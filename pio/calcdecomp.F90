@@ -87,9 +87,11 @@ contains
 ! Things work best if use_io_procs is a multiple of gdims(ndims)
 ! this adjustment makes it so, potentially increasing the blocksize a bit
     if (gdims(ldims)<use_io_procs) then
-       do while(mod(use_io_procs,gdims(ldims))>0)
-          use_io_procs=use_io_procs-1
-       end do
+       if(ldims>1 .and. gdims(ldims-1) > use_io_procs) then
+          ldims=ldims-1
+       else
+          use_io_procs = use_io_procs - mod(use_io_procs,gdims(ldims))
+       end if
     end if
     if(iorank>=use_io_procs) return 
 
