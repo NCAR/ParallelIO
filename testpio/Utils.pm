@@ -224,7 +224,7 @@ sub loadmodules{
 	module(" load p-netcdf/1.2.0");
     }elsif($host =~ "hopper"){
 	require "/opt/modules/default/init/perl";
-	module(" load netcdf-hdf5parallel/4.1.3");      
+	module(" load netcdf-hdf5parallel/4.2.0");      
 	module(" load parallel-netcdf/1.2.0");
         module("list");
     }elsif($host =~ "pleiades"){
@@ -240,6 +240,14 @@ sub loadmodules{
         module(" load INTEL/netcdf4/4.1.3_seq");
         module(" load pnetcdf/1.2.0");
 	module(" list");
+    }elsif($host =~ "hopper_gnu"){
+	require "/opt/modules/default/init/perl";
+	module(" rm PrgEnv-pgi ");
+	module(" load PrgEnv-gnu");
+	module(" switch gcc gcc/4.7.1");
+        module(" load netcdf-hdf5parallel/4.2.0");
+        module(" load parallel-netcdf/1.2.0");
+	module(" list");
     }elsif($host =~ "lynx"){
 	require "/opt/modules/default/init/perl";
 #	module(" load netcdf");
@@ -249,11 +257,10 @@ sub loadmodules{
         module("list");
     }elsif($host eq "carver"){
 	require "/usr/common/nsg/opt/Modules/default/init/perl";
-        module("rm pgi");
-	module("rm openmpi");
-	module("load intel");
-	module("load openmpi-intel");
-	module("load netcdf-intel");
+        module("load intel ");
+	module("load openmpi-intel/1.6");
+	module("load netcdf-intel/4.1.1");
+#        module("load pnetcdf/1.3.0");
         module("list");
     }
 	

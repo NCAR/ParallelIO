@@ -184,9 +184,11 @@ contains
        endif
     case(pio_iotype_binary)
        print *, subName,': IO type not supported'
+#ifdef _COMPRESSION
     case(pio_iotype_vdc2)
 #if ( {ITYPE} == TYPEREAL )
        call write_vdc2_real(File, Vardesc, iodesc, array, iostat)
+#endif
 #endif
     end select
     
@@ -300,9 +302,11 @@ contains
        call read_darray_bin_{TYPE} (File,varDesc,iodesc,array, iostat)
     case(pio_iotype_pnetcdf, pio_iotype_netcdf, pio_iotype_netcdf4c, pio_iotype_netcdf4p)
        call read_darray_nf_{TYPE} (File,varDesc,iodesc,array, iostat)
+#ifdef _COMPRESSION
     case(pio_iotype_vdc2)
 #if ( {ITYPE} == TYPEREAL )
        call read_vdc2_real(File, Vardesc, iodesc, array, iostat)
+#endif
 #endif
     case(pio_iotype_binary)
        print *, subName,': IO type not supported'
@@ -1251,7 +1255,7 @@ contains
   end subroutine darray_write_complete
     
 
-
+#ifdef _COMPRESSION
 
  subroutine write_vdc2_real(File, Vardesc, iodesc, array, iostat)
     use pio_support, only : piodie
@@ -1302,7 +1306,6 @@ contains
     iotype     = File%iotype
     UseRearranger  = File%iosystem%UseRearranger
 
-#ifdef _COMPRESSION
 #ifdef MEMCHK	
     call GPTLget_memusage(msize, rss, mshare, mtext, mstack)
     if(rss>lastrss) then
@@ -1354,9 +1357,8 @@ contains
     endif
 
     if(UseRearranger) call dealloc_check(IOBUF)
-#else
-    call piodie(__FILE__,__LINE__,'Compression is not enabled. Cannot write VDC2 file')
-#endif
+
+
 #ifdef MEMCHK	
     call GPTLget_memusage(msize, rss, mshare, mtext, mstack)
     if(rss>lastrss) then
@@ -1408,7 +1410,7 @@ subroutine read_vdc2_real(File, Vardesc, iodesc, array, iostat)
     double precision    :: timer;
     type(c_ptr) :: cptr
 
-#ifdef _COMPRESSION
+
     ! pull information from file_desc_t data structure
     IOproc     = File%iosystem%IOproc
     iotype     = File%iotype
@@ -1449,12 +1451,10 @@ subroutine read_vdc2_real(File, Vardesc, iodesc, array, iostat)
     endif   ! if(UseRearranger) 
 
     if(UseRearranger) call dealloc_check(IOBUF)
-#else
-    call piodie(__FILE__,__LINE__,'Compression is not enabled. Cannot read VDC2 file')
-#endif
+
 
   end subroutine read_vdc2_real
-
+#endif
 
 
 end module piodarray
