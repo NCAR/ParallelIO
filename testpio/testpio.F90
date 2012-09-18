@@ -4,9 +4,6 @@
 #ifdef BGL
 #define BGx
 #endif
-#ifdef TIMING
-#define MEMCHK
-#endif
 !>
 !! @file testpio.F90
 !! An example of how PIO can be used
@@ -141,10 +138,6 @@ program testpio
 
   type(var_desc_t) :: varfn_r8, varfn_r4, varfn
 
-#ifdef MEMCHK
-  integer ::  rss, mshare, mtext, mstack, lastrss=0
-#endif
-
 
   ! Initialize MPI
 
@@ -201,13 +194,6 @@ program testpio
   endif
 #endif
 
-#ifdef MEMCHK	
-    call GPTLget_memusage(msize, rss, mshare, mtext, mstack)
-    if(rss>lastrss) then
-       lastrss=rss
-       print *,__FILE__,__LINE__,'mem=',rss,' it=',it
-    end if
-#endif
   !----------------------------------------------------------------
   ! Read in namelist and set File IO Type and Format accordingly...
   !----------------------------------------------------------------
@@ -267,27 +253,11 @@ program testpio
      call MPI_COMM_SIZE(MPI_COMM_COMPUTE,nprocs,ierr)
 
   else
-#ifdef MEMCHK	
-    call GPTLget_memusage(msize, rss, mshare, mtext, mstack)
-    if(rss>lastrss) then
-       lastrss=rss
-       print *,__FILE__,__LINE__,'mem=',rss,' it=',it
-    end if
-#endif
      mpi_comm_compute = mpi_comm_world
      allocate(PIOSYS)
 
      call PIO_init(my_task, MPI_COMM_COMPUTE, num_iotasks, num_aggregator, stride, &
           rearr_type, PIOSYS, base)
-
-#ifdef MEMCHK	
-    call GPTLget_memusage(msize, rss, mshare, mtext, mstack)
-    if(rss>lastrss) then
-       lastrss=rss
-       print *,__FILE__,__LINE__,'mem=',rss,' it=',it
-    end if
-#endif
-
   end if
   if(Debug)    print *,'testpio: after call to PIO_init', piosys%num_tasks,piosys%io_comm
 
@@ -356,34 +326,11 @@ program testpio
 !     print *,'testpio: before call to mpas_decomp_generator: (',TRIM(part_input),') gdims3d: ',gdims3d
      call mpas_decomp_generator(gdims3d(1),gdims3d(2),gdims3d(3),my_task,part_input,compDOF)
   else  if (trim(compdof_input) == 'namelist') then
-#ifdef MEMCHK	
-    call GPTLget_memusage(msize, rss, mshare, mtext, mstack)
-    if(rss>lastrss) then
-       lastrss=rss
-       print *,__FILE__,__LINE__,'mem=',rss,' it=',it
-    end if
-#endif
      if(Debug)       print *,'iam: ',PIOSYS%comp_rank,'testpio: point #1'
      call gdecomp_read_nml(gdecomp,nml_filename,'comp',PIOSYS%comp_rank,PIOSYS%num_tasks,gDims3D(1:3))
-
-#ifdef MEMCHK	
-    call GPTLget_memusage(msize, rss, mshare, mtext, mstack)
-    if(rss>lastrss) then
-       lastrss=rss
-       print *,__FILE__,__LINE__,'mem=',rss,' it=',it
-    end if
-#endif
-
      if(Debug)       print *,'iam: ',PIOSYS%comp_rank,'testpio: point #2'
      call gdecomp_DOF(gdecomp,PIOSYS%comp_rank,compDOF,start,count)
      if(Debug)       print *,'iam: ',PIOSYS%comp_rank,'testpio: point #3', minval(compdof),maxval(compdof)
-#ifdef MEMCHK	
-    call GPTLget_memusage(msize, rss, mshare, mtext, mstack)
-    if(rss>lastrss) then
-       lastrss=rss
-       print *,__FILE__,__LINE__,'mem=',rss,' it=',it
-    end if
-#endif
   else
      call pio_readdof(trim(compdof_input),compDOF,MPI_COMM_COMPUTE,75)
      sdof = size(compDOF)
@@ -409,28 +356,11 @@ program testpio
         count = 0
      endif
   endif
-
-#ifdef MEMCHK	
-    call GPTLget_memusage(msize, rss, mshare, mtext, mstack)
-    if(rss>lastrss) then
-       lastrss=rss
-       print *,__FILE__,__LINE__,'mem=',rss,' it=',it
-    end if
-#endif
-
   startCOMP(1:3) = start(1:3)
   countCOMP(1:3) = count(1:3)
   if (trim(compdof_output) /= 'none') then
      call pio_writedof(trim(compdof_output),compDOF,MPI_COMM_COMPUTE,75)
   endif
-
-#ifdef MEMCHK	
-    call GPTLget_memusage(msize, rss, mshare, mtext, mstack)
-    if(rss>lastrss) then
-       lastrss=rss
-       print *,__FILE__,__LINE__,'mem=',rss,' it=',it
-    end if
-#endif
 
   sdof = sum(compDOF)
   call MPI_REDUCE(sdof,sdof_sum,1,MPI_INTEGER8,MPI_SUM,master_task,MPI_COMM_COMPUTE,ierr)
@@ -481,13 +411,7 @@ program testpio
   else
      call piodie(__FILE__,__LINE__,' rearr '//trim(rearr)//' not supported')
   endif
-#ifdef MEMCHK	
-    call GPTLget_memusage(msize, rss, mshare, mtext, mstack)
-    if(rss>lastrss) then
-       lastrss=rss
-       print *,__FILE__,__LINE__,'mem=',rss,' it=',it
-    end if
-#endif
+
   ioDOFR => ioDOF
   ioDOFW => ioDOF
   startpio = startIO
@@ -562,13 +486,7 @@ program testpio
   enddo
   if(Debug)       print *,'iam: ',PIOSYS%comp_rank,'testpio: point #10'
 
-#ifdef MEMCHK	
-    call GPTLget_memusage(msize, rss, mshare, mtext, mstack)
-    if(rss>lastrss) then
-       lastrss=rss
-       print *,__FILE__,__LINE__,'mem=',rss,' it=',it
-    end if
-#endif
+
   if(TestR8  .or. TestCombo)  call alloc_check(test_r8rd,lLength,'testpio:test_r8rd')
   if(TestInt .or. TestCombo) call alloc_check(test_i4rd,lLength,'testpio:test_i4rd')
   if(TestR4  .or. TestCombo)  call alloc_check(test_r4rd,lLength,'testpio:test_r4rd')
@@ -585,13 +503,7 @@ program testpio
   !--------------------------------
   ! allocate arrays for holding globally-reduced timing information
   !--------------------------------
-#ifdef MEMCHK	
-    call GPTLget_memusage(msize, rss, mshare, mtext, mstack)
-    if(rss>lastrss) then
-       lastrss=rss
-       print *,__FILE__,__LINE__,'mem=',rss,' it=',it
-    end if
-#endif
+
   call alloc_check(gdt_write_r8, maxiter, ' testpio:gdt_write_r8 ')
   call alloc_check(gdt_read_r8, maxiter, ' testpio:gdt_read_r8 ')
   call alloc_check(gdt_write_r4, maxiter, ' testpio:gdt_write_r4 ')
@@ -599,13 +511,7 @@ program testpio
   call alloc_check(gdt_write_i4, maxiter, ' testpio:gdt_write_i4 ')
   call alloc_check(gdt_read_i4, maxiter, ' testpio:gdt_read_i4 ')
   if(Debug)       print *,'iam: ',PIOSYS%comp_rank,'testpio: point #11'
-#ifdef MEMCHK	
-    call GPTLget_memusage(msize, rss, mshare, mtext, mstack)
-    if(rss>lastrss) then
-       lastrss=rss
-       print *,__FILE__,__LINE__,'mem=',rss,' it=',it
-    end if
-#endif
+
   if(splitPhase) then 
     numPhases = 2
   else
@@ -626,16 +532,8 @@ program testpio
         endif
      endif
      if(log_master_task) print *,'{write,read}Phase:  ',writePhase,readPhase
-
-
      do it=1,maxiter
-#ifdef MEMCHK	
-    call GPTLget_memusage(msize, rss, mshare, mtext, mstack)
-    if(rss>lastrss) then
-       lastrss=rss
-       print *,__FILE__,__LINE__,'mem=',rss,' it=',it
-    end if
-#endif
+
      !-------------------------------------------------------
      ! Explain the distributed array decomposition to PIO lib
      !-------------------------------------------------------

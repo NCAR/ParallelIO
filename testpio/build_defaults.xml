@@ -3,7 +3,7 @@
 <testpioconfig>
 
 <janus
-  PNETCDF_PATH="/home/jimedwards/parallel-netcdf/1.3.0/intel/12.1.4"
+  PNETCDF_PATH="${PNETCDF}"
   NETCDF_PATH="${NETCDF}"
   CXX="icpc"
   CC="icc"
@@ -18,7 +18,6 @@
   workdir="/lustre/janus_scratch/${USER}/testpio"
   submit="qsub"
   run = "mpirun"
-  netcdf4 = "true"
   corespernode="12"
   conopts="--enable-filesystem-hints=lustre --with-piovdc=/home/jimedwards/libpiovdc/1.0/intel_12.1.4"
   preamble = "
@@ -31,7 +30,7 @@
  />  
 
 <carver
-  PNETCDF_PATH="/global/homes/j/jedwards/pnetcdf/carver/intel/"
+  PNETCDF_PATH="/global/homes/j/jedwards//pnetcdf/carver/intel"
   NETCDF_PATH="${NETCDF_DIR}"
   CXX="icpc"
   CC="icc"
@@ -99,9 +98,8 @@
   MPICXX = "mpCC"
   LDFLAGS=" "
   LDLIBS="`nc-config --flibs`"
-  conopts = " --enable-timing --enable-filesystem-hints=gpfs  --with-expat=/contrib/expat/2.1.0/ --with-piovdc=/glade/home/jedwards/libpiovdc-cinterop/ "
+  conopts = " --enable-timing --enable-filesystem-hints=gpfs --enable-netcdf4 --with-expat=/contrib/expat/2.1.0/ --with-piovdc=/glade/home/jedwards/libpiovdc-cinterop/ "
   workdir = "/ptmp/${USER}/testpio"
-  netcdf4 = "true"
   submit = "bsub <"
   run = "mpirun.lsf "
   corespernode="32"
@@ -454,30 +452,8 @@
   CPPDEFS = " -DFORTRANUNDERSCORE -D_NO_MPI_RSEND"
   NETCDF_PATH = "${NETCDF_DIR}"
   PNETCDF_PATH = "${PARALLEL_NETCDF_DIR}"
-  LDLIBS="`nf-config --flibs`"
+  LDLIBS="`nc-config --flibs`"
   workdir = "/scratch/scratchdirs/${USER}/testpio.norsend"
-  run = "aprun"
-  corespernode = "24"
-  submit = "qsub "
-  conopts = " --enable-netcdf4 --enable-pnetcdf --enable-timing --enable-filesystem-hints=lustre "
-  preamble="
-#PBS -N testpio_suite
-#PBS -l walltime=01:00:00
-#PBS -q regular
-#PBS -j oe
-#PBS -V"
-/>
-
-<hopper_gnu
-  MPIFC = "ftn "
-  MPICC  = "cc "
-  FC = "ftn"
-  CC     = "cc"
-
-  CPPDEFS = " -DFORTRANUNDERSCORE -D_NO_MPI_RSEND"
-  NETCDF_PATH = "${NETCDF_DIR}"
-  LDLIBS="`nf-config --flibs`"
-  workdir = "/scratch/scratchdirs/${USER}/testpio.gnu"
   run = "aprun"
   corespernode = "24"
   submit = "qsub "
