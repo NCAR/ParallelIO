@@ -332,9 +332,6 @@ void compute_buffer_init(iosystem_desc_t ios)
  */
 
 
- */
-
-
 int pio_write_darray_multi_nc(file_desc_t *file, const int nvars, const int vid[], 
 			      const int iodesc_ndims, MPI_Datatype basetype, const PIO_Offset gsize[],
 			      const int maxregions, io_region *firstregion, const PIO_Offset llen,
