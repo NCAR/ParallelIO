@@ -1,0 +1,4 @@
+<map id="TIMER" name="TIMER">
+<area shape="rect" id="node2" href="$struct_wallstats.html" title="Wallstats" alt="" coords="5,5,83,32"/>
+<area shape="rect" id="node3" href="$struct_cpustats.html" title="Cpustats" alt="" coords="107,5,181,32"/>
+</map>

@@ -4,7 +4,7 @@
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.5"/>
-<title>PIO: Parallel I/O library (PIO)</title>
+<title>PIO: Examples</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -38,8 +38,8 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </script>
   <div id="navrow1" class="tabs">
     <ul class="tablist">
-      <li class="current"><a href="index.html"><span>PIO&#160;User's&#160;Guide</span></a></li>
-      <li><a href="annotated.html"><span>Appendix</span></a></li>
+      <li><a href="index.html"><span>PIO&#160;User's&#160;Guide</span></a></li>
+      <li class="current"><a href="annotated.html"><span>Appendix</span></a></li>
       <li><a href="files.html"><span>Files</span></a></li>
       <li>
         <div id="MSearchBox" class="MSearchBoxInactive">
@@ -59,7 +59,13 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
       </li>
     </ul>
   </div>
-</div><!-- top -->
+  <div id="navrow2" class="tabs2">
+    <ul class="tablist">
+      <li><a href="modules.html"><span>Modules</span></a></li>
+      <li><a href="annotated.html"><span>Data&#160;Types</span></a></li>
+      <li class="current"><a href="pages.html"><span>Page&#160;Index</span></a></li>
+    </ul>
+  </div>
 <!-- window showing the filter options -->
 <div id="MSearchSelectWindow"
      onmouseover="return searchBox.OnSearchSelectShow()"
@@ -74,27 +80,17 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </iframe>
 </div>
 
+</div><!-- top -->
 <div class="header">
   <div class="headertitle">
-<div class="title">Parallel I/O library (PIO) </div>  </div>
+<div class="title">Examples </div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><dl class="section author"><dt>Author</dt><dd>Jim Edwards </dd>
-<dd>
-John M. Dennis </dd>
-<dd>
-Mariana Vertenstein</dd></dl>
-<p>The Parallel I/O (PIO) library has been developed over several years to improve the ability of component models of the Community Earth System Model (CESM) to perform I/O. We believe that the interface is sufficiently general to be useful to a broader spectrum of applications. The focus of development has been on backend tools that use the NetCDF file format. PIO currently supports NetCDF and PnetCDF as backend libraries, both can be linked and used with runtime options controlling which is used for a given file.</p>
-<p>PIO2 represents a significant rewrite of the PIO library and includes a C API as well as the original F90 API. A new decomposition strategy has been introduced which gives the user more ability to tune io communications.</p>
-<p>This user's guide provides information about the PIO library and examples on how it can be used. Please review the ChangeLog that is included with the distribution for up-to-date release information.</p>
+<div class="textblock"><p>Examples of the usage of PIO</p>
+<p>PIO has been implemented in several geophysical component models, including the Community Atmosphere Model (CAM), the Community Land Model (CLM), the Parallel Ocean Program (POP), the Community Ice CodE (CICE), and coupler for used by CCSM4.0 (CPL7). We also provide several simpler example code as well as a test code that is suitable for regression testing and benchmarking.</p>
 <ul>
-<li><a class="el" href="intro.html">Introduction</a></li>
-<li><a class="el" href="install.html">Installing PIO</a></li>
-<li><a class="el" href="decomp.html">Describing decompositions</a></li>
-<li><a class="el" href="error.html">Error Handling</a></li>
-<li><a class="el" href="examp.html">Examples</a></li>
-<li><a class="el" href="faq.html">Frequently Asked Questions</a></li>
-<li><a class="el" href="api.html">PIO user interface</a> </li>
+<li><a class="el" href="_c_a_mexample.html">Community Atmosphere Model (CAM)</a></li>
+<li><a class="el" href="testpio_example.html">testpio: a regression and benchmarking code</a> </li>
 </ul>
 </div></div><!-- contents -->
 <!-- start footer part -->

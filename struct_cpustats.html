@@ -4,7 +4,7 @@
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.5"/>
-<title>PIO: Parallel I/O library (PIO)</title>
+<title>PIO: Cpustats Struct Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -38,8 +38,8 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </script>
   <div id="navrow1" class="tabs">
     <ul class="tablist">
-      <li class="current"><a href="index.html"><span>PIO&#160;User's&#160;Guide</span></a></li>
-      <li><a href="annotated.html"><span>Appendix</span></a></li>
+      <li><a href="index.html"><span>PIO&#160;User's&#160;Guide</span></a></li>
+      <li class="current"><a href="annotated.html"><span>Appendix</span></a></li>
       <li><a href="files.html"><span>Files</span></a></li>
       <li>
         <div id="MSearchBox" class="MSearchBoxInactive">
@@ -59,7 +59,13 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
       </li>
     </ul>
   </div>
-</div><!-- top -->
+  <div id="navrow2" class="tabs2">
+    <ul class="tablist">
+      <li><a href="modules.html"><span>Modules</span></a></li>
+      <li><a href="annotated.html"><span>Data&#160;Types</span></a></li>
+      <li><a href="pages.html"><span>Page&#160;Index</span></a></li>
+    </ul>
+  </div>
 <!-- window showing the filter options -->
 <div id="MSearchSelectWindow"
      onmouseover="return searchBox.OnSearchSelectShow()"
@@ -74,29 +80,35 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </iframe>
 </div>
 
+</div><!-- top -->
 <div class="header">
+  <div class="summary">
+<a href="struct_cpustats-members.html">List of all members</a> &#124;
+<a href="#pub-attribs">Public Attributes</a>  </div>
   <div class="headertitle">
-<div class="title">Parallel I/O library (PIO) </div>  </div>
+<div class="title">Cpustats Struct Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><dl class="section author"><dt>Author</dt><dd>Jim Edwards </dd>
-<dd>
-John M. Dennis </dd>
-<dd>
-Mariana Vertenstein</dd></dl>
-<p>The Parallel I/O (PIO) library has been developed over several years to improve the ability of component models of the Community Earth System Model (CESM) to perform I/O. We believe that the interface is sufficiently general to be useful to a broader spectrum of applications. The focus of development has been on backend tools that use the NetCDF file format. PIO currently supports NetCDF and PnetCDF as backend libraries, both can be linked and used with runtime options controlling which is used for a given file.</p>
-<p>PIO2 represents a significant rewrite of the PIO library and includes a C API as well as the original F90 API. A new decomposition strategy has been introduced which gives the user more ability to tune io communications.</p>
-<p>This user's guide provides information about the PIO library and examples on how it can be used. Please review the ChangeLog that is included with the distribution for up-to-date release information.</p>
-<ul>
-<li><a class="el" href="intro.html">Introduction</a></li>
-<li><a class="el" href="install.html">Installing PIO</a></li>
-<li><a class="el" href="decomp.html">Describing decompositions</a></li>
-<li><a class="el" href="error.html">Error Handling</a></li>
-<li><a class="el" href="examp.html">Examples</a></li>
-<li><a class="el" href="faq.html">Frequently Asked Questions</a></li>
-<li><a class="el" href="api.html">PIO user interface</a> </li>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
+Public Attributes</h2></td></tr>
+<tr class="memitem:ae303be56010226e3410122ac9df77041"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae303be56010226e3410122ac9df77041"></a>
+long&#160;</td><td class="memItemRight" valign="bottom"><b>last_utime</b></td></tr>
+<tr class="separator:ae303be56010226e3410122ac9df77041"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8aa01399b8e279c5249539b6bd859c02"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8aa01399b8e279c5249539b6bd859c02"></a>
+long&#160;</td><td class="memItemRight" valign="bottom"><b>last_stime</b></td></tr>
+<tr class="separator:a8aa01399b8e279c5249539b6bd859c02"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a66a23190fa5b3ad8a252db24a6583356"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a66a23190fa5b3ad8a252db24a6583356"></a>
+long&#160;</td><td class="memItemRight" valign="bottom"><b>accum_utime</b></td></tr>
+<tr class="separator:a66a23190fa5b3ad8a252db24a6583356"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a17d6ea2ca056eddee6894912b23fcf0d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a17d6ea2ca056eddee6894912b23fcf0d"></a>
+long&#160;</td><td class="memItemRight" valign="bottom"><b>accum_stime</b></td></tr>
+<tr class="separator:a17d6ea2ca056eddee6894912b23fcf0d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<hr/>The documentation for this struct was generated from the following file:<ul>
+<li><a class="el" href="private_8h_source.html">private.h</a></li>
 </ul>
-</div></div><!-- contents -->
+</div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
 Generated on Fri Sep 11 2015 15:44:42 for PIO by &#160;<a href="http://www.doxygen.org/index.html">

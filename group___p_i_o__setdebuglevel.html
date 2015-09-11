@@ -4,7 +4,7 @@
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.5"/>
-<title>PIO: Parallel I/O library (PIO)</title>
+<title>PIO: PIO_setdebuglevel</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -38,7 +38,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </script>
   <div id="navrow1" class="tabs">
     <ul class="tablist">
-      <li class="current"><a href="index.html"><span>PIO&#160;User's&#160;Guide</span></a></li>
+      <li><a href="index.html"><span>PIO&#160;User's&#160;Guide</span></a></li>
       <li><a href="annotated.html"><span>Appendix</span></a></li>
       <li><a href="files.html"><span>Files</span></a></li>
       <li>
@@ -75,28 +75,50 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div>
 
 <div class="header">
+  <div class="summary">
+<a href="#func-members">Functions/Subroutines</a>  </div>
   <div class="headertitle">
-<div class="title">Parallel I/O library (PIO) </div>  </div>
+<div class="title">PIO_setdebuglevel</div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><dl class="section author"><dt>Author</dt><dd>Jim Edwards </dd>
-<dd>
-John M. Dennis </dd>
-<dd>
-Mariana Vertenstein</dd></dl>
-<p>The Parallel I/O (PIO) library has been developed over several years to improve the ability of component models of the Community Earth System Model (CESM) to perform I/O. We believe that the interface is sufficiently general to be useful to a broader spectrum of applications. The focus of development has been on backend tools that use the NetCDF file format. PIO currently supports NetCDF and PnetCDF as backend libraries, both can be linked and used with runtime options controlling which is used for a given file.</p>
-<p>PIO2 represents a significant rewrite of the PIO library and includes a C API as well as the original F90 API. A new decomposition strategy has been introduced which gives the user more ability to tune io communications.</p>
-<p>This user's guide provides information about the PIO library and examples on how it can be used. Please review the ChangeLog that is included with the distribution for up-to-date release information.</p>
-<ul>
-<li><a class="el" href="intro.html">Introduction</a></li>
-<li><a class="el" href="install.html">Installing PIO</a></li>
-<li><a class="el" href="decomp.html">Describing decompositions</a></li>
-<li><a class="el" href="error.html">Error Handling</a></li>
-<li><a class="el" href="examp.html">Examples</a></li>
-<li><a class="el" href="faq.html">Frequently Asked Questions</a></li>
-<li><a class="el" href="api.html">PIO user interface</a> </li>
-</ul>
-</div></div><!-- contents -->
+
+<p>sets the level of debug information that pio will generate.  
+<a href="#details">More...</a></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Functions/Subroutines</h2></td></tr>
+<tr class="memitem:ga197ef394cd490e1650b95ef0ab97cc85"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__setdebuglevel.html#ga197ef394cd490e1650b95ef0ab97cc85">piolib_mod::setdebuglevel</a> (level)</td></tr>
+<tr class="memdesc:ga197ef394cd490e1650b95ef0ab97cc85"><td class="mdescLeft">&#160;</td><td class="mdescRight">sets the level of debug information output to stdout by pio  <a href="#ga197ef394cd490e1650b95ef0ab97cc85">More...</a><br/></td></tr>
+<tr class="separator:ga197ef394cd490e1650b95ef0ab97cc85"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<p>sets the level of debug information that pio will generate. </p>
+<h2 class="groupheader">Function/Subroutine Documentation</h2>
+<a class="anchor" id="ga197ef394cd490e1650b95ef0ab97cc85"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">subroutine piolib_mod::setdebuglevel </td>
+          <td>(</td>
+          <td class="paramtype">integer(i4), intent(in)&#160;</td>
+          <td class="paramname"><em>level</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>sets the level of debug information output to stdout by pio </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">level</td><td>: default value is 0, allowed values 0-3 </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+</div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
 Generated on Fri Sep 11 2015 15:44:42 for PIO by &#160;<a href="http://www.doxygen.org/index.html">

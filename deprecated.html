@@ -4,7 +4,7 @@
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.5"/>
-<title>PIO: Parallel I/O library (PIO)</title>
+<title>PIO: Deprecated List</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -38,8 +38,8 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </script>
   <div id="navrow1" class="tabs">
     <ul class="tablist">
-      <li class="current"><a href="index.html"><span>PIO&#160;User's&#160;Guide</span></a></li>
-      <li><a href="annotated.html"><span>Appendix</span></a></li>
+      <li><a href="index.html"><span>PIO&#160;User's&#160;Guide</span></a></li>
+      <li class="current"><a href="annotated.html"><span>Appendix</span></a></li>
       <li><a href="files.html"><span>Files</span></a></li>
       <li>
         <div id="MSearchBox" class="MSearchBoxInactive">
@@ -59,7 +59,13 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
       </li>
     </ul>
   </div>
-</div><!-- top -->
+  <div id="navrow2" class="tabs2">
+    <ul class="tablist">
+      <li><a href="modules.html"><span>Modules</span></a></li>
+      <li><a href="annotated.html"><span>Data&#160;Types</span></a></li>
+      <li class="current"><a href="pages.html"><span>Page&#160;Index</span></a></li>
+    </ul>
+  </div>
 <!-- window showing the filter options -->
 <div id="MSearchSelectWindow"
      onmouseover="return searchBox.OnSearchSelectShow()"
@@ -74,28 +80,22 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </iframe>
 </div>
 
+</div><!-- top -->
 <div class="header">
   <div class="headertitle">
-<div class="title">Parallel I/O library (PIO) </div>  </div>
+<div class="title">Deprecated List </div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><dl class="section author"><dt>Author</dt><dd>Jim Edwards </dd>
-<dd>
-John M. Dennis </dd>
-<dd>
-Mariana Vertenstein</dd></dl>
-<p>The Parallel I/O (PIO) library has been developed over several years to improve the ability of component models of the Community Earth System Model (CESM) to perform I/O. We believe that the interface is sufficiently general to be useful to a broader spectrum of applications. The focus of development has been on backend tools that use the NetCDF file format. PIO currently supports NetCDF and PnetCDF as backend libraries, both can be linked and used with runtime options controlling which is used for a given file.</p>
-<p>PIO2 represents a significant rewrite of the PIO library and includes a C API as well as the original F90 API. A new decomposition strategy has been introduced which gives the user more ability to tune io communications.</p>
-<p>This user's guide provides information about the PIO library and examples on how it can be used. Please review the ChangeLog that is included with the distribution for up-to-date release information.</p>
-<ul>
-<li><a class="el" href="intro.html">Introduction</a></li>
-<li><a class="el" href="install.html">Installing PIO</a></li>
-<li><a class="el" href="decomp.html">Describing decompositions</a></li>
-<li><a class="el" href="error.html">Error Handling</a></li>
-<li><a class="el" href="examp.html">Examples</a></li>
-<li><a class="el" href="faq.html">Frequently Asked Questions</a></li>
-<li><a class="el" href="api.html">PIO user interface</a> </li>
-</ul>
+<div class="textblock"><dl class="reflist">
+<dt><a class="anchor" id="_deprecated000002"></a>Subprogram <a class="el" href="group___p_i_o__initdecomp.html#ga043f00b0a111a252e14b4120e0dcbbd4">piolib_mod::initdecomp_1dof_bin_i8</a>  (iosystem, basepiotype, dims, lenblocks, compdof, iodofr, iodesc)</dt>
+<dd></dd>
+<dt><a class="anchor" id="_deprecated000004"></a>Subprogram <a class="el" href="group___p_i_o__initdecomp.html#ga20305909e2f9de23c3fbb5ce6a99ca9c">piolib_mod::initdecomp_1dof_nf_i4</a>  (iosystem, basepiotype, dims, lenblocks, compdof, iodof, start, count, iodesc)</dt>
+<dd></dd>
+<dt><a class="anchor" id="_deprecated000001"></a>Subprogram <a class="el" href="group___p_i_o__initdecomp.html#ga39562b2b358b3e305ce405d19d2c4db4">piolib_mod::initdecomp_2dof_bin_i4</a>  (iosystem, basepiotype, dims, lenblocks, compdof, iodofr, iodofw, iodesc)</dt>
+<dd></dd>
+<dt><a class="anchor" id="_deprecated000003"></a>Subprogram <a class="el" href="group___p_i_o__initdecomp.html#ga9e58f2836223b7f45cd1e3e0098bebbe">piolib_mod::initdecomp_2dof_nf_i4</a>  (iosystem, basepiotype, dims, lenblocks, compdof, iodofr, iodofw, start, count, iodesc)</dt>
+<dd></dd>
+</dl>
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

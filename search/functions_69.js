@@ -1,0 +1,22 @@
+var searchData=
+[
+  ['idx_5fto_5fdim_5flist',['idx_to_dim_list',['../pio__rearrange_8c.html#a76ed5622a97dad46b56a1b1bae458ba3',1,'pio_rearrange.c']]],
+  ['init_5fintercom',['init_intercom',['../group___p_i_o__init.html#ga2a34f801ef28767ad58b04cf99ebb207',1,'piolib_mod']]],
+  ['init_5fintracom',['init_intracom',['../group___p_i_o__init.html#ga2556bd8e85b99cc3ec87d99d8979c42f',1,'piolib_mod']]],
+  ['initdecomp_5f1dof_5fbin_5fi8',['initdecomp_1dof_bin_i8',['../group___p_i_o__initdecomp.html#ga043f00b0a111a252e14b4120e0dcbbd4',1,'piolib_mod']]],
+  ['initdecomp_5f1dof_5fnf_5fi4',['initdecomp_1dof_nf_i4',['../group___p_i_o__initdecomp.html#ga20305909e2f9de23c3fbb5ce6a99ca9c',1,'piolib_mod']]],
+  ['initdecomp_5f2dof_5fbin_5fi4',['initdecomp_2dof_bin_i4',['../group___p_i_o__initdecomp.html#ga39562b2b358b3e305ce405d19d2c4db4',1,'piolib_mod']]],
+  ['initdecomp_5f2dof_5fnf_5fi4',['initdecomp_2dof_nf_i4',['../group___p_i_o__initdecomp.html#ga9e58f2836223b7f45cd1e3e0098bebbe',1,'piolib_mod']]],
+  ['inq_5fatt_5fdesc',['inq_att_desc',['../classpio__nf.html#a3cf276e51e5b58322b5971c0228dd3f3',1,'pio_nf']]],
+  ['inq_5fattlen_5fdesc',['inq_attlen_desc',['../classpio__nf.html#a5cd2661a09fd5a426b89ce2b473e19b6',1,'pio_nf']]],
+  ['inq_5fdimid_5fdesc',['inq_dimid_desc',['../classpio__nf.html#ac45634c2f5f4d2d84eb3d0ceffd2d4e9',1,'pio_nf']]],
+  ['inq_5fvardimid_5fdesc',['inq_vardimid_desc',['../classpio__nf.html#ae47f2e64960778bf50c4707b5748e5b6',1,'pio_nf']]],
+  ['inq_5fvarid_5fdesc',['inq_varid_desc',['../classpio__nf.html#af0a73d06e44223e3055601b3548c661e',1,'pio_nf']]],
+  ['inq_5fvarname_5fdesc',['inq_varname_desc',['../classpio__nf.html#a7adeb7df7ab59e49d0e9f4cf7d33040c',1,'pio_nf']]],
+  ['inq_5fvarnatts_5fdesc',['inq_varnatts_desc',['../classpio__nf.html#a26758ad91704698ef0cf7fe5817a9ad6',1,'pio_nf']]],
+  ['inq_5fvarndims_5fdesc',['inq_varndims_desc',['../classpio__nf.html#ac9a43be9bd57fa5752e649adebe68205',1,'pio_nf']]],
+  ['inq_5fvartype_5fdesc',['inq_vartype_desc',['../classpio__nf.html#a4f15c4b59ee53493543dc8e8d22419cc',1,'pio_nf']]],
+  ['inquire_5fdesc',['inquire_desc',['../classpio__nf.html#aaefd5a9aaf2b61b0b5e2270868d0c076',1,'pio_nf']]],
+  ['inquire_5fdimension_5fdesc',['inquire_dimension_desc',['../classpio__nf.html#a9c1aea92ffa38817c6aa00154adf14e5',1,'pio_nf']]],
+  ['inquire_5fvariable_5fdesc',['inquire_variable_desc',['../classpio__nf.html#ab1dc4fdd5ff21b81a9c310c24d697626',1,'pio_nf']]]
+];
