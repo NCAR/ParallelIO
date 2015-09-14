@@ -100,6 +100,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
            -DPnetCDF_PATH=/path/to/pnetcdf \
            /path/to/pio/source
 </pre><p>This works for the dependencies: <code>NetCDF</code>, <code>PnetCDF</code>, <code>HDF5</code>, <code>LIBZ</code>, <code>SZIP</code>.</p>
+<p>For specific instructions to install on various commonly used super computers, please read the <a class="el" href="mach_walkthrough.html">walk-through guide to PIO Installation</a>.</p>
 <h3>Additional CMake Options</h3>
 <p>Additional configuration options can be specified on the command line.</p>
 <p>The <code>PIO_ENABLE_TIMING</code> option can be set to <code>ON</code> or <code>OFF</code> to enable or disable the use of GPTL timing in the PIO libraries. This feature requires the GPTL C library for the PIO <code>C</code> library and the GPTL Fortran library with the <code>perf_mod.mod</code> and <code>perf_utils.mod</code> interface modules. If these GPTL libraries are already installed on the system, the user can point PIO to the location of these libraries with the <code>GPTL_PATH</code> variable (or, individually, <code>GPTL_C_PATH</code> and <code>GPTL_Fortran_Perf_PATH</code> variables). However, if these GPTL libraries are not installed on the system, and GPTL cannot be found, then PIO will build its own internal version of GPTL.</p>
@@ -127,7 +128,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Sep 11 2015 15:44:42 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Sep 14 2015 11:13:40 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

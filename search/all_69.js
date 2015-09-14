@@ -21,10 +21,11 @@ var searchData=
   ['inquire_5fvariable_5fdesc',['inquire_variable_desc',['../classpio__nf.html#ab1dc4fdd5ff21b81a9c310c24d697626',1,'pio_nf']]],
   ['installing_20pio',['Installing PIO',['../install.html',1,'']]],
   ['introduction',['Introduction',['../intro.html',1,'']]],
-  ['io_5fdesc_5ft',['io_desc_t',['../structpio__types_1_1io__desc__t.html',1,'pio_types']]],
   ['io_5fdesc_5ft',['io_desc_t',['../structio__desc__t.html',1,'io_desc_t'],['../pio_8h.html#a4d90d3c91ed76852ad6b8f870adee005',1,'io_desc_t():&#160;pio.h']]],
+  ['io_5fdesc_5ft',['io_desc_t',['../structpio__types_1_1io__desc__t.html',1,'pio_types']]],
   ['io_5fregion',['io_region',['../structio__region.html',1,'io_region'],['../pio_8h.html#a255fd4def6a78cafae3ea966a4f86893',1,'io_region():&#160;pio.h']]],
   ['io_20descriptors_2c_20generating',['io descriptors, generating',['../group__iodesc__generate.html',1,'']]],
   ['iosystem_5fdesc_5ft',['iosystem_desc_t',['../structpio__types_1_1iosystem__desc__t.html',1,'pio_types']]],
-  ['iosystem_5fdesc_5ft',['iosystem_desc_t',['../structiosystem__desc__t.html',1,'iosystem_desc_t'],['../pio_8h.html#a059c7a85a913670bed41c52fbf05bc43',1,'iosystem_desc_t():&#160;pio.h']]]
+  ['iosystem_5fdesc_5ft',['iosystem_desc_t',['../structiosystem__desc__t.html',1,'iosystem_desc_t'],['../pio_8h.html#a059c7a85a913670bed41c52fbf05bc43',1,'iosystem_desc_t():&#160;pio.h']]],
+  ['install_20walk_2dthrough',['Install Walk-through',['../mach_walkthrough.html',1,'']]]
 ];
