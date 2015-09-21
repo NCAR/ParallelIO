@@ -1,7 +1,7 @@
 var searchData=
 [
   ['ceil2',['ceil2',['../pio__spmd_8c.html#a9d4a418be082781ab677278b7940323c',1,'pio_spmd.c']]],
-  ['checkmpireturn',['CheckMPIReturn',['../pio__spmd_8c.html#a182ea48207464ffaaae95b5fb3c48ce0',1,'pio_spmd.c']]],
+  ['checkmpireturn',['checkmpireturn',['../classpio__support.html#ac7968ba27902096f4dd743d468f25274',1,'pio_support::checkmpireturn()'],['../pio__spmd_8c.html#a182ea48207464ffaaae95b5fb3c48ce0',1,'CheckMPIReturn():&#160;pio_spmd.c']]],
   ['closefile',['closefile',['../group___p_i_o__closefile.html#gabd36983797d48236a8d610b58a7c3aa8',1,'piolib_mod']]],
   ['compare_5foffsets',['compare_offsets',['../pio__rearrange_8c.html#ab23cee4109e4fa8a752484456bbc62fe',1,'pio_rearrange.c']]],
   ['compute_5fbuffer_5finit',['compute_buffer_init',['../pio__darray_8c.html#a2231e6bc8e95b3b7ce073481e30eb57a',1,'pio_darray.c']]],

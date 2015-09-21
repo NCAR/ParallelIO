@@ -35,6 +35,7 @@ var searchData=
   ['pio_5fnf',['pio_nf',['../classpio__nf.html',1,'']]],
   ['pio_5fopenfile',['pio_openfile',['../group___p_i_o__openfile.html#ga434cd26b109dc9e16dbbb3741c3ac1db',1,'piolib_mod::pio_openfile()'],['../group___p_i_o__openfile.html',1,'(Global Namespace)']]],
   ['pio_5fread_5fdarray_5fnc',['pio_read_darray_nc',['../pio_8h.html#a86dd21a39e72785837ee95e32947cce7',1,'pio_read_darray_nc(file_desc_t *file, io_desc_t *iodesc, const int vid, void *IOBUF):&#160;pio_darray.c'],['../pio__darray_8c.html#a86dd21a39e72785837ee95e32947cce7',1,'pio_read_darray_nc(file_desc_t *file, io_desc_t *iodesc, const int vid, void *IOBUF):&#160;pio_darray.c']]],
+  ['pio_5freaddof',['pio_readdof',['../classpio__support.html#aa6b9b98ebf5a85c45dfc0f108f453fba',1,'pio_support']]],
   ['pio_5frearr_5fmethod',['PIO_rearr_method',['../group___p_i_o__rearr__method.html',1,'']]],
   ['pio_5frearrange_2ec',['pio_rearrange.c',['../pio__rearrange_8c.html',1,'']]],
   ['pio_5frearrangers',['PIO_REARRANGERS',['../pio_8h.html#ab0dd70fbaba2863ad8194ff3ad0b3153',1,'pio.h']]],
@@ -53,6 +54,7 @@ var searchData=
   ['pio_5ftypes_2ef90',['pio_types.F90',['../pio__types_8_f90.html',1,'']]],
   ['pio_5fwrite_5fdarray_5fmulti_5fnc',['pio_write_darray_multi_nc',['../pio__darray_8c.html#aad2d5d7522e4af9927e12478884f562b',1,'pio_darray.c']]],
   ['pio_5fwrite_5fdarray_5fnc',['pio_write_darray_nc',['../pio__darray_8c.html#abb658657fdc5f52e1a2897b00c5ab50f',1,'pio_darray.c']]],
+  ['pio_5fwritedof',['pio_writedof',['../classpio__support.html#a70786a25959ff291ef4d781f9554ff06',1,'pio_support']]],
   ['pioc_2ec',['pioc.c',['../pioc_8c.html',1,'']]],
   ['pioc_5fadvanceframe',['PIOc_advanceframe',['../pio_8h.html#aa0d2ac568ba1e0b339d7fb9248d8358c',1,'PIOc_advanceframe(int ncid, int varid):&#160;pioc.c'],['../pioc_8c.html#aa0d2ac568ba1e0b339d7fb9248d8358c',1,'PIOc_advanceframe(int ncid, int varid):&#160;pioc.c']]],
   ['pioc_5fclosefile',['PIOc_closefile',['../group___p_i_o__closefile.html#gaee37be8734afcb8ee94088dc287c341b',1,'PIOc_closefile(int ncid):&#160;pio_file.c'],['../group___p_i_o__closefile.html#gaee37be8734afcb8ee94088dc287c341b',1,'PIOc_closefile(int ncid):&#160;pio_file.c']]],
@@ -145,6 +147,7 @@ var searchData=
   ['pioc_5fsetframe',['PIOc_setframe',['../pio_8h.html#a35d02327ced04ebf8323a819e45a18d8',1,'PIOc_setframe(const int ncid, const int varid, const int frame):&#160;pioc.c'],['../pioc_8c.html#a35d02327ced04ebf8323a819e45a18d8',1,'PIOc_setframe(const int ncid, const int varid, const int frame):&#160;pioc.c']]],
   ['pioc_5fwrite_5fdarray',['PIOc_write_darray',['../pio_8h.html#aa10d75600089dde28d264a1215afa2e9',1,'PIOc_write_darray(const int ncid, const int vid, const int ioid, const PIO_Offset arraylen, void *array, void *fillvalue):&#160;pio_darray.c'],['../pio__darray_8c.html#aa10d75600089dde28d264a1215afa2e9',1,'PIOc_write_darray(const int ncid, const int vid, const int ioid, const PIO_Offset arraylen, void *array, void *fillvalue):&#160;pio_darray.c']]],
   ['pioc_5fwrite_5fdarray_5fmulti',['PIOc_write_darray_multi',['../pio_8h.html#a103705ae76233ae90e15356794dbf0d2',1,'PIOc_write_darray_multi(const int ncid, const int vid[], const int ioid, const int nvars, const PIO_Offset arraylen, void *array, const int frame[], void *fillvalue[], bool flushtodisk):&#160;pio_darray.c'],['../pio__darray_8c.html#a103705ae76233ae90e15356794dbf0d2',1,'PIOc_write_darray_multi(const int ncid, const int vid[], const int ioid, const int nvars, const PIO_Offset arraylen, void *array, const int frame[], void *fillvalue[], bool flushtodisk):&#160;pio_darray.c']]],
+  ['piodie',['piodie',['../classpio__support.html#a13fac82014192fcf782a95c3be4e9a66',1,'pio_support']]],
   ['piolib_5fmod',['piolib_mod',['../classpiolib__mod.html',1,'']]],
   ['piolib_5fmod_2ef90',['piolib_mod.F90',['../piolib__mod_8_f90.html',1,'']]],
   ['pr_5fevent',['Pr_event',['../struct_pr__event.html',1,'']]]
