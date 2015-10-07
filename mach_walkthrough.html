@@ -275,7 +275,48 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </ol>
 <p><a class="anchor" id="BlueWat"></a> </p>
 <h3>Blue Waters</h3>
-<p>Instructions to come.</p>
+<ol>
+<li>
+<p class="startli">Directory setup</p>
+<p>Download a copy of the PIO source into a sub-directory of your working directory (refered to here as the PIO_source directory). Create another sub-directory for the build (refered to here as the PIO_build directory) and 'cd' into it.</p>
+<p class="endli"></p>
+</li>
+<li>
+<p class="startli">Modules</p>
+<p>Modules required for installation depend on your prefered compiler. Issue the commands below to set the module environment for building PIO on Hobart.</p>
+<ul>
+<li><p class="startli">Intel</p>
+<p class="startli">%&gt; module swap PrgEnv-cray PrgEnv-intel %&gt; module load torque %&gt; module load git %&gt; module load cmake %&gt; module load cray-hdf5-parallel/1.8.13 %&gt; module load cray-netcdf-hdf5parallel/4.3.2 %&gt; module load cray-parallel-netcdf/1.6.0</p>
+</li>
+</ul>
+<p class="endli"></p>
+</li>
+<li>
+<p class="startli">Environment Variables</p>
+<p>The appropriate compiler wrappers must be chosen for cmake, so the environment variables CC and FC must be set as:<br/>
+ CC=cc<br/>
+ FC=ftn<br/>
+</p>
+<p class="endli"></p>
+</li>
+<li>
+<p class="startli">Build</p>
+<p>Building PIO requires running the CMake configure and then make. In the PIO_build directory type<br/>
+ %&gt; cmake -DCMAKE_VERBOSE_MAKEFILE=TRUE \<br/>
+ -DPREFER_STATIC=TRUE \<br/>
+ -DNetCDF_PATH=${NETCDF_DIR} \<br/>
+ -DPnetCDF_PATH=${PARALLEL_NETCDF_DIR} \<br/>
+ -DHDF5_PATH=${HDF5_DIR} \<br/>
+ -DMPI_C_INCLUDE_PATH=${MPICH_DIR}/include \<br/>
+ -DMPI_Fortran_INCLUDE_PATH=${MPICH_DIR}/include \<br/>
+ -DMPI_C_LIBRARIES=${MPICH_DIR}/lib/libmpich.a \<br/>
+ -DMPI_Fortran_LIBRARIES=${MPICH_DIR}/lib/libmpichf90.a \<br/>
+ -DCMAKE_SYSTEM_NAME=Catamount \<br/>
+ ../PIO_source/<br/>
+ %&gt; make</p>
+<p class="endli"></p>
+</li>
+</ol>
 <p><a class="anchor" id="Hobart"></a> </p>
 <h3>Hobart</h3>
 <ol>
@@ -328,11 +369,11 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <p class="endli"></p>
 </li>
 </ol>
-<p><em>Last updated: 09-11-2015</em> </p>
+<p><em>Last updated: 10-05-2015</em> </p>
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Sep 21 2015 13:37:34 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Wed Oct 7 2015 11:40:07 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>
