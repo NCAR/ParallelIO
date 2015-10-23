@@ -181,13 +181,6 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>PIOc_rename_att</b> (i
 <tr class="memitem:a21f98dc28620dd641aad514a280576e3"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a21f98dc28620dd641aad514a280576e3"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>PIOc_get_att_ubyte</b> (int ncid, int varid, const char *name, unsigned char *ip)</td></tr>
 <tr class="separator:a21f98dc28620dd641aad514a280576e3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr><td colspan="2"><div class="groupHeader">PIOc_inq_natts</div></td></tr>
-<tr><td colspan="2"><div class="groupText"><p>The PIO-C interface for the NetCDF function nc_inq_natts.</p>
-<p>This routine is called collectively by all tasks in the communicator ios.union_comm. For more information on the underlying NetCDF commmand please read about this function in the NetCDF documentation at: <a href="http://www.unidata.ucar.edu/software/netcdf/docs/group__attributes.html">http://www.unidata.ucar.edu/software/netcdf/docs/group__attributes.html</a> </p>
-</div></td></tr>
-<tr class="memitem:a64ac5f3a5565ec08d222b27fcb3b180c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a64ac5f3a5565ec08d222b27fcb3b180c"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><b>PIOc_inq_natts</b> (int ncid, int *ngattsp)</td></tr>
-<tr class="separator:a64ac5f3a5565ec08d222b27fcb3b180c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr><td colspan="2"><div class="groupHeader">PIOc_del_att</div></td></tr>
 <tr><td colspan="2"><div class="groupText"><p>The PIO-C interface for the NetCDF function nc_del_att.</p>
 <p>This routine is called collectively by all tasks in the communicator ios.union_comm. For more information on the underlying NetCDF commmand please read about this function in the NetCDF documentation at: <a href="http://www.unidata.ucar.edu/software/netcdf/docs/group__attributes.html">http://www.unidata.ucar.edu/software/netcdf/docs/group__attributes.html</a> </p>
@@ -195,6 +188,13 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>PIOc_inq_natts</b> (in
 <tr class="memitem:afa0ad58fad5c3c91891bb85a0d0b97f5"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="afa0ad58fad5c3c91891bb85a0d0b97f5"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>PIOc_del_att</b> (int ncid, int varid, const char *name)</td></tr>
 <tr class="separator:afa0ad58fad5c3c91891bb85a0d0b97f5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader">PIOc_inq_natts</div></td></tr>
+<tr><td colspan="2"><div class="groupText"><p>The PIO-C interface for the NetCDF function nc_inq_natts.</p>
+<p>This routine is called collectively by all tasks in the communicator ios.union_comm. For more information on the underlying NetCDF commmand please read about this function in the NetCDF documentation at: <a href="http://www.unidata.ucar.edu/software/netcdf/docs/group__attributes.html">http://www.unidata.ucar.edu/software/netcdf/docs/group__attributes.html</a> </p>
+</div></td></tr>
+<tr class="memitem:a64ac5f3a5565ec08d222b27fcb3b180c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a64ac5f3a5565ec08d222b27fcb3b180c"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><b>PIOc_inq_natts</b> (int ncid, int *ngattsp)</td></tr>
+<tr class="separator:a64ac5f3a5565ec08d222b27fcb3b180c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr><td colspan="2"><div class="groupHeader">PIOc_inq</div></td></tr>
 <tr><td colspan="2"><div class="groupText"><p>The PIO-C interface for the NetCDF function nc_inq.</p>
 <p>This routine is called collectively by all tasks in the communicator ios.union_comm. For more information on the underlying NetCDF commmand please read about this function in the NetCDF documentation at: <a href="http://www.unidata.ucar.edu/software/netcdf/docs/group__datasets.html">http://www.unidata.ucar.edu/software/netcdf/docs/group__datasets.html</a> </p>
@@ -300,20 +300,6 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>PIOc_put_att_ulonglong
 <tr class="memitem:add004af4a485f2fcfd1a818ed6a81fb1"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="add004af4a485f2fcfd1a818ed6a81fb1"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>PIOc_inq_dimlen</b> (int ncid, int dimid, PIO_Offset *lenp)</td></tr>
 <tr class="separator:add004af4a485f2fcfd1a818ed6a81fb1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr><td colspan="2"><div class="groupHeader">PIOc_inq_var_fill</div></td></tr>
-<tr><td colspan="2"><div class="groupText"><p>The PIO-C interface for the NetCDF function nc_inq_var_fill.</p>
-<p>This routine is called collectively by all tasks in the communicator ios.union_comm. For more information on the underlying NetCDF commmand please read about this function in the NetCDF documentation at: <a href="http://www.unidata.ucar.edu/software/netcdf/docs/group__variables.html">http://www.unidata.ucar.edu/software/netcdf/docs/group__variables.html</a> </p>
-</div></td></tr>
-<tr class="memitem:a1a44a5b4115e62f82a69427a256db961"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1a44a5b4115e62f82a69427a256db961"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><b>PIOc_inq_var_fill</b> (int ncid, int varid, int *no_fill, void *fill_value)</td></tr>
-<tr class="separator:a1a44a5b4115e62f82a69427a256db961"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr><td colspan="2"><div class="groupHeader">PIOc_def_var_fill</div></td></tr>
-<tr><td colspan="2"><div class="groupText"><p>The PIO-C interface for the NetCDF function nc_def_var_fill.</p>
-<p>This routine is called collectively by all tasks in the communicator ios.union_comm. For more information on the underlying NetCDF commmand please read about this function in the NetCDF documentation at: <a href="http://www.unidata.ucar.edu/software/netcdf/docs/group__variables.html">http://www.unidata.ucar.edu/software/netcdf/docs/group__variables.html</a> </p>
-</div></td></tr>
-<tr class="memitem:aa29680f5d6f8394a4ff5df0bf73dc616"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa29680f5d6f8394a4ff5df0bf73dc616"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><b>PIOc_def_var_fill</b> (int ncid, int varid, int no_fill, void *fill_value)</td></tr>
-<tr class="separator:aa29680f5d6f8394a4ff5df0bf73dc616"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr><td colspan="2"><div class="groupHeader">PIOc_get_att_uint</div></td></tr>
 <tr><td colspan="2"><div class="groupText"><p>The PIO-C interface for the NetCDF function nc_get_att_uint.</p>
 <p>This routine is called collectively by all tasks in the communicator ios.union_comm. For more information on the underlying NetCDF commmand please read about this function in the NetCDF documentation at: <a href="http://www.unidata.ucar.edu/software/netcdf/docs/group__attributes.html">http://www.unidata.ucar.edu/software/netcdf/docs/group__attributes.html</a> </p>
@@ -526,7 +512,7 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>PIOc_get_att_uchar</b>
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Oct 20 2015 14:09:05 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Oct 23 2015 15:53:54 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>
