@@ -1,7 +1,5 @@
 var searchData=
 [
-  ['wallstats',['Wallstats',['../struct_wallstats.html',1,'']]],
-  ['wmulti_5fbuffer',['wmulti_buffer',['../structwmulti__buffer.html',1,'']]],
   ['write_5fdarray_5f2d_5fdouble',['write_darray_2d_double',['../group___p_i_o__write__darray.html#ga3a403e6310fc93d477490a3d9187ac5a',1,'piodarray']]],
   ['write_5fdarray_5f2d_5fint',['write_darray_2d_int',['../group___p_i_o__write__darray.html#gaf9b118942b77419f2662e63225196e3a',1,'piodarray']]],
   ['write_5fdarray_5f2d_5freal',['write_darray_2d_real',['../group___p_i_o__write__darray.html#gaffba98ea76cd6529f70e81aebd51759c',1,'piodarray']]],
