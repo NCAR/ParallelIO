@@ -76,17 +76,17 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 <div class="header">
   <div class="summary">
-<a href="#func-members">Functions</a>  </div>
+<a href="#func-members">Functions/Subroutines</a>  </div>
   <div class="headertitle">
 <div class="title">PIO_read_darray</div>  </div>
 </div><!--header-->
 <div class="contents">
 
-<p>Read a distributed field from a file.  
+<p>The overloaded PIO_read_darray function reads a distributed array from disk.  
 <a href="#details">More...</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
-Functions</h2></td></tr>
+Functions/Subroutines</h2></td></tr>
 <tr class="memitem:ga86dd21a39e72785837ee95e32947cce7"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ga86dd21a39e72785837ee95e32947cce7"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__read__darray.html#ga86dd21a39e72785837ee95e32947cce7">pio_read_darray_nc</a> (<a class="el" href="structfile__desc__t.html">file_desc_t</a> *file, <a class="el" href="structio__desc__t.html">io_desc_t</a> *iodesc, const int vid, void *IOBUF)</td></tr>
 <tr class="memdesc:ga86dd21a39e72785837ee95e32947cce7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read an array of data from a file to the IO library. <br/></td></tr>
@@ -95,13 +95,1190 @@ int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group
 int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__read__darray.html#gad84360062331f220beb6ebf26557678e">PIOc_read_darray</a> (const int ncid, const int vid, const int ioid, const PIO_Offset arraylen, void *array)</td></tr>
 <tr class="memdesc:gad84360062331f220beb6ebf26557678e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read a field from a file to the IO library. <br/></td></tr>
 <tr class="separator:gad84360062331f220beb6ebf26557678e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gae7ff1037681c06b33a86199defdf5d2c"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__read__darray.html#gae7ff1037681c06b33a86199defdf5d2c">piodarray::read_darray_1d_real</a> (File, varDesc, ioDesc, array, iostat)</td></tr>
+<tr class="separator:gae7ff1037681c06b33a86199defdf5d2c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga759a19f17c15754c35a4a91af069c8ed"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__read__darray.html#ga759a19f17c15754c35a4a91af069c8ed">piodarray::read_darray_2d_real</a> (File, varDesc, ioDesc, array, iostat)</td></tr>
+<tr class="separator:ga759a19f17c15754c35a4a91af069c8ed"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gadc84bf1d2fa259327655b6c456b66837"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__read__darray.html#gadc84bf1d2fa259327655b6c456b66837">piodarray::read_darray_3d_real</a> (File, varDesc, ioDesc, array, iostat)</td></tr>
+<tr class="separator:gadc84bf1d2fa259327655b6c456b66837"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gae615e873b1063c1444a59009228936e9"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__read__darray.html#gae615e873b1063c1444a59009228936e9">piodarray::read_darray_4d_real</a> (File, varDesc, ioDesc, array, iostat)</td></tr>
+<tr class="separator:gae615e873b1063c1444a59009228936e9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga10cbe88474d39cc54f974d015200df83"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__read__darray.html#ga10cbe88474d39cc54f974d015200df83">piodarray::read_darray_5d_real</a> (File, varDesc, ioDesc, array, iostat)</td></tr>
+<tr class="separator:ga10cbe88474d39cc54f974d015200df83"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga6e4db8f3ccb45020fe0ebb9659f5d4a8"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__read__darray.html#ga6e4db8f3ccb45020fe0ebb9659f5d4a8">piodarray::read_darray_6d_real</a> (File, varDesc, ioDesc, array, iostat)</td></tr>
+<tr class="separator:ga6e4db8f3ccb45020fe0ebb9659f5d4a8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gac0bc86372d5e04b2770b4da730f1f7ce"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__read__darray.html#gac0bc86372d5e04b2770b4da730f1f7ce">piodarray::read_darray_7d_real</a> (File, varDesc, ioDesc, array, iostat)</td></tr>
+<tr class="separator:gac0bc86372d5e04b2770b4da730f1f7ce"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaa919aa47e0d0e3e38f2af27614dfbd3b"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__read__darray.html#gaa919aa47e0d0e3e38f2af27614dfbd3b">piodarray::read_darray_1d_int</a> (File, varDesc, ioDesc, array, iostat)</td></tr>
+<tr class="separator:gaa919aa47e0d0e3e38f2af27614dfbd3b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaccce9ae6a56f753952d72b6b43824ea6"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__read__darray.html#gaccce9ae6a56f753952d72b6b43824ea6">piodarray::read_darray_2d_int</a> (File, varDesc, ioDesc, array, iostat)</td></tr>
+<tr class="separator:gaccce9ae6a56f753952d72b6b43824ea6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaa2854f6d422459e788fa346702b800b8"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__read__darray.html#gaa2854f6d422459e788fa346702b800b8">piodarray::read_darray_3d_int</a> (File, varDesc, ioDesc, array, iostat)</td></tr>
+<tr class="separator:gaa2854f6d422459e788fa346702b800b8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaddd580d1b65c4cb5865136c167829e6a"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__read__darray.html#gaddd580d1b65c4cb5865136c167829e6a">piodarray::read_darray_4d_int</a> (File, varDesc, ioDesc, array, iostat)</td></tr>
+<tr class="separator:gaddd580d1b65c4cb5865136c167829e6a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gac8f4a48a7c0fe54e3bf4aa1bb3bb66a6"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__read__darray.html#gac8f4a48a7c0fe54e3bf4aa1bb3bb66a6">piodarray::read_darray_5d_int</a> (File, varDesc, ioDesc, array, iostat)</td></tr>
+<tr class="separator:gac8f4a48a7c0fe54e3bf4aa1bb3bb66a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga2b311a0ee93511a2e853151dbabcbd4b"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__read__darray.html#ga2b311a0ee93511a2e853151dbabcbd4b">piodarray::read_darray_6d_int</a> (File, varDesc, ioDesc, array, iostat)</td></tr>
+<tr class="separator:ga2b311a0ee93511a2e853151dbabcbd4b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga8adba892ab688ddab94ef9292c71ef54"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__read__darray.html#ga8adba892ab688ddab94ef9292c71ef54">piodarray::read_darray_7d_int</a> (File, varDesc, ioDesc, array, iostat)</td></tr>
+<tr class="separator:ga8adba892ab688ddab94ef9292c71ef54"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga3a2dea5460dafc4645216f8325483c2e"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__read__darray.html#ga3a2dea5460dafc4645216f8325483c2e">piodarray::read_darray_1d_double</a> (File, varDesc, ioDesc, array, iostat)</td></tr>
+<tr class="separator:ga3a2dea5460dafc4645216f8325483c2e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga97260e48211b060167b85f5aad382bfd"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__read__darray.html#ga97260e48211b060167b85f5aad382bfd">piodarray::read_darray_2d_double</a> (File, varDesc, ioDesc, array, iostat)</td></tr>
+<tr class="separator:ga97260e48211b060167b85f5aad382bfd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga555817ceca579848c0bd81d3c9fd57e3"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__read__darray.html#ga555817ceca579848c0bd81d3c9fd57e3">piodarray::read_darray_3d_double</a> (File, varDesc, ioDesc, array, iostat)</td></tr>
+<tr class="separator:ga555817ceca579848c0bd81d3c9fd57e3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gabc0dea01b66521f16218bbba084b99f3"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__read__darray.html#gabc0dea01b66521f16218bbba084b99f3">piodarray::read_darray_4d_double</a> (File, varDesc, ioDesc, array, iostat)</td></tr>
+<tr class="separator:gabc0dea01b66521f16218bbba084b99f3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga5ce626012abe78f78da139c2eb48703c"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__read__darray.html#ga5ce626012abe78f78da139c2eb48703c">piodarray::read_darray_5d_double</a> (File, varDesc, ioDesc, array, iostat)</td></tr>
+<tr class="separator:ga5ce626012abe78f78da139c2eb48703c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga8dd1ab4f98602a258734e0f1095a88d5"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__read__darray.html#ga8dd1ab4f98602a258734e0f1095a88d5">piodarray::read_darray_6d_double</a> (File, varDesc, ioDesc, array, iostat)</td></tr>
+<tr class="separator:ga8dd1ab4f98602a258734e0f1095a88d5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gafd439814b70b6ca6f04e4028fbf5d0bc"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__read__darray.html#gafd439814b70b6ca6f04e4028fbf5d0bc">piodarray::read_darray_7d_double</a> (File, varDesc, ioDesc, array, iostat)</td></tr>
+<tr class="separator:gafd439814b70b6ca6f04e4028fbf5d0bc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<p>Read a distributed field from a file. </p>
+<p>The overloaded PIO_read_darray function reads a distributed array from disk. </p>
+<h2 class="groupheader">Function/Subroutine Documentation</h2>
+<a class="anchor" id="ga3a2dea5460dafc4645216f8325483c2e"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">subroutine piodarray::read_darray_1d_double </td>
+          <td>(</td>
+          <td class="paramtype">type (<a class="el" href="structfile__desc__t.html">file_desc_t</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>File</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">type (<a class="el" href="structvar__desc__t.html">var_desc_t</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>varDesc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">type (<a class="el" href="structio__desc__t.html">io_desc_t</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>ioDesc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(r8), dimension(:), intent(out)&#160;</td>
+          <td class="paramname"><em>array</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(i4), intent(out)&#160;</td>
+          <td class="paramname"><em>iostat</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">File</td><td><a class="el" href="structfile__desc__t.html">file_desc_t</a> </td></tr>
+    <tr><td class="paramname">varDesc</td><td><a class="el" href="structvar__desc__t.html">var_desc_t</a> </td></tr>
+    <tr><td class="paramname">ioDesc</td><td><a class="el" href="structio__desc__t.html">io_desc_t</a> </td></tr>
+    <tr><td class="paramname">array</td><td>: The read data </td></tr>
+    <tr><td class="paramname">iostat</td><td>: The status returned from this routine (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> for details) </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="gaa919aa47e0d0e3e38f2af27614dfbd3b"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">subroutine piodarray::read_darray_1d_int </td>
+          <td>(</td>
+          <td class="paramtype">type (<a class="el" href="structfile__desc__t.html">file_desc_t</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>File</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">type (<a class="el" href="structvar__desc__t.html">var_desc_t</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>varDesc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">type (<a class="el" href="structio__desc__t.html">io_desc_t</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>ioDesc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(i4), dimension(:), intent(out)&#160;</td>
+          <td class="paramname"><em>array</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(i4), intent(out)&#160;</td>
+          <td class="paramname"><em>iostat</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">File</td><td><a class="el" href="structfile__desc__t.html">file_desc_t</a> </td></tr>
+    <tr><td class="paramname">varDesc</td><td><a class="el" href="structvar__desc__t.html">var_desc_t</a> </td></tr>
+    <tr><td class="paramname">ioDesc</td><td><a class="el" href="structio__desc__t.html">io_desc_t</a> </td></tr>
+    <tr><td class="paramname">array</td><td>: The read data </td></tr>
+    <tr><td class="paramname">iostat</td><td>: The status returned from this routine (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> for details) </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="gae7ff1037681c06b33a86199defdf5d2c"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">subroutine piodarray::read_darray_1d_real </td>
+          <td>(</td>
+          <td class="paramtype">type (<a class="el" href="structfile__desc__t.html">file_desc_t</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>File</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">type (<a class="el" href="structvar__desc__t.html">var_desc_t</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>varDesc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">type (<a class="el" href="structio__desc__t.html">io_desc_t</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>ioDesc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(r4), dimension(:), intent(out)&#160;</td>
+          <td class="paramname"><em>array</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(i4), intent(out)&#160;</td>
+          <td class="paramname"><em>iostat</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">File</td><td><a class="el" href="structfile__desc__t.html">file_desc_t</a> </td></tr>
+    <tr><td class="paramname">varDesc</td><td><a class="el" href="structvar__desc__t.html">var_desc_t</a> </td></tr>
+    <tr><td class="paramname">ioDesc</td><td><a class="el" href="structio__desc__t.html">io_desc_t</a> </td></tr>
+    <tr><td class="paramname">array</td><td>: The read data </td></tr>
+    <tr><td class="paramname">iostat</td><td>: The status returned from this routine (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> for details) </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="ga97260e48211b060167b85f5aad382bfd"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">subroutine piodarray::read_darray_2d_double </td>
+          <td>(</td>
+          <td class="paramtype">type (<a class="el" href="structfile__desc__t.html">file_desc_t</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>File</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">type (<a class="el" href="structvar__desc__t.html">var_desc_t</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>varDesc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">type (<a class="el" href="structio__desc__t.html">io_desc_t</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>ioDesc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(r8), dimension(:,:), intent(out)&#160;</td>
+          <td class="paramname"><em>array</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(i4), intent(out)&#160;</td>
+          <td class="paramname"><em>iostat</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">File</td><td><a class="el" href="structfile__desc__t.html">file_desc_t</a> </td></tr>
+    <tr><td class="paramname">varDesc</td><td><a class="el" href="structvar__desc__t.html">var_desc_t</a> </td></tr>
+    <tr><td class="paramname">ioDesc</td><td><a class="el" href="structio__desc__t.html">io_desc_t</a> </td></tr>
+    <tr><td class="paramname">array</td><td>: The read data </td></tr>
+    <tr><td class="paramname">iostat</td><td>: The status returned from this routine (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> for details) </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="gaccce9ae6a56f753952d72b6b43824ea6"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">subroutine piodarray::read_darray_2d_int </td>
+          <td>(</td>
+          <td class="paramtype">type (<a class="el" href="structfile__desc__t.html">file_desc_t</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>File</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">type (<a class="el" href="structvar__desc__t.html">var_desc_t</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>varDesc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">type (<a class="el" href="structio__desc__t.html">io_desc_t</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>ioDesc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(i4), dimension(:,:), intent(out)&#160;</td>
+          <td class="paramname"><em>array</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(i4), intent(out)&#160;</td>
+          <td class="paramname"><em>iostat</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">File</td><td><a class="el" href="structfile__desc__t.html">file_desc_t</a> </td></tr>
+    <tr><td class="paramname">varDesc</td><td><a class="el" href="structvar__desc__t.html">var_desc_t</a> </td></tr>
+    <tr><td class="paramname">ioDesc</td><td><a class="el" href="structio__desc__t.html">io_desc_t</a> </td></tr>
+    <tr><td class="paramname">array</td><td>: The read data </td></tr>
+    <tr><td class="paramname">iostat</td><td>: The status returned from this routine (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> for details) </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="ga759a19f17c15754c35a4a91af069c8ed"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">subroutine piodarray::read_darray_2d_real </td>
+          <td>(</td>
+          <td class="paramtype">type (<a class="el" href="structfile__desc__t.html">file_desc_t</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>File</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">type (<a class="el" href="structvar__desc__t.html">var_desc_t</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>varDesc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">type (<a class="el" href="structio__desc__t.html">io_desc_t</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>ioDesc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(r4), dimension(:,:), intent(out)&#160;</td>
+          <td class="paramname"><em>array</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(i4), intent(out)&#160;</td>
+          <td class="paramname"><em>iostat</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">File</td><td><a class="el" href="structfile__desc__t.html">file_desc_t</a> </td></tr>
+    <tr><td class="paramname">varDesc</td><td><a class="el" href="structvar__desc__t.html">var_desc_t</a> </td></tr>
+    <tr><td class="paramname">ioDesc</td><td><a class="el" href="structio__desc__t.html">io_desc_t</a> </td></tr>
+    <tr><td class="paramname">array</td><td>: The read data </td></tr>
+    <tr><td class="paramname">iostat</td><td>: The status returned from this routine (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> for details) </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="ga555817ceca579848c0bd81d3c9fd57e3"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">subroutine piodarray::read_darray_3d_double </td>
+          <td>(</td>
+          <td class="paramtype">type (<a class="el" href="structfile__desc__t.html">file_desc_t</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>File</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">type (<a class="el" href="structvar__desc__t.html">var_desc_t</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>varDesc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">type (<a class="el" href="structio__desc__t.html">io_desc_t</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>ioDesc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(r8), dimension(:,:,:), intent(out)&#160;</td>
+          <td class="paramname"><em>array</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(i4), intent(out)&#160;</td>
+          <td class="paramname"><em>iostat</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">File</td><td><a class="el" href="structfile__desc__t.html">file_desc_t</a> </td></tr>
+    <tr><td class="paramname">varDesc</td><td><a class="el" href="structvar__desc__t.html">var_desc_t</a> </td></tr>
+    <tr><td class="paramname">ioDesc</td><td><a class="el" href="structio__desc__t.html">io_desc_t</a> </td></tr>
+    <tr><td class="paramname">array</td><td>: The read data </td></tr>
+    <tr><td class="paramname">iostat</td><td>: The status returned from this routine (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> for details) </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="gaa2854f6d422459e788fa346702b800b8"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">subroutine piodarray::read_darray_3d_int </td>
+          <td>(</td>
+          <td class="paramtype">type (<a class="el" href="structfile__desc__t.html">file_desc_t</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>File</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">type (<a class="el" href="structvar__desc__t.html">var_desc_t</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>varDesc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">type (<a class="el" href="structio__desc__t.html">io_desc_t</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>ioDesc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(i4), dimension(:,:,:), intent(out)&#160;</td>
+          <td class="paramname"><em>array</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(i4), intent(out)&#160;</td>
+          <td class="paramname"><em>iostat</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">File</td><td><a class="el" href="structfile__desc__t.html">file_desc_t</a> </td></tr>
+    <tr><td class="paramname">varDesc</td><td><a class="el" href="structvar__desc__t.html">var_desc_t</a> </td></tr>
+    <tr><td class="paramname">ioDesc</td><td><a class="el" href="structio__desc__t.html">io_desc_t</a> </td></tr>
+    <tr><td class="paramname">array</td><td>: The read data </td></tr>
+    <tr><td class="paramname">iostat</td><td>: The status returned from this routine (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> for details) </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="gadc84bf1d2fa259327655b6c456b66837"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">subroutine piodarray::read_darray_3d_real </td>
+          <td>(</td>
+          <td class="paramtype">type (<a class="el" href="structfile__desc__t.html">file_desc_t</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>File</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">type (<a class="el" href="structvar__desc__t.html">var_desc_t</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>varDesc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">type (<a class="el" href="structio__desc__t.html">io_desc_t</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>ioDesc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(r4), dimension(:,:,:), intent(out)&#160;</td>
+          <td class="paramname"><em>array</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(i4), intent(out)&#160;</td>
+          <td class="paramname"><em>iostat</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">File</td><td><a class="el" href="structfile__desc__t.html">file_desc_t</a> </td></tr>
+    <tr><td class="paramname">varDesc</td><td><a class="el" href="structvar__desc__t.html">var_desc_t</a> </td></tr>
+    <tr><td class="paramname">ioDesc</td><td><a class="el" href="structio__desc__t.html">io_desc_t</a> </td></tr>
+    <tr><td class="paramname">array</td><td>: The read data </td></tr>
+    <tr><td class="paramname">iostat</td><td>: The status returned from this routine (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> for details) </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="gabc0dea01b66521f16218bbba084b99f3"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">subroutine piodarray::read_darray_4d_double </td>
+          <td>(</td>
+          <td class="paramtype">type (<a class="el" href="structfile__desc__t.html">file_desc_t</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>File</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">type (<a class="el" href="structvar__desc__t.html">var_desc_t</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>varDesc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">type (<a class="el" href="structio__desc__t.html">io_desc_t</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>ioDesc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(r8), dimension(:,:,:,:), intent(out)&#160;</td>
+          <td class="paramname"><em>array</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(i4), intent(out)&#160;</td>
+          <td class="paramname"><em>iostat</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">File</td><td><a class="el" href="structfile__desc__t.html">file_desc_t</a> </td></tr>
+    <tr><td class="paramname">varDesc</td><td><a class="el" href="structvar__desc__t.html">var_desc_t</a> </td></tr>
+    <tr><td class="paramname">ioDesc</td><td><a class="el" href="structio__desc__t.html">io_desc_t</a> </td></tr>
+    <tr><td class="paramname">array</td><td>: The read data </td></tr>
+    <tr><td class="paramname">iostat</td><td>: The status returned from this routine (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> for details) </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="gaddd580d1b65c4cb5865136c167829e6a"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">subroutine piodarray::read_darray_4d_int </td>
+          <td>(</td>
+          <td class="paramtype">type (<a class="el" href="structfile__desc__t.html">file_desc_t</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>File</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">type (<a class="el" href="structvar__desc__t.html">var_desc_t</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>varDesc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">type (<a class="el" href="structio__desc__t.html">io_desc_t</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>ioDesc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(i4), dimension(:,:,:,:), intent(out)&#160;</td>
+          <td class="paramname"><em>array</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(i4), intent(out)&#160;</td>
+          <td class="paramname"><em>iostat</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">File</td><td><a class="el" href="structfile__desc__t.html">file_desc_t</a> </td></tr>
+    <tr><td class="paramname">varDesc</td><td><a class="el" href="structvar__desc__t.html">var_desc_t</a> </td></tr>
+    <tr><td class="paramname">ioDesc</td><td><a class="el" href="structio__desc__t.html">io_desc_t</a> </td></tr>
+    <tr><td class="paramname">array</td><td>: The read data </td></tr>
+    <tr><td class="paramname">iostat</td><td>: The status returned from this routine (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> for details) </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="gae615e873b1063c1444a59009228936e9"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">subroutine piodarray::read_darray_4d_real </td>
+          <td>(</td>
+          <td class="paramtype">type (<a class="el" href="structfile__desc__t.html">file_desc_t</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>File</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">type (<a class="el" href="structvar__desc__t.html">var_desc_t</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>varDesc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">type (<a class="el" href="structio__desc__t.html">io_desc_t</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>ioDesc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(r4), dimension(:,:,:,:), intent(out)&#160;</td>
+          <td class="paramname"><em>array</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(i4), intent(out)&#160;</td>
+          <td class="paramname"><em>iostat</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">File</td><td><a class="el" href="structfile__desc__t.html">file_desc_t</a> </td></tr>
+    <tr><td class="paramname">varDesc</td><td><a class="el" href="structvar__desc__t.html">var_desc_t</a> </td></tr>
+    <tr><td class="paramname">ioDesc</td><td><a class="el" href="structio__desc__t.html">io_desc_t</a> </td></tr>
+    <tr><td class="paramname">array</td><td>: The read data </td></tr>
+    <tr><td class="paramname">iostat</td><td>: The status returned from this routine (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> for details) </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="ga5ce626012abe78f78da139c2eb48703c"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">subroutine piodarray::read_darray_5d_double </td>
+          <td>(</td>
+          <td class="paramtype">type (<a class="el" href="structfile__desc__t.html">file_desc_t</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>File</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">type (<a class="el" href="structvar__desc__t.html">var_desc_t</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>varDesc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">type (<a class="el" href="structio__desc__t.html">io_desc_t</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>ioDesc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(r8), dimension(:,:,:,:,:), intent(out)&#160;</td>
+          <td class="paramname"><em>array</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(i4), intent(out)&#160;</td>
+          <td class="paramname"><em>iostat</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">File</td><td><a class="el" href="structfile__desc__t.html">file_desc_t</a> </td></tr>
+    <tr><td class="paramname">varDesc</td><td><a class="el" href="structvar__desc__t.html">var_desc_t</a> </td></tr>
+    <tr><td class="paramname">ioDesc</td><td><a class="el" href="structio__desc__t.html">io_desc_t</a> </td></tr>
+    <tr><td class="paramname">array</td><td>: The read data </td></tr>
+    <tr><td class="paramname">iostat</td><td>: The status returned from this routine (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> for details) </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="gac8f4a48a7c0fe54e3bf4aa1bb3bb66a6"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">subroutine piodarray::read_darray_5d_int </td>
+          <td>(</td>
+          <td class="paramtype">type (<a class="el" href="structfile__desc__t.html">file_desc_t</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>File</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">type (<a class="el" href="structvar__desc__t.html">var_desc_t</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>varDesc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">type (<a class="el" href="structio__desc__t.html">io_desc_t</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>ioDesc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(i4), dimension(:,:,:,:,:), intent(out)&#160;</td>
+          <td class="paramname"><em>array</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(i4), intent(out)&#160;</td>
+          <td class="paramname"><em>iostat</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">File</td><td><a class="el" href="structfile__desc__t.html">file_desc_t</a> </td></tr>
+    <tr><td class="paramname">varDesc</td><td><a class="el" href="structvar__desc__t.html">var_desc_t</a> </td></tr>
+    <tr><td class="paramname">ioDesc</td><td><a class="el" href="structio__desc__t.html">io_desc_t</a> </td></tr>
+    <tr><td class="paramname">array</td><td>: The read data </td></tr>
+    <tr><td class="paramname">iostat</td><td>: The status returned from this routine (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> for details) </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="ga10cbe88474d39cc54f974d015200df83"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">subroutine piodarray::read_darray_5d_real </td>
+          <td>(</td>
+          <td class="paramtype">type (<a class="el" href="structfile__desc__t.html">file_desc_t</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>File</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">type (<a class="el" href="structvar__desc__t.html">var_desc_t</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>varDesc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">type (<a class="el" href="structio__desc__t.html">io_desc_t</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>ioDesc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(r4), dimension(:,:,:,:,:), intent(out)&#160;</td>
+          <td class="paramname"><em>array</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(i4), intent(out)&#160;</td>
+          <td class="paramname"><em>iostat</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">File</td><td><a class="el" href="structfile__desc__t.html">file_desc_t</a> </td></tr>
+    <tr><td class="paramname">varDesc</td><td><a class="el" href="structvar__desc__t.html">var_desc_t</a> </td></tr>
+    <tr><td class="paramname">ioDesc</td><td><a class="el" href="structio__desc__t.html">io_desc_t</a> </td></tr>
+    <tr><td class="paramname">array</td><td>: The read data </td></tr>
+    <tr><td class="paramname">iostat</td><td>: The status returned from this routine (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> for details) </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="ga8dd1ab4f98602a258734e0f1095a88d5"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">subroutine piodarray::read_darray_6d_double </td>
+          <td>(</td>
+          <td class="paramtype">type (<a class="el" href="structfile__desc__t.html">file_desc_t</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>File</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">type (<a class="el" href="structvar__desc__t.html">var_desc_t</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>varDesc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">type (<a class="el" href="structio__desc__t.html">io_desc_t</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>ioDesc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(r8), dimension(:,:,:,:,:,:), intent(out)&#160;</td>
+          <td class="paramname"><em>array</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(i4), intent(out)&#160;</td>
+          <td class="paramname"><em>iostat</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">File</td><td><a class="el" href="structfile__desc__t.html">file_desc_t</a> </td></tr>
+    <tr><td class="paramname">varDesc</td><td><a class="el" href="structvar__desc__t.html">var_desc_t</a> </td></tr>
+    <tr><td class="paramname">ioDesc</td><td><a class="el" href="structio__desc__t.html">io_desc_t</a> </td></tr>
+    <tr><td class="paramname">array</td><td>: The read data </td></tr>
+    <tr><td class="paramname">iostat</td><td>: The status returned from this routine (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> for details) </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="ga2b311a0ee93511a2e853151dbabcbd4b"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">subroutine piodarray::read_darray_6d_int </td>
+          <td>(</td>
+          <td class="paramtype">type (<a class="el" href="structfile__desc__t.html">file_desc_t</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>File</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">type (<a class="el" href="structvar__desc__t.html">var_desc_t</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>varDesc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">type (<a class="el" href="structio__desc__t.html">io_desc_t</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>ioDesc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(i4), dimension(:,:,:,:,:,:), intent(out)&#160;</td>
+          <td class="paramname"><em>array</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(i4), intent(out)&#160;</td>
+          <td class="paramname"><em>iostat</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">File</td><td><a class="el" href="structfile__desc__t.html">file_desc_t</a> </td></tr>
+    <tr><td class="paramname">varDesc</td><td><a class="el" href="structvar__desc__t.html">var_desc_t</a> </td></tr>
+    <tr><td class="paramname">ioDesc</td><td><a class="el" href="structio__desc__t.html">io_desc_t</a> </td></tr>
+    <tr><td class="paramname">array</td><td>: The read data </td></tr>
+    <tr><td class="paramname">iostat</td><td>: The status returned from this routine (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> for details) </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="ga6e4db8f3ccb45020fe0ebb9659f5d4a8"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">subroutine piodarray::read_darray_6d_real </td>
+          <td>(</td>
+          <td class="paramtype">type (<a class="el" href="structfile__desc__t.html">file_desc_t</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>File</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">type (<a class="el" href="structvar__desc__t.html">var_desc_t</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>varDesc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">type (<a class="el" href="structio__desc__t.html">io_desc_t</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>ioDesc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(r4), dimension(:,:,:,:,:,:), intent(out)&#160;</td>
+          <td class="paramname"><em>array</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(i4), intent(out)&#160;</td>
+          <td class="paramname"><em>iostat</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">File</td><td><a class="el" href="structfile__desc__t.html">file_desc_t</a> </td></tr>
+    <tr><td class="paramname">varDesc</td><td><a class="el" href="structvar__desc__t.html">var_desc_t</a> </td></tr>
+    <tr><td class="paramname">ioDesc</td><td><a class="el" href="structio__desc__t.html">io_desc_t</a> </td></tr>
+    <tr><td class="paramname">array</td><td>: The read data </td></tr>
+    <tr><td class="paramname">iostat</td><td>: The status returned from this routine (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> for details) </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="gafd439814b70b6ca6f04e4028fbf5d0bc"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">subroutine piodarray::read_darray_7d_double </td>
+          <td>(</td>
+          <td class="paramtype">type (<a class="el" href="structfile__desc__t.html">file_desc_t</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>File</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">type (<a class="el" href="structvar__desc__t.html">var_desc_t</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>varDesc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">type (<a class="el" href="structio__desc__t.html">io_desc_t</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>ioDesc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(r8), dimension(:,:,:,:,:,:,:), intent(out)&#160;</td>
+          <td class="paramname"><em>array</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(i4), intent(out)&#160;</td>
+          <td class="paramname"><em>iostat</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">File</td><td><a class="el" href="structfile__desc__t.html">file_desc_t</a> </td></tr>
+    <tr><td class="paramname">varDesc</td><td><a class="el" href="structvar__desc__t.html">var_desc_t</a> </td></tr>
+    <tr><td class="paramname">ioDesc</td><td><a class="el" href="structio__desc__t.html">io_desc_t</a> </td></tr>
+    <tr><td class="paramname">array</td><td>: The read data </td></tr>
+    <tr><td class="paramname">iostat</td><td>: The status returned from this routine (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> for details) </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="ga8adba892ab688ddab94ef9292c71ef54"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">subroutine piodarray::read_darray_7d_int </td>
+          <td>(</td>
+          <td class="paramtype">type (<a class="el" href="structfile__desc__t.html">file_desc_t</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>File</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">type (<a class="el" href="structvar__desc__t.html">var_desc_t</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>varDesc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">type (<a class="el" href="structio__desc__t.html">io_desc_t</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>ioDesc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(i4), dimension(:,:,:,:,:,:,:), intent(out)&#160;</td>
+          <td class="paramname"><em>array</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(i4), intent(out)&#160;</td>
+          <td class="paramname"><em>iostat</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">File</td><td><a class="el" href="structfile__desc__t.html">file_desc_t</a> </td></tr>
+    <tr><td class="paramname">varDesc</td><td><a class="el" href="structvar__desc__t.html">var_desc_t</a> </td></tr>
+    <tr><td class="paramname">ioDesc</td><td><a class="el" href="structio__desc__t.html">io_desc_t</a> </td></tr>
+    <tr><td class="paramname">array</td><td>: The read data </td></tr>
+    <tr><td class="paramname">iostat</td><td>: The status returned from this routine (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> for details) </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="gac0bc86372d5e04b2770b4da730f1f7ce"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">subroutine piodarray::read_darray_7d_real </td>
+          <td>(</td>
+          <td class="paramtype">type (<a class="el" href="structfile__desc__t.html">file_desc_t</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>File</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">type (<a class="el" href="structvar__desc__t.html">var_desc_t</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>varDesc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">type (<a class="el" href="structio__desc__t.html">io_desc_t</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>ioDesc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(r4), dimension(:,:,:,:,:,:,:), intent(out)&#160;</td>
+          <td class="paramname"><em>array</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(i4), intent(out)&#160;</td>
+          <td class="paramname"><em>iostat</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">File</td><td><a class="el" href="structfile__desc__t.html">file_desc_t</a> </td></tr>
+    <tr><td class="paramname">varDesc</td><td><a class="el" href="structvar__desc__t.html">var_desc_t</a> </td></tr>
+    <tr><td class="paramname">ioDesc</td><td><a class="el" href="structio__desc__t.html">io_desc_t</a> </td></tr>
+    <tr><td class="paramname">array</td><td>: The read data </td></tr>
+    <tr><td class="paramname">iostat</td><td>: The status returned from this routine (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> for details) </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Nov 3 2015 09:20:46 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Nov 3 2015 10:38:08 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

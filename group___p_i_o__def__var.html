@@ -81,17 +81,62 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="title">PIO_def_var</div>  </div>
 </div><!--header-->
 <div class="contents">
-
-<p>Defines a netcdf variable.  
-<a href="#details">More...</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions/Subroutines</h2></td></tr>
+<tr class="memitem:ga5545746fd00003f354f9c209866bc65b"><td class="memItemLeft" align="right" valign="top">integer function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__def__var.html#ga5545746fd00003f354f9c209866bc65b">pio_nf::def_var_0d_desc</a> (File, name, type, vardesc)</td></tr>
+<tr class="memdesc:ga5545746fd00003f354f9c209866bc65b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Defines a netcdf variable.  <a href="#ga5545746fd00003f354f9c209866bc65b">More...</a><br/></td></tr>
+<tr class="separator:ga5545746fd00003f354f9c209866bc65b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gab8277873f8c79e923a04d4cf3e64cd82"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="gab8277873f8c79e923a04d4cf3e64cd82"></a>
+integer function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__def__var.html#gab8277873f8c79e923a04d4cf3e64cd82">pio_nf::def_var_0d_id</a> (ncid, name, type, varid)</td></tr>
+<tr class="memdesc:gab8277873f8c79e923a04d4cf3e64cd82"><td class="mdescLeft">&#160;</td><td class="mdescRight">Defines a netcdf variable. <br/></td></tr>
+<tr class="separator:gab8277873f8c79e923a04d4cf3e64cd82"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gaf3c39aafb791324950d557f8cd1bd7c2"><td class="memItemLeft" align="right" valign="top">integer function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__def__var.html#gaf3c39aafb791324950d557f8cd1bd7c2">pio_nf::def_var_md_desc</a> (File, name, type, dimids, vardesc)</td></tr>
 <tr class="memdesc:gaf3c39aafb791324950d557f8cd1bd7c2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Defines the a netcdf variable.  <a href="#gaf3c39aafb791324950d557f8cd1bd7c2">More...</a><br/></td></tr>
 <tr class="separator:gaf3c39aafb791324950d557f8cd1bd7c2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gac412bec00939a8235886d791a8cb2d1f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="gac412bec00939a8235886d791a8cb2d1f"></a>
+integer function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__def__var.html#gac412bec00939a8235886d791a8cb2d1f">pio_nf::def_var_md_id</a> (ncid, name, type, dimids, varid)</td></tr>
+<tr class="memdesc:gac412bec00939a8235886d791a8cb2d1f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Defines a netcdf variable. <br/></td></tr>
+<tr class="separator:gac412bec00939a8235886d791a8cb2d1f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<h2 class="groupheader">Function/Subroutine Documentation</h2>
+<a class="anchor" id="ga5545746fd00003f354f9c209866bc65b"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">integer function pio_nf::def_var_0d_desc </td>
+          <td>(</td>
+          <td class="paramtype">type (<a class="el" href="structfile__desc__t.html">file_desc_t</a>), intent(in)&#160;</td>
+          <td class="paramname"><em>File</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">character(len=*), intent(in)&#160;</td>
+          <td class="paramname"><em>name</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer, intent(in)&#160;</td>
+          <td class="paramname"><em>type</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">type (<a class="el" href="structvar__desc__t.html">var_desc_t</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>vardesc</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
 <p>Defines a netcdf variable. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
@@ -108,7 +153,9 @@ Functions/Subroutines</h2></td></tr>
   </table>
   </dd>
 </dl>
-<h2 class="groupheader">Function/Subroutine Documentation</h2>
+
+</div>
+</div>
 <a class="anchor" id="gaf3c39aafb791324950d557f8cd1bd7c2"></a>
 <div class="memitem">
 <div class="memproto">
@@ -157,7 +204,7 @@ Functions/Subroutines</h2></td></tr>
     <tr><td class="paramname">File</td><td>io system descriptor structure This structure holds information associated with each open file </td></tr>
     <tr><td class="paramname">name</td><td>: The name of the variable to define </td></tr>
     <tr><td class="paramname">type</td><td>: The type of variable </td></tr>
-    <tr><td class="paramname">dimids</td><td>: The dimension identifier returned by PIO_def_dim </td></tr>
+    <tr><td class="paramname">dimids</td><td>: The dimension identifier returned by <a class="el" href="group___p_i_o__def__dim.html">PIO_def_dim</a> </td></tr>
     <tr><td class="paramname">vardesc</td><td>Variable description structure. The variable record is the index into the unlimited dimension in the netcdf file typically this is the time dimension. ndims is the number of dimensions on the file for this variable </td></tr>
   </table>
   </dd>
@@ -174,7 +221,7 @@ Functions/Subroutines</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Nov 3 2015 09:20:46 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Nov 3 2015 10:38:08 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>
