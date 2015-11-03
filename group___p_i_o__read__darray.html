@@ -4,7 +4,7 @@
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.5"/>
-<title>PIO: Member List</title>
+<title>PIO: PIO_read_darray</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -39,7 +39,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div id="navrow1" class="tabs">
     <ul class="tablist">
       <li><a href="index.html"><span>PIO&#160;User's&#160;Guide</span></a></li>
-      <li class="current"><a href="annotated.html"><span>Appendix</span></a></li>
+      <li><a href="annotated.html"><span>Appendix</span></a></li>
       <li><a href="files.html"><span>Files</span></a></li>
       <li>
         <div id="MSearchBox" class="MSearchBoxInactive">
@@ -59,13 +59,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
       </li>
     </ul>
   </div>
-  <div id="navrow2" class="tabs2">
-    <ul class="tablist">
-      <li><a href="modules.html"><span>Modules</span></a></li>
-      <li><a href="annotated.html"><span>Data&#160;Types</span></a></li>
-      <li><a href="pages.html"><span>Page&#160;Index</span></a></li>
-    </ul>
-  </div>
+</div><!-- top -->
 <!-- window showing the filter options -->
 <div id="MSearchSelectWindow"
      onmouseover="return searchBox.OnSearchSelectShow()"
@@ -80,25 +74,34 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </iframe>
 </div>
 
-<div id="nav-path" class="navpath">
-  <ul>
-<li class="navelem"><a class="el" href="classpio__types.html">pio_types</a></li><li class="navelem"><a class="el" href="structpio__types_1_1var__desc__t.html">var_desc_t</a></li>  </ul>
-</div>
-</div><!-- top -->
 <div class="header">
+  <div class="summary">
+<a href="#func-members">Functions</a>  </div>
   <div class="headertitle">
-<div class="title">pio_types::var_desc_t Member List</div>  </div>
+<div class="title">PIO_read_darray</div>  </div>
 </div><!--header-->
 <div class="contents">
 
-<p>This is the complete list of members for <a class="el" href="structpio__types_1_1var__desc__t.html">pio_types::var_desc_t</a>, including all inherited members.</p>
-<table class="directory">
-  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>ncid</b> (defined in <a class="el" href="structpio__types_1_1var__desc__t.html">pio_types::var_desc_t</a>)</td><td class="entry"><a class="el" href="structpio__types_1_1var__desc__t.html">pio_types::var_desc_t</a></td><td class="entry"></td></tr>
-  <tr bgcolor="#f0f0f0"><td class="entry"><b>varid</b> (defined in <a class="el" href="structpio__types_1_1var__desc__t.html">pio_types::var_desc_t</a>)</td><td class="entry"><a class="el" href="structpio__types_1_1var__desc__t.html">pio_types::var_desc_t</a></td><td class="entry"></td></tr>
-</table></div><!-- contents -->
+<p>Read a distributed field from a file.  
+<a href="#details">More...</a></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:ga86dd21a39e72785837ee95e32947cce7"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ga86dd21a39e72785837ee95e32947cce7"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__read__darray.html#ga86dd21a39e72785837ee95e32947cce7">pio_read_darray_nc</a> (<a class="el" href="structfile__desc__t.html">file_desc_t</a> *file, <a class="el" href="structio__desc__t.html">io_desc_t</a> *iodesc, const int vid, void *IOBUF)</td></tr>
+<tr class="memdesc:ga86dd21a39e72785837ee95e32947cce7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read an array of data from a file to the IO library. <br/></td></tr>
+<tr class="separator:ga86dd21a39e72785837ee95e32947cce7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gad84360062331f220beb6ebf26557678e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="gad84360062331f220beb6ebf26557678e"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__read__darray.html#gad84360062331f220beb6ebf26557678e">PIOc_read_darray</a> (const int ncid, const int vid, const int ioid, const PIO_Offset arraylen, void *array)</td></tr>
+<tr class="memdesc:gad84360062331f220beb6ebf26557678e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read a field from a file to the IO library. <br/></td></tr>
+<tr class="separator:gad84360062331f220beb6ebf26557678e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<p>Read a distributed field from a file. </p>
+</div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Nov 3 2015 09:20:47 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Nov 3 2015 09:20:46 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

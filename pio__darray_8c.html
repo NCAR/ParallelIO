@@ -120,24 +120,28 @@ Functions</h2></td></tr>
 <tr class="memitem:a2231e6bc8e95b3b7ce073481e30eb57a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio__darray_8c.html#a2231e6bc8e95b3b7ce073481e30eb57a">compute_buffer_init</a> (<a class="el" href="structiosystem__desc__t.html">iosystem_desc_t</a> ios)</td></tr>
 <tr class="memdesc:a2231e6bc8e95b3b7ce073481e30eb57a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize the compute buffer to size PIO_CNBUFFER_LIMIT.  <a href="#a2231e6bc8e95b3b7ce073481e30eb57a">More...</a><br/></td></tr>
 <tr class="separator:a2231e6bc8e95b3b7ce073481e30eb57a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abb658657fdc5f52e1a2897b00c5ab50f"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio__darray_8c.html#abb658657fdc5f52e1a2897b00c5ab50f">pio_write_darray_nc</a> (<a class="el" href="structfile__desc__t.html">file_desc_t</a> *file, <a class="el" href="structio__desc__t.html">io_desc_t</a> *iodesc, const int vid, void *IOBUF, void *fillvalue)</td></tr>
-<tr class="memdesc:abb658657fdc5f52e1a2897b00c5ab50f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write a single distributed field to output. This routine is only used if aggregation is off.  <a href="#abb658657fdc5f52e1a2897b00c5ab50f">More...</a><br/></td></tr>
-<tr class="separator:abb658657fdc5f52e1a2897b00c5ab50f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aad2d5d7522e4af9927e12478884f562b"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio__darray_8c.html#aad2d5d7522e4af9927e12478884f562b">pio_write_darray_multi_nc</a> (<a class="el" href="structfile__desc__t.html">file_desc_t</a> *file, const int nvars, const int vid[], const int iodesc_ndims, MPI_Datatype basetype, const PIO_Offset gsize[], const int maxregions, <a class="el" href="structio__region.html">io_region</a> *firstregion, const PIO_Offset llen, const int maxiobuflen, const int num_aiotasks, void *IOBUF, const int frame[])</td></tr>
-<tr class="memdesc:aad2d5d7522e4af9927e12478884f562b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write a set of one or more aggregated arrays to output file.  <a href="#aad2d5d7522e4af9927e12478884f562b">More...</a><br/></td></tr>
-<tr class="separator:aad2d5d7522e4af9927e12478884f562b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a103705ae76233ae90e15356794dbf0d2"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio__darray_8c.html#a103705ae76233ae90e15356794dbf0d2">PIOc_write_darray_multi</a> (const int ncid, const int vid[], const int ioid, const int nvars, const PIO_Offset arraylen, void *array, const int frame[], void *fillvalue[], bool flushtodisk)</td></tr>
-<tr class="memdesc:a103705ae76233ae90e15356794dbf0d2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write one or more arrays with the same IO decomposition to the file.  <a href="#a103705ae76233ae90e15356794dbf0d2">More...</a><br/></td></tr>
-<tr class="separator:a103705ae76233ae90e15356794dbf0d2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa10d75600089dde28d264a1215afa2e9"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio__darray_8c.html#aa10d75600089dde28d264a1215afa2e9">PIOc_write_darray</a> (const int ncid, const int vid, const int ioid, const PIO_Offset arraylen, void *array, void *fillvalue)</td></tr>
-<tr class="memdesc:aa10d75600089dde28d264a1215afa2e9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write a distributed array to the output file.  <a href="#aa10d75600089dde28d264a1215afa2e9">More...</a><br/></td></tr>
-<tr class="separator:aa10d75600089dde28d264a1215afa2e9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a86dd21a39e72785837ee95e32947cce7"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio__darray_8c.html#a86dd21a39e72785837ee95e32947cce7">pio_read_darray_nc</a> (<a class="el" href="structfile__desc__t.html">file_desc_t</a> *file, <a class="el" href="structio__desc__t.html">io_desc_t</a> *iodesc, const int vid, void *IOBUF)</td></tr>
-<tr class="memdesc:a86dd21a39e72785837ee95e32947cce7"><td class="mdescLeft">&#160;</td><td class="mdescRight">read interface to io library  <a href="#a86dd21a39e72785837ee95e32947cce7">More...</a><br/></td></tr>
-<tr class="separator:a86dd21a39e72785837ee95e32947cce7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad84360062331f220beb6ebf26557678e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad84360062331f220beb6ebf26557678e"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><b>PIOc_read_darray</b> (const int ncid, const int vid, const int ioid, const PIO_Offset arraylen, void *array)</td></tr>
-<tr class="separator:ad84360062331f220beb6ebf26557678e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gabb658657fdc5f52e1a2897b00c5ab50f"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__write__darray.html#gabb658657fdc5f52e1a2897b00c5ab50f">pio_write_darray_nc</a> (<a class="el" href="structfile__desc__t.html">file_desc_t</a> *file, <a class="el" href="structio__desc__t.html">io_desc_t</a> *iodesc, const int vid, void *IOBUF, void *fillvalue)</td></tr>
+<tr class="memdesc:gabb658657fdc5f52e1a2897b00c5ab50f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write a single distributed field to output. This routine is only used if aggregation is off.  <a href="group___p_i_o__write__darray.html#gabb658657fdc5f52e1a2897b00c5ab50f">More...</a><br/></td></tr>
+<tr class="separator:gabb658657fdc5f52e1a2897b00c5ab50f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaad2d5d7522e4af9927e12478884f562b"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__write__darray.html#gaad2d5d7522e4af9927e12478884f562b">pio_write_darray_multi_nc</a> (<a class="el" href="structfile__desc__t.html">file_desc_t</a> *file, const int nvars, const int vid[], const int iodesc_ndims, MPI_Datatype basetype, const PIO_Offset gsize[], const int maxregions, <a class="el" href="structio__region.html">io_region</a> *firstregion, const PIO_Offset llen, const int maxiobuflen, const int num_aiotasks, void *IOBUF, const int frame[])</td></tr>
+<tr class="memdesc:gaad2d5d7522e4af9927e12478884f562b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write a set of one or more aggregated arrays to output fileThis routine is used if aggregation is enabled, data is already on the io-tasks.  <a href="group___p_i_o__write__darray.html#gaad2d5d7522e4af9927e12478884f562b">More...</a><br/></td></tr>
+<tr class="separator:gaad2d5d7522e4af9927e12478884f562b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga103705ae76233ae90e15356794dbf0d2"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ga103705ae76233ae90e15356794dbf0d2"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__write__darray.html#ga103705ae76233ae90e15356794dbf0d2">PIOc_write_darray_multi</a> (const int ncid, const int vid[], const int ioid, const int nvars, const PIO_Offset arraylen, void *array, const int frame[], void *fillvalue[], bool flushtodisk)</td></tr>
+<tr class="memdesc:ga103705ae76233ae90e15356794dbf0d2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write one or more arrays with the same IO decomposition to the file. <br/></td></tr>
+<tr class="separator:ga103705ae76233ae90e15356794dbf0d2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaa10d75600089dde28d264a1215afa2e9"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="gaa10d75600089dde28d264a1215afa2e9"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__write__darray.html#gaa10d75600089dde28d264a1215afa2e9">PIOc_write_darray</a> (const int ncid, const int vid, const int ioid, const PIO_Offset arraylen, void *array, void *fillvalue)</td></tr>
+<tr class="memdesc:gaa10d75600089dde28d264a1215afa2e9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write a distributed array to the output file.This routine aggregates output on the compute nodes and only sends it to the IO nodes when the compute buffer is full or when a flush is triggered. <br/></td></tr>
+<tr class="separator:gaa10d75600089dde28d264a1215afa2e9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga86dd21a39e72785837ee95e32947cce7"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ga86dd21a39e72785837ee95e32947cce7"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__read__darray.html#ga86dd21a39e72785837ee95e32947cce7">pio_read_darray_nc</a> (<a class="el" href="structfile__desc__t.html">file_desc_t</a> *file, <a class="el" href="structio__desc__t.html">io_desc_t</a> *iodesc, const int vid, void *IOBUF)</td></tr>
+<tr class="memdesc:ga86dd21a39e72785837ee95e32947cce7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read an array of data from a file to the IO library. <br/></td></tr>
+<tr class="separator:ga86dd21a39e72785837ee95e32947cce7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gad84360062331f220beb6ebf26557678e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="gad84360062331f220beb6ebf26557678e"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__read__darray.html#gad84360062331f220beb6ebf26557678e">PIOc_read_darray</a> (const int ncid, const int vid, const int ioid, const PIO_Offset arraylen, void *array)</td></tr>
+<tr class="memdesc:gad84360062331f220beb6ebf26557678e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read a field from a file to the IO library. <br/></td></tr>
+<tr class="separator:gad84360062331f220beb6ebf26557678e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1b614dbe44ee8bd3a113090ebc2c23fd"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1b614dbe44ee8bd3a113090ebc2c23fd"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>flush_output_buffer</b> (<a class="el" href="structfile__desc__t.html">file_desc_t</a> *file, bool force, PIO_Offset addsize)</td></tr>
 <tr class="separator:a1b614dbe44ee8bd3a113090ebc2c23fd"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -193,215 +197,6 @@ bufsize&#160;</td><td class="memItemRight" valign="bottom"><b>PIO_CNBUFFER_LIMIT
 
 </div>
 </div>
-<a class="anchor" id="a86dd21a39e72785837ee95e32947cce7"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">int pio_read_darray_nc </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="structfile__desc__t.html">file_desc_t</a> *&#160;</td>
-          <td class="paramname"><em>file</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="structio__desc__t.html">io_desc_t</a> *&#160;</td>
-          <td class="paramname"><em>iodesc</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const int&#160;</td>
-          <td class="paramname"><em>vid</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">void *&#160;</td>
-          <td class="paramname"><em>IOBUF</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>read interface to io library </p>
-
-</div>
-</div>
-<a class="anchor" id="aad2d5d7522e4af9927e12478884f562b"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">int pio_write_darray_multi_nc </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="structfile__desc__t.html">file_desc_t</a> *&#160;</td>
-          <td class="paramname"><em>file</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const int&#160;</td>
-          <td class="paramname"><em>nvars</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const int&#160;</td>
-          <td class="paramname"><em>vid</em>[], </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const int&#160;</td>
-          <td class="paramname"><em>iodesc_ndims</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">MPI_Datatype&#160;</td>
-          <td class="paramname"><em>basetype</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const PIO_Offset&#160;</td>
-          <td class="paramname"><em>gsize</em>[], </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const int&#160;</td>
-          <td class="paramname"><em>maxregions</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="structio__region.html">io_region</a> *&#160;</td>
-          <td class="paramname"><em>firstregion</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const PIO_Offset&#160;</td>
-          <td class="paramname"><em>llen</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const int&#160;</td>
-          <td class="paramname"><em>maxiobuflen</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const int&#160;</td>
-          <td class="paramname"><em>num_aiotasks</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">void *&#160;</td>
-          <td class="paramname"><em>IOBUF</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const int&#160;</td>
-          <td class="paramname"><em>frame</em>[]&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Write a set of one or more aggregated arrays to output file. </p>
-<p>This routine is used if aggregation is enabled, data is already on the io-tasks </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">file,:</td><td>a pointer to the open file descriptor for the file that will be written to </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">nvars,:</td><td>the number of variables to be written with this decomposition </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">vid,:</td><td>an array of the variable ids to be written </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">iodesc_ndims,:</td><td>the number of dimensions explicitly in the iodesc </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">basetype</td><td>: the basic type of the minimal data unit </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">gsize</td><td>: array of the global dimensions of the field to be written </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">maxregions</td><td>: max number of blocks to be written from this iotask </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">firstregion</td><td>: pointer to the first element of a linked list of region descriptions. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">llen</td><td>: length of the iobuffer on this task for a single field </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">maxiobuflen</td><td>: maximum llen participating </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">num_aiotasks</td><td>: actual number of iotasks participating </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">IOBUF,:</td><td>the buffer to be written from this mpi task </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">frame</td><td>: the frame or record dimension for each of the nvars variables in IOBUF </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a class="anchor" id="abb658657fdc5f52e1a2897b00c5ab50f"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">int pio_write_darray_nc </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="structfile__desc__t.html">file_desc_t</a> *&#160;</td>
-          <td class="paramname"><em>file</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="structio__desc__t.html">io_desc_t</a> *&#160;</td>
-          <td class="paramname"><em>iodesc</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const int&#160;</td>
-          <td class="paramname"><em>vid</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">void *&#160;</td>
-          <td class="paramname"><em>IOBUF</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">void *&#160;</td>
-          <td class="paramname"><em>fillvalue</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Write a single distributed field to output. This routine is only used if aggregation is off. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">file,:</td><td>a pointer to the open file descriptor for the file that will be written to </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">iodesc,:</td><td>a pointer to the defined iodescriptor for the buffer </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">vid,:</td><td>the variable id to be written </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">IOBUF,:</td><td>the buffer to be written from this mpi task </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">fillvalue,:</td><td>the optional fillvalue to be used for missing data in this buffer </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
 <a class="anchor" id="a9734d15053b7d201e067f0f894bcee8a"></a>
 <div class="memitem">
 <div class="memproto">
@@ -428,133 +223,10 @@ bufsize&#160;</td><td class="memItemRight" valign="bottom"><b>PIO_CNBUFFER_LIMIT
 
 </div>
 </div>
-<a class="anchor" id="aa10d75600089dde28d264a1215afa2e9"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">int PIOc_write_darray </td>
-          <td>(</td>
-          <td class="paramtype">const int&#160;</td>
-          <td class="paramname"><em>ncid</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const int&#160;</td>
-          <td class="paramname"><em>vid</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const int&#160;</td>
-          <td class="paramname"><em>ioid</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const PIO_Offset&#160;</td>
-          <td class="paramname"><em>arraylen</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">void *&#160;</td>
-          <td class="paramname"><em>array</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">void *&#160;</td>
-          <td class="paramname"><em>fillvalue</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Write a distributed array to the output file. </p>
-<p>This routine aggregates output on the compute nodes and only sends it to the IO nodes when the compute buffer is full or when a flush is triggered. </p>
-
-</div>
-</div>
-<a class="anchor" id="a103705ae76233ae90e15356794dbf0d2"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">int PIOc_write_darray_multi </td>
-          <td>(</td>
-          <td class="paramtype">const int&#160;</td>
-          <td class="paramname"><em>ncid</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const int&#160;</td>
-          <td class="paramname"><em>vid</em>[], </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const int&#160;</td>
-          <td class="paramname"><em>ioid</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const int&#160;</td>
-          <td class="paramname"><em>nvars</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const PIO_Offset&#160;</td>
-          <td class="paramname"><em>arraylen</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">void *&#160;</td>
-          <td class="paramname"><em>array</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const int&#160;</td>
-          <td class="paramname"><em>frame</em>[], </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">void *&#160;</td>
-          <td class="paramname"><em>fillvalue</em>[], </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>flushtodisk</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Write one or more arrays with the same IO decomposition to the file. </p>
-
-</div>
-</div>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Oct 23 2015 15:53:54 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Nov 3 2015 09:20:46 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>
