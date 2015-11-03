@@ -13,10 +13,12 @@ var searchData=
   ['pio_5fiotype',['PIO_iotype',['../group___p_i_o__iotype.html',1,'']]],
   ['pio_5fkinds',['PIO_kinds',['../group___p_i_o__kinds.html',1,'']]],
   ['pio_5fopenfile',['PIO_openfile',['../group___p_i_o__openfile.html',1,'']]],
+  ['pio_5fread_5fdarray',['PIO_read_darray',['../group___p_i_o__read__darray.html',1,'']]],
   ['pio_5frearr_5fmethod',['PIO_rearr_method',['../group___p_i_o__rearr__method.html',1,'']]],
   ['pio_5fset_5fhint',['PIO_set_hint',['../group___p_i_o__set__hint.html',1,'']]],
   ['pio_5fsetdebuglevel',['PIO_setdebuglevel',['../group___p_i_o__setdebuglevel.html',1,'']]],
   ['pio_5fseterrorhandling',['PIO_seterrorhandling',['../group___p_i_o__seterrorhandling.html',1,'']]],
   ['pio_5fsetframe',['PIO_setframe',['../group___p_i_o__setframe.html',1,'']]],
-  ['pio_5fsyncfile',['PIO_syncfile',['../group___p_i_o__syncfile.html',1,'']]]
+  ['pio_5fsyncfile',['PIO_syncfile',['../group___p_i_o__syncfile.html',1,'']]],
+  ['pio_5fwrite_5fdarray',['PIO_write_darray',['../group___p_i_o__write__darray.html',1,'']]]
 ];
