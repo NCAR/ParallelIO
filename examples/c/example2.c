@@ -207,15 +207,31 @@ init_logging(int my_rank, int event_num[][NUM_EVENTS])
     return 0;
 }
 
+/** Calculate sample data. This function is deliberately slow in order to take up some time calculating. 
+ * @param my_rank the rank of the processor running the code.
+ * @param timestep the timestep.
+ * @param datap pointer where we should write datum.
+ * 
+ * @return zero for success, non-zero otherwise.
+ */
+int calculate_value(int my_rank, int x, int y, int timestep, float *datap)
+{
+    *datap = my_rank + x + y * 10 + timestep * 100;
+    /* for (int i = 0; i < 50; i++) */
+    /* 	*datap += atan(cos(my_rank * timestep)); */
+    return 0;
+}
+
 /** Check the output file.
  *
  *  Use netCDF to check that the output is as expected. 
  *
+ * @param verbose Non-zero for printf output.
  * @param ntasks The number of processors running the example. 
  * @param filename The name of the example file to check. 
  *
  * @return 0 if example file is correct, non-zero otherwise. */
-int check_file(int ntasks, char *filename) {
+int check_file(int verbose, int ntasks, char *filename) {
     
     int ncid;         /**< File ID from netCDF. */
     int ndims;        /**< Number of dimensions. */
@@ -231,59 +247,64 @@ int check_file(int ntasks, char *filename) {
     char var_name[NC_MAX_NAME + 1];    /**< Name of the variable. */
     size_t start[NDIM];                /**< Zero-based index to start read. */
     size_t count[NDIM];                /**< Number of elements to read. */
-    int buffer[X_DIM_LEN];             /**< Buffer to read in data. */
-    int expected[X_DIM_LEN];           /**< Data values we expect to find. */
+    float buffer[X_DIM_LEN][Y_DIM_LEN];  /**< Buffer to read in data. */
+    float expected;                      /**< Data values we expect to find. */
+    int dim_len_expected[NDIM] = {NUM_TIMESTEPS, X_DIM_LEN, Y_DIM_LEN}; /**< Expected dimension lenths. */
     
     /* Open the file. */
+    if (verbose)
+	printf("Opening %s\n", filename);
     if ((ret = nc_open(filename, 0, &ncid)))
 	return ret;
 
     /* Check the metadata. */
+    if (verbose)
+	printf("Checking metadata...\n");
     if ((ret = nc_inq(ncid, &ndims, &nvars, &ngatts, &unlimdimid)))
 	return ret;
-    if (ndims != NDIM || nvars != 1 || ngatts != 0 || unlimdimid != -1)
+    if (ndims != NDIM || nvars != 1 || ngatts != 0 || unlimdimid != 0)
 	return ERR_BAD;
     for (int d = 0; d < ndims; d++)
     {
 	if ((ret = nc_inq_dim(ncid, d, my_dim_name, &dimlen)))
 	    return ret;
-	if (dimlen != X_DIM_LEN || strcmp(my_dim_name, dim_name[d]))
+	if (dimlen != dim_len_expected[d])
 	    return ERR_BAD;
     }
     if ((ret = nc_inq_var(ncid, 0, var_name, &xtype, &ndims, dimids, &natts)))
 	return ret;
-    if (xtype != NC_FLOAT || ndims != NDIM || dimids[0] != 0 || natts != 0)
+    if (xtype != NC_FLOAT || ndims != NDIM || dimids[0] != 0 || dimids[1] != 1 || dimids[2] != 2 || natts != 0)
 	return ERR_BAD;
 
     /* Check the data. */
-    start[0] = 0;
-    count[0] = X_DIM_LEN;
-    if ((ret = nc_get_vara(ncid, 0, start, count, buffer)))
-	return ret;
-    for (int d = 0; d < X_DIM_LEN; d++)
-	if (buffer[d] != expected[d])
-	    return ERR_BAD;
-
+    if (verbose)
+	printf("Checking data...\n");
+    start[1] = 0;
+    start[2] = 0;
+    count[0] = 1;
+    count[1] = X_DIM_LEN;
+    count[2] = Y_DIM_LEN;
+    for (start[0] = 0; start[0] < NUM_TIMESTEPS; start[0]++)
+    {
+	if ((ret = nc_get_vara_float(ncid, 0, start, count, (float *)buffer)))
+	    return ret;
+	for (int x = 0; x < X_DIM_LEN; x++)
+	    for (int y = 0; y < Y_DIM_LEN; y++)
+	    {
+		if ((ret = calculate_value(0, x, y, start[0], &expected)))
+		    ERR(ret);
+		if (buffer[x][y] != expected)
+		    return ERR_BAD;
+	    }
+    }
+    
     /* Close the file. */
+    if (verbose)
+	printf("Closing %s\n", filename);
     if ((ret = nc_close(ncid)))
 	return ret;
 
     /* Everything looks good! */
-    return 0;
-}
-
-/** Calculate sample data. This function is deliberately slow in order to take up some time calculating. 
- * @param my_rank the rank of the processor running the code.
- * @param timestep the timestep.
- * @param datap pointer where we should write datum.
- * 
- * @return zero for success, non-zero otherwise.
- */
-int calculate_value(int my_rank, int x, int y, int timestep, float *datap)
-{
-    *datap = my_rank + x + y * 10 + timestep * 100;
-    /* for (int i = 0; i < 50; i++) */
-    /* 	*datap += atan(cos(my_rank * timestep)); */
     return 0;
 }
 
@@ -650,8 +671,8 @@ int main(int argc, char* argv[])
     /* Check the output file. */
     if (!my_rank)
         for (int fmt = 0; fmt < NUM_NETCDF_FLAVORS; fmt++)
-    	if ((ret = check_file(ntasks, filename[fmt])))
-    	    ERR(ret);
+	    if ((ret = check_file(verbose, ntasks, filename[fmt])))
+		ERR(ret);
 
 #ifdef HAVE_MPE
     /* Log with MPE that we are done with READ. */
