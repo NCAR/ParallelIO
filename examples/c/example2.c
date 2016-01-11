@@ -47,12 +47,12 @@
  * responsibilty for writing and reading them will be spread between
  * all the processors used to run this example. */
 /**@{*/
-#define X_DIM_LEN 400
-#define Y_DIM_LEN 400
+#define X_DIM_LEN 4
+#define Y_DIM_LEN 4
 /**@}*/
 
 /** The number of timesteps of data to write. */
-#define NUM_TIMESTEPS 6
+#define NUM_TIMESTEPS 3
 
 /** The name of the variable in the netCDF output file. */
 #define VAR_NAME "foo"
@@ -234,11 +234,11 @@ int check_file(int ntasks, char *filename) {
     int buffer[X_DIM_LEN];             /**< Buffer to read in data. */
     int expected[X_DIM_LEN];           /**< Data values we expect to find. */
     
-/* Open the file. */
+    /* Open the file. */
     if ((ret = nc_open(filename, 0, &ncid)))
 	return ret;
 
-/* Check the metadata. */
+    /* Check the metadata. */
     if ((ret = nc_inq(ncid, &ndims, &nvars, &ngatts, &unlimdimid)))
 	return ret;
     if (ndims != NDIM || nvars != 1 || ngatts != 0 || unlimdimid != -1)
@@ -255,13 +255,7 @@ int check_file(int ntasks, char *filename) {
     if (xtype != NC_FLOAT || ndims != NDIM || dimids[0] != 0 || natts != 0)
 	return ERR_BAD;
 
-/* Use the number of processors to figure out what the data in the
- * file should look like. */
-    int div = X_DIM_LEN * Y_DIM_LEN / ntasks;
-    for (int d = 0; d < X_DIM_LEN; d++)
-	expected[d] = START_DATA_VAL + d/div;
-    
-/* Check the data. */
+    /* Check the data. */
     start[0] = 0;
     count[0] = X_DIM_LEN;
     if ((ret = nc_get_vara(ncid, 0, start, count, buffer)))
@@ -270,11 +264,11 @@ int check_file(int ntasks, char *filename) {
 	if (buffer[d] != expected[d])
 	    return ERR_BAD;
 
-/* Close the file. */
+    /* Close the file. */
     if ((ret = nc_close(ncid)))
 	return ret;
 
-/* Everything looks good! */
+    /* Everything looks good! */
     return 0;
 }
 
@@ -285,11 +279,11 @@ int check_file(int ntasks, char *filename) {
  * 
  * @return zero for success, non-zero otherwise.
  */
-int calculate_value(int my_rank, int timestep, float *datap)
+int calculate_value(int my_rank, int x, int y, int timestep, float *datap)
 {
-    *datap = my_rank + timestep;
-    for (int i = 0; i < 50; i++)
-	*datap += atan(cos(my_rank * timestep));
+    *datap = my_rank + x + y * 10 + timestep * 100;
+    /* for (int i = 0; i < 50; i++) */
+    /* 	*datap += atan(cos(my_rank * timestep)); */
     return 0;
 }
 
@@ -412,12 +406,6 @@ int main(int argc, char* argv[])
      * execution of the example code. It's length will be the same
      * as elements_per_pe.*/
     float *buffer;
-
-    /** A buffer for reading data back from the file. The size of
-     * this array will vary depending on how many processors are
-     * involved in the execution of the example code. It's length
-     * will be the same as elements_per_pe.*/
-    int *read_buffer;
 
     /** A 1-D array which holds the decomposition mapping for this
      * example. The size of this array will vary depending on how
@@ -562,8 +550,9 @@ int main(int argc, char* argv[])
 #endif /* HAVE_MPE */
 
 	/* Allocate space for sample data. */
-	if (!(buffer = malloc(elements_per_pe * sizeof(float))))
-	    return PIO_ENOMEM;
+	int sizex = X_DIM_LEN;
+	int sizey = Y_DIM_LEN;
+	float buffer[sizex][sizey];
 
 	/* Write data for each timestep. */
 	for (int ts = 0; ts < NUM_TIMESTEPS; ts++) {
@@ -575,9 +564,10 @@ int main(int argc, char* argv[])
 #endif /* HAVE_MPE */
 
 	    /* Calculate sample data. Add some math function calls to make this slower. */
-	    for (int i = 0; i < elements_per_pe; i++)
-		if ((ret = calculate_value(my_rank, ts, &buffer[i])))
-		    ERR(ret);
+	    for (int x = 0; x < sizex; x++)
+		for (int y = 0; y < sizey; y++)
+		    if ((ret = calculate_value(my_rank, x, y, ts, &buffer[x][y])))
+			ERR(ret);
 
 #ifdef HAVE_MPE
 	    /* Log with MPE that we are done with CALCULATE. */
@@ -612,9 +602,6 @@ int main(int argc, char* argv[])
 	    MPIERR(ret);
 #endif /* HAVE_MPE */
 		
-	/* Free buffer space used in this example. */
-	free(buffer);
-	
 	/* Close the netCDF file. */
 	if (verbose)
 	    printf("rank: %d Closing the sample data file...\n", my_rank);
@@ -661,10 +648,10 @@ int main(int argc, char* argv[])
 #endif /* HAVE_MPE */
     
     /* Check the output file. */
-    /* if (!my_rank) */
-    /*     for (int fmt = 0; fmt < NUM_NETCDF_FLAVORS; fmt++)  */
-    /* 	if ((ret = check_file(ntasks, filename[fmt]))) */
-    /* 	    ERR(ret); */
+    if (!my_rank)
+        for (int fmt = 0; fmt < NUM_NETCDF_FLAVORS; fmt++)
+    	if ((ret = check_file(ntasks, filename[fmt])))
+    	    ERR(ret);
 
 #ifdef HAVE_MPE
     /* Log with MPE that we are done with READ. */
