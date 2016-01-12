@@ -52,7 +52,7 @@
 /**@}*/
 
 /** The number of timesteps of data to write. */
-#define NUM_TIMESTEPS 3
+#define NUM_TIMESTEPS 1
 
 /** The name of the variable in the netCDF output file. */
 #define VAR_NAME "foo"
@@ -76,7 +76,7 @@
 /** Handle non-MPI errors by finalizing the MPI library and exiting
  * with an exit code. */
 #define ERR(e) do {				\
-        fprintf(stderr, "Error %d in %s, line %d\n", e, __FILE__, __LINE__); \
+        fprintf(stderr, "FAILURE! Error %d in %s, line %d\n", e, __FILE__, __LINE__); \
 	MPI_Finalize();				\
 	return e;				\
     } while (0) 
@@ -291,10 +291,16 @@ int check_file(int verbose, int ntasks, char *filename) {
 	for (int x = 0; x < X_DIM_LEN; x++)
 	    for (int y = 0; y < Y_DIM_LEN; y++)
 	    {
+		if (verbose)
+		    printf("buffer[%d][%d] = %f\n", x, y, buffer[x][y]);
 		if ((ret = calculate_value(x, y, start[0], &expected)))
 		    ERR(ret);
 		if (buffer[x][y] != expected)
+		{
+		    if (verbose)
+			printf("at x=%d y=%d expected %f but found %f\n", x, y, expected, buffer[x][y]);
 		    return ERR_BAD;
+		}
 	    }
     }
     
@@ -476,9 +482,11 @@ int main(int argc, char* argv[])
 	MPIERR(ret);
 
     /* Check that a valid number of processors was specified. */
-    if (!(ntasks == 1 || ntasks == 2 || ntasks == 4 ||
-	  ntasks == 8 || ntasks == 16))
-	fprintf(stderr, "Number of processors must be 1, 2, 4, 8, or 16!\n");
+    if (!(ntasks == 1 || ntasks == 2 || ntasks == 4))
+    {
+	fprintf(stderr, "Number of processors must be 1, 2, or 4!\n");
+	ERR(ERR_INIT);
+    }
     if (verbose)
 	printf("%d: ParallelIO Library example1 running on %d processors.\n",
 	       my_rank, ntasks);
@@ -510,6 +518,8 @@ int main(int argc, char* argv[])
 	return PIO_ENOMEM;
     for (int i = 0; i < elements_per_pe; i++) {
 	compdof[i] = my_rank * elements_per_pe + i + 1;
+	if (verbose)
+	    printf("rank = %d compdof[%d] = %d\n", my_rank, i, compdof[i]); 
     }
 	
     /* Create the PIO decomposition for this example. */
@@ -518,7 +528,6 @@ int main(int argc, char* argv[])
     if ((ret = PIOc_InitDecomp(iosysid, PIO_FLOAT, 2, &dim_len[1], (PIO_Offset)elements_per_pe,
 			       compdof, &ioid, NULL, NULL, NULL)))
 	ERR(ret);
-    free(compdof);
 
 #ifdef HAVE_MPE
     /* Log with MPE that we are done with INIT. */
@@ -544,7 +553,7 @@ int main(int argc, char* argv[])
 				   PIO_CLOBBER)))
 	    ERR(ret);
 	
-	/* Define netCDF dimensions and variable. */
+	/* Define netCDF dimensions. */
 	if (verbose)
 	    printf("rank: %d Defining netCDF metadata...\n", my_rank);
 	for (int d = 0; d < NDIM; d++) {
@@ -554,8 +563,11 @@ int main(int argc, char* argv[])
 	    if ((ret = PIOc_def_dim(ncid, dim_name[d], (PIO_Offset)dim_len[d], &dimids[d])))
 		ERR(ret);
 	}
+
+	/* Define netCDF variable. */
 	if ((ret = PIOc_def_var(ncid, VAR_NAME, PIO_FLOAT, NDIM, dimids, &varid)))
 	    ERR(ret);
+	
 	/* For netCDF-4 files, set the chunksize to improve performance. */
 	if (format[fmt] == PIO_IOTYPE_NETCDF4C || format[fmt] == PIO_IOTYPE_NETCDF4P)
 	    if ((ret = PIOc_def_var_chunking(ncid, 0, NC_CHUNKED, chunksize)))
@@ -572,7 +584,7 @@ int main(int argc, char* argv[])
 
 	/* Allocate space for sample data. */
 	int sizex = X_DIM_LEN;
-	int sizey = Y_DIM_LEN;
+	int sizey = Y_DIM_LEN/ntasks;
 	float buffer[sizex][sizey];
 
 	/* Write data for each timestep. */
@@ -584,11 +596,22 @@ int main(int argc, char* argv[])
 		MPIERR(ret);
 #endif /* HAVE_MPE */
 
-	    /* Calculate sample data. Add some math function calls to make this slower. */
+	    /* Calculate sample data. These calculations depend on row
+	     * decomposition. If the decompositon changes, so must
+	     * these calculations. */
+	    int decomp_idx = 0;
 	    for (int x = 0; x < sizex; x++)
 		for (int y = 0; y < sizey; y++)
-		    if ((ret = calculate_value(x, y, ts, &buffer[x][y])))
+		{
+		    PIO_Offset decomp_val = compdof[decomp_idx++] - 1;
+		    int x_offset = decomp_val / X_DIM_LEN;
+		    int y_offset = (decomp_val - x_offset / X_DIM_LEN) % Y_DIM_LEN;
+		    if (verbose)
+			printf("decomp_val = %d x_offset = %d y_offset = %d\n", decomp_val,
+			       x_offset, y_offset);
+		    if ((ret = calculate_value(x_offset, y_offset, ts, &buffer[x][y])))
 			ERR(ret);
+		}
 
 #ifdef HAVE_MPE
 	    /* Log with MPE that we are done with CALCULATE. */
@@ -652,6 +675,7 @@ int main(int argc, char* argv[])
 	printf("rank: %d Freeing PIO decomposition...\n", my_rank);
     if ((ret = PIOc_freedecomp(iosysid, ioid)))
 	ERR(ret);
+    free(compdof);
 	
     /* Finalize the IO system. */
     if (verbose)
@@ -690,6 +714,9 @@ int main(int argc, char* argv[])
 #endif    
 
     if (verbose)
-	printf("rank: %d SUCCESS!\n", my_rank);
+	if (ret)
+	    printf("rank: %d FAILURE!\n", my_rank);
+	else
+	    printf("rank: %d SUCCESS!\n", my_rank);
     return 0;
 }
