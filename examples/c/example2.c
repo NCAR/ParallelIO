@@ -214,9 +214,9 @@ init_logging(int my_rank, int event_num[][NUM_EVENTS])
  * 
  * @return zero for success, non-zero otherwise.
  */
-int calculate_value(int my_rank, int x, int y, int timestep, float *datap)
+int calculate_value(int x, int y, int timestep, float *datap)
 {
-    *datap = my_rank + x + y * 10 + timestep * 100;
+    *datap = x + y * 10 + timestep * 100;
     /* for (int i = 0; i < 50; i++) */
     /* 	*datap += atan(cos(my_rank * timestep)); */
     return 0;
@@ -291,7 +291,7 @@ int check_file(int verbose, int ntasks, char *filename) {
 	for (int x = 0; x < X_DIM_LEN; x++)
 	    for (int y = 0; y < Y_DIM_LEN; y++)
 	    {
-		if ((ret = calculate_value(0, x, y, start[0], &expected)))
+		if ((ret = calculate_value(x, y, start[0], &expected)))
 		    ERR(ret);
 		if (buffer[x][y] != expected)
 		    return ERR_BAD;
@@ -587,7 +587,7 @@ int main(int argc, char* argv[])
 	    /* Calculate sample data. Add some math function calls to make this slower. */
 	    for (int x = 0; x < sizex; x++)
 		for (int y = 0; y < sizey; y++)
-		    if ((ret = calculate_value(my_rank, x, y, ts, &buffer[x][y])))
+		    if ((ret = calculate_value(x, y, ts, &buffer[x][y])))
 			ERR(ret);
 
 #ifdef HAVE_MPE
