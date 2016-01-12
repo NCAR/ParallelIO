@@ -344,7 +344,7 @@ int check_file(int ntasks, char *filename) {
 	
 	/* Use PIO to create the example file in each of the four
 	 * available ways. */
-	for (int fmt = 1; fmt < NUM_NETCDF_FLAVORS; fmt++) 
+	for (int fmt = 0; fmt < NUM_NETCDF_FLAVORS; fmt++) 
 	{
 	    /* Create the netCDF output file. */
 	    if (verbose)
