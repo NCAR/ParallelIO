@@ -280,6 +280,9 @@ int check_file(int ntasks, char *filename) {
 	/** Used for command line processing. */
 	int c;
 
+	/** Return code. */
+	int ret;
+
 	/* Parse command line. */
 	while ((c = getopt(argc, argv, "v")) != -1)
 	    switch (c)
@@ -293,11 +296,9 @@ int check_file(int ntasks, char *filename) {
 
 #ifdef TIMING    
 	/* Initialize the GPTL timing library. */
-	int ret;
-	if ((ret = GPTLinitialize ()))
+	if ((ret = GPTLinitialize()))
 	    return ret;
 #endif    
-    
 	/* Initialize MPI. */
 	if ((ret = MPI_Init(&argc, &argv)))
 	    MPIERR(ret);
@@ -412,7 +413,7 @@ int check_file(int ntasks, char *filename) {
 
 #ifdef TIMING    
 	/* Finalize the GPTL timing library. */
-	if ((ret = GPTLfinalize ()))
+	if ((ret = GPTLfinalize()))
 	    return ret;
 #endif    
 
