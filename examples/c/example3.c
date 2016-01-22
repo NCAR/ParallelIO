@@ -20,18 +20,13 @@
 #include <mpe.h>
 #endif
 
-/** The number of possible output netCDF output flavors available to
- * the ParallelIO library. */
+/** The number of possible output netCDF output flavors. */
 #define NUM_NETCDF_FLAVORS 4
 
-/** The number of dimensions in the example data. In this example, we
- * are using three-dimensional data. */
+/** The number of dimensions in the example data. */
 #define NDIM 3
 
-/** The length of our sample data along each dimension. There will be
- * a total of 16 integers in each timestep of our data, and
- * responsibilty for writing and reading them will be spread between
- * all the processors used to run this example. */
+/** The length of our sample data along each dimension. */
 /**@{*/
 #define X_DIM_LEN 4
 #define Y_DIM_LEN 4
@@ -67,13 +62,10 @@
 	return e;				\
     } while (0) 
 
-/** Global err buffer for MPI. When there is an MPI error, this buffer
- * is used to store the error message that is associated with the MPI
- * error. */
+/** Global err buffer for MPI. */
 char err_buffer[MPI_MAX_ERROR_STRING];
 
-/** This is the length of the most recent MPI error message, stored
- * int the global error string. */
+/** This is the length of the most recent MPI error message. */
 int resultlen;
 
 /** The dimension names. */
@@ -85,9 +77,7 @@ int dim_len[NDIM] = {NC_UNLIMITED, X_DIM_LEN, Y_DIM_LEN};
 /** Length of chunksizes to use in netCDF-4 files. */
 size_t chunksize[NDIM] = {2, X_DIM_LEN/2, Y_DIM_LEN/2};
 
-
-/** Number of MPE events. The start and stop of each event will be
- * tracked, and graphed. This value is used outside of HAVE_MPE ifdefs.*/
+/** Number of MPE events. */
 #define NUM_EVENTS 10
 
 #ifdef HAVE_MPE
@@ -97,9 +87,7 @@ size_t chunksize[NDIM] = {2, X_DIM_LEN/2, Y_DIM_LEN/2};
 #define END 1
 /**@}*/
 
-/** These are for the event numbers array used to log various events
- * in the program with the MPE library, which produces output for the
- * Jumpshot program. */
+/** These are used to log various events. */
 /**@{*/
 #define INIT 0
 #define CREATE_PNETCDF 1
@@ -194,7 +182,9 @@ init_logging(int my_rank, int event_num[][NUM_EVENTS])
     return 0;
 }
 
-/** Calculate sample data. This function is deliberately slow in order to take up some time calculating. 
+/** Calculate sample data. This function is deliberately slow in order
+ * to take up some time calculating.
+ *
  * @param my_rank the rank of the processor running the code.
  * @param timestep the timestep.
  * @param datap pointer where we should write datum.
@@ -316,25 +306,9 @@ int check_file(int verbose, int ntasks, char *filename) {
 
     The example can be run from the command line (on system that support it) like this:
     <pre>
-    mpiexec -n 4 ./examplePio
+    mpiexec -n 4 ./example3
     </pre>
 
-    The sample file created by this program is a small netCDF file. It
-    has the following contents (as shown by ncdump) for a 4-processor
-    run:
-
-    <pre>
-    netcdf examplePio_c {
-    dimensions:
-    x = 16 ;
-    variables:
-    int foo(x) ;
-    data:
-
-    foo = 42, 42, 42, 42, 43, 43, 43, 43, 44, 44, 44, 44, 45, 45, 45, 45 ;
-    }
-    </pre>
-    
     @param [in] argc argument count (should be zero)
     @param [in] argv argument array (should be NULL)
     @retval examplePioClass* Pointer to self.
@@ -350,33 +324,22 @@ int main(int argc, char* argv[])
     /** Number of processors involved in current execution. */
     int ntasks;
 
-    /** Different output flavors. The example file is written (and
-     * then read) four times. The first two flavors,
-     * parallel-netcdf, and netCDF serial, both produce a netCDF
-     * classic format file (but with different libraries). The
-     * last two produce netCDF4/HDF5 format files, written with
-     * and without using netCDF-4 parallel I/O. */
+    /** Different output flavors. */
     int format[NUM_NETCDF_FLAVORS] = {PIO_IOTYPE_PNETCDF, 
 				      PIO_IOTYPE_NETCDF,
 				      PIO_IOTYPE_NETCDF4C,
 				      PIO_IOTYPE_NETCDF4P};
 
-    /** Names for the output files. Two of them (pnetcdf and
-     * classic) will be in classic netCDF format, the others
-     * (serial4 and parallel4) will be in netCDF-4/HDF5
-     * format. All four can be read by the netCDF library, and all
-     * will contain the same contents. */
+    /** Names for the output files. */
     char filename[NUM_NETCDF_FLAVORS][NC_MAX_NAME + 1] = {"example2_pnetcdf.nc",
 							  "example2_classic.nc",
 							  "example2_serial4.nc",
 							  "example2_parallel4.nc"};
 	
-    /** Number of processors that will do IO. In this example we
-     * will do IO from all processors. */
+    /** Number of processors that will do IO. */
     int niotasks;
 
-    /** Stride in the mpi rank between io tasks. Always 1 in this
-     * example. */
+    /** Stride in the mpi rank between io tasks. */
     int ioproc_stride = 1;
 
     /** Number of the aggregator? Always 0 in this example. */
@@ -391,18 +354,10 @@ int main(int argc, char* argv[])
     /** The dimension IDs. */
     int dimids[NDIM];
 
-    /** Array index per processing unit. This is the number of
-     * elements of the data array that will be handled by each
-     * processor. In this example there are 16 data elements. If the
-     * example is run on 4 processors, then arrIdxPerPe will be 4. */
+    /** Array index per processing unit. */
     PIO_Offset elements_per_pe;
 
-    /** The ID for the parallel I/O system. It is set by
-     * PIOc_Init_Intracomm(). It references an internal structure
-     * containing the general IO subsystem data and MPI
-     * structure. It is passed to PIOc_finalize() to free
-     * associated resources, after all I/O, but before
-     * MPI_Finalize is called. */
+    /** The ID for the parallel I/O system. */
     int iosysid;
 
     /** The ncid of the netCDF file created in this example. */
@@ -411,27 +366,17 @@ int main(int argc, char* argv[])
     /** The ID of the netCDF varable in the example file. */
     int varid;
 
-    /** The I/O description ID as passed back by PIOc_InitDecomp()
-     * and freed in PIOc_freedecomp(). */
+    /** The I/O description ID. */
     int ioid;
 
-    /** A buffer for sample data.  The size of this array will
-     * vary depending on how many processors are involved in the
-     * execution of the example code. It's length will be the same
-     * as elements_per_pe.*/
+    /** A buffer for sample data. */
     float *buffer;
 
-    /** A 1-D array which holds the decomposition mapping for this
-     * example. The size of this array will vary depending on how
-     * many processors are involved in the execution of the
-     * example code. It's length will be the same as
-     * elements_per_pe. */
+    /** Holds the decomposition mapping. */
     PIO_Offset *compdof;
 
 #ifdef HAVE_MPE	
-    /** MPE event numbers used to track start and stop of
-     * different parts of the program for later display with
-     * Jumpshot. */
+    /** Used to track program for later display with Jumpshot. */
     int event_num[2][NUM_EVENTS];
 #endif /* HAVE_MPE */
 
