@@ -340,6 +340,38 @@ int PIOc_InitDecomp_bc(const int iosysid, const int basetype,const int ndims, co
   return PIO_NOERR;
 }
 
+/** @ingroup PIO_init
+ * Library initialization used when IO tasks are distinct from compute tasks
+ *
+ * This is a collective call.  Input parameters are read on
+ * comp_rank=0 values on other tasks are ignored.  This variation of
+ * PIO_init sets up a distinct set of tasks to handle IO, these tasks
+ * do not return from this call.  Instead they go to an internal loop
+ * and wait to receive further instructions from the computational
+ * tasks.
+ *
+ * Fortran function (from PIO1) is:
+ *
+ * subroutine init_intercom(component_count, peer_comm, comp_comms,
+ * io_comm, iosystem, rearr_opts)
+ *
+ * @param component_count The number of computational components to
+ * associate with this IO component
+ * @param peer_comm The communicator from which all other communicator
+ * arguments are derived
+ * @param comp_comms The computational communicator for each of the
+ * computational components
+`* @param io_comm The io communicator
+ * @param iosystem a derived type which can be used in subsequent pio
+ * operations (defined in PIO_types).
+ *
+ * @return PIO_NOERR on success, error code otherwise.
+ */
+int PIOc_Init_Intercomm(int component_count, MPI_Comm peer_comm, MPI_Comm comp_comms,
+			MPI_Comm io_comm, int *iosysidp)
+{
+    return PIO_NOERR;
+}
 
 /** 
  ** @ingroup PIO_init
