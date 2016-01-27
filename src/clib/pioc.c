@@ -350,17 +350,33 @@ int PIOc_InitDecomp_bc(const int iosysid, const int basetype,const int ndims, co
  * and wait to receive further instructions from the computational
  * tasks.
  *
+ * For 4 tasks, to have 2 of them be computational, and 2 of them
+ * be IO, I would provide the following:
+ *
+ * component_count = 1
+ *
+ * peer_comm = MPI_COMM_WORLD
+ *
+ * comp_comms = an array with one element, an MPI (intra) communicator
+ * that contains the two tasks designated to do computation
+ * (processors 0, 1).
+
+ * io_comm = an MPI (intra) communicator with the other two tasks (2,
+ * 3).
+ *
+ * iosysidp = pointer that gets the IO system ID.
+ *
  * Fortran function (from PIO1) is:
  *
  * subroutine init_intercom(component_count, peer_comm, comp_comms,
  * io_comm, iosystem, rearr_opts)
  *
- * @param component_count The number of computational components to
- * associate with this IO component
+ * @param component_count The number of computational (ex. model)
+ * components to associate with this IO component
  * @param peer_comm The communicator from which all other communicator
  * arguments are derived
- * @param comp_comms The computational communicator for each of the
- * computational components
+ * @param comp_comms An array containing the computational
+ * communicator for each of the computational components
 `* @param io_comm The io communicator
  * @param iosystem a derived type which can be used in subsequent pio
  * operations (defined in PIO_types).
@@ -370,6 +386,24 @@ int PIOc_InitDecomp_bc(const int iosysid, const int basetype,const int ndims, co
 int PIOc_Init_Intercomm(int component_count, MPI_Comm peer_comm, MPI_Comm comp_comms,
 			MPI_Comm io_comm, int *iosysidp)
 {
+    iosystem_desc_t *iosys;
+    
+    iosys = (iosystem_desc_t *) malloc(sizeof(iosystem_desc_t));    
+    iosys->union_comm = comp_comms;
+    iosys->comp_comm = comp_comms;
+    iosys->my_comm = comp_comms;
+    iosys->io_comm = io_comm;
+    iosys->intercomm = MPI_COMM_NULL;
+    iosys->error_handler = PIO_INTERNAL_ERROR;
+    iosys->async_interface= true;
+    iosys->compmaster = false;
+    iosys->iomaster = false;
+    iosys->ioproc = false;
+    /*iosys->default_rearranger = rearr;*/
+    iosys->num_iotasks = 1;
+    /*iosys->num_iotasks = num_iotasks;*/
+
+    *iosysidp = pio_add_to_iosystem_list(iosys);
     return PIO_NOERR;
 }
 
