@@ -321,6 +321,15 @@ Contains
        return
     end if
 
+    ! Turn on compression for this variable.
+    ret_val = PIO_def_var_deflate(pio_file, pio_var, 0, 1, 4)
+    if (ret_val .ne. PIO_NOERR) then
+       ! Error in PIO_def_var
+       err_msg = "Could not turn on compression for variable foo2"
+       call PIO_closefile(pio_file)
+       return
+    end if
+
     ret_val = PIO_put_att(pio_file, pio_var, "max_val", ntasks)
     if (ret_val .ne. PIO_NOERR) then
        ! Error in PIO_put_att
