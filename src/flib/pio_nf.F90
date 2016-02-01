@@ -11,7 +11,7 @@ module pio_nf
 
   public :: &
        pio_def_var                                          ,   &
-       pio_def_var_deflate                                  ,   &
+       pio_def_var_deflate                                          ,   &
        pio_def_dim                                          ,  &
        pio_inq_attname                                      ,    & 
        pio_inq_att                                          ,        &
@@ -43,6 +43,9 @@ module pio_nf
      module procedure &
           def_var_deflate
   end interface
+  ! interface pio_def_var_deflate
+  !    module procedure def_var_deflate
+  ! end interface
   interface pio_inq_attname
      module procedure &
           inq_attname_desc                                  , &
@@ -1422,13 +1425,13 @@ contains
 !! @ingroup PIO_def_var_deflate
 !! @brief Changes compression settings for a netCDF-4/HDF5 variable.
 !<
-  integer function def_var_deflate(ncid, varid, shuffle, deflate, deflate_level) result(ierr)
-    integer, intent(in) :: ncid
-    integer, intent(in) :: varid
+  integer function def_var_deflate(file, vardesc, shuffle, deflate, deflate_level) result(ierr)
+    type (File_desc_t), intent(in)  :: file
+    type (var_desc_t), intent(in) :: vardesc
     integer, intent(in) :: shuffle
     integer, intent(in) :: deflate
     integer, intent(in) :: deflate_level
-    integer :: ndims, i
+
     interface
        integer (C_INT) function PIOc_def_var_deflate(ncid, varid, shuffle, deflate, deflate_level) &
             bind(c,name="PIOc_def_var_deflate")
@@ -1441,7 +1444,7 @@ contains
        end function PIOc_def_var_deflate
     end interface
 
-    ierr = PIOc_def_var_deflate(ncid, varid, shuffle, deflate, deflate_level)
+    ierr = PIOc_def_var_deflate(file%fh, vardesc%varid-1, shuffle, deflate, deflate_level)
   end function def_var_deflate
 
 end module pio_nf

@@ -14,6 +14,7 @@ module ncdf_tests
 
   public :: test_redef
   public :: test_enddef
+  public :: test_nc4
 
 Contains
 
@@ -267,6 +268,7 @@ Contains
     ! Local Vars
     character(len=str_len) :: filename
     integer                :: iotype, ret_val
+    integer                :: ret_val1
 
     ! Data used to test writing
     integer,          dimension(2) :: data_to_write, compdof
@@ -275,6 +277,13 @@ Contains
     integer                        :: pio_dim
     type(var_desc_t)               :: pio_var
 
+    integer :: shuffle
+    integer :: deflate
+    integer :: deflate_level
+
+    shuffle = 0
+    deflate = 1
+    deflate_level = 4
     err_msg = "no_error"
 
     dims(1) = 2*ntasks
@@ -303,33 +312,52 @@ Contains
        return
     end if
 
-    ! Define a new dimension M (already has 'N' from previous tests)
-    ret_val = PIO_def_dim(pio_file, 'M', int(2*ntasks,pio_offset_kind), pio_dim)
+    ! Define a new dimension M1.
+    ret_val = PIO_def_dim(pio_file, 'M111222', int(2*ntasks,pio_offset_kind), pio_dim)
     if (ret_val .ne. PIO_NOERR) then
-       err_msg = "Could not define dimension M"
+       err_msg = "Could not define dimension M111222"
+       print *, ret_val
        call PIO_closefile(pio_file)
        return
     end if
 
-    ! Define a new variable foo2 (already has 'foo' from previous tests)
-    ret_val = PIO_def_var(pio_file, 'foo2', PIO_int, &
+    ! Define a new variable
+    ret_val = PIO_def_var(pio_file, 'foo2222', PIO_int, &
          (/pio_dim/), pio_var)
     if (ret_val .ne. PIO_NOERR) then
        ! Error in PIO_def_var
-       err_msg = "Could not define variable foo2"
+       err_msg = "Could not define variable foo2222"
        call PIO_closefile(pio_file)
        return
     end if
 
-    ! Turn on compression for this variable.
-    ret_val = PIO_def_var_deflate(pio_file, pio_var, 0, 1, 4)
-    if (ret_val .ne. PIO_NOERR) then
-       ! Error in PIO_def_var
-       err_msg = "Could not turn on compression for variable foo2"
+    ! Try to turn on compression for this variable.
+    print *,__FILE__,__LINE__, 'turning on deflate iotype = ', iotype, ' varid =', pio_var%varid
+    ret_val1 = PIO_def_var_deflate(pio_file, pio_var, shuffle, deflate, &
+         deflate_level)
+    print *,'deflate ret_val = ', ret_val
+    ! Should not have worked except for netCDF-4/HDF5 serial.
+    if (iotype .eq. PIO_iotype_netcdf4c .and. ret_val .ne. PIO_NOERR) then
+       ! Error in PIO_def_var_deflate
+       print *, 'error 1'
+       err_msg = "Could not turn on compression for variable foo2222"
+       call PIO_closefile(pio_file)
+       return
+    else if ((iotype .eq. PIO_iotype_pnetcdf .or. iotype .eq. PIO_iotype_netcdf) .and. ret_val .ne. -111) then
+       print *, 'error 2'
+       ! Error in PIO_def_var_deflate
+       err_msg = "Did not get expected error when trying to turn deflate on for non-netcdf-4 file"
+       call PIO_closefile(pio_file)
+       return
+    else if (iotype .eq. PIO_iotype_netcdf4p .and. ret_val .ne. PIO_NOERR) then
+       print *, 'error 3'
+       ! Error in PIO_def_var_deflate
+       err_msg = "Did not get expected error when trying to turn deflate on for parallel netcdf-4 file"
        call PIO_closefile(pio_file)
        return
     end if
 
+    print *, 'writing att'
     ret_val = PIO_put_att(pio_file, pio_var, "max_val", ntasks)
     if (ret_val .ne. PIO_NOERR) then
        ! Error in PIO_put_att
@@ -346,18 +374,7 @@ Contains
        return
     end if
 
-    ! Try to enter define mode again
-    if(master_task) write(*,"(6x,A,1x)") "trying to enter define mode in define mode, error expected ... "
-    call mpi_barrier(MPI_COMM_WORLD,ret_val)
-
-    ret_val = PIO_redef(pio_file)
-    if (ret_val .eq. PIO_NOERR) then
-       ! Error in PIO_redef
-       err_msg = "Entered define mode from define mode"
-       call PIO_closefile(pio_file)
-       return
-    end if
-
+    print *, 'leaving define'
     ! Leave define mode
     ret_val = PIO_enddef(pio_file)
     if (ret_val .ne. PIO_NOERR) then
@@ -376,17 +393,8 @@ Contains
     end if
 
     ! Close file
+    print *, 'closing file'
     call PIO_closefile(pio_file)
-
-    ! Try to enter define mode again
-    if(master_task) write(*,"(6x,A,1x)") "trying to enter define mode in closed file, error expected ... "
-    call mpi_barrier(MPI_COMM_WORLD,ret_val)
-    ret_val = PIO_redef(pio_file)
-    if (ret_val .eq. PIO_NOERR) then
-       ! Error in PIO_redef
-       err_msg = "Entered define mode from a closed file"
-       return
-    end if
 
     ! Free decomp
     call PIO_freedecomp(pio_iosystem, iodesc_nCells)

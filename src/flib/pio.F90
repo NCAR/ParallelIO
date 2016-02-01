@@ -49,7 +49,7 @@ module pio
        PIO_inq_dimlen ,    &
        PIO_def_dim   ,        &
        PIO_def_var   ,        &
-       PIO_def_var_deflate,   &
+       PIO_def_var_deflate   ,        &
        PIO_redef     ,          &
 !       PIO_copy_att  ,       &   
        PIO_inquire_variable , &

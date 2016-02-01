@@ -30,6 +30,8 @@ add_executable (test_nc4 EXCLUDE_FROM_ALL test_nc4.c)
 target_link_libraries (test_nc4 pioc)
 add_executable (test_intercomm EXCLUDE_FROM_ALL test_intercomm.c)
 target_link_libraries (test_intercomm pioc)
+add_executable (test_netcdf_parallel EXCLUDE_FROM_ALL test_netcdf_parallel.c)
+target_link_libraries (test_netcdf_parallel pioc)
 
 if (CMAKE_Fortran_COMPILER_ID STREQUAL "NAG")
    set ( CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -mismatch_all" )
@@ -38,6 +40,7 @@ if (CMAKE_Fortran_COMPILER_ID STREQUAL "NAG")
 endif ()
 
 add_dependencies (tests test_nc4)
+add_dependencies (tests test_netcdf_parallel)
 add_dependencies (tests test_intercomm)
 add_dependencies (tests pio_unit_test)
 
@@ -49,6 +52,8 @@ if (PIO_USE_MPISERIAL)
         COMMAND test_intercomm)
     add_test(NAME test_nc4
         COMMAND test_nc4)
+    add_test(NAME test_netcdf_parallel
+        COMMAND test_netcdf_parallel)
     add_test(NAME pio_unit_test
         COMMAND pio_unit_test)
     set_tests_properties(pio_unit_test
@@ -56,6 +61,10 @@ if (PIO_USE_MPISERIAL)
 else ()
     add_mpi_test(test_intercomm
         EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/test_intercomm
+        NUMPROCS 4
+        TIMEOUT ${DEFAULT_TEST_TIMEOUT})
+    add_mpi_test(test_netcdf_parallel
+        EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/test_netcdf_parallel
         NUMPROCS 4
         TIMEOUT ${DEFAULT_TEST_TIMEOUT})
     add_mpi_test(test_nc4
