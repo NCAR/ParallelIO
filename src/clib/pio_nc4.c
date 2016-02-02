@@ -57,7 +57,12 @@ int PIOc_def_var_deflate(int ncid, int varid, int shuffle, int deflate,
 #ifdef _NETCDF
 #ifdef _NETCDF4
 	case PIO_IOTYPE_NETCDF4P:
-	    ierr = nc_def_var_deflate(file->fh, varid, shuffle, deflate, deflate_level);
+	    /* Versions of netCDF 4.4 and earlier do not return an
+	     * error when attempting to turn on deflation with
+	     * parallel I.O. But this is not allowed by HDF5. So
+	     * return the correct error code. */
+	    return NC_EINVAL;
+	    //ierr = nc_def_var_deflate(file->fh, varid, shuffle, deflate, deflate_level);
 	    break;
 	case PIO_IOTYPE_NETCDF4C:
 	    if (!ios->io_rank)
