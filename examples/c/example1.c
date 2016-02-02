@@ -10,6 +10,7 @@
  * processors.
  */
 
+#include <getopt.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -281,6 +282,9 @@ int check_file(int ntasks, char *filename) {
 	/** Used for command line processing. */
 	int c;
 
+	/** Return value. */
+	int ret;
+
 	/* Parse command line. */
 	while ((c = getopt(argc, argv, "v")) != -1)
 	    switch (c)
@@ -294,7 +298,6 @@ int check_file(int ntasks, char *filename) {
 
 #ifdef TIMING    
 	/* Initialize the GPTL timing library. */
-	int ret;
 	if ((ret = GPTLinitialize ()))
 	    return ret;
 #endif    
