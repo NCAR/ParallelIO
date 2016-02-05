@@ -22,6 +22,7 @@ module pio_nf
        pio_inq_varndims                                     ,   &
        pio_inq_vardimid                                     ,   &
        pio_inq_varnatts                                     ,   &
+       pio_inq_vardeflate                                   ,    &       
        pio_inquire_variable                                 , &
        pio_inquire_dimension                                , &
        pio_inq_dimname                                      , &
@@ -101,6 +102,12 @@ module pio_nf
           inq_varnatts_desc                                 , &
           inq_varnatts_vid                                  ,    &
           inq_varnatts_id
+  end interface
+  interface pio_inq_vardeflate
+     module procedure &
+          inq_vardeflate_desc                                 , &
+          inq_vardeflate_vid                                  , &
+          inq_vardeflate_id
   end interface
   interface pio_inquire_dimension
      module procedure &
@@ -1002,7 +1009,75 @@ contains
 
     ierr = PIOc_inq_varnatts(ncid                           ,varid-1,natts)
   end function inq_varnatts_id
-    
+
+!>
+!!  @defgroup PIO_inq_vardeflate PIO_inq_vardeflate
+!<
+!>
+!! @public 
+!! @ingroup PIO_inq_vardeflate
+!! @brief Gets metadata information for netcdf file.
+!! @details
+!! @param File @copydoc file_desc_t
+!! @param vardesc @copydoc var_desc_t
+!! @param type : The type of variable
+!! @retval ierr @copydoc error_return
+!<
+  integer function inq_vardeflate_desc(File, vardesc, shuffle, deflate, &
+       deflate_level) result(ierr)
+
+    type (File_desc_t), intent(in) :: File
+    type (Var_desc_t), intent(in) :: vardesc
+    integer, intent(out) :: shuffle
+    integer, intent(out) :: deflate
+    integer, intent(out) :: deflate_level
+
+    ierr = pio_inq_vardeflate(File%fh, vardesc%varid, shuffle, deflate, deflate_level)
+  end function inq_vardeflate_desc
+
+!>
+!! @public 
+!! @ingroup PIO_inq_vardeflate
+!! @brief Gets metadata information for netcdf file.
+!<
+  integer function inq_vardeflate_vid(File, varid, shuffle, deflate, deflate_level) result(ierr)
+
+    type (File_desc_t), intent(in) :: File
+    integer, intent(in) :: varid
+    integer, intent(out) :: shuffle
+    integer, intent(out) :: deflate
+    integer, intent(out) :: deflate_level
+
+    ierr = pio_inq_vardeflate(File%fh, varid, shuffle, deflate, deflate_level)
+  end function inq_vardeflate_vid
+!>
+!! @public 
+!! @ingroup PIO_inq_vardeflate
+!! @brief Gets metadata information for netcdf file.
+!<
+  integer function inq_vardeflate_id(ncid, varid, shuffle, deflate, &
+       deflate_level) result(ierr)
+    integer, intent(in) :: ncid
+    integer, intent(in) :: varid
+    integer, intent(out) :: shuffle
+    integer, intent(out) :: deflate
+    integer, intent(out) :: deflate_level
+
+    interface
+       integer(C_INT) function PIOc_inq_var_deflate(ncid, varid, shuffle, deflate, deflate_level) &
+            bind(C, name="PIOc_inq_var_deflate")
+         use iso_c_binding
+         integer(C_INT), value :: ncid
+         integer(C_INT), value :: varid
+         integer(C_INT) :: shuffle
+         integer(C_INT) :: deflate
+         integer(C_INT) :: deflate_level
+       end function PIOc_inq_var_deflate
+    end interface
+
+    ierr = PIOc_inq_var_deflate(ncid, varid-1, shuffle, deflate, deflate_level)
+  end function inq_vardeflate_id
+  
 !>
 !! @defgroup PIO_inq_varname
 !<

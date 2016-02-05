@@ -332,26 +332,23 @@ Contains
     end if
 
     ! Try to turn on compression for this variable.
-    print *,__FILE__,__LINE__, 'turning on deflate iotype = ', iotype, ' varid =', pio_var%varid
-    ret_val1 = PIO_def_var_deflate(pio_file, pio_var, shuffle, deflate, &
+    ret_val = PIO_def_var_deflate(pio_file, pio_var, shuffle, deflate, &
          deflate_level)
-    print *,'deflate ret_val = ', ret_val
+
     ! Should not have worked except for netCDF-4/HDF5 serial.
     if (iotype .eq. PIO_iotype_netcdf4c .and. ret_val .ne. PIO_NOERR) then
-       ! Error in PIO_def_var_deflate
-       print *, 'error 1'
        err_msg = "Could not turn on compression for variable foo2222"
        call PIO_closefile(pio_file)
        return
-    else if ((iotype .eq. PIO_iotype_pnetcdf .or. iotype .eq. PIO_iotype_netcdf) .and. ret_val .ne. -111) then
-       print *, 'error 2'
-       ! Error in PIO_def_var_deflate
+    else if (iotype .eq. PIO_iotype_pnetcdf .and. ret_val .eq. PIO_NOERR) then
        err_msg = "Did not get expected error when trying to turn deflate on for non-netcdf-4 file"
        call PIO_closefile(pio_file)
        return
-    else if (iotype .eq. PIO_iotype_netcdf4p .and. ret_val .ne. PIO_NOERR) then
-       print *, 'error 3'
-       ! Error in PIO_def_var_deflate
+    else if (iotype .eq. PIO_iotype_netcdf .and. ret_val .eq. PIO_NOERR) then
+       err_msg = "Did not get expected error when trying to turn deflate on for non-netcdf-4 file"
+       call PIO_closefile(pio_file)
+       return
+    else if (iotype .eq. PIO_iotype_netcdf4p .and. ret_val .eq. PIO_NOERR) then
        err_msg = "Did not get expected error when trying to turn deflate on for parallel netcdf-4 file"
        call PIO_closefile(pio_file)
        return
@@ -384,6 +381,28 @@ Contains
        return
     end if
 
+    ! Check the compression settings of the variables.
+    ! ret_val = PIO_inq_vardeflate(pio_file, pio_var, shuffle, deflate, deflate_level)
+
+    ! ! Should not have worked except for netCDF-4/HDF5 serial.
+    ! if (iotype .eq. PIO_iotype_netcdf4c .and. ret_val .ne. PIO_NOERR) then
+    !    err_msg = "Could not turn on compression for variable foo2222"
+    !    call PIO_closefile(pio_file)
+    !    return
+    ! else if (iotype .eq. PIO_iotype_pnetcdf .and. ret_val .eq. PIO_NOERR) then
+    !    err_msg = "Did not get expected error when trying to turn deflate on for non-netcdf-4 file"
+    !    call PIO_closefile(pio_file)
+    !    return
+    ! else if (iotype .eq. PIO_iotype_netcdf .and. ret_val .eq. PIO_NOERR) then
+    !    err_msg = "Did not get expected error when trying to turn deflate on for non-netcdf-4 file"
+    !    call PIO_closefile(pio_file)
+    !    return
+    ! else if (iotype .eq. PIO_iotype_netcdf4p .and. ret_val .ne. PIO_NOERR) then
+    !    err_msg = "Did not get expected error when trying to turn deflate on for parallel netcdf-4 file"
+    !    call PIO_closefile(pio_file)
+    !    return
+    ! end if
+
     ! Write foo2
     call PIO_write_darray(pio_file, pio_var, iodesc_nCells, data_to_write, ret_val)
     if (ret_val .ne. PIO_NOERR) then
@@ -396,8 +415,10 @@ Contains
     print *, 'closing file'
     call PIO_closefile(pio_file)
 
+    err_msg = "no_error"
     ! Free decomp
     call PIO_freedecomp(pio_iosystem, iodesc_nCells)
-
+    call mpi_barrier(MPI_COMM_WORLD,ret_val)
+    
   End Subroutine test_nc4
 end module ncdf_tests
