@@ -313,20 +313,26 @@ main(int argc, char **argv)
 		ERR(ret);
 
 	    /** Check that the inq_varname function works. */
-	    /* char varname[15]; */
-	    /* if (verbose) */
-	    /* 	printf("rank: %d Checking varname\n", my_rank); */
-	    /* ret = PIOc_inq_varname(ncid, 0, &varname); */
-	    /* printf("rank: %d ret: %d varname: %s\n", my_rank, ret, varname); */
+	    char varname[15];
+	    if (verbose)
+	    	printf("rank: %d Checking varname\n", my_rank);
+	    ret = PIOc_inq_varname(ncid, 0, &varname);
+	    printf("rank: %d ret: %d varname: %s\n", my_rank, ret, varname);
 	    
 	    /** Check that the inq_var_chunking function works. */
 	    if (verbose)
 		printf("rank: %d Checking chunksizes\n");
 	    if ((ret = PIOc_inq_var_chunking(ncid, 0, &storage, my_chunksize)))
 	    	ERR(ret);
+	    if (verbose)
+	    {
+		printf("rank: %d ret: %d storage: %d\n", my_rank, ret, storage);
+		for (d1 = 0; d1 < NDIM; d1++)
+		    printf("chunksize[%d]=%d\n", d1, my_chunksize[d1]);
+	    }
 	    
 	    /** For serial netCDF-4, only processor rank 0 gets the answers. */
-	    if (format[fmt] == PIO_IOTYPE_NETCDF4C && my_rank == 0 ||
+	    if (format[fmt] == PIO_IOTYPE_NETCDF4C ||
 		format[fmt] == PIO_IOTYPE_NETCDF4P)
 	    {
 		if (storage != NC_CHUNKED)
