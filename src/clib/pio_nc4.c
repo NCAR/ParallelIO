@@ -61,7 +61,7 @@ int PIOc_def_var_deflate(int ncid, int varid, int shuffle, int deflate,
 	     * error when attempting to turn on deflation with
 	     * parallel I.O. But this is not allowed by HDF5. So
 	     * return the correct error code. */
-	    return NC_EINVAL;
+	    ierr = NC_EINVAL;
 	    //ierr = nc_def_var_deflate(file->fh, varid, shuffle, deflate, deflate_level);
 	    break;
 	case PIO_IOTYPE_NETCDF4C:
@@ -70,12 +70,12 @@ int PIOc_def_var_deflate(int ncid, int varid, int shuffle, int deflate,
 	    break;
 #endif
 	case PIO_IOTYPE_NETCDF:
-	    return PIO_ENOTNC4;
+	    ierr = PIO_ENOTNC4;
 	    break;
 #endif
 #ifdef _PNETCDF
 	case PIO_IOTYPE_PNETCDF:
-	    return PIO_ENOTNC4;
+	    ierr = PIO_ENOTNC4;
 	    break;
 #endif
 	default:
