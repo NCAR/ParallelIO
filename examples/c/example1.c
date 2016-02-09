@@ -59,6 +59,7 @@
 /** Handle non-MPI errors by finalizing the MPI library and exiting
  * with an exit code. */
 #define ERR(e) do {				\
+	printf("FAILURE!\n");                   \
 	MPI_Finalize();				\
 	return e;				\
     } while (0) 
@@ -405,10 +406,9 @@ int check_file(int ntasks, char *filename) {
 	    ERR(ret);
 
 	/* Check the output file. */
-	if (!my_rank)
-	    for (int fmt = 0; fmt < NUM_NETCDF_FLAVORS; fmt++) 
-		if ((ret = check_file(ntasks, filename[fmt])))
-		    ERR(ret);
+	for (int fmt = 0; fmt < NUM_NETCDF_FLAVORS; fmt++) 
+	    if ((ret = check_file(ntasks, filename[fmt])))
+		ERR(ret);
 
 	/* Finalize the MPI library. */
 	MPI_Finalize();
