@@ -8,9 +8,7 @@ var searchData=
   ['pio_5fenddef',['PIO_enddef',['../group___p_i_o__enddef.html',1,'']]],
   ['pio_5ffinalize',['PIO_finalize',['../group___p_i_o__finalize.html',1,'']]],
   ['pio_5ffreedecomp',['PIO_freedecomp',['../group___p_i_o__freedecomp.html',1,'']]],
-  ['pio_5fget_5fatt',['PIO_get_att',['../group___p_i_o__get__att.html',1,'']]],
   ['pio_5fget_5flocal_5farray_5fsize',['PIO_get_local_array_size',['../group___p_i_o__get__local__array__size.html',1,'']]],
-  ['pio_5fget_5fvar',['PIO_get_var',['../group___p_i_o__get__var.html',1,'']]],
   ['pio_5fgetnumiotasks',['PIO_getnumiotasks',['../group___p_i_o__getnumiotasks.html',1,'']]],
   ['pio_5finit',['PIO_init',['../group___p_i_o__init.html',1,'']]],
   ['pio_5finitdecomp',['PIO_initdecomp',['../group___p_i_o__initdecomp.html',1,'']]],
@@ -24,6 +22,7 @@ var searchData=
   ['pio_5finq_5fndims',['PIO_inq_ndims',['../group___p_i_o__inq__ndims.html',1,'']]],
   ['pio_5finq_5fnvars',['PIO_inq_nvars',['../group___p_i_o__inq__nvars.html',1,'']]],
   ['pio_5finq_5funlimdim',['PIO_inq_unlimdim',['../group___p_i_o__inq__unlimdim.html',1,'']]],
+  ['pio_5finq_5fvar_5fdeflate',['PIO_inq_var_deflate',['../group___p_i_o__inq__var__deflate.html',1,'']]],
   ['pio_5finq_5fvardimid',['PIO_inq_vardimid',['../group___p_i_o__inq__vardimid.html',1,'']]],
   ['pio_5finq_5fvarid',['PIO_inq_varid',['../group___p_i_o__inq__varid.html',1,'']]],
   ['pio_5finq_5fvarname',['PIO_inq_varname',['../group___p_i_o__inq__varname.html',1,'']]],
@@ -36,9 +35,6 @@ var searchData=
   ['pio_5fiotype',['PIO_iotype',['../group___p_i_o__iotype.html',1,'']]],
   ['pio_5fkinds',['PIO_kinds',['../group___p_i_o__kinds.html',1,'']]],
   ['pio_5fopenfile',['PIO_openfile',['../group___p_i_o__openfile.html',1,'']]],
-  ['pio_5fput_5fatt',['PIO_put_att',['../group___p_i_o__put__att.html',1,'']]],
-  ['pio_5fput_5fvar',['PIO_put_var',['../group___p_i_o__put__var.html',1,'']]],
-  ['pio_5fread_5fdarray',['PIO_read_darray',['../group___p_i_o__read__darray.html',1,'']]],
   ['pio_5frearr_5fmethod',['PIO_rearr_method',['../group___p_i_o__rearr__method.html',1,'']]],
   ['pio_5fredef',['PIO_redef',['../group___p_i_o__redef.html',1,'']]],
   ['pio_5fset_5fblocksize',['PIO_set_blocksize',['../group___p_i_o__set__blocksize.html',1,'']]],
@@ -46,6 +42,5 @@ var searchData=
   ['pio_5fsetdebuglevel',['PIO_setdebuglevel',['../group___p_i_o__setdebuglevel.html',1,'']]],
   ['pio_5fseterrorhandling',['PIO_seterrorhandling',['../group___p_i_o__seterrorhandling.html',1,'']]],
   ['pio_5fsetframe',['PIO_setframe',['../group___p_i_o__setframe.html',1,'']]],
-  ['pio_5fsyncfile',['PIO_syncfile',['../group___p_i_o__syncfile.html',1,'']]],
-  ['pio_5fwrite_5fdarray',['PIO_write_darray',['../group___p_i_o__write__darray.html',1,'']]]
+  ['pio_5fsyncfile',['PIO_syncfile',['../group___p_i_o__syncfile.html',1,'']]]
 ];

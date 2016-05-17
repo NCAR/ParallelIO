@@ -1,8 +1,10 @@
 var searchData=
 [
   ['idx_5fto_5fdim_5flist',['idx_to_dim_list',['../pio__rearrange_8c.html#a76ed5622a97dad46b56a1b1bae458ba3',1,'pio_rearrange.c']]],
+  ['init',['init',['../structpioexample_1_1pioexampleclass.html#a839b15f3abf340e2b046964bfe297808',1,'pioexample::pioexampleclass::init()'],['../classpioexample.html#a78080ad7096ad345563544273bb61b85',1,'pioexample::init()']]],
   ['init_5fintercom',['init_intercom',['../group___p_i_o__init.html#ga2a34f801ef28767ad58b04cf99ebb207',1,'piolib_mod']]],
   ['init_5fintracom',['init_intracom',['../group___p_i_o__init.html#ga2556bd8e85b99cc3ec87d99d8979c42f',1,'piolib_mod']]],
+  ['init_5flogging',['init_logging',['../example2_8c.html#a34cfad2213dacda3f966cb58ca85ec62',1,'example2.c']]],
   ['initdecomp_5f1dof_5fbin_5fi8',['initdecomp_1dof_bin_i8',['../group___p_i_o__initdecomp.html#ga043f00b0a111a252e14b4120e0dcbbd4',1,'piolib_mod']]],
   ['initdecomp_5f1dof_5fnf_5fi4',['initdecomp_1dof_nf_i4',['../group___p_i_o__initdecomp.html#ga20305909e2f9de23c3fbb5ce6a99ca9c',1,'piolib_mod']]],
   ['initdecomp_5f2dof_5fbin_5fi4',['initdecomp_2dof_bin_i4',['../group___p_i_o__initdecomp.html#ga39562b2b358b3e305ce405d19d2c4db4',1,'piolib_mod']]],
@@ -32,6 +34,9 @@ var searchData=
   ['inq_5fnvars_5fid',['inq_nvars_id',['../group___p_i_o__inq__nvars.html#ga64f78f2105aa0c8114a9995c114b738d',1,'pio_nf']]],
   ['inq_5funlimdim_5fdesc',['inq_unlimdim_desc',['../classpio__nf.html#ac9b95e29502dececfa46daf02a451817',1,'pio_nf']]],
   ['inq_5funlimdim_5fid',['inq_unlimdim_id',['../classpio__nf.html#a4e62e2c5174c482a51467a542f22b6ca',1,'pio_nf']]],
+  ['inq_5fvar_5fdeflate_5fdesc',['inq_var_deflate_desc',['../group___p_i_o__inq__var__deflate.html#ga9ef34700d0b2fb30d1443c5424d997d9',1,'pio_nf']]],
+  ['inq_5fvar_5fdeflate_5fid',['inq_var_deflate_id',['../group___p_i_o__inq__var__deflate.html#gab68fda955e3a5ac6ef0367749483c7f1',1,'pio_nf']]],
+  ['inq_5fvar_5fdeflate_5fvid',['inq_var_deflate_vid',['../group___p_i_o__inq__var__deflate.html#gacaf3f950665cd30b440c162969bce37d',1,'pio_nf']]],
   ['inq_5fvardimid_5fdesc',['inq_vardimid_desc',['../group___p_i_o__inq__vardimid.html#gae47f2e64960778bf50c4707b5748e5b6',1,'pio_nf']]],
   ['inq_5fvardimid_5fid',['inq_vardimid_id',['../group___p_i_o__inq__vardimid.html#ga6403626a7aff422ec4302cf292bd81ea',1,'pio_nf']]],
   ['inq_5fvardimid_5fvid',['inq_vardimid_vid',['../group___p_i_o__inq__vardimid.html#ga0f08c75e267929e30a2abf75b3767940',1,'pio_nf']]],

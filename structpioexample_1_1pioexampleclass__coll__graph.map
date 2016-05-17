@@ -1,0 +1,8 @@
+<map id="pioexample::pioexampleclass" name="pioexample::pioexampleclass">
+<area shape="rect" id="node2" href="$structio__desc__t.html" title="io descriptor structure " alt="" coords="15,109,93,136"/>
+<area shape="rect" id="node3" href="$structio__region.html" title="io region structure " alt="" coords="5,5,80,32"/>
+<area shape="rect" id="node4" href="$structfile__desc__t.html" title="io system descriptor structure " alt="" coords="271,109,356,136"/>
+<area shape="rect" id="node5" href="$structwmulti__buffer.html" title="multi buffer " alt="" coords="269,5,368,32"/>
+<area shape="rect" id="node6" href="$structvar__desc__t.html" title="Variable description structure. " alt="" coords="158,5,244,32"/>
+<area shape="rect" id="node7" href="$structiosystem__desc__t.html" title="io system descriptor structure " alt="" coords="446,5,567,32"/>
+</map>

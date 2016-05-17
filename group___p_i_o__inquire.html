@@ -24,7 +24,7 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">PIO
-   &#160;<span id="projectnumber">2.0.0</span>
+   &#160;<span id="projectnumber">..</span>
    </div>
   </td>
  </tr>
@@ -87,9 +87,8 @@ Functions/Subroutines</h2></td></tr>
 <tr class="memitem:gaaefd5a9aaf2b61b0b5e2270868d0c076"><td class="memItemLeft" align="right" valign="top">integer function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__inquire.html#gaaefd5a9aaf2b61b0b5e2270868d0c076">pio_nf::inquire_desc</a> (File, nDimensions, nVariables, nAttributes, unlimitedDimID)</td></tr>
 <tr class="memdesc:gaaefd5a9aaf2b61b0b5e2270868d0c076"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets metadata information for netcdf file.  <a href="#gaaefd5a9aaf2b61b0b5e2270868d0c076">More...</a><br/></td></tr>
 <tr class="separator:gaaefd5a9aaf2b61b0b5e2270868d0c076"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga195f13262360e2f389b612508b4e2744"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ga195f13262360e2f389b612508b4e2744"></a>
-integer function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__inquire.html#ga195f13262360e2f389b612508b4e2744">pio_nf::inquire_id</a> (ncid, nDimensions, nVariables, nAttributes, unlimitedDimID)</td></tr>
-<tr class="memdesc:ga195f13262360e2f389b612508b4e2744"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets metadata information for netcdf file. <br/></td></tr>
+<tr class="memitem:ga195f13262360e2f389b612508b4e2744"><td class="memItemLeft" align="right" valign="top">integer function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__inquire.html#ga195f13262360e2f389b612508b4e2744">pio_nf::inquire_id</a> (ncid, nDimensions, nVariables, nAttributes, unlimitedDimID)</td></tr>
+<tr class="memdesc:ga195f13262360e2f389b612508b4e2744"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets metadata information for netcdf file.  <a href="#ga195f13262360e2f389b612508b4e2744">More...</a><br/></td></tr>
 <tr class="separator:ga195f13262360e2f389b612508b4e2744"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
@@ -149,17 +148,63 @@ integer function&#160;</td><td class="memItemRight" valign="bottom"><a class="el
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> )</td></tr>
+    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
   </table>
   </dd>
 </dl>
 
 </div>
 </div>
+<a class="anchor" id="ga195f13262360e2f389b612508b4e2744"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">integer function pio_nf::inquire_id </td>
+          <td>(</td>
+          <td class="paramtype">integer, intent(in)&#160;</td>
+          <td class="paramname"><em>ncid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer, intent(out), optional&#160;</td>
+          <td class="paramname"><em>nDimensions</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer, intent(out), optional&#160;</td>
+          <td class="paramname"><em>nVariables</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer, intent(out), optional&#160;</td>
+          <td class="paramname"><em>nAttributes</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer, intent(out), optional&#160;</td>
+          <td class="paramname"><em>unlimitedDimID</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Gets metadata information for netcdf file. </p>
+
+</div>
+</div>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Nov 17 2015 13:18:41 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue May 17 2016 14:25:07 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

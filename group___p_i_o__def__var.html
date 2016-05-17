@@ -24,7 +24,7 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">PIO
-   &#160;<span id="projectnumber">2.0.0</span>
+   &#160;<span id="projectnumber">..</span>
    </div>
   </td>
  </tr>
@@ -84,6 +84,27 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions/Subroutines</h2></td></tr>
+<tr class="memitem:ga914f3306b223e1631a8fc63cd603acea"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__def__var.html#ga914f3306b223e1631a8fc63cd603acea">PIOc_def_var_deflate</a> (int ncid, int varid, int shuffle, int deflate, int deflate_level)</td></tr>
+<tr class="memdesc:ga914f3306b223e1631a8fc63cd603acea"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set deflate (zlib) settings for a variable.  <a href="#ga914f3306b223e1631a8fc63cd603acea">More...</a><br/></td></tr>
+<tr class="separator:ga914f3306b223e1631a8fc63cd603acea"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga1accdef205cd597d5c598bd6733db1ce"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__def__var.html#ga1accdef205cd597d5c598bd6733db1ce">PIOc_def_var_chunking</a> (int ncid, int varid, int storage, const PIO_Offset *chunksizesp)</td></tr>
+<tr class="memdesc:ga1accdef205cd597d5c598bd6733db1ce"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set chunksizes for a variable.  <a href="#ga1accdef205cd597d5c598bd6733db1ce">More...</a><br/></td></tr>
+<tr class="separator:ga1accdef205cd597d5c598bd6733db1ce"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gae6fd1c53abec86c51d302ffa368b498d"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__def__var.html#gae6fd1c53abec86c51d302ffa368b498d">PIOc_def_var_fill</a> (int ncid, int varid, int no_fill, const void *fill_value)</td></tr>
+<tr class="memdesc:gae6fd1c53abec86c51d302ffa368b498d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set chunksizes for a variable.  <a href="#gae6fd1c53abec86c51d302ffa368b498d">More...</a><br/></td></tr>
+<tr class="separator:gae6fd1c53abec86c51d302ffa368b498d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga96ad8b671c81a209e253fc56dbc022e3"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__def__var.html#ga96ad8b671c81a209e253fc56dbc022e3">PIOc_def_var_endian</a> (int ncid, int varid, int endian)</td></tr>
+<tr class="memdesc:ga96ad8b671c81a209e253fc56dbc022e3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set chunksizes for a variable.  <a href="#ga96ad8b671c81a209e253fc56dbc022e3">More...</a><br/></td></tr>
+<tr class="separator:ga96ad8b671c81a209e253fc56dbc022e3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga6a7595c5fa66ef4c35d26910a1195b52"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__def__var.html#ga6a7595c5fa66ef4c35d26910a1195b52">PIOc_set_chunk_cache</a> (int iosysid, int iotype, PIO_Offset size, PIO_Offset nelems, float preemption)</td></tr>
+<tr class="memdesc:ga6a7595c5fa66ef4c35d26910a1195b52"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set chunk cache netCDF files to be opened/created.  <a href="#ga6a7595c5fa66ef4c35d26910a1195b52">More...</a><br/></td></tr>
+<tr class="separator:ga6a7595c5fa66ef4c35d26910a1195b52"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga21d9de130e3c2be14bf21b3bc4063999"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__def__var.html#ga21d9de130e3c2be14bf21b3bc4063999">PIOc_get_chunk_cache</a> (int iosysid, int iotype, PIO_Offset *sizep, PIO_Offset *nelemsp, float *preemptionp)</td></tr>
+<tr class="memdesc:ga21d9de130e3c2be14bf21b3bc4063999"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get current file chunk cache settings from HDF5.  <a href="#ga21d9de130e3c2be14bf21b3bc4063999">More...</a><br/></td></tr>
+<tr class="separator:ga21d9de130e3c2be14bf21b3bc4063999"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gafe68b976cb9feaefb3c06a4656f7152a"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__def__var.html#gafe68b976cb9feaefb3c06a4656f7152a">PIOc_set_var_chunk_cache</a> (int ncid, int varid, PIO_Offset size, PIO_Offset nelems, float preemption)</td></tr>
+<tr class="memdesc:gafe68b976cb9feaefb3c06a4656f7152a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set chunksizes for a variable.  <a href="#gafe68b976cb9feaefb3c06a4656f7152a">More...</a><br/></td></tr>
+<tr class="separator:gafe68b976cb9feaefb3c06a4656f7152a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga5545746fd00003f354f9c209866bc65b"><td class="memItemLeft" align="right" valign="top">integer function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__def__var.html#ga5545746fd00003f354f9c209866bc65b">pio_nf::def_var_0d_desc</a> (File, name, type, vardesc)</td></tr>
 <tr class="memdesc:ga5545746fd00003f354f9c209866bc65b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Defines a netcdf variable.  <a href="#ga5545746fd00003f354f9c209866bc65b">More...</a><br/></td></tr>
 <tr class="separator:ga5545746fd00003f354f9c209866bc65b"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -149,7 +170,7 @@ integer function&#160;</td><td class="memItemRight" valign="bottom"><a class="el
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> )</td></tr>
+    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
   </table>
   </dd>
 </dl>
@@ -211,17 +232,407 @@ integer function&#160;</td><td class="memItemRight" valign="bottom"><a class="el
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> )</td></tr>
+    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
   </table>
   </dd>
 </dl>
 
 </div>
 </div>
+<a class="anchor" id="ga1accdef205cd597d5c598bd6733db1ce"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int PIOc_def_var_chunking </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>ncid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>varid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>storage</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const PIO_Offset *&#160;</td>
+          <td class="paramname"><em>chunksizesp</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Set chunksizes for a variable. </p>
+<p>This function only applies to netCDF-4 files. When used with netCDF classic files, the error PIO_ENOTNC4 will be returned.</p>
+<p>Chunksizes have important performance repercussions. NetCDF attempts to choose sensible chunk sizes by default, but for best performance check chunking against access patterns.</p>
+<p>See the <a href="http://www.unidata.ucar.edu/software/netcdf/docs/group__variables.html">netCDF variable documentation</a> for details about the operation of this function.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">ncid</td><td>the ncid of the open file. </td></tr>
+    <tr><td class="paramname">varid</td><td>the ID of the variable to set chunksizes for. </td></tr>
+    <tr><td class="paramname">storage</td><td>NC_CONTIGUOUS or NC_CHUNKED. </td></tr>
+    <tr><td class="paramname">chunksizep</td><td>an array of chunksizes. Must have a chunksize for every variable dimension.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>PIO_NOERR for success, otherwise an error code. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="ga914f3306b223e1631a8fc63cd603acea"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int PIOc_def_var_deflate </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>ncid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>varid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>shuffle</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>deflate</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>deflate_level</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Set deflate (zlib) settings for a variable. </p>
+<p>This function only applies to netCDF-4 files. When used with netCDF classic files, the error PIO_ENOTNC4 will be returned.</p>
+<p>See the <a href="http://www.unidata.ucar.edu/software/netcdf/docs/group__variables.html">netCDF variable documentation</a> for details about the operation of this function.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">ncid</td><td>the ncid of the open file. </td></tr>
+    <tr><td class="paramname">varid</td><td>the ID of the variable. </td></tr>
+    <tr><td class="paramname">shuffle</td><td>non-zero to turn on shuffle filter (can be good for integer data). </td></tr>
+    <tr><td class="paramname">deflate</td><td>non-zero to turn on zlib compression for this variable. </td></tr>
+    <tr><td class="paramname">deflate_level</td><td>1 to 9, with 1 being faster and 9 being more compressed.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>PIO_NOERR for success, otherwise an error code. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="ga96ad8b671c81a209e253fc56dbc022e3"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int PIOc_def_var_endian </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>ncid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>varid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>endian</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Set chunksizes for a variable. </p>
+<p>This function only applies to netCDF-4 files. When used with netCDF classic files, the error PIO_ENOTNC4 will be returned.</p>
+<p>See the <a href="http://www.unidata.ucar.edu/software/netcdf/docs/group__variables.html">netCDF variable documentation</a> for details about the operation of this function.</p>
+<p>Chunksizes have important performance repercussions. NetCDF attempts to choose sensible chunk sizes by default, but for best performance check chunking against access patterns.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">ncid</td><td>the ncid of the open file. </td></tr>
+    <tr><td class="paramname">varid</td><td>the ID of the variable to set chunksizes for. </td></tr>
+    <tr><td class="paramname">storage</td><td>NC_CONTIGUOUS or NC_CHUNKED. </td></tr>
+    <tr><td class="paramname">chunksizep</td><td>an array of chunksizes. Must have a chunksize for every variable dimension.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>PIO_NOERR for success, otherwise an error code. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="gae6fd1c53abec86c51d302ffa368b498d"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int PIOc_def_var_fill </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>ncid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>varid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>no_fill</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const void *&#160;</td>
+          <td class="paramname"><em>fill_value</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Set chunksizes for a variable. </p>
+<p>This function only applies to netCDF-4 files. When used with netCDF classic files, the error PIO_ENOTNC4 will be returned.</p>
+<p>See the <a href="http://www.unidata.ucar.edu/software/netcdf/docs/group__variables.html">netCDF variable documentation</a> for details about the operation of this function.</p>
+<p>Chunksizes have important performance repercussions. NetCDF attempts to choose sensible chunk sizes by default, but for best performance check chunking against access patterns.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">ncid</td><td>the ncid of the open file. </td></tr>
+    <tr><td class="paramname">varid</td><td>the ID of the variable to set chunksizes for. </td></tr>
+    <tr><td class="paramname">storage</td><td>NC_CONTIGUOUS or NC_CHUNKED. </td></tr>
+    <tr><td class="paramname">chunksizep</td><td>an array of chunksizes. Must have a chunksize for every variable dimension.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>PIO_NOERR for success, otherwise an error code. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="ga21d9de130e3c2be14bf21b3bc4063999"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int PIOc_get_chunk_cache </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>iosysid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>iotype</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">PIO_Offset *&#160;</td>
+          <td class="paramname"><em>sizep</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">PIO_Offset *&#160;</td>
+          <td class="paramname"><em>nelemsp</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float *&#160;</td>
+          <td class="paramname"><em>preemptionp</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get current file chunk cache settings from HDF5. </p>
+<p>This function has no effect on netCDF classic files. Calling this function with iotype of PIO_IOTYPE_PNETCDF or PIO_IOTYPE_NETCDF returns an error.</p>
+<p>The file chunk cache for HDF5 can be set, and will apply for any files opened or created until the program ends, or the settings are changed again. The cache settings apply only to the open file. They do not persist with the file, and must be set each time the file is opened, before it is opened, if they are to have effect.</p>
+<p>See the <a href="http://www.unidata.ucar.edu/software/netcdf/docs/group__variables.html">netCDF variable documentation</a> for details about the operation of this function.</p>
+<p>Chunksizes have important performance repercussions. NetCDF attempts to choose sensible chunk sizes by default, but for best performance check chunking against access patterns.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">iotype</td><td>the iotype of files to be created or opened. </td></tr>
+    <tr><td class="paramname">sizep</td><td>gets the size of file cache. </td></tr>
+    <tr><td class="paramname">nelemsp</td><td>gets the number of elements in file cache. </td></tr>
+    <tr><td class="paramname">preemptionp</td><td>gets the preemption setting for file cache.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>PIO_NOERR for success, otherwise an error code. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="ga6a7595c5fa66ef4c35d26910a1195b52"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int PIOc_set_chunk_cache </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>iosysid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>iotype</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">PIO_Offset&#160;</td>
+          <td class="paramname"><em>size</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">PIO_Offset&#160;</td>
+          <td class="paramname"><em>nelems</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>preemption</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Set chunk cache netCDF files to be opened/created. </p>
+<p>This function only applies to netCDF-4 files. When used with netCDF classic files, the error PIO_ENOTNC4 will be returned.</p>
+<p>The file chunk cache for HDF5 can be set, and will apply for any files opened or created until the program ends, or the settings are changed again. The cache settings apply only to the open file. They do not persist with the file, and must be set each time the file is opened, before it is opened, if they are to have effect.</p>
+<p>See the <a href="http://www.unidata.ucar.edu/software/netcdf/docs/group__variables.html">netCDF variable documentation</a> for details about the operation of this function.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">iotype</td><td>the iotype of files to be created or opened. </td></tr>
+    <tr><td class="paramname">size</td><td>size of file cache. </td></tr>
+    <tr><td class="paramname">nelems</td><td>number of elements in file cache. </td></tr>
+    <tr><td class="paramname">preemption</td><td>preemption setting for file cache.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>PIO_NOERR for success, otherwise an error code. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="gafe68b976cb9feaefb3c06a4656f7152a"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int PIOc_set_var_chunk_cache </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>ncid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>varid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">PIO_Offset&#160;</td>
+          <td class="paramname"><em>size</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">PIO_Offset&#160;</td>
+          <td class="paramname"><em>nelems</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>preemption</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Set chunksizes for a variable. </p>
+<p>This function only applies to netCDF-4 files. When used with netCDF classic files, the error PIO_ENOTNC4 will be returned.</p>
+<p>See the <a href="http://www.unidata.ucar.edu/software/netcdf/docs/group__variables.html">netCDF variable documentation</a> for details about the operation of this function.</p>
+<p>Chunksizes have important performance repercussions. NetCDF attempts to choose sensible chunk sizes by default, but for best performance check chunking against access patterns.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">ncid</td><td>the ncid of the open file. </td></tr>
+    <tr><td class="paramname">varid</td><td>the ID of the variable to set chunksizes for. </td></tr>
+    <tr><td class="paramname">storage</td><td>NC_CONTIGUOUS or NC_CHUNKED. </td></tr>
+    <tr><td class="paramname">chunksizep</td><td>an array of chunksizes. Must have a chunksize for every variable dimension.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>PIO_NOERR for success, otherwise an error code. </dd></dl>
+
+</div>
+</div>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Nov 17 2015 13:18:41 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue May 17 2016 14:25:07 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

@@ -24,7 +24,7 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">PIO
-   &#160;<span id="projectnumber">2.0.0</span>
+   &#160;<span id="projectnumber">..</span>
    </div>
   </td>
  </tr>
@@ -86,7 +86,21 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="title">Examples </div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p>Examples of the usage of PIO</p>
+<div class="textblock"><h2>Examples Included with PIO Distribution</h2>
+<p>The PIO library examples can be found under the examples subdirectory. They are built with the make test or make check build target.</p>
+<h3>C Examples</h3>
+<p>The C examples are in the examples/c subdirectory.</p>
+<ul>
+<li><a class="el" href="example_pio_8c.html" title="A simple C example for the ParallelIO Library. ">examplePio.c</a> A simple example showing a write, then read, of a 1D variable.</li>
+<li><a class="el" href="example1_8c.html" title="A simple C example for the ParallelIO Library. ">example1.c</a> Another simple example showing a write, then read, of a 1D variable. This produces the same output as <a class="el" href="example_pio_8c.html" title="A simple C example for the ParallelIO Library. ">examplePio.c</a>.</li>
+<li><a class="el" href="example2_8c.html" title="A simple C example for the ParallelIO Library. ">example2.c</a> This example writes a 3D floating point variable, with an unlimited dimension. The data are written in slices along the unlimited dimension. This example also incorporates (if installed) the MPE profiling system to generate graphical output.</li>
+</ul>
+<h3>Fortran Examples</h3>
+<p>The Fortran examples are in the examples/f03 subdirectory.</p>
+<ul>
+<li><a class="el" href="example_pio_8f90.html" title="A simple Fortran example for the ParallelIO Library. ">examplePio.f90</a> A simple example showing a write, then read, of a 1D variable.</li>
+</ul>
+<h3>Other Examples</h3>
 <p>PIO has been implemented in several geophysical component models, including the Community Atmosphere Model (CAM), the Community Land Model (CLM), the Parallel Ocean Program (POP), the Community Ice CodE (CICE), and coupler for used by CCSM4.0 (CPL7). We also provide several simpler example code as well as a test code that is suitable for regression testing and benchmarking.</p>
 <ul>
 <li><a class="el" href="_c_a_mexample.html">Community Atmosphere Model (CAM)</a></li>
@@ -95,7 +109,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Nov 17 2015 13:18:41 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue May 17 2016 14:25:07 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

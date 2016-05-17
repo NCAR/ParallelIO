@@ -24,7 +24,7 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">PIO
-   &#160;<span id="projectnumber">2.0.0</span>
+   &#160;<span id="projectnumber">..</span>
    </div>
   </td>
  </tr>
@@ -87,13 +87,11 @@ Functions/Subroutines</h2></td></tr>
 <tr class="memitem:ga4f15c4b59ee53493543dc8e8d22419cc"><td class="memItemLeft" align="right" valign="top">integer function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__inq__vartype.html#ga4f15c4b59ee53493543dc8e8d22419cc">pio_nf::inq_vartype_desc</a> (File, vardesc, type)</td></tr>
 <tr class="memdesc:ga4f15c4b59ee53493543dc8e8d22419cc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets metadata information for netcdf file.  <a href="#ga4f15c4b59ee53493543dc8e8d22419cc">More...</a><br/></td></tr>
 <tr class="separator:ga4f15c4b59ee53493543dc8e8d22419cc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga5fe39a80cbf008092aa3de0c607b8989"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ga5fe39a80cbf008092aa3de0c607b8989"></a>
-integer function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__inq__vartype.html#ga5fe39a80cbf008092aa3de0c607b8989">pio_nf::inq_vartype_vid</a> (File, varid, type)</td></tr>
-<tr class="memdesc:ga5fe39a80cbf008092aa3de0c607b8989"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets metadata information for netcdf file. <br/></td></tr>
+<tr class="memitem:ga5fe39a80cbf008092aa3de0c607b8989"><td class="memItemLeft" align="right" valign="top">integer function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__inq__vartype.html#ga5fe39a80cbf008092aa3de0c607b8989">pio_nf::inq_vartype_vid</a> (File, varid, type)</td></tr>
+<tr class="memdesc:ga5fe39a80cbf008092aa3de0c607b8989"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets metadata information for netcdf file.  <a href="#ga5fe39a80cbf008092aa3de0c607b8989">More...</a><br/></td></tr>
 <tr class="separator:ga5fe39a80cbf008092aa3de0c607b8989"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga2e31ee3f011c4de5de082add7c593c90"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ga2e31ee3f011c4de5de082add7c593c90"></a>
-integer function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__inq__vartype.html#ga2e31ee3f011c4de5de082add7c593c90">pio_nf::inq_vartype_id</a> (ncid, varid, type)</td></tr>
-<tr class="memdesc:ga2e31ee3f011c4de5de082add7c593c90"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets metadata information for netcdf file. <br/></td></tr>
+<tr class="memitem:ga2e31ee3f011c4de5de082add7c593c90"><td class="memItemLeft" align="right" valign="top">integer function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__inq__vartype.html#ga2e31ee3f011c4de5de082add7c593c90">pio_nf::inq_vartype_id</a> (ncid, varid, type)</td></tr>
+<tr class="memdesc:ga2e31ee3f011c4de5de082add7c593c90"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets metadata information for netcdf file.  <a href="#ga2e31ee3f011c4de5de082add7c593c90">More...</a><br/></td></tr>
 <tr class="separator:ga2e31ee3f011c4de5de082add7c593c90"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
@@ -139,17 +137,85 @@ integer function&#160;</td><td class="memItemRight" valign="bottom"><a class="el
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> )</td></tr>
+    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
   </table>
   </dd>
 </dl>
 
 </div>
 </div>
+<a class="anchor" id="ga2e31ee3f011c4de5de082add7c593c90"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">integer function pio_nf::inq_vartype_id </td>
+          <td>(</td>
+          <td class="paramtype">integer, intent(in)&#160;</td>
+          <td class="paramname"><em>ncid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer, intent(in)&#160;</td>
+          <td class="paramname"><em>varid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer, intent(out)&#160;</td>
+          <td class="paramname"><em>type</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Gets metadata information for netcdf file. </p>
+
+</div>
+</div>
+<a class="anchor" id="ga5fe39a80cbf008092aa3de0c607b8989"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">integer function pio_nf::inq_vartype_vid </td>
+          <td>(</td>
+          <td class="paramtype">type (<a class="el" href="structfile__desc__t.html">file_desc_t</a>), intent(in)&#160;</td>
+          <td class="paramname"><em>File</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer, intent(in)&#160;</td>
+          <td class="paramname"><em>varid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer, intent(out)&#160;</td>
+          <td class="paramname"><em>type</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Gets metadata information for netcdf file. </p>
+
+</div>
+</div>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Nov 17 2015 13:18:41 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue May 17 2016 14:25:07 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

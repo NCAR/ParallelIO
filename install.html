@@ -24,7 +24,7 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">PIO
-   &#160;<span id="projectnumber">2.0.0</span>
+   &#160;<span id="projectnumber">..</span>
    </div>
   </td>
  </tr>
@@ -88,7 +88,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="contents">
 <div class="textblock"><p>The PIO code is currently stored on github at <a href="https://github.com/PARALLELIO/ParallelIO">https://github.com/PARALLELIO/ParallelIO</a>. For questions about downloading or developing this code, consult the <a href="https://github.com/CESM-Development/cime/wiki/CIME-Git-Workflow">CIME Git Wiki</a> or email <a href="#" onclick="location.href='mai'+'lto:'+'jed'+'wa'+'rds'+'@u'+'car'+'.e'+'du'; return false;">jedwa<span style="display: none;">.nosp@m.</span>rds@<span style="display: none;">.nosp@m.</span>ucar.<span style="display: none;">.nosp@m.</span>edu</a>.</p>
 <h3>Dependencies</h3>
-<p>PIO can use NetCDF (version 4.3.3+) and/or PnetCDF (version 1.6.0+) for I/O. Ideally, the NetCDF version should be built with MPI, which requires that it be linked with an MPI-enabled version of HDF5. Optionally, NetCDF can be built with DAP support, which introduces a dependency on CURL. Additionally, HDF5, itself, introduces dependencies on LIBZ and (optionally) SZIP.</p>
+<p>PIO can use NetCDF (version 4.3.3+) and/or PnetCDF (version 1.6.1+) for I/O. Ideally, the NetCDF version should be built with MPI, which requires that it be linked with an MPI-enabled version of HDF5. Optionally, NetCDF can be built with DAP support, which introduces a dependency on CURL. Additionally, HDF5, itself, introduces dependencies on LIBZ and (optionally) SZIP.</p>
 <h3>Configuring with CMake</h3>
 <p>To configure the build, PIO requires CMake version 2.8.12+. The typical configuration with CMake can be done as follows:</p>
 <pre class="fragment">&gt; CC=mpicc FC=mpif90 cmake [-DOPTION1=value1 -DOPTION2=value2 ...] /path/to/pio/source
@@ -124,11 +124,15 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <h3>Installing</h3>
 <p>Once you have built the PIO libraries, you may install them in the location specified by the <code>CMAKE_INSTALL_PREFIX</code>. To do this, simply type:</p>
 <pre class="fragment">&gt; make install
-</pre><p>If the internal GPTL libraries were built (because GPTL could not be found and the <code>PIO_ENABLE_TIMING</code> variable is set to <code>ON</code>), then these libraries will be installed with PIO. </p>
+</pre><p>If the internal GPTL libraries were built (because GPTL could not be found and the <code>PIO_ENABLE_TIMING</code> variable is set to <code>ON</code>), then these libraries will be installed with PIO.</p>
+<h3>Examples</h3>
+<p>From within the build directory, build the PIO examples with:</p>
+<pre class="fragment">&gt; make examples
+</pre><p>This will build the C and Fortran examples in under the examples subdirectory. </p>
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Nov 17 2015 13:18:41 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue May 17 2016 14:25:07 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

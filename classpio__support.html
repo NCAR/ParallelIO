@@ -24,7 +24,7 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">PIO
-   &#160;<span id="projectnumber">2.0.0</span>
+   &#160;<span id="projectnumber">..</span>
    </div>
   </td>
  </tr>
@@ -93,10 +93,9 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a13246846298e2bebaa0421062ac444c7"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a13246846298e2bebaa0421062ac444c7"></a>
-subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpio__support.html#a13246846298e2bebaa0421062ac444c7">replace_c_null</a> (istr)</td></tr>
-<tr class="memdesc:a13246846298e2bebaa0421062ac444c7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Remove null termination (C-style) from strings for Fortran. <br/></td></tr>
-<tr class="separator:a13246846298e2bebaa0421062ac444c7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abcbf3a9d77e36435f9110d1efe8fb19a"><td class="memItemLeft" align="right" valign="top">subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpio__support.html#abcbf3a9d77e36435f9110d1efe8fb19a">replace_c_null</a> (istr, ilen)</td></tr>
+<tr class="memdesc:abcbf3a9d77e36435f9110d1efe8fb19a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Remove null termination (C-style) from strings for Fortran.  <a href="#abcbf3a9d77e36435f9110d1efe8fb19a">More...</a><br/></td></tr>
+<tr class="separator:abcbf3a9d77e36435f9110d1efe8fb19a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a13fac82014192fcf782a95c3be4e9a66"><td class="memItemLeft" align="right" valign="top">subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpio__support.html#a13fac82014192fcf782a95c3be4e9a66">piodie</a> (file, line, msg, ival1, msg2, ival2, msg3, ival3, mpirank)</td></tr>
 <tr class="memdesc:a13fac82014192fcf782a95c3be4e9a66"><td class="mdescLeft">&#160;</td><td class="mdescRight">Abort the model for abnormal termination.  <a href="#a13fac82014192fcf782a95c3be4e9a66">More...</a><br/></td></tr>
 <tr class="separator:a13fac82014192fcf782a95c3be4e9a66"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -369,13 +368,41 @@ logical, public&#160;</td><td class="memItemRight" valign="bottom"><b>debugasync
 
 </div>
 </div>
+<a class="anchor" id="abcbf3a9d77e36435f9110d1efe8fb19a"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">subroutine, public pio_support::replace_c_null </td>
+          <td>(</td>
+          <td class="paramtype">character(len=*), intent(inout)&#160;</td>
+          <td class="paramname"><em>istr</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(kind=pio_offset_kind), intent(in), optional&#160;</td>
+          <td class="paramname"><em>ilen</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Remove null termination (C-style) from strings for Fortran. </p>
+
+</div>
+</div>
 <hr/>The documentation for this module was generated from the following file:<ul>
 <li><a class="el" href="pio__support_8_f90.html">pio_support.F90</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Nov 17 2015 13:18:42 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue May 17 2016 14:25:07 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>
