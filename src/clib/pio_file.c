@@ -496,23 +496,24 @@ int PIOc_deletefile(const int iosysid, const char filename[])
     return ierr;
 }
 
-///
-/// PIO interface to nc_sync
-///
-/// This routine is called collectively by all tasks in the communicator ios.union_comm.  
-/// 
-/// Refer to the <A HREF="http://www.unidata.ucar.edu/software/netcdf/docs/modules.html" target="_blank"> netcdf </A> documentation. 
-///
 /** 
- * @name    PIOc_sync
+ * PIO interface to nc_sync
+ *
+ * This routine is called collectively by all tasks in the
+ * communicator ios.union_comm.
+ *
+ * Refer to the <A
+ * HREF="http://www.unidata.ucar.edu/software/netcdf/docs/modules.html"
+ * target="_blank"> netcdf </A> documentation.
+ *
  */
 int PIOc_sync(int ncid) 
 {
-    int ierr;
+    iosystem_desc_t *ios;  /** Pointer to io system information. */
+    file_desc_t *file;     /** Pointer to file information. */
+    int ierr = PIO_NOERR;  /** Return code from function calls. */
+    int mpierr = MPI_SUCCESS, mpierr2;  /** Return code from MPI function codes. */
     int msg;
-    int mpierr;
-    iosystem_desc_t *ios;
-    file_desc_t *file;
     wmulti_buffer *wmb, *twmb;
 
     ierr = PIO_NOERR;
