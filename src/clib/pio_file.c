@@ -374,9 +374,9 @@ int PIOc_closefile(int ncid)
         return PIO_EBADID;
     ios = file->iosystem;
 
-    if((file->mode & PIO_WRITE)){
+    /* Sync any changes that may have been made to the file. */
+    if (file->mode & PIO_WRITE)
 	PIOc_sync(ncid);
-    }
 
     /* If async is in use and this is a comp tasks, then the compmaster
      * sends a msg to the pio_msg_handler running on the IO master and
@@ -402,35 +402,22 @@ int PIOc_closefile(int ncid)
 	    return check_mpi(file, mpierr, __FILE__, __LINE__);
     }
 
-    /* If this is an IO task, then call the netCDF function. */    
+    /* If this is an IO task, then call the netCDF function. */
     if (ios->ioproc)
     {
-	switch (file->iotype)
-	{
-#ifdef _NETCDF
-#ifdef _NETCDF4
-	case PIO_IOTYPE_NETCDF4P:
-	    ierr = nc_close(file->fh);
-	    break;
-	case PIO_IOTYPE_NETCDF4C:
-#endif
-	case PIO_IOTYPE_NETCDF:
-	    if(ios->io_rank==0){
-		ierr = nc_close(file->fh);
-	    }
-	    break;
-#endif
 #ifdef _PNETCDF
-	case PIO_IOTYPE_PNETCDF:
-	    if((file->mode & PIO_WRITE)){
+        if (file->iotype == PIO_IOTYPE_PNETCDF)
+	{
+	    if (file->mode & PIO_WRITE)
 		ierr = ncmpi_buffer_detach(file->fh);
-	    }
 	    ierr = ncmpi_close(file->fh);
-	    break;
-#endif
-	default:
-	    ierr = iotype_error(file->iotype,__FILE__,__LINE__);
 	}
+#endif /* _PNETCDF */
+#ifdef _NETCDF
+        if (file->iotype != PIO_IOTYPE_PNETCDF && file->do_io)
+	    ierr = nc_close(file->fh);
+#endif /* _NETCDF */
+        LOG((2, "PIOc_inq netcdf call returned %d", ierr));
     }
 
     /* Broadcast and check the return code. */
