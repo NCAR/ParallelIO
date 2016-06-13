@@ -417,7 +417,6 @@ int PIOc_closefile(int ncid)
         if (file->iotype != PIO_IOTYPE_PNETCDF && file->do_io)
 	    ierr = nc_close(file->fh);
 #endif /* _NETCDF */
-        LOG((2, "PIOc_inq netcdf call returned %d", ierr));
     }
 
     /* Broadcast and check the return code. */
@@ -440,41 +439,57 @@ int PIOc_closefile(int ncid)
  */
 int PIOc_deletefile(const int iosysid, const char filename[])
 {
-    int ierr;
-    int msg;
-    int mpierr;
-    int chkerr;
-    iosystem_desc_t *ios;
-    size_t len;
+    iosystem_desc_t *ios;  /** Pointer to io system information. */
+    file_desc_t *file;     /** Pointer to file information. */
+    int ierr = PIO_NOERR;  /** Return code from function calls. */
+    int mpierr = MPI_SUCCESS, mpierr2;  /** Return code from MPI function codes. */
 
-    ierr = PIO_NOERR;
-    ios = pio_get_iosystem_from_id(iosysid);
-
-    if(ios == NULL)
+    /* Get the IO system info. */
+    if (!(ios = pio_get_iosystem_from_id(iosysid)))
 	return PIO_EBADID;
 
-    msg = PIO_MSG_DELETE_FILE;
+    /* If async is in use, send msg to IO hanlder. */
+    if (ios->async_interface)
+    {
+	if (!ios->ioproc)
+	{
+	    int msg = PIO_MSG_DELETE_FILE;
+	    size_t len = strlen(filename);
+	    
+	    if (ios->compmaster) 
+		mpierr = MPI_Send(&msg, 1, MPI_INT, ios->ioroot, 1, ios->union_comm);
 
-    if(ios->async_interface && ! ios->ioproc){
-	if(ios->comp_rank==0) 
-	    mpierr = MPI_Send(&msg, 1,MPI_INT, ios->ioroot, 1, ios->union_comm);
-	len = strlen(filename);
-	mpierr = MPI_Bcast(&len, 1, MPI_INT, ios->compmaster, ios->intercomm);
-	mpierr = MPI_Bcast((void *)filename, len + 1, MPI_CHAR, ios->compmaster, ios->intercomm);
+	    if (!mpierr)
+		mpierr = MPI_Bcast(&len, 1, MPI_INT, ios->compmaster, ios->intercomm);
+	    if (!mpierr)
+		mpierr = MPI_Bcast((char *)filename, len + 1, MPI_CHAR, ios->compmaster,
+				   ios->intercomm);
+	}
+
+        /* Handle MPI errors. */
+        if ((mpierr2 = MPI_Bcast(&mpierr, 1, MPI_INT, ios->comproot, ios->my_comm)))
+            return check_mpi(file, mpierr2, __FILE__, __LINE__);
+	if (mpierr)
+	    return check_mpi(file, mpierr, __FILE__, __LINE__);
     }
-    // The barriers are needed to assure that no task is trying to operate on the file while it is being deleted.
-    if(ios->ioproc){
+
+    /* If this is an IO task, then call the netCDF function. The
+     * barriers are needed to assure that no task is trying to operate
+     * on the file while it is being deleted. */
+    if (ios->ioproc)
+    {
 	MPI_Barrier(ios->io_comm);
-#ifdef _NETCDF
-	if(ios->io_rank==0)
-	    ierr = nc_delete(filename);
-#else
 #ifdef _PNETCDF
-	ierr = ncmpi_delete(filename, ios->info);
-#endif
-#endif
+        if (file->iotype == PIO_IOTYPE_PNETCDF)
+	    ierr = ncmpi_delete((char *)filename, ios->info);
+#endif /* _PNETCDF */
+#ifdef _NETCDF
+        if (file->iotype != PIO_IOTYPE_PNETCDF && file->do_io)
+	    ierr = nc_delete(filename);
+#endif /* _NETCDF */
 	MPI_Barrier(ios->io_comm);
     }
+
     //   Special case - always broadcast the return from the  
     MPI_Bcast(&ierr, 1, MPI_INT, ios->ioroot, ios->my_comm);
 
