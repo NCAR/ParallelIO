@@ -380,8 +380,8 @@ if (PIO_USE_MPISERIAL)
     set_tests_properties(pio_iosystem_tests3
         PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 else ()
-   add_mpi_test(pio_iosystem_tests3
-        EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_iosystem_tests3
-        NUMPROCS 4
-        TIMEOUT ${DEFAULT_TEST_TIMEOUT})
+   # add_mpi_test(pio_iosystem_tests3
+   #      EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_iosystem_tests3
+   #      NUMPROCS 4
+   #      TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 endif ()
