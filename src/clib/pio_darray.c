@@ -1135,29 +1135,27 @@ int PIOc_write_darray_multi(const int ncid, const int *vid, const int ioid,
 	switch(file->iotype)
 	{
 	case PIO_IOTYPE_PNETCDF:
+	case PIO_IOTYPE_NETCDF4P:
 	    ierr = pio_write_darray_multi_nc(file, nvars, vid,
 					     iodesc->ndims, iodesc->basetype, iodesc->gsize,
 					     iodesc->maxfillregions, iodesc->fillregion, iodesc->holegridsize,
 					     iodesc->holegridsize, iodesc->num_aiotasks,
 					     vdesc0->fillbuf, frame);
 	    break;
-	case PIO_IOTYPE_NETCDF4P:
 	case PIO_IOTYPE_NETCDF4C:
 	case PIO_IOTYPE_NETCDF:
-	    /*       ierr = pio_write_darray_multi_nc_serial(file, nvars, vid,
+	    ierr = pio_write_darray_multi_nc_serial(file, nvars, vid,
 		     iodesc->ndims, iodesc->basetype, iodesc->gsize,
 		     iodesc->maxfillregions, iodesc->fillregion, iodesc->holegridsize,
 		     iodesc->holegridsize, iodesc->num_aiotasks,
 		     vdesc0->fillbuf, frame);
-	    */
-	    /*       if (vdesc0->fillbuf != NULL){
-		     printf("%s %d %x\n",__FILE__,__LINE__,vdesc0->fillbuf);
-		     brel(vdesc0->fillbuf);
-		     vdesc0->fillbuf = NULL;
-		     }
-	    */
 	    break;
 	}
+    if (vdesc0->fillbuf != NULL){
+         /* printf("%s %d %x\n",__FILE__,__LINE__,vdesc0->fillbuf); */
+         brel(vdesc0->fillbuf);
+         vdesc0->fillbuf = NULL;
+    }
     }
 
     flush_output_buffer(file, flushtodisk, 0);
