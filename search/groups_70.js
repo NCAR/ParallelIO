@@ -39,8 +39,10 @@ var searchData=
   ['pio_5fredef',['PIO_redef',['../group___p_i_o__redef.html',1,'']]],
   ['pio_5fset_5fblocksize',['PIO_set_blocksize',['../group___p_i_o__set__blocksize.html',1,'']]],
   ['pio_5fset_5fhint',['PIO_set_hint',['../group___p_i_o__set__hint.html',1,'']]],
+  ['pio_5fset_5flog_5flevel',['PIO_set_log_level',['../group___p_i_o__set__log__level.html',1,'']]],
   ['pio_5fsetdebuglevel',['PIO_setdebuglevel',['../group___p_i_o__setdebuglevel.html',1,'']]],
   ['pio_5fseterrorhandling',['PIO_seterrorhandling',['../group___p_i_o__seterrorhandling.html',1,'']]],
   ['pio_5fsetframe',['PIO_setframe',['../group___p_i_o__setframe.html',1,'']]],
+  ['pio_5fstrerror',['PIO_strerror',['../group___p_i_o__strerror.html',1,'']]],
   ['pio_5fsyncfile',['PIO_syncfile',['../group___p_i_o__syncfile.html',1,'']]]
 ];

@@ -65,7 +65,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Enumerations</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Macros</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Groups</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(9)"><span class="SelectionMark">&#160;</span>Pages</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Enumerations</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Enumerator</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Macros</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(9)"><span class="SelectionMark">&#160;</span>Groups</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(10)"><span class="SelectionMark">&#160;</span>Pages</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -87,12 +87,6 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions/Subroutines</h2></td></tr>
-<tr class="memitem:ga3930b9b4f52c2e69cdb58634f17e58e7"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__initdecomp.html#ga3930b9b4f52c2e69cdb58634f17e58e7">PIOc_InitDecomp</a> (const int iosysid, const int basetype, const int ndims, const int dims[], const int maplen, const PIO_Offset *compmap, int *ioidp, const int *rearranger, const PIO_Offset *iostart, const PIO_Offset *iocount)</td></tr>
-<tr class="memdesc:ga3930b9b4f52c2e69cdb58634f17e58e7"><td class="mdescLeft">&#160;</td><td class="mdescRight">C interface to the initdecomp.  <a href="#ga3930b9b4f52c2e69cdb58634f17e58e7">More...</a><br/></td></tr>
-<tr class="separator:ga3930b9b4f52c2e69cdb58634f17e58e7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga43508dda0d580f3d8c46eb15fa9c98ce"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__initdecomp.html#ga43508dda0d580f3d8c46eb15fa9c98ce">PIOc_InitDecomp_bc</a> (const int iosysid, const int basetype, const int ndims, const int dims[], const long int start[], const long int count[], int *ioidp)</td></tr>
-<tr class="memdesc:ga43508dda0d580f3d8c46eb15fa9c98ce"><td class="mdescLeft">&#160;</td><td class="mdescRight">This is a simplified initdecomp which can be used if the memory order of the data can be expressed in terms of start and count on the file.  <a href="#ga43508dda0d580f3d8c46eb15fa9c98ce">More...</a><br/></td></tr>
-<tr class="separator:ga43508dda0d580f3d8c46eb15fa9c98ce"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga6f7a8735dbe5214bf2b3dcd88f37eaf3"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__initdecomp.html#ga6f7a8735dbe5214bf2b3dcd88f37eaf3">piolib_mod::pio_initdecomp_bc</a> (iosystem, basepiotype, dims, compstart, compcount, iodesc)</td></tr>
 <tr class="memdesc:ga6f7a8735dbe5214bf2b3dcd88f37eaf3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Implements the decomp_bc for PIO_initdecomp.  <a href="#ga6f7a8735dbe5214bf2b3dcd88f37eaf3">More...</a><br/></td></tr>
 <tr class="separator:ga6f7a8735dbe5214bf2b3dcd88f37eaf3"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -111,6 +105,12 @@ Functions/Subroutines</h2></td></tr>
 <tr class="memitem:gaba1b0bd480a9ccb431dc304abce94764"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__initdecomp.html#gaba1b0bd480a9ccb431dc304abce94764">piolib_mod::pio_initdecomp_dof_i4</a> (iosystem, basepiotype, dims, compdof, iodesc, rearr, iostart, iocount)</td></tr>
 <tr class="memdesc:gaba1b0bd480a9ccb431dc304abce94764"><td class="mdescLeft">&#160;</td><td class="mdescRight">Implements the decomp_dof for PIO_initdecomp (previous name: <b>initdecomp_1dof_nf_box</b>)  <a href="#gaba1b0bd480a9ccb431dc304abce94764">More...</a><br/></td></tr>
 <tr class="separator:gaba1b0bd480a9ccb431dc304abce94764"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga3930b9b4f52c2e69cdb58634f17e58e7"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__initdecomp.html#ga3930b9b4f52c2e69cdb58634f17e58e7">PIOc_InitDecomp</a> (const int iosysid, const int basetype, const int ndims, const int dims[], const int maplen, const PIO_Offset *compmap, int *ioidp, const int *rearranger, const PIO_Offset *iostart, const PIO_Offset *iocount)</td></tr>
+<tr class="memdesc:ga3930b9b4f52c2e69cdb58634f17e58e7"><td class="mdescLeft">&#160;</td><td class="mdescRight">C interface to the initdecomp.  <a href="#ga3930b9b4f52c2e69cdb58634f17e58e7">More...</a><br/></td></tr>
+<tr class="separator:ga3930b9b4f52c2e69cdb58634f17e58e7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga43508dda0d580f3d8c46eb15fa9c98ce"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__initdecomp.html#ga43508dda0d580f3d8c46eb15fa9c98ce">PIOc_InitDecomp_bc</a> (const int iosysid, const int basetype, const int ndims, const int dims[], const long int start[], const long int count[], int *ioidp)</td></tr>
+<tr class="memdesc:ga43508dda0d580f3d8c46eb15fa9c98ce"><td class="mdescLeft">&#160;</td><td class="mdescRight">This is a simplified initdecomp which can be used if the memory order of the data can be expressed in terms of start and count on the file.  <a href="#ga43508dda0d580f3d8c46eb15fa9c98ce">More...</a><br/></td></tr>
+<tr class="separator:ga43508dda0d580f3d8c46eb15fa9c98ce"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <p>PIO_initdecomp is an overload interface the models decomposition to pio. </p>
@@ -518,7 +518,7 @@ Functions/Subroutines</h2></td></tr>
 <p>This provides the ability to describe a computational decomposition in PIO that has a block-cyclic form. That is something that can be described using start and count arrays. Optional parameters for this subroutine allows for the specification of io decomposition using iostart and iocount arrays. If iostart and iocount arrays are not specified by the user, and rearrangement is turned on then PIO will calculate a suitable IO decomposition </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">iosystem</td><td>io system descriptor structure This structure contains the general IO subsystem data and MPI structure </td></tr>
+    <tr><td class="paramname">iosystem</td><td>IO system descriptor structure. This structure contains the general IO subsystem data and MPI structure </td></tr>
     <tr><td class="paramname">basepiotype</td><td>The type of variable(s) associated with this iodesc. The base types supported by PIO are:<ul>
 <li>PIO_double : 8-byte reals or double precision</li>
 <li>PIO_real : 4-byte reals</li>
@@ -600,7 +600,7 @@ Functions/Subroutines</h2></td></tr>
 <p>This provides the ability to describe a computational decomposition in PIO using degrees of freedom method. This is a decomposition that can not be easily described using a start and count method (see decomp_dof). Optional parameters for this subroutine allows for the specififcation of io decomposition using iostart and iocount arrays. If iostart and iocount arrays are not specified by the user, and rearrangement is turned on then PIO will calculate an suitable IO decomposition. Note that this subroutine was previously called <em>initdecomp_1dof_nf_box</em> </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">iosystem</td><td>io system descriptor structure This structure contains the general IO subsystem data and MPI structure </td></tr>
+    <tr><td class="paramname">iosystem</td><td>IO system descriptor structure. This structure contains the general IO subsystem data and MPI structure </td></tr>
     <tr><td class="paramname">basepiotype</td><td>The type of variable(s) associated with this iodesc. The base types supported by PIO are:<ul>
 <li>PIO_double : 8-byte reals or double precision</li>
 <li>PIO_real : 4-byte reals</li>
@@ -694,7 +694,7 @@ Functions/Subroutines</h2></td></tr>
 <p>C interface to the initdecomp. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">iosysid</td><td>io system descriptor structure (input) This structure contains the general IO subsystem data and MPI structure (input) </td></tr>
+    <tr><td class="paramname">iosysid</td><td>IO system descriptor structure. (input) This structure contains the general IO subsystem data and MPI structure (input) </td></tr>
     <tr><td class="paramname">basetype</td><td>the basic PIO data type used (input) </td></tr>
     <tr><td class="paramname">ndims</td><td>the number of dimensions in the variable (input) </td></tr>
     <tr><td class="paramname">dims[]</td><td>the global size of each dimension (input) </td></tr>
@@ -707,6 +707,7 @@ Functions/Subroutines</h2></td></tr>
   </table>
   </dd>
 </dl>
+<dl class="section return"><dt>Returns</dt><dd>0 on success, error code otherwise </dd></dl>
 
 </div>
 </div>
@@ -765,14 +766,27 @@ Functions/Subroutines</h2></td></tr>
 </div><div class="memdoc">
 
 <p>This is a simplified initdecomp which can be used if the memory order of the data can be expressed in terms of start and count on the file. </p>
-<p>in this case we compute the compdof and use the subset rearranger </p>
+<p>In this case we compute the compdof and use the subset rearranger.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">iosysid</td><td>the IO system ID </td></tr>
+    <tr><td class="paramname">basetype</td><td></td></tr>
+    <tr><td class="paramname">ndims</td><td>the number of dimensions </td></tr>
+    <tr><td class="paramname">dims</td><td>array of dimensions </td></tr>
+    <tr><td class="paramname">start</td><td>start array </td></tr>
+    <tr><td class="paramname">count</td><td>count array </td></tr>
+    <tr><td class="paramname">pointer</td><td>that gets the IO ID. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>0 for success, error code otherwise </dd></dl>
 
 </div>
 </div>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue May 17 2016 14:25:07 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Oct 24 2016 15:17:16 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

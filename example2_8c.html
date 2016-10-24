@@ -70,7 +70,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Enumerations</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Macros</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Groups</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(9)"><span class="SelectionMark">&#160;</span>Pages</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Enumerations</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Enumerator</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Macros</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(9)"><span class="SelectionMark">&#160;</span>Groups</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(10)"><span class="SelectionMark">&#160;</span>Pages</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -81,7 +81,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="dir_5cb5fc4b4ca5c9408cab32cfa5fcafac.html">PIO_source_kt</a></li><li class="navelem"><a class="el" href="dir_673375825b411a8c6ec9043493af5cea.html">examples</a></li><li class="navelem"><a class="el" href="dir_2b42d76fff09cc95855aac920435e940.html">c</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_d28a4824dc47e487b107a5db32ef43c4.html">examples</a></li><li class="navelem"><a class="el" href="dir_6df6542b1223c38c3752260fabab64d0.html">c</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
@@ -614,7 +614,7 @@ data:</pre><pre>foo = 42, 42, 42, 42, 43, 43, 43, 43, 44, 44, 44, 44, 45, 45, 45
 <p>Specifies the flavor of netCDF output format.</p>
 <p>The dimension IDs.</p>
 <p>Array index per processing unit. This is the number of elements of the data array that will be handled by each processor. In this example there are 16 data elements. If the example is run on 4 processors, then arrIdxPerPe will be 4.</p>
-<p>The ID for the parallel I/O system. It is set by <a class="el" href="group___p_i_o__init.html#ga23f28fa74f31adc64033121f1d49adf1" title="library initialization used when IO tasks are a subset of compute tasks ">PIOc_Init_Intracomm()</a>. It references an internal structure containing the general IO subsystem data and MPI structure. It is passed to <a class="el" href="group___p_i_o__finalize.html#ga0095e5fd5e4514afb391dc96e17601e4" title="Clean up internal data structures, free MPI resources, and exit the pio library. ">PIOc_finalize()</a> to free associated resources, after all I/O, but before MPI_Finalize is called.</p>
+<p>The ID for the parallel I/O system. It is set by <a class="el" href="group___p_i_o__init.html#ga23f28fa74f31adc64033121f1d49adf1" title="Library initialization used when IO tasks are a subset of compute tasks. ">PIOc_Init_Intracomm()</a>. It references an internal structure containing the general IO subsystem data and MPI structure. It is passed to <a class="el" href="group___p_i_o__finalize.html#ga0095e5fd5e4514afb391dc96e17601e4" title="Clean up internal data structures, free MPI resources, and exit the pio library. ">PIOc_finalize()</a> to free associated resources, after all I/O, but before MPI_Finalize is called.</p>
 <p>The ncid of the netCDF file created in this example.</p>
 <p>The ID of the netCDF varable in the example file.</p>
 <p>The I/O description ID as passed back by <a class="el" href="group___p_i_o__initdecomp.html#ga3930b9b4f52c2e69cdb58634f17e58e7" title="C interface to the initdecomp. ">PIOc_InitDecomp()</a> and freed in PIOc_freedecomp().</p>
@@ -700,7 +700,7 @@ data:</pre><pre>foo = 42, 42, 42, 42, 43, 43, 43, 43, 44, 44, 44, 44, 45, 45, 45
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue May 17 2016 14:25:06 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Oct 24 2016 15:17:16 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

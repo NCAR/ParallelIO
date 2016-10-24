@@ -71,7 +71,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Enumerations</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Macros</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Groups</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(9)"><span class="SelectionMark">&#160;</span>Pages</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Enumerations</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Enumerator</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Macros</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(9)"><span class="SelectionMark">&#160;</span>Groups</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(10)"><span class="SelectionMark">&#160;</span>Pages</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -90,7 +90,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!--header-->
 <div class="contents">
 
-<p>io system descriptor structure  
+<p>File descriptor structure.  
  <a href="structfile__desc__t.html#details">More...</a></p>
 
 <p><code>#include &lt;<a class="el" href="pio_8h_source.html">pio.h</a>&gt;</code></p>
@@ -99,46 +99,164 @@ Collaboration diagram for file_desc_t:</div>
 <div class="dyncontent">
 <div class="center"><img src="structfile__desc__t__coll__graph.png" border="0" usemap="#file__desc__t_coll__map" alt="Collaboration graph"/></div>
 <map name="file__desc__t_coll__map" id="file__desc__t_coll__map">
-<area shape="rect" id="node2" href="structwmulti__buffer.html" title="multi buffer " alt="" coords="5,5,104,32"/><area shape="rect" id="node3" href="structvar__desc__t.html" title="Variable description structure. " alt="" coords="182,5,268,32"/><area shape="rect" id="node4" href="structiosystem__desc__t.html" title="io system descriptor structure " alt="" coords="293,5,413,32"/></map>
+<area shape="rect" id="node2" href="structwmulti__buffer.html" title="multi buffer. " alt="" coords="5,5,104,32"/><area shape="rect" id="node3" href="structvar__desc__t.html" title="Variable description structure. " alt="" coords="182,5,268,32"/><area shape="rect" id="node4" href="structiosystem__desc__t.html" title="IO system descriptor structure. " alt="" coords="293,5,413,32"/></map>
 <center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a2786365ee60ecd996a53d7d5107c24dd"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2786365ee60ecd996a53d7d5107c24dd"></a>
-<a class="el" href="structiosystem__desc__t.html">iosystem_desc_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>iosystem</b></td></tr>
+<tr class="memitem:a2786365ee60ecd996a53d7d5107c24dd"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structiosystem__desc__t.html">iosystem_desc_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structfile__desc__t.html#a2786365ee60ecd996a53d7d5107c24dd">iosystem</a></td></tr>
+<tr class="memdesc:a2786365ee60ecd996a53d7d5107c24dd"><td class="mdescLeft">&#160;</td><td class="mdescRight">The IO system ID used to open this file.  <a href="#a2786365ee60ecd996a53d7d5107c24dd">More...</a><br/></td></tr>
 <tr class="separator:a2786365ee60ecd996a53d7d5107c24dd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae41e989123b19251f910db70389b615b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae41e989123b19251f910db70389b615b"></a>
-PIO_Offset&#160;</td><td class="memItemRight" valign="bottom"><b>buffsize</b></td></tr>
-<tr class="separator:ae41e989123b19251f910db70389b615b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac11d983d7f6a52f1d7e1e1205aa0c93c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac11d983d7f6a52f1d7e1e1205aa0c93c"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><b>fh</b></td></tr>
+<tr class="memitem:ac11d983d7f6a52f1d7e1e1205aa0c93c"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structfile__desc__t.html#ac11d983d7f6a52f1d7e1e1205aa0c93c">fh</a></td></tr>
+<tr class="memdesc:ac11d983d7f6a52f1d7e1e1205aa0c93c"><td class="mdescLeft">&#160;</td><td class="mdescRight">The buffersize does not seem to be used anywhere.  <a href="#ac11d983d7f6a52f1d7e1e1205aa0c93c">More...</a><br/></td></tr>
 <tr class="separator:ac11d983d7f6a52f1d7e1e1205aa0c93c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4f43bb9519d336d421ce4c4c82ef8bb0"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4f43bb9519d336d421ce4c4c82ef8bb0"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><b>iotype</b></td></tr>
+<tr class="memitem:a6238064b4318aa9d5d6bfd9776d75613"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structfile__desc__t.html#a6238064b4318aa9d5d6bfd9776d75613">pio_ncid</a></td></tr>
+<tr class="memdesc:a6238064b4318aa9d5d6bfd9776d75613"><td class="mdescLeft">&#160;</td><td class="mdescRight">The ncid that will be returned to the user.  <a href="#a6238064b4318aa9d5d6bfd9776d75613">More...</a><br/></td></tr>
+<tr class="separator:a6238064b4318aa9d5d6bfd9776d75613"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4f43bb9519d336d421ce4c4c82ef8bb0"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structfile__desc__t.html#a4f43bb9519d336d421ce4c4c82ef8bb0">iotype</a></td></tr>
+<tr class="memdesc:a4f43bb9519d336d421ce4c4c82ef8bb0"><td class="mdescLeft">&#160;</td><td class="mdescRight">The PIO_TYPE value that was used to open this file.  <a href="#a4f43bb9519d336d421ce4c4c82ef8bb0">More...</a><br/></td></tr>
 <tr class="separator:a4f43bb9519d336d421ce4c4c82ef8bb0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acee23027c33ce296ec6f48694716ba95"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="acee23027c33ce296ec6f48694716ba95"></a>
-struct <a class="el" href="structvar__desc__t.html">var_desc_t</a>&#160;</td><td class="memItemRight" valign="bottom"><b>varlist</b> [<a class="el" href="pio_8h.html#adbc8561902f84b31e4b10157ea0be817">PIO_MAX_VARS</a>]</td></tr>
+<tr class="memitem:acee23027c33ce296ec6f48694716ba95"><td class="memItemLeft" align="right" valign="top">struct <a class="el" href="structvar__desc__t.html">var_desc_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structfile__desc__t.html#acee23027c33ce296ec6f48694716ba95">varlist</a> [<a class="el" href="pio_8h.html#adbc8561902f84b31e4b10157ea0be817">PIO_MAX_VARS</a>]</td></tr>
+<tr class="memdesc:acee23027c33ce296ec6f48694716ba95"><td class="mdescLeft">&#160;</td><td class="mdescRight">List of variables in this file.  <a href="#acee23027c33ce296ec6f48694716ba95">More...</a><br/></td></tr>
 <tr class="separator:acee23027c33ce296ec6f48694716ba95"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a52d341d56ab2f36a444c8bc8c8bffccc"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a52d341d56ab2f36a444c8bc8c8bffccc"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><b>mode</b></td></tr>
+int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structfile__desc__t.html#a52d341d56ab2f36a444c8bc8c8bffccc">mode</a></td></tr>
+<tr class="memdesc:a52d341d56ab2f36a444c8bc8c8bffccc"><td class="mdescLeft">&#160;</td><td class="mdescRight">??? <br/></td></tr>
 <tr class="separator:a52d341d56ab2f36a444c8bc8c8bffccc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9509da72bd6b683459f67d860414883a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9509da72bd6b683459f67d860414883a"></a>
-struct <a class="el" href="structwmulti__buffer.html">wmulti_buffer</a>&#160;</td><td class="memItemRight" valign="bottom"><b>buffer</b></td></tr>
+<tr class="memitem:a9509da72bd6b683459f67d860414883a"><td class="memItemLeft" align="right" valign="top">struct <a class="el" href="structwmulti__buffer.html">wmulti_buffer</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structfile__desc__t.html#a9509da72bd6b683459f67d860414883a">buffer</a></td></tr>
+<tr class="memdesc:a9509da72bd6b683459f67d860414883a"><td class="mdescLeft">&#160;</td><td class="mdescRight">The <a class="el" href="structwmulti__buffer.html" title="multi buffer. ">wmulti_buffer</a> is used to aggregate multiple variables with the same communication pattern prior to a write.  <a href="#a9509da72bd6b683459f67d860414883a">More...</a><br/></td></tr>
 <tr class="separator:a9509da72bd6b683459f67d860414883a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad70891a793de258f58752ec5170ee80e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad70891a793de258f58752ec5170ee80e"></a>
-struct <a class="el" href="structfile__desc__t.html">file_desc_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>next</b></td></tr>
+<tr class="memitem:ad70891a793de258f58752ec5170ee80e"><td class="memItemLeft" align="right" valign="top">struct <a class="el" href="structfile__desc__t.html">file_desc_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structfile__desc__t.html#ad70891a793de258f58752ec5170ee80e">next</a></td></tr>
+<tr class="memdesc:ad70891a793de258f58752ec5170ee80e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Pointer to the next <a class="el" href="structfile__desc__t.html" title="File descriptor structure. ">file_desc_t</a> in the list of open files.  <a href="#ad70891a793de258f58752ec5170ee80e">More...</a><br/></td></tr>
 <tr class="separator:ad70891a793de258f58752ec5170ee80e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4bffd16a82bcb2734433ff50614b5b85"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structfile__desc__t.html#a4bffd16a82bcb2734433ff50614b5b85">do_io</a></td></tr>
+<tr class="memdesc:a4bffd16a82bcb2734433ff50614b5b85"><td class="mdescLeft">&#160;</td><td class="mdescRight">True if this task should participate in IO (only true for one task with netcdf serial files.  <a href="#a4bffd16a82bcb2734433ff50614b5b85">More...</a><br/></td></tr>
+<tr class="separator:a4bffd16a82bcb2734433ff50614b5b85"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>io system descriptor structure </p>
+<div class="textblock"><p>File descriptor structure. </p>
 <p>This structure holds information associated with each open file </p>
-</div><hr/>The documentation for this struct was generated from the following file:<ul>
+</div><h2 class="groupheader">Member Data Documentation</h2>
+<a class="anchor" id="a9509da72bd6b683459f67d860414883a"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">struct <a class="el" href="structwmulti__buffer.html">wmulti_buffer</a> file_desc_t::buffer</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>The <a class="el" href="structwmulti__buffer.html" title="multi buffer. ">wmulti_buffer</a> is used to aggregate multiple variables with the same communication pattern prior to a write. </p>
+
+</div>
+</div>
+<a class="anchor" id="a4bffd16a82bcb2734433ff50614b5b85"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int file_desc_t::do_io</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>True if this task should participate in IO (only true for one task with netcdf serial files. </p>
+
+</div>
+</div>
+<a class="anchor" id="ac11d983d7f6a52f1d7e1e1205aa0c93c"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int file_desc_t::fh</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>The buffersize does not seem to be used anywhere. </p>
+<p>The ncid returned for this file by the underlying library (netcdf or pnetcdf). </p>
+
+</div>
+</div>
+<a class="anchor" id="a2786365ee60ecd996a53d7d5107c24dd"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structiosystem__desc__t.html">iosystem_desc_t</a>* file_desc_t::iosystem</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>The IO system ID used to open this file. </p>
+
+</div>
+</div>
+<a class="anchor" id="a4f43bb9519d336d421ce4c4c82ef8bb0"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int file_desc_t::iotype</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>The PIO_TYPE value that was used to open this file. </p>
+
+</div>
+</div>
+<a class="anchor" id="ad70891a793de258f58752ec5170ee80e"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">struct <a class="el" href="structfile__desc__t.html">file_desc_t</a>* file_desc_t::next</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Pointer to the next <a class="el" href="structfile__desc__t.html" title="File descriptor structure. ">file_desc_t</a> in the list of open files. </p>
+
+</div>
+</div>
+<a class="anchor" id="a6238064b4318aa9d5d6bfd9776d75613"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int file_desc_t::pio_ncid</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>The ncid that will be returned to the user. </p>
+
+</div>
+</div>
+<a class="anchor" id="acee23027c33ce296ec6f48694716ba95"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">struct <a class="el" href="structvar__desc__t.html">var_desc_t</a> file_desc_t::varlist[<a class="el" href="pio_8h.html#adbc8561902f84b31e4b10157ea0be817">PIO_MAX_VARS</a>]</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>List of variables in this file. </p>
+
+</div>
+</div>
+<hr/>The documentation for this struct was generated from the following file:<ul>
 <li><a class="el" href="pio_8h_source.html">pio.h</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue May 17 2016 14:25:07 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Oct 24 2016 15:17:16 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

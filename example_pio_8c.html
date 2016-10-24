@@ -70,7 +70,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Enumerations</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Macros</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Groups</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(9)"><span class="SelectionMark">&#160;</span>Pages</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Enumerations</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Enumerator</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Macros</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(9)"><span class="SelectionMark">&#160;</span>Groups</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(10)"><span class="SelectionMark">&#160;</span>Pages</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -81,7 +81,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="dir_5cb5fc4b4ca5c9408cab32cfa5fcafac.html">PIO_source_kt</a></li><li class="navelem"><a class="el" href="dir_673375825b411a8c6ec9043493af5cea.html">examples</a></li><li class="navelem"><a class="el" href="dir_2b42d76fff09cc95855aac920435e940.html">c</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_d28a4824dc47e487b107a5db32ef43c4.html">examples</a></li><li class="navelem"><a class="el" href="dir_6df6542b1223c38c3752260fabab64d0.html">c</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
@@ -218,7 +218,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Closes the netCDF file. </p>
-<p>Uses the <a class="el" href="group___p_i_o__closefile.html#gaee37be8734afcb8ee94088dc287c341b" title="close a file previously opened with PIO ">PIOc_closefile()</a> function to close the netCDF sample file written by this example.</p>
+<p>Uses the <a class="el" href="group___p_i_o__closefile.html#gaee37be8734afcb8ee94088dc287c341b" title="Close a file previously opened with PIO. ">PIOc_closefile()</a> function to close the netCDF sample file written by this example.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">this</td><td>Pointer to self. </td></tr>
@@ -308,14 +308,14 @@ rank: 3 length: 4 [13, 14, 15, 16]
 
 <p>Create the netCDF file. </p>
 <p>This function is called as part of the creation of a sample data file for this example.</p>
-<p>Uses the function <a class="el" href="group___p_i_o__createfile.html#gacbbc0304ff5ffa98398ade3d5ba3c54f" title="open a new file using pio ">PIOc_createfile()</a> to create the netCDF output file. The format of the file is created in accordance with the iotype member variable, which specifies one of the following values:</p>
+<p>Uses the function <a class="el" href="group___p_i_o__createfile.html#gacbbc0304ff5ffa98398ade3d5ba3c54f" title="Create a new file using pio. ">PIOc_createfile()</a> to create the netCDF output file. The format of the file is created in accordance with the iotype member variable, which specifies one of the following values:</p>
 <ul>
 <li>PIO_IOTYPE_PNETCDF=1 Parallel Netcdf (parallel)</li>
 <li>PIO_IOTYPE_NETCDF=2 Netcdf3 Classic format (serial)</li>
 <li>PIO_IOTYPE_NETCDF4C=3 NetCDF4 (HDF5) compressed format (serial)</li>
 <li>PIO_IOTYPE_NETCDF4P=4 NetCDF4 (HDF5) parallel</li>
 </ul>
-<p>The <a class="el" href="group___p_i_o__createfile.html#gacbbc0304ff5ffa98398ade3d5ba3c54f" title="open a new file using pio ">PIOc_createfile()</a> function has the following parameters:</p>
+<p>The <a class="el" href="group___p_i_o__createfile.html#gacbbc0304ff5ffa98398ade3d5ba3c54f" title="Create a new file using pio. ">PIOc_createfile()</a> function has the following parameters:</p>
 <ul>
 <li>The IO system ID as set by PIOc_init_intracomm().</li>
 <li>A pointer which will get the ncid of this file when it is created.</li>
@@ -355,7 +355,7 @@ rank: 3 length: 4 [13, 14, 15, 16]
 <p>Define netCDF metadata. </p>
 <p>This function is called as part of the creation of a sample data file for this example.</p>
 <p>It defines a dimension and a one-dimensional variable in the netCDF file using functions <a class="el" href="pio_8h.html#a19ec254c22fa1822aa86cf69a074c1af" title="The PIO-C interface for the NetCDF function nc_def_dim. ">PIOc_def_dim()</a> and <a class="el" href="pio_8h.html#a70d1d5b2f5e828fed653ca87aacef16e" title="The PIO-C interface for the NetCDF function nc_def_var. ">PIOc_def_var()</a>. It then calls <a class="el" href="pio_8h.html#a9967ed940ad4b735965a4abe35101709" title="The PIO-C interface for the NetCDF function nc_enddef. ">PIOc_enddef()</a> to end the define mode of the file.</p>
-<p>All of the functions take the pioFileDesc returned by <a class="el" href="group___p_i_o__createfile.html#gacbbc0304ff5ffa98398ade3d5ba3c54f" title="open a new file using pio ">PIOc_createfile()</a>. This is the ncid of the netCDF file.</p>
+<p>All of the functions take the pioFileDesc returned by <a class="el" href="group___p_i_o__createfile.html#gacbbc0304ff5ffa98398ade3d5ba3c54f" title="Create a new file using pio. ">PIOc_createfile()</a>. This is the ncid of the netCDF file.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">this</td><td>Pointer to self. </td></tr>
@@ -402,7 +402,7 @@ rank: 3 length: 4 [13, 14, 15, 16]
 </div><div class="memdoc">
 
 <p>Error handling function. </p>
-<p>On error, process with rank zero will print error message, the netCDF file will be closed with <a class="el" href="group___p_i_o__closefile.html#gaee37be8734afcb8ee94088dc287c341b" title="close a file previously opened with PIO ">PIOc_closefile()</a>, and MPI_Abort is called to end the example execution on all processes.</p>
+<p>On error, process with rank zero will print error message, the netCDF file will be closed with <a class="el" href="group___p_i_o__closefile.html#gaee37be8734afcb8ee94088dc287c341b" title="Close a file previously opened with PIO. ">PIOc_closefile()</a>, and MPI_Abort is called to end the example execution on all processes.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">this</td><td>Pointer to self. </td></tr>
@@ -437,7 +437,7 @@ rank: 3 length: 4 [13, 14, 15, 16]
 <p>Initialize libraries, create sample data. </p>
 <p>This function is called as part of the creation of a sample data file for this example.</p>
 <p>Ths funtion initializes MPI and the ParallelIO libraries. It sets up the ParallelIO library communicator. It also allocates memory for data used in this example, and assigns sample values to the data array that will be written.</p>
-<p>The ParallelIO communicator is set up with a call to <a class="el" href="group___p_i_o__init.html#ga23f28fa74f31adc64033121f1d49adf1" title="library initialization used when IO tasks are a subset of compute tasks ">PIOc_Init_Intracomm()</a>. This call takes the following parameters:</p>
+<p>The ParallelIO communicator is set up with a call to <a class="el" href="group___p_i_o__init.html#ga23f28fa74f31adc64033121f1d49adf1" title="Library initialization used when IO tasks are a subset of compute tasks. ">PIOc_Init_Intracomm()</a>. This call takes the following parameters:</p>
 <ul>
 <li>The MPI communicator specifying the invovled processors (MPI_COMM_WORLD, in this case, to use all processors).</li>
 <li>The number of I/O tasks. In this example there will be one I/O task for each process.</li>
@@ -509,7 +509,7 @@ rank: 3 length: 4 [13, 14, 15, 16]
 
 <p>Read the example data from the file. </p>
 <p>This function is called as part of the creation of a sample data file for this example.</p>
-<p>This function reads the data that has been written to the sample data file. The data are read with the <a class="el" href="pio_8h.html#ad84360062331f220beb6ebf26557678e" title="Read a field from a file to the IO library. ">PIOc_read_darray()</a> function.</p>
+<p>This function reads the data that has been written to the sample data file. The data are read with the <a class="el" href="pio__darray_8c.html#ad84360062331f220beb6ebf26557678e" title="Read a field from a file to the IO library. ">PIOc_read_darray()</a> function.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">this</td><td>Pointer to self. </td></tr>
@@ -541,7 +541,7 @@ rank: 3 length: 4 [13, 14, 15, 16]
 
 <p>Write the sample data to the file. </p>
 <p>This function is called as part of the creation of a sample data file for this example.</p>
-<p>The data are written with the <a class="el" href="pio_8h.html#aa10d75600089dde28d264a1215afa2e9" title="Write a distributed array to the output file. ">PIOc_write_darray()</a> function. After the write is complete, ensure the file is synced for all processes after the write.</p>
+<p>The data are written with the <a class="el" href="pio__darray_8c.html#aa10d75600089dde28d264a1215afa2e9" title="Write a distributed array to the output file. ">PIOc_write_darray()</a> function. After the write is complete, ensure the file is synced for all processes after the write.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">this</td><td>Pointer to self. </td></tr>
@@ -625,7 +625,7 @@ data:</pre><pre>    foo = 42, 42, 42, 42, 43, 43, 43, 43, 44, 44, 44, 44, 45, 45
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue May 17 2016 14:25:06 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Oct 24 2016 15:17:16 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

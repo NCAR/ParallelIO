@@ -65,7 +65,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Enumerations</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Macros</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Groups</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(9)"><span class="SelectionMark">&#160;</span>Pages</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Enumerations</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Enumerator</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Macros</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(9)"><span class="SelectionMark">&#160;</span>Groups</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(10)"><span class="SelectionMark">&#160;</span>Pages</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -88,7 +88,7 @@ Functions/Subroutines</h2></td></tr>
 <tr class="memdesc:gaf44dad7065b2cbc0f8b0b0308d7f88c5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Exits netcdf define mode.  <a href="#gaf44dad7065b2cbc0f8b0b0308d7f88c5">More...</a><br/></td></tr>
 <tr class="separator:gaf44dad7065b2cbc0f8b0b0308d7f88c5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga1a98648b5347710c172e49d556b2eae8"><td class="memItemLeft" align="right" valign="top">integer function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__redef.html#ga1a98648b5347710c172e49d556b2eae8">pio_nf::redef_id</a> (ncid)</td></tr>
-<tr class="memdesc:ga1a98648b5347710c172e49d556b2eae8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Wrapper for the C function <a class="el" href="pio__nc__async_8c.html#a409ea0e493fa0f74464ecde01647629a">PIOc_redef</a> .  <a href="#ga1a98648b5347710c172e49d556b2eae8">More...</a><br/></td></tr>
+<tr class="memdesc:ga1a98648b5347710c172e49d556b2eae8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Wrapper for the C function <a class="el" href="pio__nc_8c.html#a409ea0e493fa0f74464ecde01647629a">PIOc_redef</a> .  <a href="#ga1a98648b5347710c172e49d556b2eae8">More...</a><br/></td></tr>
 <tr class="separator:ga1a98648b5347710c172e49d556b2eae8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
@@ -110,7 +110,7 @@ Functions/Subroutines</h2></td></tr>
 <p>Exits netcdf define mode. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">File</td><td>io system descriptor structure This structure holds information associated with each open file </td></tr>
+    <tr><td class="paramname">File</td><td>File descriptor structure. This structure holds information associated with each open file </td></tr>
   </table>
   </dd>
 </dl>
@@ -137,14 +137,14 @@ Functions/Subroutines</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Wrapper for the C function <a class="el" href="pio__nc__async_8c.html#a409ea0e493fa0f74464ecde01647629a">PIOc_redef</a> . </p>
+<p>Wrapper for the C function <a class="el" href="pio__nc_8c.html#a409ea0e493fa0f74464ecde01647629a">PIOc_redef</a> . </p>
 
 </div>
 </div>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue May 17 2016 14:25:07 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Oct 24 2016 15:17:16 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

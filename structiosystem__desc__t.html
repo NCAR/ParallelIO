@@ -71,7 +71,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Enumerations</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Macros</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Groups</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(9)"><span class="SelectionMark">&#160;</span>Pages</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Enumerations</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Enumerator</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Macros</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(9)"><span class="SelectionMark">&#160;</span>Groups</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(10)"><span class="SelectionMark">&#160;</span>Pages</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -90,7 +90,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!--header-->
 <div class="contents">
 
-<p>io system descriptor structure  
+<p>IO system descriptor structure.  
  <a href="structiosystem__desc__t.html#details">More...</a></p>
 
 <p><code>#include &lt;<a class="el" href="pio_8h_source.html">pio.h</a>&gt;</code></p>
@@ -98,12 +98,14 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 Collaboration diagram for iosystem_desc_t:</div>
 <div class="dyncontent">
 <div class="center"><img src="structiosystem__desc__t__coll__graph.png" border="0" usemap="#iosystem__desc__t_coll__map" alt="Collaboration graph"/></div>
+<map name="iosystem__desc__t_coll__map" id="iosystem__desc__t_coll__map">
+</map>
 <center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
 <tr class="memitem:a349780a2a7a8b14bccadba61d0a3283b"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structiosystem__desc__t.html#a349780a2a7a8b14bccadba61d0a3283b">iosysid</a></td></tr>
-<tr class="memdesc:a349780a2a7a8b14bccadba61d0a3283b"><td class="mdescLeft">&#160;</td><td class="mdescRight">The ID of this <a class="el" href="structiosystem__desc__t.html" title="io system descriptor structure ">iosystem_desc_t</a>.  <a href="#a349780a2a7a8b14bccadba61d0a3283b">More...</a><br/></td></tr>
+<tr class="memdesc:a349780a2a7a8b14bccadba61d0a3283b"><td class="mdescLeft">&#160;</td><td class="mdescRight">The ID of this <a class="el" href="structiosystem__desc__t.html" title="IO system descriptor structure. ">iosystem_desc_t</a>.  <a href="#a349780a2a7a8b14bccadba61d0a3283b">More...</a><br/></td></tr>
 <tr class="separator:a349780a2a7a8b14bccadba61d0a3283b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5d23f90564ab0753aed17688cf6d9263"><td class="memItemLeft" align="right" valign="top">MPI_Comm&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structiosystem__desc__t.html#a5d23f90564ab0753aed17688cf6d9263">union_comm</a></td></tr>
 <tr class="memdesc:a5d23f90564ab0753aed17688cf6d9263"><td class="mdescLeft">&#160;</td><td class="mdescRight">This is an MPI intra communicator that includes all the tasks in both the IO and the computation communicators.  <a href="#a5d23f90564ab0753aed17688cf6d9263">More...</a><br/></td></tr>
@@ -159,9 +161,8 @@ Public Attributes</h2></td></tr>
 <tr class="memitem:a5feeb0ee83c989df85476df5f9b891e5"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structiosystem__desc__t.html#a5feeb0ee83c989df85476df5f9b891e5">error_handler</a></td></tr>
 <tr class="memdesc:a5feeb0ee83c989df85476df5f9b891e5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Controls handling errors.  <a href="#a5feeb0ee83c989df85476df5f9b891e5">More...</a><br/></td></tr>
 <tr class="separator:a5feeb0ee83c989df85476df5f9b891e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6badea08e053fb45299a22b6a57e5d46"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6badea08e053fb45299a22b6a57e5d46"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structiosystem__desc__t.html#a6badea08e053fb45299a22b6a57e5d46">default_rearranger</a></td></tr>
-<tr class="memdesc:a6badea08e053fb45299a22b6a57e5d46"><td class="mdescLeft">&#160;</td><td class="mdescRight">??? <br/></td></tr>
+<tr class="memitem:a6badea08e053fb45299a22b6a57e5d46"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structiosystem__desc__t.html#a6badea08e053fb45299a22b6a57e5d46">default_rearranger</a></td></tr>
+<tr class="memdesc:a6badea08e053fb45299a22b6a57e5d46"><td class="mdescLeft">&#160;</td><td class="mdescRight">The rearranger decides which parts of a distributed array are handled by which IO tasks.  <a href="#a6badea08e053fb45299a22b6a57e5d46">More...</a><br/></td></tr>
 <tr class="separator:a6badea08e053fb45299a22b6a57e5d46"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8d3a63351207a0a3fc70a7c1fe2090fe"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structiosystem__desc__t.html#a8d3a63351207a0a3fc70a7c1fe2090fe">async_interface</a></td></tr>
 <tr class="memdesc:a8d3a63351207a0a3fc70a7c1fe2090fe"><td class="mdescLeft">&#160;</td><td class="mdescRight">True if asynchronous interface is in use.  <a href="#a8d3a63351207a0a3fc70a7c1fe2090fe">More...</a><br/></td></tr>
@@ -172,12 +173,15 @@ int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struc
 <tr class="memitem:a6230bdca13e27d28836c5180c3083e3a"><td class="memItemLeft" align="right" valign="top">MPI_Info&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structiosystem__desc__t.html#a6230bdca13e27d28836c5180c3083e3a">info</a></td></tr>
 <tr class="memdesc:a6230bdca13e27d28836c5180c3083e3a"><td class="mdescLeft">&#160;</td><td class="mdescRight">MPI Info object.  <a href="#a6230bdca13e27d28836c5180c3083e3a">More...</a><br/></td></tr>
 <tr class="separator:a6230bdca13e27d28836c5180c3083e3a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a57a0b192ffe2f569d21ae31fc998ef88"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structiosystem__desc__t.html#a57a0b192ffe2f569d21ae31fc998ef88">comp_idx</a></td></tr>
+<tr class="memdesc:a57a0b192ffe2f569d21ae31fc998ef88"><td class="mdescLeft">&#160;</td><td class="mdescRight">Index of this component in the list of components.  <a href="#a57a0b192ffe2f569d21ae31fc998ef88">More...</a><br/></td></tr>
+<tr class="separator:a57a0b192ffe2f569d21ae31fc998ef88"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad4885665a95c1c45ce592e180e127e34"><td class="memItemLeft" align="right" valign="top">struct <a class="el" href="structiosystem__desc__t.html">iosystem_desc_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structiosystem__desc__t.html#ad4885665a95c1c45ce592e180e127e34">next</a></td></tr>
-<tr class="memdesc:ad4885665a95c1c45ce592e180e127e34"><td class="mdescLeft">&#160;</td><td class="mdescRight">Pointer to the next <a class="el" href="structiosystem__desc__t.html" title="io system descriptor structure ">iosystem_desc_t</a> in the list.  <a href="#ad4885665a95c1c45ce592e180e127e34">More...</a><br/></td></tr>
+<tr class="memdesc:ad4885665a95c1c45ce592e180e127e34"><td class="mdescLeft">&#160;</td><td class="mdescRight">Pointer to the next <a class="el" href="structiosystem__desc__t.html" title="IO system descriptor structure. ">iosystem_desc_t</a> in the list.  <a href="#ad4885665a95c1c45ce592e180e127e34">More...</a><br/></td></tr>
 <tr class="separator:ad4885665a95c1c45ce592e180e127e34"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>io system descriptor structure </p>
+<div class="textblock"><p>IO system descriptor structure. </p>
 <p>This structure contains the general IO subsystem data and MPI structure </p>
 </div><h2 class="groupheader">Member Data Documentation</h2>
 <a class="anchor" id="a8d3a63351207a0a3fc70a7c1fe2090fe"></a>
@@ -205,6 +209,20 @@ int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struc
 </div><div class="memdoc">
 
 <p>This is an MPI intra communicator that includes all the tasks involved in computation. </p>
+
+</div>
+</div>
+<a class="anchor" id="a57a0b192ffe2f569d21ae31fc998ef88"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int iosystem_desc_t::comp_idx</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Index of this component in the list of components. </p>
 
 </div>
 </div>
@@ -261,6 +279,21 @@ int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struc
 </div><div class="memdoc">
 
 <p>Rank of computation root task (which is rank 0 in comm_comms[cmp]) in the union communicator. </p>
+<p>Will always = number of IO tasks in async situations. </p>
+
+</div>
+</div>
+<a class="anchor" id="a6badea08e053fb45299a22b6a57e5d46"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int iosystem_desc_t::default_rearranger</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>The rearranger decides which parts of a distributed array are handled by which IO tasks. </p>
 
 </div>
 </div>
@@ -401,6 +434,7 @@ int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struc
 </div><div class="memdoc">
 
 <p>Rank of IO root task (which is rank 0 in io_comm) in the union communicator. </p>
+<p>Will always be 0 for async situations. </p>
 
 </div>
 </div>
@@ -414,7 +448,8 @@ int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struc
       </table>
 </div><div class="memdoc">
 
-<p>The ID of this <a class="el" href="structiosystem__desc__t.html" title="io system descriptor structure ">iosystem_desc_t</a>. </p>
+<p>The ID of this <a class="el" href="structiosystem__desc__t.html" title="IO system descriptor structure. ">iosystem_desc_t</a>. </p>
+<p>This will be obtained by calling PIOc_Init_Intercomm() or <a class="el" href="group___p_i_o__init.html#ga23f28fa74f31adc64033121f1d49adf1" title="Library initialization used when IO tasks are a subset of compute tasks. ">PIOc_Init_Intracomm()</a>. </p>
 
 </div>
 </div>
@@ -442,7 +477,7 @@ int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struc
       </table>
 </div><div class="memdoc">
 
-<p>Pointer to the next <a class="el" href="structiosystem__desc__t.html" title="io system descriptor structure ">iosystem_desc_t</a> in the list. </p>
+<p>Pointer to the next <a class="el" href="structiosystem__desc__t.html" title="IO system descriptor structure. ">iosystem_desc_t</a> in the list. </p>
 
 </div>
 </div>
@@ -508,7 +543,7 @@ int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struc
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue May 17 2016 14:25:07 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Oct 24 2016 15:17:16 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

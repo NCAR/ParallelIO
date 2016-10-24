@@ -22,5 +22,6 @@ var searchData=
   ['deprecated_20list',['Deprecated List',['../deprecated.html',1,'']]],
   ['dim_5flen',['DIM_LEN',['../example1_8c.html#a64ac6367028a6df084dea6efe741a795',1,'DIM_LEN():&#160;example1.c'],['../example2_8c.html#a0cdd029eb53af7edd1f798d8d2425b2b',1,'dim_len():&#160;example2.c']]],
   ['dim_5fname',['dim_name',['../example2_8c.html#a9e2919e1371b6f55efc820db00024ef3',1,'dim_name():&#160;example2.c'],['../example1_8c.html#a68eca42e606398f1b7321200813679e4',1,'DIM_NAME():&#160;example1.c']]],
-  ['dimlen',['dimlen',['../structpioexample_1_1pioexampleclass.html#a04793022c40b565f88a4ae49c91b23bd',1,'pioexample::pioexampleclass']]]
+  ['dimlen',['dimlen',['../structpioexample_1_1pioexampleclass.html#a04793022c40b565f88a4ae49c91b23bd',1,'pioexample::pioexampleclass']]],
+  ['do_5fio',['do_io',['../structfile__desc__t.html#a4bffd16a82bcb2734433ff50614b5b85',1,'file_desc_t']]]
 ];

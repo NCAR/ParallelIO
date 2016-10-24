@@ -71,7 +71,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Enumerations</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Macros</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Groups</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(9)"><span class="SelectionMark">&#160;</span>Pages</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Enumerations</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Enumerator</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Macros</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(9)"><span class="SelectionMark">&#160;</span>Groups</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(10)"><span class="SelectionMark">&#160;</span>Pages</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -90,7 +90,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!--header-->
 <div class="contents">
 
-<p>io descriptor structure  
+<p>IO descriptor structure.  
  <a href="structio__desc__t.html#details">More...</a></p>
 
 <p><code>#include &lt;<a class="el" href="pio_8h_source.html">pio.h</a>&gt;</code></p>
@@ -99,13 +99,13 @@ Collaboration diagram for io_desc_t:</div>
 <div class="dyncontent">
 <div class="center"><img src="structio__desc__t__coll__graph.png" border="0" usemap="#io__desc__t_coll__map" alt="Collaboration graph"/></div>
 <map name="io__desc__t_coll__map" id="io__desc__t_coll__map">
-<area shape="rect" id="node2" href="structio__region.html" title="io region structure " alt="" coords="7,5,81,32"/></map>
+<area shape="rect" id="node2" href="structio__region.html" title="IO region structure. " alt="" coords="7,5,81,32"/></map>
 <center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a25b4283d2730b6570d8fa890a8ce73ea"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a25b4283d2730b6570d8fa890a8ce73ea"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><b>ioid</b></td></tr>
+<tr class="memitem:a25b4283d2730b6570d8fa890a8ce73ea"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structio__desc__t.html#a25b4283d2730b6570d8fa890a8ce73ea">ioid</a></td></tr>
+<tr class="memdesc:a25b4283d2730b6570d8fa890a8ce73ea"><td class="mdescLeft">&#160;</td><td class="mdescRight">The ID of this <a class="el" href="structio__desc__t.html" title="IO descriptor structure. ">io_desc_t</a>.  <a href="#a25b4283d2730b6570d8fa890a8ce73ea">More...</a><br/></td></tr>
 <tr class="separator:a25b4283d2730b6570d8fa890a8ce73ea"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a74dbee1a89115d4db68e3e001da81d71"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a74dbee1a89115d4db68e3e001da81d71"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>async_id</b></td></tr>
@@ -131,8 +131,8 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>maxregions</b></td></t
 <tr class="memitem:ae091e478cb04d7b108cb1e124c05355d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae091e478cb04d7b108cb1e124c05355d"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>needsfill</b></td></tr>
 <tr class="separator:ae091e478cb04d7b108cb1e124c05355d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7f6bf3b3dc649e3cb87fdea2eff4fc6f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a7f6bf3b3dc649e3cb87fdea2eff4fc6f"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><b>maxbytes</b></td></tr>
+<tr class="memitem:a7f6bf3b3dc649e3cb87fdea2eff4fc6f"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structio__desc__t.html#a7f6bf3b3dc649e3cb87fdea2eff4fc6f">maxbytes</a></td></tr>
+<tr class="memdesc:a7f6bf3b3dc649e3cb87fdea2eff4fc6f"><td class="mdescLeft">&#160;</td><td class="mdescRight">The maximum number of bytes of this iodesc before flushing.  <a href="#a7f6bf3b3dc649e3cb87fdea2eff4fc6f">More...</a><br/></td></tr>
 <tr class="separator:a7f6bf3b3dc649e3cb87fdea2eff4fc6f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6281997e876f74e1a20163081912c1fe"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6281997e876f74e1a20163081912c1fe"></a>
 MPI_Datatype&#160;</td><td class="memItemRight" valign="bottom"><b>basetype</b></td></tr>
@@ -194,20 +194,63 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>max_requests</b></td><
 <tr class="memitem:ae9e9fc0c4d6fea535c4fbe51ccd4d71f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae9e9fc0c4d6fea535c4fbe51ccd4d71f"></a>
 MPI_Comm&#160;</td><td class="memItemRight" valign="bottom"><b>subset_comm</b></td></tr>
 <tr class="separator:ae9e9fc0c4d6fea535c4fbe51ccd4d71f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a270324af754251cf5b00971060288fbb"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a270324af754251cf5b00971060288fbb"></a>
-struct <a class="el" href="structio__desc__t.html">io_desc_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>next</b></td></tr>
+<tr class="memitem:a270324af754251cf5b00971060288fbb"><td class="memItemLeft" align="right" valign="top">struct <a class="el" href="structio__desc__t.html">io_desc_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structio__desc__t.html#a270324af754251cf5b00971060288fbb">next</a></td></tr>
+<tr class="memdesc:a270324af754251cf5b00971060288fbb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Pointer to the next <a class="el" href="structio__desc__t.html" title="IO descriptor structure. ">io_desc_t</a> in the list.  <a href="#a270324af754251cf5b00971060288fbb">More...</a><br/></td></tr>
 <tr class="separator:a270324af754251cf5b00971060288fbb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>io descriptor structure </p>
+<div class="textblock"><p>IO descriptor structure. </p>
 <p>This structure defines the mapping for a given variable between compute and IO decomposition. </p>
-</div><hr/>The documentation for this struct was generated from the following file:<ul>
+</div><h2 class="groupheader">Member Data Documentation</h2>
+<a class="anchor" id="a25b4283d2730b6570d8fa890a8ce73ea"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int io_desc_t::ioid</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>The ID of this <a class="el" href="structio__desc__t.html" title="IO descriptor structure. ">io_desc_t</a>. </p>
+
+</div>
+</div>
+<a class="anchor" id="a7f6bf3b3dc649e3cb87fdea2eff4fc6f"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int io_desc_t::maxbytes</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>The maximum number of bytes of this iodesc before flushing. </p>
+
+</div>
+</div>
+<a class="anchor" id="a270324af754251cf5b00971060288fbb"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">struct <a class="el" href="structio__desc__t.html">io_desc_t</a>* io_desc_t::next</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Pointer to the next <a class="el" href="structio__desc__t.html" title="IO descriptor structure. ">io_desc_t</a> in the list. </p>
+
+</div>
+</div>
+<hr/>The documentation for this struct was generated from the following file:<ul>
 <li><a class="el" href="pio_8h_source.html">pio.h</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue May 17 2016 14:25:07 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Oct 24 2016 15:17:16 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>
