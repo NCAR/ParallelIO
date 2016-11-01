@@ -25,6 +25,5 @@ var searchData=
   ['examplepio_2ec',['examplePio.c',['../example_pio_8c.html',1,'']]],
   ['examplepio_2ef90',['examplePio.f90',['../example_pio_8f90.html',1,'']]],
   ['examplepioclass',['examplePioClass',['../example_pio_8c.html#a979ddb2d426025010ad5160da5c9e9e8',1,'examplePio.c']]],
-  ['expand_5fregion',['expand_region',['../pio__rearrange_8c.html#aecd2bf53f68494dcd10dd3d2f71fbc65',1,'pio_rearrange.c']]],
   ['error_5fmethods',['error_methods',['../group___p_i_o__error__method.html',1,'']]]
 ];

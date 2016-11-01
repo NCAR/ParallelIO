@@ -9,8 +9,6 @@ var searchData=
   ['pio_5fnc_2ec',['pio_nc.c',['../pio__nc_8c.html',1,'']]],
   ['pio_5fnc4_2ec',['pio_nc4.c',['../pio__nc4_8c.html',1,'']]],
   ['pio_5fput_5fnc_2ec',['pio_put_nc.c',['../pio__put__nc_8c.html',1,'']]],
-  ['pio_5frearrange_2ec',['pio_rearrange.c',['../pio__rearrange_8c.html',1,'']]],
-  ['pio_5fspmd_2ec',['pio_spmd.c',['../pio__spmd_8c.html',1,'']]],
   ['pio_5fsupport_2ef90',['pio_support.F90',['../pio__support_8_f90.html',1,'']]],
   ['pio_5ftypes_2ef90',['pio_types.F90',['../pio__types_8_f90.html',1,'']]],
   ['pioc_2ec',['pioc.c',['../pioc_8c.html',1,'']]],

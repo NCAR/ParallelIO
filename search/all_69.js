@@ -1,6 +1,5 @@
 var searchData=
 [
-  ['idx_5fto_5fdim_5flist',['idx_to_dim_list',['../pio__rearrange_8c.html#a76ed5622a97dad46b56a1b1bae458ba3',1,'pio_rearrange.c']]],
   ['info',['info',['../structiosystem__desc__t.html#a6230bdca13e27d28836c5180c3083e3a',1,'iosystem_desc_t']]],
   ['init',['init',['../structpioexample_1_1pioexampleclass.html#a839b15f3abf340e2b046964bfe297808',1,'pioexample::pioexampleclass::init()'],['../classpioexample.html#a78080ad7096ad345563544273bb61b85',1,'pioexample::init()']]],
   ['init_5fintercom',['init_intercom',['../group___p_i_o__init.html#ga2a34f801ef28767ad58b04cf99ebb207',1,'piolib_mod']]],
@@ -82,8 +81,8 @@ var searchData=
   ['ioroot',['ioroot',['../structiosystem__desc__t.html#ad4887d6eeefbbe4cf8373c6a094a10d1',1,'iosystem_desc_t']]],
   ['iosysid',['iosysid',['../structiosystem__desc__t.html#a349780a2a7a8b14bccadba61d0a3283b',1,'iosystem_desc_t']]],
   ['iosystem',['iosystem',['../structfile__desc__t.html#a2786365ee60ecd996a53d7d5107c24dd',1,'file_desc_t']]],
-  ['iosystem_5fdesc_5ft',['iosystem_desc_t',['../structiosystem__desc__t.html',1,'iosystem_desc_t'],['../pio_8h.html#a059c7a85a913670bed41c52fbf05bc43',1,'iosystem_desc_t():&#160;pio.h']]],
   ['iosystem_5fdesc_5ft',['iosystem_desc_t',['../structpio__types_1_1iosystem__desc__t.html',1,'pio_types']]],
+  ['iosystem_5fdesc_5ft',['iosystem_desc_t',['../structiosystem__desc__t.html',1,'iosystem_desc_t'],['../pio_8h.html#a059c7a85a913670bed41c52fbf05bc43',1,'iosystem_desc_t():&#160;pio.h']]],
   ['iotype',['iotype',['../structpioexample_1_1pioexampleclass.html#af59b594e0e942335c3dea5712c2dc473',1,'pioexample::pioexampleclass::iotype()'],['../structfile__desc__t.html#a4f43bb9519d336d421ce4c4c82ef8bb0',1,'file_desc_t::iotype()']]],
   ['ista',['ista',['../structpioexample_1_1pioexampleclass.html#a9f1fe416650ed720ede20f245cdfc855',1,'pioexample::pioexampleclass']]],
   ['isto',['isto',['../structpioexample_1_1pioexampleclass.html#a9625281513502d3da7696e84dceaf0d5',1,'pioexample::pioexampleclass']]],

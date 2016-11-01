@@ -11,7 +11,5 @@ var searchData=
   ['def_5fvar_5fdeflate_5fid',['def_var_deflate_id',['../classpio__nf.html#ac9249f9a05e3ac399ced3b0ddc55d554',1,'pio_nf']]],
   ['def_5fvar_5fmd_5fdesc',['def_var_md_desc',['../group___p_i_o__def__var.html#gaf3c39aafb791324950d557f8cd1bd7c2',1,'pio_nf']]],
   ['def_5fvar_5fmd_5fid',['def_var_md_id',['../group___p_i_o__def__var.html#gac412bec00939a8235886d791a8cb2d1f',1,'pio_nf']]],
-  ['default_5fsubset_5fpartition',['default_subset_partition',['../pio__rearrange_8c.html#a8c6515917da0dc3029ff162f4e232750',1,'pio_rearrange.c']]],
-  ['define_5fiodesc_5fdatatypes',['define_iodesc_datatypes',['../pio__rearrange_8c.html#a837e8323215676abc327a9f6ffc31b29',1,'pio_rearrange.c']]],
   ['definevar',['definevar',['../structpioexample_1_1pioexampleclass.html#af5d63a6a2129d3b6b782561695e1b254',1,'pioexample::pioexampleclass']]]
 ];

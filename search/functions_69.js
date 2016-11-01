@@ -1,6 +1,5 @@
 var searchData=
 [
-  ['idx_5fto_5fdim_5flist',['idx_to_dim_list',['../pio__rearrange_8c.html#a76ed5622a97dad46b56a1b1bae458ba3',1,'pio_rearrange.c']]],
   ['init',['init',['../structpioexample_1_1pioexampleclass.html#a839b15f3abf340e2b046964bfe297808',1,'pioexample::pioexampleclass::init()'],['../classpioexample.html#a78080ad7096ad345563544273bb61b85',1,'pioexample::init()']]],
   ['init_5fintercom',['init_intercom',['../group___p_i_o__init.html#ga2a34f801ef28767ad58b04cf99ebb207',1,'piolib_mod']]],
   ['init_5fintracom',['init_intracom',['../group___p_i_o__init.html#ga2556bd8e85b99cc3ec87d99d8979c42f',1,'piolib_mod']]],

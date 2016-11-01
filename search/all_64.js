@@ -16,8 +16,6 @@ var searchData=
   ['def_5fvar_5fmd_5fid',['def_var_md_id',['../group___p_i_o__def__var.html#gac412bec00939a8235886d791a8cb2d1f',1,'pio_nf']]],
   ['default_5fblocksize',['default_blocksize',['../pioc__sc_8c.html#a32df74ec2a2913bd237dc90f30f08c10',1,'pioc_sc.c']]],
   ['default_5frearranger',['default_rearranger',['../structiosystem__desc__t.html#a6badea08e053fb45299a22b6a57e5d46',1,'iosystem_desc_t']]],
-  ['default_5fsubset_5fpartition',['default_subset_partition',['../pio__rearrange_8c.html#a8c6515917da0dc3029ff162f4e232750',1,'pio_rearrange.c']]],
-  ['define_5fiodesc_5fdatatypes',['define_iodesc_datatypes',['../pio__rearrange_8c.html#a837e8323215676abc327a9f6ffc31b29',1,'pio_rearrange.c']]],
   ['definevar',['definevar',['../structpioexample_1_1pioexampleclass.html#af5d63a6a2129d3b6b782561695e1b254',1,'pioexample::pioexampleclass']]],
   ['deprecated_20list',['Deprecated List',['../deprecated.html',1,'']]],
   ['dim_5flen',['DIM_LEN',['../example1_8c.html#a64ac6367028a6df084dea6efe741a795',1,'DIM_LEN():&#160;example1.c'],['../example2_8c.html#a0cdd029eb53af7edd1f798d8d2425b2b',1,'dim_len():&#160;example2.c']]],

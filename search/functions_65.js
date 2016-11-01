@@ -11,6 +11,5 @@ var searchData=
   ['epc_5finit',['epc_init',['../example_pio_8c.html#a67976bc68369e54b1efe9e7ce5dd1a01',1,'examplePio.c']]],
   ['epc_5fnew',['epc_new',['../example_pio_8c.html#a7175aa5557459a40cad3acd59b400799',1,'examplePio.c']]],
   ['epc_5freadvar',['epc_readVar',['../example_pio_8c.html#ad7b5f59231752c94fee226d7cb5fe7bb',1,'examplePio.c']]],
-  ['epc_5fwritevar',['epc_writeVar',['../example_pio_8c.html#a78a930ccdbecdb78384a415449509cd8',1,'examplePio.c']]],
-  ['expand_5fregion',['expand_region',['../pio__rearrange_8c.html#aecd2bf53f68494dcd10dd3d2f71fbc65',1,'pio_rearrange.c']]]
+  ['epc_5fwritevar',['epc_writeVar',['../example_pio_8c.html#a78a930ccdbecdb78384a415449509cd8',1,'examplePio.c']]]
 ];

@@ -9,6 +9,5 @@ var searchData=
   ['setframe',['setframe',['../group___p_i_o__setframe.html#ga2c5966f917968c675e6c734c3ddbe565',1,'piolib_mod']]],
   ['start_5fdata_5fval',['START_DATA_VAL',['../example1_8c.html#aba5ba18a0b68130c63410845f87fa708',1,'START_DATA_VAL():&#160;example1.c'],['../example2_8c.html#aba5ba18a0b68130c63410845f87fa708',1,'START_DATA_VAL():&#160;example2.c']]],
   ['stride',['stride',['../structpioexample_1_1pioexampleclass.html#a7db2a2d4a3a90efb1d15304a1302f367',1,'pioexample::pioexampleclass']]],
-  ['subset_5frearrange_5fcreate',['subset_rearrange_create',['../pio__rearrange_8c.html#aa905eed35c892b0b1f1a6665c33223fc',1,'pio_rearrange.c']]],
   ['syncfile',['syncfile',['../group___p_i_o__syncfile.html#ga2b10f2553a1dde620a57f8ac9f43c780',1,'piolib_mod']]]
 ];
