@@ -243,7 +243,7 @@ int PIOc_InitDecomp(const int iosysid, const int basetype, const int ndims, cons
     int ierr;   /* Return code. */
 
     LOG((1, "PIOc_InitDecomp iosysid = %d basetype = %d ndims = %d maplen = %d",
-	 iosysid, basetype, ndims, maplen));
+         iosysid, basetype, ndims, maplen));
 
     /* Check the dim lengths. */
     for (int i = 0; i < ndims; i++)
@@ -260,9 +260,9 @@ int PIOc_InitDecomp(const int iosysid, const int basetype, const int ndims, cons
         char filename[30];
         if (ios->num_comptasks < 100)
             sprintf(filename, "piodecomp%2.2dtasks%2.2ddims%2.2d.dat", ios->num_comptasks, ndims, counter);
-	else if (ios->num_comptasks < 10000)
+        else if (ios->num_comptasks < 10000)
             sprintf(filename, "piodecomp%4.4dtasks%2.2ddims%2.2d.dat", ios->num_comptasks, ndims, counter);
-	else
+        else
             sprintf(filename, "piodecomp%6.6dtasks%2.2ddims%2.2d.dat", ios->num_comptasks, ndims, counter);
 
         PIOc_writemap(filename, ndims, dims, maplen, (PIO_Offset *)compmap, ios->comp_comm);
@@ -281,25 +281,25 @@ int PIOc_InitDecomp(const int iosysid, const int basetype, const int ndims, cons
     if (iodesc->rearranger == PIO_REARR_SUBSET)
     {
         if (iostart && iocount)
-	{
+        {
             fprintf(stderr,"%s %s\n","Iostart and iocount arguments to PIOc_InitDecomp",
                     "are incompatable with subset rearrange method and will be ignored");
         }
         iodesc->num_aiotasks = ios->num_iotasks;
         ierr = subset_rearrange_create(*ios, maplen, (PIO_Offset *)compmap, dims,
-				       ndims, iodesc);
+                                       ndims, iodesc);
     }
     else
     {
         if (ios->ioproc)
-	{
+        {
             /*  Unless the user specifies the start and count for each
-	     *  IO task compute it. */
+             *  IO task compute it. */
             if (iostart && iocount)
-	    {
+            {
                 iodesc->maxiobuflen=1;
                 for (int i = 0; i < ndims; i++)
-		{
+                {
                     iodesc->firstregion->start[i] = iostart[i];
                     iodesc->firstregion->count[i] = iocount[i];
                     compute_maxIObuffersize(ios->io_comm, iodesc);
@@ -307,8 +307,8 @@ int PIOc_InitDecomp(const int iosysid, const int basetype, const int ndims, cons
                 }
                 iodesc->num_aiotasks = ios->num_iotasks;
             }
-	    else
-	    {
+            else
+            {
                 iodesc->num_aiotasks = CalcStartandCount(basetype, ndims, dims,
                                                          ios->num_iotasks, ios->io_rank,
                                                          iodesc->firstregion->start, iodesc->firstregion->count);
@@ -317,7 +317,7 @@ int PIOc_InitDecomp(const int iosysid, const int basetype, const int ndims, cons
         }
 
         /* Depending on array size and io-blocksize the actual number
-	 * of io tasks used may vary. */
+         * of io tasks used may vary. */
         CheckMPIReturn(MPI_Bcast(&(iodesc->num_aiotasks), 1, MPI_INT, ios->ioroot,
                                  ios->my_comm),__FILE__,__LINE__);
 
