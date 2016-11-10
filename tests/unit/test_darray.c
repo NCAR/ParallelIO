@@ -15,13 +15,43 @@
 #define VAR_NAME "foo"
 #define DIM_NAME "dim"
 
+/* Create the decomposition to divide the data between the 4 tasks. */
+int create_decomposition(int ntasks, int my_rank, int iosysid, int *ioid)
+{
+    PIO_Offset elements_per_pe;     /* Array elements per processing unit. */
+    PIO_Offset *compdof;  /* The decomposition mapping. */
+    int dim_len[NDIM] = {DIM_LEN};
+    int ret;
+
+    /* How many data elements per task? */
+    elements_per_pe = DIM_LEN / ntasks;
+
+    /* Allocate space for the decomposition array. */
+    if (!(compdof = malloc(elements_per_pe * sizeof(PIO_Offset))))
+	return PIO_ENOMEM;
+
+    /* Describe the decomposition. This is a 1-based array, so add 1! */
+    for (int i = 0; i < elements_per_pe; i++) 
+	compdof[i] = my_rank * elements_per_pe + i + 1;
+
+    /* Create the PIO decomposition for this test. */
+    printf("rank: %d Creating decomposition...\n", my_rank);
+    if ((ret = PIOc_InitDecomp(iosysid, PIO_FLOAT, NDIM, dim_len, (PIO_Offset)elements_per_pe,
+			       compdof, ioid, NULL, NULL, NULL)))
+	ERR(ret);
+    free(compdof);
+}
+
 /* Check the contents of the test file. */
-int check_file(int iosysid, char *filename)
+int check_file(int iosysid, int ntasks, int my_rank, char *filename)
 {
     int ncid;
     int ndims, nvars, ngatts, unlimdimid;
     char dim_name_in[NC_MAX_NAME + 1];
     PIO_Offset dim_len_in;
+    PIO_Offset arraylen = 1;
+    float data_in;
+    int ioid;
     int ret;
     
     assert(filename);
@@ -39,6 +69,14 @@ int check_file(int iosysid, char *filename)
 	return ret;
     if (strcmp(dim_name_in, DIM_NAME) || dim_len_in != DIM_LEN)
 	return ERR_WRONG;
+
+    /* Decompose the data over the tasks. */
+    if ((ret = create_decomposition(ntasks, my_rank, iosysid, &ioid)))
+	return ret;
+
+    /* Read data. */
+    if ((ret = PIOc_read_darray(ncid, 0, ioid, arraylen, &data_in)))
+	return ret;
 
     /* Check data. */
 
@@ -155,8 +193,8 @@ int main(int argc, char **argv)
 		MPIERR(ret);
 
 	    /* Check the file contents. */
-	    if ((ret = check_file(iosysid, filename)))
-		ERR(ret);
+	    /* if ((ret = check_file(iosysid, ntasks, my_rank, filename))) */
+	    /* 	ERR(ret); */
 	}
 
 	/* Free the PIO decomposition. */
