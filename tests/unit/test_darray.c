@@ -73,7 +73,7 @@ int main(int argc, char **argv)
 
 	/* Create the PIO decomposition for this test. */
 	printf("rank: %d Creating decomposition...\n", my_rank);
-	if ((ret = PIOc_InitDecomp(iosysid, PIO_FLOAT, NDIM, &dim_len, (PIO_Offset)elements_per_pe,
+	if ((ret = PIOc_InitDecomp(iosysid, PIO_FLOAT, NDIM, dim_len, (PIO_Offset)elements_per_pe,
 				   compdof, &ioid, NULL, NULL, NULL)))
 	    ERR(ret);
 	free(compdof);
@@ -110,9 +110,8 @@ int main(int argc, char **argv)
 	    float test_data[arraylen];
 	    for (int f = 0; f < arraylen; f++)
 		test_data[f] = my_rank * 10 + f;
-	    /* if ((ret = PIOc_write_darray(ncid, varid, iosysid, arraylen, test_data, */
-	    /* 				 &fillvalue))) */
-	    /* 	ERR(ret); */
+	    if ((ret = PIOc_write_darray(ncid, varid, ioid, arraylen, test_data, &fillvalue)))
+	    	ERR(ret);
 
 	    /* Close the netCDF file. */
 	    printf("rank: %d Closing the sample data file...\n", my_rank);

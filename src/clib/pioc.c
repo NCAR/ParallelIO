@@ -232,7 +232,7 @@ int PIOc_Set_IOSystem_Error_Handling(int iosysid, int method)
  * @returns 0 on success, error code otherwise
  */
 int PIOc_InitDecomp(const int iosysid, const int basetype,const int ndims, const int dims[],
-                    const int maplen, const PIO_Offset *compmap, int *ioidp,const int *rearranger,
+                    const int maplen, const PIO_Offset *compmap, int *ioidp, const int *rearranger,
                     const PIO_Offset *iostart,const PIO_Offset *iocount)
 {
     iosystem_desc_t *ios;
