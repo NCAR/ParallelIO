@@ -31,7 +31,7 @@ int create_decomposition(int ntasks, int my_rank, int iosysid, int *ioid)
 	return PIO_ENOMEM;
 
     /* Describe the decomposition. This is a 1-based array, so add 1! */
-    for (int i = 0; i < elements_per_pe; i++) 
+    for (int i = 0; i < elements_per_pe; i++)
 	compdof[i] = my_rank * elements_per_pe + i + 1;
 
     /* Create the PIO decomposition for this test. */
@@ -53,7 +53,7 @@ int check_file(int iosysid, int ntasks, int my_rank, char *filename)
     float data_in;
     int ioid;
     int ret;
-    
+
     assert(filename);
 
     /* Open the file. */
@@ -112,7 +112,7 @@ int main(int argc, char **argv)
     int num_flavors;      /* Number of PIO netCDF flavors in this build. */
     int flavor[NUM_FLAVORS]; /* iotypes for the supported netCDF IO flavors. */
     int ret;              /* Return code. */
-	
+
     /* Length of the dimensions in the sample data. */
     int dim_len[NDIM] = {DIM_LEN};
 
@@ -138,7 +138,7 @@ int main(int argc, char **argv)
 	elements_per_pe = DIM_LEN / ntasks;
 	if (!(compdof = malloc(elements_per_pe * sizeof(PIO_Offset))))
 	    return PIO_ENOMEM;
-	for (int i = 0; i < elements_per_pe; i++) 
+	for (int i = 0; i < elements_per_pe; i++)
 	    compdof[i] = my_rank * elements_per_pe + i + 1;
 
 	/* Create the PIO decomposition for this test. */
@@ -154,7 +154,7 @@ int main(int argc, char **argv)
 	{
 	    /* Create the filename. */
 	    sprintf(filename, "%s_%d.nc", TEST_NAME, flavor[fmt]);
-	    
+
 	    /* Create the netCDF output file. */
 	    printf("rank: %d Creating sample file %s with format %d...\n", my_rank, filename,
 		   flavor[fmt]);
@@ -193,8 +193,8 @@ int main(int argc, char **argv)
 		MPIERR(ret);
 
 	    /* Check the file contents. */
-	    /* if ((ret = check_file(iosysid, ntasks, my_rank, filename))) */
-	    /* 	ERR(ret); */
+	    if ((ret = check_file(iosysid, ntasks, my_rank, filename)))
+		ERR(ret);
 	}
 
 	/* Free the PIO decomposition. */

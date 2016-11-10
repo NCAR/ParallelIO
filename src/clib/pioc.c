@@ -258,9 +258,9 @@ int PIOc_InitDecomp(const int iosysid, const int basetype, const int ndims, cons
     if (PIO_Save_Decomps)
     {
         char filename[30];
-        if (ios->num_comptasks < 100) 
+        if (ios->num_comptasks < 100)
             sprintf(filename, "piodecomp%2.2dtasks%2.2ddims%2.2d.dat", ios->num_comptasks, ndims, counter);
-	else if (ios->num_comptasks < 10000) 
+	else if (ios->num_comptasks < 10000)
             sprintf(filename, "piodecomp%4.4dtasks%2.2ddims%2.2d.dat", ios->num_comptasks, ndims, counter);
 	else
             sprintf(filename, "piodecomp%6.6dtasks%2.2ddims%2.2d.dat", ios->num_comptasks, ndims, counter);
@@ -320,7 +320,7 @@ int PIOc_InitDecomp(const int iosysid, const int basetype, const int ndims, cons
 	 * of io tasks used may vary. */
         CheckMPIReturn(MPI_Bcast(&(iodesc->num_aiotasks), 1, MPI_INT, ios->ioroot,
                                  ios->my_comm),__FILE__,__LINE__);
-	
+
         /* Compute the communications pattern for this decomposition. */
         if (iodesc->rearranger == PIO_REARR_BOX)
             ierr = box_rearrange_create( *ios, maplen, compmap, dims, ndims, iodesc);
