@@ -13,12 +13,41 @@
 #define NDIM 1
 #define DIM_LEN 4
 #define VAR_NAME "foo"
+#define DIM_NAME "dim"
 
-/* The dimension names. */
-char dim_name[NC_MAX_NAME + 1] = "dim";
+/* Check the contents of the test file. */
+int check_file(int iosysid, char *filename)
+{
+    int ncid;
+    int ndims, nvars, ngatts, unlimdimid;
+    char dim_name_in[NC_MAX_NAME + 1];
+    PIO_Offset dim_len_in;
+    int ret;
+    
+    assert(filename);
 
-/* Length of the dimensions in the sample data. */
-int dim_len[NDIM] = {DIM_LEN};
+    /* Open the file. */
+    if ((ret = PIOc_open(iosysid, filename, NC_NOWRITE, &ncid)))
+	return ret;
+
+    /* Check metadata. */
+    if ((ret = PIOc_inq(ncid, &ndims, &nvars, &ngatts, &unlimdimid)))
+	return ret;
+    if (ndims != 1 || nvars != 1 || ngatts != 0 || unlimdimid != -1)
+	return ERR_WRONG;
+    if ((ret = PIOc_inq_dim(ncid, 0, dim_name_in, &dim_len_in)))
+	return ret;
+    if (strcmp(dim_name_in, DIM_NAME) || dim_len_in != DIM_LEN)
+	return ERR_WRONG;
+
+    /* Check data. */
+
+    /* Close the file. */
+    if ((ret = PIOc_closefile(ncid)))
+	return ret;
+
+    return PIO_NOERR;
+}
 
 /* Run Tests for darray Functions. */
 int main(int argc, char **argv)
@@ -46,6 +75,9 @@ int main(int argc, char **argv)
     int flavor[NUM_FLAVORS]; /* iotypes for the supported netCDF IO flavors. */
     int ret;              /* Return code. */
 	
+    /* Length of the dimensions in the sample data. */
+    int dim_len[NDIM] = {DIM_LEN};
+
     /* Initialize test. */
     if ((ret = pio_test_init(argc, argv, &my_rank, &ntasks, TARGET_NTASKS, &test_comm)))
         ERR(ERR_INIT);
@@ -93,7 +125,7 @@ int main(int argc, char **argv)
 
 	    /* Define netCDF dimensions and variable. */
 	    printf("rank: %d Defining netCDF metadata...\n", my_rank);
-	    if ((ret = PIOc_def_dim(ncid, dim_name, (PIO_Offset)dim_len[0], &dimids[0])))
+	    if ((ret = PIOc_def_dim(ncid, DIM_NAME, (PIO_Offset)dim_len[0], &dimids[0])))
 		ERR(ret);
 
 	    /* Define a variable. */
@@ -122,6 +154,9 @@ int main(int argc, char **argv)
 	    if ((ret = MPI_Barrier(MPI_COMM_WORLD)))
 		MPIERR(ret);
 
+	    /* Check the file contents. */
+	    if ((ret = check_file(iosysid, filename)))
+		ERR(ret);
 	}
 
 	/* Free the PIO decomposition. */
