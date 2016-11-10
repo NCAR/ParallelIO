@@ -58,9 +58,6 @@ int pio_get_file(int ncid, file_desc_t **cfile1)
 
     LOG((2, "pio_get_file ncid = %d", ncid));
 
-    for (file_desc_t *cf = pio_file_list; cf; cf = cf->next)
-	LOG((2, "cf->pio_ncid = %d", cf->pio_ncid));
-
     /* Caller must provide this. */
     if (!cfile1)
         return PIO_EINVAL;
