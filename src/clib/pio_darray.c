@@ -259,7 +259,7 @@ int PIOc_write_darray(const int ncid, const int vid, const int ioid,
     bufsize maxfree;    /* Max amount of free space in buffer. */
     int ierr = PIO_NOERR; /* Return code. */
     int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI function codes. */
-    
+
     LOG((1, "PIOc_write_darray ncid = %d vid = %d ioid = %d arraylen = %d",
 	 ncid, vid, ioid, arraylen));
 
@@ -267,7 +267,7 @@ int PIOc_write_darray(const int ncid, const int vid, const int ioid,
     if ((ierr = pio_get_file(ncid, &file)))
         return ierr;
     ios = file->iosystem;
-  
+
     /* Can we write to this file? */
     if (!(file->mode & PIO_WRITE))
         return PIO_EPERM;
@@ -353,7 +353,7 @@ int PIOc_write_darray(const int ncid, const int vid, const int ioid,
 
     /* Get the size of the MPI type. */
     if ((mpierr = MPI_Type_size(iodesc->basetype, &tsize)))
-        return check_mpi(file, mpierr, __FILE__, __LINE__);	
+        return check_mpi(file, mpierr, __FILE__, __LINE__);
 
     LOG((2, "wmb->validvars = %d arraylen = %d tsize = %d\n", wmb->validvars,
 	 arraylen, tsize));
@@ -369,7 +369,7 @@ int PIOc_write_darray(const int ncid, const int vid, const int ioid,
     /* Tell all tests on the computation communicator whether we need
      * to flush data. */
     if ((mpierr = MPI_Allreduce(MPI_IN_PLACE, &needsflush, 1,  MPI_INT,  MPI_MAX, ios->comp_comm)))
-        return check_mpi(file, mpierr, __FILE__, __LINE__);	
+        return check_mpi(file, mpierr, __FILE__, __LINE__);
 
     /* Flush data if needed. */
     if (needsflush > 0)
