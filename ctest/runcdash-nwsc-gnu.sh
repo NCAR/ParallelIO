@@ -13,7 +13,7 @@ module swap intel gnu/6.1.0
 module load git/2.3.0
 module load cmake/3.0.2
 module load netcdf-mpi/4.4.1
-module load pnetcdf/1.6.1
+module load pnetcdf/1.7.0
 
 export CC=mpicc
 export FC=mpif90
