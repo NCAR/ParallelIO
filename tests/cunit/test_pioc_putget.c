@@ -187,13 +187,28 @@ int test_att_conv_byte(int ncid, int flavor, char *name, int *expected, long lon
             if (int_array_in[x] != expected_data[x])
                 return ERR_WRONG;
 
-    if (expected[PIO_INT] != PIOc_get_att_long(ncid, NC_GLOBAL, name, long_array_in))
-        return ERR_WRONG;
+    switch (flavor)
+    {
+    case PIO_IOTYPE_PNETCDF:
+#ifdef _NETCDF4
+    case PIO_IOTYPE_NETCDF:
+#endif
+    case PIO_IOTYPE_NETCDF4C:
+    case PIO_IOTYPE_NETCDF4P:
+        if (expected[PIO_INT] != PIOc_get_att_long(ncid, NC_GLOBAL, name, long_array_in))
+            return ERR_WRONG;
 
-    if (expected[PIO_INT] == 0)
-        for (int x = 0; x < ATT_LEN; x++)
-            if (long_array_in[x] != expected_data[x])
-                return ERR_WRONG;
+        if (expected[PIO_INT] == 0)
+            for (int x = 0; x < ATT_LEN; x++)
+                if (long_array_in[x] != expected_data[x])
+                    return ERR_WRONG;
+
+        break;
+
+    default:
+        break;                 
+    }
+
 
     if (expected[PIO_FLOAT] != PIOc_get_att_float(ncid, NC_GLOBAL, name, float_array_in))
         return ERR_WRONG;
@@ -632,10 +647,24 @@ int test_write_atts(int ncid, int *varid, int flavor)
                                   ATT_LEN, (int *)int_array)))
         return ret;
 
-    /* Use long on same int var. */
-    if ((ret = PIOc_put_att_long(ncid, varid[3], LONG_ATT_NAME, PIO_INT,
-                                 ATT_LEN, (long int *)long_array)))
-        return ret;
+    switch (flavor)
+    {
+    case PIO_IOTYPE_PNETCDF:
+#ifdef _NETCDF4
+    case PIO_IOTYPE_NETCDF:
+#endif
+    case PIO_IOTYPE_NETCDF4C:
+    case PIO_IOTYPE_NETCDF4P:
+        /* Use long on same int var. */
+        if ((ret = PIOc_put_att_long(ncid, varid[3], LONG_ATT_NAME, PIO_INT,
+                                     ATT_LEN, (long int *)long_array)))
+            return ret;
+
+        break;
+
+    default:
+        break;                 
+    }
 
     if ((ret = PIOc_put_att_float(ncid, varid[4], FLOAT_ATT_NAME, PIO_FLOAT,
                                   ATT_LEN, (float *)float_array)))
