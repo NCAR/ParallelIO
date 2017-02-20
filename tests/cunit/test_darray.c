@@ -114,7 +114,8 @@ int test_darray(int iosysid, int ioid, int num_flavors, int *flavor, int my_rank
 
     /* Use PIO to create the example file in each of the four
      * available ways. */
-    for (int fmt = 0; fmt < num_flavors; fmt++)
+    /* for (int fmt = 0; fmt < num_flavors; fmt++) */
+    for (int fmt = 1; fmt < 2; fmt++)
     {
         /* Create the filename. */
         sprintf(filename, "data_%s_iotype_%d.nc", TEST_NAME, flavor[fmt]);
@@ -148,6 +149,12 @@ int test_darray(int iosysid, int ioid, int num_flavors, int *flavor, int my_rank
 
         if ((ret = PIOc_setframe(ncid, varid, 0)))
             ERR(ret);
+
+        /* These should not work. */
+        if (PIOc_write_darray(ncid + 42, varid, ioid, arraylen, test_data, &fillvalue) != PIO_EBADID)
+            ERR(ERR_WRONG);
+        if (PIOc_write_darray(ncid, varid, ioid + 42, arraylen, test_data, &fillvalue) != PIO_EBADID)
+            ERR(ERR_WRONG);
         
         if ((ret = PIOc_write_darray(ncid, varid, ioid, arraylen, test_data, &fillvalue)))
             ERR(ret);
