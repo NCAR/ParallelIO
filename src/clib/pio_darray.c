@@ -118,7 +118,6 @@ int PIOc_write_darray_multi(int ncid, const int *varids, int ioid, int nvars,
      * large as the largest used to accommodate this serial io
      * method. */
     vdesc0 = file->varlist + varids[0];
-    pioassert(!vdesc0->iobuf, "buffer overwrite",__FILE__, __LINE__);
 
     /* Determine total size of aggregated data (all vars/records). */
     rlen = 0;
@@ -201,9 +200,6 @@ int PIOc_write_darray_multi(int ncid, const int *varids, int ioid, int nvars,
     {
         LOG((2, "nvars = %d holegridsize = %ld iodesc->needsfill = %d\n", nvars,
              iodesc->holegridsize, iodesc->needsfill));
-
-        if (vdesc0->fillbuf)
-            piodie("Attempt to overwrite existing buffer",__FILE__,__LINE__);
 
         /* Get a buffer. */
 	if (ios->io_rank == 0)
