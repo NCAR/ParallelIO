@@ -3,7 +3,7 @@
 PIO_TF_TEMPLATE<PIO_TF_PREDEF_TYPENAME PIO_TF_DATA_TYPE, PIO_TF_PREDEF_TYPENAME PIO_TF_FC_DATA_TYPE>
 PIO_TF_AUTO_TEST_SUB_BEGIN nc_wr_1d_mreg_exp_fval
   implicit none
-  type(var_desc_t)  :: pio_var
+  type(var_desc_t)  :: pio_var1, pio_var2
   type(file_desc_t) :: pio_file
   character(len=PIO_TF_MAX_STR_LEN) :: filename
   type(io_desc_t) :: wiodesc, riodesc
@@ -74,19 +74,34 @@ PIO_TF_AUTO_TEST_SUB_BEGIN nc_wr_1d_mreg_exp_fval
     ierr = PIO_def_dim(pio_file, 'PIO_TF_test_dim', dims(1), pio_dim)
     PIO_TF_CHECK_ERR(ierr, "Failed to define a dim : " // trim(filename))
 
-    ierr = PIO_def_var(pio_file, 'PIO_TF_test_var', PIO_TF_DATA_TYPE, (/pio_dim/), pio_var)
+    ierr = PIO_def_var(pio_file, 'PIO_TF_test_var1', PIO_TF_DATA_TYPE,&
+                        (/pio_dim/), pio_var1)
+    PIO_TF_CHECK_ERR(ierr, "Failed to define a var : " // trim(filename))
+
+    ierr = PIO_def_var(pio_file, 'PIO_TF_test_var2', PIO_TF_DATA_TYPE,&
+                        (/pio_dim/), pio_var2)
     PIO_TF_CHECK_ERR(ierr, "Failed to define a var : " // trim(filename))
 
     ierr = PIO_enddef(pio_file)
     PIO_TF_CHECK_ERR(ierr, "Failed to end redef mode : " // trim(filename))
 
     ! Write the variable out
-    call PIO_write_darray(pio_file, pio_var, wiodesc, wbuf, ierr, BUF_FILLVAL)
+    call PIO_write_darray(pio_file, pio_var1, wiodesc, wbuf, ierr, BUF_FILLVAL)
+    PIO_TF_CHECK_ERR(ierr, "Failed to write darray : " // trim(filename))
+
+    call PIO_write_darray(pio_file, pio_var2, wiodesc, wbuf, ierr, BUF_FILLVAL)
     PIO_TF_CHECK_ERR(ierr, "Failed to write darray : " // trim(filename))
 
     call PIO_syncfile(pio_file)
 
-    call PIO_read_darray(pio_file, pio_var, riodesc, rbuf, ierr)
+    rbuf = 0
+    call PIO_read_darray(pio_file, pio_var1, riodesc, rbuf, ierr)
+    PIO_TF_CHECK_ERR(ierr, "Failed to read darray : " // trim(filename))
+
+    PIO_TF_CHECK_VAL((rbuf, exp_val), "Got wrong val")
+
+    rbuf = 0
+    call PIO_read_darray(pio_file, pio_var2, riodesc, rbuf, ierr)
     PIO_TF_CHECK_ERR(ierr, "Failed to read darray : " // trim(filename))
 
     PIO_TF_CHECK_VAL((rbuf, exp_val), "Got wrong val")
@@ -113,7 +128,7 @@ PIO_TF_AUTO_TEST_SUB_END nc_wr_1d_mreg_exp_fval
 PIO_TF_TEMPLATE<PIO_TF_PREDEF_TYPENAME PIO_TF_DATA_TYPE, PIO_TF_PREDEF_TYPENAME PIO_TF_FC_DATA_TYPE>
 PIO_TF_AUTO_TEST_SUB_BEGIN nc_wr_1d_mreg_imp_fval
   implicit none
-  type(var_desc_t)  :: pio_var
+  type(var_desc_t)  :: pio_var1, pio_var2
   type(file_desc_t) :: pio_file
   character(len=PIO_TF_MAX_STR_LEN) :: filename
   type(io_desc_t) :: wiodesc, riodesc
@@ -196,19 +211,34 @@ PIO_TF_AUTO_TEST_SUB_BEGIN nc_wr_1d_mreg_imp_fval
     ierr = PIO_def_dim(pio_file, 'PIO_TF_test_dim', dims(1), pio_dim)
     PIO_TF_CHECK_ERR(ierr, "Failed to define a dim : " // trim(filename))
 
-    ierr = PIO_def_var(pio_file, 'PIO_TF_test_var', PIO_TF_DATA_TYPE, (/pio_dim/), pio_var)
+    ierr = PIO_def_var(pio_file, 'PIO_TF_test_var1', PIO_TF_DATA_TYPE,&
+                        (/pio_dim/), pio_var1)
+    PIO_TF_CHECK_ERR(ierr, "Failed to define a var : " // trim(filename))
+
+    ierr = PIO_def_var(pio_file, 'PIO_TF_test_var2', PIO_TF_DATA_TYPE,&
+                        (/pio_dim/), pio_var2)
     PIO_TF_CHECK_ERR(ierr, "Failed to define a var : " // trim(filename))
 
     ierr = PIO_enddef(pio_file)
     PIO_TF_CHECK_ERR(ierr, "Failed to end redef mode : " // trim(filename))
 
     ! Write the variable out
-    call PIO_write_darray(pio_file, pio_var, wiodesc, wbuf, ierr, BUF_FILLVAL)
+    call PIO_write_darray(pio_file, pio_var1, wiodesc, wbuf, ierr, BUF_FILLVAL)
+    PIO_TF_CHECK_ERR(ierr, "Failed to write darray : " // trim(filename))
+
+    call PIO_write_darray(pio_file, pio_var2, wiodesc, wbuf, ierr, BUF_FILLVAL)
     PIO_TF_CHECK_ERR(ierr, "Failed to write darray : " // trim(filename))
 
     call PIO_syncfile(pio_file)
 
-    call PIO_read_darray(pio_file, pio_var, riodesc, rbuf, ierr)
+    rbuf = 0
+    call PIO_read_darray(pio_file, pio_var1, riodesc, rbuf, ierr)
+    PIO_TF_CHECK_ERR(ierr, "Failed to read darray : " // trim(filename))
+
+    PIO_TF_CHECK_VAL((rbuf, exp_val), "Got wrong val")
+
+    rbuf = 0
+    call PIO_read_darray(pio_file, pio_var2, riodesc, rbuf, ierr)
     PIO_TF_CHECK_ERR(ierr, "Failed to read darray : " // trim(filename))
 
     PIO_TF_CHECK_VAL((rbuf, exp_val), "Got wrong val")
