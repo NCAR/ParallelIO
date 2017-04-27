@@ -19,7 +19,7 @@
 ! Code added as a work around for poor rsend performance on cray systems with
 ! Gemini interconnect
 !
-#ifdef _NO_MPI_RSEND
+#ifndef _USE_MPI_RSEND
 #define MPI_RSEND MPI_SEND
 #define mpi_rsend mpi_send
 #define MPI_IRSEND MPI_ISEND
