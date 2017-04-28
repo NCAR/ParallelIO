@@ -30,7 +30,7 @@ endif()
 
 # Netcdf is required
 #SET (NETCDF_FIND_COMPONENTS F90)
-FIND_PACKAGE(NetCDF "4.3.3" COMPONENTS Fortran)
+FIND_PACKAGE(NetCDF "4.3.3" COMPONENTS C Fortran)
 IF (${NetCDF_Fortran_FOUND})
   MESSAGE("Building PIO with netcdf support ")
   SET(pio_include_dirs_ ${pio_include_dirs_} ${NetCDF_Fortran_INCLUDE_DIR})
