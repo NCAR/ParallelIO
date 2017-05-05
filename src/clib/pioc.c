@@ -14,6 +14,11 @@
 #include "pio_timer.h"
 #endif
 
+#if PIO_SAVE_DECOMPS
+static int counter = 0;
+static bool fortran_order = false;
+#endif
+
 /** The default error handler used when iosystem cannot be located. */
 int default_error_handler = PIO_INTERNAL_ERROR;
 
@@ -471,6 +476,31 @@ int PIOc_InitDecomp(int iosysid, int pio_type, int ndims, const int *gdimlen, in
             return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
     }
 
+#if PIO_SAVE_DECOMPS
+    char filename[NC_MAX_NAME];
+    if (ios->num_comptasks < 100)
+        sprintf(filename, "piodecomp%2.2dtasks%2.2dio%2.2ddims%2.2d.dat", ios->num_comptasks, ios->num_iotasks, ndims, counter);
+    else if (ios->num_comptasks < 10000)
+        sprintf(filename, "piodecomp%4.4dtasks%4.4dio%2.2ddims%2.2d.dat", ios->num_comptasks, ios->num_iotasks, ndims, counter);
+    else
+        sprintf(filename, "piodecomp%6.6dtasks%6.6dio%2.2ddims%2.2d.dat", ios->num_comptasks, ios->num_iotasks, ndims, counter);
+
+    LOG((2, "Saving decomp map to %s", filename));
+
+    if (fortran_order)
+    {
+        int gdimlen_reversed[ndims];
+        for (int i = 0; i < ndims; i++)
+            gdimlen_reversed[i] = gdimlen[ndims - 1 - i];
+
+        PIOc_writemap(filename, ndims, gdimlen_reversed, maplen, (PIO_Offset *)compmap, ios->my_comm);
+    }
+    else
+        PIOc_writemap(filename, ndims, gdimlen, maplen, (PIO_Offset *)compmap, ios->my_comm);
+
+    counter++;
+#endif
+
     /* Allocate space for the iodesc info. This also allocates the
      * first region and copies the rearranger opts into this
      * iodesc. */
@@ -915,6 +945,9 @@ int PIOc_Init_Intracomm_from_F90(int f90_comp_comm,
                                  const int base, const int rearr,
                                  rearr_opt_t *rearr_opts, int *iosysidp)
 {
+#if PIO_SAVE_DECOMPS
+    fortran_order = true;
+#endif
     int ret = PIO_NOERR;
     ret = PIOc_Init_Intracomm(MPI_Comm_f2c(f90_comp_comm), num_iotasks,
                               stride, base, rearr,
