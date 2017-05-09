@@ -274,7 +274,10 @@ int write_darray_multi_par(file_desc_t *file, int nvars, int fndims, const int *
                         /* Get a pointer to the data. */
                         bufptr = (void *)((char *)iobuf + nv * iodesc->mpitype_size * llen);
 
-                        /* ??? */
+                        /*  If needed, allocate additional space for
+                         *  the vdesc->request array, which has an
+                         *  entry for each pending write request to
+                         *  the pnetcdf library. */
                         int reqn = 0;
                         if (vdesc->nreqs % PIO_REQUEST_ALLOC_CHUNK == 0 )
                         {
@@ -287,7 +290,7 @@ int write_darray_multi_par(file_desc_t *file, int nvars, int fndims, const int *
                             reqn = vdesc->nreqs;
                         }
                         else
-                            while(vdesc->request[reqn] != NC_REQ_NULL)
+                            while (vdesc->request[reqn] != NC_REQ_NULL)
                                 reqn++;
 
                         /* Write, in non-blocking fashion, a list of subarrays. */
@@ -301,7 +304,6 @@ int write_darray_multi_par(file_desc_t *file, int nvars, int fndims, const int *
                             vdesc->request[reqn] = PIO_REQ_NULL;
 
                         vdesc->nreqs += reqn + 1;
-
                     }
 
                     /* Free resources. */
