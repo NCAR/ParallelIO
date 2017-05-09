@@ -218,11 +218,6 @@ int write_darray_multi_par(file_desc_t *file, int nvars, int fndims, const int *
                 /* For each variable to be written. */
                 for (int nv = 0; nv < nvars; nv++)
                 {
-                    /* Set the start of the record dimension. (Hasn't
-                     * this already been set above ???) */
-                    /* if (vdesc->record >= 0 && iodesc->ndims < fndims) */
-                    /*     start[0] = frame[nv]; */
-
                     /* If there is data for this region, get a pointer to it. */
                     if (region)
                         bufptr = (void *)((char *)iobuf + iodesc->mpitype_size * (nv * llen + region->loffset));
@@ -275,12 +270,6 @@ int write_darray_multi_par(file_desc_t *file, int nvars, int fndims, const int *
                     {
                         /* Get the var info. */
                         vdesc = file->varlist + varids[nv];
-
-                        /* If this is a record var, set the start for
-                         * the record dimension. */
-                        if (vdesc->record >= 0 && iodesc->ndims < fndims)
-                            for (int rc = 0; rc < rrcnt; rc++)
-                                startlist[rc][0] = frame[nv];
 
                         /* Get a pointer to the data. */
                         bufptr = (void *)((char *)iobuf + nv * iodesc->mpitype_size * llen);
