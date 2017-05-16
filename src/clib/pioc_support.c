@@ -1646,13 +1646,8 @@ int PIOc_writemap(const char *file, int ndims, const int *gdims, PIO_Offset mapl
         }
         /* Free memory for the nmaplen. */
         free(nmaplen);
-#if PIO_SAVE_DECOMPS
-        /* Append no stack trace to the dumped decomposition file, until
-         * we make scripts/prune_decomps.pl work in the future */
-#else
         fprintf(fp, "\n");
         print_trace(fp);
-#endif
 
         /* Close the file. */
         fclose(fp);
