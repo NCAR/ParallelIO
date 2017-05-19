@@ -844,6 +844,7 @@ int PIOc_readmap(const char *file, int *ndims, int **gdims, PIO_Offset *fmaplen,
 {
     int npes, myrank;
     int rnpes, rversno;
+    char rversstr[PIO_MAX_NAME], rnpesstr[PIO_MAX_NAME], rndimsstr[PIO_MAX_NAME];
     int j;
     int *tdims;
     PIO_Offset *tmap;
@@ -866,7 +867,7 @@ int PIOc_readmap(const char *file, int *ndims, int **gdims, PIO_Offset *fmaplen,
         if (!fp)
             pio_err(NULL, NULL, PIO_EINVAL, __FILE__, __LINE__);
 
-        fscanf(fp,"version %d npes %d ndims %d\n",&rversno, &rnpes, ndims);
+        fscanf(fp,"%s%d%s%d%s%d\n",rversstr, &rversno, rnpesstr, &rnpes, rndimsstr, ndims);
 
         if (rversno != VERSNO)
             return pio_err(NULL, NULL, PIO_EINVAL, __FILE__, __LINE__);
