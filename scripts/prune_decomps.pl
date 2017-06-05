@@ -201,19 +201,30 @@ sub decode_stack_traces
     closedir(F);
     my $ndecompfiles = @decompfiles;
     for(my $i=0; $i< $ndecompfiles; $i++){
-        my $file = $decompfiles[$i];
-        open(F1,$file);
+        my $fname = $decompfiles[$i];
+        open(F1,$fname);
         my @file1 = <F1>;
         close(F1);
-        open(F1,">$file");
+        open(F1,">$fname");
+        if($is_dry_run){
+            print "Decoded stack frame ($fname) :\n";
+        }
         foreach(@file1){
             # Find stack addresses in the file and use
             # addrline to translate/decode the filenames and
             # line numbers from it
             if(/\[(.*)\]/){
                 my $decode = `addr2line -e $exe $1`;
-                print F1 "$decode\n";
-                print  "$decode\n";
+                if(!$is_dry_run){
+                    print F1 "$decode\n";
+                    if($verbose){
+                        print  "$decode\n";
+                    }
+                }
+                else{
+                    print F1 $_;
+                    print  "$decode\n";
+                }
             }else{
                 print F1 $_;
             }
