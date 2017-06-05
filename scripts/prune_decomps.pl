@@ -8,6 +8,7 @@ my $rundir="";
 my $exe="";
 my $nargs = 0;
 my $verbose = 0;
+my $is_dry_run = 0;
 
 # Reg expression that match the pio decomposition file names
 my $PIO_DECOMP_FNAMES = "^piodecomp";
@@ -75,14 +76,28 @@ sub rem_dup_decomp_files
                 close(F2);
                 if($rmfile == 1){
                     $decompfile_info[$j]->{IS_DUP} = 1;
+                    if($is_dry_run){
+                        print "\"$decompfile_info[$j]->{FNAME}\" IS DUP OF \"$decompfile_info[$i]->{FNAME}\"\n";
+                    }
                 }
             }
         }
     }
     for(my $i=0; $i<$ndecompfile_info; $i++){
-        if($decompfile_info[$i]->{IS_DUP}){
-            unlink($decompfile_info[$i]->{FNAME});
+        if($is_dry_run == 0){
+            if($decompfile_info[$i]->{IS_DUP}){
+                unlink($decompfile_info[$i]->{FNAME});
+            }
         }
+    }
+    if($is_dry_run){
+        print "UNIQUE files are : ";
+        for(my $i=0; $i<$ndecompfile_info; $i++){
+            if($decompfile_info[$i]->{IS_DUP} == 0){
+                print "\"$decompfile_info[$i]->{FNAME}\", ";
+            }
+        }
+        print "\n";
     }
 }
 
@@ -130,6 +145,7 @@ sub print_usage_and_exit()
     print "Available options : \n";
     print "\t--decomp-prune-dir : Directory that contains the decomp files to be pruned\n";
     print "\t--exe      : Executable that generated the decompositions \n";
+    print "\t--dry-run  : Run the tool and only print (without pruning) dup decomp files\n";
     print "\t--verbose  : Verbose debug output\n";
     exit;
 }
@@ -140,6 +156,7 @@ sub print_usage_and_exit()
 GetOptions(
     "decomp-prune-dir=s"    => \$rundir,
     "exe=s"             => \$exe,
+    "dry-run"               => \$is_dry_run,
     "verbose"               => \$verbose
 );
 
