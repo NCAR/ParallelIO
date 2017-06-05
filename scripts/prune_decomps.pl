@@ -23,7 +23,7 @@ sub rem_dup_decomp_files
     # decomposition files
     opendir(F,$dirname);
     #my @decompfiles = grep(/^piodecomp/,readdir(F));
-    my @decompfile_info_tmp = map{ {FNAME=>$_, SIZE=>-s $_, IS_DUP=>0} } grep(/${PIO_DECOMP_FNAMES}/,readdir(F));
+    my @decompfile_info_tmp = map{ {FNAME=>"$dirname/$_", SIZE=>-s "$dirname/$_", IS_DUP=>0} } grep(/${PIO_DECOMP_FNAMES}/,readdir(F));
     closedir(F);
     my @decompfile_info = sort { $a->{SIZE} <=> $b->{SIZE} } @decompfile_info_tmp;
     my $ndecompfile_info = @decompfile_info;
