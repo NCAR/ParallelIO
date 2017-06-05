@@ -36,38 +36,38 @@ sub rem_dup_decomp_files
     # Compare the decomposition files to find
     # duplicates - and delete the dups
     for(my $i=0; $i<$ndecompfile_info; $i++){
-        my $file  = $decompfile_info[$i]->{FNAME};
-        my $fsize  = $decompfile_info[$i]->{SIZE};
+        my $f1name  = $decompfile_info[$i]->{FNAME};
+        my $f1size  = $decompfile_info[$i]->{SIZE};
         next if($decompfile_info[$i]->{IS_DUP});
         for(my $j=$i+1;$j<$ndecompfile_info;$j++){
-            my $nfile = $decompfile_info[$j]->{FNAME};
+            my $f2name = $decompfile_info[$j]->{FNAME};
             my $f2size = $decompfile_info[$j]->{SIZE};
             next if($decompfile_info[$j]->{IS_DUP});
-            last if($fsize != $f2size);
+            last if($f1size != $f2size);
             if($verbose){
-                print "Comparing $file, size=$fsize, $nfile, size=$f2size\n";
+                print "Comparing $f1name, size=$f1size, $f2name, size=$f2size\n";
             }
-            if($fsize == $f2size){
-                open(F1,$file);
+            if($f1size == $f2size){
+                open(F1,$f1name);
                 my @file1 = <F1>;
-                open(F2,$nfile);
+                open(F2,$f2name);
                 my @file2 = <F2>;
                 $rmfile = 1;
-                foreach my $line (@file1){
-                    my $nline = shift (@file2);
+                foreach my $f1line (@file1){
+                    my $f2line = shift (@file2);
                     # Ignore stack traces when comparing files
                     # The stack traces start with a line containing
                     # "Obtained" 
                     # Also, stack trace is the last line being
                     # compared
-                    if(($line =~ /${BEGIN_STACK_TRACE}/)
-                          && ($nline =~ /${BEGIN_STACK_TRACE}/)){
+                    if(($f1line =~ /${BEGIN_STACK_TRACE}/)
+                          && ($f2line =~ /${BEGIN_STACK_TRACE}/)){
                         if($verbose){
-                            print "Files $file and $nfile are the same (ignoring stack traces)\n";
+                            print "Files $f1name and $f2name are the same (ignoring stack traces)\n";
                         }
                         last;
                     }
-                    next if($line eq $nline);
+                    next if($f1line eq $f2line);
                     # Files are different, don't remove    
                     $rmfile = 0;
                     last;
