@@ -14,6 +14,38 @@ my $is_dry_run = 0;
 my $PIO_DECOMP_FNAMES = "^piodecomp";
 my $BEGIN_STACK_TRACE = "Obtained";
 
+sub cmp_decomp_files
+{
+    my ($f1name, $f2name) = @_;
+    open(F1,$f1name);
+    my @file1 = <F1>;
+    open(F2,$f2name);
+    my @file2 = <F2>;
+    my $rmfile = 1;
+    foreach my $f1line (@file1){
+        my $f2line = shift (@file2);
+        # Ignore stack traces when comparing files
+        # The stack traces start with a line containing
+        # "Obtained" 
+        # Also, stack trace is the last line being
+        # compared
+        if(($f1line =~ /${BEGIN_STACK_TRACE}/)
+              && ($f2line =~ /${BEGIN_STACK_TRACE}/)){
+            if($verbose){
+                print "Files $f1name and $f2name are the same (ignoring stack traces)\n";
+            }
+            last;
+        }
+        next if($f1line eq $f2line);
+        # Files are different, don't remove    
+        $rmfile = 0;
+        last;
+    }
+    close(F1);
+    close(F2);
+    return ($rmfile == 1);
+}
+
 # Remove duplicate decomposition files in "dirname"
 sub rem_dup_decomp_files
 {
@@ -48,33 +80,8 @@ sub rem_dup_decomp_files
                 print "Comparing $f1name, size=$f1size, $f2name, size=$f2size\n";
             }
             if($f1size == $f2size){
-                open(F1,$f1name);
-                my @file1 = <F1>;
-                open(F2,$f2name);
-                my @file2 = <F2>;
-                $rmfile = 1;
-                foreach my $f1line (@file1){
-                    my $f2line = shift (@file2);
-                    # Ignore stack traces when comparing files
-                    # The stack traces start with a line containing
-                    # "Obtained" 
-                    # Also, stack trace is the last line being
-                    # compared
-                    if(($f1line =~ /${BEGIN_STACK_TRACE}/)
-                          && ($f2line =~ /${BEGIN_STACK_TRACE}/)){
-                        if($verbose){
-                            print "Files $f1name and $f2name are the same (ignoring stack traces)\n";
-                        }
-                        last;
-                    }
-                    next if($f1line eq $f2line);
-                    # Files are different, don't remove    
-                    $rmfile = 0;
-                    last;
-                }
-                close(F1);
-                close(F2);
-                if($rmfile == 1){
+                $rmfile = &cmp_decomp_files($f1name, $f2name);
+                if($rmfile){
                     $decompfile_info[$j]->{IS_DUP} = 1;
                     if($is_dry_run){
                         print "\"$decompfile_info[$j]->{FNAME}\" IS DUP OF \"$decompfile_info[$i]->{FNAME}\"\n";
