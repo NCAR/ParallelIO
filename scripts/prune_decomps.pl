@@ -20,8 +20,9 @@ my $TRAILER_SIZE_INVALID = -1;
 # else returns false/0
 sub cmp_decomp_files
 {
-    my ($f1name, $f2name, $trsize_ref) = @_;
+    my ($f1name, $f2name, $trsize_ref, $ioid_ref) = @_;
     ${$trsize_ref} = 0;
+    ${$ioid_ref} = -1;
     open(F1,$f1name);
     my @file1 = <F1>;
     open(F2,$f2name);
@@ -40,6 +41,9 @@ sub cmp_decomp_files
             use bytes;
             ${$trsize_ref} += length($f1line);
             while(defined(my $trline = shift(@file2))){
+                if($trline =~ /^ioid\s+([0-9]+)$/){
+                    ${$ioid_ref} = $1;
+                }
                 ${$trsize_ref} += length($trline);
             }
             if($verbose){
@@ -59,10 +63,12 @@ sub cmp_decomp_files
 
 # Get the size of the trailer in the decomposition file
 # Trailer => Content of the file after the stack trace
-sub get_decomp_trailer_sz
+sub get_decomp_trailer_info
 {
-    my ($fname) = @_;
-    my $ftrsize = 0;
+    my ($fname, $trsize_ref, $ioid_ref) = @_;
+    #my $ftrsize = 0;
+    ${$trsize_ref} = 0;
+    ${$ioid_ref} = -1;
     my $has_trailer = 0;
     open(F1,$fname);
     # Read the file from the end
@@ -73,10 +79,13 @@ sub get_decomp_trailer_sz
         # "Obtained" 
         # Calculate trailer size/length in bytes
         use bytes;
-        $ftrsize += length($line);
+        ${$trsize_ref} += length($line);
         if($line =~ /${BEGIN_STACK_TRACE}/){
             $has_trailer = 1;
             last;
+        }
+        if($line =~ /^ioid\s+([0-9]+)$/){
+            ${$ioid_ref} = $1;
         }
         next;
     }
@@ -85,9 +94,8 @@ sub get_decomp_trailer_sz
         # If the trailer is not present we end up with
         # the size of the decomp file as the trailer size,
         # so reset it
-        $ftrsize = 0;
+        ${$trsize_ref} = 0;
     }
-    return $ftrsize;
 }
 
 # Remove duplicate decomposition files in "dirname"
@@ -125,7 +133,8 @@ sub rem_dup_decomp_files
             }
             if($f1size == $f2size){
                 my $trsize = 0;
-                $rmfile = &cmp_decomp_files($f1name, $f2name, \$trsize);
+                my $ioid = -1;
+                $rmfile = &cmp_decomp_files($f1name, $f2name, \$trsize, \$ioid);
                 if($rmfile){
                     $decompfile_info[$i]->{TRAILER_SIZE} = $trsize;
                     $decompfile_info[$j]->{TRAILER_SIZE} = $trsize;
@@ -137,7 +146,10 @@ sub rem_dup_decomp_files
             }
         }
         if($decompfile_info[$i]->{TRAILER_SIZE} == $TRAILER_SIZE_INVALID){
-            $decompfile_info[$i]->{TRAILER_SIZE} = &get_decomp_trailer_sz($f1name);
+            my $trsize = 0;
+            my $ioid = -1;
+            &get_decomp_trailer_info($f1name, \$trsize, \$ioid);
+            $decompfile_info[$i]->{TRAILER_SIZE} = $trsize;
         }
     }
 
@@ -161,7 +173,8 @@ sub rem_dup_decomp_files
                 print "Comparing $f1name, size=$f1size, trsize=$f1trsize, $f2name, size=$f2size, trsize=$f2trsize\n";
             }
             my $trsize = 0;
-            $rmfile = &cmp_decomp_files($f1name, $f2name, \$trsize);
+            my $ioid = -1;
+            $rmfile = &cmp_decomp_files($f1name, $f2name, \$trsize, \$ioid);
             if($rmfile){
                 $decompfile_info[$j]->{IS_DUP} = 1;
                 if($is_dry_run){
