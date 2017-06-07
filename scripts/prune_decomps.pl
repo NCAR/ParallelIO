@@ -15,21 +15,27 @@ my $PIO_DECOMP_FNAMES = "^piodecomp";
 my $BEGIN_STACK_TRACE = "Obtained";
 
 my $TRAILER_SIZE_INVALID = -1;
+my $IOID_INVALID = -1;
 
 # Compares two decomp files and returns true/1 if they are equal
 # else returns false/0
 sub cmp_decomp_files
 {
-    my ($f1name, $f2name, $trsize_ref, $ioid_ref) = @_;
-    ${$trsize_ref} = 0;
-    ${$ioid_ref} = -1;
+    my ($f1name, $f2name, $f1trsize_ref, $f2trsize_ref, $f1ioid_ref, $f2ioid_ref) = @_;
+    ${$f1trsize_ref} = 0;
+    ${$f2trsize_ref} = 0;
+    ${$f1ioid_ref} = $IOID_INVALID;
+    ${$f2ioid_ref} = $IOID_INVALID;
     open(F1,$f1name);
     my @file1 = <F1>;
+    my $nf1lines = @file1;
     open(F2,$f2name);
     my @file2 = <F2>;
     my $rmfile = 1;
-    foreach my $f1line (@file1){
+    for(my $i=0; $i < $nf1lines; $i++){
+        my $f1line = $file1[$i];
         my $f2line = shift (@file2);
+        last if (not defined($f2line));
         # Ignore stack traces when comparing files
         # The stack traces start with a line containing
         # "Obtained" 
@@ -39,15 +45,23 @@ sub cmp_decomp_files
               && ($f2line =~ /${BEGIN_STACK_TRACE}/)){
             # Calculate trailer length/size in bytes
             use bytes;
-            ${$trsize_ref} += length($f1line);
+            ${$f2trsize_ref} += length($f2line);
             while(defined(my $trline = shift(@file2))){
                 if($trline =~ /^ioid\s+([0-9]+)$/){
-                    ${$ioid_ref} = $1;
+                    ${$f2ioid_ref} = $1;
                 }
-                ${$trsize_ref} += length($trline);
+                ${$f2trsize_ref} += length($trline);
+            }
+            ${$f1trsize_ref} += length($f1line);
+            for($i=$i+1;$i<$nf1lines; $i++){
+                my $trline = $file1[$i];
+                if($trline =~ /^ioid\s+([0-9]+)$/){
+                    ${$f1ioid_ref} = $1;
+                }
+                ${$f1trsize_ref} += length($trline);
             }
             if($verbose){
-                print "Files $f1name and $f2name are the same (ignoring stack traces), trailer sz = ${$trsize_ref}\n";
+                print "Files $f1name (trailer sz = ${$f1trsize_ref}) and $f2name (trailer sz = ${$f2trsize_ref}) are the same (ignoring stack traces)\n";
             }
             last;
         }
@@ -107,7 +121,7 @@ sub rem_dup_decomp_files
     # decomposition files
     opendir(F,$dirname);
     #my @decompfiles = grep(/^piodecomp/,readdir(F));
-    my @decompfile_info_tmp = map{ {FNAME=>"$dirname/$_", SIZE=>-s "$dirname/$_", TRAILER_SIZE=>$TRAILER_SIZE_INVALID, IS_DUP=>0} } grep(/${PIO_DECOMP_FNAMES}/,readdir(F));
+    my @decompfile_info_tmp = map{ {FNAME=>"$dirname/$_", SIZE=>-s "$dirname/$_", TRAILER_SIZE=>$TRAILER_SIZE_INVALID, IOID=>$IOID_INVALID, IS_DUP=>0} } grep(/${PIO_DECOMP_FNAMES}/,readdir(F));
     closedir(F);
     my @decompfile_info = sort { $a->{SIZE} <=> $b->{SIZE} } @decompfile_info_tmp;
     my $ndecompfile_info = @decompfile_info;
@@ -132,24 +146,30 @@ sub rem_dup_decomp_files
                 print "Comparing $f1name, size=$f1size, $f2name, size=$f2size\n";
             }
             if($f1size == $f2size){
-                my $trsize = 0;
-                my $ioid = -1;
-                $rmfile = &cmp_decomp_files($f1name, $f2name, \$trsize, \$ioid);
+                my $f1trsize = 0;
+                my $f2trsize = 0;
+                my $f1ioid = $IOID_INVALID;
+                my $f2ioid = $IOID_INVALID;
+                $rmfile = &cmp_decomp_files($f1name, $f2name, \$f1trsize, \$f2trsize, \$f1ioid, \$f2ioid);
                 if($rmfile){
-                    $decompfile_info[$i]->{TRAILER_SIZE} = $trsize;
-                    $decompfile_info[$j]->{TRAILER_SIZE} = $trsize;
+                    $decompfile_info[$i]->{TRAILER_SIZE} = $f1trsize;
+                    $decompfile_info[$i]->{IOID} = $f1ioid;
+                    $decompfile_info[$j]->{TRAILER_SIZE} = $f2trsize;
+                    $decompfile_info[$j]->{IOID} = $f2ioid;
                     $decompfile_info[$j]->{IS_DUP} = 1;
                     if($is_dry_run){
-                        print "\"$decompfile_info[$j]->{FNAME}\" IS DUP OF \"$decompfile_info[$i]->{FNAME}\", trailer sz = $trsize\n";
+                        print "\"$decompfile_info[$j]->{FNAME}\":ioid=$decompfile_info[$j]->{IOID} IS DUP OF \"$decompfile_info[$i]->{FNAME}\":ioid=$decompfile_info[$i]->{IOID}, trailer sz = $f1trsize\n";
                     }
                 }
             }
         }
+        # Get info for non-dups
         if($decompfile_info[$i]->{TRAILER_SIZE} == $TRAILER_SIZE_INVALID){
             my $trsize = 0;
             my $ioid = -1;
             &get_decomp_trailer_info($f1name, \$trsize, \$ioid);
             $decompfile_info[$i]->{TRAILER_SIZE} = $trsize;
+            $decompfile_info[$i]->{IOID} = $ioid;
         }
     }
 
@@ -172,13 +192,13 @@ sub rem_dup_decomp_files
             if($verbose){
                 print "Comparing $f1name, size=$f1size, trsize=$f1trsize, $f2name, size=$f2size, trsize=$f2trsize\n";
             }
-            my $trsize = 0;
-            my $ioid = -1;
-            $rmfile = &cmp_decomp_files($f1name, $f2name, \$trsize, \$ioid);
+            my $f1ioid = $IOID_INVALID;
+            my $f2ioid = $IOID_INVALID;
+            $rmfile = &cmp_decomp_files($f1name, $f2name, \$f1trsize, \$f2trsize, \$f1ioid, \$f2ioid);
             if($rmfile){
                 $decompfile_info[$j]->{IS_DUP} = 1;
                 if($is_dry_run){
-                    print "\"$decompfile_info[$j]->{FNAME}\" IS DUP OF \"$decompfile_info[$i]->{FNAME}\", trailer sz = $trsize\n";
+                    print "\"$decompfile_info[$j]->{FNAME}\":ioid=$decompfile_info[$j]->{IOID}:tr_sz=$decompfile_info[$j]->{TRAILER_SIZE} IS DUP OF \"$decompfile_info[$i]->{FNAME}\":ioid=$decompfile_info[$i]->{IOID}:tr_sz=$decompfile_info[$i]->{TRAILER_SIZE}\n";
                 }
             }
         }
@@ -194,7 +214,7 @@ sub rem_dup_decomp_files
         print "UNIQUE files are : ";
         for(my $i=0; $i<$ndecompfile_info; $i++){
             if($decompfile_info[$i]->{IS_DUP} == 0){
-                print "\"$decompfile_info[$i]->{FNAME}\" (trailer sz = $decompfile_info[$i]->{TRAILER_SIZE}), ";
+                print "\"$decompfile_info[$i]->{FNAME}\":ioid=$decompfile_info[$i]->{IOID} (trailer sz = $decompfile_info[$i]->{TRAILER_SIZE}), ";
             }
         }
         print "\n";
