@@ -121,7 +121,7 @@ sub rem_dup_decomp_files
     # decomposition files
     opendir(F,$dirname);
     #my @decompfiles = grep(/^piodecomp/,readdir(F));
-    my @decompfile_info_tmp = map{ {FNAME=>"$dirname/$_", SIZE=>-s "$dirname/$_", TRAILER_SIZE=>$TRAILER_SIZE_INVALID, IOID=>$IOID_INVALID, IS_DUP=>0} } grep(/${PIO_DECOMP_FNAMES}/,readdir(F));
+    my @decompfile_info_tmp = map{ {FNAME=>"$dirname/$_", SIZE=>-s "$dirname/$_", TRAILER_SIZE=>$TRAILER_SIZE_INVALID, IOID=>$IOID_INVALID, IS_DUP=>0, DUPLIST=>[]} } grep(/${PIO_DECOMP_FNAMES}/,readdir(F));
     closedir(F);
     my @decompfile_info = sort { $a->{SIZE} <=> $b->{SIZE} } @decompfile_info_tmp;
     my $ndecompfile_info = @decompfile_info;
@@ -154,6 +154,7 @@ sub rem_dup_decomp_files
                 if($rmfile){
                     $decompfile_info[$i]->{TRAILER_SIZE} = $f1trsize;
                     $decompfile_info[$i]->{IOID} = $f1ioid;
+                    push(@{$decompfile_info[$i]->{DUPLIST}},$j);
                     $decompfile_info[$j]->{TRAILER_SIZE} = $f2trsize;
                     $decompfile_info[$j]->{IOID} = $f2ioid;
                     $decompfile_info[$j]->{IS_DUP} = 1;
@@ -196,6 +197,7 @@ sub rem_dup_decomp_files
             my $f2ioid = $IOID_INVALID;
             $rmfile = &cmp_decomp_files($f1name, $f2name, \$f1trsize, \$f2trsize, \$f1ioid, \$f2ioid);
             if($rmfile){
+                push(@{$decompfile_info[$i]->{DUPLIST}},$j);
                 $decompfile_info[$j]->{IS_DUP} = 1;
                 if($is_dry_run){
                     print "\"$decompfile_info[$j]->{FNAME}\":ioid=$decompfile_info[$j]->{IOID}:tr_sz=$decompfile_info[$j]->{TRAILER_SIZE} IS DUP OF \"$decompfile_info[$i]->{FNAME}\":ioid=$decompfile_info[$i]->{IOID}:tr_sz=$decompfile_info[$i]->{TRAILER_SIZE}\n";
@@ -214,7 +216,18 @@ sub rem_dup_decomp_files
         print "UNIQUE files are : ";
         for(my $i=0; $i<$ndecompfile_info; $i++){
             if($decompfile_info[$i]->{IS_DUP} == 0){
-                print "\"$decompfile_info[$i]->{FNAME}\":ioid=$decompfile_info[$i]->{IOID} (trailer sz = $decompfile_info[$i]->{TRAILER_SIZE}), ";
+                print "\"$decompfile_info[$i]->{FNAME}\":ioid=$decompfile_info[$i]->{IOID}:(trailer sz = $decompfile_info[$i]->{TRAILER_SIZE}):";
+                my $ndups = @{$decompfile_info[$i]->{DUPLIST}};
+                if($ndups == 0){
+                    print "NO dups\n";
+                }
+                else{
+                    print "dup ioids = (";
+                    foreach (@{$decompfile_info[$i]->{DUPLIST}}){
+                        print "$decompfile_info[$_]->{IOID}, ";
+                    }
+                    print ")\n";
+                }
             }
         }
         print "\n";
