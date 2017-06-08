@@ -216,17 +216,27 @@ sub rem_dup_decomp_files
         print "UNIQUE files are : ";
         for(my $i=0; $i<$ndecompfile_info; $i++){
             if($decompfile_info[$i]->{IS_DUP} == 0){
-                print "\"$decompfile_info[$i]->{FNAME}\":ioid=$decompfile_info[$i]->{IOID}:(trailer sz = $decompfile_info[$i]->{TRAILER_SIZE}):";
-                my $ndups = @{$decompfile_info[$i]->{DUPLIST}};
-                if($ndups == 0){
-                    print "NO dups\n";
+                print "\"$decompfile_info[$i]->{FNAME}\"";
+                if($decompfile_info[$i]->{IOID} != $IOID_INVALID){
+                    print ":ioid=$decompfile_info[$i]->{IOID}";
                 }
                 else{
-                    print "dup ioids = (";
+                    print "ioid=UNAVAILABLE";
+                }
+                print ":(trailer sz = $decompfile_info[$i]->{TRAILER_SIZE})";
+                my $ndups = @{$decompfile_info[$i]->{DUPLIST}};
+                if($ndups == 0){
+                    print ":NO dups\n";
+                }
+                else{
+                    print ":$ndups dup ioids :";
                     foreach (@{$decompfile_info[$i]->{DUPLIST}}){
-                        print "$decompfile_info[$_]->{IOID}, ";
+                        my $ioid = $decompfile_info[$_]->{IOID};
+                        if($ioid != $IOID_INVALID){
+                            print "$ioid, ";
+                        }
                     }
-                    print ")\n";
+                    print "\n";
                 }
             }
         }
