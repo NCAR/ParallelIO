@@ -22,15 +22,12 @@ program pioperformance_rearr
   integer :: ierr, mype, npe, i
   logical :: Mastertask
   character(len=PIO_MAX_NAME) :: decompfile(MAX_DECOMP_FILES)
-  character(len=MAX_PIO_TYPENAME_LEN) :: pio_typenames(MAX_PIO_TYPES)
   integer :: piotypes(MAX_PIO_TYPES), niotypes
   integer :: rearrangers(MAX_PIO_REARRS)
   integer :: niotasks(MAX_IO_TASK_ARRAY_SIZE)
   integer :: nv, nframes, nvars(MAX_NVARS)
   integer :: vs, varsize(MAX_NVARS) !  Local size of array for idealized decomps
   logical :: unlimdimindof
-  namelist /pioperf/ decompfile, pio_typenames, rearrangers, niotasks, nframes, &
-       nvars, varsize, unlimdimindof
 #ifdef BGQTRY
   external :: print_memusage
 #endif
@@ -61,40 +58,12 @@ program pioperformance_rearr
   rearrangers = 0
   nframes = 5
   decompfile = ' '
-  pio_typenames = ' '
   piotypes = -1
   varsize = 0
   varsize(1) = 1
   unlimdimindof=.false.
-  if(mype==0) then
-     open(unit=12,file='pioperf.nl',status='old')
-     read(12,pioperf)
-     close(12)
-
-     do i=1,MAX_PIO_TYPES
-        if(pio_typenames(i) .eq. 'netcdf') then
-           piotypes(i) = PIO_IOTYPE_NETCDF
-        else if(pio_typenames(i) .eq. 'netcdf4p') then
-           piotypes(i) = PIO_IOTYPE_NETCDF4P
-        else if(pio_typenames(i) .eq. 'netcdf4c') then
-           piotypes(i) = PIO_IOTYPE_NETCDF4C
-        else if(pio_typenames(i) .eq. 'pnetcdf') then
-           piotypes(i) = PIO_IOTYPE_PNETCDF
-        else
-           exit
-        endif
-     enddo
-
-  endif
-
-  call MPI_Bcast(decompfile,PIO_MAX_NAME*MAX_DECOMP_FILES,MPI_CHARACTER,0, MPI_COMM_WORLD,ierr)
-  call MPI_Bcast(piotypes,MAX_PIO_TYPES, MPI_INTEGER, 0, MPI_COMM_WORLD,ierr)
-  call MPI_Bcast(rearrangers, MAX_PIO_REARRS, MPI_INTEGER, 0, MPI_COMM_WORLD,ierr)
-  call MPI_Bcast(niotasks, MAX_IO_TASK_ARRAY_SIZE, MPI_INTEGER, 0, MPI_COMM_WORLD,ierr)
-  call MPI_Bcast(nframes, 1, MPI_INTEGER, 0, MPI_COMM_WORLD,ierr)
-  call MPI_Bcast(unlimdimindof, 1, MPI_INTEGER, 0, MPI_COMM_WORLD,ierr)
-  call MPI_Bcast(nvars, MAX_NVARS, MPI_INTEGER, 0, MPI_COMM_WORLD,ierr)
-  call MPI_Bcast(varsize, MAX_NVARS, MPI_INTEGER, 0, MPI_COMM_WORLD,ierr)
+  call read_user_input(mype, decompfile, piotypes, rearrangers,&
+        niotasks, nframes, unlimdimindof, nvars, varsize, ierr)
 
   call t_initf('pioperf.nl', LogPrint=.false., mpicom=MPI_COMM_WORLD, MasterTask=MasterTask)
   niotypes = 0
@@ -124,6 +93,59 @@ program pioperformance_rearr
 
   call MPI_Finalize(ierr)
 contains
+
+  ! Read user input
+  subroutine read_user_input(mype, decompfile, piotypes, rearrangers,&
+        niotasks, nframes, unlimdimindof, nvars, varsize, ierr)
+    integer, intent(in) :: mype
+    character(len=*), intent(out) :: decompfile(MAX_DECOMP_FILES)
+    integer, intent(out) :: piotypes(MAX_PIO_TYPES)
+    integer, intent(out) :: rearrangers(MAX_PIO_REARRS)
+    integer, intent(out) :: niotasks(MAX_IO_TASK_ARRAY_SIZE)
+    integer, intent(out) :: nframes
+    logical, intent(out) :: unlimdimindof
+    integer, intent(out) :: nvars(MAX_NVARS)
+    integer, intent(out) :: varsize(MAX_NVARS)
+    integer, intent(out) :: ierr
+
+    character(len=MAX_PIO_TYPENAME_LEN) :: pio_typenames(MAX_PIO_TYPES)
+
+    namelist /pioperf/ decompfile, pio_typenames, rearrangers, niotasks, nframes, &
+         nvars, varsize, unlimdimindof
+
+    pio_typenames = ' '
+
+    if(mype==0) then
+       open(unit=12,file='pioperf.nl',status='old')
+       read(12,pioperf)
+       close(12)
+
+       do i=1,MAX_PIO_TYPES
+          if(pio_typenames(i) .eq. 'netcdf') then
+             piotypes(i) = PIO_IOTYPE_NETCDF
+          else if(pio_typenames(i) .eq. 'netcdf4p') then
+             piotypes(i) = PIO_IOTYPE_NETCDF4P
+          else if(pio_typenames(i) .eq. 'netcdf4c') then
+             piotypes(i) = PIO_IOTYPE_NETCDF4C
+          else if(pio_typenames(i) .eq. 'pnetcdf') then
+             piotypes(i) = PIO_IOTYPE_PNETCDF
+          else
+             exit
+          endif
+       enddo
+
+    endif
+
+    call MPI_Bcast(decompfile,PIO_MAX_NAME*MAX_DECOMP_FILES,MPI_CHARACTER,0, MPI_COMM_WORLD,ierr)
+    call MPI_Bcast(piotypes,MAX_PIO_TYPES, MPI_INTEGER, 0, MPI_COMM_WORLD,ierr)
+    call MPI_Bcast(rearrangers, MAX_PIO_REARRS, MPI_INTEGER, 0, MPI_COMM_WORLD,ierr)
+    call MPI_Bcast(niotasks, MAX_IO_TASK_ARRAY_SIZE, MPI_INTEGER, 0, MPI_COMM_WORLD,ierr)
+    call MPI_Bcast(nframes, 1, MPI_INTEGER, 0, MPI_COMM_WORLD,ierr)
+    call MPI_Bcast(unlimdimindof, 1, MPI_INTEGER, 0, MPI_COMM_WORLD,ierr)
+    call MPI_Bcast(nvars, MAX_NVARS, MPI_INTEGER, 0, MPI_COMM_WORLD,ierr)
+    call MPI_Bcast(varsize, MAX_NVARS, MPI_INTEGER, 0, MPI_COMM_WORLD,ierr)
+
+  end subroutine read_user_input
 
   subroutine pioperformance_rearrtest(filename, piotypes, mype, npe_base, &
        rearrangers, niotasks,nframes, nvars, varsize, unlimdimindof)
