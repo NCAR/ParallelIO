@@ -220,12 +220,9 @@ contains
 
   end subroutine read_cmd_line_input
 
-  ! Read user input
-  ! Read the input from namelist file and then
-  ! read (and override) the command line options
-  subroutine read_user_input(mype, decompfile, piotypes, rearrangers,&
+  ! Read the namelist file
+  subroutine read_nml_input(decompfile, piotypes, rearrangers,&
         niotasks, nframes, unlimdimindof, nvars, varsize, ierr)
-    integer, intent(in) :: mype
     character(len=*), intent(out) :: decompfile(MAX_DECOMP_FILES)
     integer, intent(out) :: piotypes(MAX_PIO_TYPES)
     integer, intent(out) :: rearrangers(MAX_PIO_REARRS)
@@ -244,28 +241,50 @@ contains
 
     pio_typenames = ' '
 
-    if(mype==0) then
-       open(unit=12,file='pioperf.nl',status='old')
-       read(12,pioperf)
-       close(12)
+    open(unit=12,file='pioperf.nl',status='old')
+    read(12,pioperf)
+    close(12)
 
-       do i=1,MAX_PIO_TYPES
-          if(pio_typenames(i) .eq. 'netcdf') then
-             piotypes(i) = PIO_IOTYPE_NETCDF
-          else if(pio_typenames(i) .eq. 'netcdf4p') then
-             piotypes(i) = PIO_IOTYPE_NETCDF4P
-          else if(pio_typenames(i) .eq. 'netcdf4c') then
-             piotypes(i) = PIO_IOTYPE_NETCDF4C
-          else if(pio_typenames(i) .eq. 'pnetcdf') then
-             piotypes(i) = PIO_IOTYPE_PNETCDF
-          else
-             exit
-          endif
-       enddo
+    do i=1,MAX_PIO_TYPES
+       if(pio_typenames(i) .eq. 'netcdf') then
+          piotypes(i) = PIO_IOTYPE_NETCDF
+       else if(pio_typenames(i) .eq. 'netcdf4p') then
+          piotypes(i) = PIO_IOTYPE_NETCDF4P
+       else if(pio_typenames(i) .eq. 'netcdf4c') then
+          piotypes(i) = PIO_IOTYPE_NETCDF4C
+       else if(pio_typenames(i) .eq. 'pnetcdf') then
+          piotypes(i) = PIO_IOTYPE_PNETCDF
+       else
+          exit
+       endif
+    enddo
 
-    endif
+  end subroutine read_nml_input
+
+  ! Read user input
+  ! Read the input from namelist file and then
+  ! read (and override) the command line options
+  subroutine read_user_input(mype, decompfile, piotypes, rearrangers,&
+        niotasks, nframes, unlimdimindof, nvars, varsize, ierr)
+    integer, intent(in) :: mype
+    character(len=*), intent(out) :: decompfile(MAX_DECOMP_FILES)
+    integer, intent(out) :: piotypes(MAX_PIO_TYPES)
+    integer, intent(out) :: rearrangers(MAX_PIO_REARRS)
+    integer, intent(out) :: niotasks(MAX_IO_TASK_ARRAY_SIZE)
+    integer, intent(out) :: nframes
+    logical, intent(out) :: unlimdimindof
+    integer, intent(out) :: nvars(MAX_NVARS)
+    integer, intent(out) :: varsize(MAX_NVARS)
+    integer, intent(out) :: ierr
+
+    character(len=MAX_PIO_TYPENAME_LEN) :: pio_typenames(MAX_PIO_TYPES)
+
+    pio_typenames = ' '
 
     if(mype == 0) then
+      ! Read namelist file
+      call read_nml_input(decompfile, piotypes, rearrangers,&
+            niotasks, nframes, unlimdimindof, nvars, varsize, ierr)
       ! Allow user to override the values via command line
       call read_cmd_line_input(decompfile, piotypes, rearrangers,&
             niotasks, nframes, unlimdimindof, nvars, varsize, ierr)
