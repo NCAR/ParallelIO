@@ -233,7 +233,7 @@ contains
 
   end subroutine read_cmd_line_input
 
-  ! Read the namelist file
+  ! Read the namelist file, if it exists
   subroutine read_nml_input(decompfile, piotypes, rearrangers,&
         niotasks, nframes, unlimdimindof, nvars, varsize, ierr)
     character(len=*), intent(out) :: decompfile(MAX_DECOMP_FILES)
@@ -254,28 +254,31 @@ contains
 
     pio_typenames = ' '
 
-    open(unit=12,file='pioperf.nl',status='old')
-    read(12,pioperf)
-    close(12)
+    inquire(file='pioperf.nl',exist=file_exists)
+    if(file_exists) then
+      open(unit=12,file='pioperf.nl',status='old')
+      read(12,pioperf)
+      close(12)
 
-    do i=1,MAX_PIO_TYPES
-       if(pio_typenames(i) .eq. 'netcdf') then
-          piotypes(i) = PIO_IOTYPE_NETCDF
-       else if(pio_typenames(i) .eq. 'netcdf4p') then
-          piotypes(i) = PIO_IOTYPE_NETCDF4P
-       else if(pio_typenames(i) .eq. 'netcdf4c') then
-          piotypes(i) = PIO_IOTYPE_NETCDF4C
-       else if(pio_typenames(i) .eq. 'pnetcdf') then
-          piotypes(i) = PIO_IOTYPE_PNETCDF
-       else
-          exit
-       endif
-    enddo
+      do i=1,MAX_PIO_TYPES
+         if(pio_typenames(i) .eq. 'netcdf') then
+            piotypes(i) = PIO_IOTYPE_NETCDF
+         else if(pio_typenames(i) .eq. 'netcdf4p') then
+            piotypes(i) = PIO_IOTYPE_NETCDF4P
+         else if(pio_typenames(i) .eq. 'netcdf4c') then
+            piotypes(i) = PIO_IOTYPE_NETCDF4C
+         else if(pio_typenames(i) .eq. 'pnetcdf') then
+            piotypes(i) = PIO_IOTYPE_PNETCDF
+         else
+            exit
+         endif
+      enddo
+    end if
 
   end subroutine read_nml_input
 
   ! Read user input
-  ! Read the input from namelist file and then
+  ! Read the input from namelist file, if available, and then
   ! read (and override) the command line options
   subroutine read_user_input(mype, decompfile, piotypes, rearrangers,&
         niotasks, nframes, unlimdimindof, nvars, varsize, ierr)
