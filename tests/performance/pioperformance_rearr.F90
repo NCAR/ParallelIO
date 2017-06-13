@@ -206,6 +206,24 @@ contains
 
   end subroutine parse_and_process_input
 
+  subroutine pio_typename2type(pio_typename, pio_type)
+    character(len=*), intent(in) :: pio_typename
+    integer, intent(out) :: pio_type
+
+    if(pio_typename .eq. 'netcdf') then
+      pio_type = PIO_IOTYPE_NETCDF
+    else if(pio_typename .eq. 'netcdf4p') then
+      pio_type = PIO_IOTYPE_NETCDF4P
+    else if(pio_typename .eq. 'netcdf4c') then
+      pio_type = PIO_IOTYPE_NETCDF4C
+    else if(pio_typename .eq. 'pnetcdf') then
+      pio_type = PIO_IOTYPE_PNETCDF
+    else
+      print *, "ERROR: Unrecognized pio type :", pio_typename,&
+                __FILE__, __LINE__
+    endif
+  end subroutine pio_typename2type
+
   ! Parse command line user options
   subroutine read_cmd_line_input(decompfile, piotypes, rearrangers,&
         niotasks, nframes, unlimdimindof, nvars, varsize, ierr)
@@ -261,17 +279,7 @@ contains
       close(12)
 
       do i=1,MAX_PIO_TYPES
-         if(pio_typenames(i) .eq. 'netcdf') then
-            piotypes(i) = PIO_IOTYPE_NETCDF
-         else if(pio_typenames(i) .eq. 'netcdf4p') then
-            piotypes(i) = PIO_IOTYPE_NETCDF4P
-         else if(pio_typenames(i) .eq. 'netcdf4c') then
-            piotypes(i) = PIO_IOTYPE_NETCDF4C
-         else if(pio_typenames(i) .eq. 'pnetcdf') then
-            piotypes(i) = PIO_IOTYPE_PNETCDF
-         else
-            exit
-         endif
+         call pio_typename2type(pio_typenames(i), piotypes(i))
       enddo
     end if
 
