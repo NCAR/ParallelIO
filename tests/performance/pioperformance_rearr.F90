@@ -1,5 +1,5 @@
-#define VARINT 1 
-!#define VARREAL 1
+!#define VARINT 1
+#define VARREAL 1
 !#define VARDOUBLE 1
 
 program pioperformance_rearr
