@@ -171,41 +171,6 @@ contains
     
   end subroutine init_arr_from_list
 
-  ! Parse a single command line arg
-  subroutine parse_and_process_input(argv, decompfile, piotypes,&
-        rearrangers, niotasks, nframes, unlimdimindof, nvars, varsize, ierr)
-    character(len=*), intent(in)  :: argv
-    character(len=*), intent(out) :: decompfile(MAX_DECOMP_FILES)
-    integer, intent(out) :: piotypes(MAX_PIO_TYPES)
-    integer, intent(out) :: rearrangers(MAX_PIO_REARRS)
-    integer, intent(out) :: niotasks(MAX_IO_TASK_ARRAY_SIZE)
-    integer, intent(out) :: nframes
-    logical, intent(out) :: unlimdimindof
-    integer, intent(out) :: nvars(MAX_NVARS)
-    integer, intent(out) :: varsize(MAX_NVARS)
-    integer, intent(out) :: ierr
-
-    integer :: pos
-
-    ! All input arguments are of the form <INPUT_ARG_NAME>=<INPUT_ARG>
-    !print *, argv
-    pos = index(argv, "=")
-    if (pos == 0) then
-      ! Ignore unrecognized args
-      return
-    else
-      ! Check if it an input to PIO testing framework
-      if (argv(:pos) == "--pio-nvars=") THEN
-        call init_arr_from_list(argv(pos+1:), iarr=nvars, ierr=ierr)
-        !print *, "Read nvars : ", nvars
-      ELSE IF (argv(:pos) == "--pio-nframes=") THEN
-        read(argv(pos+1:), *) nframes
-        !print *, "Read nframes = ", nframes
-      END IF
-    end if
-
-  end subroutine parse_and_process_input
-
   subroutine pio_typename2type(pio_typename, pio_type)
     character(len=*), intent(in) :: pio_typename
     integer, intent(out) :: pio_type
@@ -219,10 +184,68 @@ contains
     else if(pio_typename .eq. 'pnetcdf') then
       pio_type = PIO_IOTYPE_PNETCDF
     else
-      print *, "ERROR: Unrecognized pio type :", pio_typename,&
-                __FILE__, __LINE__
+      !print *, "ERROR: Unrecognized pio type :", pio_typename,&
+      !          __FILE__, __LINE__
     endif
   end subroutine pio_typename2type
+
+  ! Parse a single command line arg
+  subroutine parse_and_process_input(argv, decompfiles, piotypes,&
+        rearrangers, niotasks, nframes, unlimdimindof, nvars, varsize, ierr)
+    character(len=*), intent(in)  :: argv
+    character(len=*), intent(out) :: decompfiles(MAX_DECOMP_FILES)
+    integer, intent(out) :: piotypes(MAX_PIO_TYPES)
+    integer, intent(out) :: rearrangers(MAX_PIO_REARRS)
+    integer, intent(out) :: niotasks(MAX_IO_TASK_ARRAY_SIZE)
+    integer, intent(out) :: nframes
+    logical, intent(out) :: unlimdimindof
+    integer, intent(out) :: nvars(MAX_NVARS)
+    integer, intent(out) :: varsize(MAX_NVARS)
+    integer, intent(out) :: ierr
+
+    character(len=MAX_PIO_TYPENAME_LEN) :: pio_typenames(MAX_PIO_TYPES)
+    integer :: pos, i
+
+    ! All input arguments are of the form <INPUT_ARG_NAME>=<INPUT_ARG>
+    !print *, argv
+    pos = index(argv, "=")
+    if (pos == 0) then
+      ! Ignore unrecognized args
+      return
+    else
+      ! Check if it an input to PIO testing framework
+      if (argv(:pos) == "--pio-decompfiles=") then
+        call init_arr_from_list(argv(pos+1:), carr=decompfiles, ierr=ierr)
+        !print *, "Read decompfiles : ", decompfiles
+      else if (argv(:pos) == "--pio-types=") then
+        pio_typenames = ' '
+        call init_arr_from_list(argv(pos+1:), carr=pio_typenames, ierr=ierr)
+        !print *, "Read types : ", pio_typenames
+        do i=1,MAX_PIO_TYPES
+          call pio_typename2type(pio_typenames(i), piotypes(i))
+        end do
+      else if (argv(:pos) == "--pio-rearrangers=") then
+        call init_arr_from_list(argv(pos+1:), iarr=rearrangers, ierr=ierr)
+        !print *, "Read rearrangers : ", rearrangers
+      else if (argv(:pos) == "--pio-niotasks=") then
+        call init_arr_from_list(argv(pos+1:), iarr=niotasks, ierr=ierr)
+        !print *, "Read niotasks : ", niotasks
+      else if (argv(:pos) == "--pio-nframes=") then
+        read(argv(pos+1:), *) nframes
+        !print *, "Read nframes = ", nframes
+      else if (argv(:pos) == "--pio-unlimdimindof=") then
+        read(argv(pos+1:), *) unlimdimindof
+        !print *, "Read unlimdimindof = ", unlimdimindof
+      else if (argv(:pos) == "--pio-nvars=") then
+        call init_arr_from_list(argv(pos+1:), iarr=nvars, ierr=ierr)
+        !print *, "Read nvars : ", nvars
+      else if (argv(:pos) == "--pio-varsize=") then
+        call init_arr_from_list(argv(pos+1:), iarr=varsize, ierr=ierr)
+        !print *, "Read varsize : ", varsize
+      end if
+    end if
+
+  end subroutine parse_and_process_input
 
   ! Parse command line user options
   subroutine read_cmd_line_input(decompfile, piotypes, rearrangers,&
