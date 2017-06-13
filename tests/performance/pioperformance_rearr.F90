@@ -34,9 +34,11 @@ program pioperformance_rearr
   integer :: vs, varsize(MAX_NVARS) !  Local size of array for idealized decomps
   logical :: unlimdimindof
   type(pio_rearr_opt_t) :: rearr_opts
+  logical :: nml_file_exists = .false. , use_gptl = .false.
 #ifdef BGQTRY
   external :: print_memusage
 #endif
+  external :: gptlinitialize, gptlfinalize
 #ifdef _PIO1
   integer, parameter :: PIO_FILL_INT   = 02147483647
   real, parameter    :: PIO_FILL_FLOAT = 9.969209968E+36
@@ -72,7 +74,18 @@ program pioperformance_rearr
         niotasks, nframes, unlimdimindof, nvars, varsize,&
         rearr_opts, ierr)
 
-  call t_initf(PIO_NML_FNAME, LogPrint=.false., mpicom=MPI_COMM_WORLD, MasterTask=MasterTask)
+  inquire(file=PIO_NML_FNAME,exist=nml_file_exists)
+  if(nml_file_exists) then
+    use_gptl = .false.
+  else
+    use_gptl = .true.
+  end if
+  if(use_gptl) then
+    call gptlinitialize()
+  else
+    call t_initf(PIO_NML_FNAME, LogPrint=.false.,&
+      mpicom=MPI_COMM_WORLD, MasterTask=MasterTask)
+  end if
   niotypes = 0
   do i=1,MAX_PIO_TYPES
      if (piotypes(i) > -1) niotypes = niotypes+1
@@ -97,7 +110,12 @@ program pioperformance_rearr
         endif
      enddo
   enddo
-  call t_finalizef()
+
+  if(use_gptl) then
+    call gptlfinalize()
+  else
+    call t_finalizef()
+  end if
 
   call MPI_Finalize(ierr)
 contains
@@ -156,10 +174,11 @@ contains
       if(prev_pos+1 <= pos-1) then
         if(present(iarr)) then
           read(argv(prev_pos+1:pos-1), *) iarr(arr_idx) 
+          !print *, "Parser : read : ", iarr(arr_idx)
         else if(present(carr)) then
           read(argv(prev_pos+1:pos-1), *) carr(arr_idx) 
+          !print *, "Parser : read : ", carr(arr_idx)
         end if
-        !print *, "Parser : read : ", arr(arr_idx)
         arr_idx = arr_idx + 1
       else
         ! Ignore this invalid value and continue parsing
@@ -534,6 +553,18 @@ contains
 
   end subroutine read_user_input
 
+  subroutine get_tstamp(wall, sys, usr)
+    use perf_mod
+    double precision, intent(out) :: wall, sys, usr
+    external :: gptlstamp
+
+    if(use_gptl) then
+      call gptlstamp(wall, sys, usr)
+    else
+      call t_stampf(wall, sys, usr)
+    end if
+  end subroutine get_tstamp
+
   subroutine pioperformance_rearrtest(filename, piotypes, mype, npe_base, &
        rearrangers, rearr_opts, niotasks,nframes, nvars, varsize,&
        unlimdimindof)
@@ -679,7 +710,7 @@ contains
                 call WriteMetadata(File, gdims, vari, varr, vard, unlimdimindof)
 
                 call MPI_Barrier(comm,ierr)
-                call t_stampf(wall(1), usr(1), sys(1))
+                call get_tstamp(wall(1), usr(1), sys(1))
 
                 if(.not. unlimdimindof) then
 #ifdef VARINT
@@ -745,7 +776,7 @@ contains
 
                 call MPI_Barrier(comm,ierr)
 
-                call t_stampf(wall(2), usr(2), sys(2))
+                call get_tstamp(wall(2), usr(2), sys(2))
                 wall(1) = wall(2)-wall(1)
                 call MPI_Reduce(wall(1), wall(2), 1, MPI_DOUBLE_PRECISION, MPI_MAX, 0, comm, ierr)
                 if(mype==0) then
@@ -798,7 +829,7 @@ contains
 
 
                 call MPI_Barrier(comm,ierr)
-                call t_stampf(wall(1), usr(1), sys(1))
+                call get_tstamp(wall(1), usr(1), sys(1))
                 
                 do frame=1,nframes                   
                    do nv=1,nvars
@@ -819,7 +850,7 @@ contains
                 
                 call pio_closefile(File)
                 call MPI_Barrier(comm,ierr)
-                call t_stampf(wall(2), usr(2), sys(2))
+                call get_tstamp(wall(2), usr(2), sys(2))
                 wall(1) = wall(2)-wall(1)
                 call MPI_Reduce(wall(1), wall(2), 1, MPI_DOUBLE_PRECISION, MPI_MAX, 0, comm, ierr)
                 errorcnt = 0
