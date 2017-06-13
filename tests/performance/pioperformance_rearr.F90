@@ -8,7 +8,11 @@ program pioperformance_rearr
 #endif
   use perf_mod, only : t_initf, t_finalizef
   use pio, only : pio_iotype_netcdf, pio_iotype_pnetcdf, pio_iotype_netcdf4p, &
-       pio_iotype_netcdf4c, pio_rearr_subset, pio_rearr_box, PIO_MAX_NAME
+       pio_iotype_netcdf4c, pio_rearr_subset, pio_rearr_box, PIO_MAX_NAME,&
+        pio_rearr_opt_t, pio_rearr_comm_p2p, pio_rearr_comm_coll,&
+        pio_rearr_comm_fc_2d_disable, pio_rearr_comm_fc_1d_comp2io,&
+        pio_rearr_comm_fc_1d_io2comp, pio_rearr_comm_fc_2d_enable,&
+        pio_rearr_comm_unlimited_pend_req
   implicit none
 #ifdef NO_MPIMOD
 #include <mpif.h>
@@ -29,6 +33,7 @@ program pioperformance_rearr
   integer :: nv, nframes, nvars(MAX_NVARS)
   integer :: vs, varsize(MAX_NVARS) !  Local size of array for idealized decomps
   logical :: unlimdimindof
+  type(pio_rearr_opt_t) :: rearr_opts
 #ifdef BGQTRY
   external :: print_memusage
 #endif
@@ -64,7 +69,8 @@ program pioperformance_rearr
   varsize(1) = 1
   unlimdimindof=.false.
   call read_user_input(mype, decompfile, piotypes, rearrangers,&
-        niotasks, nframes, unlimdimindof, nvars, varsize, ierr)
+        niotasks, nframes, unlimdimindof, nvars, varsize,&
+        rearr_opts, ierr)
 
   call t_initf(PIO_NML_FNAME, LogPrint=.false., mpicom=MPI_COMM_WORLD, MasterTask=MasterTask)
   niotypes = 0
@@ -83,8 +89,9 @@ program pioperformance_rearr
         if(varsize(vs) > 0 ) then
            do nv=1,MAX_NVARS
               if(nvars(nv)>0) then
-                 call pioperformance_rearrtest(decompfile(i), piotypes(1:niotypes), mype, npe, &
-                      rearrangers, niotasks, nframes, nvars(nv), varsize(vs),unlimdimindof) 
+                 call pioperformance_rearrtest(decompfile(i), piotypes(1:niotypes),&
+                      mype, npe, rearrangers, rearr_opts, niotasks, nframes,&
+                      nvars(nv), varsize(vs),unlimdimindof) 
               endif
            enddo
         endif
@@ -190,9 +197,34 @@ contains
     endif
   end subroutine pio_typename2type
 
+  ! Convert pio rearr option string to option
+  subroutine pio_rearr_str2opt(rearr_opt_str, rearr_opt)
+    character(len=*), intent(in) :: rearr_opt_str
+    integer, intent(out) :: rearr_opt
+
+    if(rearr_opt_str .eq. 'p2p') then
+      rearr_opt = pio_rearr_comm_p2p
+    else if(rearr_opt_str .eq. 'coll') then
+      rearr_opt = pio_rearr_comm_coll
+    else if(rearr_opt_str .eq. '2d_enable') then
+      rearr_opt = pio_rearr_comm_fc_2d_enable
+    else if(rearr_opt_str .eq. '1d_comp2io') then
+      rearr_opt = pio_rearr_comm_fc_1d_comp2io
+    else if(rearr_opt_str .eq. '1d_io2comp') then
+      rearr_opt = pio_rearr_comm_fc_1d_io2comp
+    else if(rearr_opt_str .eq. '2d_disable') then
+      rearr_opt = pio_rearr_comm_fc_2d_disable
+    else
+      !print *, "ERROR: Unrecognized pio rearr opt :", rearr_opt_str,&
+      !          __FILE__, __LINE__
+    end if
+    
+  end subroutine pio_rearr_str2opt
+
   ! Parse a single command line arg
   subroutine parse_and_process_input(argv, decompfiles, piotypes,&
-        rearrangers, niotasks, nframes, unlimdimindof, nvars, varsize, ierr)
+        rearrangers, niotasks, nframes, unlimdimindof, nvars, varsize,&
+        rearr_opts, ierr)
     character(len=*), intent(in)  :: argv
     character(len=*), intent(out) :: decompfiles(MAX_DECOMP_FILES)
     integer, intent(out) :: piotypes(MAX_PIO_TYPES)
@@ -202,9 +234,12 @@ contains
     logical, intent(out) :: unlimdimindof
     integer, intent(out) :: nvars(MAX_NVARS)
     integer, intent(out) :: varsize(MAX_NVARS)
+    type(pio_rearr_opt_t), intent(out) :: rearr_opts
     integer, intent(out) :: ierr
 
+    integer, parameter :: MAX_PIO_REARR_OPT_LEN = 128
     character(len=MAX_PIO_TYPENAME_LEN) :: pio_typenames(MAX_PIO_TYPES)
+    character(len=MAX_PIO_REARR_OPT_LEN) :: tmp_rearr_opt
     integer :: pos, i
 
     ! All input arguments are of the form <INPUT_ARG_NAME>=<INPUT_ARG>
@@ -228,6 +263,40 @@ contains
       else if (argv(:pos) == "--pio-rearrangers=") then
         call init_arr_from_list(argv(pos+1:), iarr=rearrangers, ierr=ierr)
         !print *, "Read rearrangers : ", rearrangers
+      else if (argv(:pos) == "--pio-rearr-comm-type=") then
+        tmp_rearr_opt = ''
+        read(argv(pos+1:), *) tmp_rearr_opt
+        !print *, "Read rearr opt comm type : ", tmp_rearr_opt
+        call pio_rearr_str2opt(tmp_rearr_opt,rearr_opts%comm_type)
+      else if (argv(:pos) == "--pio-rearr-fcd=") then
+        tmp_rearr_opt = ''
+        read(argv(pos+1:), *) tmp_rearr_opt
+        !print *, "Read rearr opt fcd : ", tmp_rearr_opt
+        call pio_rearr_str2opt(tmp_rearr_opt,rearr_opts%fcd)
+      else if (argv(:pos) == "--pio-rearr-comp2io-enable-hs=") then
+        read(argv(pos+1:), *) rearr_opts%comm_fc_opts_comp2io%enable_hs
+        !print *, "Read rearr opt enable_hs (comp2io): ",&
+        !            rearr_opts%comm_fc_opts_comp2io%enable_hs 
+      else if (argv(:pos) == "--pio-rearr-comp2io-enable-isend=") then
+        read(argv(pos+1:), *) rearr_opts%comm_fc_opts_comp2io%enable_isend
+        !print *, "Read rearr opt enable_isend (comp2io): ",&
+        !            rearr_opts%comm_fc_opts_comp2io%enable_isend
+      else if (argv(:pos) == "--pio-rearr-comp2io-max-pend-req=") then
+        read(argv(pos+1:), *) rearr_opts%comm_fc_opts_comp2io%max_pend_req
+        !print *, "Read rearr opt max pend req (comp2io): ",&
+        !            rearr_opts%comm_fc_opts_comp2io%max_pend_req
+      else if (argv(:pos) == "--pio-rearr-io2comp-enable-hs=") then
+        read(argv(pos+1:), *) rearr_opts%comm_fc_opts_io2comp%enable_hs
+        !print *, "Read rearr opt enable_hs (io2comp): ",&
+        !            rearr_opts%comm_fc_opts_io2comp%enable_hs 
+      else if (argv(:pos) == "--pio-rearr-io2comp-enable-isend=") then
+        read(argv(pos+1:), *) rearr_opts%comm_fc_opts_io2comp%enable_isend
+        !print *, "Read rearr opt enable_isend (io2comp): ",&
+        !            rearr_opts%comm_fc_opts_io2comp%enable_isend
+      else if (argv(:pos) == "--pio-rearr-io2comp-max-pend-req=") then
+        read(argv(pos+1:), *) rearr_opts%comm_fc_opts_io2comp%max_pend_req
+        !print *, "Read rearr opt max pend req (io2comp): ",&
+        !            rearr_opts%comm_fc_opts_io2comp%max_pend_req
       else if (argv(:pos) == "--pio-niotasks=") then
         call init_arr_from_list(argv(pos+1:), iarr=niotasks, ierr=ierr)
         !print *, "Read niotasks : ", niotasks
@@ -250,7 +319,8 @@ contains
 
   ! Parse command line user options
   subroutine read_cmd_line_input(decompfile, piotypes, rearrangers,&
-        niotasks, nframes, unlimdimindof, nvars, varsize, ierr)
+        niotasks, nframes, unlimdimindof, nvars, varsize,&
+        rearr_opts, ierr)
     character(len=*), intent(out) :: decompfile(MAX_DECOMP_FILES)
     integer, intent(out) :: piotypes(MAX_PIO_TYPES)
     integer, intent(out) :: rearrangers(MAX_PIO_REARRS)
@@ -259,6 +329,7 @@ contains
     logical, intent(out) :: unlimdimindof
     integer, intent(out) :: nvars(MAX_NVARS)
     integer, intent(out) :: varsize(MAX_NVARS)
+    type(pio_rearr_opt_t), intent(out) :: rearr_opts
     integer, intent(out) :: ierr
 
     integer, parameter :: MAX_STDIN_ARG_LEN = 4096
@@ -270,14 +341,16 @@ contains
     do i=1,nargs
       call get_command_argument(i, argv)
       call parse_and_process_input(argv, decompfile, piotypes, rearrangers,&
-            niotasks, nframes, unlimdimindof, nvars, varsize, ierr)
+            niotasks, nframes, unlimdimindof, nvars, varsize,&
+            rearr_opts, ierr)
     end do
 
   end subroutine read_cmd_line_input
 
   ! Read the namelist file, if it exists
   subroutine read_nml_input(decompfile, piotypes, rearrangers,&
-        niotasks, nframes, unlimdimindof, nvars, varsize, ierr)
+        niotasks, nframes, unlimdimindof, nvars, varsize,&
+        rearr_opts, ierr)
     character(len=*), intent(out) :: decompfile(MAX_DECOMP_FILES)
     integer, intent(out) :: piotypes(MAX_PIO_TYPES)
     integer, intent(out) :: rearrangers(MAX_PIO_REARRS)
@@ -286,15 +359,35 @@ contains
     logical, intent(out) :: unlimdimindof
     integer, intent(out) :: nvars(MAX_NVARS)
     integer, intent(out) :: varsize(MAX_NVARS)
+    type(pio_rearr_opt_t), intent(out) :: rearr_opts
+    integer :: pio_rearr_comm_type, pio_rearr_fcd
+    logical :: pio_rearr_comp2io_enable_hs, pio_rearr_comp2io_enable_isend
+    integer :: pio_rearr_comp2io_max_pend_req
+    logical :: pio_rearr_io2comp_enable_hs, pio_rearr_io2comp_enable_isend
+    integer :: pio_rearr_io2comp_max_pend_req
     integer, intent(out) :: ierr
 
     character(len=MAX_PIO_TYPENAME_LEN) :: pio_typenames(MAX_PIO_TYPES)
     logical :: file_exists = .false.
 
     namelist /pioperf/ decompfile, pio_typenames, rearrangers, niotasks, nframes, &
-         nvars, varsize, unlimdimindof
+         nvars, varsize, unlimdimindof,&
+          pio_rearr_comm_type, pio_rearr_fcd, &
+          pio_rearr_comp2io_enable_hs, pio_rearr_comp2io_enable_isend, &
+          pio_rearr_comp2io_max_pend_req,&
+          pio_rearr_io2comp_enable_hs, pio_rearr_io2comp_enable_isend, &
+          pio_rearr_io2comp_max_pend_req
 
     pio_typenames = ' '
+
+    pio_rearr_comm_type = pio_rearr_comm_coll
+    pio_rearr_fcd = pio_rearr_comm_fc_2d_disable
+    pio_rearr_comp2io_enable_hs = .false.
+    pio_rearr_comp2io_enable_isend = .false.
+    pio_rearr_comp2io_max_pend_req = pio_rearr_comm_unlimited_pend_req
+    pio_rearr_io2comp_enable_hs = .false.
+    pio_rearr_io2comp_enable_isend = .false.
+    pio_rearr_io2comp_max_pend_req = pio_rearr_comm_unlimited_pend_req
 
     inquire(file=PIO_NML_FNAME,exist=file_exists)
     if(file_exists) then
@@ -307,13 +400,100 @@ contains
       enddo
     end if
 
+    rearr_opts%comm_type = pio_rearr_comm_type
+    rearr_opts%fcd = pio_rearr_fcd
+    rearr_opts%comm_fc_opts_comp2io%enable_hs = pio_rearr_comp2io_enable_hs
+    rearr_opts%comm_fc_opts_comp2io%enable_isend = pio_rearr_comp2io_enable_isend
+    rearr_opts%comm_fc_opts_comp2io%max_pend_req =&
+      pio_rearr_comp2io_max_pend_req
+    rearr_opts%comm_fc_opts_io2comp%enable_hs = pio_rearr_io2comp_enable_hs
+    rearr_opts%comm_fc_opts_io2comp%enable_isend = pio_rearr_io2comp_enable_isend
+    rearr_opts%comm_fc_opts_io2comp%max_pend_req =&
+      pio_rearr_io2comp_max_pend_req
+
   end subroutine read_nml_input
+
+  ! Bcast rearranger options from rank 0 to all other ranks
+  subroutine bcast_rearr_opts(rearr_opts)
+    type(pio_rearr_opt_t), intent(out) :: rearr_opts
+
+    enum, bind(c)
+      enumerator :: COMM_TYPE_SIDX = 1
+      enumerator :: FCD_SIDX
+      enumerator :: COMP2IO_ENABLE_HS_SIDX
+      enumerator :: COMP2IO_ENABLE_ISEND_SIDX
+      enumerator :: COMP2IO_MAX_PEND_REQ_SIDX
+      enumerator :: IO2COMP_ENABLE_HS_SIDX
+      enumerator :: IO2COMP_ENABLE_ISEND_SIDX
+      enumerator :: IO2COMP_MAX_PEND_REQ_SIDX
+      enumerator :: NUM_OPTS = IO2COMP_MAX_PEND_REQ_SIDX
+    end enum
+    integer :: irearr_opts(NUM_OPTS)
+
+    irearr_opts(COMM_TYPE_SIDX) = rearr_opts%comm_type
+    irearr_opts(FCD_SIDX) = rearr_opts%fcd
+    if(rearr_opts%comm_fc_opts_comp2io%enable_hs) then
+      irearr_opts(COMP2IO_ENABLE_HS_SIDX) = 1
+    else
+      irearr_opts(COMP2IO_ENABLE_HS_SIDX) = 0
+    end if
+    if(rearr_opts%comm_fc_opts_comp2io%enable_isend) then
+      irearr_opts(COMP2IO_ENABLE_ISEND_SIDX) = 1
+    else
+      irearr_opts(COMP2IO_ENABLE_ISEND_SIDX) = 0
+    end if
+    irearr_opts(COMP2IO_MAX_PEND_REQ_SIDX) =&
+      rearr_opts%comm_fc_opts_comp2io%max_pend_req
+    if(rearr_opts%comm_fc_opts_io2comp%enable_hs) then
+      irearr_opts(IO2COMP_ENABLE_HS_SIDX) = 1
+    else
+      irearr_opts(IO2COMP_ENABLE_HS_SIDX) = 0
+    end if
+    if(rearr_opts%comm_fc_opts_io2comp%enable_isend) then
+      irearr_opts(IO2COMP_ENABLE_ISEND_SIDX) = 1
+    else
+      irearr_opts(IO2COMP_ENABLE_ISEND_SIDX) = 0
+    end if
+    irearr_opts(IO2COMP_MAX_PEND_REQ_SIDX) =&
+      rearr_opts%comm_fc_opts_io2comp%max_pend_req
+
+    call MPI_Bcast(irearr_opts, NUM_OPTS, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
+
+    rearr_opts%comm_type = irearr_opts(COMM_TYPE_SIDX)
+    rearr_opts%fcd = irearr_opts(FCD_SIDX)
+    if(irearr_opts(COMP2IO_ENABLE_HS_SIDX) == 0) then
+      rearr_opts%comm_fc_opts_comp2io%enable_hs = .false.
+    else
+      rearr_opts%comm_fc_opts_comp2io%enable_hs = .true.
+    end if
+    if(irearr_opts(COMP2IO_ENABLE_ISEND_SIDX) == 0) then
+      rearr_opts%comm_fc_opts_comp2io%enable_isend = .false.
+    else
+      rearr_opts%comm_fc_opts_comp2io%enable_isend = .true.
+    end if
+    rearr_opts%comm_fc_opts_comp2io%max_pend_req =&
+      irearr_opts(COMP2IO_MAX_PEND_REQ_SIDX)
+    if(irearr_opts(IO2COMP_ENABLE_HS_SIDX) == 0) then
+      rearr_opts%comm_fc_opts_io2comp%enable_hs = .false.
+    else
+      rearr_opts%comm_fc_opts_io2comp%enable_hs = .true.
+    end if
+    if(irearr_opts(IO2COMP_ENABLE_ISEND_SIDX) == 0) then
+      rearr_opts%comm_fc_opts_io2comp%enable_isend = .false.
+    else
+      rearr_opts%comm_fc_opts_io2comp%enable_isend = .true.
+    end if
+    rearr_opts%comm_fc_opts_io2comp%max_pend_req =&
+      irearr_opts(IO2COMP_MAX_PEND_REQ_SIDX)
+
+  end subroutine bcast_rearr_opts
 
   ! Read user input
   ! Read the input from namelist file, if available, and then
   ! read (and override) the command line options
   subroutine read_user_input(mype, decompfile, piotypes, rearrangers,&
-        niotasks, nframes, unlimdimindof, nvars, varsize, ierr)
+        niotasks, nframes, unlimdimindof, nvars, varsize,&
+        rearr_opts, ierr)
     integer, intent(in) :: mype
     character(len=*), intent(out) :: decompfile(MAX_DECOMP_FILES)
     integer, intent(out) :: piotypes(MAX_PIO_TYPES)
@@ -323,6 +503,7 @@ contains
     logical, intent(out) :: unlimdimindof
     integer, intent(out) :: nvars(MAX_NVARS)
     integer, intent(out) :: varsize(MAX_NVARS)
+    type(pio_rearr_opt_t), intent(out) :: rearr_opts
     integer, intent(out) :: ierr
 
     character(len=MAX_PIO_TYPENAME_LEN) :: pio_typenames(MAX_PIO_TYPES)
@@ -332,10 +513,12 @@ contains
     if(mype == 0) then
       ! Read namelist file
       call read_nml_input(decompfile, piotypes, rearrangers,&
-            niotasks, nframes, unlimdimindof, nvars, varsize, ierr)
+            niotasks, nframes, unlimdimindof, nvars, varsize,&
+            rearr_opts, ierr)
       ! Allow user to override the values via command line
       call read_cmd_line_input(decompfile, piotypes, rearrangers,&
-            niotasks, nframes, unlimdimindof, nvars, varsize, ierr)
+            niotasks, nframes, unlimdimindof, nvars, varsize,&
+            rearr_opts, ierr)
     end if
 
     call MPI_Bcast(decompfile,PIO_MAX_NAME*MAX_DECOMP_FILES,MPI_CHARACTER,0, MPI_COMM_WORLD,ierr)
@@ -347,10 +530,13 @@ contains
     call MPI_Bcast(nvars, MAX_NVARS, MPI_INTEGER, 0, MPI_COMM_WORLD,ierr)
     call MPI_Bcast(varsize, MAX_NVARS, MPI_INTEGER, 0, MPI_COMM_WORLD,ierr)
 
+    call bcast_rearr_opts(rearr_opts)
+
   end subroutine read_user_input
 
   subroutine pioperformance_rearrtest(filename, piotypes, mype, npe_base, &
-       rearrangers, niotasks,nframes, nvars, varsize, unlimdimindof)
+       rearrangers, rearr_opts, niotasks,nframes, nvars, varsize,&
+       unlimdimindof)
     use pio
     use pio_support, only : pio_readdof
     use perf_mod
@@ -358,6 +544,7 @@ contains
     integer, intent(in) :: mype, npe_base
     integer, intent(in) :: piotypes(:)
     integer, intent(in) :: rearrangers(:)
+    type(pio_rearr_opt_t), intent(in) :: rearr_opts
     integer, intent(inout) :: niotasks(:)
     integer, intent(in) :: nframes 
     integer, intent(in) :: nvars
@@ -482,7 +669,8 @@ contains
                 if(ntasks<=0 .or. ntasks>npe) exit
                 stride = max(1,npe/ntasks)
 
-                call pio_init(mype, comm, ntasks, 0, stride, PIO_REARR_SUBSET, iosystem)
+                call pio_init(mype, comm, ntasks, 0, stride, PIO_REARR_SUBSET,&
+                  iosystem, rearr_opts=rearr_opts)
                    
                 write(fname, '(a,i1,a,i4.4,a,i1,a)') 'pioperf.',rearr,'-',ntasks,'-',iotype,'.nc'
 		
