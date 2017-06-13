@@ -18,6 +18,7 @@ program pioperformance_rearr
   integer, parameter :: MAX_PIO_TYPES = 4, MAX_PIO_REARRS = 2
   integer, parameter :: MAX_NVARS = 12
 
+  character(len=*), parameter :: PIO_NML_FNAME = 'pioperf_rearr.nl'
 
   integer :: ierr, mype, npe, i
   logical :: Mastertask
@@ -65,7 +66,7 @@ program pioperformance_rearr
   call read_user_input(mype, decompfile, piotypes, rearrangers,&
         niotasks, nframes, unlimdimindof, nvars, varsize, ierr)
 
-  call t_initf('pioperf.nl', LogPrint=.false., mpicom=MPI_COMM_WORLD, MasterTask=MasterTask)
+  call t_initf(PIO_NML_FNAME, LogPrint=.false., mpicom=MPI_COMM_WORLD, MasterTask=MasterTask)
   niotypes = 0
   do i=1,MAX_PIO_TYPES
      if (piotypes(i) > -1) niotypes = niotypes+1
@@ -295,9 +296,9 @@ contains
 
     pio_typenames = ' '
 
-    inquire(file='pioperf.nl',exist=file_exists)
+    inquire(file=PIO_NML_FNAME,exist=file_exists)
     if(file_exists) then
-      open(unit=12,file='pioperf.nl',status='old')
+      open(unit=12,file=PIO_NML_FNAME,status='old')
       read(12,pioperf)
       close(12)
 
