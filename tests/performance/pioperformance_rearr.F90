@@ -94,7 +94,135 @@ program pioperformance_rearr
   call MPI_Finalize(ierr)
 contains
 
+  ! Initialize an integer array from a comma separated list
+  ! Note: When directly reading a list of comma separated list
+  ! of integers into an array using fortran read(str,*) we
+  ! need,
+  ! 1) To know the number of elements read (size of array <=
+  !    number of elements read)
+  ! 2) This read does not handle simple user errors in input
+  subroutine init_int_arr_from_list(argv, arr, ierr)
+    character(len=*), intent(in) :: argv
+    integer, dimension(:), intent(out) :: arr
+    integer, intent(out) :: ierr
+
+    !integer, parameter :: MAX_STR_LEN = 4096
+
+    !character(len=MAX_STR_LEN) :: tmp_argv
+    character, parameter :: LIST_DELIM = ','
+    integer :: arr_idx
+    integer :: prev_pos, pos, rel_pos, max_arr_sz, totlen, remlen
+
+    !print *, "Parsing :", trim(argv)
+    max_arr_sz = size(arr)
+
+    totlen = len_trim(argv)
+    remlen = totlen
+    ! The substring considered is always from posn prev_pos+1
+    prev_pos = 0
+    pos = index(argv, LIST_DELIM)
+
+    if(totlen == 0) then
+      return
+    end if
+
+    arr_idx = 1
+    do while((remlen > 0) .and. (arr_idx <= max_arr_sz))
+      if(pos == 0) then
+        ! Last element in list
+        pos = totlen + 1
+        remlen = 0
+      else
+        remlen = totlen - pos
+      end if
+      !print *, "prev_pos = ", prev_pos, ", pos=", pos, ", remlen=", remlen
+      if(prev_pos+1 <= pos-1) then
+        read(argv(prev_pos+1:pos-1), *) arr(arr_idx) 
+        !print *, "Parser : read : ", arr(arr_idx)
+        arr_idx = arr_idx + 1
+      else
+        ! Ignore this invalid value and continue parsing
+        print *, "Warning : INVALID user input - not well formed list"
+      end if
+
+      if(remlen > 0) then
+        prev_pos = pos
+        rel_pos = index(argv(pos+1:), LIST_DELIM)
+        pos = pos + rel_pos
+        if(rel_pos == 0) then
+          ! Last element in the list
+          pos = 0
+        end if
+      end if
+    end do
+    
+  end subroutine init_int_arr_from_list
+
+  ! Parse a single command line arg
+  subroutine parse_and_process_input(argv, decompfile, piotypes,&
+        rearrangers, niotasks, nframes, unlimdimindof, nvars, varsize, ierr)
+    character(len=*), intent(in)  :: argv
+    character(len=*), intent(out) :: decompfile(MAX_DECOMP_FILES)
+    integer, intent(out) :: piotypes(MAX_PIO_TYPES)
+    integer, intent(out) :: rearrangers(MAX_PIO_REARRS)
+    integer, intent(out) :: niotasks(MAX_IO_TASK_ARRAY_SIZE)
+    integer, intent(out) :: nframes
+    logical, intent(out) :: unlimdimindof
+    integer, intent(out) :: nvars(MAX_NVARS)
+    integer, intent(out) :: varsize(MAX_NVARS)
+    integer, intent(out) :: ierr
+
+    integer :: pos
+
+    ! All input arguments are of the form <INPUT_ARG_NAME>=<INPUT_ARG>
+    !print *, argv
+    pos = index(argv, "=")
+    if (pos == 0) then
+      ! Ignore unrecognized args
+      return
+    else
+      ! Check if it an input to PIO testing framework
+      if (argv(:pos) == "--pio-nvars=") THEN
+        call init_int_arr_from_list(argv(pos+1:), nvars, ierr)
+        !print *, "Read nvars : ", nvars
+      ELSE IF (argv(:pos) == "--pio-nframes=") THEN
+        read(argv(pos+1:), *) nframes
+        !print *, "Read nframes = ", nframes
+      END IF
+    end if
+
+  end subroutine parse_and_process_input
+
+  ! Parse command line user options
+  subroutine read_cmd_line_input(decompfile, piotypes, rearrangers,&
+        niotasks, nframes, unlimdimindof, nvars, varsize, ierr)
+    character(len=*), intent(out) :: decompfile(MAX_DECOMP_FILES)
+    integer, intent(out) :: piotypes(MAX_PIO_TYPES)
+    integer, intent(out) :: rearrangers(MAX_PIO_REARRS)
+    integer, intent(out) :: niotasks(MAX_IO_TASK_ARRAY_SIZE)
+    integer, intent(out) :: nframes
+    logical, intent(out) :: unlimdimindof
+    integer, intent(out) :: nvars(MAX_NVARS)
+    integer, intent(out) :: varsize(MAX_NVARS)
+    integer, intent(out) :: ierr
+
+    integer, parameter :: MAX_STDIN_ARG_LEN = 4096
+    character(len=MAX_PIO_TYPENAME_LEN) :: pio_typenames(MAX_PIO_TYPES)
+    character(len=MAX_STDIN_ARG_LEN) :: argv
+    integer :: i, nargs
+
+    nargs = command_argument_count()
+    do i=1,nargs
+      call get_command_argument(i, argv)
+      call parse_and_process_input(argv, decompfile, piotypes, rearrangers,&
+            niotasks, nframes, unlimdimindof, nvars, varsize, ierr)
+    end do
+
+  end subroutine read_cmd_line_input
+
   ! Read user input
+  ! Read the input from namelist file and then
+  ! read (and override) the command line options
   subroutine read_user_input(mype, decompfile, piotypes, rearrangers,&
         niotasks, nframes, unlimdimindof, nvars, varsize, ierr)
     integer, intent(in) :: mype
@@ -109,6 +237,7 @@ contains
     integer, intent(out) :: ierr
 
     character(len=MAX_PIO_TYPENAME_LEN) :: pio_typenames(MAX_PIO_TYPES)
+    logical :: file_exists = .false.
 
     namelist /pioperf/ decompfile, pio_typenames, rearrangers, niotasks, nframes, &
          nvars, varsize, unlimdimindof
@@ -135,6 +264,12 @@ contains
        enddo
 
     endif
+
+    if(mype == 0) then
+      ! Allow user to override the values via command line
+      call read_cmd_line_input(decompfile, piotypes, rearrangers,&
+            niotasks, nframes, unlimdimindof, nvars, varsize, ierr)
+    end if
 
     call MPI_Bcast(decompfile,PIO_MAX_NAME*MAX_DECOMP_FILES,MPI_CHARACTER,0, MPI_COMM_WORLD,ierr)
     call MPI_Bcast(piotypes,MAX_PIO_TYPES, MPI_INTEGER, 0, MPI_COMM_WORLD,ierr)
