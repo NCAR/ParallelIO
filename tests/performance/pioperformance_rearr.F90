@@ -94,17 +94,21 @@ program pioperformance_rearr
   call MPI_Finalize(ierr)
 contains
 
-  ! Initialize an integer array from a comma separated list
+  ! Initialize an array from a comma separated list
+  ! The function only accepts either an integer array or a
+  ! character array (if you provide both, the function 
+  ! currently only parses for the integer array)
   ! Note: When directly reading a list of comma separated list
   ! of integers into an array using fortran read(str,*) we
   ! need,
   ! 1) To know the number of elements read (size of array <=
   !    number of elements read)
   ! 2) This read does not handle simple user errors in input
-  subroutine init_int_arr_from_list(argv, arr, ierr)
+  subroutine init_arr_from_list(argv, iarr, carr, ierr)
     character(len=*), intent(in) :: argv
-    integer, dimension(:), intent(out) :: arr
-    integer, intent(out) :: ierr
+    integer, dimension(:), intent(out), optional :: iarr
+    character(len=*), dimension(:), intent(out), optional :: carr
+    integer, intent(out), optional :: ierr
 
     !integer, parameter :: MAX_STR_LEN = 4096
 
@@ -114,7 +118,12 @@ contains
     integer :: prev_pos, pos, rel_pos, max_arr_sz, totlen, remlen
 
     !print *, "Parsing :", trim(argv)
-    max_arr_sz = size(arr)
+    max_arr_sz = 0
+    if(present(iarr)) then
+      max_arr_sz = size(iarr)
+    else if(present(carr)) then
+      max_arr_sz = size(carr)
+    end if
 
     totlen = len_trim(argv)
     remlen = totlen
@@ -137,7 +146,11 @@ contains
       end if
       !print *, "prev_pos = ", prev_pos, ", pos=", pos, ", remlen=", remlen
       if(prev_pos+1 <= pos-1) then
-        read(argv(prev_pos+1:pos-1), *) arr(arr_idx) 
+        if(present(iarr)) then
+          read(argv(prev_pos+1:pos-1), *) iarr(arr_idx) 
+        else if(present(carr)) then
+          read(argv(prev_pos+1:pos-1), *) carr(arr_idx) 
+        end if
         !print *, "Parser : read : ", arr(arr_idx)
         arr_idx = arr_idx + 1
       else
@@ -156,7 +169,7 @@ contains
       end if
     end do
     
-  end subroutine init_int_arr_from_list
+  end subroutine init_arr_from_list
 
   ! Parse a single command line arg
   subroutine parse_and_process_input(argv, decompfile, piotypes,&
@@ -183,7 +196,7 @@ contains
     else
       ! Check if it an input to PIO testing framework
       if (argv(:pos) == "--pio-nvars=") THEN
-        call init_int_arr_from_list(argv(pos+1:), nvars, ierr)
+        call init_arr_from_list(argv(pos+1:), iarr=nvars, ierr=ierr)
         !print *, "Read nvars : ", nvars
       ELSE IF (argv(:pos) == "--pio-nframes=") THEN
         read(argv(pos+1:), *) nframes
