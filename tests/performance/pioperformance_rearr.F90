@@ -18,6 +18,7 @@ program pioperformance_rearr
 #include <mpif.h>
 #endif  
   integer, parameter :: MAX_IO_TASK_ARRAY_SIZE=64, MAX_DECOMP_FILES=64
+  integer, parameter :: MAX_FNAME_LEN = 1024
   integer, parameter :: MAX_PIO_TYPENAME_LEN = 8
   integer, parameter :: MAX_PIO_TYPES = 4, MAX_PIO_REARRS = 2
   integer, parameter :: MAX_NVARS = 12
@@ -26,7 +27,7 @@ program pioperformance_rearr
 
   integer :: ierr, mype, npe, i
   logical :: Mastertask
-  character(len=PIO_MAX_NAME) :: decompfile(MAX_DECOMP_FILES)
+  character(len=MAX_FNAME_LEN) :: decompfile(MAX_DECOMP_FILES)
   integer :: piotypes(MAX_PIO_TYPES), niotypes
   integer :: rearrangers(MAX_PIO_REARRS)
   integer :: niotasks(MAX_IO_TASK_ARRAY_SIZE)
@@ -540,7 +541,7 @@ contains
             rearr_opts, ierr)
     end if
 
-    call MPI_Bcast(decompfile,PIO_MAX_NAME*MAX_DECOMP_FILES,MPI_CHARACTER,0, MPI_COMM_WORLD,ierr)
+    call MPI_Bcast(decompfile,MAX_FNAME_LEN*MAX_DECOMP_FILES,MPI_CHARACTER,0, MPI_COMM_WORLD,ierr)
     call MPI_Bcast(piotypes,MAX_PIO_TYPES, MPI_INTEGER, 0, MPI_COMM_WORLD,ierr)
     call MPI_Bcast(rearrangers, MAX_PIO_REARRS, MPI_INTEGER, 0, MPI_COMM_WORLD,ierr)
     call MPI_Bcast(niotasks, MAX_IO_TASK_ARRAY_SIZE, MPI_INTEGER, 0, MPI_COMM_WORLD,ierr)
