@@ -2,6 +2,7 @@
 use strict;
 use warnings;
 
+use FileHandle;
 use Getopt::Long;
 
 my $rundir="";
@@ -26,16 +27,18 @@ sub cmp_decomp_files
     ${$f2trsize_ref} = 0;
     ${$f1ioid_ref} = $IOID_INVALID;
     ${$f2ioid_ref} = $IOID_INVALID;
-    open(F1,$f1name);
-    my @file1 = <F1>;
-    my $nf1lines = @file1;
-    open(F2,$f2name);
-    my @file2 = <F2>;
+
+    my ($FILE_A, $FILE_B);
+    $FILE_A = new FileHandle;
+    $FILE_A->open($f1name);
+
+    $FILE_B = new FileHandle;
+    $FILE_B->open($f2name);
+
     my $rmfile = 1;
-    for(my $i=0; $i < $nf1lines; $i++){
-        my $f1line = $file1[$i];
-        my $f2line = shift (@file2);
-        last if (not defined($f2line));
+    while(defined(my $f1line = <$FILE_A>)){
+        last if (not defined(my $f2line = <$FILE_B>));
+        
         # Ignore stack traces when comparing files
         # The stack traces start with a line containing
         # "Obtained" 
@@ -46,15 +49,14 @@ sub cmp_decomp_files
             # Calculate trailer length/size in bytes
             use bytes;
             ${$f2trsize_ref} += length($f2line);
-            while(defined(my $trline = shift(@file2))){
+            while(defined(my $trline = <$FILE_B>)){
                 if($trline =~ /^ioid\s+([0-9]+)$/){
                     ${$f2ioid_ref} = $1;
                 }
                 ${$f2trsize_ref} += length($trline);
             }
             ${$f1trsize_ref} += length($f1line);
-            for($i=$i+1;$i<$nf1lines; $i++){
-                my $trline = $file1[$i];
+            while(defined(my $trline = <$FILE_A>)){
                 if($trline =~ /^ioid\s+([0-9]+)$/){
                     ${$f1ioid_ref} = $1;
                 }
@@ -70,14 +72,16 @@ sub cmp_decomp_files
         $rmfile = 0;
         last;
     }
-    close(F1);
-    close(F2);
+    $FILE_A->close();
+    $FILE_B->close();
     return ($rmfile == 1);
 }
 
 # Get the size of the trailer in the decomposition file
 # Trailer => Content of the file after the stack trace
-sub get_decomp_trailer_info
+# Iterate from the end of the file
+# Useful for small files (consumes more mem)
+sub get_decomp_trailer_info_from_end
 {
     my ($fname, $trsize_ref, $ioid_ref) = @_;
     #my $ftrsize = 0;
@@ -86,6 +90,9 @@ sub get_decomp_trailer_info
     my $has_trailer = 0;
     open(F1,$fname);
     # Read the file from the end
+    # Using ReadBackwards might have been a better strategy
+    # but the module is not available on all perl installations
+    # - i.e., the module needs explicit installation by sysadmins
     my @file1 = reverse <F1>;
     foreach my $line (@file1){
         # Trailer starts with the stack trace
@@ -110,6 +117,42 @@ sub get_decomp_trailer_info
         # so reset it
         ${$trsize_ref} = 0;
     }
+}
+
+# Get the size of the trailer in the decomposition file
+# Trailer => Content of the file after the stack trace
+# Iterate from the top of the file, one line at a time
+# Useful for large files (uses less memory compared to
+# get_decomp_trailer_info_from_end() version above)
+sub get_decomp_trailer_info_from_top
+{
+    my ($fname, $trsize_ref, $ioid_ref) = @_;
+    ${$trsize_ref} = 0;
+    ${$ioid_ref} = -1;
+
+    my $FILE_A;
+    $FILE_A = new FileHandle;
+    $FILE_A->open($fname);
+
+    # Read the file from the top
+    while(defined(my $line = <$FILE_A>)){
+        # Trailer starts with the stack trace
+        # The stack traces start with a line containing
+        # "Obtained" 
+        # Calculate trailer size/length in bytes
+        use bytes;
+        if($line =~ /${BEGIN_STACK_TRACE}/){
+            ${$trsize_ref} += length($line);
+            while(defined($line = <$FILE_A>)){
+                ${$trsize_ref} += length($line);
+                if($line =~ /^ioid\s+([0-9]+)$/){
+                    ${$ioid_ref} = $1;
+                }
+            }
+            last;
+        }
+    }
+    $FILE_A->close();
 }
 
 # Remove duplicate decomposition files in "dirname"
@@ -168,7 +211,7 @@ sub rem_dup_decomp_files
         if($decompfile_info[$i]->{TRAILER_SIZE} == $TRAILER_SIZE_INVALID){
             my $trsize = 0;
             my $ioid = -1;
-            &get_decomp_trailer_info($f1name, \$trsize, \$ioid);
+            &get_decomp_trailer_info_from_top($f1name, \$trsize, \$ioid);
             $decompfile_info[$i]->{TRAILER_SIZE} = $trsize;
             $decompfile_info[$i]->{IOID} = $ioid;
         }
