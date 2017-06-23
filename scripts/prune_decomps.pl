@@ -229,6 +229,8 @@ sub rem_dup_decomp_files
             my $f2size = $decompfile_info[$j]->{SIZE};
             my $f2trsize = $decompfile_info[$j]->{TRAILER_SIZE};
             next if($decompfile_info[$j]->{IS_DUP});
+            # Decomp files of the same size have already been compared
+            next if($f1size == $f2size);
             if($verbose){
                 print "Comparing files $f1name, adj sz = ($f1size - $f1trsize), $f2name, adj sz = ($f2size - $f2trsize)\n";
             }
