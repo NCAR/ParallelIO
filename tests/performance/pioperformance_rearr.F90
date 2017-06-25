@@ -380,7 +380,8 @@ contains
     integer, intent(out) :: nvars(MAX_NVARS)
     integer, intent(out) :: varsize(MAX_NVARS)
     type(pio_rearr_opt_t), intent(out) :: rearr_opts
-    integer :: pio_rearr_comm_type, pio_rearr_fcd
+    integer :: ipio_rearr_comm_type, ipio_rearr_fcd
+    character(len=PIO_MAX_NAME) :: pio_rearr_comm_type, pio_rearr_fcd
     logical :: pio_rearr_comp2io_enable_hs, pio_rearr_comp2io_enable_isend
     integer :: pio_rearr_comp2io_max_pend_req
     logical :: pio_rearr_io2comp_enable_hs, pio_rearr_io2comp_enable_isend
@@ -399,9 +400,11 @@ contains
           pio_rearr_io2comp_max_pend_req
 
     pio_typenames = ' '
+    pio_rearr_comm_type = ' '
+    pio_rearr_fcd = ' '
 
-    pio_rearr_comm_type = pio_rearr_comm_coll
-    pio_rearr_fcd = pio_rearr_comm_fc_2d_disable
+    ipio_rearr_comm_type = pio_rearr_comm_coll
+    ipio_rearr_fcd = pio_rearr_comm_fc_2d_disable
     pio_rearr_comp2io_enable_hs = .false.
     pio_rearr_comp2io_enable_isend = .false.
     pio_rearr_comp2io_max_pend_req = pio_rearr_comm_unlimited_pend_req
@@ -414,14 +417,15 @@ contains
       open(unit=12,file=PIO_NML_FNAME,status='old')
       read(12,pioperf)
       close(12)
-
+      call pio_rearr_str2opt(pio_rearr_comm_type, ipio_rearr_comm_type)
+      call pio_rearr_str2opt(pio_rearr_fcd, ipio_rearr_fcd)
       do i=1,MAX_PIO_TYPES
          call pio_typename2type(pio_typenames(i), piotypes(i))
       enddo
     end if
 
-    rearr_opts%comm_type = pio_rearr_comm_type
-    rearr_opts%fcd = pio_rearr_fcd
+    rearr_opts%comm_type = ipio_rearr_comm_type
+    rearr_opts%fcd = ipio_rearr_fcd
     rearr_opts%comm_fc_opts_comp2io%enable_hs = pio_rearr_comp2io_enable_hs
     rearr_opts%comm_fc_opts_comp2io%enable_isend = pio_rearr_comp2io_enable_isend
     rearr_opts%comm_fc_opts_comp2io%max_pend_req =&
