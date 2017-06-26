@@ -17,7 +17,7 @@ program pioperformance_rearr
 #ifdef NO_MPIMOD
 #include <mpif.h>
 #endif  
-  integer, parameter :: MAX_IO_TASK_ARRAY_SIZE=64, MAX_DECOMP_FILES=64
+  integer, parameter :: MAX_IO_TASK_ARRAY_SIZE=256, MAX_DECOMP_FILES=256
   integer, parameter :: MAX_FNAME_LEN = 1024
   integer, parameter :: MAX_PIO_TYPENAME_LEN = 8
   integer, parameter :: MAX_PIO_TYPES = 4, MAX_PIO_REARRS = 2
