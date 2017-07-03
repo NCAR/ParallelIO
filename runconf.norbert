@@ -1,0 +1,9 @@
+ADIOS_DIR=/opt/adios/lean/1.12 \
+CC=mpicc \
+FC=mpif90 \
+CFLAGS="-g -fPIC" \
+cmake -DNetCDF_C_PATH=/opt/netcdf-4.4.0-parallel \
+      -DNetCDF_Fortran_PATH=/opt/netcdf-4.4.0-parallel \
+      -DPnetCDF_PATH=/opt/pnetcdf-1.8.1 \
+      -DCMAKE_INSTALL_PREFIX=/opt/pio \
+      ..

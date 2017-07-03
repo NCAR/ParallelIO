@@ -22,7 +22,7 @@
 
 /** The number of possible output netCDF output flavors available to
  * the ParallelIO library. */
-#define NUM_NETCDF_FLAVORS 4	
+#define NUM_NETCDF_FLAVORS 5
 
 /** The number of dimensions in the example data. In this simple
     example, we are using one-dimensional data. */
@@ -342,6 +342,9 @@ int check_file(int ntasks, char *filename) {
         format[num_flavors++] = PIO_IOTYPE_NETCDF4C;
         format[num_flavors++] = PIO_IOTYPE_NETCDF4P;
 #endif
+#ifdef _ADIOS
+        format[num_flavors++] = PIO_IOTYPE_ADIOS;
+#endif
 	
 	/* Use PIO to create the example file in each of the four
 	 * available ways. */
@@ -408,11 +411,12 @@ int check_file(int ntasks, char *filename) {
 	/* Check the output file. */
 	if (!my_rank)
 	    for (int fmt = 0; fmt < num_flavors; fmt++)
-            {
-                sprintf(filename, "example1_%d.nc", fmt);
-		if ((ret = check_file(ntasks, filename)))
-		    ERR(ret);
-            }
+	    {
+	        sprintf(filename, "example1_%d.nc", fmt);
+	        if (format[fmt] != PIO_IOTYPE_ADIOS &&
+	            (ret = check_file(ntasks, filename)))
+	            ERR(ret);
+	    }
 
 	/* Finalize the MPI library. */
 	MPI_Finalize();

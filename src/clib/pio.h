@@ -24,6 +24,9 @@
 #ifdef _PNETCDF
 #include <pnetcdf.h>
 #endif
+#ifdef _ADIOS
+#include <adios.h>
+#endif
 
 #ifndef MPI_OFFSET
 /** MPI_OFFSET is an integer type of size sufficient to represent the
@@ -749,6 +752,21 @@ typedef struct file_desc_t
     /** The ncid returned for this file by the underlying library
      * (netcdf or pnetcdf). */
     int fh;
+#ifdef _ADIOS
+    /** ADIOS file handler is 64bit integer */
+    int64_t adios_fh;
+    /** Handler for ADIOS group (of variables) */
+    int64_t adios_group;
+    /** ADIOS output transport method name, POSIX or MPI_AGGREGATE */
+    char transport[16];
+    /** Parameters for the transport method, required for MPI_AGGREGATE.
+     * Created automatically from the application setup */
+    char params[128];
+    /** Need to store the dim names for finding them and using them when defining variables */
+    char *dim_names[100];
+    /** Number of dim vars defined */
+    int num_dim_vars;
+#endif
 
     /* File name - cached */
     char fname[PIO_MAX_NAME + 1];
@@ -811,7 +829,10 @@ enum PIO_IOTYPE
     PIO_IOTYPE_NETCDF4C = 3,
 
     /** NetCDF4 (HDF5) parallel */
-    PIO_IOTYPE_NETCDF4P = 4
+    PIO_IOTYPE_NETCDF4P = 4,
+
+    /** ADIOS parallel */
+    PIO_IOTYPE_ADIOS = 5
 };
 
 /**

@@ -1993,6 +1993,29 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
                 ierr = ncmpi_buffer_attach(file->fh, pio_buffer_size_limit);
             break;
 #endif
+#ifdef _ADIOS
+        case PIO_IOTYPE_ADIOS:
+            LOG((2, "Calling adios_open mode = %d", file->mode));
+            /* Create a new ADIOS variable group, names the same as the filename for
+             * lack of better solution here */
+            adios_declare_group(&file->adios_group, filename, NULL, adios_stat_default);
+            int do_aggregate = (ios->num_comptasks != ios->num_iotasks);
+            if (do_aggregate)
+            {
+                sprintf(file->transport,"%s","MPI_AGGREGATE");
+                sprintf(file->params,"num_aggregators=%d,striping=0", ios->num_iotasks);
+            }
+            else
+            {
+                sprintf(file->transport,"%s","POSIX");
+                file->params[0] = '\0';
+            }
+            adios_select_method(file->adios_group,file->transport,file->params,"");
+            ierr = adios_open(&file->adios_fh,filename,filename,"w", ios->io_comm);
+            memset(file->dim_names, 0, sizeof(file->dim_names));
+            file->num_dim_vars = 0;
+            break;
+#endif
         }
     }
 
@@ -2519,7 +2542,7 @@ int pioc_change_def(int ncid, int is_enddef)
         }
 #endif /* _PNETCDF */
 #ifdef _NETCDF
-        if (file->iotype != PIO_IOTYPE_PNETCDF && file->do_io)
+        if (file->iotype != PIO_IOTYPE_PNETCDF && file->iotype != PIO_IOTYPE_ADIOS && file->do_io)
         {
             if (is_enddef)
             {
@@ -2570,6 +2593,11 @@ int iotype_is_valid(int iotype)
     if (iotype == PIO_IOTYPE_PNETCDF)
         ret++;
 #endif /* _PNETCDF */
+
+#ifdef _ADIOS
+    if (iotype == PIO_IOTYPE_ADIOS)
+        ret++;
+#endif
 
     return ret;
 }
