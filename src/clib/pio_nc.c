@@ -2011,7 +2011,7 @@ int PIOc_def_dim(int ncid, const char *name, PIO_Offset len, int *idp)
             fprintf(stderr,"ADIOS define dimension %s with size %llu, id = %d\n",
                     name, (unsigned long long)len, file->num_dim_vars);
             char dimname[128];
-            snprintf(dimname, sizeof(dimname), "/dim/%s", name);
+            snprintf(dimname, sizeof(dimname), "dim/%s", name);
             adios_define_var(file->adios_group, dimname, "", adios_unsigned_long, "","","");
             file->dim_names[file->num_dim_vars] = strdup(name);
             *idp = file->num_dim_vars;
@@ -2052,28 +2052,6 @@ int PIOc_def_dim(int ncid, const char *name, PIO_Offset len, int *idp)
 
     LOG((2, "def_dim ierr = %d", ierr));
     return PIO_NOERR;
-}
-
-static enum ADIOS_DATATYPES get_adios_type(nc_type xtype)
-{
-    enum ADIOS_DATATYPES t;
-    switch (xtype)
-    {
-    case NC_BYTE:   t = adios_byte; break;
-    case NC_CHAR:   t = adios_byte; break;
-    case NC_SHORT:  t = adios_short; break;
-    case NC_INT:    t = adios_integer; break;
-    case NC_FLOAT:  t = adios_real; break;
-    case NC_DOUBLE: t = adios_double; break;
-    case NC_UBYTE:  t = adios_unsigned_byte; break;
-    case NC_USHORT: t = adios_unsigned_short; break;
-    case NC_UINT:   t = adios_unsigned_integer; break;
-    case NC_INT64:  t = adios_long; break;
-    case NC_UINT64: t = adios_unsigned_long; break;
-    case NC_STRING: t = adios_string; break;
-    default: t = adios_byte;
-    }
-    return t;
 }
 
 /**
@@ -2172,16 +2150,9 @@ int PIOc_def_var(int ncid, const char *name, nc_type xtype, int ndims,
         if (file->iotype == PIO_IOTYPE_ADIOS)
         {
             fprintf(stderr,"ADIOS pre-define variable %s with %d dimensions\n", name, ndims);
-            adios_define_attribute_byvalue(file->adios_group,"ndims",name,adios_integer,1,&ndims);
-            adios_define_attribute_byvalue(file->adios_group,"nctype",name,adios_integer,1,&xtype);
-            char* dimnames[6];
-            for (int i = 0; i < ndims; i++)
-            {
-                dimnames[i] = file->dim_names[dimidsp[i]];
-            }
-            adios_define_attribute_byvalue(file->adios_group,"dims",name,adios_string_array,ndims,dimnames);
             file->adios_vars[file->num_vars].name = strdup(name);
-            file->adios_vars[file->num_vars].type = get_adios_type(xtype);
+            file->adios_vars[file->num_vars].nc_type = xtype;
+            file->adios_vars[file->num_vars].adios_type = PIOc_get_adios_type(xtype);
             file->adios_vars[file->num_vars].ndims = ndims;
             file->adios_vars[file->num_vars].gdimids = (int*) malloc(ndims*sizeof(int));
             memcpy(file->adios_vars[file->num_vars].gdimids, dimidsp, ndims*sizeof(int));
@@ -2308,8 +2279,8 @@ int PIOc_def_var_fill(int ncid, int varid, int fill_mode, const void *fill_value
 {
     iosystem_desc_t *ios;  /* Pointer to io system information. */
     file_desc_t *file;     /* Pointer to file information. */
-    nc_type xtype;         /* The type of the variable (and fill value att). */
-    PIO_Offset type_size;  /* Size in bytes of this variable's type. */
+    nc_type xtype;         /* The adios_type of the variable (and fill value att). */
+    PIO_Offset type_size;  /* Size in bytes of this variable's adios_type. */
     int ierr = PIO_NOERR;              /* Return code from function calls. */
     int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI function codes. */
 
@@ -2328,7 +2299,7 @@ int PIOc_def_var_fill(int ncid, int varid, int fill_mode, const void *fill_value
 
     /* Run this on all tasks if async is not in use, but only on
      * non-IO tasks if async is in use. Get the size of this vars
-     * type. */
+     * adios_type. */
     if (!ios->async || !ios->ioproc)
     {
         ierr = PIOc_inq_vartype(ncid, varid, &xtype);
@@ -2443,7 +2414,7 @@ int PIOc_inq_var_fill(int ncid, int varid, int *no_fill, void *fill_valuep)
     iosystem_desc_t *ios;  /* Pointer to io system information. */
     file_desc_t *file;     /* Pointer to file information. */
     nc_type xtype;         /* Type of variable and its _FillValue attribute. */
-    PIO_Offset type_size;  /* Size in bytes of this variable's type. */
+    PIO_Offset type_size;  /* Size in bytes of this variable's adios_type. */
     int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI function codes. */
     int ierr = PIO_NOERR;  /* Return code from function calls. */
 
@@ -2457,7 +2428,7 @@ int PIOc_inq_var_fill(int ncid, int varid, int *no_fill, void *fill_valuep)
 
     /* Run this on all tasks if async is not in use, but only on
      * non-IO tasks if async is in use. Get the size of this vars
-     * type. */
+     * adios_type. */
     if (!ios->async || !ios->ioproc)
     {
         ierr = PIOc_inq_vartype(ncid, varid, &xtype);
@@ -2611,7 +2582,7 @@ int PIOc_get_att(int ncid, int varid, const char *name, void *ip)
     iosystem_desc_t *ios;  /* Pointer to io system information. */
     file_desc_t *file;     /* Pointer to file information. */
     int ierr = PIO_NOERR;              /* Return code from function calls. */
-    nc_type atttype;       /* The type of the attribute. */
+    nc_type atttype;       /* The adios_type of the attribute. */
 
     /* Find the info about this file. */
     if ((ierr = pio_get_file(ncid, &file)))

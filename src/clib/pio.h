@@ -747,8 +747,10 @@ typedef struct adios_var_desc_t
 {
     /** Variable name */
     char * name;
+    /** NC type give at def_var time */
+    int nc_type;
     /** Type converted from NC type to adios type */
-    enum ADIOS_DATATYPES type;
+    enum ADIOS_DATATYPES adios_type;
     /** Number of dimensions */
     int ndims;
     /** Global dims (dim var ids) */

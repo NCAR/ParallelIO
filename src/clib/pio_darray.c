@@ -580,13 +580,17 @@ void PIOc_write_decomp_adios(file_desc_t *file, int ioid)
 {
     io_desc_t *iodesc = pio_get_iodesc_from_id(ioid);
     char name[32], ldim[32];
-    sprintf(name, "/decomp/%d", ioid);
+    sprintf(name, "decomp/%d", ioid);
     sprintf(ldim, "%d", iodesc->maplen);
-    enum ADIOS_DATATYPES type = adios_integer;
+    enum ADIOS_DATATYPES type = adios_integer; //PIOc_get_adios_type(iodesc->piotype);
     if (sizeof(PIO_Offset) == 8)
-        type = adios_long;
+       type = adios_long;
     int64_t vid = adios_define_var(file->adios_group, name, "", type, ldim,"","");
+    adios_define_attribute_byvalue(file->adios_group,"piotype",name,adios_integer,1,&iodesc->piotype);
+    adios_define_attribute_byvalue(file->adios_group,"ndims",name,adios_integer,1,&iodesc->ndims);
+    adios_define_attribute_byvalue(file->adios_group,"dimlen",name,adios_integer,iodesc->ndims,iodesc->dimlen);
     adios_write_byid(file->adios_fh, vid, iodesc->map);
+    PIOc_get_adios_type(iodesc->piotype);
 }
 
 
@@ -606,13 +610,26 @@ int PIOc_write_darray_adios(file_desc_t *file, int varid, int ioid, PIO_Offset a
         if (d < av->ndims-1)
             strcat(gdims,",");
     }*/
+    char varname[256];
     char ldim[32];
+    sprintf(varname,"darray/%s", av->name);
     sprintf(ldim, "%lld", arraylen);
-    int64_t vid = adios_define_var(file->adios_group, av->name, "", av->type, ldim,"","");
-    adios_write_byid(file->adios_fh, vid, array);
+    int64_t vid = adios_define_var(file->adios_group, varname, "", av->adios_type, ldim,"","");
+
+    adios_define_attribute_byvalue(file->adios_group,"ndims",varname,adios_integer,1,&av->ndims);
+    adios_define_attribute_byvalue(file->adios_group,"nctype",varname,adios_integer,1,&av->nc_type);
+    char* dimnames[6];
+    for (int i = 0; i < av->ndims; i++)
+    {
+        dimnames[i] = file->dim_names[av->gdimids[i]];
+    }
+    adios_define_attribute_byvalue(file->adios_group,"dims",varname,adios_string_array,av->ndims,dimnames);
     char decompname[32];
-    sprintf(decompname, "/decomp/%d", ioid);
-    adios_define_attribute(file->adios_group, "decomp", av->name, adios_string, decompname, NULL);
+    sprintf(decompname, "%d", ioid);
+    adios_define_attribute(file->adios_group, "decomp", varname, adios_string, decompname, NULL);
+
+    adios_write_byid(file->adios_fh, vid, array);
+
 
     PIOc_write_decomp_adios(file,ioid);
 
@@ -907,7 +924,7 @@ int PIOc_write_darray(int ncid, int varid, int ioid, PIO_Offset arraylen, void *
             return pio_err(ios, file, PIO_ENOMEM, __FILE__, __LINE__);
 
         /* If the user passed a fill value, use that, otherwise use
-         * the default fill value of the netCDF type. Copy the fill
+         * the default fill value of the netCDF adios_type. Copy the fill
          * value to the buffer. */
         if (fillvalue)
         {
