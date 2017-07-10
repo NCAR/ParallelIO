@@ -215,6 +215,9 @@ add_custom_target (tests)
 add_custom_target (check COMMAND ${CMAKE_CTEST_COMMAND})
 add_dependencies (check tests)
 
+# Tools
+add_subdirectory(tools)
+
 # Tests
 if (PIO_ENABLE_TESTS)
   enable_testing()
