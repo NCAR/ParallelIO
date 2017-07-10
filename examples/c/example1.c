@@ -353,6 +353,9 @@ int check_file(int ntasks, char *filename) {
             /* Create a filename. */
             sprintf(filename, "example1_%d.nc", fmt);
             
+        if (format[fmt] == PIO_IOTYPE_ADIOS)
+            sprintf(filename, "example1_%d.bp", fmt);
+
 	    /* Create the netCDF output file. */
 	    if (verbose)
 		printf("rank: %d Creating sample file %s with format %d...\n",

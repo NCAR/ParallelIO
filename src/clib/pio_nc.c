@@ -2010,11 +2010,13 @@ int PIOc_def_dim(int ncid, const char *name, PIO_Offset len, int *idp)
         {
             fprintf(stderr,"ADIOS define dimension %s with size %llu, id = %d\n",
                     name, (unsigned long long)len, file->num_dim_vars);
-            adios_define_var(file->adios_group, name, "", adios_unsigned_long, "","","");
+            char dimname[128];
+            snprintf(dimname, sizeof(dimname), "/dim/%s", name);
+            adios_define_var(file->adios_group, dimname, "", adios_unsigned_long, "","","");
             file->dim_names[file->num_dim_vars] = strdup(name);
             *idp = file->num_dim_vars;
             ++file->num_dim_vars;
-            adios_write(file->adios_fh,name,&len);
+            adios_write(file->adios_fh,dimname,&len);
             ierr = 0;
         }
 #endif
@@ -2050,6 +2052,28 @@ int PIOc_def_dim(int ncid, const char *name, PIO_Offset len, int *idp)
 
     LOG((2, "def_dim ierr = %d", ierr));
     return PIO_NOERR;
+}
+
+static enum ADIOS_DATATYPES get_adios_type(nc_type xtype)
+{
+    enum ADIOS_DATATYPES t;
+    switch (xtype)
+    {
+    case NC_BYTE:   t = adios_byte; break;
+    case NC_CHAR:   t = adios_byte; break;
+    case NC_SHORT:  t = adios_short; break;
+    case NC_INT:    t = adios_integer; break;
+    case NC_FLOAT:  t = adios_real; break;
+    case NC_DOUBLE: t = adios_double; break;
+    case NC_UBYTE:  t = adios_unsigned_byte; break;
+    case NC_USHORT: t = adios_unsigned_short; break;
+    case NC_UINT:   t = adios_unsigned_integer; break;
+    case NC_INT64:  t = adios_long; break;
+    case NC_UINT64: t = adios_unsigned_long; break;
+    case NC_STRING: t = adios_string; break;
+    default: t = adios_byte;
+    }
+    return t;
 }
 
 /**
@@ -2147,16 +2171,22 @@ int PIOc_def_var(int ncid, const char *name, nc_type xtype, int ndims,
 #ifdef _ADIOS
         if (file->iotype == PIO_IOTYPE_ADIOS)
         {
-            fprintf(stderr,"ADIOS define variable %s with %d dimensions\n", name, ndims);
-            char gdims[256];
-            gdims[0] = '\0';
-            for (int d=0; d<ndims; d++)
+            fprintf(stderr,"ADIOS pre-define variable %s with %d dimensions\n", name, ndims);
+            adios_define_attribute_byvalue(file->adios_group,"ndims",name,adios_integer,1,&ndims);
+            adios_define_attribute_byvalue(file->adios_group,"nctype",name,adios_integer,1,&xtype);
+            char* dimnames[6];
+            for (int i = 0; i < ndims; i++)
             {
-                strcat(gdims,file->dim_names[dimidsp[d]]);
-                if (d<ndims-1)
-                    strcat(gdims,",");
+                dimnames[i] = file->dim_names[dimidsp[i]];
             }
-            adios_define_var(file->adios_group, name, "", adios_unsigned_long, "",gdims,"");
+            adios_define_attribute_byvalue(file->adios_group,"dims",name,adios_string_array,ndims,dimnames);
+            file->adios_vars[file->num_vars].name = strdup(name);
+            file->adios_vars[file->num_vars].type = get_adios_type(xtype);
+            file->adios_vars[file->num_vars].ndims = ndims;
+            file->adios_vars[file->num_vars].gdimids = (int*) malloc(ndims*sizeof(int));
+            memcpy(file->adios_vars[file->num_vars].gdimids, dimidsp, ndims*sizeof(int));
+            *varidp = file->num_vars;
+            file->num_vars++;
             ierr = 0;
         }
 #endif

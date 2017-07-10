@@ -574,6 +574,53 @@ static int PIO_wmb_needs_flush(wmulti_buffer *wmb, int arraylen, io_desc_t *iode
     return NO_FLUSH;
 }
 
+#ifdef _ADIOS
+
+void PIOc_write_decomp_adios(file_desc_t *file, int ioid)
+{
+    io_desc_t *iodesc = pio_get_iodesc_from_id(ioid);
+    char name[32], ldim[32];
+    sprintf(name, "/decomp/%d", ioid);
+    sprintf(ldim, "%d", iodesc->maplen);
+    enum ADIOS_DATATYPES type = adios_integer;
+    if (sizeof(PIO_Offset) == 8)
+        type = adios_long;
+    int64_t vid = adios_define_var(file->adios_group, name, "", type, ldim,"","");
+    adios_write_byid(file->adios_fh, vid, iodesc->map);
+}
+
+
+int PIOc_write_darray_adios(file_desc_t *file, int varid, int ioid, PIO_Offset arraylen, void *array,
+                      void *fillvalue)
+{
+    int ierr = PIO_NOERR;
+    if (varid < 0 || varid >= file->num_vars)
+        return pio_err(file->iosystem, file, PIO_EBADID, __FILE__, __LINE__);
+    /* First we need to define the variable now that we know it's decomposition */
+    adios_var_desc_t * av = &(file->adios_vars[varid]);
+    /*char gdims[256];
+    gdims[0] = '\0';
+    for (int d=0; d < av->ndims; d++)
+    {
+        strcat(gdims,file->dim_names[av->gdimids[d]]);
+        if (d < av->ndims-1)
+            strcat(gdims,",");
+    }*/
+    char ldim[32];
+    sprintf(ldim, "%lld", arraylen);
+    int64_t vid = adios_define_var(file->adios_group, av->name, "", av->type, ldim,"","");
+    adios_write_byid(file->adios_fh, vid, array);
+    char decompname[32];
+    sprintf(decompname, "/decomp/%d", ioid);
+    adios_define_attribute(file->adios_group, "decomp", av->name, adios_string, decompname, NULL);
+
+    PIOc_write_decomp_adios(file,ioid);
+
+    return PIO_NOERR;
+}
+
+#endif
+
 /**
  * Write a distributed array to the output file.
  *
@@ -722,6 +769,14 @@ int PIOc_write_darray(int ncid, int varid, int ioid, PIO_Offset arraylen, void *
         if (wmb->ioid == ioid && wmb->recordvar == recordvar)
             break;
     LOG((3, "wmb->ioid = %d wmb->recordvar = %d", wmb->ioid, wmb->recordvar));
+
+#ifdef _ADIOS
+    if (file->iotype == PIO_IOTYPE_ADIOS)
+    {
+        ierr = PIOc_write_darray_adios(file, varid, ioid, arraylen, array, fillvalue);
+        return ierr;
+    }
+#endif
 
     /* If we did not find an existing wmb entry, create a new wmb. */
     if (wmb->ioid != ioid || wmb->recordvar != recordvar)

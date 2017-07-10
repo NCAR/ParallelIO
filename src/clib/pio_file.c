@@ -282,14 +282,20 @@ int PIOc_closefile(int ncid)
         case PIO_IOTYPE_ADIOS:
             // Already closed in PIOc_sync()
             adios_free_group(file->adios_group);
-            for (int i=0; i<sizeof(file->dim_names)/sizeof(char*); i++)
+            for (int i=0; i<file->num_dim_vars; i++)
             {
-                if (file->dim_names[i]) {
-                    free (file->dim_names[i]);
-                    file->dim_names[i] = NULL;
-                }
+                free (file->dim_names[i]);
+                file->dim_names[i] = NULL;
             }
             file->num_dim_vars = 0;
+            for (int i=0; i<file->num_vars; i++)
+            {
+                free(file->adios_vars[file->num_vars].name);
+                file->adios_vars[file->num_vars].name = NULL;
+                free(file->adios_vars[file->num_vars].gdimids);
+                file->adios_vars[file->num_vars].gdimids = NULL;
+            }
+            file->num_vars = 0;
             ierr = 0;
             break;
 #endif

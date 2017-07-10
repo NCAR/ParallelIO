@@ -739,6 +739,21 @@ typedef struct wmulti_buffer
     struct wmulti_buffer *next;
 } wmulti_buffer;
 
+/** Variable definition information saved at pioc_def_var,
+ * so that ADIOS can define the variable at write time when
+ * local dimensions and offsets are known.
+ */
+typedef struct adios_var_desc_t
+{
+    /** Variable name */
+    char * name;
+    /** Type converted from NC type to adios type */
+    enum ADIOS_DATATYPES type;
+    /** Number of dimensions */
+    int ndims;
+    /** Global dims (dim var ids) */
+    int * gdimids;
+} adios_var_desc_t;
 /**
  * File descriptor structure.
  *
@@ -766,6 +781,10 @@ typedef struct file_desc_t
     char *dim_names[100];
     /** Number of dim vars defined */
     int num_dim_vars;
+    /** Variable information, max 1024 variables allowed */
+    struct adios_var_desc_t adios_vars[1024];
+    /** Number of vars defined */
+    int num_vars;
 #endif
 
     /* File name - cached */

@@ -2014,6 +2014,7 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
             ierr = adios_open(&file->adios_fh,filename,filename,"w", ios->io_comm);
             memset(file->dim_names, 0, sizeof(file->dim_names));
             file->num_dim_vars = 0;
+            file->num_vars = 0;
             break;
 #endif
         }
