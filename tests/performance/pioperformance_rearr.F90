@@ -246,7 +246,7 @@ contains
         rearrangers, niotasks, nframes, unlimdimindof, nvars, varsize,&
         rearr_opts, ierr)
     character(len=*), intent(in)  :: argv
-    character(len=*), intent(out) :: decompfiles(MAX_DECOMP_FILES)
+    character(len=MAX_FNAME_LEN), intent(out) :: decompfiles(MAX_DECOMP_FILES)
     integer, intent(out) :: piotypes(MAX_PIO_TYPES)
     integer, intent(out) :: rearrangers(MAX_PIO_REARRS)
     integer, intent(out) :: niotasks(MAX_IO_TASK_ARRAY_SIZE)
@@ -359,7 +359,7 @@ contains
   subroutine read_cmd_line_input(decompfile, piotypes, rearrangers,&
         niotasks, nframes, unlimdimindof, nvars, varsize,&
         rearr_opts, ierr)
-    character(len=*), intent(out) :: decompfile(MAX_DECOMP_FILES)
+    character(len=MAX_FNAME_LEN), intent(out) :: decompfile(MAX_DECOMP_FILES)
     integer, intent(out) :: piotypes(MAX_PIO_TYPES)
     integer, intent(out) :: rearrangers(MAX_PIO_REARRS)
     integer, intent(out) :: niotasks(MAX_IO_TASK_ARRAY_SIZE)
@@ -389,7 +389,7 @@ contains
   subroutine read_nml_input(decompfile, piotypes, rearrangers,&
         niotasks, nframes, unlimdimindof, nvars, varsize,&
         rearr_opts, ierr)
-    character(len=*), intent(out) :: decompfile(MAX_DECOMP_FILES)
+    character(len=MAX_FNAME_LEN), intent(out) :: decompfile(MAX_DECOMP_FILES)
     integer, intent(out) :: piotypes(MAX_PIO_TYPES)
     integer, intent(out) :: rearrangers(MAX_PIO_REARRS)
     integer, intent(out) :: niotasks(MAX_IO_TASK_ARRAY_SIZE)
@@ -537,7 +537,7 @@ contains
         niotasks, nframes, unlimdimindof, nvars, varsize,&
         rearr_opts, ierr)
     integer, intent(in) :: mype
-    character(len=*), intent(out) :: decompfile(MAX_DECOMP_FILES)
+    character(len=MAX_FNAME_LEN), intent(out) :: decompfile(MAX_DECOMP_FILES)
     integer, intent(out) :: piotypes(MAX_PIO_TYPES)
     integer, intent(out) :: rearrangers(MAX_PIO_REARRS)
     integer, intent(out) :: niotasks(MAX_IO_TASK_ARRAY_SIZE)
