@@ -1,9 +1,15 @@
+
+#include <algorithm>
 #include <iostream>
 #include <string>
 #include <vector>
 #include <mpi.h>
 #include "pio.h"
 #include "adios_read.h"
+#ifdef TIMING
+#include <gptl.h>
+#endif
+
 using namespace std;
 
 
@@ -25,6 +31,33 @@ int ncid;
 
 /* Number of processes that wrote the BP file (read from the file) */
 int n_bp_writers;
+
+/* Timer functions to separate time for read (ADIOS) and write (PIO) */
+double time_read, time_write;
+double time_temp_read, time_temp_write;
+void TimerInitialize() { time_read = 0.0; time_write = 0.0; }
+#define TimerStart(x) { time_temp_##x = MPI_Wtime(); }
+#define TimerStop(x) { time_##x += (MPI_Wtime() - time_temp_##x); }
+void TimerReport(MPI_Comm comm)
+{
+    int nproc, rank;
+    double tr_sum, tr_max;
+    double tw_sum, tw_max;
+    MPI_Comm_size(comm, &nproc);
+    MPI_Comm_rank(comm, &rank);
+    MPI_Reduce(&time_read, &tr_max, 1, MPI_DOUBLE, MPI_MAX, 0, comm);
+    MPI_Reduce(&time_read, &tr_sum, 1, MPI_DOUBLE, MPI_SUM, 0, comm);
+    MPI_Reduce(&time_write, &tw_max, 1, MPI_DOUBLE, MPI_MAX, 0, comm);
+    MPI_Reduce(&time_write, &tw_sum, 1, MPI_DOUBLE, MPI_SUM, 0, comm);
+
+    if (!rank)
+    {
+        cout << "Timing information:    Max    Sum of all\n";
+        cout << "ADIOS read time   = " << to_string(tr_max) << "s " << to_string(tr_sum) << "s\n";
+        cout << "PIO  write time   = " << to_string(tw_max) << "s " << to_string(tw_sum) << "s\n";
+    }
+}
+void TimerFinalize() {}
 
 void InitPIO()
 {
@@ -56,16 +89,20 @@ std::vector<int> AssignWriteRanks(int n_bp_writers)
 
 void ConvertBPFile(string infilename, string outfilename, int pio_iotype)
 {
+    TimerStart(read);
     ADIOS_FILE * infile = adios_read_open_file(infilename.c_str(), ADIOS_READ_METHOD_BP, comm);
+    TimerStop(read);
     if (!infile)
         throw std::runtime_error("ADIOS: "+ string(adios_errmsg()) + "\n");
 
     try {
         ncid = -1;
+        TimerStart(read);
         int ret = adios_schedule_read(infile, NULL, "info/nproc", 0, 1, &n_bp_writers);
         if (ret)
             throw std::runtime_error("Invalid BP file: missing 'info/nproc' variable\n");
         adios_perform_reads(infile, 1);
+        TimerStop(read);
 
         /* Number of BP file writers != number of processes here */
         std::vector<int> wblocks; // from-to writeblocks
@@ -87,8 +124,10 @@ void ConvertBPFile(string infilename, string outfilename, int pio_iotype)
                 if (!mpirank) cout << "Process decomposition " << decompname << endl;
 
                 /* Sum the sizes of blocks assigned to this process */
+                TimerStart(read);
                 ADIOS_VARINFO *vi = adios_inq_var(infile, infile->var_namelist[i]);
                 adios_inq_var_blockinfo(infile, vi);
+
                 uint64_t nelems = 0;
                 for (auto wb : wblocks)
                 {
@@ -121,9 +160,13 @@ void ConvertBPFile(string infilename, string outfilename, int pio_iotype)
                 int *decomp_dims;
                 attname = string(infile->var_namelist[i]) + "/dimlen";
                 adios_get_attr(infile, attname.c_str(), &atype, &asize, (void**)&decomp_dims);
+                TimerStop(read);
+
+                TimerStart(write);
                 int ioid;
                 PIOc_InitDecomp(iosysid, *piotype, *decomp_ndims, decomp_dims, (PIO_Offset)nelems,
                                d.data(), &ioid, NULL, NULL, NULL);
+                TimerStop(write);
 
                 free(piotype);
                 free(decomp_ndims);
@@ -134,7 +177,9 @@ void ConvertBPFile(string infilename, string outfilename, int pio_iotype)
         }
 
         /* Create output file */
+        TimerStart(write);
         ret = PIOc_createfile(iosysid, &ncid, &pio_iotype, outfilename.c_str(), PIO_CLOBBER);
+        TimerStop(write);
         if (ret)
             throw std::runtime_error("Could not create output file " + outfilename + "\n");
 
@@ -150,12 +195,15 @@ void ConvertBPFile(string infilename, string outfilename, int pio_iotype)
                 if (!mpirank) cout << "Process dimension " << dimname << endl;
 
                 unsigned long long dimval;
+                TimerStart(read);
                 int ret = adios_schedule_read(infile, NULL, infile->var_namelist[i], 0, 1, &dimval);
                 adios_perform_reads(infile, 1);
+                TimerStop(read);
                 int dimid;
+                TimerStart(write);
                 PIOc_def_dim(ncid, dimname.c_str(), (PIO_Offset)dimval, &dimid);
+                TimerStop(write);
                 dimensions_map[dimname] = dimid;
-
             }
             MPI_Barrier(comm);
         }
@@ -171,6 +219,7 @@ void ConvertBPFile(string infilename, string outfilename, int pio_iotype)
                 string varname = v.substr(7);
                 if (!mpirank) cout << "Process darray variable " << varname << endl;
 
+                TimerStart(read);
                 string attname = string(infile->var_namelist[i]) + "/nctype";
                 int asize;
                 int *nctype;
@@ -191,9 +240,12 @@ void ConvertBPFile(string infilename, string outfilename, int pio_iotype)
                     //cout << "Dim " << to_string(i) << " = " <<  dimnames[i] << endl;
                     dimids[i] = dimensions_map[dimnames[i]];
                 }
+                TimerStop(read);
 
+                TimerStart(write);
                 int varid;
                 PIOc_def_var(ncid, varname.c_str(), *nctype, *ndims, dimids, &varid);
+                TimerStop(write);
                 vars_map[varname] = varid;
 
                 free(nctype);
@@ -217,6 +269,7 @@ void ConvertBPFile(string infilename, string outfilename, int pio_iotype)
                 string varname = v.substr(7);
                 if (!mpirank) cout << "Convert darray variable " << varname << endl;
 
+                TimerStart(read);
                 string attname = string(infile->var_namelist[i]) + "/decomp";
                 int asize;
                 char *decompname;
@@ -247,17 +300,24 @@ void ConvertBPFile(string infilename, string outfilename, int pio_iotype)
                     adios_perform_reads(infile, 1);
                     offset += vi->blockinfo[wb].count[0] * elemsize;
                 }
+                TimerStop(read);
 
+                TimerStart(write);
                 ret = PIOc_write_darray(ncid, vars_map[varname], decompid, (PIO_Offset)nelems,
                                         d.data(), NULL);
+                TimerStop(write);
 
                 adios_free_varinfo(vi);
             }
             MPI_Barrier(comm);
         }
+        TimerStart(write);
         ret = PIOc_sync(ncid);
         ret = PIOc_closefile(ncid);
+        TimerStop(write);
+        TimerStart(read);
         adios_read_close(infile);
+        TimerStop(read);
     }
     catch (std::exception &e)
     {
@@ -277,8 +337,6 @@ void usage(string prgname)
         cout << "   pio format:  output PIO_IO_TYPE. Supported parameters:\n";
         cout << "                pnetcdf  netcdf  netcdf4c  netcdf4p   or:\n";
         cout << "                   1       2        3         4\n";
-
-
     }
 }
 
@@ -323,11 +381,21 @@ int main (int argc, char *argv[])
     
     string infilename = argv[1];
     string outfilename = argv[2];
+
+    #ifdef TIMING
+    /* Initialize the GPTL timing library. */
+    if ((ret = GPTLinitialize ()))
+        return ret;
+#endif
+
+    TimerInitialize();
+
     try {
         enum PIO_IOTYPE pio_iotype = GetIOType(argv[3]);
         InitPIO();
         ConvertBPFile(infilename, outfilename, pio_iotype);
         PIOc_finalize(iosysid);
+        TimerReport(comm);
     }
     catch (std::invalid_argument &e)
     {
@@ -342,5 +410,11 @@ int main (int argc, char *argv[])
     }
 
     MPI_Finalize();
+    TimerFinalize();
+#ifdef TIMING
+    /* Finalize the GPTL timing library. */
+    if ((ret = GPTLfinalize ()))
+        return ret;
+#endif
     return ret;
 }
