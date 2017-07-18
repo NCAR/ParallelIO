@@ -79,6 +79,9 @@ int PIOc_strerror(int pioerr, char *errmsg)
         case PIO_EBADIOTYPE:
             strcpy(errmsg, "Bad IO type");
             break;
+        case PIO_EADIOSREAD:
+             strcpy(errmsg, "ADIOS IO type does not support read operations");
+             break;
         default:
             strcpy(errmsg, "Unknown Error: Unrecognized error code");
         }

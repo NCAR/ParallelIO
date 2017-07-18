@@ -271,6 +271,11 @@
 #define PIO_EBADIOTYPE  (-500)
 #define PIO_EINTERNAL  (-501)
 
+#ifdef _ADIOS
+/** Define error codes for ADIOS. */
+#define PIO_EADIOSREAD  (-300)
+#endif
+
 /** ??? */
 #define PIO_REQ_NULL (NC_REQ_NULL-1)
 

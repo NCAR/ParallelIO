@@ -1072,6 +1072,12 @@ int PIOc_read_darray(int ncid, int varid, int ioid, PIO_Offset arraylen,
 #ifdef PIO_MICRO_TIMING
     mtimer_start(file->varlist[varid].rd_mtimer);
 #endif
+#ifdef _ADIOS
+    if (file->iotype == PIO_IOTYPE_ADIOS)
+    {
+        return pio_err(ios, file, PIO_EADIOSREAD, __FILE__, __LINE__);
+    }
+#endif
 
     /* Run these on all tasks if async is not in use, but only on
      * non-IO tasks if async is in use. */

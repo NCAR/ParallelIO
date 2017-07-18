@@ -100,12 +100,14 @@ module pio_types
 !!   - PIO_iotype_netcdf : serial read/write of NetCDF files using 'base_node' (netcdf3)
 !!   - PIO_iotype_netcdf4c : parallel read/serial write of NetCDF4 (HDF5) files with data compression
 !!   - PIO_iotype_netcdf4p : parallel read/write of NETCDF4 (HDF5) files
+!!   - PIO_iotype_adios : parallel write of ADIOS files with subset rearrangement only
 !>
     integer(i4), public, parameter ::  &
         PIO_iotype_pnetcdf = 1, &   ! parallel read/write of pNetCDF files
         PIO_iotype_netcdf  = 2, &   ! serial read/write of NetCDF file using 'base_node'
         PIO_iotype_netcdf4c = 3, &  ! netcdf4 (hdf5 format) file opened for compression (serial write access only)
-        PIO_iotype_netcdf4p = 4    ! netcdf4 (hdf5 format) file opened in parallel (all netcdf4 files for read will be opened this way)
+        PIO_iotype_netcdf4p = 4, &  ! netcdf4 (hdf5 format) file opened in parallel (all netcdf4 files for read will be opened this way)
+        PIO_iotype_adios = 5        ! parallel write of ADIOS files (Write only, rearr subset only)
 
 
 ! These are for backward compatability and should not be used or expanded upon
