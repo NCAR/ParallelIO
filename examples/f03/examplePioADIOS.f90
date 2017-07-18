@@ -8,6 +8,7 @@ module pioExampleADIOS
     use pio, only : PIO_closefile, io_desc_t, PIO_initdecomp, PIO_write_darray
     use pio, only : PIO_freedecomp, PIO_clobber, PIO_read_darray, PIO_syncfile, PIO_OFFSET_KIND
     use pio, only : PIO_nowrite, PIO_openfile, PIO_seterrorhandling, PIO_RETURN_ERROR
+    use pio, only : PIO_GLOBAL, PIO_put_att
 
     implicit none
 
@@ -242,12 +243,19 @@ contains
         class(pioExampleClass), intent(inout) :: this
 
         integer :: retVal
+        character(len=100) :: str       ! character temporary 
+
 
         retVal = PIO_def_dim(this%pioFileDesc, 'x', this%dimLen(1) , this%pioDimId)
         call this%errorHandle("Could not define dimension x", retVal)
 
         retVal = PIO_def_var(this%pioFileDesc, 'foo', PIO_int, (/this%pioDimId/), this%pioVar)
         call this%errorHandle("Could not define variable foo", retVal)
+
+        retVal = PIO_put_att(this%pioFileDesc, this%pioVar, 'startvalue', VAL)
+        str = 'Just a string attribute'
+        retVal = PIO_put_att(this%pioFileDesc, PIO_GLOBAL, 'astringattr', str)
+
 
         retVal = PIO_enddef(this%pioFileDesc)
         call this%errorHandle("Could not end define mode", retVal)

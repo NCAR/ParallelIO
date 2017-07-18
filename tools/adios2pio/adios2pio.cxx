@@ -87,6 +87,55 @@ std::vector<int> AssignWriteRanks(int n_bp_writers)
     return blocks;
 }
 
+void process_attributes(ADIOS_FILE *infile, int adios_varid, std::string varname, int ncid, int nc_varid)
+{
+    ADIOS_VARINFO *vi = adios_inq_var(infile, infile->var_namelist[adios_varid]);
+    for (int i=0; i < vi->nattrs; i++)
+    {
+        cout << "    Attribute: " << infile->attr_namelist[vi->attr_ids[i]] << std::endl;
+        int asize;
+        char *adata;
+        ADIOS_DATATYPES atype;
+        adios_get_attr(infile, infile->attr_namelist[vi->attr_ids[i]], &atype, &asize, (void**)&adata);
+        nc_type piotype = PIOc_get_nctype_from_adios_type(atype);
+        char *attname = infile->attr_namelist[vi->attr_ids[i]]+varname.length()+1;
+        cout << "        define PIO attribute: " << attname << ""
+             << "  type=" << to_string(piotype) << std::endl;
+        int len = 1;
+        if (atype == adios_string)
+            len = strlen(adata);
+        PIOc_put_att(ncid, nc_varid, attname, piotype, len, adata);
+        free(adata);
+    }
+    adios_free_varinfo(vi);
+}
+
+void process_global_attributes(ADIOS_FILE *infile, int ncid)
+{
+    cout << "Process Global Attributes: \n";
+    for (int i=0; i < infile->nattrs; i++)
+    {
+        string a = infile->attr_namelist[i];
+        if (a.find("pio_global/") != string::npos)
+        {
+            cout << "    Attribute: " << infile->attr_namelist[i] << std::endl;
+            int asize;
+            char *adata;
+            ADIOS_DATATYPES atype;
+            adios_get_attr(infile, infile->attr_namelist[i], &atype, &asize, (void**)&adata);
+            nc_type piotype = PIOc_get_nctype_from_adios_type(atype);
+            char *attname = infile->attr_namelist[i]+strlen("pio_global/");
+            cout << "        define PIO attribute: " << attname << ""
+                    << "  type=" << to_string(piotype) << std::endl;
+            int len = 1;
+            if (atype == adios_string)
+                len = strlen(adata);
+            PIOc_put_att(ncid, PIO_GLOBAL, attname, piotype, len, adata);
+            free(adata);
+        }
+    }
+}
+
 void ConvertBPFile(string infilename, string outfilename, int pio_iotype)
 {
     TimerStart(read);
@@ -98,9 +147,9 @@ void ConvertBPFile(string infilename, string outfilename, int pio_iotype)
     try {
         ncid = -1;
         TimerStart(read);
-        int ret = adios_schedule_read(infile, NULL, "info/nproc", 0, 1, &n_bp_writers);
+        int ret = adios_schedule_read(infile, NULL, "/__pio__/info/nproc", 0, 1, &n_bp_writers);
         if (ret)
-            throw std::runtime_error("Invalid BP file: missing 'info/nproc' variable\n");
+            throw std::runtime_error("Invalid BP file: missing '/__pio__/info/nproc' variable\n");
         adios_perform_reads(infile, 1);
         TimerStop(read);
 
@@ -114,13 +163,13 @@ void ConvertBPFile(string infilename, string outfilename, int pio_iotype)
         for (int i = 0; i < infile->nvars; i++)
         {
             string v = infile->var_namelist[i];
-            if (v.find("decomp/") != string::npos)
+            if (v.find("/__pio__/decomp/") != string::npos)
             {
                 /* Read all decomposition blocks assigned to this process,
                  * create one big array from them and
                  * create a single big decomposition with PIO
                  */
-                string decompname = v.substr(7);
+                string decompname = v.substr(16);
                 if (!mpirank) cout << "Process decomposition " << decompname << endl;
 
                 /* Sum the sizes of blocks assigned to this process */
@@ -137,7 +186,7 @@ void ConvertBPFile(string infilename, string outfilename, int pio_iotype)
                 uint64_t offset = 0;
                 for (auto wb : wblocks)
                 {
-                    cout << "rank " << to_string(mpirank) << ": read decomp wb = " << to_string(wb) <<
+                    cout << "    rank " << to_string(mpirank) << ": read decomp wb = " << to_string(wb) <<
                             " start = " << to_string(offset) <<
                             " elems = " << to_string(vi->blockinfo[wb].count[0]) << endl;
                     ADIOS_SELECTION *wbsel = adios_selection_writeblock(wb);
@@ -188,10 +237,10 @@ void ConvertBPFile(string infilename, string outfilename, int pio_iotype)
         for (int i = 0; i < infile->nvars; i++)
         {
             string v = infile->var_namelist[i];
-            if (v.find("dim/") != string::npos)
+            if (v.find("/__pio__/dim/") != string::npos)
             {
                 /* For each dimension stored, define a dimension variable with PIO */
-                string dimname = v.substr(4);
+                string dimname = v.substr(13);
                 if (!mpirank) cout << "Process dimension " << dimname << endl;
 
                 unsigned long long dimval;
@@ -213,25 +262,24 @@ void ConvertBPFile(string infilename, string outfilename, int pio_iotype)
         for (int i = 0; i < infile->nvars; i++)
         {
             string v = infile->var_namelist[i];
-            if (v.find("darray/") != string::npos)
+            if (v.find("/__") == string::npos)
             {
-                /* For each variable written by pio_write_darray, read with ADIOS then write with PIO */
-                string varname = v.substr(7);
-                if (!mpirank) cout << "Process darray variable " << varname << endl;
+                /* For each variable written define it with PIO */
+                if (!mpirank) cout << "Process variable " << v << endl;
 
                 TimerStart(read);
-                string attname = string(infile->var_namelist[i]) + "/nctype";
+                string attname = string(infile->var_namelist[i]) + "/__pio__/nctype";
                 int asize;
                 int *nctype;
                 ADIOS_DATATYPES atype;
                 adios_get_attr(infile, attname.c_str(), &atype, &asize, (void**)&nctype);
 
-                attname = string(infile->var_namelist[i]) + "/ndims";
+                attname = string(infile->var_namelist[i]) + "/__pio__/ndims";
                 int *ndims;
                 adios_get_attr(infile, attname.c_str(), &atype, &asize, (void**)&ndims);
 
                 char **dimnames;
-                attname = string(infile->var_namelist[i]) + "/dims";
+                attname = string(infile->var_namelist[i]) + "/__pio__/dims";
                 adios_get_attr(infile, attname.c_str(), &atype, &asize, (void**)&dimnames);
 
                 int dimids[*ndims];
@@ -244,16 +292,23 @@ void ConvertBPFile(string infilename, string outfilename, int pio_iotype)
 
                 TimerStart(write);
                 int varid;
-                PIOc_def_var(ncid, varname.c_str(), *nctype, *ndims, dimids, &varid);
+                PIOc_def_var(ncid, v.c_str(), *nctype, *ndims, dimids, &varid);
                 TimerStop(write);
-                vars_map[varname] = varid;
+                vars_map[v] = varid;
+
+                if (!mpirank)
+                    process_attributes(infile, i, v, ncid, varid);
 
                 free(nctype);
                 free(ndims);
                 free(dimnames);
             }
+            //else cout << "Skip var " << v << std::endl;
             MPI_Barrier(comm);
         }
+
+        /* Process the global attributes */
+        process_global_attributes(infile, ncid);
 
         PIOc_enddef(ncid);
 
@@ -263,14 +318,13 @@ void ConvertBPFile(string infilename, string outfilename, int pio_iotype)
         for (int i = 0; i < infile->nvars; i++)
         {
             string v = infile->var_namelist[i];
-            if (v.find("darray/") != string::npos)
+            if (v.find("/__") == string::npos)
             {
                 /* For each variable written by pio_write_darray, read with ADIOS then write with PIO */
-                string varname = v.substr(7);
-                if (!mpirank) cout << "Convert darray variable " << varname << endl;
+                if (!mpirank) cout << "Convert variable " << v << endl;
 
                 TimerStart(read);
-                string attname = string(infile->var_namelist[i]) + "/decomp";
+                string attname = string(infile->var_namelist[i]) + "/__pio__/decomp";
                 int asize;
                 char *decompname;
                 ADIOS_DATATYPES atype;
@@ -291,7 +345,7 @@ void ConvertBPFile(string infilename, string outfilename, int pio_iotype)
                 uint64_t offset = 0;
                 for (auto wb : wblocks)
                 {
-                    cout << "rank " << to_string(mpirank) << ": read var = " << to_string(wb) <<
+                    cout << "    rank " << to_string(mpirank) << ": read var = " << to_string(wb) <<
                             " start byte = " << to_string(offset) <<
                             " elems = " << to_string(vi->blockinfo[wb].count[0]) << endl;
                     ADIOS_SELECTION *wbsel = adios_selection_writeblock(wb);
@@ -303,7 +357,7 @@ void ConvertBPFile(string infilename, string outfilename, int pio_iotype)
                 TimerStop(read);
 
                 TimerStart(write);
-                ret = PIOc_write_darray(ncid, vars_map[varname], decompid, (PIO_Offset)nelems,
+                ret = PIOc_write_darray(ncid, vars_map[v], decompid, (PIO_Offset)nelems,
                                         d.data(), NULL);
                 TimerStop(write);
 

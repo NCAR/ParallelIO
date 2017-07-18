@@ -2018,7 +2018,7 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
             memset(file->dim_names, 0, sizeof(file->dim_names));
             file->num_dim_vars = 0;
             file->num_vars = 0;
-            int64_t vid = adios_define_var(file->adios_group, "info/nproc", "", adios_integer, "","","");
+            int64_t vid = adios_define_var(file->adios_group, "/__pio__/info/nproc", "", adios_integer, "","","");
             adios_write_byid(file->adios_fh, vid, &ios->num_iotasks);
             break;
 #endif
@@ -2951,7 +2951,7 @@ enum ADIOS_DATATYPES PIOc_get_adios_type(nc_type xtype)
     switch (xtype)
     {
     case NC_BYTE:   t = adios_byte; break;
-    case NC_CHAR:   t = adios_byte; break;
+    case NC_CHAR:   t = adios_string; break;
     case NC_SHORT:  t = adios_short; break;
     case NC_INT:    t = adios_integer; break;
     case NC_FLOAT:  t = adios_real; break;
@@ -2966,4 +2966,27 @@ enum ADIOS_DATATYPES PIOc_get_adios_type(nc_type xtype)
     }
     return t;
 }
+
+nc_type PIOc_get_nctype_from_adios_type(enum ADIOS_DATATYPES atype)
+{
+    nc_type t;
+    switch (atype)
+    {
+    case adios_byte:                t = NC_BYTE; break;
+    case adios_short:               t = NC_SHORT; break;
+    case adios_integer:             t = NC_INT; break;
+    case adios_real:                t = NC_FLOAT; break;
+    case adios_double:              t = NC_DOUBLE; break;
+    case adios_unsigned_byte:       t = NC_UBYTE; break;
+    case adios_unsigned_short:      t = NC_USHORT; break;
+    case adios_unsigned_integer:    t = NC_UINT; break;
+    case adios_long:                t = NC_INT64; break;
+    case adios_unsigned_long:       t = NC_UINT64; break;
+    case adios_string:              t = NC_CHAR; break;
+    default:                        t = NC_BYTE;
+    }
+    return t;
+}
+
+
 #endif

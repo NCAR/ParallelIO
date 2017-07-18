@@ -138,7 +138,28 @@ int PIOc_put_att_tc(int ncid, int varid, const char *name, nc_type atttype,
         }
 #endif /* _PNETCDF */
 
-        if (file->iotype != PIO_IOTYPE_PNETCDF && file->do_io)
+#ifdef _ADIOS
+        if (file->iotype == PIO_IOTYPE_ADIOS)
+        {
+            fprintf(stderr,"ADIOS define attribute %s, varid %d, type %d\n", name, varid, atttype);
+            enum ADIOS_DATATYPES adios_type = PIOc_get_adios_type(atttype);
+            char path[256];
+            if (varid != PIO_GLOBAL)
+            {
+                adios_var_desc_t * av = &(file->adios_vars[varid]);
+                strncpy(path, av->name, sizeof(path));
+            }
+            else
+            {
+                strncpy(path,"pio_global", sizeof(path));
+            }
+            //fprintf(stderr,"     define %s/%s, type %d\n", path, name, adios_type);
+            adios_define_attribute_byvalue(file->adios_group, name, path, adios_type, 1, op);
+            ierr = 0;
+        }
+#endif
+
+        if (file->iotype != PIO_IOTYPE_PNETCDF && file->iotype != PIO_IOTYPE_ADIOS && file->do_io)
         {
             switch(memtype)
             {

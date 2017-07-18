@@ -788,8 +788,8 @@ typedef struct file_desc_t
     char *dim_names[100];
     /** Number of dim vars defined */
     int num_dim_vars;
-    /** Variable information, max 1024 variables allowed */
-    struct adios_var_desc_t adios_vars[1024];
+    /** Variable information, max PIO_MAX_VARS variables allowed */
+    struct adios_var_desc_t adios_vars[PIO_MAX_VARS];
     /** Number of vars defined */
     int num_vars;
 #endif
@@ -1340,6 +1340,13 @@ extern "C" {
                             const PIO_Offset *stride, const PIO_Offset *imap, float *buf);
     int PIOc_get_varm_long(int ncid, int varid, const PIO_Offset *start, const PIO_Offset *count,
                            const PIO_Offset *stride, const PIO_Offset *imap, long *buf);
+
+#   ifdef _ADIOS
+    enum ADIOS_DATATYPES PIOc_get_adios_type(nc_type xtype);
+    nc_type PIOc_get_nctype_from_adios_type(enum ADIOS_DATATYPES atype);
+#   endif
+
+
 #if defined(__cplusplus)
 }
 #endif

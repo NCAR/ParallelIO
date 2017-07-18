@@ -2011,7 +2011,7 @@ int PIOc_def_dim(int ncid, const char *name, PIO_Offset len, int *idp)
             fprintf(stderr,"ADIOS define dimension %s with size %llu, id = %d\n",
                     name, (unsigned long long)len, file->num_dim_vars);
             char dimname[128];
-            snprintf(dimname, sizeof(dimname), "dim/%s", name);
+            snprintf(dimname, sizeof(dimname), "/__pio__/dim/%s", name);
             adios_define_var(file->adios_group, dimname, "", adios_unsigned_long, "","","");
             file->dim_names[file->num_dim_vars] = strdup(name);
             *idp = file->num_dim_vars;

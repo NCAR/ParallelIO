@@ -377,10 +377,6 @@ extern "C" {
     /* Create a unique PIO string */
     int pio_create_uniq_str(iosystem_desc_t *ios, io_desc_t *iodesc, char *str, int len, const char *prefix, const char *suffix);
 
-#   ifdef _ADIOS
-    enum ADIOS_DATATYPES PIOc_get_adios_type(nc_type xtype);
-#   endif
-
 #if defined(__cplusplus)
 }
 #endif
