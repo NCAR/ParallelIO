@@ -34,6 +34,7 @@ PIO_Offset maxusage = 0;
  *
  * @param limit the size of the buffer on the IO nodes
  * @return The previous limit setting.
+ * @author Jim Edwards
  */
 PIO_Offset PIOc_set_buffer_size_limit(PIO_Offset limit)
 {
@@ -139,9 +140,6 @@ int PIOc_write_darray_multi(int ncid, const int *varids, int ioid, int nvars,
     pioassert(iodesc->rearranger == PIO_REARR_BOX || iodesc->rearranger == PIO_REARR_SUBSET,
               "unknown rearranger", __FILE__, __LINE__);
 
-    /* Get a pointer to the variable info for the first variable. */
-    vdesc0 = &file->varlist[varids[0]];
-
     /* Run these on all tasks if async is not in use, but only on
      * non-IO tasks if async is in use. */
     if (!ios->async || !ios->ioproc)
@@ -209,11 +207,14 @@ int PIOc_write_darray_multi(int ncid, const int *varids, int ioid, int nvars,
         LOG((3, "shared fndims = %d", fndims));
     }
 
+    /* Get a pointer to the variable info for the first variable. */
+    vdesc0 = &file->varlist[varids[0]];
+
     /* if the buffer is already in use in pnetcdf we need to flush first */
-    if (file->iotype == PIO_IOTYPE_PNETCDF && vdesc0->iobuf)
+    if (file->iotype == PIO_IOTYPE_PNETCDF && file->iobuf)
 	flush_output_buffer(file, 1, 0);
 
-    pioassert(!vdesc0->iobuf, "buffer overwrite",__FILE__, __LINE__);
+    pioassert(!file->iobuf, "buffer overwrite",__FILE__, __LINE__);
 
     /* Determine total size of aggregated data (all vars/records).
      * For netcdf serial writes we collect the data on io nodes and
@@ -229,7 +230,7 @@ int PIOc_write_darray_multi(int ncid, const int *varids, int ioid, int nvars,
     if (rlen > 0)
     {
         /* Allocate memory for the buffer for all vars/records. */
-        if (!(vdesc0->iobuf = bget(iodesc->mpitype_size * (size_t)rlen)))
+        if (!(file->iobuf = bget(iodesc->mpitype_size * (size_t)rlen)))
             return pio_err(ios, file, PIO_ENOMEM, __FILE__, __LINE__);
         LOG((3, "allocated %lld bytes for variable buffer", (size_t)rlen * iodesc->mpitype_size));
 
@@ -240,7 +241,7 @@ int PIOc_write_darray_multi(int ncid, const int *varids, int ioid, int nvars,
             LOG((3, "inerting fill values iodesc->maxiobuflen = %d", iodesc->maxiobuflen));
             for (int nv = 0; nv < nvars; nv++)
                 for (int i = 0; i < iodesc->maxiobuflen; i++)
-                    memcpy(&((char *)vdesc0->iobuf)[iodesc->mpitype_size * (i + nv * iodesc->maxiobuflen)],
+                    memcpy(&((char *)file->iobuf)[iodesc->mpitype_size * (i + nv * iodesc->maxiobuflen)],
                            &((char *)fillvalue)[nv * iodesc->mpitype_size], iodesc->mpitype_size);
         }
     }
@@ -249,13 +250,13 @@ int PIOc_write_darray_multi(int ncid, const int *varids, int ioid, int nvars,
 	/* this assures that iobuf is allocated on all iotasks thus
 	 assuring that the flush_output_buffer call above is called
 	 collectively (from all iotasks) */
-        if (!(vdesc0->iobuf = bget(1)))
+        if (!(file->iobuf = bget(1)))
             return pio_err(ios, file, PIO_ENOMEM, __FILE__, __LINE__);
         LOG((3, "allocated token for variable buffer"));
     }
 
     /* Move data from compute to IO tasks. */
-    if ((ierr = rearrange_comp2io(ios, iodesc, array, vdesc0->iobuf, nvars)))
+    if ((ierr = rearrange_comp2io(ios, iodesc, array, file->iobuf, nvars)))
         return pio_err(ios, file, ierr, __FILE__, __LINE__);
 
     /* Write the darray based on the iotype. */
@@ -283,11 +284,11 @@ int PIOc_write_darray_multi(int ncid, const int *varids, int ioid, int nvars,
     if (file->iotype != PIO_IOTYPE_PNETCDF)
     {
         /* Release resources. */
-        if (vdesc0->iobuf)
+        if (file->iobuf)
         {
 	    LOG((3,"freeing variable buffer in pio_darray"));
-            brel(vdesc0->iobuf);
-            vdesc0->iobuf = NULL;
+            brel(file->iobuf);
+            file->iobuf = NULL;
         }
     }
 
