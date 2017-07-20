@@ -193,7 +193,7 @@ int write_darray_multi_par(file_desc_t *file, int nvars, int fndims, const int *
     int num_regions = fill ? iodesc->maxfillregions: iodesc->maxregions;
     io_region *region = fill ? iodesc->fillregion : iodesc->firstregion;
     PIO_Offset llen = fill ? iodesc->holegridsize : iodesc->llen;
-    void *iobuf = fill ? vdesc->fillbuf : vdesc->iobuf;
+    void *iobuf = fill ? vdesc->fillbuf : file->iobuf;
 
     /* If this is an IO task write the data. */
     if (ios->ioproc)
@@ -692,7 +692,7 @@ int write_darray_multi_serial(file_desc_t *file, int nvars, int fndims, const in
     int num_regions = fill ? iodesc->maxfillregions: iodesc->maxregions;
     io_region *region = fill ? iodesc->fillregion : iodesc->firstregion;
     PIO_Offset llen = fill ? iodesc->holegridsize : iodesc->llen;
-    void *iobuf = fill ? vdesc->fillbuf : vdesc->iobuf; 
+    void *iobuf = fill ? vdesc->fillbuf : file->iobuf; 
 
 #ifdef TIMING
     /* Start timing this function. */
@@ -1399,16 +1399,16 @@ int flush_output_buffer(file_desc_t *file, bool force, PIO_Offset addsize)
 #endif
 
         /* Release resources. */
+        if (file->iobuf)
+        {
+            LOG((3,"freeing variable buffer in flush_output_buffer"));
+            brel(file->iobuf);
+            file->iobuf = NULL;
+        }
         for (int i = 0; i < PIO_MAX_VARS; i++)
         {
             vdesc = file->varlist + i;
             vdesc->wb_pend = 0;
-            if (vdesc->iobuf)
-            {
-		LOG((3,"freeing variable buffer in flush_output_buffer"));
-                brel(vdesc->iobuf);
-                vdesc->iobuf = NULL;
-            }
             if (vdesc->fillbuf)
             {
                 brel(vdesc->fillbuf);

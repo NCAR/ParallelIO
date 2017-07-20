@@ -305,9 +305,6 @@ typedef struct var_desc_t
      * missing sections of data when using the subset rearranger. */
     void *fillbuf;
 
-    /** Data buffer for this variable. */
-    void *iobuf;
-
     /** Pointer to next var in list. */
     struct var_desc_t *next;
 } var_desc_t;
@@ -741,6 +738,9 @@ typedef struct file_desc_t
 
     /* Bytes pending to be written out for this file */
     PIO_Offset wb_pend;
+
+    /** Data buffer for this file. */
+    void *iobuf;
 
     /** Pointer to the next file_desc_t in the list of open files. */
     struct file_desc_t *next;
