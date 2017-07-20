@@ -1734,7 +1734,7 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
         file->varlist[i].type_size = 0;
         file->varlist[i].use_fill = 0;
         file->varlist[i].fillbuf = NULL;
-        file->varlist[i].iobuf = NULL;
+        /* file->varlist[i].iobuf = NULL; */
     }
     file->mode = mode;
 
@@ -2199,8 +2199,8 @@ int openfile_int(int iosysid, int *ncidp, int *iotype, const char *filename,
         }
 
         /* Add to the list of var_desc_t structs for this file. */
-        if ((ierr = add_to_varlist(v, rec_var, &file->varlist2)))
-            return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
+        /* if ((ierr = add_to_varlist(v, rec_var, &file->varlist2))) */
+        /*     return pio_err(ios, NULL, ierr, __FILE__, __LINE__); */
     }
 
     return PIO_NOERR;
