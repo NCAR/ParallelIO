@@ -308,6 +308,10 @@ CONTAINS
       ! pnetcdf
       num_iotypes = num_iotypes + 1
 #endif
+#ifdef _ADIOS
+      ! adios
+      num_iotypes = num_iotypes + 1
+#endif
 
     ! ALLOCATE with 0 elements ok?
     ALLOCATE(iotypes(num_iotypes))
@@ -318,6 +322,12 @@ CONTAINS
       ! pnetcdf
       iotypes(i) = PIO_iotype_pnetcdf
       iotype_descs(i) = "PNETCDF"
+      i = i + 1
+#endif
+#ifdef _ADIOS
+      ! adios
+      iotypes(i) = PIO_iotype_adios
+      iotype_descs(i) = "ADIOS"
       i = i + 1
 #endif
 #ifdef _NETCDF4
@@ -369,6 +379,10 @@ CONTAINS
       ! pnetcdf
       num_iotypes = num_iotypes + 1
 #endif
+#ifndef _ADIOS
+      ! adios
+      num_iotypes = num_iotypes + 1
+#endif
 
     ! ALLOCATE with 0 elements ok?
     ALLOCATE(iotypes(num_iotypes))
@@ -394,6 +408,12 @@ CONTAINS
       ! pnetcdf
       iotypes(i) = PIO_iotype_pnetcdf
       iotype_descs(i) = "PNETCDF"
+      i = i + 1
+#endif
+#ifndef _ADIOS
+      ! adios
+      iotypes(i) = PIO_iotype_adios
+      iotype_descs(i) = "ADIOS"
       i = i + 1
 #endif
   END SUBROUTINE
@@ -425,6 +445,10 @@ CONTAINS
       ! pnetcdf
       num_iotypes = num_iotypes + 1
 #endif
+#ifdef _ADIOS
+      ! adios
+      num_iotypes = num_iotypes + 1
+#endif
 
     ! ALLOCATE with 0 elements ok?
     ALLOCATE(iotypes(num_iotypes))
@@ -435,6 +459,12 @@ CONTAINS
       ! pnetcdf
       iotypes(i) = PIO_iotype_pnetcdf
       iotype_descs(i) = "PNETCDF"
+      i = i + 1
+#endif
+#ifdef _ADIOS
+      ! adios
+      iotypes(i) = PIO_iotype_adios
+      iotype_descs(i) = "ADIOS"
       i = i + 1
 #endif
 #ifdef _NETCDF4
@@ -486,12 +516,22 @@ CONTAINS
       ! pnetcdf
       num_iotypes = num_iotypes + 1
 #endif
+#ifndef _ADIOS
+      ! adios
+      num_iotypes = num_iotypes + 1
+#endif
 
     ! ALLOCATE with 0 elements ok?
     ALLOCATE(iotypes(num_iotypes))
     ALLOCATE(iotype_descs(num_iotypes))
 
     i = 1
+#ifndef _ADIOS
+      ! adios
+      iotypes(i) = PIO_iotype_adios
+      iotype_descs(i) = "ADIOS"
+      i = i + 1
+#endif
 #ifndef _NETCDF
       ! netcdf
       iotypes(i) = PIO_iotype_netcdf
