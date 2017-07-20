@@ -3,6 +3,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <map>
 #include <mpi.h>
 #include "pio.h"
 #include "adios_read.h"
