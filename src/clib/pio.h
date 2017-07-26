@@ -26,6 +26,7 @@
 #endif
 #ifdef _ADIOS
 #include <adios.h>
+#include <adios_read.h> // we only need adios_type_size() at the moment
 #endif
 
 #ifndef MPI_OFFSET

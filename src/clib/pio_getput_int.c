@@ -1146,7 +1146,89 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
         }
 #endif /* _PNETCDF */
 
-        if (file->iotype != PIO_IOTYPE_PNETCDF && file->do_io)
+#ifdef _ADIOS
+        if (file->iotype == PIO_IOTYPE_ADIOS)
+        {
+            if (varid < 0 || varid >= file->num_vars)
+                return pio_err(file->iosystem, file, PIO_EBADID, __FILE__, __LINE__);
+            /* First we need to define the variable now that we know it's decomposition */
+            adios_var_desc_t * av = &(file->adios_vars[varid]);
+
+            /* Scalars have to be handled differently. */
+            if (av->ndims == 0)
+            {
+                /* This is a scalar var. */
+                LOG((2, "ADIOS writing scalar file->fh = %d varid = %d",
+                        file->fh, varid));
+                pioassert(!start && !count && !stride, "expected NULLs", __FILE__, __LINE__);
+
+                /* Only the IO master does the IO, so we are not really
+                 * getting parallel IO here. */
+                if (ios->iomaster == MPI_ROOT)
+                {
+                    int64_t vid = adios_define_var(file->adios_group, av->name, "", av->adios_type,
+                            "","","");
+                    adios_write_byid(file->adios_fh, vid, buf);
+                }
+            }
+            else
+            {
+                /* This is not a scalar var. */
+                if (stride_present)
+                {
+                    fprintf(stderr,"ADIOS does not support striping %s:%s\n"
+                            "Variable %s will be corrupted in the output\n"
+                            , __FILE__, __func__, av->name);
+                }
+
+                char ldims[32],gdims[256],offs[256],tmp[256];
+                ldims[0] = '\0';
+                for (int d=0; d < av->ndims; d++)
+                {
+                    sprintf(tmp,"%lld", count[d]);
+                    strcat(ldims,tmp);
+                    if (d < av->ndims-1)
+                        strcat(ldims,",");
+                }
+                gdims[0] = '\0';
+                for (int d=0; d < av->ndims; d++)
+                {
+                    char dimname[128];
+                    snprintf(dimname, sizeof(dimname), "/__pio__/dim/%s", file->dim_names[av->gdimids[d]]);
+                    strcat(gdims,dimname);
+                    if (d < av->ndims-1)
+                        strcat(gdims,",");
+                }
+                offs[0] = '\0';
+                for (int d=0; d < av->ndims; d++)
+                {
+                    sprintf(tmp,"%lld", start[d]);
+                    strcat(offs,tmp);
+                    if (d < av->ndims-1)
+                        strcat(offs,",");
+                }
+                fprintf(stderr,"ADIOS variable %s on io rank %d define gdims=\"%s\", ldims=\"%s\", offsets=\"%s\"\n",
+                                            av->name, ios->io_rank, gdims, ldims, offs);
+                int64_t vid = adios_define_var(file->adios_group, av->name, "", av->adios_type, ldims,gdims,offs);
+                adios_write_byid(file->adios_fh, vid, buf);
+                char* dimnames[6];
+                for (int i = 0; i < av->ndims; i++)
+                {
+                    dimnames[i] = file->dim_names[av->gdimids[i]];
+                }
+                adios_define_attribute_byvalue(file->adios_group,"__pio__/dims",av->name,adios_string_array,av->ndims,dimnames);
+            }
+
+            if (ios->iomaster == MPI_ROOT)
+            {
+                adios_define_attribute_byvalue(file->adios_group,"__pio__/ndims",av->name,adios_integer,1,&av->ndims);
+                adios_define_attribute_byvalue(file->adios_group,"__pio__/nctype",av->name,adios_integer,1,&av->nc_type);
+                adios_define_attribute(file->adios_group, "__pio__/ncop", av->name, adios_string, "put_var", NULL);
+            }
+        }
+#endif
+
+        if (file->iotype != PIO_IOTYPE_PNETCDF && file->iotype != PIO_IOTYPE_ADIOS && file->do_io)
         {
             LOG((2, "PIOc_put_vars_tc calling netcdf function file->iotype = %d",
                  file->iotype));

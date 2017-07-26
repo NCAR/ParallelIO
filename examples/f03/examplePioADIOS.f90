@@ -8,7 +8,7 @@ module pioExampleADIOS
     use pio, only : PIO_closefile, io_desc_t, PIO_initdecomp, PIO_write_darray
     use pio, only : PIO_freedecomp, PIO_clobber, PIO_read_darray, PIO_syncfile, PIO_OFFSET_KIND
     use pio, only : PIO_nowrite, PIO_openfile, PIO_seterrorhandling, PIO_RETURN_ERROR
-    use pio, only : PIO_GLOBAL, PIO_put_att
+    use pio, only : PIO_GLOBAL, PIO_put_att, PIO_put_var
 
     implicit none
 
@@ -25,6 +25,9 @@ module pioExampleADIOS
 
     !> @brief Error code if anything goes wrong.
     integer, parameter :: ERR_CODE = 99
+
+    integer, parameter :: d0 = 3;
+
 
     !> @brief A class to hold example code and data.
     !! This class contains the data and functions to execute the
@@ -57,6 +60,9 @@ module pioExampleADIOS
 
         !> @brief The netCDF variable ID.
         type(var_desc_t)      :: pioVar
+
+        !> @brief The netCDF variable ID.
+        type(var_desc_t)      :: pioVard0
 
         !> @brief An io descriptor handle that is generated in @ref PIO_initdecomp.
         type(io_desc_t)       :: iodescNCells
@@ -256,6 +262,7 @@ contains
         str = 'Just a string attribute'
         retVal = PIO_put_att(this%pioFileDesc, PIO_GLOBAL, 'astringattr', str)
 
+        retVal = PIO_def_var(this%pioFileDesc, 'd0', PIO_int, this%pioVard0)
 
         retVal = PIO_enddef(this%pioFileDesc)
         call this%errorHandle("Could not end define mode", retVal)
@@ -272,6 +279,7 @@ contains
 
         call PIO_write_darray(this%pioFileDesc, this%pioVar, this%iodescNCells, this%dataBuffer(this%ista:this%isto), retVal)
         call this%errorHandle("Could not write foo", retVal)
+        retVal = PIO_put_var(this%pioFileDesc, this%pioVard0, d0);
         call PIO_syncfile(this%pioFileDesc)
 
     end subroutine writeVar

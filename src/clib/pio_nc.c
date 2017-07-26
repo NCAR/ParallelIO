@@ -403,6 +403,9 @@ int PIOc_inq_type(int ncid, nc_type xtype, char *name, PIO_Offset *sizep)
         if (file->iotype == PIO_IOTYPE_ADIOS)
         {
             fprintf(stderr,"ADIOS missing %s:%s\n", __FILE__, __func__);
+            enum ADIOS_DATATYPES atype = PIOc_get_adios_type(xtype);
+            int asize = adios_type_size(atype,NULL);
+            *sizep = (PIO_Offset) asize;
             ierr = 0;
         }
 #endif
