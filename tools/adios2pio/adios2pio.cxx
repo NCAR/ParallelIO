@@ -99,6 +99,18 @@ std::vector<int> AssignWriteRanks(int n_bp_writers)
     return blocks;
 }
 
+void ProcessGlobalFillmode(ADIOS_FILE *infile, int ncid)
+{
+    cout << "Process Global Fillmode: \n";
+    int asize;
+    void *fillmode;
+    ADIOS_DATATYPES atype;
+    adios_get_attr(infile, "/__pio__/fillmode", &atype, &asize, &fillmode);
+    cout << "    set fillmode: " << *(int*)fillmode << std::endl;
+    PIOc_set_fill(ncid, *(int*)fillmode, NULL);
+    free(fillmode);
+}
+
 void ProcessVarAttributes(ADIOS_FILE *infile, int adios_varid, std::string varname, int ncid, int nc_varid)
 {
     ADIOS_VARINFO *vi = adios_inq_var(infile, infile->var_namelist[adios_varid]);
@@ -461,6 +473,9 @@ void ConvertBPFile(string infilename, string outfilename, int pio_iotype)
         TimerStop(write);
         if (ret)
             throw std::runtime_error("Could not create output file " + outfilename + "\n");
+
+        /* Process the global fillmode */
+        ProcessGlobalFillmode(infile, ncid);
 
         /* Next process dimensions */
         std::map<std::string,int> dimensions_map = ProcessDimensions(infile, ncid);

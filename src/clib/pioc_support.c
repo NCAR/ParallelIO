@@ -2018,6 +2018,7 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
             memset(file->dim_names, 0, sizeof(file->dim_names));
             file->num_dim_vars = 0;
             file->num_vars = 0;
+            file->fillmode = NC_NOFILL;
             int64_t vid = adios_define_var(file->adios_group, "/__pio__/info/nproc", "", adios_integer, "","","");
             adios_write_byid(file->adios_fh, vid, &ios->num_iotasks);
             break;

@@ -424,6 +424,7 @@ int PIOc_sync(int ncid)
     {
         if (file->adios_fh != -1)
         {
+            adios_define_attribute_byvalue(file->adios_group,"/__pio__/fillmode","",adios_integer,1,&file->fillmode);
             ierr = adios_close(file->adios_fh);
             file->adios_fh = -1;
         }

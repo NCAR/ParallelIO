@@ -796,6 +796,7 @@ typedef struct file_desc_t
     struct adios_var_desc_t adios_vars[PIO_MAX_VARS];
     /** Number of vars defined */
     int num_vars;
+    int fillmode;
 #endif
 
     /* File name - cached */

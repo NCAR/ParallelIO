@@ -1818,7 +1818,8 @@ int PIOc_del_att(int ncid, int varid, const char *name)
 #ifdef _ADIOS
         if (file->iotype == PIO_IOTYPE_ADIOS)
         {
-            fprintf(stderr,"ADIOS missing %s:%s\n", __FILE__, __func__);
+            if (old_modep) *old_modep = file->fillmode;
+            file->fillmode = fillmode;
             ierr = 0;
         }
 #endif
