@@ -148,6 +148,7 @@ int PIOc_put_att_tc(int ncid, int varid, const char *name, nc_type atttype,
             {
                 adios_var_desc_t * av = &(file->adios_vars[varid]);
                 strncpy(path, av->name, sizeof(path));
+                ++file->adios_vars[varid].nattrs;
             }
             else
             {

@@ -402,10 +402,12 @@ int PIOc_inq_type(int ncid, nc_type xtype, char *name, PIO_Offset *sizep)
 #ifdef _ADIOS
         if (file->iotype == PIO_IOTYPE_ADIOS)
         {
-            fprintf(stderr,"ADIOS missing %s:%s\n", __FILE__, __func__);
-            enum ADIOS_DATATYPES atype = PIOc_get_adios_type(xtype);
-            int asize = adios_type_size(atype,NULL);
-            *sizep = (PIO_Offset) asize;
+            if (sizep)
+            {
+                enum ADIOS_DATATYPES atype = PIOc_get_adios_type(xtype);
+                int asize = adios_type_size(atype,NULL);
+                *sizep = (PIO_Offset) asize;
+            }
             ierr = 0;
         }
 #endif
@@ -572,7 +574,7 @@ int PIOc_inq_dim(int ncid, int dimid, char *name, PIO_Offset *lenp)
 #ifdef _ADIOS
         if (file->iotype == PIO_IOTYPE_ADIOS)
         {
-            fprintf(stderr,"ADIOS missing %s:%s\n", __FILE__, __func__);
+            *formatp = 1;
             ierr = 0;
         }
 #endif
@@ -710,6 +712,8 @@ int PIOc_inq_dimid(int ncid, const char *name, int *idp)
 #ifdef _ADIOS
         if (file->iotype == PIO_IOTYPE_ADIOS)
         {
+            char * dimname  = file->dim_names[dimid];
+            *lenp = file->dim_values[dimid];
             fprintf(stderr,"ADIOS missing %s:%s\n", __FILE__, __func__);
             ierr = 0;
         }
@@ -845,8 +849,16 @@ int PIOc_inq_var(int ncid, int varid, char *name, int namelen, nc_type *xtypep, 
 #ifdef _ADIOS
         if (file->iotype == PIO_IOTYPE_ADIOS)
         {
-            fprintf(stderr,"ADIOS missing %s:%s\n", __FILE__, __func__);
-            ierr = 0;
+            if (varid < file->num_vars)
+            {
+                if (name)    name    = file->adios_vars[varid].name;
+                if (xtypep)  *xtypep = file->adios_vars[varid].nc_type;
+                if (ndimsp)  *ndimsp = file->adios_vars[varid].ndims;
+                if (dimidsp) dimidsp = file->adios_vars[varid].gdimids;
+                if (nattsp)  *nattsp = file->adios_vars[varid].nattrs;
+                ierr = 0;
+            }
+            else ierr = PIO_EBADID;
         }
 #endif
 
@@ -2017,6 +2029,7 @@ int PIOc_def_dim(int ncid, const char *name, PIO_Offset len, int *idp)
             snprintf(dimname, sizeof(dimname), "/__pio__/dim/%s", name);
             adios_define_var(file->adios_group, dimname, "", adios_unsigned_long, "","","");
             file->dim_names[file->num_dim_vars] = strdup(name);
+            file->dim_values[file->num_dim_vars] = len;
             *idp = file->num_dim_vars;
             ++file->num_dim_vars;
             adios_write(file->adios_fh,dimname,&len);
@@ -2156,6 +2169,7 @@ int PIOc_def_var(int ncid, const char *name, nc_type xtype, int ndims,
             file->adios_vars[file->num_vars].name = strdup(name);
             file->adios_vars[file->num_vars].nc_type = xtype;
             file->adios_vars[file->num_vars].adios_type = PIOc_get_adios_type(xtype);
+            file->adios_vars[file->num_vars].nattrs = 0;
             file->adios_vars[file->num_vars].ndims = ndims;
             file->adios_vars[file->num_vars].gdimids = (int*) malloc(ndims*sizeof(int));
             memcpy(file->adios_vars[file->num_vars].gdimids, dimidsp, ndims*sizeof(int));
