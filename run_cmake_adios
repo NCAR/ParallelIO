@@ -25,18 +25,27 @@ if [ `hostname | cut -c 1-4` == "rhea" ]; then
 elif [ `hostname | cut -c 1-4` == "sith" ]; then
     echo "Configure on Sith"
     TARGET=`module list 2>&1 | grep "PE"- | sed "s/^.*PE-\([a-z]*\).*/\1/"`
-    NETCDF_DIR=/ccs/proj/e2e/pnorbert/netcdf-4.4.0/install/rhea.$TARGET
-    PNETCDF_DIR=/ccs/proj/csc143/ACME_support/sith.$TARGET/pnetcdf
+    NETCDF_DIR=/ccs/proj/csc143/ACME_support/sith.pgi/netcdf
+    NETCDFF_DIR=$NETCDF_DIR
+    PNETCDF_DIR=/ccs/proj/csc143/mxu/software4acme/lib/parallel-netcdf-1.8.1-pgi-16.9
+    export HFD5_DIR=/ccs/proj/csc143/ACME_support/sith.pgi/phdf5
     CC=mpicc \
     CXX=mpic++ \
     FC=mpif90 \
     CFLAGS="-g -fPIC" \
     ADIOS_DIR=/ccs/proj/csc143/ACME_support/sith.$TARGET/adios \
-    cmake -DNetCDF_C_PATH=$NETCDF_DIR \
-          -DNetCDF_Fortran_PATH=$NETCDF_DIR \
+    cmake \
+          -DNetCDF_C_PATH=$NETCDF_DIR \
+          -DNetCDF_Fortran_PATH=$NETCDFF_DIR \
           -DPnetCDF_PATH=$PNETCDF_DIR \
+          -DHDF5_PATH=$HDF5_DIR \
           -DCMAKE_INSTALL_PREFIX=/ccs/proj/csc143/ACME_support/sith.$TARGET/pio \
           ..
+          #--debug-output 
+          #--trace \
+          #-DPREFER_STATIC=TRUE \
+          #-DLIBZ_PATH=/ccs/proj/csc143/mxu/software4acme/zlib-1.2.11-pgi-17.1 \
+          #-DSZIP_PATH=/ccs/proj/csc143/mxu/software4acme/szip-2.1.1-pgi-17.1 \
 
 elif [ `hostname | cut -c 1-5` == "titan" ]; then
     TARGET=`module list 2>&1 | grep "PrgEnv"- | sed "s/^.*PrgEnv-\([a-z]*\).*/\1/"`
