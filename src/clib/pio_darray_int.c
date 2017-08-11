@@ -1,4 +1,4 @@
-/** @file
+ /** @file
  *
  * Private functions to help read and write distributed arrays in PIO.
  *
@@ -981,11 +981,6 @@ int pio_read_darray_nc_serial(file_desc_t *file, io_desc_t *iodesc, int vid,
     /* Get number of dims for this var. */
     if ((ierr = PIOc_inq_varndims(file->pio_ncid, vid, &fndims)))
         return pio_err(ios, file, ierr, __FILE__, __LINE__);
-
-    /* Confirm rec_var setting. */
-    pioassert((fndims == ndims && !vdesc->rec_var) ||
-              (fndims == ndims + 1 && vdesc->rec_var),
-              "invalid rec_var", __FILE__, __LINE__);
 
     if (ios->ioproc)
     {

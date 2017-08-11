@@ -112,8 +112,10 @@ typedef struct var_desc_t
      * dimension). */
     int rec_var;
 
-    /** The record number to be written. Ignored if there is no
-     * unlimited dimension. */
+    /** The value of the first dimension, if darrays are used to read
+     * and write this variable. The is the record dimension in the
+     * case of vars with an unlimited dim, but can also be used for
+     * vars with no unlimited dim. */
     int record;
 
     /** ID of each outstanding pnetcdf request for this variable. */

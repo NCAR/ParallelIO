@@ -199,6 +199,10 @@ int test_darray(int iosysid, int ioid, int num_flavors, int *flavor, int my_rank
         if ((ret = PIOc_openfile(iosysid, &ncid2, &flavor[fmt], filename, PIO_NOWRITE)))
             ERR(ret);
 
+        /* Set the value of the record dimension. */
+        if ((ret = PIOc_setframe(ncid2, varid, 0)))
+            ERR(ret);
+
         /* Read the data. */
         if ((ret = PIOc_read_darray(ncid2, varid, ioid, arraylen, test_data_in)))
             ERR(ret);
