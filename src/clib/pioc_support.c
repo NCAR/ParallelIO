@@ -2163,7 +2163,7 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
     /* User must provide valid input for these parameters. */
     if (!ncidp || !iotype || !filename)
         return pio_err(ios, NULL, PIO_EINVAL, __FILE__, __LINE__);
-    if (*iotype < PIO_IOTYPE_PNETCDF || *iotype > PIO_IOTYPE_NETCDF4P)
+    if (*iotype < PIO_IOTYPE_PNETCDF || *iotype > PIO_IOTYPE_ADIOS)
         return pio_err(ios, NULL, PIO_EINVAL, __FILE__, __LINE__);
 
     LOG((2, "PIOc_openfile_retry iosysid = %d iotype = %d filename = %s mode = %d retry = %d",
@@ -2177,6 +2177,22 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
     file->fh = -1;
     strncpy(file->fname, filename, PIO_MAX_NAME);
     file->iotype = *iotype;
+#ifdef _ADIOS
+    if (file->iotype == PIO_IOTYPE_ADIOS)
+    {
+#  ifdef _PNETCDF
+        file->iotype = PIO_IOTYPE_PNETCDF;
+#  else
+#    ifdef _NETCDF4
+#      ifdef _MPISERIAL
+        file->iotype = PIO_IOTYPE_NETCDF4C;
+#      else
+        file->iotype = PIO_IOTYPE_NETCDF4P;
+#      endif
+#    endif
+#  endif
+    }
+#endif
     file->iosystem = ios;
     file->mode = mode;
     /*
@@ -2988,6 +3004,20 @@ nc_type PIOc_get_nctype_from_adios_type(enum ADIOS_DATATYPES atype)
     }
     return t;
 }
+
+#  ifndef strdup
+char *strdup(const char *str)
+{
+    int n = strlen(str) + 1;
+    char *dup = (char*)malloc(n);
+    if(dup)
+    {
+        strcpy(dup, str);
+    }
+    return dup;
+}
+#  endif
+
 
 
 #endif

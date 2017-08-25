@@ -1349,6 +1349,9 @@ extern "C" {
 #   ifdef _ADIOS
     enum ADIOS_DATATYPES PIOc_get_adios_type(nc_type xtype);
     nc_type PIOc_get_nctype_from_adios_type(enum ADIOS_DATATYPES atype);
+#      ifndef strdup
+    char *strdup(const char *str);
+#      endif
 #   endif
 
 
