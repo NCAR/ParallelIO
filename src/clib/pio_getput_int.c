@@ -155,7 +155,12 @@ int PIOc_put_att_tc(int ncid, int varid, const char *name, nc_type atttype,
                 strncpy(path,"pio_global", sizeof(path));
             }
             //fprintf(stderr,"     define %s/%s, type %d\n", path, name, adios_type);
-            adios_define_attribute_byvalue(file->adios_group, name, path, adios_type, 1, op);
+            //Workaround for adios 1.12.0, where adios_define_attribute_byvalue
+            //  throws an error on a string attribute of ""
+            if (adios_type == adios_string && strlen((char*)op) == 0)
+                adios_define_attribute(file->adios_group, name, path, adios_type, op, NULL);
+            else
+                adios_define_attribute_byvalue(file->adios_group, name, path, adios_type, 1, op);
             ierr = 0;
         }
 #endif
