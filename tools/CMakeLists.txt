@@ -3,5 +3,8 @@
 ###-------------------------------------------------------------------------###
 
 if (WITH_ADIOS)
-  ADD_SUBDIRECTORY(adios2pio)
+  find_package (ADIOS "1.10.0")
+  if (ADIOS_FOUND)
+    ADD_SUBDIRECTORY(adios2pio)
+  endif (ADIOS_FOUND)
 endif(WITH_ADIOS)

@@ -745,6 +745,7 @@ typedef struct wmulti_buffer
     struct wmulti_buffer *next;
 } wmulti_buffer;
 
+#ifdef _ADIOS
 /** Variable definition information saved at pioc_def_var,
  * so that ADIOS can define the variable at write time when
  * local dimensions and offsets are known.
@@ -764,6 +765,7 @@ typedef struct adios_var_desc_t
     /** Number of attributes defined for this variable */
     int nattrs;
 } adios_var_desc_t;
+#endif
 /**
  * File descriptor structure.
  *
