@@ -851,10 +851,12 @@ int PIOc_inq_var(int ncid, int varid, char *name, int namelen, nc_type *xtypep, 
         {
             if (varid < file->num_vars)
             {
-                if (name)    name    = file->adios_vars[varid].name;
+                if (name)    strcpy(name, file->adios_vars[varid].name);
                 if (xtypep)  *xtypep = file->adios_vars[varid].nc_type;
                 if (ndimsp)  *ndimsp = file->adios_vars[varid].ndims;
-                if (dimidsp) dimidsp = file->adios_vars[varid].gdimids;
+                if (dimidsp)
+                    memcpy(dimidsp, file->adios_vars[varid].gdimids,
+                            file->adios_vars[varid].ndims * sizeof(int));
                 if (nattsp)  *nattsp = file->adios_vars[varid].nattrs;
                 ierr = 0;
             }
@@ -2181,7 +2183,7 @@ int PIOc_def_var(int ncid, const char *name, nc_type xtype, int ndims,
 #ifdef _ADIOS
         if (file->iotype == PIO_IOTYPE_ADIOS)
         {
-            fprintf(stderr,"ADIOS pre-define variable %s with %d dimensions\n", name, ndims);
+            fprintf(stderr,"ADIOS pre-define variable %s (%d dimensions, type %d)\n", name, ndims, xtype);
             file->adios_vars[file->num_vars].name = strdup(name);
             file->adios_vars[file->num_vars].nc_type = xtype;
             file->adios_vars[file->num_vars].adios_type = PIOc_get_adios_type(xtype);
