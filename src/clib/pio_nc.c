@@ -1279,7 +1279,22 @@ int PIOc_inq_att(int ncid, int varid, const char *name, nc_type *xtypep,
 #ifdef _ADIOS
         if (file->iotype == PIO_IOTYPE_ADIOS)
         {
-            fprintf(stderr,"ADIOS missing %s:%s\n", __FILE__, __func__);
+            if (file->num_vars > 0) // in create/write mode we have variables, in open/read mode, we don't
+            {
+                int i;
+                for (i=0; i < file->num_vars; i++)
+                {
+                    if (!strcmp(name, file->adios_vars[i].name))
+                    {
+                        *varidp = i;
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                fprintf(stderr,"ADIOS Read mode missing %s:%s\n", __FILE__, __func__);
+            }
             ierr = 0;
         }
 #endif
