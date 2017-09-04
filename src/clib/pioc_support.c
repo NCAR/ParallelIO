@@ -2003,7 +2003,10 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
             LOG((2, "Calling adios_open mode = %d", file->mode));
             /* Create a new ADIOS variable group, names the same as the filename for
              * lack of better solution here */
-            adios_declare_group(&file->adios_group, filename, NULL, adios_stat_default);
+            int len = strlen(filename);
+            file->filename = malloc(len+3+3);
+            sprintf(file->filename, "%s.bp", filename);
+            adios_declare_group(&file->adios_group, file->filename, NULL, adios_stat_default);
             int do_aggregate = (ios->num_comptasks != ios->num_iotasks);
             if (do_aggregate)
             {
@@ -2015,8 +2018,9 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
                 sprintf(file->transport,"%s","POSIX");
                 file->params[0] = '\0';
             }
+            //adios_set_time_aggregation(file->adios_group,100000000,NULL);
             adios_select_method(file->adios_group,file->transport,file->params,"");
-            ierr = adios_open(&file->adios_fh,filename,filename,"w", ios->io_comm);
+            ierr = adios_open(&file->adios_fh,file->filename,file->filename,"w", ios->io_comm);
             memset(file->dim_names, 0, sizeof(file->dim_names));
             file->num_dim_vars = 0;
             file->num_vars = 0;

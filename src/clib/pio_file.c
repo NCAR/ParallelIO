@@ -280,8 +280,18 @@ int PIOc_closefile(int ncid)
 #endif
 #ifdef _ADIOS
         case PIO_IOTYPE_ADIOS:
-            // Already closed in PIOc_sync()
-            adios_free_group(file->adios_group);
+            if (file->adios_fh != -1)
+            {
+                LOG((2,"ADIOS close file %s\n", file->filename));
+                adios_define_attribute_byvalue(file->adios_group,"/__pio__/fillmode","",adios_integer,1,&file->fillmode);
+                ierr = adios_close(file->adios_fh);
+                file->adios_fh = -1;
+            }
+            if (file->adios_group != -1)
+            {
+                adios_free_group(file->adios_group);
+                file->adios_group = -1;
+            }
             for (int i=0; i<file->num_dim_vars; i++)
             {
                 free (file->dim_names[i]);
@@ -296,6 +306,7 @@ int PIOc_closefile(int ncid)
                 file->adios_vars[file->num_vars].gdimids = NULL;
             }
             file->num_vars = 0;
+            free(file->filename);
             ierr = 0;
             break;
 #endif
@@ -420,20 +431,7 @@ int PIOc_sync(int ncid)
     ios = file->iosystem;
 
 #ifdef _ADIOS
-    if (file->iotype == PIO_IOTYPE_ADIOS)
-    {
-        if (file->adios_fh != -1)
-        {
-            adios_define_attribute_byvalue(file->adios_group,"/__pio__/fillmode","",adios_integer,1,&file->fillmode);
-            ierr = adios_close(file->adios_fh);
-            file->adios_fh = -1;
-        }
-        else
-        {
-            ierr = 0;
-        }
-    }
-    else
+    if (file->iotype != PIO_IOTYPE_ADIOS)
     {
 #endif
 

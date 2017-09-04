@@ -780,6 +780,8 @@ typedef struct file_desc_t
      * (netcdf or pnetcdf). */
     int fh;
 #ifdef _ADIOS
+    /** Save the filename, now just for printing it at close */
+    char *filename;
     /** ADIOS file handler is 64bit integer */
     int64_t adios_fh;
     /** Handler for ADIOS group (of variables) */
