@@ -393,7 +393,6 @@ int ConvertVariablePutVar(ADIOS_FILE * infile, int adios_varid, int ncid, int nc
 int ConvertVariableDarray(ADIOS_FILE * infile, int adios_varid, int ncid, int nc_varid,
         std::vector<int>& wblocks, std::map<std::string,int>& decomp_map)
 {
-    TimerStart(read);
     int ret = 0;
     string attname = string(infile->var_namelist[adios_varid]) + "/__pio__/decomp";
     int asize;
