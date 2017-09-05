@@ -141,7 +141,7 @@ int PIOc_put_att_tc(int ncid, int varid, const char *name, nc_type atttype,
 #ifdef _ADIOS
         if (file->iotype == PIO_IOTYPE_ADIOS)
         {
-            fprintf(stderr,"ADIOS define attribute %s, varid %d, type %d\n", name, varid, atttype);
+            LOG((2,"ADIOS define attribute %s, varid %d, type %d\n", name, varid, atttype));
             enum ADIOS_DATATYPES adios_type = PIOc_get_adios_type(atttype);
             char path[256];
             if (varid != PIO_GLOBAL)
@@ -154,7 +154,6 @@ int PIOc_put_att_tc(int ncid, int varid, const char *name, nc_type atttype,
             {
                 strncpy(path,"pio_global", sizeof(path));
             }
-            //fprintf(stderr,"     define %s/%s, type %d\n", path, name, adios_type);
             //Workaround for adios 1.12.0, where adios_define_attribute_byvalue
             //  throws an error on a string attribute of ""
             if (adios_type == adios_string || atttype == NC_CHAR)
@@ -1182,9 +1181,9 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                 /* This is not a scalar var. */
                 if (stride_present)
                 {
-                    fprintf(stderr,"ADIOS does not support striping %s:%s\n"
+                    LOG((2,"ADIOS does not support striping %s:%s\n"
                             "Variable %s will be corrupted in the output\n"
-                            , __FILE__, __func__, av->name);
+                            , __FILE__, __func__, av->name));
                 }
 
                 char ldims[32],gdims[256],offs[256],tmp[256];
@@ -1213,8 +1212,8 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                     if (d < av->ndims-1)
                         strcat(offs,",");
                 }
-                fprintf(stderr,"ADIOS variable %s on io rank %d define gdims=\"%s\", ldims=\"%s\", offsets=\"%s\"\n",
-                                            av->name, ios->io_rank, gdims, ldims, offs);
+                LOG((2,"ADIOS variable %s on io rank %d define gdims=\"%s\", ldims=\"%s\", offsets=\"%s\"\n",
+                                            av->name, ios->io_rank, gdims, ldims, offs));
                 int64_t vid = adios_define_var(file->adios_group, av->name, "", av->adios_type, ldims,gdims,offs);
                 adios_write_byid(file->adios_fh, vid, buf);
                 char* dimnames[6];
