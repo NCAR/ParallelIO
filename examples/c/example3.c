@@ -32,13 +32,17 @@
  * integers in our data, and responsibilty for writing and reading
  * them will be spread between all the processors used to run this
  * example. */
-#define DIM_LEN 16
+#define DIM_LEN_FOO 16
+#define DIM_LEN_BAR (2*DIM_LEN_FOO)
 
 /** The name of the dimension in the netCDF output file. */
-#define DIM_NAME "x"
+#define DIM_NAME_FOO "x"
+#define DIM_NAME_BAR "y"
 
 /** The name of the variable in the netCDF output file. */
-#define VAR_NAME "foo"
+#define VAR_NAME_FOO "foo"
+#define VAR_NAME_FOO2 "foo2"
+#define VAR_NAME_BAR "bar"
 
 /** Return code when netCDF output file does not match
  * expectations. */
@@ -81,7 +85,7 @@ int resultlen;
  *
  * @return 0 if example file is correct, non-zero otherwise. */
 int check_file(int ntasks, char *filename) {
-#ifdef _NETCDF
+    
     int ncid;         /**< File ID from netCDF. */
     int ndims;        /**< Number of dimensions. */
     int nvars;        /**< Number of variables. */
@@ -92,12 +96,12 @@ int check_file(int ntasks, char *filename) {
     nc_type xtype;    /**< NetCDF data type of this variable. */
     int ret;          /**< Return code for function calls. */
     int dimids[NDIM]; /**< Dimension ids for this variable. */
-    char dim_name[PIO_MAX_NAME];   /**< Name of the dimension. */
-    char var_name[PIO_MAX_NAME];   /**< Name of the variable. */
+    char dim_name[NC_MAX_NAME];   /**< Name of the dimension. */
+    char var_name[NC_MAX_NAME];   /**< Name of the variable. */
     size_t start[NDIM];           /**< Zero-based index to start read. */
     size_t count[NDIM];           /**< Number of elements to read. */
-    int buffer[DIM_LEN];          /**< Buffer to read in data. */
-    int expected[DIM_LEN];        /**< Data values we expect to find. */
+    int buffer[DIM_LEN_FOO];          /**< Buffer to read in data. */
+    int expected[DIM_LEN_FOO];        /**< Data values we expect to find. */
     
     /* Open the file. */
     if ((ret = nc_open(filename, 0, &ncid)))
@@ -106,11 +110,11 @@ int check_file(int ntasks, char *filename) {
     /* Check the metadata. */
     if ((ret = nc_inq(ncid, &ndims, &nvars, &ngatts, &unlimdimid)))
 	return ret;
-    if (ndims != NDIM || nvars != 1 || ngatts != 0 || unlimdimid != -1)
+    if (ndims != 3 || nvars != 4 || ngatts != 0 || unlimdimid != -1)
 	return ERR_BAD;
     if ((ret = nc_inq_dim(ncid, 0, dim_name, &dimlen)))
 	return ret;
-    if (dimlen != DIM_LEN || strcmp(dim_name, DIM_NAME))
+    if (dimlen != DIM_LEN_FOO || strcmp(dim_name, DIM_NAME_FOO))
 	return ERR_BAD;
     if ((ret = nc_inq_var(ncid, 0, var_name, &xtype, &ndims, dimids, &natts)))
 	return ret;
@@ -119,23 +123,22 @@ int check_file(int ntasks, char *filename) {
 
     /* Use the number of processors to figure out what the data in the
      * file should look like. */
-    int div = DIM_LEN/ntasks;
-    for (int d = 0; d < DIM_LEN; d++)
+    int div = DIM_LEN_FOO/ntasks;
+    for (int d = 0; d < DIM_LEN_FOO; d++)
 	expected[d] = START_DATA_VAL + d/div;
     
     /* Check the data. */
     start[0] = 0;
-    count[0] = DIM_LEN;
+    count[0] = DIM_LEN_FOO;
     if ((ret = nc_get_vara(ncid, 0, start, count, buffer)))
 	return ret;
-    for (int d = 0; d < DIM_LEN; d++)
+    for (int d = 0; d < DIM_LEN_FOO; d++)
 	if (buffer[d] != expected[d])
 	    return ERR_BAD;
 
     /* Close the file. */
     if ((ret = nc_close(ncid)))
 	return ret;
-#endif
 
     /* Everything looks good! */
     return 0;
@@ -210,18 +213,22 @@ int check_file(int ntasks, char *filename) {
 	int ioproc_start = 0;
 
 	/** The dimension ID. */
-	int dimid;
+	int dimid_foo;
+	int dimid_bar;
+	int dimid_varname;
 
 	/** Array index per processing unit. This is the number of
 	 * elements of the data array that will be handled by each
 	 * processor. In this example there are 16 data elements. If the
 	 * example is run on 4 processors, then arrIdxPerPe will be 4. */
-	PIO_Offset elements_per_pe;
+	PIO_Offset elements_per_pe_foo;
+    PIO_Offset elements_per_pe_bar;
 
 	/* Length of the dimensions in the data. This simple example
 	 * uses one-dimensional data. The lenght along that dimension
 	 * is DIM_LEN (16). */
-	int dim_len[1] = {DIM_LEN};
+	int dim_len_foo[1] = {DIM_LEN_FOO};
+    int dim_len_bar[1] = {DIM_LEN_BAR};
 
 	/** The ID for the parallel I/O system. It is set by
 	 * PIOc_Init_Intracomm(). It references an internal structure
@@ -235,17 +242,22 @@ int check_file(int ntasks, char *filename) {
 	int ncid;
 
 	/** The ID of the netCDF varable in the example file. */
-	int varid;
+	int varid_foo;
+	int varid_foo2;
+	int varid_bar;
+	int varid_varname; // varid of another variable which is a string
 
 	/** The I/O description ID as passed back by PIOc_InitDecomp()
 	 * and freed in PIOc_freedecomp(). */
-	int ioid;
+	int ioid_foo;
+	int ioid_bar;
 
 	/** A buffer for sample data.  The size of this array will
 	 * vary depending on how many processors are involved in the
 	 * execution of the example code. It's length will be the same
 	 * as elements_per_pe.*/
-	int *buffer;
+	int *buffer_foo;
+	float *buffer_bar;
 
 	/** A 1-D array which holds the decomposition mapping for this
 	 * example. The size of this array will vary depending on how
@@ -254,11 +266,11 @@ int check_file(int ntasks, char *filename) {
 	 * elements_per_pe. */
 	PIO_Offset *compdof;
 
-        /** Test filename. */
-        char filename[PIO_MAX_NAME + 1];
+	/** Test filename. */
+	char filename[NC_MAX_NAME + 1];
 
-        /** The number of netCDF flavors available in this build. */
-        int num_flavors = 0;
+	/** The number of netCDF flavors available in this build. */
+	int num_flavors = 0;
             
 	/** Used for command line processing. */
 	int c;
@@ -278,20 +290,16 @@ int check_file(int ntasks, char *filename) {
 	    }
 
 #ifdef TIMING    
-#ifndef TIMING_INTERNAL
 	/* Initialize the GPTL timing library. */
 	if ((ret = GPTLinitialize ()))
 	    return ret;
-#endif
 #endif    
     
 	/* Initialize MPI. */
 	if ((ret = MPI_Init(&argc, &argv)))
 	    MPIERR(ret);
-        /*
 	if ((ret = MPI_Comm_set_errhandler(MPI_COMM_WORLD, MPI_ERRORS_RETURN)))
 	    MPIERR(ret);
-        */
 
 	/* Learn my rank and the total number of processors. */
 	if ((ret = MPI_Comm_rank(MPI_COMM_WORLD, &my_rank)))
@@ -310,34 +318,48 @@ int check_file(int ntasks, char *filename) {
 	/* keep things simple - 1 iotask per MPI process */    
 	niotasks = ntasks; 
 
+	PIOc_set_log_level(2);
 	/* Initialize the PIO IO system. This specifies how
 	 * many and which processors are involved in I/O. */
 	if ((ret = PIOc_Init_Intracomm(MPI_COMM_WORLD, niotasks, ioproc_stride,
 				       ioproc_start, PIO_REARR_SUBSET, &iosysid)))
 	    ERR(ret);
 
-	/* Describe the decomposition. This is a 1-based array, so add 1! */
-	elements_per_pe = DIM_LEN / ntasks;
-	if (!(compdof = malloc(elements_per_pe * sizeof(PIO_Offset))))
+	/* Describe the 'foo' decomposition. This is a 1-based array, so add 1! */
+	elements_per_pe_foo = DIM_LEN_FOO / ntasks;
+	if (!(compdof = malloc(elements_per_pe_foo * sizeof(PIO_Offset))))
 	    return PIO_ENOMEM;
-	for (int i = 0; i < elements_per_pe; i++)
-	    compdof[i] = my_rank * elements_per_pe + i + 1;
+	for (int i = 0; i < elements_per_pe_foo; i++)
+	    compdof[i] = my_rank * elements_per_pe_foo + i + 1;
 	
 	/* Create the PIO decomposition for this example. */
 	if (verbose)
-	    printf("rank: %d Creating decomposition...\n", my_rank);
-	if ((ret = PIOc_InitDecomp(iosysid, PIO_INT, NDIM, dim_len, (PIO_Offset)elements_per_pe,
-				   compdof, &ioid, NULL, NULL, NULL)))
+	    printf("rank: %d Creating decomposition for foo...\n", my_rank);
+	if ((ret = PIOc_InitDecomp(iosysid, PIO_INT, NDIM, dim_len_foo, (PIO_Offset)elements_per_pe_foo,
+				   compdof, &ioid_foo, NULL, NULL, NULL)))
 	    ERR(ret);
 	free(compdof);
+
+    /* Describe the 'bar' decomposition which is twice as big as 'foo'. This is a 1-based array, so add 1! */
+    elements_per_pe_bar = DIM_LEN_BAR / ntasks;
+    if (!(compdof = malloc(elements_per_pe_bar * sizeof(PIO_Offset))))
+        return PIO_ENOMEM;
+    for (int i = 0; i < elements_per_pe_bar; i++)
+        compdof[i] = my_rank * elements_per_pe_bar + i + 1;
+
+    /* Create the PIO decomposition for this example. */
+    if (verbose)
+        printf("rank: %d Creating decomposition for bar...\n", my_rank);
+    if ((ret = PIOc_InitDecomp(iosysid, PIO_INT, NDIM, dim_len_bar, (PIO_Offset)elements_per_pe_bar,
+                   compdof, &ioid_bar, NULL, NULL, NULL)))
+        ERR(ret);
+    free(compdof);
 
         /* The number of favors may change with the build parameters. */
 #ifdef _PNETCDF
         format[num_flavors++] = PIO_IOTYPE_PNETCDF;
 #endif
-#ifdef _NETCDF
         format[num_flavors++] = PIO_IOTYPE_NETCDF;
-#endif
 #ifdef _NETCDF4
         format[num_flavors++] = PIO_IOTYPE_NETCDF4C;
         format[num_flavors++] = PIO_IOTYPE_NETCDF4P;
@@ -352,7 +374,7 @@ int check_file(int ntasks, char *filename) {
 	{
 	    /* Create a filename. */
 	    sprintf(filename, "example1_%d.nc", fmt);
-
+            
 	    /* Create the netCDF output file. */
 	    if (verbose)
 		printf("rank: %d Creating sample file %s with format %d...\n",
@@ -364,31 +386,64 @@ int check_file(int ntasks, char *filename) {
 	    /* Define netCDF dimension and variable. */
 	    if (verbose)
 		printf("rank: %d Defining netCDF metadata...\n", my_rank);
-	    if ((ret = PIOc_def_dim(ncid, DIM_NAME, (PIO_Offset)dim_len[0], &dimid)))
+	    if ((ret = PIOc_def_dim(ncid, DIM_NAME_FOO, (PIO_Offset)dim_len_foo[0], &dimid_foo)))
 		ERR(ret);
-	    if ((ret = PIOc_def_var(ncid, VAR_NAME, PIO_INT, NDIM, &dimid, &varid)))
+	    if ((ret = PIOc_def_var(ncid, VAR_NAME_FOO, PIO_INT, NDIM, &dimid_foo, &varid_foo)))
 		ERR(ret);
+        if ((ret = PIOc_def_var(ncid, VAR_NAME_FOO2, PIO_INT, NDIM, &dimid_foo, &varid_foo2)))
+        ERR(ret);
+
+        if ((ret = PIOc_def_dim(ncid, DIM_NAME_BAR, (PIO_Offset)dim_len_bar[0], &dimid_bar)))
+        ERR(ret);
+        if ((ret = PIOc_def_var(ncid, VAR_NAME_BAR, PIO_FLOAT, NDIM, &dimid_bar, &varid_bar)))
+        ERR(ret);
+
+        if ((ret = PIOc_def_dim(ncid, "varname_len", strlen(VAR_NAME_FOO), &dimid_varname)))
+        ERR(ret);
+        if ((ret = PIOc_def_var(ncid, "varname", PIO_CHAR, 1, &dimid_varname, &varid_varname)))
+        ERR(ret);
 	    if ((ret = PIOc_enddef(ncid)))
 		ERR(ret);
 	
 	    /* Prepare sample data. */
-	    if (!(buffer = malloc(elements_per_pe * sizeof(int))))
+	    if (!(buffer_foo = (int *) malloc(elements_per_pe_foo * sizeof(int))))
 	        return PIO_ENOMEM;
-	    for (int i = 0; i < elements_per_pe; i++)
-	        buffer[i] = START_DATA_VAL + my_rank;
+	    for (int i = 0; i < elements_per_pe_foo; i++)
+	        buffer_foo[i] = START_DATA_VAL + my_rank;
+        if (!(buffer_bar = (float *) calloc(elements_per_pe_bar, sizeof(float))))
+            return PIO_ENOMEM;
+        for (int i = 0; i < elements_per_pe_bar; i++)
+            buffer_bar[i] = (float) START_DATA_VAL*1.0 + my_rank*1.0;
 
 	    /* Write data to the file. */
 	    if (verbose)
 	        printf("rank: %d Writing sample data...\n", my_rank);
-	    if ((ret = PIOc_write_darray(ncid, varid, ioid, (PIO_Offset)elements_per_pe,
-	    			     buffer, NULL)))
+	    int test_varid = -1;
+	    PIOc_inq_varid(ncid,VAR_NAME_FOO,&test_varid);
+	    if (varid_foo != test_varid) {
+	        printf("rank: %d PIOc_inq_varid(%s) returned wrong varid=%d, expected=%d\n",
+	                my_rank, VAR_NAME_FOO, test_varid, varid_foo);
+	    }
+
+	    if ((ret = PIOc_write_darray(ncid, varid_foo, ioid_foo, (PIO_Offset)elements_per_pe_foo,
+	    			     buffer_foo, NULL)))
 	        ERR(ret);
+        if ((ret = PIOc_write_darray(ncid, varid_foo2, ioid_foo, (PIO_Offset)elements_per_pe_foo,
+                         buffer_foo, NULL)))
+            ERR(ret);
+        if ((ret = PIOc_write_darray(ncid, varid_bar, ioid_bar, (PIO_Offset)elements_per_pe_bar,
+                         buffer_bar, NULL)))
+            ERR(ret);
+
+        if ((ret = PIOc_put_var_text(ncid,varid_varname,VAR_NAME_FOO)))
+            ERR(ret);
 	    if ((ret = PIOc_sync(ncid)))
 	        ERR(ret);
 
 	    /* Free buffer space used in this example. */
-	    free(buffer);
-	
+	    free(buffer_foo);
+        free(buffer_bar);
+
 	    /* Close the netCDF file. */
 	    if (verbose)
 		printf("rank: %d Closing the sample data file...\n", my_rank);
@@ -399,7 +454,7 @@ int check_file(int ntasks, char *filename) {
 	/* Free the PIO decomposition. */
 	if (verbose)
 	    printf("rank: %d Freeing PIO decomposition...\n", my_rank);
-	if ((ret = PIOc_freedecomp(iosysid, ioid)))
+	if ((ret = PIOc_freedecomp(iosysid, ioid_foo)))
 	    ERR(ret);
 	
 	/* Finalize the IO system. */
@@ -422,11 +477,9 @@ int check_file(int ntasks, char *filename) {
 	MPI_Finalize();
 
 #ifdef TIMING    
-#ifndef TIMING_INTERNAL
 	/* Finalize the GPTL timing library. */
 	if ((ret = GPTLfinalize ()))
 	    return ret;
-#endif
 #endif    
 
 	if (verbose)
