@@ -801,6 +801,9 @@ typedef struct file_desc_t
     /** Number of vars defined */
     int num_vars;
     int fillmode;
+    /** array for decompositions that has been written already (must write only once) */
+    int n_written_ioids;
+    int written_ioids[100]; // written_ioids[N] = ioid if that decomp has been already written,
 #endif
 
     /* File name - cached */

@@ -2025,6 +2025,7 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
             file->num_dim_vars = 0;
             file->num_vars = 0;
             file->fillmode = NC_NOFILL;
+            file->n_written_ioids = 0;
             int64_t vid = adios_define_var(file->adios_group, "/__pio__/info/nproc", "", adios_integer, "","","");
             adios_write_byid(file->adios_fh, vid, &ios->num_iotasks);
             break;
@@ -2974,7 +2975,7 @@ enum ADIOS_DATATYPES PIOc_get_adios_type(nc_type xtype)
     switch (xtype)
     {
     case NC_BYTE:   t = adios_byte; break;
-    case NC_CHAR:   t = adios_string; break;
+    case NC_CHAR:   t = adios_byte; break;
     case NC_SHORT:  t = adios_short; break;
     case NC_INT:    t = adios_integer; break;
     case NC_FLOAT:  t = adios_real; break;

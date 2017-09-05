@@ -576,6 +576,21 @@ static int PIO_wmb_needs_flush(wmulti_buffer *wmb, int arraylen, io_desc_t *iode
 
 #ifdef _ADIOS
 
+static int needs_to_write_decomp(file_desc_t *file, int ioid)
+{
+    int ret = 1; // yes
+    for (int i=0; i < file->n_written_ioids; i++)
+        if (file->written_ioids[i] == ioid)
+            ret = 0;
+    return ret;
+}
+
+static void register_decomp(file_desc_t *file, int ioid)
+{
+    file->written_ioids[file->n_written_ioids] = ioid;
+    ++file->n_written_ioids;
+}
+
 void PIOc_write_decomp_adios(file_desc_t *file, int ioid)
 {
     io_desc_t *iodesc = pio_get_iodesc_from_id(ioid);
@@ -633,7 +648,11 @@ int PIOc_write_darray_adios(file_desc_t *file, int varid, int ioid, PIO_Offset a
         adios_define_attribute(file->adios_group, "__pio__/ncop", av->name, adios_string, "darray", NULL);
     }
 
-    PIOc_write_decomp_adios(file,ioid);
+    if (needs_to_write_decomp(file, ioid))
+    {
+        PIOc_write_decomp_adios(file,ioid);
+        register_decomp(file, ioid);
+    }
 
     return PIO_NOERR;
 }
