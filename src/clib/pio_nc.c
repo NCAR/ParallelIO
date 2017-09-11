@@ -712,14 +712,27 @@ int PIOc_inq_dimid(int ncid, const char *name, int *idp)
 #ifdef _ADIOS
         if (file->iotype == PIO_IOTYPE_ADIOS)
         {
-            char * dimname  = file->dim_names[dimid];
-            *lenp = file->dim_values[dimid];
-            LOG((2,"ADIOS missing %s:%s\n", __FILE__, __func__));
+            if (file->num_dim_vars > 0) // in create/write mode we have dimensions, in open/read mode, we don't
+            {
+                int i;
+                for (i=0; i < file->num_dim_vars; i++)
+                {
+                    if (!strcmp(name, file->dim_names[i]))
+                    {
+                        *idp = i;
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                LOG((2,"ADIOS Read mode missing %s:%s\n", __FILE__, __func__));
+            }
             ierr = 0;
         }
 #endif
 #ifdef _NETCDF
-        if (file->iotype != PIO_IOTYPE_PNETCDF && file->do_io)
+        if (file->iotype != PIO_IOTYPE_PNETCDF && file->iotype != PIO_IOTYPE_ADIOS && file->do_io)
             ierr = nc_inq_dimid(file->fh, name, idp);
 #endif /* _NETCDF */
     }
