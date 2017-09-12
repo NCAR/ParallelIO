@@ -37,6 +37,10 @@ ADD_EXECUTABLE(example3 example3.c)
 TARGET_LINK_LIBRARIES(example3 pioc)
 add_dependencies(tests example3)
 
+ADD_EXECUTABLE(timesteps timesteps.c)
+TARGET_LINK_LIBRARIES(timesteps pioc)
+add_dependencies(tests timesteps)
+
 ADD_EXECUTABLE(darray_no_async darray_no_async.c)
 TARGET_LINK_LIBRARIES(darray_no_async pioc)
 add_dependencies(tests darray_no_async)
