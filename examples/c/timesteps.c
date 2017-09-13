@@ -1,11 +1,11 @@
 /**
  * @file
- * Tests for handling of fillval.
+ * Example for writing multiple records of a 2D array.
+ * The result is a 3D variable, with an unlimited "timestep"
+ * dimension in the first dimension.
  *
- * This test was added to track down memory leaks in
- * pio_decomp_fillval. Since that code is large, complex, and in
- * fortran, I have reproduced the error-inducing calls in a simple C
- * test.
+ * This example was added to show PIOc_setframe() to set the record,
+ * i.e. the timestep of the output array.
  *
  */
 #include <pio.h>
@@ -22,16 +22,16 @@
 #define NDIM 3
 
 /** The length of our sample data along each dimension. There will be
- * a total of 16 integers in each timestep of our data, and
+ * a total of X_DIM_LEN*Y_DIM_LEN floats in each timestep of our data, and
  * responsibilty for writing and reading them will be spread between
  * all the processors used to run this example. */
 /**@{*/
-#define X_DIM_LEN 400
-#define Y_DIM_LEN 400
+#define X_DIM_LEN 10
+#define Y_DIM_LEN 6
 /**@}*/
 
 /** The number of timesteps of data to write. */
-#define NUM_TIMESTEPS 6
+#define NUM_TIMESTEPS 2
 
 /** The name of the variable in the netCDF output file. */
 #define VAR_NAME "foo"
@@ -81,7 +81,7 @@ float *data;
 void create_data(int nelems) {data = (float *) calloc(nelems, sizeof(float));}
 void fill_data(int nelems, int rank, int time)
 {
-    for (int i=0; i<nelems; i++) data[i] = ((100.0*time)+rank)/100.0;
+    for (int i=0; i<nelems; i++) data[i] = ((100.0*rank)+time+1)/100.0;
 }
 void destroy_data() { free(data); data=NULL; }
 
@@ -286,16 +286,20 @@ main(int argc, char **argv)
 
 
         /* Write a few timesteps */
-        for (int ts = 1; ts < 4; ++ts)
+
+        for (int ts = 0; ts < NUM_TIMESTEPS; ++ts)
         {
             fill_data((int)elements_per_pe, my_rank, ts);
             if (verbose)
                  printf("rank: %d     Writing sample data step %d...\n", my_rank, ts);
 
-             if ((ret = PIOc_write_darray(ncid, varid, ioid, (PIO_Offset)elements_per_pe,
-                     data, NULL)))
-                 ERR(ret);
+            if ((ret = PIOc_setframe(ncid, varid, ts)))
+                ERR(ret);
+            if ((ret = PIOc_write_darray(ncid, varid, ioid, (PIO_Offset)elements_per_pe,
+                    data, NULL)))
+                ERR(ret);
         }
+
 
         /* Close the netCDF file. */
         if (verbose)

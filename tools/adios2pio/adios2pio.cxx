@@ -391,7 +391,7 @@ int ConvertVariablePutVar(ADIOS_FILE * infile, int adios_varid, int ncid, int nc
 }
 
 int ConvertVariableDarray(ADIOS_FILE * infile, int adios_varid, int ncid, int nc_varid,
-        std::vector<int>& wblocks, std::map<std::string,int>& decomp_map)
+        std::vector<int>& wblocks, std::map<std::string,int>& decomp_map, int nblocks_per_step)
 {
     int ret = 0;
     string attname = string(infile->var_namelist[adios_varid]) + "/__pio__/decomp";
@@ -401,42 +401,70 @@ int ConvertVariableDarray(ADIOS_FILE * infile, int adios_varid, int ncid, int nc
     adios_get_attr(infile, attname.c_str(), &atype, &asize, (void**)&decompname);
     int decompid = decomp_map[decompname];
     free(decompname);
+    attname = string(infile->var_namelist[adios_varid]) + "/__pio__/timed";
+    char *is_timed_val;
+    adios_get_attr(infile, attname.c_str(), &atype, &asize, (void**)&is_timed_val);
+    char is_timed = *is_timed_val;
+    free(is_timed_val);
 
-    /* Sum the sizes of blocks assigned to this process */
     ADIOS_VARINFO *vi = adios_inq_var(infile, infile->var_namelist[adios_varid]);
     adios_inq_var_blockinfo(infile, vi);
-    uint64_t nelems = 0;
-    for (auto wb : wblocks)
-    {
-        if (wb < vi->nblocks[0])
-            nelems += vi->blockinfo[wb].count[0];
-    }
-    int elemsize = adios_type_size(vi->type,NULL);
-    std::vector<char> d(nelems * elemsize);
-    uint64_t offset = 0;
-    for (auto wb : wblocks)
-    {
-        if (wb < vi->nblocks[0])
-        {
-            cout << "    rank " << mpirank << ": read var = " << wb <<
-                    " start byte = " << offset <<
-                    " elems = " << vi->blockinfo[wb].count[0] << endl;
-            ADIOS_SELECTION *wbsel = adios_selection_writeblock(wb);
-            int ret = adios_schedule_read(infile, wbsel, infile->var_namelist[adios_varid], 0, 1,
-                    d.data()+offset);
-            adios_perform_reads(infile, 1);
-            offset += vi->blockinfo[wb].count[0] * elemsize;
-        }
-    }
-    TimerStop(read);
 
-    TimerStart(write);
-    if (wblocks[0] < vi->nblocks[0])
+    /* calculate how many records/steps we have for this variable */
+    int nsteps = 1;
+    if (is_timed)
     {
-        ret = PIOc_write_darray(ncid, nc_varid, decompid, (PIO_Offset)nelems,
-                d.data(), NULL);
+        nsteps = vi->nblocks[0] / nblocks_per_step;
     }
-    TimerStop(write);
+    if (vi->nblocks[0] != nsteps * nblocks_per_step)
+    {
+        cout << "rank " << mpirank << ":ERROR in processing darray " << infile->var_namelist[adios_varid]
+             << ". Number of blocks = " << vi->nblocks[0]
+             << " does not equal the number of steps * number of writers = "
+             << nsteps << " * " << nblocks_per_step << " = " << nsteps*nblocks_per_step
+             << endl;
+    }
+
+
+    for (int ts = 0; ts < nsteps; ++ts)
+    {
+        /* Sum the sizes of blocks assigned to this process */
+        uint64_t nelems = 0;
+        for (auto wb : wblocks)
+        {
+            if (wb < vi->nblocks[0])
+                nelems += vi->blockinfo[wb*nsteps+ts].count[0];
+        }
+        int elemsize = adios_type_size(vi->type,NULL);
+        std::vector<char> d(nelems * elemsize);
+        uint64_t offset = 0;
+        for (auto wb : wblocks)
+        {
+            int blockid = wb*nsteps+ts;
+            if (blockid < vi->nblocks[0])
+            {
+                cout << "    rank " << mpirank << ": read var = " << blockid <<
+                        " start byte = " << offset <<
+                        " elems = " << vi->blockinfo[blockid].count[0] << endl;
+                ADIOS_SELECTION *wbsel = adios_selection_writeblock(blockid);
+                int ret = adios_schedule_read(infile, wbsel, infile->var_namelist[adios_varid], 0, 1,
+                        d.data()+offset);
+                adios_perform_reads(infile, 1);
+                offset += vi->blockinfo[blockid].count[0] * elemsize;
+            }
+        }
+        TimerStop(read);
+
+        TimerStart(write);
+        if (wblocks[0] < nblocks_per_step)
+        {
+            if (is_timed)
+                PIOc_setframe(ncid, nc_varid, ts);
+            ret = PIOc_write_darray(ncid, nc_varid, decompid, (PIO_Offset)nelems,
+                    d.data(), NULL);
+        }
+        TimerStop(write);
+    }
     adios_free_varinfo(vi);
 
     return ret;
@@ -514,7 +542,7 @@ void ConvertBPFile(string infilename, string outfilename, int pio_iotype)
                 else if (op == "darray")
                 {
                     /* Variable was written with pio_write_darray() with a decomposition */
-                    ConvertVariableDarray(infile, i, ncid, vars_map[v], wblocks, decomp_map);
+                    ConvertVariableDarray(infile, i, ncid, vars_map[v], wblocks, decomp_map, n_bp_writers);
                 }
                 else
                 {

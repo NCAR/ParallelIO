@@ -617,42 +617,58 @@ int PIOc_write_darray_adios(file_desc_t *file, int varid, int ioid, PIO_Offset a
     int ierr = PIO_NOERR;
     if (varid < 0 || varid >= file->num_vars)
         return pio_err(file->iosystem, file, PIO_EBADID, __FILE__, __LINE__);
-    /* First we need to define the variable now that we know it's decomposition */
+
     adios_var_desc_t * av = &(file->adios_vars[varid]);
-    /*char gdims[256];
-    gdims[0] = '\0';
-    for (int d=0; d < av->ndims; d++)
+    if (av->adios_varid == 0)
     {
-        strcat(gdims,file->dim_names[av->gdimids[d]]);
-        if (d < av->ndims-1)
-            strcat(gdims,",");
-    }*/
-    char ldim[32];
-    sprintf(ldim, "%lld", arraylen);
-    int64_t vid = adios_define_var(file->adios_group, av->name, "", av->adios_type, ldim,"","");
-    adios_write_byid(file->adios_fh, vid, array);
-
-    if (file->iosystem->iomaster == MPI_ROOT)
-    {
-        adios_define_attribute_byvalue(file->adios_group,"__pio__/ndims",av->name,adios_integer,1,&av->ndims);
-        adios_define_attribute_byvalue(file->adios_group,"__pio__/nctype",av->name,adios_integer,1,&av->nc_type);
-        char* dimnames[6];
-        for (int i = 0; i < av->ndims; i++)
+        /* First we need to define the variable now that we know it's decomposition */
+        char ldims[256];
+        char gdims[256];
+        char offs[256];
+        char is_timed = 0;
+        /* ADIOS has no unlimited dimension, so we imitate it with a large dimension */
+        if (av->ndims > 0 && file->dim_values[av->gdimids[0]] == PIO_UNLIMITED)
         {
-            dimnames[i] = file->dim_names[av->gdimids[i]];
+            sprintf(gdims, "999999,%lld",arraylen); // up to 999999 timesteps/records allowed but not required
+            sprintf(ldims, "%lld", arraylen);
+            sprintf(offs, "%d,0", file->varlist[varid].record);
+            is_timed = 1;
         }
-        adios_define_attribute_byvalue(file->adios_group,"__pio__/dims",av->name,adios_string_array,av->ndims,dimnames);
-        char decompname[32];
-        sprintf(decompname, "%d", ioid);
-        adios_define_attribute(file->adios_group, "__pio__/decomp", av->name, adios_string, decompname, NULL);
-        adios_define_attribute(file->adios_group, "__pio__/ncop", av->name, adios_string, "darray", NULL);
+        else
+        {
+            sprintf(gdims, "arraylen");
+            sprintf(ldims, "%lld", arraylen);
+            sprintf(offs, "0");
+        }
+
+        av->adios_varid = adios_define_var(file->adios_group, av->name, "", av->adios_type,ldims,"","");
+
+        if (file->iosystem->iomaster == MPI_ROOT)
+        {
+            adios_define_attribute_byvalue(file->adios_group,"__pio__/ndims",av->name,adios_integer,1,&av->ndims);
+            adios_define_attribute_byvalue(file->adios_group,"__pio__/nctype",av->name,adios_integer,1,&av->nc_type);
+            char* dimnames[6];
+            for (int i = 0; i < av->ndims; i++)
+            {
+                dimnames[i] = file->dim_names[av->gdimids[i]];
+            }
+            adios_define_attribute_byvalue(file->adios_group,"__pio__/dims",av->name,adios_string_array,av->ndims,dimnames);
+            char decompname[32];
+            sprintf(decompname, "%d", ioid);
+            adios_define_attribute(file->adios_group, "__pio__/decomp", av->name, adios_string, decompname, NULL);
+            adios_define_attribute(file->adios_group, "__pio__/ncop", av->name, adios_string, "darray", NULL);
+            adios_define_attribute_byvalue(file->adios_group,"__pio__/timed",av->name,adios_byte,1,&is_timed);
+
+        }
+
+        if (needs_to_write_decomp(file, ioid))
+        {
+            PIOc_write_decomp_adios(file,ioid);
+            register_decomp(file, ioid);
+        }
     }
 
-    if (needs_to_write_decomp(file, ioid))
-    {
-        PIOc_write_decomp_adios(file,ioid);
-        register_decomp(file, ioid);
-    }
+    adios_write_byid(file->adios_fh, av->adios_varid, array);
 
     return PIO_NOERR;
 }

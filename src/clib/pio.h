@@ -764,6 +764,10 @@ typedef struct adios_var_desc_t
     int * gdimids;
     /** Number of attributes defined for this variable */
     int nattrs;
+    /** ADIOS varID, if it has already been defined.
+     * We avoid defining again when writing multiple records over time
+     */
+    int64_t adios_varid; // 0: undefined yet
 } adios_var_desc_t;
 #endif
 /**

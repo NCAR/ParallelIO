@@ -2203,6 +2203,7 @@ int PIOc_def_var(int ncid, const char *name, nc_type xtype, int ndims,
             file->adios_vars[file->num_vars].adios_type = PIOc_get_adios_type(xtype);
             file->adios_vars[file->num_vars].nattrs = 0;
             file->adios_vars[file->num_vars].ndims = ndims;
+            file->adios_vars[file->num_vars].adios_varid = 0;
             file->adios_vars[file->num_vars].gdimids = (int*) malloc(ndims*sizeof(int));
             memcpy(file->adios_vars[file->num_vars].gdimids, dimidsp, ndims*sizeof(int));
             *varidp = file->num_vars;
