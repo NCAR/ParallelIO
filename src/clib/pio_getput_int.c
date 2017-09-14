@@ -1181,7 +1181,7 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                 /* This is not a scalar var. */
                 if (stride_present)
                 {
-                    LOG((2,"ADIOS does not support striping %s:%s\n"
+                    LOG((2,"ADIOS does not support striding %s:%s\n"
                             "Variable %s will be corrupted in the output\n"
                             , __FILE__, __func__, av->name));
                 }

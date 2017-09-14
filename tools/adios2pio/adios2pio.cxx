@@ -64,6 +64,21 @@ void TimerReport(MPI_Comm comm)
 }
 void TimerFinalize() {}
 
+struct Dimension {
+    int dimid;
+    PIO_Offset dimvalue;
+};
+
+using DimensionMap = std::map<std::string,Dimension>;
+
+struct Variable {
+    int nc_varid;
+    bool is_timed;
+};
+
+using VariableMap = std::map<std::string,Variable>;
+
+
 void InitPIO()
 {
     if (PIOc_Init_Intracomm(comm, nproc, 1,
@@ -230,9 +245,9 @@ std::map<std::string,int> ProcessDecompositions(ADIOS_FILE * infile, int ncid, s
     return decomp_map;
 }
 
-std::map<std::string,int> ProcessDimensions(ADIOS_FILE * infile, int ncid)
+DimensionMap ProcessDimensions(ADIOS_FILE * infile, int ncid)
 {
-    std::map<std::string,int> dimensions_map;
+    DimensionMap dimensions_map;
     for (int i = 0; i < infile->nvars; i++)
     {
         string v = infile->var_namelist[i];
@@ -251,16 +266,16 @@ std::map<std::string,int> ProcessDimensions(ADIOS_FILE * infile, int ncid)
             TimerStart(write);
             PIOc_def_dim(ncid, dimname.c_str(), (PIO_Offset)dimval, &dimid);
             TimerStop(write);
-            dimensions_map[dimname] = dimid;
+            dimensions_map[dimname] = Dimension{dimid,(PIO_Offset)dimval};
         }
         FlushStdout(comm);
     }
     return dimensions_map;
 }
 
-std::map<std::string,int> ProcessVariableDefinitions(ADIOS_FILE * infile, int ncid, std::map<std::string,int>& dimensions_map)
+VariableMap ProcessVariableDefinitions(ADIOS_FILE * infile, int ncid, DimensionMap& dimension_map)
 {
-    std::map<std::string,int> vars_map;
+    VariableMap vars_map;
     for (int i = 0; i < infile->nvars; i++)
     {
         string v = infile->var_namelist[i];
@@ -282,6 +297,7 @@ std::map<std::string,int> ProcessVariableDefinitions(ADIOS_FILE * infile, int nc
 
             char **dimnames = NULL;
             int dimids[MAX_NC_DIMS];
+            bool timed = false;
             if (*ndims)
             {
                 attname = string(infile->var_namelist[i]) + "/__pio__/dims";
@@ -290,7 +306,11 @@ std::map<std::string,int> ProcessVariableDefinitions(ADIOS_FILE * infile, int nc
                 for (int d=0; d < *ndims; d++)
                 {
                     //cout << "Dim " << d << " = " <<  dimnames[d] << endl;
-                    dimids[d] = dimensions_map[dimnames[d]];
+                    dimids[d] = dimension_map[dimnames[d]].dimid;
+                    if (dimension_map[dimnames[d]].dimvalue == PIO_UNLIMITED)
+                    {
+                        timed = true;
+                    }
                 }
             }
             TimerStop(read);
@@ -299,7 +319,7 @@ std::map<std::string,int> ProcessVariableDefinitions(ADIOS_FILE * infile, int nc
             int varid;
             PIOc_def_var(ncid, v.c_str(), *nctype, *ndims, dimids, &varid);
             TimerStop(write);
-            vars_map[v] = varid;
+            vars_map[v] = Variable{varid,timed};
 
             if (!mpirank)
                 ProcessVarAttributes(infile, i, v, ncid, varid);
@@ -314,7 +334,7 @@ std::map<std::string,int> ProcessVariableDefinitions(ADIOS_FILE * infile, int nc
     return vars_map;
 }
 
-int ConvertVariablePutVar(ADIOS_FILE * infile, int adios_varid, int ncid, int nc_varid)
+int ConvertVariablePutVar(ADIOS_FILE * infile, int adios_varid, int ncid, Variable var)
 {
     TimerStart(read);
     int ret = 0;
@@ -323,15 +343,12 @@ int ConvertVariablePutVar(ADIOS_FILE * infile, int adios_varid, int ncid, int nc
     if (vi->ndim == 0)
     {
         /* Scalar variable */
-        //if (!mpirank)
-        {
-            TimerStart(write);
-            int ret = PIOc_put_var(ncid, nc_varid, vi->value);
-            if (ret != PIO_NOERR)
-                cout << "ERROR in PIOc_put_var(), code = " << ret
-                     << " at " << __func__ << ":" << __LINE__ << endl;
-            TimerStop(write);
-        }
+        TimerStart(write);
+        int ret = PIOc_put_var(ncid, var.nc_varid, vi->value);
+        if (ret != PIO_NOERR)
+            cout << "ERROR in PIOc_put_var(), code = " << ret
+            << " at " << __func__ << ":" << __LINE__ << endl;
+        TimerStop(write);
     }
     else
     {
@@ -379,7 +396,7 @@ int ConvertVariablePutVar(ADIOS_FILE * infile, int adios_varid, int ncid, int nc
             start[d] = (PIO_Offset) offsets[d];
             count[d] = (PIO_Offset) mydims[d];
         }
-        PIOc_put_vara(ncid, nc_varid, start, count, buf);
+        PIOc_put_vara(ncid, var.nc_varid, start, count, buf);
         if (ret != PIO_NOERR)
             cout << "rank " << mpirank << ":ERROR in PIOc_put_vara(), code = " << ret
                  << " at " << __func__ << ":" << __LINE__ << endl;
@@ -390,7 +407,56 @@ int ConvertVariablePutVar(ADIOS_FILE * infile, int adios_varid, int ncid, int nc
     return ret;
 }
 
-int ConvertVariableDarray(ADIOS_FILE * infile, int adios_varid, int ncid, int nc_varid,
+int ConvertVariableTimedPutVar(ADIOS_FILE * infile, int adios_varid, int ncid, Variable var, int nblocks_per_step)
+{
+    TimerStart(read);
+    int ret = 0;
+    ADIOS_VARINFO *vi = adios_inq_var(infile, infile->var_namelist[adios_varid]);
+
+    /* calculate how many records/steps we have for this variable */
+    int nsteps = 1;
+    if (var.is_timed)
+    {
+        nsteps = vi->nblocks[0] / nblocks_per_step;
+    }
+    if (vi->nblocks[0] != nsteps * nblocks_per_step)
+    {
+        cout << "rank " << mpirank << ":ERROR in processing darray " << infile->var_namelist[adios_varid]
+             << ". Number of blocks = " << vi->nblocks[0]
+             << " does not equal the number of steps * number of writers = "
+             << nsteps << " * " << nblocks_per_step << " = " << nsteps*nblocks_per_step
+             << endl;
+    }
+
+    if (vi->ndim == 0)
+    {
+        /* Scalar variable over time*/
+        for (int ts=0; ts < nsteps; ++ts)
+        {
+            TimerStart(write);
+            PIO_Offset start[1], count[1];
+            start[0] = ts;
+            count[0] = 1;
+            if ((ret = PIOc_put_vara_int(ncid, var.nc_varid, start, count, &ts)))
+                int ret = PIOc_put_var(ncid, var.nc_varid, vi->value);
+            if (ret != PIO_NOERR)
+                cout << "ERROR in PIOc_put_var(), code = " << ret
+                << " at " << __func__ << ":" << __LINE__ << endl;
+            TimerStop(write);
+        }
+    }
+    else
+    {
+        cout << "ERROR: put_vara of arrays over time is not supported yet. "
+             << "Variable \"" << infile->var_namelist[adios_varid] << "\" is a "
+             << vi->ndim << "D array including the unlimited dimension"
+             << endl;
+    }
+    adios_free_varinfo(vi);
+    return ret;
+}
+
+int ConvertVariableDarray(ADIOS_FILE * infile, int adios_varid, int ncid, Variable var,
         std::vector<int>& wblocks, std::map<std::string,int>& decomp_map, int nblocks_per_step)
 {
     int ret = 0;
@@ -401,18 +467,18 @@ int ConvertVariableDarray(ADIOS_FILE * infile, int adios_varid, int ncid, int nc
     adios_get_attr(infile, attname.c_str(), &atype, &asize, (void**)&decompname);
     int decompid = decomp_map[decompname];
     free(decompname);
-    attname = string(infile->var_namelist[adios_varid]) + "/__pio__/timed";
-    char *is_timed_val;
-    adios_get_attr(infile, attname.c_str(), &atype, &asize, (void**)&is_timed_val);
-    char is_timed = *is_timed_val;
-    free(is_timed_val);
+    //attname = string(infile->var_namelist[adios_varid]) + "/__pio__/timed";
+    //char *is_timed_val;
+    //adios_get_attr(infile, attname.c_str(), &atype, &asize, (void**)&is_timed_val);
+    //char is_timed = *is_timed_val;
+    //free(is_timed_val);
 
     ADIOS_VARINFO *vi = adios_inq_var(infile, infile->var_namelist[adios_varid]);
     adios_inq_var_blockinfo(infile, vi);
 
     /* calculate how many records/steps we have for this variable */
     int nsteps = 1;
-    if (is_timed)
+    if (var.is_timed)
     {
         nsteps = vi->nblocks[0] / nblocks_per_step;
     }
@@ -458,9 +524,9 @@ int ConvertVariableDarray(ADIOS_FILE * infile, int adios_varid, int ncid, int nc
         TimerStart(write);
         if (wblocks[0] < nblocks_per_step)
         {
-            if (is_timed)
-                PIOc_setframe(ncid, nc_varid, ts);
-            ret = PIOc_write_darray(ncid, nc_varid, decompid, (PIO_Offset)nelems,
+            if (var.is_timed)
+                PIOc_setframe(ncid, var.nc_varid, ts);
+            ret = PIOc_write_darray(ncid, var.nc_varid, decompid, (PIO_Offset)nelems,
                     d.data(), NULL);
         }
         TimerStop(write);
@@ -505,10 +571,10 @@ void ConvertBPFile(string infilename, string outfilename, int pio_iotype)
         ProcessGlobalFillmode(infile, ncid);
 
         /* Next process dimensions */
-        std::map<std::string,int> dimensions_map = ProcessDimensions(infile, ncid);
+        DimensionMap dimension_map = ProcessDimensions(infile, ncid);
 
         /* For each variable, define a variable with PIO */
-        std::map<string, int> vars_map = ProcessVariableDefinitions(infile, ncid, dimensions_map);
+        VariableMap vars_map = ProcessVariableDefinitions(infile, ncid, dimension_map);
 
         /* Process the global attributes */
         ProcessGlobalAttributes(infile, ncid);
@@ -525,6 +591,7 @@ void ConvertBPFile(string infilename, string outfilename, int pio_iotype)
             {
                 /* For each variable, read with ADIOS then write with PIO */
                 if (!mpirank) cout << "Convert variable " << v << endl;
+                Variable& var = vars_map[v];
 
                 TimerStart(read);
                 string attname = string(infile->var_namelist[i]) + "/__pio__/ncop";
@@ -537,12 +604,19 @@ void ConvertBPFile(string infilename, string outfilename, int pio_iotype)
                 std::string op(ncop);
                 if (op == "put_var")
                 {
-                    ConvertVariablePutVar(infile, i, ncid, vars_map[v]);
+                    if (var.is_timed)
+                    {
+                        ConvertVariableTimedPutVar(infile, i, ncid, var, n_bp_writers);
+                    }
+                    else
+                    {
+                        ConvertVariablePutVar(infile, i, ncid, var);
+                    }
                 }
                 else if (op == "darray")
                 {
                     /* Variable was written with pio_write_darray() with a decomposition */
-                    ConvertVariableDarray(infile, i, ncid, vars_map[v], wblocks, decomp_map, n_bp_writers);
+                    ConvertVariableDarray(infile, i, ncid, var, wblocks, decomp_map, n_bp_writers);
                 }
                 else
                 {

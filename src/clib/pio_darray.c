@@ -623,23 +623,12 @@ int PIOc_write_darray_adios(file_desc_t *file, int varid, int ioid, PIO_Offset a
     {
         /* First we need to define the variable now that we know it's decomposition */
         char ldims[256];
-        char gdims[256];
-        char offs[256];
-        char is_timed = 0;
-        /* ADIOS has no unlimited dimension, so we imitate it with a large dimension */
+        sprintf(ldims, "%lld", arraylen);
+        /*char is_timed = 0;
         if (av->ndims > 0 && file->dim_values[av->gdimids[0]] == PIO_UNLIMITED)
         {
-            sprintf(gdims, "999999,%lld",arraylen); // up to 999999 timesteps/records allowed but not required
-            sprintf(ldims, "%lld", arraylen);
-            sprintf(offs, "%d,0", file->varlist[varid].record);
             is_timed = 1;
-        }
-        else
-        {
-            sprintf(gdims, "arraylen");
-            sprintf(ldims, "%lld", arraylen);
-            sprintf(offs, "0");
-        }
+        }*/
 
         av->adios_varid = adios_define_var(file->adios_group, av->name, "", av->adios_type,ldims,"","");
 
@@ -657,7 +646,7 @@ int PIOc_write_darray_adios(file_desc_t *file, int varid, int ioid, PIO_Offset a
             sprintf(decompname, "%d", ioid);
             adios_define_attribute(file->adios_group, "__pio__/decomp", av->name, adios_string, decompname, NULL);
             adios_define_attribute(file->adios_group, "__pio__/ncop", av->name, adios_string, "darray", NULL);
-            adios_define_attribute_byvalue(file->adios_group,"__pio__/timed",av->name,adios_byte,1,&is_timed);
+            /*adios_define_attribute_byvalue(file->adios_group,"__pio__/timed",av->name,adios_byte,1,&is_timed);*/
 
         }
 
