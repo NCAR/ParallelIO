@@ -1163,17 +1163,42 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
             if (av->ndims == 0)
             {
                 /* This is a scalar var. */
-                LOG((2, "ADIOS writing scalar file->fh = %d varid = %d",
-                        file->fh, varid));
+                printf("ADIOS writing scalar '%s' varid = %d\n", av->name, varid);
                 pioassert(!start && !count && !stride, "expected NULLs", __FILE__, __LINE__);
 
                 /* Only the IO master does the IO, so we are not really
                  * getting parallel IO here. */
                 if (ios->iomaster == MPI_ROOT)
                 {
-                    int64_t vid = adios_define_var(file->adios_group, av->name, "", av->adios_type,
+                    if (av->adios_varid == 0)
+                    {
+                        av->adios_varid = adios_define_var(file->adios_group, av->name, "", av->adios_type,
+                                "","","");
+                    }
+                    adios_write_byid(file->adios_fh, av->adios_varid, buf);
+                }
+            }
+            else if (av->ndims == 1 && file->dim_values[av->gdimids[0]] == PIO_UNLIMITED)
+            {
+                /* This is a scalar variable over time */
+                printf("ADIOS writing scalar '%s' over time varid = %d\n", av->name, varid);
+
+                /* Only the IO master does the IO, so we are not really
+                 * getting parallel IO here. */
+                if (ios->iomaster == MPI_ROOT)
+                {
+                    if (av->adios_varid == 0)
+                    {
+                        av->adios_varid = adios_define_var(file->adios_group, av->name, "", av->adios_type,
                             "","","");
-                    adios_write_byid(file->adios_fh, vid, buf);
+                    }
+                    adios_write_byid(file->adios_fh, av->adios_varid, buf);
+                    char* dimnames[6];
+                    for (int i = 0; i < av->ndims; i++)
+                    {
+                        dimnames[i] = file->dim_names[av->gdimids[i]];
+                    }
+                    adios_define_attribute_byvalue(file->adios_group,"__pio__/dims",av->name,adios_string_array,av->ndims,dimnames);
                 }
             }
             else
@@ -1185,10 +1210,14 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                             "Variable %s will be corrupted in the output\n"
                             , __FILE__, __func__, av->name));
                 }
-
+                int d_start = 0;
+                if (file->dim_values[av->gdimids[0]] == PIO_UNLIMITED)
+                {
+                    d_start = 1; // omit the unlimited time dimension from the adios variable definition
+                }
                 char ldims[32],gdims[256],offs[256],tmp[256];
                 ldims[0] = '\0';
-                for (int d=0; d < av->ndims; d++)
+                for (int d=d_start; d < av->ndims; d++)
                 {
                     sprintf(tmp,"%lld", count[d]);
                     strcat(ldims,tmp);
@@ -1196,7 +1225,7 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                         strcat(ldims,",");
                 }
                 gdims[0] = '\0';
-                for (int d=0; d < av->ndims; d++)
+                for (int d=d_start; d < av->ndims; d++)
                 {
                     char dimname[128];
                     snprintf(dimname, sizeof(dimname), "/__pio__/dim/%s", file->dim_names[av->gdimids[d]]);
@@ -1205,18 +1234,22 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                         strcat(gdims,",");
                 }
                 offs[0] = '\0';
-                for (int d=0; d < av->ndims; d++)
+                for (int d=d_start; d < av->ndims; d++)
                 {
                     sprintf(tmp,"%lld", start[d]);
                     strcat(offs,tmp);
                     if (d < av->ndims-1)
                         strcat(offs,",");
                 }
-                LOG((2,"ADIOS variable %s on io rank %d define gdims=\"%s\", ldims=\"%s\", offsets=\"%s\"\n",
-                                            av->name, ios->io_rank, gdims, ldims, offs));
-                int64_t vid = adios_define_var(file->adios_group, av->name, "", av->adios_type, ldims,gdims,offs);
-                adios_write_byid(file->adios_fh, vid, buf);
+                if (av->adios_varid == 0)
+                {
+                    printf("ADIOS variable %s on io rank %d define gdims=\"%s\", ldims=\"%s\", offsets=\"%s\"\n",
+                            av->name, ios->io_rank, gdims, ldims, offs);
+                    av->adios_varid = adios_define_var(file->adios_group, av->name, "", av->adios_type, ldims,gdims,offs);
+                }
+                adios_write_byid(file->adios_fh, av->adios_varid, buf);
                 char* dimnames[6];
+                /* record the NC dimensions in an attribute, including the unlimited dimension */
                 for (int i = 0; i < av->ndims; i++)
                 {
                     dimnames[i] = file->dim_names[av->gdimids[i]];

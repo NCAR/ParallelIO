@@ -80,6 +80,8 @@ void fill_data(float *data, int nelems, int rank, int time)
 }
 #define destroy_data(data) free(data); data=NULL;
 
+char info[] = "This string is identical on every process. Step 0000";
+
 
 /** Run Tests for NetCDF-4 Functions.
  *
@@ -140,6 +142,7 @@ main(int argc, char **argv)
     /** The dimension IDs. */
     int dimids_foo[NDIM];  /* foo is time x X_DIM_LEN x Y_DIM_LEN */
     int dimids_bar[NDIM]; /* bar is a time x nproc x X_DIM_LEN  */
+    int dimids_info[NDIM]; /* info is a time x strlen(info)  */
 
     /** Array index per processing unit. This is the number of
      * elements of the data array that will be handled by each
@@ -160,7 +163,8 @@ main(int argc, char **argv)
 
     /** The ID of the netCDF varables in the example file. */
     int varid_foo; // A 2D array over time written by write_darray
-    int varid_bar; // A 1D array over time written by put_vara
+    int varid_bar; // A 1D array over time written by put_vara, a distributed array written in parallel
+    int varid_info; // A string over time, a local array identical on every process
     int varid_scalar; // A scalar value over time
 
     /** The I/O description ID as passed back by PIOc_InitDecomp()
@@ -185,6 +189,8 @@ main(int argc, char **argv)
      * example code. It's length will be the same as
      * elements_per_pe. */
     PIO_Offset *compdof;
+
+    const int info_len = strlen(info);
 
     /** Return code. */
     int ret;
@@ -285,12 +291,23 @@ main(int argc, char **argv)
             ERR(ret);
         dimids_bar[2] = dimids_foo[1]; /* X_DIM_LEN */
 
+
+        dimids_info[0] = dimids_foo[0]; /* unlimited dim */
+        if (verbose)
+            printf("rank: %d Defining netCDF dimension %s, length %d\n", my_rank, "info_len", info_len);
+        if ((ret = PIOc_def_dim(ncid, "info_len", (PIO_Offset)info_len, &dimids_info[1])))
+            ERR(ret);
+
         /* Define a 2D array over time */
         if ((ret = PIOc_def_var(ncid, VAR_NAME, PIO_FLOAT, NDIM, dimids_foo, &varid_foo)))
             ERR(ret);
 
         /* Define a 1D array over time, i.e. a 1D variable on the unlimited dimension */
         if ((ret = PIOc_def_var(ncid, "bar", PIO_FLOAT, NDIM, dimids_bar, &varid_bar)))
+            ERR(ret);
+
+        /* Define a 1D array over time, but this is a local array, not distributed */
+        if ((ret = PIOc_def_var(ncid, "info", PIO_CHAR, 2, dimids_info, &varid_info)))
             ERR(ret);
 
         /* Define a scalar over time, i.e. a 1D variable on the unlimited dimension */
@@ -306,8 +323,11 @@ main(int argc, char **argv)
 
         for (int ts = 0; ts < NUM_TIMESTEPS; ++ts)
         {
+            /* update data */
             fill_data(foo, (int)elements_per_pe, my_rank, ts);
             fill_data(bar, X_DIM_LEN, my_rank, ts);
+            /* update info string with timestep */
+            sprintf(info+info_len-4, "%4.4d", ts);
             if (verbose)
                  printf("rank: %d     Writing sample data step %d...\n", my_rank, ts);
 
@@ -317,10 +337,19 @@ main(int argc, char **argv)
                     foo, NULL)))
                 ERR(ret);
 #if 1
+            /* put_vara() a distributed global array, every process writes one row into
+             * the nproc x X_DIM_LEN array.
+             */
             PIO_Offset start[3], count[3];
             start[0] = ts; start[1] = my_rank; start[2] = 0;
             count[0] = 1; count[1] = 1; count[2] = X_DIM_LEN;
             if ((ret = PIOc_put_vara_float(ncid, varid_bar, start, count, bar)))
+                ERR(ret);
+
+            /* put_vara() is a collective call even if a single process has all the data */
+            start[0] = ts; start[1] = 0;
+            count[0] = 1; count[1] = info_len;
+            if ((ret = PIOc_put_vara_text(ncid, varid_info, start, count, info)))
                 ERR(ret);
 
             start[0] = ts;

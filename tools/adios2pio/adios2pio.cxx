@@ -396,7 +396,7 @@ int ConvertVariablePutVar(ADIOS_FILE * infile, int adios_varid, int ncid, Variab
             start[d] = (PIO_Offset) offsets[d];
             count[d] = (PIO_Offset) mydims[d];
         }
-        PIOc_put_vara(ncid, var.nc_varid, start, count, buf);
+        ret = PIOc_put_vara(ncid, var.nc_varid, start, count, buf);
         if (ret != PIO_NOERR)
             cout << "rank " << mpirank << ":ERROR in PIOc_put_vara(), code = " << ret
                  << " at " << __func__ << ":" << __LINE__ << endl;
@@ -413,32 +413,23 @@ int ConvertVariableTimedPutVar(ADIOS_FILE * infile, int adios_varid, int ncid, V
     int ret = 0;
     ADIOS_VARINFO *vi = adios_inq_var(infile, infile->var_namelist[adios_varid]);
 
-    /* calculate how many records/steps we have for this variable */
-    int nsteps = 1;
-    if (var.is_timed)
-    {
-        nsteps = vi->nblocks[0] / nblocks_per_step;
-    }
-    if (vi->nblocks[0] != nsteps * nblocks_per_step)
-    {
-        cout << "rank " << mpirank << ":ERROR in processing darray " << infile->var_namelist[adios_varid]
-             << ". Number of blocks = " << vi->nblocks[0]
-             << " does not equal the number of steps * number of writers = "
-             << nsteps << " * " << nblocks_per_step << " = " << nsteps*nblocks_per_step
-             << endl;
-    }
-
     if (vi->ndim == 0)
     {
-        /* Scalar variable over time*/
+        /* Scalar variable over time */
+        /* Written by only one process, so steps = number of blocks in file */
+        int nsteps = vi->nblocks[0];
+        TimerStart(read);
+        adios_inq_var_stat(infile, vi, 0, 1);
+        TimerStart(read);
+        PIO_Offset start[1], count[1];
         for (int ts=0; ts < nsteps; ++ts)
         {
             TimerStart(write);
-            PIO_Offset start[1], count[1];
             start[0] = ts;
             count[0] = 1;
-            if ((ret = PIOc_put_vara_int(ncid, var.nc_varid, start, count, &ts)))
-                int ret = PIOc_put_var(ncid, var.nc_varid, vi->value);
+            //cout << "DBG: " << infile->var_namelist[adios_varid] << " step " << ts
+            //     << " value = " << *(int*) vi->statistics->blocks->mins[ts] << endl;
+            int ret = PIOc_put_vara(ncid, var.nc_varid, start, count, vi->statistics->blocks->mins[ts]);
             if (ret != PIO_NOERR)
                 cout << "ERROR in PIOc_put_var(), code = " << ret
                 << " at " << __func__ << ":" << __LINE__ << endl;
@@ -447,10 +438,79 @@ int ConvertVariableTimedPutVar(ADIOS_FILE * infile, int adios_varid, int ncid, V
     }
     else
     {
-        cout << "ERROR: put_vara of arrays over time is not supported yet. "
-             << "Variable \"" << infile->var_namelist[adios_varid] << "\" is a "
-             << vi->ndim << "D array including the unlimited dimension"
-             << endl;
+        /* calculate how many records/steps we have for this variable */
+        int nsteps = 1;
+        if (var.is_timed)
+        {
+            nsteps = vi->nblocks[0] / nblocks_per_step;
+        }
+        if (vi->nblocks[0] != nsteps * nblocks_per_step)
+        {
+            cout << "rank " << mpirank << ":ERROR in processing variable '" << infile->var_namelist[adios_varid]
+                 << "'. Number of blocks = " << vi->nblocks[0]
+                 << " does not equal the number of steps * number of writers = "
+                 << nsteps << " * " << nblocks_per_step << " = " << nsteps*nblocks_per_step
+                 << endl;
+        }
+
+        /* Is this a local array written by each process, or a truly distributed global array */
+        TimerStart(read);
+        adios_inq_var_blockinfo(infile, vi);
+        TimerStart(read);
+        bool local_array = true;
+        for (int d = 0; d < vi->ndim; d++)
+        {
+            if (vi->blockinfo[0].count[d] != vi->dims[d])
+            {
+                local_array = false;
+                break;
+            }
+        }
+
+        if (local_array)
+        {
+            /* Just read the arrays written by rank 0 (on every process here) and
+             * write it collectively.
+             */
+            for (int ts=0; ts < nsteps; ++ts)
+            {
+                TimerStart(read);
+                int elemsize = adios_type_size(vi->type,NULL);
+                uint64_t nelems = 1;
+                for (int d = 0; d < vi->ndim; d++)
+                {
+                    nelems *= vi->dims[d];
+                }
+                std::vector<char> d(nelems * elemsize);
+                ADIOS_SELECTION *wbsel = adios_selection_writeblock(ts);
+                int ret = adios_schedule_read(infile, wbsel, infile->var_namelist[adios_varid],
+                        0, 1, d.data());
+                adios_perform_reads(infile, 1);
+                TimerStop(read);
+
+                TimerStart(write);
+                PIO_Offset start[vi->ndim+1], count[vi->ndim+1];
+                start[0] = ts;
+                count[0] = 1;
+                for (int d = 0; d < vi->ndim; d++)
+                {
+                    start[d+1] = 0;
+                    count[d+1] = vi->dims[d];
+                }
+                if ((ret = PIOc_put_vara(ncid, var.nc_varid, start, count, d.data())))
+                if (ret != PIO_NOERR)
+                    cout << "ERROR in PIOc_put_var(), code = " << ret
+                    << " at " << __func__ << ":" << __LINE__ << endl;
+                TimerStop(write);
+            }
+        }
+        else
+        {
+            cout << "ERROR: put_vara of arrays over time is not supported yet. "
+                    << "Variable \"" << infile->var_namelist[adios_varid] << "\" is a "
+                    << vi->ndim << "D array including the unlimited dimension"
+                    << endl;
+        }
     }
     adios_free_varinfo(vi);
     return ret;
@@ -484,8 +544,8 @@ int ConvertVariableDarray(ADIOS_FILE * infile, int adios_varid, int ncid, Variab
     }
     if (vi->nblocks[0] != nsteps * nblocks_per_step)
     {
-        cout << "rank " << mpirank << ":ERROR in processing darray " << infile->var_namelist[adios_varid]
-             << ". Number of blocks = " << vi->nblocks[0]
+        cout << "rank " << mpirank << ":ERROR in processing darray '" << infile->var_namelist[adios_varid]
+             << "'. Number of blocks = " << vi->nblocks[0]
              << " does not equal the number of steps * number of writers = "
              << nsteps << " * " << nblocks_per_step << " = " << nsteps*nblocks_per_step
              << endl;
