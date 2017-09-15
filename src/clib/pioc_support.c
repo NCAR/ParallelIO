@@ -2024,6 +2024,7 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
             memset(file->dim_names, 0, sizeof(file->dim_names));
             file->num_dim_vars = 0;
             file->num_vars = 0;
+            file->num_gattrs = 0;
             file->fillmode = NC_NOFILL;
             file->n_written_ioids = 0;
             int64_t vid = adios_define_var(file->adios_group, "/__pio__/info/nproc", "", adios_integer, "","","");

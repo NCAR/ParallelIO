@@ -153,6 +153,7 @@ int PIOc_put_att_tc(int ncid, int varid, const char *name, nc_type atttype,
             else
             {
                 strncpy(path,"pio_global", sizeof(path));
+                file->num_gattrs++;
             }
             //Workaround for adios 1.12.0, where adios_define_attribute_byvalue
             //  throws an error on a string attribute of ""

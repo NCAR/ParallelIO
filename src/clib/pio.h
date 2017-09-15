@@ -804,6 +804,8 @@ typedef struct file_desc_t
     struct adios_var_desc_t adios_vars[PIO_MAX_VARS];
     /** Number of vars defined */
     int num_vars;
+    /** Number of global attributes defined. Needed to support PIOc_inq_nattrs() */
+    int num_gattrs;
     int fillmode;
     /** array for decompositions that has been written already (must write only once) */
     int n_written_ioids;

@@ -84,7 +84,18 @@ int PIOc_inq(int ncid, int *ndimsp, int *nvarsp, int *ngattsp, int *unlimdimidp)
 #ifdef _ADIOS
         if (file->iotype == PIO_IOTYPE_ADIOS)
         {
-            LOG((2,"ADIOS missing %s:%s\n", __FILE__, __func__));
+            if (ndimsp) *ndimsp = file->num_dim_vars;
+            if (nvarsp) *nvarsp = file->num_vars;
+            if (ngattsp) *ngattsp = file->num_gattrs;
+            if (unlimdimidp)
+            {
+                *unlimdimidp = -1;
+                for (int i=0; i < file->num_dim_vars; ++i)
+                {
+                    if (file->dim_values[i] == PIO_UNLIMITED)
+                        *unlimdimidp = i;
+                }
+            }
             ierr = 0;
         }
 #endif

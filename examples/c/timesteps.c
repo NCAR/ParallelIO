@@ -314,10 +314,21 @@ main(int argc, char **argv)
         if ((ret = PIOc_def_var(ncid, "ts", PIO_INT, 1, &dimids_foo[0], &varid_scalar)))
             ERR(ret);
 
+        char atext[] = "This is a global attribute";
+        PIOc_put_att(ncid, PIO_GLOBAL, "globalattr", PIO_CHAR, strlen(atext), atext);
+        char bartext[] = "An identical string on each processor";
+        PIOc_put_att(ncid, varid_bar, "desc", PIO_CHAR, strlen(bartext), bartext);
+
 
         if ((ret = PIOc_enddef(ncid)))
             ERR(ret);
 
+        /* Print some info, test PIOc_inq() */
+        int test_ndims, test_nvars, test_nattrs, test_unlimdimid;
+        PIOc_inq(ncid, &test_ndims, &test_nvars, &test_nattrs, &test_unlimdimid);
+        printf("rank: %d PIOc_inq() returned ndims=%d nvars=%d ngattrs=%d unlimited dimension id=%d\n"
+               "                   expected ndims=5 nvars=4 ngattrs=1 unlimited dimension id=0\n",
+               my_rank, test_ndims, test_nvars, test_nattrs, test_unlimdimid);
 
         /* Write a few timesteps */
 

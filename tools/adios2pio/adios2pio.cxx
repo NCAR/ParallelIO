@@ -321,8 +321,7 @@ VariableMap ProcessVariableDefinitions(ADIOS_FILE * infile, int ncid, DimensionM
             TimerStop(write);
             vars_map[v] = Variable{varid,timed};
 
-            if (!mpirank)
-                ProcessVarAttributes(infile, i, v, ncid, varid);
+            ProcessVarAttributes(infile, i, v, ncid, varid);
 
             free(nctype);
             free(ndims);
