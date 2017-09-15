@@ -74,6 +74,7 @@ using DimensionMap = std::map<std::string,Dimension>;
 struct Variable {
     int nc_varid;
     bool is_timed;
+    nc_type nctype;
 };
 
 using VariableMap = std::map<std::string,Variable>;
@@ -319,7 +320,7 @@ VariableMap ProcessVariableDefinitions(ADIOS_FILE * infile, int ncid, DimensionM
             int varid;
             PIOc_def_var(ncid, v.c_str(), *nctype, *ndims, dimids, &varid);
             TimerStop(write);
-            vars_map[v] = Variable{varid,timed};
+            vars_map[v] = Variable{varid,timed,*nctype};
 
             ProcessVarAttributes(infile, i, v, ncid, varid);
 
@@ -465,6 +466,11 @@ int ConvertVariableTimedPutVar(ADIOS_FILE * infile, int adios_varid, int ncid, V
                 break;
             }
         }
+        if (var.nctype == PIO_CHAR && vi->ndim == 1)
+        {
+            /* Character array over time may have longer dimension declaration than the actual content */
+            local_array = true;
+        }
 
         if (local_array)
         {
@@ -540,16 +546,15 @@ int ConvertVariableDarray(ADIOS_FILE * infile, int adios_varid, int ncid, Variab
     if (var.is_timed)
     {
         nsteps = vi->nblocks[0] / nblocks_per_step;
+        if (vi->nblocks[0] != nsteps * nblocks_per_step)
+        {
+            cout << "rank " << mpirank << ":ERROR in processing darray '" << infile->var_namelist[adios_varid]
+                 << "'. Number of blocks = " << vi->nblocks[0]
+                 << " does not equal the number of steps * number of writers = "
+                 << nsteps << " * " << nblocks_per_step << " = " << nsteps*nblocks_per_step
+                 << endl;
+        }
     }
-    if (vi->nblocks[0] != nsteps * nblocks_per_step)
-    {
-        cout << "rank " << mpirank << ":ERROR in processing darray '" << infile->var_namelist[adios_varid]
-             << "'. Number of blocks = " << vi->nblocks[0]
-             << " does not equal the number of steps * number of writers = "
-             << nsteps << " * " << nblocks_per_step << " = " << nsteps*nblocks_per_step
-             << endl;
-    }
-
 
     for (int ts = 0; ts < nsteps; ++ts)
     {
@@ -685,6 +690,7 @@ void ConvertBPFile(string infilename, string outfilename, int pio_iotype)
                 free(ncop);
             }
             FlushStdout(comm);
+            PIOc_sync(ncid); /* FIXME: flush after each variable until development is done. Remove for efficiency */
         }
         TimerStart(write);
         ret = PIOc_sync(ncid);
