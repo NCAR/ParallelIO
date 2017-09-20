@@ -334,6 +334,101 @@ VariableMap ProcessVariableDefinitions(ADIOS_FILE * infile, int ncid, DimensionM
     return vars_map;
 }
 
+int put_var(int ncid, int varid, int nctype, enum ADIOS_DATATYPES memtype, const void* buf)
+{
+    int ret = 0;
+    switch(memtype)
+    {
+    case adios_byte:
+        ret = PIOc_put_var_schar(ncid, varid, (const signed char*)buf);
+        break;
+    case adios_short:
+        ret = PIOc_put_var_short(ncid, varid, (const signed short*)buf);
+        break;
+    case adios_integer:
+        ret = PIOc_put_var_int(ncid, varid, (const signed int*)buf);
+        break;
+    case adios_real:
+        ret = PIOc_put_var_float(ncid, varid, (const float *)buf);
+        break;
+    case adios_double:
+        ret = PIOc_put_var_double(ncid, varid, (const double *)buf);
+        break;
+    case adios_unsigned_byte:
+        ret = PIOc_put_var_uchar(ncid, varid, (const unsigned char *)buf);
+        break;
+    case adios_unsigned_short:
+        ret = PIOc_put_var_ushort(ncid, varid, (const unsigned short *)buf);
+        break;
+    case adios_unsigned_integer:
+        ret = PIOc_put_var_uint(ncid, varid, (const unsigned int *)buf);
+        break;
+    case adios_long:
+        ret = PIOc_put_var_longlong(ncid, varid, (const signed long long *)buf);
+        break;
+    case adios_unsigned_long:
+        ret = PIOc_put_var_ulonglong(ncid, varid, (const unsigned long long *)buf);
+        break;
+    case adios_string:
+        ret = PIOc_put_var_text(ncid, varid, (const char *)buf);
+        break;
+    default:
+        /* We can't do anything here, hope for the best, i.e. memtype equals to nctype */
+        ret = PIOc_put_var(ncid, varid, buf);
+        break;
+    }
+    return ret;
+}
+
+int put_vara(int ncid, int varid, int nctype, enum ADIOS_DATATYPES memtype, PIO_Offset *start, PIO_Offset *count, const void* buf)
+{
+    int ret = 0;
+    switch(memtype)
+    {
+    case adios_byte:
+        if (nctype == PIO_BYTE)
+            ret = PIOc_put_vara_schar(ncid, varid, start, count, (const signed char*)buf);
+        else
+            ret = PIOc_put_vara_text(ncid, varid, start, count, (const char*)buf);
+        break;
+    case adios_short:
+        ret = PIOc_put_vara_short(ncid, varid, start, count, (const signed short*)buf);
+        break;
+    case adios_integer:
+        ret = PIOc_put_vara_int(ncid, varid, start, count, (const signed int*)buf);
+        break;
+    case adios_real:
+        ret = PIOc_put_vara_float(ncid, varid, start, count, (const float *)buf);
+        break;
+    case adios_double:
+        ret = PIOc_put_vara_double(ncid, varid, start, count, (const double *)buf);
+        break;
+    case adios_unsigned_byte:
+        ret = PIOc_put_vara_uchar(ncid, varid, start, count, (const unsigned char *)buf);
+        break;
+    case adios_unsigned_short:
+        ret = PIOc_put_vara_ushort(ncid, varid, start, count, (const unsigned short *)buf);
+        break;
+    case adios_unsigned_integer:
+        ret = PIOc_put_vara_uint(ncid, varid, start, count, (const unsigned int *)buf);
+        break;
+    case adios_long:
+        ret = PIOc_put_vara_longlong(ncid, varid, start, count, (const signed long long *)buf);
+        break;
+    case adios_unsigned_long:
+        ret = PIOc_put_vara_ulonglong(ncid, varid, start, count, (const unsigned long long *)buf);
+        break;
+    case adios_string:
+        ret = PIOc_put_vara_text(ncid, varid, start, count, (const char *)buf);
+        break;
+    default:
+        /* We can't do anything here, hope for the best, i.e. memtype equals to nctype */
+        ret = PIOc_put_vara(ncid, varid, start, count, buf);
+        break;
+    }
+    return ret;
+}
+
 int ConvertVariablePutVar(ADIOS_FILE * infile, int adios_varid, int ncid, Variable var)
 {
     TimerStart(read);
@@ -344,7 +439,7 @@ int ConvertVariablePutVar(ADIOS_FILE * infile, int adios_varid, int ncid, Variab
     {
         /* Scalar variable */
         TimerStart(write);
-        int ret = PIOc_put_var(ncid, var.nc_varid, vi->value);
+        int ret = put_var(ncid, var.nc_varid, var.nctype, vi->type, vi->value);
         if (ret != PIO_NOERR)
             cout << "ERROR in PIOc_put_var(), code = " << ret
             << " at " << __func__ << ":" << __LINE__ << endl;
@@ -396,7 +491,7 @@ int ConvertVariablePutVar(ADIOS_FILE * infile, int adios_varid, int ncid, Variab
             start[d] = (PIO_Offset) offsets[d];
             count[d] = (PIO_Offset) mydims[d];
         }
-        ret = PIOc_put_vara(ncid, var.nc_varid, start, count, buf);
+        ret = put_vara(ncid, var.nc_varid, var.nctype, vi->type, start, count, buf);
         if (ret != PIO_NOERR)
             cout << "rank " << mpirank << ":ERROR in PIOc_put_vara(), code = " << ret
                  << " at " << __func__ << ":" << __LINE__ << endl;

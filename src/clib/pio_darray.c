@@ -657,6 +657,19 @@ int PIOc_write_darray_adios(file_desc_t *file, int varid, int ioid, PIO_Offset a
         }
     }
 
+    /* DEBUG printout */
+    if (file->iosystem->iomaster == MPI_ROOT && !strcmp(file->adios_vars[varid].name,"foo"))
+    {
+        /* Print the first few longitude values */
+        float *lon = (float*)array;
+        printf("Values of '%s' addr %p..%p: [ ", file->adios_vars[varid].name, (float*)array, ((float*)array)+10);
+        for (int i=0; i<10; i++)
+        {
+            printf("%6.3f ", lon[i]);
+        }
+        printf("\n");
+    }
+
     adios_write_byid(file->adios_fh, av->adios_varid, array);
 
     return PIO_NOERR;

@@ -1160,11 +1160,28 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
             /* First we need to define the variable now that we know it's decomposition */
             adios_var_desc_t * av = &(file->adios_vars[varid]);
 
+            /* Write ADIOS with memory type since ADIOS does not do conversions.
+             * Add an attribute describing the target output type (defined type).
+             */
+            if (xtype == NC_NAT)
+                xtype = vartype;
+
+            if (xtype == PIO_LONG_INTERNAL)
+            {
+                int typesize = sizeof(long int);
+                if (typesize == 4)
+                    xtype = PIO_INT;
+                else
+                    xtype = PIO_INT64;
+            }
+            if (xtype != vartype)
+                av->adios_type = PIOc_get_adios_type(xtype);
+
             /* Scalars have to be handled differently. */
             if (av->ndims == 0)
             {
                 /* This is a scalar var. */
-                printf("ADIOS writing scalar '%s' varid = %d\n", av->name, varid);
+                /*printf("ADIOS writing scalar '%s' varid = %d\n", av->name, varid);*/
                 pioassert(!start && !count && !stride, "expected NULLs", __FILE__, __LINE__);
 
                 /* Only the IO master does the IO, so we are not really
@@ -1182,7 +1199,7 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
             else if (av->ndims == 1 && file->dim_values[av->gdimids[0]] == PIO_UNLIMITED)
             {
                 /* This is a scalar variable over time */
-                printf("ADIOS writing scalar '%s' over time varid = %d\n", av->name, varid);
+                /*printf("ADIOS writing scalar '%s' over time varid = %d\n", av->name, varid);*/
 
                 /* Only the IO master does the IO, so we are not really
                  * getting parallel IO here. */
@@ -1244,8 +1261,8 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                 }
                 if (av->adios_varid == 0)
                 {
-                    printf("ADIOS variable %s on io rank %d define gdims=\"%s\", ldims=\"%s\", offsets=\"%s\"\n",
-                            av->name, ios->io_rank, gdims, ldims, offs);
+                    /*printf("ADIOS variable %s on io rank %d define gdims=\"%s\", ldims=\"%s\", offsets=\"%s\"\n",
+                            av->name, ios->io_rank, gdims, ldims, offs);*/
                     av->adios_varid = adios_define_var(file->adios_group, av->name, "", av->adios_type, ldims,gdims,offs);
                 }
                 adios_write_byid(file->adios_fh, av->adios_varid, buf);
