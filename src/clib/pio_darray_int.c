@@ -236,8 +236,54 @@ int write_darray_multi_par(file_desc_t *file, int nvars, int fndims, const int *
                     ierr = nc_var_par_access(file->fh, varids[nv], NC_COLLECTIVE);
 
                     /* Write the data for this variable. */
+                    /*
                     if (!ierr)
                         ierr = nc_put_vara(file->fh, varids[nv], (size_t *)start, (size_t *)count, bufptr);
+                    */
+                    if (!ierr)
+                    {
+                        switch (iodesc->piotype)
+                        {
+                        case PIO_BYTE:
+                            ierr = nc_put_vara_schar(file->fh, varids[nv], start, count, (signed char*)bufptr);
+                            break;
+                        case PIO_CHAR:
+                            ierr = nc_put_vara_text(file->fh, varids[nv], start, count, (char*)bufptr);
+                            break;
+                        case PIO_SHORT:
+                            ierr = nc_put_vara_short(file->fh, varids[nv], start, count, (short*)bufptr);
+                            break;
+                        case PIO_INT:
+                            ierr = nc_put_vara_int(file->fh, varids[nv], start, count, (int*)bufptr);
+                            break;
+                        case PIO_FLOAT:
+                            ierr = nc_put_vara_float(file->fh, varids[nv], start, count, (float*)bufptr);
+                            break;
+                        case PIO_DOUBLE:
+                            ierr = nc_put_vara_double(file->fh, varids[nv], start, count, (double*)bufptr);
+                            break;
+                        case PIO_UBYTE:
+                            ierr = nc_put_vara_uchar(file->fh, varids[nv], start, count, (unsigned char*)bufptr);
+                            break;
+                        case PIO_USHORT:
+                            ierr = nc_put_vara_ushort(file->fh, varids[nv], start, count, (unsigned short*)bufptr);
+                            break;
+                        case PIO_UINT:
+                            ierr = nc_put_vara_uint(file->fh, varids[nv], start, count, (unsigned int*)bufptr);
+                            break;
+                        case PIO_INT64:
+                            ierr = nc_put_vara_longlong(file->fh, varids[nv], start, count, (long long*)bufptr);
+                            break;
+                        case PIO_UINT64:
+                            ierr = nc_put_vara_ulonglong(file->fh, varids[nv], start, count, (unsigned long long*)bufptr);
+                            break;
+                        case PIO_STRING:
+                            ierr = nc_put_vara_string(file->fh, varids[nv], start, count, (const char**)bufptr);
+                            break;
+                        default:
+                            return pio_err(ios, file, PIO_EBADTYPE, __FILE__, __LINE__);
+                        }
+                    }
                 }
                 break;
 #endif
@@ -624,7 +670,54 @@ int recv_and_write_data(file_desc_t *file, const int *varids, const int *frame,
                     }
 
                     /* Call the netCDF functions to write the data. */
+                    /*
                     if ((ierr = nc_put_vara(file->fh, varids[nv], start, count, bufptr)))
+                        return check_netcdf2(ios, NULL, ierr, __FILE__, __LINE__);
+                    */
+                    switch (iodesc->piotype)
+                    {
+                    case PIO_BYTE:
+                        ierr = nc_put_vara_schar(file->fh, varids[nv], start, count, (signed char*)bufptr);
+                        break;
+                    case PIO_CHAR:
+                        ierr = nc_put_vara_text(file->fh, varids[nv], start, count, (char*)bufptr);
+                        break;
+                    case PIO_SHORT:
+                        ierr = nc_put_vara_short(file->fh, varids[nv], start, count, (short*)bufptr);
+                        break;
+                    case PIO_INT:
+                        ierr = nc_put_vara_int(file->fh, varids[nv], start, count, (int*)bufptr);
+                        break;
+                    case PIO_FLOAT:
+                        ierr = nc_put_vara_float(file->fh, varids[nv], start, count, (float*)bufptr);
+                        break;
+                    case PIO_DOUBLE:
+                        ierr = nc_put_vara_double(file->fh, varids[nv], start, count, (double*)bufptr);
+                        break;
+#ifdef _NETCDF4
+                    case PIO_UBYTE:
+                        ierr = nc_put_vara_uchar(file->fh, varids[nv], start, count, (unsigned char*)bufptr);
+                        break;
+                    case PIO_USHORT:
+                        ierr = nc_put_vara_ushort(file->fh, varids[nv], start, count, (unsigned short*)bufptr);
+                        break;
+                    case PIO_UINT:
+                        ierr = nc_put_vara_uint(file->fh, varids[nv], start, count, (unsigned int*)bufptr);
+                        break;
+                    case PIO_INT64:
+                        ierr = nc_put_vara_longlong(file->fh, varids[nv], start, count, (long long*)bufptr);
+                        break;
+                    case PIO_UINT64:
+                        ierr = nc_put_vara_ulonglong(file->fh, varids[nv], start, count, (unsigned long long*)bufptr);
+                        break;
+                    case PIO_STRING:
+                        ierr = nc_put_vara_string(file->fh, varids[nv], start, count, (const char**)bufptr);
+                        break;
+#endif /* _NETCDF4 */
+                    default:
+                        return pio_err(ios, file, PIO_EBADTYPE, __FILE__, __LINE__);
+                    }
+                    if (ierr)
                         return check_netcdf2(ios, NULL, ierr, __FILE__, __LINE__);
 
                 } /* next var */
