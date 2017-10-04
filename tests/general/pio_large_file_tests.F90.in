@@ -1,0 +1,309 @@
+module pio_large_file_tests_util
+  use pio_tutil
+  type pio_file_fmt_info
+    character(len=PIO_TF_MAX_STR_LEN) :: name
+    ! PIO flags for creating a file with the file format
+    integer :: pio_flag
+    ! Maximum record size, in bytes, for the file format
+    integer :: max_rec_sz
+    integer(pio_offset_kind) :: max_large_rec_sz
+  end type pio_file_fmt_info
+end module pio_large_file_tests_util
+! Get a block cyclic decomposition
+! rank : Rank of current process
+! sz : Total number of processes
+! dims : Global dims (assumes each dims(i) > 0)
+! start/count : Set by the function to local start and count
+! e.g. 1) dims = 10, sz = 2 :  [1,2,3,4,5] [6,7,8,9,10]
+! e.g. 1) dims = 10, sz = 3 :  [1,2,3] [4,5,6] [7,8,9,10]
+! e.g. 1) dims = 2, sz = 3 :  [1] [2] []
+SUBROUTINE get_1d_bc_info(rank, sz, dims, start, count)
+  integer, intent(in) :: rank
+  integer, intent(in) :: sz
+  integer, dimension(1), intent(in) :: dims
+  integer, dimension(1), intent(out) :: start
+  integer, dimension(1), intent(out) :: count
+
+  integer :: last_rank_with_data
+  integer :: num_per_rank
+
+  last_rank_with_data = sz - 1
+  num_per_rank = dims(1) / sz
+  if (dims(1) < sz) then
+    last_rank_with_data = dims(1)
+    num_per_rank = 1
+  end if
+
+  start(1) = 0
+  count(1) = 0
+  if(rank < last_rank_with_data) then
+    start(1) = rank * num_per_rank + 1
+    count(1) = num_per_rank 
+  else if(rank == last_rank_with_data) then
+    start(1) = rank * num_per_rank + 1
+    count(1) = dims(1) - start(1) + 1
+  end if
+  
+END SUBROUTINE
+
+! Fill in the supported file formats and the related information
+SUBROUTINE init_file_fmts(pio_file_fmts, num_pio_file_fmts)
+  use pio_large_file_tests_util
+  implicit none
+  type(pio_file_fmt_info), dimension(:), allocatable, intent(out) :: pio_file_fmts
+  integer, intent(out) :: num_pio_file_fmts
+
+  integer, parameter :: MAX_PIO_FILE_FMTS = 3
+  integer(pio_offset_kind), parameter :: ONE_K = INT(2,pio_offset_kind)**10
+  integer(pio_offset_kind), parameter :: ONE_G = INT(2,pio_offset_kind)**30
+  integer(pio_offset_kind), parameter :: TWO_G = INT(2,pio_offset_kind)**31
+  integer(pio_offset_kind), parameter :: FOUR_G = INT(2,pio_offset_kind)**32
+
+  allocate(pio_file_fmts(MAX_PIO_FILE_FMTS))
+
+  pio_file_fmts(1)%name = "CDF1"
+  pio_file_fmts(1)%pio_flag = PIO_CLOBBER
+  ! max number represented by a 32-bit signed integer = 2**31 - 1
+  ! max record size, CDF1 = 2**31 - 4
+  !pio_file_fmts(1)%max_large_rec_sz = INT(TWO_G - ONE_K)
+  ! NetCDF documentation says max_rec_sz should be 2**31 - 4, but
+  ! it no longer works.
+  ! i.e., pio_file_fmts(1)%max_rec_sz = INT(TWO_G - 4)  => FAILs
+  ! So trying out 2**31 - 2**10 instead
+  pio_file_fmts(1)%max_rec_sz = INT(TWO_G - ONE_K)
+  ! This is the max size of another variable that could be 
+  ! created if we already have 
+  ! 1. A var of size (2GiB - 1KiB)
+  ! 2. A dummy var of 10 elements
+  pio_file_fmts(1)%max_large_rec_sz = ONE_K/2 - 1
+  pio_file_fmts(2)%name = "CDF2"
+  pio_file_fmts(2)%pio_flag = IOR(PIO_CLOBBER,PIO_64BIT_OFFSET)
+  ! max record size, CDF2 = 2**32-4
+  pio_file_fmts(2)%max_rec_sz = INT(TWO_G - 1)
+  pio_file_fmts(2)%max_large_rec_sz = FOUR_G - 4
+  pio_file_fmts(3)%name = "CDF5"
+  pio_file_fmts(3)%pio_flag = IOR(PIO_CLOBBER,PIO_64BIT_DATA)
+  ! max record size, CDF5 = ??, try larger than 4G
+  pio_file_fmts(3)%max_rec_sz = INT(TWO_G - 1)
+  pio_file_fmts(3)%max_large_rec_sz = FOUR_G + 1
+
+  num_pio_file_fmts = MAX_PIO_FILE_FMTS
+
+END SUBROUTINE init_file_fmts
+
+! Perform 1d writes and reads for all supported file types
+! (CDF1, CDF2, CDF5)
+PIO_TF_TEMPLATE<PIO_TF_PREDEF_TYPENAME PIO_TF_DATA_TYPE, PIO_TF_PREDEF_TYPENAME PIO_TF_FC_DATA_TYPE>
+PIO_TF_AUTO_TEST_SUB_BEGIN nc_wr_rd_large_1d_bc
+  use pio_large_file_tests_util
+  implicit none
+  interface
+    SUBROUTINE init_file_fmts(pio_file_fmts, num_pio_file_fmts)
+      use pio_large_file_tests_util
+      implicit none
+      type(pio_file_fmt_info), dimension(:), allocatable, intent(out) :: pio_file_fmts
+      integer, intent(out) :: num_pio_file_fmts
+    END SUBROUTINE init_file_fmts
+  end interface
+  type(var_desc_t)  :: pio_var, pio_last_var
+  type(file_desc_t) :: pio_file
+  character(len=PIO_TF_MAX_STR_LEN) :: filename
+  type(io_desc_t) :: wr_iodesc, rd_iodesc
+  integer, dimension(:), allocatable :: compdof
+  integer, dimension(1) :: start, count
+  PIO_TF_FC_DATA_TYPE, dimension(:), allocatable :: rbuf, wbuf, exp_val
+  PIO_TF_FC_DATA_TYPE :: tmp_val
+  integer, dimension(1) :: dims, last_var_dims
+  integer :: pio_dim, pio_last_var_dim
+  integer, parameter :: DUMMY_DIM_SZ = 10
+  integer :: i, j, ierr, lsz
+  ! iotypes = valid io types
+  integer, dimension(:), allocatable :: iotypes
+  character(len=PIO_TF_MAX_STR_LEN), dimension(:), allocatable :: iotype_descs
+  integer :: num_iotypes
+  type(pio_file_fmt_info), dimension(:), allocatable :: pio_file_fmts
+  integer :: num_pio_file_fmts = 0, cur_pio_file_fmt
+
+  ! Initialize the supported file fmts
+  call init_file_fmts(pio_file_fmts, num_pio_file_fmts)
+
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  ! REMOVE THIS RETURN STMT TO RUN THE TEST
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  PIO_TF_LOG(0,*) "Skipping the write test..."
+  RETURN
+
+  num_iotypes = 0
+  call PIO_TF_Get_nc_iotypes(iotypes, iotype_descs, num_iotypes)
+  filename = "test_pio_large_file_tests.testfile"
+  do cur_pio_file_fmt=1,num_pio_file_fmts
+    do i=1,num_iotypes
+      PIO_TF_LOG(0,*) "Testing : PIO file format : ", trim(pio_file_fmts(cur_pio_file_fmt)%name), " : PIO_TF_DATA_TYPE : ", trim(iotype_descs(i))
+      ! Set the decomposition for writing data - forcing rearrangement
+      dims(1) = pio_file_fmts(cur_pio_file_fmt)%max_rec_sz / C_SIZEOF(tmp_val)
+      last_var_dims(1) = DUMMY_DIM_SZ
+      call get_1d_bc_info(pio_tf_world_rank_, pio_tf_world_sz_, dims,&
+             start, count)
+      allocate(wbuf(count(1)))
+      allocate(compdof(count(1)))
+      do j=1,count(1)
+        wbuf(j) = start(1) + j - 1
+        compdof(j) = start(1) + j - 1
+      end do
+
+      call PIO_initdecomp(pio_tf_iosystem_, PIO_TF_DATA_TYPE, dims, compdof, wr_iodesc)
+      deallocate(compdof)
+
+      ! Set the decomposition for reading data - different from the write decomp
+      call get_1d_bc_info(pio_tf_world_rank_, pio_tf_world_sz_, dims,&
+             start, count)
+      allocate(rbuf(count(1)))
+      allocate(compdof(count(1)))
+      allocate(exp_val(count(1)))
+      do j=1,count(1)
+        compdof(j) = start(1) + j -1
+        ! Expected value, after reading, is the same as the compdof
+        exp_val(j) = compdof(j)
+      end do
+
+      call PIO_initdecomp(pio_tf_iosystem_, PIO_TF_DATA_TYPE, dims, compdof, rd_iodesc)
+      deallocate(compdof)
+
+      ierr = PIO_createfile(pio_tf_iosystem_, pio_file, iotypes(i), filename, pio_file_fmts(cur_pio_file_fmt)%pio_flag) 
+      PIO_TF_CHECK_ERR(ierr, "Could not create file " // trim(filename))
+
+      ierr = PIO_def_dim(pio_file, 'PIO_TF_test_dim', dims(1), pio_dim)
+      PIO_TF_CHECK_ERR(ierr, "Failed to define a dim : " // trim(filename))
+
+      ierr = PIO_def_dim(pio_file, 'PIO_TF_test_last_var_dim', last_var_dims(1), pio_last_var_dim)
+      PIO_TF_CHECK_ERR(ierr, "Failed to define a dim (last var) : " // trim(filename))
+
+      ierr = PIO_def_var(pio_file, 'PIO_TF_test_var', PIO_TF_DATA_TYPE, (/pio_dim/), pio_var)
+      PIO_TF_CHECK_ERR(ierr, "Failed to define a var : " // trim(filename))
+
+      ! The last var is special, with relaxed constraints - we just define it and ignore it
+      ! All tests are done for the other var
+      ierr = PIO_def_var(pio_file, 'PIO_TF_test_last_var', PIO_TF_DATA_TYPE, (/pio_last_var_dim/), pio_last_var)
+      PIO_TF_CHECK_ERR(ierr, "Failed to define the last var : " // trim(filename))
+
+      ierr = PIO_enddef(pio_file)
+      PIO_TF_CHECK_ERR(ierr, "Failed to end redef mode : " // trim(filename))
+
+      ! Write the variable out
+      call PIO_write_darray(pio_file, pio_var, wr_iodesc, wbuf, ierr)
+      PIO_TF_CHECK_ERR(ierr, "Failed to write darray : " // trim(filename))
+
+      call PIO_syncfile(pio_file)
+
+      rbuf = 0
+      call PIO_read_darray(pio_file, pio_var, rd_iodesc, rbuf, ierr)
+      PIO_TF_CHECK_ERR(ierr, "Failed to read darray : " // trim(filename))
+
+      PIO_TF_CHECK_VAL((rbuf, exp_val), "Got wrong val")
+
+      call PIO_closefile(pio_file)
+      
+    !  call PIO_deletefile(pio_tf_iosystem_, filename);
+      call PIO_freedecomp(pio_tf_iosystem_, rd_iodesc)
+      call PIO_freedecomp(pio_tf_iosystem_, wr_iodesc)
+      deallocate(exp_val)
+      deallocate(rbuf)
+      deallocate(wbuf)
+    end do
+  end do
+
+  if(allocated(iotypes)) then
+    deallocate(iotypes)
+    deallocate(iotype_descs)
+  end if
+PIO_TF_AUTO_TEST_SUB_END nc_wr_rd_large_1d_bc
+
+PIO_TF_TEMPLATE<PIO_TF_PREDEF_TYPENAME PIO_TF_DATA_TYPE, PIO_TF_PREDEF_TYPENAME PIO_TF_FC_DATA_TYPE>
+PIO_TF_AUTO_TEST_SUB_BEGIN nc_def_large_1d_bc
+  use pio_large_file_tests_util
+  implicit none
+  interface
+    SUBROUTINE init_file_fmts(pio_file_fmts, num_pio_file_fmts)
+      use pio_large_file_tests_util
+      implicit none
+      type(pio_file_fmt_info), dimension(:), allocatable, intent(out) :: pio_file_fmts
+      integer, intent(out) :: num_pio_file_fmts
+    END SUBROUTINE init_file_fmts
+  end interface
+  type(var_desc_t)  :: pio_var, pio_large_var, pio_last_var
+  type(file_desc_t) :: pio_file
+  character(len=PIO_TF_MAX_STR_LEN) :: filename
+  type(io_desc_t) :: wr_iodesc, rd_iodesc
+  integer, dimension(:), allocatable :: compdof
+  integer, dimension(1) :: start, count
+  PIO_TF_FC_DATA_TYPE, dimension(:), allocatable :: rbuf, wbuf, exp_val
+  PIO_TF_FC_DATA_TYPE :: tmp_val
+  integer :: nbytes
+  integer :: DUMMY_DIM_SZ = 10
+  integer, dimension(1) :: dims, last_var_dims
+  integer(pio_offset_kind), dimension(1) :: large_dims
+  integer :: pio_dim, pio_large_dim, pio_last_var_dim
+  integer :: i, ierr, lsz
+  ! iotypes = valid io types
+  integer, dimension(:), allocatable :: iotypes
+  character(len=PIO_TF_MAX_STR_LEN), dimension(:), allocatable :: iotype_descs
+  integer :: num_iotypes
+  type(pio_file_fmt_info), dimension(:), allocatable :: pio_file_fmts
+  integer :: num_pio_file_fmts = 0, cur_pio_file_fmt
+
+  ! Initialize the supported file fmts
+  call init_file_fmts(pio_file_fmts, num_pio_file_fmts)
+
+  num_iotypes = 0
+  call PIO_TF_Get_nc_iotypes(iotypes, iotype_descs, num_iotypes)
+  filename = "test_pio_large_file_tests.testfile"
+  do cur_pio_file_fmt=1,num_pio_file_fmts
+    do i=1,num_iotypes
+      PIO_TF_LOG(0,*) "Testing : PIO file format : ", trim(pio_file_fmts(cur_pio_file_fmt)%name), " : PIO file format : ", trim(iotype_descs(i))
+      nbytes = C_SIZEOF(tmp_val)
+      ! max_rec_sz is in bytes, find the max dim allowed for this file format
+      dims(1) = pio_file_fmts(cur_pio_file_fmt)%max_rec_sz / nbytes
+      large_dims(1) = pio_file_fmts(cur_pio_file_fmt)%max_large_rec_sz / nbytes
+      !print *, "dim sz = ", dims(1)
+      ! The last var/dim is just a place holder var
+      last_var_dims(1) = DUMMY_DIM_SZ
+
+      ierr = PIO_createfile(pio_tf_iosystem_, pio_file, iotypes(i), filename, pio_file_fmts(cur_pio_file_fmt)%pio_flag) 
+      PIO_TF_CHECK_ERR(ierr, "Could not create file " // trim(filename))
+
+      ierr = PIO_def_dim(pio_file, 'PIO_TF_test_dim', dims(1), pio_dim)
+      PIO_TF_CHECK_ERR(ierr, "Failed to define a dim : " // trim(filename))
+
+      ierr = PIO_def_dim(pio_file, 'PIO_TF_test_large_dim', large_dims(1), pio_large_dim)
+      PIO_TF_CHECK_ERR(ierr, "Failed to define a dim (large dim) : " // trim(filename))
+
+      ierr = PIO_def_dim(pio_file, 'PIO_TF_test_last_var_dim', last_var_dims(1), pio_last_var_dim)
+      PIO_TF_CHECK_ERR(ierr, "Failed to define a dim (for last dummy var) : " // trim(filename))
+
+      ierr = PIO_def_var(pio_file, 'PIO_TF_test_var', PIO_TF_DATA_TYPE, (/pio_dim/), pio_var)
+      PIO_TF_CHECK_ERR(ierr, "Failed to define a var : " // trim(filename))
+
+      ierr = PIO_def_var(pio_file, 'PIO_TF_test_large_var', PIO_TF_DATA_TYPE, (/pio_large_dim/), pio_large_var)
+      PIO_TF_CHECK_ERR(ierr, "Failed to define a large var : " // trim(filename))
+
+      ! The last var is special, with relaxed constraints 
+      ! - we just define it and ignore it
+      ! All tests are done for the other var
+      ierr = PIO_def_var(pio_file, 'PIO_TF_test_last_var', PIO_TF_DATA_TYPE, (/pio_last_var_dim/), pio_last_var)
+      PIO_TF_CHECK_ERR(ierr, "Failed to define the last var : " // trim(filename))
+
+      ierr = PIO_enddef(pio_file)
+      PIO_TF_CHECK_ERR(ierr, "Failed to end def mode : " // trim(filename))
+
+      call PIO_closefile(pio_file)
+      
+      !call PIO_deletefile(pio_tf_iosystem_, filename);
+    end do
+  end do
+  if(allocated(iotypes)) then
+    deallocate(iotypes)
+    deallocate(iotype_descs)
+  end if
+PIO_TF_AUTO_TEST_SUB_END nc_def_large_1d_bc
+
