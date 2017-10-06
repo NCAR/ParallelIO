@@ -350,7 +350,7 @@ int check_file(int ntasks, char *filename) {
     /* Create the PIO decomposition for this example. */
     if (verbose)
         printf("rank: %d Creating decomposition for bar...\n", my_rank);
-    if ((ret = PIOc_InitDecomp(iosysid, PIO_INT, NDIM, dim_len_bar, (PIO_Offset)elements_per_pe_bar,
+    if ((ret = PIOc_InitDecomp(iosysid, PIO_FLOAT, NDIM, dim_len_bar, (PIO_Offset)elements_per_pe_bar,
                    compdof, &ioid_bar, NULL, NULL, NULL)))
         ERR(ret);
     free(compdof);
