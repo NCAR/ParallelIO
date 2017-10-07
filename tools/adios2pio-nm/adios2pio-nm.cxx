@@ -19,11 +19,9 @@
 
 using namespace std;
 
-
 MPI_Comm comm = MPI_COMM_WORLD;
 int mpirank;
 int nproc;
-
 
 /** The ID for the parallel I/O system. It is set by
  * PIOc_Init_Intracomm(). It references an internal structure
@@ -113,8 +111,6 @@ int GlobalMaxSteps(int nsteps_in=0)
         nsteps_current = nsteps_in;
     return nsteps_current;
 }
-
-
 
 std::vector<int> AssignWriteRanks(int n_bp_writers)
 {
@@ -504,8 +500,6 @@ int ConvertVariablePutVar(ADIOS_FILE **infile, std::vector<int> wblocks, int adi
 	char *varname     = infile[0]->var_namelist[adios_varid];
     ADIOS_VARINFO *vi = adios_inq_var(infile[0], varname);
 
-	printf("ConvertVariablePutVar: %s %d %d\n",varname,vi->ndim,mpirank); fflush(stdout);
-
     if (vi->ndim == 0)
     {
         /* Scalar variable */
@@ -599,7 +593,6 @@ int ConvertVariablePutVar(ADIOS_FILE **infile, std::vector<int> wblocks, int adi
     }
 
     adios_free_varinfo(vi);
-	printf("Exiting: %d\n",mpirank); fflush(stdout);
     return ret;
 }
 
@@ -609,8 +602,6 @@ int ConvertVariableTimedPutVar(ADIOS_FILE **infile, std::vector<int> wblocks, in
     int ret = 0;
 	char *varname = infile[0]->var_namelist[adios_varid];
     ADIOS_VARINFO *vi = adios_inq_var(infile[0], varname);
-
-	printf("IN ConvertVariableTimedPutVar\n");
 
     if (vi->ndim == 0)
     {
@@ -738,7 +729,6 @@ int ConvertVariableDarray(ADIOS_FILE **infile, int adios_varid, int ncid, Variab
 {
     int ret = 0;
 
-	printf("IN ConvertVariableDarray\n");
 	char *varname = infile[0]->var_namelist[adios_varid];
     string attname = string(varname) + "/__pio__/decomp";
     int asize;
