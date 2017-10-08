@@ -233,6 +233,7 @@ Decomposition ProcessOneDecomposition(ADIOS_FILE **infile, int ncid, const char 
        		 	int ret = adios_schedule_read(infile[i], wbsel, varname, 0, 1, d.data()+offset);
        		 	adios_perform_reads(infile[i], 1);
 				offset += vb->blockinfo[j].count[0];
+				adios_selection_delete(wbsel);
 	   		}
 	   		adios_free_varinfo(vb);
 		}
@@ -543,13 +544,10 @@ int ConvertVariablePutVar(ADIOS_FILE **infile, std::vector<int> wblocks, int adi
 				adios_inq_var_blockinfo(infile[i], vb);
 				for (int j=0;j<vb->nblocks[0];j++) {
 					mysize = 0;
-					for (int d=0;d<vb->ndim;d++) {
-						printf("Size: %d\n",vb->blockinfo[j].count[d]);
+					for (int d=0;d<vb->ndim;d++) 
 						mysize += (size_t)vb->blockinfo[j].count[d];
-					}
 					mysize = mysize*adios_type_size(vb->type,NULL);
-        			buf = (char *)malloc(mysize); 
-					if (!buf) { 
+        			if ((buf = (char *)malloc(mysize))==NULL) {
 						printf("ERROR: cannot allocate memory: %ld\n",mysize);
 						return 1;
 					}
@@ -579,7 +577,10 @@ int ConvertVariablePutVar(ADIOS_FILE **infile, std::vector<int> wblocks, int adi
        		start[d] = (PIO_Offset) 0;
     		count[d] = (PIO_Offset) 0;
         }
-		buf = (char *)malloc(mysize+1);
+		if ((buf = (char *)malloc(mysize+1))==NULL) {
+			printf("ERROR: cannot allocate memory: %ld\n",mysize+1);
+			return 1;
+		}
 		for (;k<g_wbsize;k++) {
 			ret = put_vara(ncid, var.nc_varid, var.nctype, vi->type, start, count, buf);
         	if (ret != PIO_NOERR) {
@@ -691,8 +692,7 @@ int ConvertVariableTimedPutVar(ADIOS_FILE **infile, std::vector<int> wblocks, in
                 }
                 std::vector<char> d(nelems * elemsize);
                 ADIOS_SELECTION *wbsel = adios_selection_writeblock(ts);
-                int ret = adios_schedule_read(infile[0], wbsel, varname,
-                        0, 1, d.data());
+                int ret = adios_schedule_read(infile[0], wbsel, varname, 0, 1, d.data());
                 adios_perform_reads(infile[0], 1);
                 TimerStop(read);
 
@@ -710,6 +710,7 @@ int ConvertVariableTimedPutVar(ADIOS_FILE **infile, std::vector<int> wblocks, in
                     cout << "ERROR in PIOc_put_var(), code = " << ret
                     << " at " << __func__ << ":" << __LINE__ << endl;
                 TimerStop(write);
+				adios_selection_delete(wbsel);
             }
         }
         else
@@ -851,6 +852,7 @@ int ConvertVariableDarray(ADIOS_FILE **infile, int adios_varid, int ncid, Variab
                         				d.data()+offset);
                 		adios_perform_reads(infile[i], 1);
                 		offset += vb->blockinfo[blockid].count[0] * elemsize;
+        				adios_selection_delete(wbsel);
 					}
                 }
                 adios_free_varinfo(vb);
