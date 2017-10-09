@@ -715,10 +715,67 @@ int ConvertVariableTimedPutVar(ADIOS_FILE **infile, std::vector<int> wblocks, in
         }
         else
         {
+			/* PIOc_put_vara_ writes out from processor 0       */
+			/* Read in infile[0] and output using PIOc_put_vara */
+			if (mpirank==0) {
+				for (int ts=0; ts < nsteps; ++ts)
+           		{
+               		TimerStart(read);
+               		int elemsize = adios_type_size(vi->type,NULL);
+               		uint64_t nelems = 1;
+               		for (int d = 0; d < vi->ndim; d++) {
+               	    	nelems *= vi->dims[d];
+               		}
+               		std::vector<char> d(nelems * elemsize);
+               		ADIOS_SELECTION *wbsel = adios_selection_writeblock(ts);
+               		int ret = adios_schedule_read(infile[0], wbsel, varname, 0, 1, d.data());
+               		adios_perform_reads(infile[0], 1);
+               		TimerStop(read);
+	
+   	            	TimerStart(write);
+   	            	PIO_Offset start[vi->ndim+1], count[vi->ndim+1];
+   	            	start[0] = ts;
+   	            	count[0] = 1;
+   	            	for (int d = 0; d < vi->ndim; d++) {
+						start[d+1] = 0;
+   	                	count[d+1] = vi->dims[d];
+   	            	}
+	
+   	            	if ((ret = PIOc_put_vara(ncid, var.nc_varid, start, count, d.data())))
+   	            	if (ret != PIO_NOERR)
+   	                	cout << "ERROR in PIOc_put_var(), code = " << ret
+   	                	<< " at " << __func__ << ":" << __LINE__ << endl;
+   	            	TimerStop(write);
+					adios_selection_delete(wbsel);
+   	        	}
+			} else {
+				for (int ts=0; ts < nsteps; ++ts)
+           		{
+               		TimerStart(read);
+               		int elemsize = adios_type_size(vi->type,NULL);
+               		uint64_t nelems = 1;
+               		std::vector<char> d(nelems * elemsize);
+
+   	            	PIO_Offset start[vi->ndim+1], count[vi->ndim+1];
+   	            	start[0] = 0;
+   	            	count[0] = 0;
+   	            	for (int d = 0; d < vi->ndim; d++) {
+						start[d+1] = 0;
+   	                	count[d+1] = 0; 
+   	            	}
+	
+   	            	if ((ret = PIOc_put_vara(ncid, var.nc_varid, start, count, d.data())))
+   	            	if (ret != PIO_NOERR)
+   	                	cout << "ERROR in PIOc_put_var(), code = " << ret
+   	                	<< " at " << __func__ << ":" << __LINE__ << endl;
+   	        	}
+			}
+			/*
             cout << "ERROR: put_vara of arrays over time is not supported yet. "
                     << "Variable \"" << varname << "\" is a "
                     << vi->ndim << "D array including the unlimited dimension"
                     << endl;
+			*/
         }
     }
     adios_free_varinfo(vi);
