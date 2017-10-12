@@ -2142,6 +2142,8 @@ int openfile_int(int iosysid, int *ncidp, int *iotype, const char *filename,
         return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
 
     /* Create an entry in the varlist for each variable. */
+    /* FIXME : Until we start using varlist2, this code
+     * should be commented out - this code is costly */
     for (int v = 0; v < nvars; v++)
     {
         int rec_var = 0; /* Does var use unlimited dimension? */

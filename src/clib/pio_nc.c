@@ -2019,6 +2019,7 @@ int PIOc_def_var(int ncid, const char *name, nc_type xtype, int ndims,
         return check_netcdf(file, ierr, __FILE__, __LINE__);
 
     /* Broadcast results. */
+    /* FIXME: varidp should be valid, no need to check it here */
     if (varidp)
         if ((mpierr = MPI_Bcast(varidp, 1, MPI_INT, ios->ioroot, ios->my_comm)))
             check_mpi(file, mpierr, __FILE__, __LINE__);
