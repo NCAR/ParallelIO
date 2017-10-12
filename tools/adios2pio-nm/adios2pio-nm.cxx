@@ -964,7 +964,31 @@ int GetNumOfFiles(string infilename)
 	return file_count;
 }
 
-void ConvertBPFile(string infilename, string outfilename, int pio_iotype)
+std::string ExtractFilename(std::string pathname)
+{
+	size_t pos = pathname.find_last_of("/\\");
+	if (pos==std::string::npos) {
+		// std::cout << "Couldn't find...." << std::endl;
+		return pathname;
+	} else {
+		// std::cout << "Position: " << pos << std::endl;	
+		return pathname.substr(pos+1);
+	}
+}
+
+std::string ExtractPathname(std::string pathname)
+{
+	size_t pos = pathname.find_last_of("/\\");
+	if (pos==std::string::npos) {
+		// std::cout << "Couldn't find...." << std::endl;
+		return "./";
+	} else {
+		// std::cout << "Position: " << pos << std::endl;	
+		return pathname.substr(0,pos);
+	}
+}
+
+void ConvertBPFile(string infilepath, string outfilename, int pio_iotype)
 {
 	ADIOS_FILE **infile = NULL;
 	int num_infiles = 0; 
@@ -977,15 +1001,23 @@ void ConvertBPFile(string infilename, string outfilename, int pio_iotype)
 		 *
 		 * TODO: split the basename and the path.
 		 */
+		std::string foldername   = ExtractPathname(infilepath);
+		std::string basefilename = ExtractFilename(infilepath);
 
 		/*
 		 * Get the number of files in BP folder. 
 		 * This operation assumes that the BP folder contains only the 
 		 * BP files. 
 		 */
-		int n_bp_files = GetNumOfFiles(infilename);
+		int n_bp_files = GetNumOfFiles(infilepath);
 		if (n_bp_files<0) 
 			throw std::runtime_error("Input folder doesn't exist.\n");
+
+		if (nproc>n_bp_files) {
+			std::cout << "ERROR: nproc (" << nproc << ") is greater than #files (" << n_bp_files << ")" << std::endl;
+			throw std::runtime_error("Use fewer processors.\n");
+		}
+
 
 		/* Number of BP file writers != number of converter processes here */
         std::vector<int> wblocks;
@@ -999,7 +1031,7 @@ void ConvertBPFile(string infilename, string outfilename, int pio_iotype)
 		if (!infile) 
 			throw std::runtime_error("Cannot allocate space for infile array.\n");
 		
-		string file0 = infilename + ".dir/" + infilename + ".0";
+		string file0 = infilepath + ".dir/" + basefilename + ".0";
 		infile[0] = adios_read_open_file(file0.c_str(), ADIOS_READ_METHOD_BP, comm);
 		int ret = adios_schedule_read(infile[0], NULL, "/__pio__/info/nproc", 0, 1, &n_bp_writers);
 		if (ret)
@@ -1016,11 +1048,11 @@ void ConvertBPFile(string infilename, string outfilename, int pio_iotype)
 
 		/*
 		 * Open the BP files. 
-		 * infilename.bp.0 is opened by all the nodes. It contains all of the variables 
+		 * basefilename.bp.0 is opened by all the nodes. It contains all of the variables 
 		 * and attributes. Each node then opens the files assigned to that node. 
 		 */
 		for (int i=1;i<=wblocks.size();i++) {
-			string filei = infilename + ".dir/" + infilename + "." + to_string(wblocks[i-1]);
+			string filei = infilepath + ".dir/" + basefilename + "." + to_string(wblocks[i-1]);
 			infile[i] = adios_read_open_file(filei.c_str(), ADIOS_READ_METHOD_BP, MPI_COMM_SELF); 
 			std::cout << "myrank " << mpirank << " file: " << filei << std::endl;
 		}
@@ -1166,7 +1198,7 @@ int main (int argc, char *argv[])
         return 1;
     }
     
-    string infilename  = argv[1];
+    string infilepath  = argv[1];
     string outfilename = argv[2];
 
 #ifdef TIMING
@@ -1180,7 +1212,7 @@ int main (int argc, char *argv[])
     try {
         enum PIO_IOTYPE pio_iotype = GetIOType(argv[3]);
         InitPIO();
-        ConvertBPFile(infilename, outfilename, pio_iotype);
+        ConvertBPFile(infilepath, outfilename, pio_iotype);
         PIOc_finalize(iosysid);
         TimerReport(comm);
     }
