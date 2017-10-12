@@ -196,7 +196,7 @@ void ProcessGlobalAttributes(ADIOS_FILE **infile, int ncid)
     }
 }
 
-Decomposition ProcessOneDecomposition(ADIOS_FILE **infile, int ncid, const char *varname, std::vector<int>& wblocks,
+Decomposition ProcessOneDecomposition(ADIOS_FILE **infile, int ncid, const char *varname, std::vector<int>& wfiles,
         int forced_type=NC_NAT)
 {
     /* 
@@ -208,7 +208,7 @@ Decomposition ProcessOneDecomposition(ADIOS_FILE **infile, int ncid, const char 
     /* Sum the sizes of blocks assigned to this process */
     TimerStart(read);
     uint64_t nelems = 0;
-    for (int i=1;i<=wblocks.size();i++) { // iterate over all the files assigned to this process
+    for (int i=1;i<=wfiles.size();i++) { // iterate over all the files assigned to this process
    		ADIOS_VARINFO *vb = adios_inq_var(infile[i], varname);
 		if (vb) {
 			adios_inq_var_blockinfo(infile[i], vb);
@@ -222,7 +222,7 @@ Decomposition ProcessOneDecomposition(ADIOS_FILE **infile, int ncid, const char 
 
     std::vector<PIO_Offset> d(nelems);
     uint64_t offset = 0;
-    for (int i=1;i<=wblocks.size();i++) {
+    for (int i=1;i<=wfiles.size();i++) {
 		ADIOS_VARINFO *vb = adios_inq_var(infile[i], varname);
 		if (vb) {
        		adios_inq_var_blockinfo(infile[i], vb);
@@ -274,7 +274,7 @@ Decomposition ProcessOneDecomposition(ADIOS_FILE **infile, int ncid, const char 
     return Decomposition{ioid, *piotype};
 }
 
-DecompositionMap ProcessDecompositions(ADIOS_FILE **infile, int ncid, std::vector<int>& wblocks)
+DecompositionMap ProcessDecompositions(ADIOS_FILE **infile, int ncid, std::vector<int>& wfiles)
 {
     DecompositionMap decomp_map;
     for (int i = 0; i < infile[0]->nvars; i++)
@@ -284,7 +284,7 @@ DecompositionMap ProcessDecompositions(ADIOS_FILE **infile, int ncid, std::vecto
         {
             string decompname = v.substr(16);
             if (!mpirank) cout << "Process decomposition " << decompname << endl;
-            Decomposition d = ProcessOneDecomposition(infile, ncid, infile[0]->var_namelist[i], wblocks);
+            Decomposition d = ProcessOneDecomposition(infile, ncid, infile[0]->var_namelist[i], wfiles);
             decomp_map[decompname] = d;
         }
         FlushStdout(comm);
@@ -293,7 +293,7 @@ DecompositionMap ProcessDecompositions(ADIOS_FILE **infile, int ncid, std::vecto
 }
 
 Decomposition GetNewDecomposition(DecompositionMap& decompmap, string decompname,
-        ADIOS_FILE **infile, int ncid, std::vector<int>& wblocks, int nctype)
+        ADIOS_FILE **infile, int ncid, std::vector<int>& wfiles, int nctype)
 {
     stringstream ss;
     ss << decompname << "_" << nctype;
@@ -303,7 +303,7 @@ Decomposition GetNewDecomposition(DecompositionMap& decompmap, string decompname
     if (it == decompmap.end())
     {
         string varname = "/__pio__/decomp/" + decompname;
-        d = ProcessOneDecomposition(infile, ncid, varname.c_str(), wblocks, nctype);
+        d = ProcessOneDecomposition(infile, ncid, varname.c_str(), wfiles, nctype);
         decompmap[key] = d;
     }
     else
@@ -496,7 +496,7 @@ int put_vara(int ncid, int varid, int nctype, enum ADIOS_DATATYPES memtype, PIO_
     return ret;
 }
 
-int ConvertVariablePutVar(ADIOS_FILE **infile, std::vector<int> wblocks, int adios_varid, int ncid, Variable& var)
+int ConvertVariablePutVar(ADIOS_FILE **infile, std::vector<int> wfiles, int adios_varid, int ncid, Variable& var)
 {
     TimerStart(read);
     int ret = 0;
@@ -523,7 +523,7 @@ int ConvertVariablePutVar(ADIOS_FILE **infile, std::vector<int> wblocks, int adi
 		/* Find the maximum number of blocks assigned to a process.  */
 		int l_wbsize = 0;
 		int g_wbsize = 0;
-		for (int i=1;i<=wblocks.size();i++) {
+		for (int i=1;i<=wfiles.size();i++) {
 			ADIOS_VARINFO *vb = adios_inq_var(infile[i], varname);
 			if (vb) {
 				l_wbsize += vb->nblocks[0];
@@ -540,7 +540,7 @@ int ConvertVariablePutVar(ADIOS_FILE **infile, std::vector<int> wblocks, int adi
 		int k=0;
 		size_t mysize = 0;
 		char *buf = NULL;
-		for (int i=1;i<=wblocks.size();i++) {
+		for (int i=1;i<=wfiles.size();i++) {
        		ADIOS_VARINFO *vb = adios_inq_var(infile[i], varname);
 			if (vb) {
 				adios_inq_var_blockinfo(infile[i], vb);
@@ -599,7 +599,7 @@ int ConvertVariablePutVar(ADIOS_FILE **infile, std::vector<int> wblocks, int adi
     return ret;
 }
 
-int ConvertVariableTimedPutVar(ADIOS_FILE **infile, std::vector<int> wblocks, int adios_varid, int ncid, Variable& var, int nblocks_per_step)
+int ConvertVariableTimedPutVar(ADIOS_FILE **infile, std::vector<int> wfiles, int adios_varid, int ncid, Variable& var, int nblocks_per_step)
 {
     TimerStart(read);
     int ret = 0;
@@ -639,7 +639,7 @@ int ConvertVariableTimedPutVar(ADIOS_FILE **infile, std::vector<int> wblocks, in
 		/* compute the total number of blocks */
 		int l_nblocks = 0;
 		int g_nblocks = 0;
-		for (int i=1;i<=wblocks.size();i++) {
+		for (int i=1;i<=wfiles.size();i++) {
     		ADIOS_VARINFO *vb = adios_inq_var(infile[i], varname);
 			if (vb) {
 				l_nblocks += vb->nblocks[0];
@@ -787,7 +787,7 @@ int ConvertVariableTimedPutVar(ADIOS_FILE **infile, std::vector<int> wblocks, in
 }
 
 int ConvertVariableDarray(ADIOS_FILE **infile, int adios_varid, int ncid, Variable& var,
-        std::vector<int>& wblocks, DecompositionMap& decomp_map, int nblocks_per_step)
+        std::vector<int>& wfiles, DecompositionMap& decomp_map, int nblocks_per_step)
 {
     int ret = 0;
 
@@ -804,7 +804,7 @@ int ConvertVariableDarray(ADIOS_FILE **infile, int adios_varid, int ncid, Variab
  		 * Type conversion may happened at writing. Now we make a new decomposition
          * for this nctype
          */
-        decomp = GetNewDecomposition(decomp_map, decompname, infile, ncid, wblocks, var.nctype);
+        decomp = GetNewDecomposition(decomp_map, decompname, infile, ncid, wfiles, var.nctype);
     }
     free(decompname);
 
@@ -818,7 +818,7 @@ int ConvertVariableDarray(ADIOS_FILE **infile, int adios_varid, int ncid, Variab
 	/* compute the total number of blocks */
 	int l_nblocks = 0;
 	int g_nblocks = 0;
-	for (int i=1;i<=wblocks.size();i++) {
+	for (int i=1;i<=wfiles.size();i++) {
    		ADIOS_VARINFO *vb = adios_inq_var(infile[i], varname);
 		if (vb) {
 			printf("VARNAME: %s %d %d mpirank: %d\n",varname,i,vb->nblocks[0],mpirank); fflush(stdout);
@@ -884,7 +884,7 @@ int ConvertVariableDarray(ADIOS_FILE **infile, int adios_varid, int ncid, Variab
 		/* Compute the number of writers for each file from nsteps */
         uint64_t nelems = 0;
 		int l_nwriters  = 0;
-		for (int i=1;i<=wblocks.size();i++) {
+		for (int i=1;i<=wfiles.size();i++) {
         	ADIOS_VARINFO *vb = adios_inq_var(infile[i], varname);
         	if (vb) {
 				adios_inq_var_blockinfo(infile[i], vb);
@@ -901,7 +901,7 @@ int ConvertVariableDarray(ADIOS_FILE **infile, int adios_varid, int ncid, Variab
         int elemsize = adios_type_size(vi->type,NULL);
         std::vector<char> d(nelems * elemsize);
         uint64_t offset = 0;
-		for (int i=1;i<=wblocks.size();i++) {
+		for (int i=1;i<=wfiles.size();i++) {
             ADIOS_VARINFO *vb = adios_inq_var(infile[i], varname);
             if (vb) {
                 adios_inq_var_blockinfo(infile[i], vb);
@@ -927,7 +927,7 @@ int ConvertVariableDarray(ADIOS_FILE **infile, int adios_varid, int ncid, Variab
         TimerStop(read);
 
         TimerStart(write);
-        if (wblocks[0] < nblocks_per_step)
+        if (wfiles[0] < nblocks_per_step)
         {
             if (var.is_timed)
                 PIOc_setframe(ncid, var.nc_varid, ts);
@@ -1018,15 +1018,14 @@ void ConvertBPFile(string infilepath, string outfilename, int pio_iotype)
 			throw std::runtime_error("Use fewer processors.\n");
 		}
 
-
 		/* Number of BP file writers != number of converter processes here */
-        std::vector<int> wblocks;
-        wblocks = AssignWriteRanks(n_bp_files);
-        printf("SIZE: %d\n",wblocks.size());
-        for (auto nb: wblocks)
+        std::vector<int> wfiles;
+        wfiles = AssignWriteRanks(n_bp_files);
+        printf("SIZE: %d\n",wfiles.size());
+        for (auto nb: wfiles)
             printf("Myrank: %d File id: %d\n",mpirank,nb);
 
-		num_infiles = wblocks.size()+1; //  infile[0] is opened by all processors
+		num_infiles = wfiles.size()+1; //  infile[0] is opened by all processors
 		infile = (ADIOS_FILE **)malloc(num_infiles*sizeof(ADIOS_FILE *));
 		if (!infile) 
 			throw std::runtime_error("Cannot allocate space for infile array.\n");
@@ -1051,14 +1050,14 @@ void ConvertBPFile(string infilepath, string outfilename, int pio_iotype)
 		 * basefilename.bp.0 is opened by all the nodes. It contains all of the variables 
 		 * and attributes. Each node then opens the files assigned to that node. 
 		 */
-		for (int i=1;i<=wblocks.size();i++) {
-			string filei = infilepath + ".dir/" + basefilename + "." + to_string(wblocks[i-1]);
+		for (int i=1;i<=wfiles.size();i++) {
+			string filei = infilepath + ".dir/" + basefilename + "." + to_string(wfiles[i-1]);
 			infile[i] = adios_read_open_file(filei.c_str(), ADIOS_READ_METHOD_BP, MPI_COMM_SELF); 
 			std::cout << "myrank " << mpirank << " file: " << filei << std::endl;
 		}
 
 		/* First process decompositions */
-		DecompositionMap decomp_map = ProcessDecompositions(infile, ncid, wblocks);
+		DecompositionMap decomp_map = ProcessDecompositions(infile, ncid, wfiles);
 
 		/* Create output file */
 		TimerStart(write);
@@ -1105,15 +1104,15 @@ void ConvertBPFile(string infilepath, string outfilename, int pio_iotype)
 				if (op == "put_var") {
 					if (var.is_timed) {
 						printf("ConvertVariableTimedPutVar: %d\n",mpirank); fflush(stdout);
-						ConvertVariableTimedPutVar(infile, wblocks, i, ncid, var, n_bp_writers);
+						ConvertVariableTimedPutVar(infile, wfiles, i, ncid, var, n_bp_writers);
 					} else {
 						// printf("ConvertVariablePutVar: %d\n",mpirank); fflush(stdout);
-						ConvertVariablePutVar(infile, wblocks, i, ncid, var);
+						ConvertVariablePutVar(infile, wfiles, i, ncid, var);
 					}
 				} else if (op == "darray") {
 					/* Variable was written with pio_write_darray() with a decomposition */
 					printf("ConvertVariableDarray: %d\n",mpirank); fflush(stdout);
-					ConvertVariableDarray(infile, i, ncid, var, wblocks, decomp_map, n_bp_writers);
+					ConvertVariableDarray(infile, i, ncid, var, wfiles, decomp_map, n_bp_writers);
 				} else {
 					if (!mpirank)
 						cout << "  WARNING: unknown operation " << op << ". Will not process this variable\n";
