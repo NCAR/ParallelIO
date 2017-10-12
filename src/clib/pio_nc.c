@@ -585,9 +585,18 @@ int PIOc_inq_dim(int ncid, int dimid, char *name, PIO_Offset *lenp)
 #ifdef _ADIOS
         if (file->iotype == PIO_IOTYPE_ADIOS)
         {
-            if (name) strcpy(name, file->dim_names[dimid]);
-            if (lenp) *lenp = file->dim_values[dimid];
-            ierr = 0;
+            if (0 < dimid && dimid < file->num_dim_vars)
+            {
+                if (name) strcpy(name, file->dim_names[dimid]);
+                if (lenp) *lenp = file->dim_values[dimid];
+                ierr = 0;
+            }
+            else
+            {
+                if (name) name[0]='\0';
+                if (lenp) *lenp = 0;
+                ierr = PIO_EBADDIM;
+            }
         }
 #endif
 #ifdef _NETCDF

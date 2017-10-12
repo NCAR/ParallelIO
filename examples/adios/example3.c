@@ -445,6 +445,16 @@ int check_file(int ntasks, char *filename) {
                     my_rank, DIM_NAME_BAR, (long long)test_dimvalue[0], dim_len_bar[0]);
         }
 
+        int err_handling_method = PIOc_Set_IOSystem_Error_Handling(iosysid, PIO_BCAST_ERROR);
+        ret = PIOc_inq_dimlen(ncid,15,test_dimvalue);
+        if (ret != PIO_EBADDIM)
+        {
+            printf("rank: %d PIOc_inq_dimid(15) should have returned PIO_EBADID error. "
+                    "Instead it returned error code %d and dimension size =%lld, expected=0\n",
+                    my_rank, ret, (long long)test_dimvalue[0]);
+        }
+        PIOc_Set_IOSystem_Error_Handling(iosysid, err_handling_method);
+
         /* Write data to the file. */
         if (verbose)
             printf("rank: %d Writing sample data...\n", my_rank);
