@@ -142,6 +142,8 @@ void ProcessGlobalFillmode(ADIOS_FILE **infile, int ncid)
     adios_get_attr(infile[0], "/__pio__/fillmode", &atype, &asize, &fillmode);
     cout << "    set fillmode: " << *(int*)fillmode << std::endl;
     PIOc_set_fill(ncid, *(int*)fillmode, NULL);
+    // int fill_value = 256;
+    // PIOc_set_fill(ncid, *(int*)fillmode, &fill_value);
     free(fillmode);
 }
 
@@ -604,6 +606,8 @@ int ConvertVariableTimedPutVar(ADIOS_FILE **infile, std::vector<int> wblocks, in
 	char *varname = infile[0]->var_namelist[adios_varid];
     ADIOS_VARINFO *vi = adios_inq_var(infile[0], varname);
 
+	printf("TIMED_VARIABLE: %s\n",varname);
+
     if (vi->ndim == 0)
     {
         /* Scalar variable over time */
@@ -817,11 +821,14 @@ int ConvertVariableDarray(ADIOS_FILE **infile, int adios_varid, int ncid, Variab
 	for (int i=1;i<=wblocks.size();i++) {
    		ADIOS_VARINFO *vb = adios_inq_var(infile[i], varname);
 		if (vb) {
+			printf("VARNAME: %s %d %d mpirank: %d\n",varname,i,vb->nblocks[0],mpirank); fflush(stdout);
 			l_nblocks += vb->nblocks[0];
 			adios_free_varinfo(vb);
 		}
 	}
 	MPI_Allreduce(&l_nblocks,&g_nblocks,1,MPI_INT,MPI_SUM,comm); 
+
+	printf("LNBLOCKS: %d GNBLOCKS: %d\n",l_nblocks,g_nblocks); fflush(stdout);
 		
     if (var.is_timed)
     {
@@ -868,6 +875,8 @@ int ConvertVariableDarray(ADIOS_FILE **infile, int adios_varid, int ncid, Variab
         ts = nsteps-1;
     }
 
+	printf("NSTEPS: %d %d\n",ts,nsteps);
+
 	// TAHSIN -- THIS IS GETTING CONFUSING. NEED TO THINK ABOUT time steps. 
     for (; ts < nsteps; ++ts)
     {
@@ -900,9 +909,9 @@ int ConvertVariableDarray(ADIOS_FILE **infile, int adios_varid, int ncid, Variab
                 for (int j=0;j<l_nwriters;j++) {
 					int blockid = j*nsteps+ts;
                     if (blockid<vb->nblocks[0]) {
-						cout << "    rank " << mpirank << ": read var = " << blockid <<
-                        		" start byte = " << offset <<
-                        		" elems = " << vb->blockinfo[blockid].count[0] << endl;
+						// cout << "    rank " << mpirank << ": read var = " << blockid <<
+                        // 		" start byte = " << offset <<
+                        // 		" elems = " << vb->blockinfo[blockid].count[0] << endl;
                 		ADIOS_SELECTION *wbsel = adios_selection_writeblock(blockid);
                 		int ret = adios_schedule_read(infile[i], wbsel, 
 										varname, 0, 1,
@@ -997,9 +1006,9 @@ void ConvertBPFile(string infilename, string outfilename, int pio_iotype)
 			throw std::runtime_error("Invalid BP file: missing '/__pio__/info/nproc' variable\n");
 		adios_perform_reads(infile[0], 1);
 		if (n_bp_writers!=n_bp_files) {
-			std::cout  << "ERROR: #writers ("<< n_bp_writers 
-					   << ") != #files (" << n_bp_files << std::endl;
-			throw std::runtime_error("#writers has to be equal to #files.\n");
+			std::cout  << "WARNING: #writers (" 
+					<< n_bp_writers << ") != #files (" 
+					<< n_bp_files << ")" << std::endl;
 		} else {
 			std::cout << "n_bp_writers: " << n_bp_writers 
 					  << " n_bp_files: " << n_bp_files << std::endl;
@@ -1021,7 +1030,7 @@ void ConvertBPFile(string infilename, string outfilename, int pio_iotype)
 
 		/* Create output file */
 		TimerStart(write);
-		ret = PIOc_createfile(iosysid, &ncid, &pio_iotype, outfilename.c_str(), PIO_CLOBBER);
+		ret = PIOc_createfile(iosysid, &ncid, &pio_iotype, outfilename.c_str(), PIO_64BIT_OFFSET);
 		TimerStop(write);
 		if (ret)
 			throw std::runtime_error("Could not create output file " + outfilename + "\n");
@@ -1090,8 +1099,8 @@ void ConvertBPFile(string infilename, string outfilename, int pio_iotype)
 		TimerStart(read);
 		printf("I am before adios_read_close: %d\n",mpirank); fflush(stdout);
 		MPI_Barrier(MPI_COMM_WORLD);
-		// for (int i=0;i<num_infiles;i++) 
-		// adios_read_close(infile[i]);
+		for (int i=0;i<num_infiles;i++) 
+			adios_read_close(infile[i]);
 		TimerStop(read);
 
 		return;

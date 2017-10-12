@@ -2294,6 +2294,10 @@ int subset_rearrange_create(iosystem_desc_t *ios, int maplen, PIO_Offset *compma
             maxregions = iodesc->maxfillregions;
         }
 
+#ifdef _USE_MALLOC_
+		if (grid) free(grid);
+#endif
+
         /* Get the max maxregions, and distribute it to all tasks in
          * the IO communicator. */
         if ((mpierr = MPI_Allreduce(MPI_IN_PLACE, &maxregions, 1, MPI_INT, MPI_MAX,
