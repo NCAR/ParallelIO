@@ -735,21 +735,24 @@ int PIOc_inq_dimid(int ncid, const char *name, int *idp)
         {
             if (file->num_dim_vars > 0) // in create/write mode we have dimensions, in open/read mode, we don't
             {
-                int i;
-                for (i=0; i < file->num_dim_vars; i++)
+                ierr = PIO_EBADDIM;
+                for (int i=0; i < file->num_dim_vars; i++)
                 {
                     if (!strcmp(name, file->dim_names[i]))
                     {
                         *idp = i;
+                        ierr = 0;
                         break;
                     }
                 }
+
             }
             else
             {
                 LOG((2,"ADIOS Read mode missing %s:%s\n", __FILE__, __func__));
+                ierr = 0;
             }
-            ierr = 0;
+
         }
 #endif
 #ifdef _NETCDF

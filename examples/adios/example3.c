@@ -434,22 +434,29 @@ int check_file(int ntasks, char *filename) {
         PIOc_inq_dimname(ncid,dimid_bar,test_dimname);
         if (strcmp(DIM_NAME_BAR, test_dimname))
         {
-            printf("rank: %d PIOc_inq_dim(%d) returned wrong dim name = '%s', expected='%s'\n",
+            printf("rank: %d PIOc_inq_dimname(%d) returned wrong dim name = '%s', expected='%s'\n",
                     my_rank, dimid_bar, test_dimname, DIM_NAME_FOO);
         }
 
         PIO_Offset test_dimvalue[1];
         PIOc_inq_dimlen(ncid,dimid_bar,test_dimvalue);
         if ((PIO_Offset)dim_len_bar[0] != test_dimvalue[0]) {
-            printf("rank: %d PIOc_inq_dimid(%s) returned wrong dimension size =%lld, expected=%d\n",
+            printf("rank: %d PIOc_inq_dimlen(%s) returned wrong dimension size =%lld, expected=%d\n",
                     my_rank, DIM_NAME_BAR, (long long)test_dimvalue[0], dim_len_bar[0]);
         }
 
+        /* Test errors for some non-existent dimension names/IDs */
         int err_handling_method = PIOc_Set_IOSystem_Error_Handling(iosysid, PIO_BCAST_ERROR);
+        ret = PIOc_inq_dimid(ncid,"NonexistentVariable",&test_dimid);
+        if (ret != PIO_EBADDIM) {
+            printf("rank: %d PIOc_inq_dimid(NonexistentVariable) returned wrong return code=%d, expected PIO_EBADDIM=%d\n",
+                    my_rank, ret, PIO_EBADDIM);
+        }
+
         ret = PIOc_inq_dimlen(ncid,15,test_dimvalue);
         if (ret != PIO_EBADDIM)
         {
-            printf("rank: %d PIOc_inq_dimid(15) should have returned PIO_EBADID error. "
+            printf("rank: %d PIOc_inq_dimlen(15) should have returned PIO_EBADID error. "
                     "Instead it returned error code %d and dimension size =%lld, expected=0\n",
                     my_rank, ret, (long long)test_dimvalue[0]);
         }
