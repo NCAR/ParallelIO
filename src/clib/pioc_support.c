@@ -1783,6 +1783,28 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
     /* If this task is in the IO component, do the IO. */
     if (ios->ioproc)
     {
+#ifdef _NETCDF4
+        /* All NetCDF4 files use the CDF5 file format by default,
+         * - 64bit offset, 64bit data
+         * However the NetCDF library does not allow setting the 
+         * NC_64BIT_OFFSET or NC_64BIT_DATA flags for NetCDF4 types 
+         * - this internal reset of flags is for user convenience */
+        if ((file->iotype == PIO_IOTYPE_NETCDF4P) ||
+            (file->iotype == PIO_IOTYPE_NETCDF4C))
+        {
+            LOG((2, "File create mode (before change) = %x",file->mode));
+            if ((file->mode & NC_64BIT_OFFSET) == NC_64BIT_OFFSET)
+            {
+                file->mode &= ~NC_64BIT_OFFSET;
+            }
+            if ((file->mode & NC_64BIT_DATA) == NC_64BIT_DATA)
+            {
+                file->mode &= ~NC_64BIT_DATA;
+            }
+            LOG((2, "File create mode (after change) = %x",file->mode));
+        }
+#endif
+
         switch (file->iotype)
         {
 #ifdef _NETCDF4
