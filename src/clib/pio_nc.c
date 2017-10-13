@@ -754,6 +754,8 @@ int PIOc_inq_var(int ncid, int varid, char *name, nc_type *xtypep, int *ndimsp,
     iosystem_desc_t *ios;
     file_desc_t *file;
     int ndims = 0;    /* The number of dimensions for this variable. */
+    char my_name[PIO_MAX_NAME + 1];
+    int slen;
     int ierr;
     int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI function codes. */
 
@@ -770,7 +772,10 @@ int PIOc_inq_var(int ncid, int varid, char *name, nc_type *xtypep, int *ndimsp,
         if (!ios->ioproc)
         {
             int msg = PIO_MSG_INQ_VAR;
-            char name_present = name ? true : false;
+            /* Since we now always get the variable name and cache it name_present
+              * is always true
+              */
+            char name_present = true;
             char xtype_present = xtypep ? true : false;
             char ndims_present = ndimsp ? true : false;
             char dimids_present = dimidsp ? true : false;
@@ -815,7 +820,11 @@ int PIOc_inq_var(int ncid, int varid, char *name, nc_type *xtypep, int *ndimsp,
             ierr = ncmpi_inq_varndims(file->fh, varid, &ndims);
             LOG((2, "from pnetcdf ndims = %d", ndims));
             if (!ierr)
-                ierr = ncmpi_inq_var(file->fh, varid, name, xtypep, ndimsp, dimidsp, nattsp);
+                ierr = ncmpi_inq_var(file->fh, varid, my_name, xtypep, ndimsp, dimidsp, nattsp);
+            if (!ierr && name)
+            {
+                strncpy(name, my_name, PIO_MAX_NAME);
+            }
         }
 #endif /* _PNETCDF */
 
@@ -825,7 +834,6 @@ int PIOc_inq_var(int ncid, int varid, char *name, nc_type *xtypep, int *ndimsp,
             LOG((3, "nc_inq_varndims called ndims = %d", ndims));
             if (!ierr)
             {
-                char my_name[NC_MAX_NAME + 1];
                 nc_type my_xtype;
                 int my_ndims = 0, my_dimids[ndims], my_natts = 0;
                 ierr = nc_inq_var(file->fh, varid, my_name, &my_xtype, &my_ndims, my_dimids, &my_natts);
@@ -859,16 +867,18 @@ int PIOc_inq_var(int ncid, int varid, char *name, nc_type *xtypep, int *ndimsp,
         return check_netcdf(file, ierr, __FILE__, __LINE__);
 
     /* Broadcast the results for non-null pointers. */
+    if (ios->iomaster == MPI_ROOT)
+        slen = strlen(my_name);
+    if ((mpierr = MPI_Bcast(&slen, 1, MPI_INT, ios->ioroot, ios->my_comm)))
+        return check_mpi(file, mpierr, __FILE__, __LINE__);
+    if ((mpierr = MPI_Bcast((void *)my_name, slen + 1, MPI_CHAR, ios->ioroot, ios->my_comm)))
+        return check_mpi(file, mpierr, __FILE__, __LINE__);
     if (name)
     {
-        int slen;
-        if (ios->iomaster == MPI_ROOT)
-            slen = strlen(name);
-        if ((mpierr = MPI_Bcast(&slen, 1, MPI_INT, ios->ioroot, ios->my_comm)))
-            return check_mpi(file, mpierr, __FILE__, __LINE__);
-        if ((mpierr = MPI_Bcast((void *)name, slen + 1, MPI_CHAR, ios->ioroot, ios->my_comm)))
-            return check_mpi(file, mpierr, __FILE__, __LINE__);
+        strncpy(name, my_name, PIO_MAX_NAME);
     }
+    strncpy(file->varlist[varid].vname, my_name, PIO_MAX_NAME);
+
     if (xtypep)
         if ((mpierr = MPI_Bcast(xtypep, 1, MPI_INT, ios->ioroot, ios->my_comm)))
             return check_mpi(file, mpierr, __FILE__, __LINE__);
@@ -2024,6 +2034,7 @@ int PIOc_def_var(int ncid, const char *name, nc_type xtype, int ndims,
         if ((mpierr = MPI_Bcast(varidp, 1, MPI_INT, ios->ioroot, ios->my_comm)))
             check_mpi(file, mpierr, __FILE__, __LINE__);
 
+    strncpy(file->varlist[*varidp].vname, name, PIO_MAX_NAME);
     return PIO_NOERR;
 }
 
