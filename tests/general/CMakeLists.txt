@@ -8,6 +8,7 @@ SET(GENERATED_SRCS pio_file_simple_tests.F90
   pio_init_finalize.F90
   pio_fail.F90
   pio_file_fail.F90
+  pio_large_file_tests.F90
   ncdf_simple_tests.F90
   ncdf_get_put.F90
   ncdf_fail.F90
@@ -109,6 +110,27 @@ else ()
     EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_file_simple_tests
     NUMPROCS 2
     TIMEOUT ${DEFAULT_TEST_TIMEOUT})
+endif ()
+
+#===== pio_large_file_tests =====
+add_executable (pio_large_file_tests EXCLUDE_FROM_ALL
+  pio_large_file_tests.F90
+  ${CMAKE_CURRENT_SOURCE_DIR}/util/pio_tutil.F90)
+target_link_libraries (pio_large_file_tests piof)
+add_dependencies (tests pio_large_file_tests)
+
+if (PIO_ENABLE_LARGE_TESTS)
+  if (PIO_USE_MPISERIAL)
+    add_test(NAME pio_large_file_tests
+      COMMAND pio_large_file_tests)
+    set_tests_properties(pio_large_file_tests
+      PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
+  else ()
+    add_mpi_test(pio_large_file_tests
+      EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_large_file_tests
+      NUMPROCS 2
+      TIMEOUT ${DEFAULT_TEST_TIMEOUT})
+  endif ()
 endif ()
 
 #===== pio_file_fail =====

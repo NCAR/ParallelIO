@@ -96,6 +96,7 @@ set (PIO_FILESYSTEM_HINTS IGNORE CACHE STRING "Filesystem hints (lustre or gpfs)
 
 #===== Testing Options =====
 option (PIO_ENABLE_TESTS  "Enable the testing builds"                           ON)
+option (PIO_ENABLE_LARGE_TESTS  "Enable large (file, processes) tests"         OFF)
 option (PIO_VALGRIND_CHECK  "Enable memory leak check using valgrind"           OFF)
 
 #==============================================================================
