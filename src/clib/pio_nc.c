@@ -593,6 +593,15 @@ int PIOc_inq_dim(int ncid, int dimid, char *name, PIO_Offset *lenp)
             }
             else
             {
+                printf("WARNING: PIOc_inq_dim() invalid id=%d, only have 0..%d\n", dimid, file->num_dim_vars);
+                printf("Currently these dimensions are defined: ");
+                for (int i=0; i < file->num_dim_vars; i++)
+                {
+                    printf("%s", file->dim_names[i]);
+                    if (i < file->num_dim_vars-1)
+                        printf(", ");
+                }
+                printf("\n");
                 if (name) name[0]='\0';
                 if (lenp) *lenp = 0;
                 ierr = PIO_EBADDIM;
@@ -740,17 +749,28 @@ int PIOc_inq_dimid(int ncid, const char *name, int *idp)
                 {
                     if (!strcmp(name, file->dim_names[i]))
                     {
+                        printf("WARNING: PIOc_inq_dimid(%s) found id=%d\n", name, file->num_dim_vars);
                         *idp = i;
-                        ierr = 0;
+                        ierr = PIO_NOERR;
                         break;
                     }
                 }
-
+                if (ierr == PIO_EBADDIM) {
+                    printf("WARNING: PIOc_inq_dimid(%s) did not find this variable\n"
+                            "Currently these dimensions are defined: ", name);
+                    for (int i=0; i < file->num_dim_vars; i++)
+                    {
+                        printf("%s", file->dim_names[i]);
+                        if (i < file->num_dim_vars-1)
+                            printf(", ");
+                    }
+                    printf("\n");
+                }
             }
             else
             {
                 LOG((2,"ADIOS Read mode missing %s:%s\n", __FILE__, __func__));
-                ierr = 0;
+                ierr = PIO_NOERR;
             }
 
         }
