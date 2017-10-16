@@ -447,6 +447,13 @@ int check_file(int ntasks, char *filename) {
 
         /* Test errors for some non-existent dimension names/IDs */
         int err_handling_method = PIOc_Set_IOSystem_Error_Handling(iosysid, PIO_BCAST_ERROR);
+
+        ret = PIOc_inq_varid(ncid,"NonexistentVariable",&test_varid);
+        if (ret != PIO_ENOTVAR) {
+            printf("rank: %d PIOc_inq_varid(NonexistentVariable) returned wrong return code=%d, expected=%d\n",
+                    my_rank,  ret, PIO_EBADNAME);
+        }
+
         ret = PIOc_inq_dimid(ncid,"NonexistentVariable",&test_dimid);
         if (ret != PIO_EBADDIM) {
             printf("rank: %d PIOc_inq_dimid(NonexistentVariable) returned wrong return code=%d, expected PIO_EBADDIM=%d\n",
@@ -460,6 +467,7 @@ int check_file(int ntasks, char *filename) {
                     "Instead it returned error code %d and dimension size =%lld, expected=0\n",
                     my_rank, ret, (long long)test_dimvalue[0]);
         }
+
         PIOc_Set_IOSystem_Error_Handling(iosysid, err_handling_method);
 
         /* Write data to the file. */
