@@ -593,8 +593,9 @@ int PIOc_inq_dim(int ncid, int dimid, char *name, PIO_Offset *lenp)
             }
             else
             {
-                printf("WARNING: PIOc_inq_dim() invalid id=%d, only have 0..%d\n", dimid, file->num_dim_vars);
-                printf("Currently these dimensions are defined: ");
+                /*printf("WARNING: ncid %d: PIOc_inq_dim() invalid id=%d, only have 0..%d. " 
+                       "Dimensions defined: ",
+                       ncid, dimid, file->num_dim_vars);*/
                 for (int i=0; i < file->num_dim_vars; i++)
                 {
                     printf("%s", file->dim_names[i]);
@@ -742,37 +743,28 @@ int PIOc_inq_dimid(int ncid, const char *name, int *idp)
 #ifdef _ADIOS
         if (file->iotype == PIO_IOTYPE_ADIOS)
         {
-            if (file->num_dim_vars > 0) // in create/write mode we have dimensions, in open/read mode, we don't
+            ierr = PIO_EBADDIM;
+            for (int i=0; i < file->num_dim_vars; i++)
             {
-                ierr = PIO_EBADDIM;
+                if (!strcmp(name, file->dim_names[i]))
+                {
+                    /*printf("WARNING: ncid %d: PIOc_inq_dimid(%s) found id=%d\n", ncid, name, i);*/
+                    *idp = i;
+                    ierr = PIO_NOERR;
+                    break;
+                }
+            }
+            if (ierr == PIO_EBADDIM) {
+                /*printf("WARNING: ncid %d: PIOc_inq_dimid(%s) did not find this dimension. "
+                        "Available dimensions: ", ncid, name);*/
                 for (int i=0; i < file->num_dim_vars; i++)
                 {
-                    if (!strcmp(name, file->dim_names[i]))
-                    {
-                        printf("WARNING: PIOc_inq_dimid(%s) found id=%d\n", name, file->num_dim_vars);
-                        *idp = i;
-                        ierr = PIO_NOERR;
-                        break;
-                    }
+                    printf("%s", file->dim_names[i]);
+                    if (i < file->num_dim_vars-1)
+                        printf(", ");
                 }
-                if (ierr == PIO_EBADDIM) {
-                    printf("WARNING: PIOc_inq_dimid(%s) did not find this variable\n"
-                            "Currently these dimensions are defined: ", name);
-                    for (int i=0; i < file->num_dim_vars; i++)
-                    {
-                        printf("%s", file->dim_names[i]);
-                        if (i < file->num_dim_vars-1)
-                            printf(", ");
-                    }
-                    printf("\n");
-                }
+                printf("\n");
             }
-            else
-            {
-                LOG((2,"ADIOS Read mode missing %s:%s\n", __FILE__, __func__));
-                ierr = PIO_NOERR;
-            }
-
         }
 #endif
 #ifdef _NETCDF
@@ -1206,24 +1198,16 @@ int PIOc_inq_varid(int ncid, const char *name, int *varidp)
 #ifdef _ADIOS
         if (file->iotype == PIO_IOTYPE_ADIOS)
         {
-            if (file->num_vars > 0) // in create/write mode we have variables, in open/read mode, we don't
+            ierr = PIO_ENOTVAR;
+            int i;
+            for (i=0; i < file->num_vars; i++)
             {
-                ierr = PIO_ENOTVAR;
-                int i;
-                for (i = 0; i < file->num_vars; i++)
+                if (!strcmp(name, file->adios_vars[i].name))
                 {
-                    if (!strcmp(name, file->adios_vars[i].name))
-                    {
-                        *varidp = i;
-                        ierr = 0;
-                        break;
-                    }
+                    *varidp = i;
+                    ierr = 0;
+                    break;
                 }
-            }
-            else
-            {
-                LOG((2, "ADIOS Read mode missing %s:%s\n", __FILE__, __func__));
-                ierr = 0;
             }
         }
 #endif
