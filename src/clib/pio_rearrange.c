@@ -1195,6 +1195,9 @@ int box_rearrange_create(iosystem_desc_t *ios, int maplen, const PIO_Offset *com
 {
     int ret;
 
+#ifdef TIMING
+    GPTLstart("PIO:box_rearrange_create");
+#endif
     /* Check inputs. */
     pioassert(ios && maplen >= 0 && compmap && gdimlen && ndims > 0 && iodesc,
               "invalid input", __FILE__, __LINE__);
@@ -1423,6 +1426,9 @@ int box_rearrange_create(iosystem_desc_t *ios, int maplen, const PIO_Offset *com
         return pio_err(ios, NULL, ret, __FILE__, __LINE__);
     LOG((3, "iodesc->maxbytes = %d", iodesc->maxbytes));
 
+#ifdef TIMING
+    GPTLstop("PIO:box_rearrange_create");
+#endif
     return PIO_NOERR;
 }
 
@@ -1643,6 +1649,9 @@ int subset_rearrange_create(iosystem_desc_t *ios, int maplen, PIO_Offset *compma
     int mpierr; /* Return call from MPI function calls. */
     int ret;
 
+#ifdef TIMING
+    GPTLstart("PIO:subset_rearrange_create");
+#endif
     /* Check inputs. */
     pioassert(ios && maplen >= 0 && compmap && gdimlen && ndims >= 0 && iodesc,
               "invalid input", __FILE__, __LINE__);
@@ -2033,6 +2042,9 @@ int subset_rearrange_create(iosystem_desc_t *ios, int maplen, PIO_Offset *compma
     if ((ret = compute_maxaggregate_bytes(ios, iodesc)))
         return pio_err(ios, NULL, ret, __FILE__, __LINE__);
 
+#ifdef TIMING
+    GPTLstop("PIO:subset_rearrange_create");
+#endif
     return PIO_NOERR;
 }
 

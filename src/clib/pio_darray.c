@@ -112,6 +112,9 @@ int PIOc_write_darray_multi(int ncid, const int *varids, int ioid, int nvars,
     int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI function calls. */
     int ierr;              /* Return code. */
 
+#ifdef TIMING
+    GPTLstart("PIO:PIOc_write_darray_multi");
+#endif
     /* Get the file info. */
     if ((ierr = pio_get_file(ncid, &file)))
         return pio_err(NULL, NULL, PIO_EBADID, __FILE__, __LINE__);
@@ -355,6 +358,9 @@ int PIOc_write_darray_multi(int ncid, const int *varids, int ioid, int nvars,
         if ((ierr = flush_output_buffer(file, flushtodisk, 0)))
             return pio_err(ios, file, ierr, __FILE__, __LINE__);
 
+#ifdef TIMING
+    GPTLstop("PIO:PIOc_write_darray_multi");
+#endif
     return PIO_NOERR;
 }
 
@@ -470,6 +476,9 @@ int PIOc_write_darray(int ncid, int varid, int ioid, PIO_Offset arraylen, void *
     int mpierr = MPI_SUCCESS;  /* Return code from MPI functions. */
     int ierr = PIO_NOERR;  /* Return code. */
 
+#ifdef TIMING
+    GPTLstart("PIO:PIOc_write_darray");
+#endif
     LOG((1, "PIOc_write_darray ncid = %d varid = %d ioid = %d arraylen = %d",
          ncid, varid, ioid, arraylen));
 
@@ -724,6 +733,9 @@ int PIOc_write_darray(int ncid, int varid, int ioid, PIO_Offset arraylen, void *
          "iodesc->ndof = %d iodesc->llen = %d", wmb->num_arrays,
          iodesc->maxbytes / iodesc->mpitype_size, iodesc->ndof, iodesc->llen));
 
+#ifdef TIMING
+    GPTLstop("PIO:PIOc_write_darray");
+#endif
     return PIO_NOERR;
 }
 
@@ -753,6 +765,9 @@ int PIOc_read_darray(int ncid, int varid, int ioid, PIO_Offset arraylen,
     size_t rlen = 0;       /* the length of data in iobuf. */
     int ierr;           /* Return code. */
 
+#ifdef TIMING
+    GPTLstart("PIO:PIOc_read_darray");
+#endif
     /* Get the file info. */
     if ((ierr = pio_get_file(ncid, &file)))
         return pio_err(NULL, NULL, PIO_EBADID, __FILE__, __LINE__);
@@ -800,5 +815,8 @@ int PIOc_read_darray(int ncid, int varid, int ioid, PIO_Offset arraylen,
     if (rlen > 0)
         brel(iobuf);
 
+#ifdef TIMING
+    GPTLstop("PIO:PIOc_read_darray");
+#endif
     return PIO_NOERR;
 }

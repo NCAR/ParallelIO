@@ -732,7 +732,11 @@ int PIOc_freedecomp(int iosysid, int ioid)
     iosystem_desc_t *ios;
     io_desc_t *iodesc;
     int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI function calls. */
+    int ret = 0;
 
+#ifdef TIMING
+    GPTLstart("PIO:PIOc_freedecomp");
+#endif
     if (!(ios = pio_get_iosystem_from_id(iosysid)))
         return pio_err(NULL, NULL, PIO_EBADID, __FILE__, __LINE__);
 
@@ -815,7 +819,12 @@ int PIOc_freedecomp(int iosysid, int ioid)
         if ((mpierr = MPI_Comm_free(&iodesc->subset_comm)))
             return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
 
-    return pio_delete_iodesc_from_list(ioid);
+    ret = pio_delete_iodesc_from_list(ioid);
+#ifdef TIMING
+    GPTLstop("PIO:PIOc_freedecomp");
+#endif
+
+    return ret;
 }
 
 /**
@@ -1700,6 +1709,9 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
     int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI function codes. */
     int ierr;              /* Return code from function calls. */
 
+#ifdef TIMING
+    GPTLstart("PIO:PIOc_createfile_int");
+#endif
     /* Get the IO system info from the iosysid. */
     if (!(ios = pio_get_iosystem_from_id(iosysid)))
         return pio_err(NULL, NULL, PIO_EBADID, __FILE__, __LINE__);
@@ -1873,6 +1885,9 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
     LOG((2, "Created file %s file->fh = %d file->pio_ncid = %d", filename,
          file->fh, file->pio_ncid));
 
+#ifdef TIMING
+    GPTLstop("PIO:PIOc_createfile_int");
+#endif
     return ierr;
 }
 

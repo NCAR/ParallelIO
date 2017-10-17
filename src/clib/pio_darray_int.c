@@ -1192,6 +1192,9 @@ int flush_output_buffer(file_desc_t *file, bool force, PIO_Offset addsize)
     int mpierr;  /* Return code from MPI functions. */
     int ierr = PIO_NOERR;
 
+#ifdef TIMING
+    GPTLstart("PIO:flush_output_buffer");
+#endif
 #ifdef _PNETCDF
     var_desc_t *vdesc;
     PIO_Offset usage = 0;
@@ -1288,6 +1291,9 @@ int flush_output_buffer(file_desc_t *file, bool force, PIO_Offset addsize)
     }
 
 #endif /* _PNETCDF */
+#ifdef TIMING
+    GPTLstop("PIO:flush_output_buffer");
+#endif
     return ierr;
 }
 
@@ -1377,6 +1383,9 @@ int flush_buffer(int ncid, wmulti_buffer *wmb, bool flushtodisk)
     file_desc_t *file;
     int ret;
 
+#ifdef TIMING
+    GPTLstart("PIO:flush_buffer");
+#endif
     /* Check input. */
     pioassert(wmb, "invalid input", __FILE__, __LINE__);
 
@@ -1419,6 +1428,9 @@ int flush_buffer(int ncid, wmulti_buffer *wmb, bool flushtodisk)
             return pio_err(NULL, file, ret, __FILE__, __LINE__);
     }
 
+#ifdef TIMING
+    GPTLstop("PIO:flush_buffer");
+#endif
     return PIO_NOERR;
 }
 
