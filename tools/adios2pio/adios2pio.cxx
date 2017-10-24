@@ -821,7 +821,7 @@ void ConvertBPFile(string infilename, string outfilename, int pio_iotype)
 
         /* Create output file */
         TimerStart(write);
-        ret = PIOc_createfile(iosysid, &ncid, &pio_iotype, outfilename.c_str(), PIO_CLOBBER);
+        ret = PIOc_createfile(iosysid, &ncid, &pio_iotype, outfilename.c_str(), PIO_64BIT_OFFSET); // PIO_CLOBBER);
         TimerStop(write);
         if (ret)
             throw std::runtime_error("Could not create output file " + outfilename + "\n");
