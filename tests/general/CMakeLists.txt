@@ -326,19 +326,6 @@ if (PIO_USE_MPISERIAL)
   set_tests_properties(pio_decomp_tests_3p
     PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
-  add_test(NAME pio_decomp_tests_4p_1agg
-    COMMAND pio_decomp_tests --pio-tf-num-aggregators=1)
-  set_tests_properties(pio_decomp_tests_4p_1agg
-    PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-  add_test(NAME pio_decomp_tests_4p_2agg
-    COMMAND pio_decomp_tests --pio-tf-num-aggregators=2)
-  set_tests_properties(pio_decomp_tests_4p_2agg
-    PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-  add_test(NAME pio_decomp_tests_4p_3agg
-    COMMAND pio_decomp_tests --pio-tf-num-aggregators=3)
-  set_tests_properties(pio_decomp_tests_4p_3agg
-    PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-
   add_test(NAME pio_decomp_tests_4p_1iop
     COMMAND pio_decomp_tests --pio-tf-num-io-tasks=1)
   set_tests_properties(pio_decomp_tests_4p_1iop
@@ -356,10 +343,6 @@ if (PIO_USE_MPISERIAL)
     COMMAND pio_decomp_tests --pio-tf-num-io-tasks=2 --pio-tf-stride=2)
   set_tests_properties(pio_decomp_tests_4p_2iop_2str
     PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-  add_test(NAME pio_decomp_tests_4p_2iop_1agg
-    COMMAND pio_decomp_tests --pio-tf-num-io-tasks=2 --pio-tf-num-aggregators=1)
-  set_tests_properties(pio_decomp_tests_4p_2iop_1agg
-    PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 else ()
   add_mpi_test(pio_decomp_tests_1p
     EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_tests
@@ -372,22 +355,6 @@ else ()
   add_mpi_test(pio_decomp_tests_3p
     EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_tests
     NUMPROCS 3
-    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-
-  add_mpi_test(pio_decomp_tests_4p_1agg
-    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_tests
-    ARGUMENTS --pio-tf-num-aggregators=1
-    NUMPROCS 4
-    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-  add_mpi_test(pio_decomp_tests_4p_2agg
-    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_tests
-    ARGUMENTS --pio-tf-num-aggregators=2
-    NUMPROCS 4
-    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-  add_mpi_test(pio_decomp_tests_4p_3agg
-    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_tests
-    ARGUMENTS --pio-tf-num-aggregators=3
-    NUMPROCS 4
     TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
   add_mpi_test(pio_decomp_tests_4p_1iop
@@ -409,11 +376,6 @@ else ()
   add_mpi_test(pio_decomp_tests_4p_2iop_2str
     EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_tests
     ARGUMENTS --pio-tf-num-io-tasks=2 --pio-tf-stride=2
-    NUMPROCS 4
-    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-  add_mpi_test(pio_decomp_tests_4p_2iop_1agg
-    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_tests
-    ARGUMENTS --pio-tf-num-io-tasks=2 --pio-tf-num-aggregators=1
     NUMPROCS 4
     TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 endif ()
@@ -439,19 +401,6 @@ if (PIO_USE_MPISERIAL)
   set_tests_properties(pio_decomp_tests_1d_3p
     PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
-  add_test(NAME pio_decomp_tests_1d_4p_1agg
-    COMMAND pio_decomp_tests_1d --pio-tf-num-aggregators=1)
-  set_tests_properties(pio_decomp_tests_1d_4p_1agg
-    PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-  add_test(NAME pio_decomp_tests_1d_4p_2agg
-    COMMAND pio_decomp_tests_1d --pio-tf-num-aggregators=2)
-  set_tests_properties(pio_decomp_tests_1d_4p_2agg
-    PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-  add_test(NAME pio_decomp_tests_1d_4p_3agg
-    COMMAND pio_decomp_tests_1d --pio-tf-num-aggregators=3)
-  set_tests_properties(pio_decomp_tests_1d_4p_3agg
-    PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-
   add_test(NAME pio_decomp_tests_1d_4p_1iop
     COMMAND pio_decomp_tests_1d --pio-tf-num-io-tasks=1)
   set_tests_properties(pio_decomp_tests_1d_4p_1iop
@@ -469,10 +418,6 @@ if (PIO_USE_MPISERIAL)
     COMMAND pio_decomp_tests_1d --pio-tf-num-io-tasks=2 --pio-tf-stride=2)
   set_tests_properties(pio_decomp_tests_1d_4p_2iop_2str
     PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-  add_test(NAME pio_decomp_tests_1d_4p_2iop_1agg
-    COMMAND pio_decomp_tests_1d --pio-tf-num-io-tasks=2 --pio-tf-num-aggregators=1)
-  set_tests_properties(pio_decomp_tests_1d_4p_2iop_1agg
-    PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 else ()
   add_mpi_test(pio_decomp_tests_1d_1p
     EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_tests_1d
@@ -485,22 +430,6 @@ else ()
   add_mpi_test(pio_decomp_tests_1d_3p
     EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_tests_1d
     NUMPROCS 3
-    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-
-  add_mpi_test(pio_decomp_tests_1d_4p_1agg
-    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_tests_1d
-    ARGUMENTS --pio-tf-num-aggregators=1
-    NUMPROCS 4
-    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-  add_mpi_test(pio_decomp_tests_1d_4p_2agg
-    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_tests_1d
-    ARGUMENTS --pio-tf-num-aggregators=2
-    NUMPROCS 4
-    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-  add_mpi_test(pio_decomp_tests_1d_4p_3agg
-    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_tests_1d
-    ARGUMENTS --pio-tf-num-aggregators=3
-    NUMPROCS 4
     TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
   add_mpi_test(pio_decomp_tests_1d_4p_1iop
@@ -522,11 +451,6 @@ else ()
   add_mpi_test(pio_decomp_tests_1d_4p_2iop_2str
     EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_tests_1d
     ARGUMENTS --pio-tf-num-io-tasks=2 --pio-tf-stride=2
-    NUMPROCS 4
-    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-  add_mpi_test(pio_decomp_tests_1d_4p_2iop_1agg
-    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_tests_1d
-    ARGUMENTS --pio-tf-num-io-tasks=2 --pio-tf-num-aggregators=1
     NUMPROCS 4
     TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 endif ()
@@ -552,19 +476,6 @@ if (PIO_USE_MPISERIAL)
   set_tests_properties(pio_decomp_tests_2d_3p
     PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
-  add_test(NAME pio_decomp_tests_2d_4p_1agg
-    COMMAND pio_decomp_tests_2d --pio-tf-num-aggregators=1)
-  set_tests_properties(pio_decomp_tests_2d_4p_1agg
-    PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-  add_test(NAME pio_decomp_tests_2d_4p_2agg
-    COMMAND pio_decomp_tests_2d --pio-tf-num-aggregators=2)
-  set_tests_properties(pio_decomp_tests_2d_4p_2agg
-    PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-  add_test(NAME pio_decomp_tests_2d_4p_3agg
-    COMMAND pio_decomp_tests_2d --pio-tf-num-aggregators=3)
-  set_tests_properties(pio_decomp_tests_2d_4p_3agg
-    PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-
   add_test(NAME pio_decomp_tests_2d_4p_1iop
     COMMAND pio_decomp_tests_2d --pio-tf-num-io-tasks=1)
   set_tests_properties(pio_decomp_tests_2d_4p_1iop
@@ -582,10 +493,6 @@ if (PIO_USE_MPISERIAL)
     COMMAND pio_decomp_tests_2d --pio-tf-num-io-tasks=2 --pio-tf-stride=2)
   set_tests_properties(pio_decomp_tests_2d_4p_2iop_2str
     PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-  add_test(NAME pio_decomp_tests_2d_4p_2iop_1agg
-    COMMAND pio_decomp_tests_2d --pio-tf-num-io-tasks=2 --pio-tf-num-aggregators=1)
-  set_tests_properties(pio_decomp_tests_2d_4p_2iop_1agg
-    PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 else ()
   add_mpi_test(pio_decomp_tests_2d_1p
     EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_tests_2d
@@ -598,22 +505,6 @@ else ()
   add_mpi_test(pio_decomp_tests_2d_3p
     EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_tests_2d
     NUMPROCS 3
-    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-
-  add_mpi_test(pio_decomp_tests_2d_4p_1agg
-    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_tests_2d
-    ARGUMENTS --pio-tf-num-aggregators=1
-    NUMPROCS 4
-    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-  add_mpi_test(pio_decomp_tests_2d_4p_2agg
-    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_tests_2d
-    ARGUMENTS --pio-tf-num-aggregators=2
-    NUMPROCS 4
-    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-  add_mpi_test(pio_decomp_tests_2d_4p_3agg
-    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_tests_2d
-    ARGUMENTS --pio-tf-num-aggregators=3
-    NUMPROCS 4
     TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
   add_mpi_test(pio_decomp_tests_2d_4p_1iop
@@ -635,11 +526,6 @@ else ()
   add_mpi_test(pio_decomp_tests_2d_4p_2iop_2str
     EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_tests_2d
     ARGUMENTS --pio-tf-num-io-tasks=2 --pio-tf-stride=2
-    NUMPROCS 4
-    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-  add_mpi_test(pio_decomp_tests_2d_4p_2iop_1agg
-    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_tests_2d
-    ARGUMENTS --pio-tf-num-io-tasks=2 --pio-tf-num-aggregators=1
     NUMPROCS 4
     TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 endif ()
@@ -665,19 +551,6 @@ if (PIO_USE_MPISERIAL)
   set_tests_properties(pio_decomp_tests_3d_3p
     PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
-  add_test(NAME pio_decomp_tests_3d_4p_1agg
-    COMMAND pio_decomp_tests_3d --pio-tf-num-aggregators=1)
-  set_tests_properties(pio_decomp_tests_3d_4p_1agg
-    PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-  add_test(NAME pio_decomp_tests_3d_4p_2agg
-    COMMAND pio_decomp_tests_3d --pio-tf-num-aggregators=2)
-  set_tests_properties(pio_decomp_tests_3d_4p_2agg
-    PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-  add_test(NAME pio_decomp_tests_3d_4p_3agg
-    COMMAND pio_decomp_tests_3d --pio-tf-num-aggregators=3)
-  set_tests_properties(pio_decomp_tests_3d_4p_3agg
-    PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-
   add_test(NAME pio_decomp_tests_3d_4p_1iop
     COMMAND pio_decomp_tests_3d --pio-tf-num-io-tasks=1)
   set_tests_properties(pio_decomp_tests_3d_4p_1iop
@@ -695,10 +568,6 @@ if (PIO_USE_MPISERIAL)
     COMMAND pio_decomp_tests_3d --pio-tf-num-io-tasks=2 --pio-tf-stride=2)
   set_tests_properties(pio_decomp_tests_3d_4p_2iop_2str
     PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-  add_test(NAME pio_decomp_tests_3d_4p_2iop_1agg
-    COMMAND pio_decomp_tests_3d --pio-tf-num-io-tasks=2 --pio-tf-num-aggregators=1)
-  set_tests_properties(pio_decomp_tests_3d_4p_2iop_1agg
-    PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 else ()
   add_mpi_test(pio_decomp_tests_3d_1p
     EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_tests_3d
@@ -711,22 +580,6 @@ else ()
   add_mpi_test(pio_decomp_tests_3d_3p
     EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_tests_3d
     NUMPROCS 3
-    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-
-  add_mpi_test(pio_decomp_tests_3d_4p_1agg
-    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_tests_3d
-    ARGUMENTS --pio-tf-num-aggregators=1
-    NUMPROCS 4
-    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-  add_mpi_test(pio_decomp_tests_3d_4p_2agg
-    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_tests_3d
-    ARGUMENTS --pio-tf-num-aggregators=2
-    NUMPROCS 4
-    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-  add_mpi_test(pio_decomp_tests_3d_4p_3agg
-    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_tests_3d
-    ARGUMENTS --pio-tf-num-aggregators=3
-    NUMPROCS 4
     TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
   add_mpi_test(pio_decomp_tests_3d_4p_1iop
@@ -748,11 +601,6 @@ else ()
   add_mpi_test(pio_decomp_tests_3d_4p_2iop_2str
     EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_tests_3d
     ARGUMENTS --pio-tf-num-io-tasks=2 --pio-tf-stride=2
-    NUMPROCS 4
-    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-  add_mpi_test(pio_decomp_tests_3d_4p_2iop_1agg
-    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_tests_3d
-    ARGUMENTS --pio-tf-num-io-tasks=2 --pio-tf-num-aggregators=1
     NUMPROCS 4
     TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 endif ()
