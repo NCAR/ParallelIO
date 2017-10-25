@@ -20,8 +20,10 @@ SET(GENERATED_SRCS pio_file_simple_tests.F90
   pio_decomp_tests_1d.F90
   pio_decomp_tests_2d.F90
   pio_decomp_tests_3d.F90
+  pio_sync_tests.F90
   pio_decomp_frame_tests.F90
   pio_decomp_fillval.F90
+  pio_decomp_fillval2.F90
   pio_iosystem_tests.F90
   pio_iosystem_tests2.F90
   pio_iosystem_tests3.F90)
@@ -757,6 +759,25 @@ else ()
     TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 endif ()
 
+#===== pio_sync_tests =====
+add_executable (pio_sync_tests EXCLUDE_FROM_ALL
+  pio_sync_tests.F90
+  ${CMAKE_CURRENT_SOURCE_DIR}/util/pio_tutil.F90)
+target_link_libraries (pio_sync_tests piof)
+add_dependencies (tests pio_sync_tests)
+
+if (PIO_USE_MPISERIAL)
+  add_test(NAME pio_sync_tests
+    COMMAND pio_sync_tests)
+  set_tests_properties(pio_sync_tests
+    PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
+else ()
+  add_mpi_test(pio_sync_tests
+    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_sync_tests
+    NUMPROCS 4
+    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
+endif ()
+
 #===== pio_decomp_frame_tests =====
 add_executable (pio_decomp_frame_tests EXCLUDE_FROM_ALL
   pio_decomp_frame_tests.F90
@@ -791,6 +812,25 @@ if (PIO_USE_MPISERIAL)
 else ()
   add_mpi_test(pio_decomp_fillval
     EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_fillval
+    NUMPROCS 4
+    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
+endif ()
+
+#===== pio_decomp_fillval2 =====
+add_executable (pio_decomp_fillval2 EXCLUDE_FROM_ALL
+  pio_decomp_fillval2.F90
+  ${CMAKE_CURRENT_SOURCE_DIR}/util/pio_tutil.F90)
+target_link_libraries (pio_decomp_fillval2 piof)
+add_dependencies (tests pio_decomp_fillval2)
+
+if (PIO_USE_MPISERIAL)
+  add_test(NAME pio_decomp_fillval2
+    COMMAND pio_decomp_fillval2)
+  set_tests_properties(pio_decomp_fillval2
+    PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
+else ()
+  add_mpi_test(pio_decomp_fillval2
+    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_fillval2
     NUMPROCS 4
     TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 endif ()

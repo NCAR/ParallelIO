@@ -220,9 +220,7 @@ int PIOc_write_darray_multi(int ncid, const int *varids, int ioid, int nvars,
      * and write (or read). The buffer size on io task 0 must be as
      * large as the largest used to accommodate this serial io
      * method.  */
-    rlen = 0;
-    if (iodesc->llen > 0)
-        rlen = iodesc->maxiobuflen * nvars;
+    rlen = iodesc->maxiobuflen * nvars;
 
     /* Allocate iobuf. */
     if (rlen > 0)
