@@ -273,11 +273,13 @@ Decomposition ProcessOneDecomposition(ADIOS_FILE **infile, int ncid, const char 
             		d.data(), &ioid, NULL, NULL, NULL);
     TimerStop(write);
 
+	int piotype_return = *piotype;
+
     free(piotype);
     free(decomp_ndims);
     free(decomp_dims);
 
-    return Decomposition{ioid, *piotype};
+    return Decomposition{ioid, piotype_return};
 }
 
 DecompositionMap ProcessDecompositions(ADIOS_FILE **infile, int ncid, std::vector<int>& wfiles)
@@ -510,10 +512,13 @@ int ConvertVariablePutVar(ADIOS_FILE **infile, std::vector<int> wfiles, int adio
 	char *varname     = infile[0]->var_namelist[adios_varid];
     ADIOS_VARINFO *vi = adios_inq_var(infile[0], varname);
 
+	printf("I am converting variable: %s\n",varname);
+
     if (vi->ndim == 0)
     {
         /* Scalar variable */
         TimerStart(write);
+		printf("Writing scalar variable.\n"); fflush(stdout);
         int ret = put_var(ncid, var.nc_varid, var.nctype, vi->type, vi->value);
         if (ret != PIO_NOERR)
                 cout << "ERROR in PIOc_put_var(), code = " << ret
@@ -522,64 +527,58 @@ int ConvertVariablePutVar(ADIOS_FILE **infile, std::vector<int> wfiles, int adio
     }
     else
     {
+		printf("Writing n-dimensional array.\n"); fflush(stdout);
         /* An N-dimensional array that needs no rearrangement.
          * put_vara() needs all processes participate */
         TimerStart(read);
-
+		
 		/* ACME writes this array from I/O processor 0 */
         PIO_Offset start[MAX_NC_DIMS], count[MAX_NC_DIMS];
-		size_t mysize = 0;
-		char   *buf   = NULL;
 		if (mpirank==0) {
-       		ADIOS_VARINFO *vb = adios_inq_var(infile[0], varname);
-			adios_inq_var_blockinfo(infile[0], vb);
-			mysize = 1;
-			for (int d=0;d<vb->ndim;d++) 
-				mysize *= (size_t)vb->blockinfo[0].count[d];
+			size_t mysize = 1;
+			char   *buf   = NULL;
+			adios_inq_var_blockinfo(infile[0], vi);
+			for (int d=0;d<vi->ndim;d++) 
+				mysize *= (size_t)vi->blockinfo[0].count[d];
 
 			printf("MYSIZE: %d\n",mysize); fflush(stdout);
-			mysize = mysize*adios_type_size(vb->type,NULL);
-        	if ((buf = (char *)malloc(mysize))==NULL) {
+			mysize = mysize*adios_type_size(vi->type,NULL);
+   	    	if ((buf = (char *)malloc(mysize))==NULL) {
 				printf("ERROR: cannot allocate memory: %ld\n",mysize);
 				return 1;
 			}
 			ADIOS_SELECTION *wbsel = adios_selection_writeblock(0);
-       		int ret = adios_schedule_read(infile[0], wbsel, varname, 0, 1, buf);
-       		adios_perform_reads(infile[0], 1);
-
-			for (int d=0;d<vb->ndim;d++) {
-				start[d] = (PIO_Offset) vb->blockinfo[0].start[d];
-           		count[d] = (PIO_Offset) vb->blockinfo[0].count[d];
+   	    	int ret = adios_schedule_read(infile[0], wbsel, varname, 0, 1, buf);
+   	    	adios_perform_reads(infile[0], 1);
+	
+			for (int d=0;d<vi->ndim;d++) {
+				start[d] = (PIO_Offset) vi->blockinfo[0].start[d];
+   	    		count[d] = (PIO_Offset) vi->blockinfo[0].count[d];
 				printf("DIMS: %d %d\n",start[d],count[d]); fflush(stdout);
 			}
- 			ret = put_vara(ncid, var.nc_varid, var.nctype, vb->type, start, count, buf);
-        	if (ret != PIO_NOERR) {
-           		cout << "rank " << mpirank << ":ERROR in PIOc_put_vara(), code = " << ret
-           			 << " at " << __func__ << ":" << __LINE__ << endl;
+ 			ret = put_vara(ncid, var.nc_varid, var.nctype, vi->type, start, count, buf);
+   	    	if (ret != PIO_NOERR) {
+   	    		cout << "rank " << mpirank << ":ERROR in PIOc_put_vara(), code = " << ret
+   	    			 << " at " << __func__ << ":" << __LINE__ << endl;
 				return 1;
 			}
-        	adios_selection_delete(wbsel);
+			adios_selection_delete(wbsel);
 			free(buf);
 		} else {
-			mysize = 0;
+			char temp_buf;
 			for (int d=0;d<vi->ndim;d++) {
 				start[d] = (PIO_Offset) 0;
-				count[d] = (PIO_Offset) 0;
+   	    		count[d] = (PIO_Offset) 0;
 			}
-			if ((buf = (char *)malloc(1))==NULL) {
-				printf("ERROR: cannot allocate memory: %ld\n",mysize+1);
+			ret = put_vara(ncid, var.nc_varid, var.nctype, vi->type, start, count, &temp_buf);
+   	    	if (ret != PIO_NOERR) {
+   	    		cout << "rank " << mpirank << ":ERROR in PIOc_put_vara(), code = " << ret
+   	    			 << " at " << __func__ << ":" << __LINE__ << endl;
 				return 1;
 			}
-			ret = put_vara(ncid, var.nc_varid, var.nctype, vi->type, start, count, buf);
-			if (ret != PIO_NOERR) {
-				cout << "rank " << mpirank << ":ERROR in PIOc_put_vara(), code = " << ret
-					<< " at " << __func__ << ":" << __LINE__ << endl;
-           		return 1;
-        	}
-        	free(buf);
 		}
-
         TimerStop(write);
+
 #ifdef _OLD_VERSION_ 
 		/* We are reading from multiple files.                       */
 		/* Find the maximum number of blocks assigned to a process.  */
@@ -863,8 +862,12 @@ int ConvertVariableDarray(ADIOS_FILE **infile, int adios_varid, int ncid, Variab
     char *decompname;
     adios_get_attr(infile[0], attname.c_str(), &atype, &asize, (void**)&decompname);
 	printf("VARIABLE: %s decomp: %s %s\n",varname,attname.c_str(),decompname);
+
 	if (!strcmp(decompname,"594")) sprintf(decompname,"517");
+	if (!strcmp(varname,"ACNUM")) return 1;
+
     Decomposition decomp = decomp_map[decompname];
+
     if (decomp.piotype != var.nctype)
     {
         /* 
@@ -873,6 +876,7 @@ int ConvertVariableDarray(ADIOS_FILE **infile, int adios_varid, int ncid, Variab
          */
         decomp = GetNewDecomposition(decomp_map, decompname, infile, ncid, wfiles, var.nctype);
     }
+
     free(decompname);
 
 	printf("DECOMP: %ld\n",decomp.ioid);
@@ -970,10 +974,13 @@ int ConvertVariableDarray(ADIOS_FILE **infile, int adios_varid, int ncid, Variab
 		/* Read local data for each file */
         int elemsize = adios_type_size(vi->type,NULL);
 
-		printf("ELEMSIZE: %d numelems: %d\n",elemsize,nelems);
-		if (nelems==49152) 
-			decomp = decomp_map["517"];
+		printf("DARRAY: %s ndim: %d\n",varname,vi->ndim); fflush(stdout);
 
+		printf("ELEMSIZE: %d numelems: %d\n",elemsize,nelems);
+		if ((nproc*nelems)==49152) {
+			printf("Using a specific decomp: 517\n"); fflush(stdout);
+			decomp = decomp_map["517"];
+		}
 
         std::vector<char> d(nelems * elemsize);
         uint64_t offset = 0;
@@ -1002,10 +1009,26 @@ int ConvertVariableDarray(ADIOS_FILE **infile, int adios_varid, int ncid, Variab
         }	
         TimerStop(read);
 
-		printf("I am writing now.\n");
+		if (!strcmp(varname,"lon")) {
+			double *acnum = (double*) d.data();
+			int k =0;
+			for (int i=0;i<nelems;i++) {
+				if (k==0) printf("lon: %s ",varname); fflush(stdout);
+				printf("%lf ",acnum[i]);
+				k++;
+				if (k>6) {
+					printf("\n"); fflush(stdout);
+					k=0;
+				}
+			}
+			printf("\n"); fflush(stdout);
+		}
+				
+
+		printf("I am writing now %s %d.\n",varname,wfiles[0]);
 
         TimerStart(write);
-        if (wfiles[0] < nblocks_per_step)
+        // if (wfiles[0] < nblocks_per_step)
         {
 			printf("I am in writing.\n");
             if (var.is_timed)
@@ -1112,7 +1135,13 @@ void ConvertBPFile(string infilepath, string outfilename, int pio_iotype)
 			throw std::runtime_error("Cannot allocate space for infile array.\n");
 		
 		string file0 = infilepath + ".dir/" + basefilename + ".0";
+		printf("FILE0: %s\n",file0.c_str()); fflush(stdout);
 		infile[0] = adios_read_open_file(file0.c_str(), ADIOS_READ_METHOD_BP, comm);
+		if (infile[0]==NULL) { 
+			printf("ERROR: file open returned an error.\n");
+			fflush(stdout);
+		}
+		printf("ADIOS ERROR: %d\n",adios_errno); fflush(stdout);
 		int ret = adios_schedule_read(infile[0], NULL, "/__pio__/info/nproc", 0, 1, &n_bp_writers);
 		if (ret)
 			throw std::runtime_error("Invalid BP file: missing '/__pio__/info/nproc' variable\n");
