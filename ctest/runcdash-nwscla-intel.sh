@@ -21,7 +21,7 @@ module list
 
 export CC=mpicc
 export FC=mpif90
-
+export MPI_TYPE_DEPTH=36
 export PIO_DASHBOARD_ROOT=/glade/scratch/jedwards/dashboard
 export PIO_COMPILER_ID=Intel-`$CC --version | head -n 1 | cut -d' ' -f3`
 
