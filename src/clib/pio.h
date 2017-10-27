@@ -116,12 +116,6 @@ typedef struct var_desc_t
      * unlimited dimension. */
     int record;
 
-    /** ID of each outstanding pnetcdf request for this variable. */
-    int *request;
-
-    /** Number of requests bending with pnetcdf. */
-    int nreqs;
-
     /* Holds the fill value of this var. */
     void *fillvalue;
 
@@ -208,7 +202,6 @@ enum PIO_REARR_COMM_FC_DIR
     PIO_REARR_COMM_FC_2D_DISABLE
 };
 
-/* Constant to indicate unlimited requests. */
 #define PIO_REARR_COMM_UNLIMITED_PEND_REQ -1
 
 /**

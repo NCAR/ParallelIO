@@ -890,8 +890,6 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
     char start_present = start ? true : false;    /* Is start non-NULL? */
     char count_present = count ? true : false;    /* Is count non-NULL? */
     char stride_present = stride ? true : false;  /* Is stride non-NULL? */
-    var_desc_t *vdesc;
-    int *request;
     nc_type vartype;   /* The type of the var we are reading from. */
     int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI function codes. */
     int ierr;          /* Return code from function calls. */
@@ -1076,15 +1074,6 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                     fake_stride = (PIO_Offset *)stride;
 
                 LOG((2, "PIOc_put_vars_tc calling pnetcdf function"));
-                /*vdesc = &file->varlist[varid];*/
-                if ((ierr = get_var_desc(varid, &file->varlist, &vdesc)))
-                    return pio_err(ios, file, ierr, __FILE__, __LINE__);
-                if (vdesc->nreqs % PIO_REQUEST_ALLOC_CHUNK == 0)
-                    if (!(vdesc->request = realloc(vdesc->request,
-                                                   sizeof(int) * (vdesc->nreqs + PIO_REQUEST_ALLOC_CHUNK))))
-                        return pio_err(ios, file, PIO_ENOMEM, __FILE__, __LINE__);
-                request = vdesc->request + vdesc->nreqs;
-                LOG((2, "PIOc_put_vars_tc request = %d", vdesc->request));
 
                 /* Only the IO master actually does the call. */
                 if (ios->iomaster == MPI_ROOT)
@@ -1092,35 +1081,32 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                     switch(xtype)
                     {
                     case NC_BYTE:
-                        ierr = ncmpi_bput_vars_schar(file->fh, varid, start, count, fake_stride, buf, request);
+                        ierr = ncmpi_bput_vars_schar(file->fh, varid, start, count, fake_stride, buf, NULL);
                         break;
                     case NC_CHAR:
-                        ierr = ncmpi_bput_vars_text(file->fh, varid, start, count, fake_stride, buf, request);
+                        ierr = ncmpi_bput_vars_text(file->fh, varid, start, count, fake_stride, buf, NULL);
                         break;
                     case NC_SHORT:
-                        ierr = ncmpi_bput_vars_short(file->fh, varid, start, count, fake_stride, buf, request);
+                        ierr = ncmpi_bput_vars_short(file->fh, varid, start, count, fake_stride, buf, NULL);
                         break;
                     case NC_INT:
-                        ierr = ncmpi_bput_vars_int(file->fh, varid, start, count, fake_stride, buf, request);
+                        ierr = ncmpi_bput_vars_int(file->fh, varid, start, count, fake_stride, buf, NULL);
                         break;
                     case PIO_LONG_INTERNAL:
-                        ierr = ncmpi_bput_vars_long(file->fh, varid, start, count, fake_stride, buf, request);
+                        ierr = ncmpi_bput_vars_long(file->fh, varid, start, count, fake_stride, buf, NULL);
                         break;
                     case NC_FLOAT:
-                        ierr = ncmpi_bput_vars_float(file->fh, varid, start, count, fake_stride, buf, request);
+                        ierr = ncmpi_bput_vars_float(file->fh, varid, start, count, fake_stride, buf, NULL);
                         break;
                     case NC_DOUBLE:
-                        ierr = ncmpi_bput_vars_double(file->fh, varid, start, count, fake_stride, buf, request);
+                        ierr = ncmpi_bput_vars_double(file->fh, varid, start, count, fake_stride, buf, NULL);
                         break;
                     default:
                         return pio_err(ios, file, PIO_EBADTYPE, __FILE__, __LINE__);
                     }
                     LOG((2, "PIOc_put_vars_tc io_rank 0 done with pnetcdf call, ierr=%d", ierr));
                 }
-                else
-                    *request = PIO_REQ_NULL;
 
-                vdesc->nreqs++;
                 flush_output_buffer(file, false, 0);
                 LOG((2, "PIOc_put_vars_tc flushed output buffer"));
 
