@@ -252,6 +252,7 @@ int write_darray_multi_par(file_desc_t *file, int nvars, int fndims, const int *
                  * to provide arrays of arrays for start/count. */
                 if (dsize > 0)
                 {
+
                     /* Allocate storage for start/count arrays for
                      * this region. */
                     if (!(startlist[rrcnt] = calloc(fndims, sizeof(PIO_Offset))))
@@ -289,27 +290,12 @@ int write_darray_multi_par(file_desc_t *file, int nvars, int fndims, const int *
                         /* Get a pointer to the data. */
                         bufptr = (void *)((char *)iobuf + nv * iodesc->mpitype_size * llen);
 
-                        if (vdesc->nreqs % PIO_REQUEST_ALLOC_CHUNK == 0)
-                        {
-                            if (!(vdesc->request = realloc(vdesc->request, sizeof(int) *
-                                                           (vdesc->nreqs + PIO_REQUEST_ALLOC_CHUNK))))
-                                return pio_err(ios, file, PIO_ENOMEM, __FILE__, __LINE__);
-
-                            for (int i = vdesc->nreqs; i < vdesc->nreqs + PIO_REQUEST_ALLOC_CHUNK; i++)
-                                vdesc->request[i] = NC_REQ_NULL;
-                        }
-
                         /* Write, in non-blocking fashion, a list of subarrays. */
                         LOG((3, "about to call ncmpi_iput_varn() varids[%d] = %d rrcnt = %d, llen = %d",
                              nv, varids[nv], rrcnt, llen));
                         ierr = ncmpi_iput_varn(file->fh, varids[nv], rrcnt, startlist, countlist,
-                                               bufptr, llen, iodesc->mpitype, &vdesc->request[vdesc->nreqs]);
+                                               bufptr, llen, iodesc->mpitype, NULL);
 
-                        /* keeps wait calls in sync */
-                        if (vdesc->request[vdesc->nreqs] == NC_REQ_NULL)
-                            vdesc->request[vdesc->nreqs] = PIO_REQ_NULL;
-
-                        vdesc->nreqs++;
                     }
 
                     /* Free resources. */
@@ -1311,54 +1297,7 @@ int flush_output_buffer(file_desc_t *file, bool force, PIO_Offset addsize)
      * limit, then flush to disk. */
     if (force || usage >= pio_buffer_size_limit)
     {
-        int rcnt;
-        int  maxreq;
-        int reqcnt;
-        maxreq = 0;
-        reqcnt = 0;
-        rcnt = 0;
-
-        for (int i = 0; i < file->nvars; i++)
-        {
-            if ((ierr = get_var_desc(i, &file->varlist, &vdesc)))
-                return pio_err(NULL, file, ierr, __FILE__, __LINE__);
-            reqcnt += vdesc->nreqs;
-            if (vdesc->nreqs > 0)
-                maxreq = i;
-        }
-        int request[reqcnt];
-        int status[reqcnt];
-
-        for (int i = 0; i <= maxreq; i++)
-        {
-            if ((ierr = get_var_desc(i, &file->varlist, &vdesc)))
-                return pio_err(NULL, file, ierr, __FILE__, __LINE__);
-#ifdef MPIO_ONESIDED
-            /*onesided optimization requires that all of the requests in a wait_all call represent
-              a contiguous block of data in the file */
-            if (rcnt > 0 && (prev_record != vdesc->record || vdesc->nreqs == 0))
-            {
-                ierr = ncmpi_wait_all(file->fh, rcnt, request, status);
-                rcnt = 0;
-            }
-            prev_record = vdesc->record;
-#endif
-            for (reqcnt = 0; reqcnt < vdesc->nreqs; reqcnt++)
-                request[rcnt++] = max(vdesc->request[reqcnt], NC_REQ_NULL);
-
-            if (vdesc->request != NULL)
-                free(vdesc->request);
-            vdesc->request = NULL;
-            vdesc->nreqs = 0;
-
-#ifdef FLUSH_EVERY_VAR
-            ierr = ncmpi_wait_all(file->fh, rcnt, request, status);
-            rcnt = 0;
-#endif
-        }
-
-        if (rcnt > 0)
-            ierr = ncmpi_wait_all(file->fh, rcnt, request, status);
+	ierr = ncmpi_wait_all(file->fh, NC_REQ_ALL, NULL, NULL);
 
         /* Release resources. */
         if (file->iobuf)
@@ -1517,4 +1456,3 @@ int flush_buffer(int ncid, wmulti_buffer *wmb, bool flushtodisk)
 
     return PIO_NOERR;
 }
-

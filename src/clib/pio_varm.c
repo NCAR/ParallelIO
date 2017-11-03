@@ -14,8 +14,6 @@ int PIOc_put_varm (int ncid, int varid, const PIO_Offset start[], const PIO_Offs
     int ierr;
     iosystem_desc_t *ios;
     file_desc_t *file;
-    var_desc_t *vdesc;
-    int *request;
 
     ierr = PIO_NOERR;
 
@@ -48,21 +46,9 @@ int PIOc_put_varm (int ncid, int varid, const PIO_Offset start[], const PIO_Offs
             break;
 #ifdef _PNETCDF
         case PIO_IOTYPE_PNETCDF:
-            if ((ierr = get_var_desc(varid, &file->varlist, &vdesc)))
-                return pio_err(ios, file, ierr, __FILE__, __LINE__);
-
-            if (vdesc->nreqs%PIO_REQUEST_ALLOC_CHUNK == 0 ){
-                vdesc->request = realloc(vdesc->request,
-                                         sizeof(int)*(vdesc->nreqs+PIO_REQUEST_ALLOC_CHUNK));
-            }
-            request = vdesc->request+vdesc->nreqs;
-
             if (ios->io_rank==0){
-                ierr = ncmpi_bput_varm(file->fh, varid, start, count, stride, imap, buf, bufcount, buftype, request);;
-            }else{
-                *request = PIO_REQ_NULL;
+                ierr = ncmpi_bput_varm(file->fh, varid, start, count, stride, imap, buf, bufcount, buftype, NULL);;
             }
-            vdesc->nreqs++;
             flush_output_buffer(file, false, 0);
             break;
 #endif
@@ -88,8 +74,6 @@ int PIOc_put_varm_uchar (int ncid, int varid, const PIO_Offset start[], const PI
     int ierr;
     iosystem_desc_t *ios;
     file_desc_t *file;
-    var_desc_t *vdesc;
-    int *request;
 
     ierr = PIO_NOERR;
 
@@ -118,21 +102,9 @@ int PIOc_put_varm_uchar (int ncid, int varid, const PIO_Offset start[], const PI
             break;
 #ifdef _PNETCDF
         case PIO_IOTYPE_PNETCDF:
-            if ((ierr = get_var_desc(varid, &file->varlist, &vdesc)))
-                return pio_err(ios, file, ierr, __FILE__, __LINE__);
-
-            if (vdesc->nreqs%PIO_REQUEST_ALLOC_CHUNK == 0 ){
-                vdesc->request = realloc(vdesc->request,
-                                         sizeof(int)*(vdesc->nreqs+PIO_REQUEST_ALLOC_CHUNK));
-            }
-            request = vdesc->request+vdesc->nreqs;
-
             if (ios->io_rank==0){
-                ierr = ncmpi_bput_varm_uchar(file->fh, varid, start, count, stride, imap, op, request);;
-            }else{
-                *request = PIO_REQ_NULL;
+                ierr = ncmpi_bput_varm_uchar(file->fh, varid, start, count, stride, imap, op, NULL);;
             }
-            vdesc->nreqs++;
             flush_output_buffer(file, false, 0);
             break;
 #endif
@@ -158,8 +130,6 @@ int PIOc_put_varm_short (int ncid, int varid, const PIO_Offset start[], const PI
     int ierr;
     iosystem_desc_t *ios;
     file_desc_t *file;
-    var_desc_t *vdesc;
-    int *request;
 
     ierr = PIO_NOERR;
 
@@ -188,21 +158,9 @@ int PIOc_put_varm_short (int ncid, int varid, const PIO_Offset start[], const PI
             break;
 #ifdef _PNETCDF
         case PIO_IOTYPE_PNETCDF:
-            if ((ierr = get_var_desc(varid, &file->varlist, &vdesc)))
-                return pio_err(ios, file, ierr, __FILE__, __LINE__);
-
-            if (vdesc->nreqs%PIO_REQUEST_ALLOC_CHUNK == 0 ){
-                vdesc->request = realloc(vdesc->request,
-                                         sizeof(int)*(vdesc->nreqs+PIO_REQUEST_ALLOC_CHUNK));
-            }
-            request = vdesc->request+vdesc->nreqs;
-
             if (ios->io_rank==0){
-                ierr = ncmpi_bput_varm_short(file->fh, varid, start, count, stride, imap, op, request);;
-            }else{
-                *request = PIO_REQ_NULL;
+                ierr = ncmpi_bput_varm_short(file->fh, varid, start, count, stride, imap, op, NULL);;
             }
-            vdesc->nreqs++;
             flush_output_buffer(file, false, 0);
             break;
 #endif
@@ -227,8 +185,6 @@ int PIOc_put_varm_text (int ncid, int varid, const PIO_Offset start[], const PIO
     int ierr;
     iosystem_desc_t *ios;
     file_desc_t *file;
-    var_desc_t *vdesc;
-    int *request;
 
     ierr = PIO_NOERR;
 
@@ -259,21 +215,9 @@ int PIOc_put_varm_text (int ncid, int varid, const PIO_Offset start[], const PIO
             break;
 #ifdef _PNETCDF
         case PIO_IOTYPE_PNETCDF:
-            if ((ierr = get_var_desc(varid, &file->varlist, &vdesc)))
-                return pio_err(ios, file, ierr, __FILE__, __LINE__);
-
-            if (vdesc->nreqs%PIO_REQUEST_ALLOC_CHUNK == 0 ){
-                vdesc->request = realloc(vdesc->request,
-                                         sizeof(int)*(vdesc->nreqs+PIO_REQUEST_ALLOC_CHUNK));
-            }
-            request = vdesc->request+vdesc->nreqs;
-
             if (ios->io_rank==0){
-                ierr = ncmpi_bput_varm_text(file->fh, varid, start, count, stride, imap, op, request);;
-            }else{
-                *request = PIO_REQ_NULL;
+                ierr = ncmpi_bput_varm_text(file->fh, varid, start, count, stride, imap, op, NULL);;
             }
-            vdesc->nreqs++;
             flush_output_buffer(file, false, 0);
             break;
 #endif
@@ -299,8 +243,6 @@ int PIOc_put_varm_ushort (int ncid, int varid, const PIO_Offset start[], const P
     int ierr;
     iosystem_desc_t *ios;
     file_desc_t *file;
-    var_desc_t *vdesc;
-    int *request;
 
     ierr = PIO_NOERR;
 
@@ -331,21 +273,9 @@ int PIOc_put_varm_ushort (int ncid, int varid, const PIO_Offset start[], const P
             break;
 #ifdef _PNETCDF
         case PIO_IOTYPE_PNETCDF:
-            if ((ierr = get_var_desc(varid, &file->varlist, &vdesc)))
-                return pio_err(ios, file, ierr, __FILE__, __LINE__);
-
-            if (vdesc->nreqs%PIO_REQUEST_ALLOC_CHUNK == 0 ){
-                vdesc->request = realloc(vdesc->request,
-                                         sizeof(int)*(vdesc->nreqs+PIO_REQUEST_ALLOC_CHUNK));
-            }
-            request = vdesc->request+vdesc->nreqs;
-
             if (ios->io_rank==0){
-                ierr = ncmpi_bput_varm_ushort(file->fh, varid, start, count, stride, imap, op, request);;
-            }else{
-                *request = PIO_REQ_NULL;
+                ierr = ncmpi_bput_varm_ushort(file->fh, varid, start, count, stride, imap, op, NULL);;
             }
-            vdesc->nreqs++;
             flush_output_buffer(file, false, 0);
             break;
 #endif
@@ -371,8 +301,6 @@ int PIOc_put_varm_ulonglong (int ncid, int varid, const PIO_Offset start[], cons
     int ierr;
     iosystem_desc_t *ios;
     file_desc_t *file;
-    var_desc_t *vdesc;
-    int *request;
 
     ierr = PIO_NOERR;
 
@@ -403,21 +331,9 @@ int PIOc_put_varm_ulonglong (int ncid, int varid, const PIO_Offset start[], cons
             break;
 #ifdef _PNETCDF
         case PIO_IOTYPE_PNETCDF:
-            if ((ierr = get_var_desc(varid, &file->varlist, &vdesc)))
-                return pio_err(ios, file, ierr, __FILE__, __LINE__);
-
-            if (vdesc->nreqs%PIO_REQUEST_ALLOC_CHUNK == 0 ){
-                vdesc->request = realloc(vdesc->request,
-                                         sizeof(int)*(vdesc->nreqs+PIO_REQUEST_ALLOC_CHUNK));
-            }
-            request = vdesc->request+vdesc->nreqs;
-
             if (ios->io_rank==0){
-                ierr = ncmpi_bput_varm_ulonglong(file->fh, varid, start, count, stride, imap, op, request);;
-            }else{
-                *request = PIO_REQ_NULL;
+                ierr = ncmpi_bput_varm_ulonglong(file->fh, varid, start, count, stride, imap, op, NULL);;
             }
-            vdesc->nreqs++;
             flush_output_buffer(file, false, 0);
             break;
 #endif
@@ -442,8 +358,6 @@ int PIOc_put_varm_int (int ncid, int varid, const PIO_Offset start[], const PIO_
     int ierr;
     iosystem_desc_t *ios;
     file_desc_t *file;
-    var_desc_t *vdesc;
-    int *request;
 
     ierr = PIO_NOERR;
 
@@ -474,21 +388,9 @@ int PIOc_put_varm_int (int ncid, int varid, const PIO_Offset start[], const PIO_
             break;
 #ifdef _PNETCDF
         case PIO_IOTYPE_PNETCDF:
-            if ((ierr = get_var_desc(varid, &file->varlist, &vdesc)))
-                return pio_err(ios, file, ierr, __FILE__, __LINE__);
-
-            if (vdesc->nreqs%PIO_REQUEST_ALLOC_CHUNK == 0 ){
-                vdesc->request = realloc(vdesc->request,
-                                         sizeof(int)*(vdesc->nreqs+PIO_REQUEST_ALLOC_CHUNK));
-            }
-            request = vdesc->request+vdesc->nreqs;
-
             if (ios->io_rank==0){
-                ierr = ncmpi_bput_varm_int(file->fh, varid, start, count, stride, imap, op, request);;
-            }else{
-                *request = PIO_REQ_NULL;
+                ierr = ncmpi_bput_varm_int(file->fh, varid, start, count, stride, imap, op, NULL);;
             }
-            vdesc->nreqs++;
             flush_output_buffer(file, false, 0);
             break;
 #endif
@@ -514,8 +416,6 @@ int PIOc_put_varm_float (int ncid, int varid, const PIO_Offset start[], const PI
     int ierr;
     iosystem_desc_t *ios;
     file_desc_t *file;
-    var_desc_t *vdesc;
-    int *request;
 
     ierr = PIO_NOERR;
 
@@ -546,21 +446,9 @@ int PIOc_put_varm_float (int ncid, int varid, const PIO_Offset start[], const PI
             break;
 #ifdef _PNETCDF
         case PIO_IOTYPE_PNETCDF:
-            if ((ierr = get_var_desc(varid, &file->varlist, &vdesc)))
-                return pio_err(ios, file, ierr, __FILE__, __LINE__);
-
-            if (vdesc->nreqs%PIO_REQUEST_ALLOC_CHUNK == 0 ){
-                vdesc->request = realloc(vdesc->request,
-                                         sizeof(int)*(vdesc->nreqs+PIO_REQUEST_ALLOC_CHUNK));
-            }
-            request = vdesc->request+vdesc->nreqs;
-
             if (ios->io_rank==0){
-                ierr = ncmpi_bput_varm_float(file->fh, varid, start, count, stride, imap, op, request);;
-            }else{
-                *request = PIO_REQ_NULL;
+                ierr = ncmpi_bput_varm_float(file->fh, varid, start, count, stride, imap, op, NULL);;
             }
-            vdesc->nreqs++;
             flush_output_buffer(file, false, 0);
             break;
 #endif
@@ -585,8 +473,6 @@ int PIOc_put_varm_long (int ncid, int varid, const PIO_Offset start[], const PIO
     int ierr;
     iosystem_desc_t *ios;
     file_desc_t *file;
-    var_desc_t *vdesc;
-    int *request;
 
     ierr = PIO_NOERR;
 
@@ -617,21 +503,9 @@ int PIOc_put_varm_long (int ncid, int varid, const PIO_Offset start[], const PIO
             break;
 #ifdef _PNETCDF
         case PIO_IOTYPE_PNETCDF:
-            if ((ierr = get_var_desc(varid, &file->varlist, &vdesc)))
-                return pio_err(ios, file, ierr, __FILE__, __LINE__);
-
-            if (vdesc->nreqs%PIO_REQUEST_ALLOC_CHUNK == 0 ){
-                vdesc->request = realloc(vdesc->request,
-                                         sizeof(int)*(vdesc->nreqs+PIO_REQUEST_ALLOC_CHUNK));
-            }
-            request = vdesc->request+vdesc->nreqs;
-
             if (ios->io_rank==0){
-                ierr = ncmpi_bput_varm_long(file->fh, varid, start, count, stride, imap, op, request);;
-            }else{
-                *request = PIO_REQ_NULL;
+                ierr = ncmpi_bput_varm_long(file->fh, varid, start, count, stride, imap, op, NULL);;
             }
-            vdesc->nreqs++;
             flush_output_buffer(file, false, 0);
             break;
 #endif
@@ -657,8 +531,6 @@ int PIOc_put_varm_uint (int ncid, int varid, const PIO_Offset start[], const PIO
     int ierr;
     iosystem_desc_t *ios;
     file_desc_t *file;
-    var_desc_t *vdesc;
-    int *request;
 
     ierr = PIO_NOERR;
 
@@ -690,21 +562,9 @@ int PIOc_put_varm_uint (int ncid, int varid, const PIO_Offset start[], const PIO
             break;
 #ifdef _PNETCDF
         case PIO_IOTYPE_PNETCDF:
-            if ((ierr = get_var_desc(varid, &file->varlist, &vdesc)))
-                return pio_err(ios, file, ierr, __FILE__, __LINE__);
-
-            if (vdesc->nreqs%PIO_REQUEST_ALLOC_CHUNK == 0 ){
-                vdesc->request = realloc(vdesc->request,
-                                         sizeof(int)*(vdesc->nreqs+PIO_REQUEST_ALLOC_CHUNK));
-            }
-            request = vdesc->request+vdesc->nreqs;
-
             if (ios->io_rank==0){
-                ierr = ncmpi_bput_varm_uint(file->fh, varid, start, count, stride, imap, op, request);;
-            }else{
-                *request = PIO_REQ_NULL;
+                ierr = ncmpi_bput_varm_uint(file->fh, varid, start, count, stride, imap, op, NULL);;
             }
-            vdesc->nreqs++;
             flush_output_buffer(file, false, 0);
             break;
 #endif
@@ -730,8 +590,6 @@ int PIOc_put_varm_double (int ncid, int varid, const PIO_Offset start[], const P
     int ierr;
     iosystem_desc_t *ios;
     file_desc_t *file;
-    var_desc_t *vdesc;
-    int *request;
 
     ierr = PIO_NOERR;
 
@@ -762,21 +620,9 @@ int PIOc_put_varm_double (int ncid, int varid, const PIO_Offset start[], const P
             break;
 #ifdef _PNETCDF
         case PIO_IOTYPE_PNETCDF:
-            if ((ierr = get_var_desc(varid, &file->varlist, &vdesc)))
-                return pio_err(ios, file, ierr, __FILE__, __LINE__);
-
-            if (vdesc->nreqs%PIO_REQUEST_ALLOC_CHUNK == 0 ){
-                vdesc->request = realloc(vdesc->request,
-                                         sizeof(int)*(vdesc->nreqs+PIO_REQUEST_ALLOC_CHUNK));
-            }
-            request = vdesc->request+vdesc->nreqs;
-
             if (ios->io_rank==0){
-                ierr = ncmpi_bput_varm_double(file->fh, varid, start, count, stride, imap, op, request);;
-            }else{
-                *request = PIO_REQ_NULL;
+                ierr = ncmpi_bput_varm_double(file->fh, varid, start, count, stride, imap, op, NULL);;
             }
-            vdesc->nreqs++;
             flush_output_buffer(file, false, 0);
             break;
 #endif
@@ -801,8 +647,6 @@ int PIOc_put_varm_schar (int ncid, int varid, const PIO_Offset start[], const PI
     int ierr;
     iosystem_desc_t *ios;
     file_desc_t *file;
-    var_desc_t *vdesc;
-    int *request;
 
     ierr = PIO_NOERR;
 
@@ -833,21 +677,9 @@ int PIOc_put_varm_schar (int ncid, int varid, const PIO_Offset start[], const PI
             break;
 #ifdef _PNETCDF
         case PIO_IOTYPE_PNETCDF:
-            if ((ierr = get_var_desc(varid, &file->varlist, &vdesc)))
-                return pio_err(ios, file, ierr, __FILE__, __LINE__);
-
-            if (vdesc->nreqs%PIO_REQUEST_ALLOC_CHUNK == 0 ){
-                vdesc->request = realloc(vdesc->request,
-                                         sizeof(int)*(vdesc->nreqs+PIO_REQUEST_ALLOC_CHUNK));
-            }
-            request = vdesc->request+vdesc->nreqs;
-
             if (ios->io_rank==0){
-                ierr = ncmpi_bput_varm_schar(file->fh, varid, start, count, stride, imap, op, request);;
-            }else{
-                *request = PIO_REQ_NULL;
+                ierr = ncmpi_bput_varm_schar(file->fh, varid, start, count, stride, imap, op, NULL);;
             }
-            vdesc->nreqs++;
             flush_output_buffer(file, false, 0);
             break;
 #endif
@@ -873,8 +705,6 @@ int PIOc_put_varm_longlong (int ncid, int varid, const PIO_Offset start[], const
     int ierr;
     iosystem_desc_t *ios;
     file_desc_t *file;
-    var_desc_t *vdesc;
-    int *request;
 
     ierr = PIO_NOERR;
 
@@ -903,21 +733,9 @@ int PIOc_put_varm_longlong (int ncid, int varid, const PIO_Offset start[], const
             break;
 #ifdef _PNETCDF
         case PIO_IOTYPE_PNETCDF:
-            if ((ierr = get_var_desc(varid, &file->varlist, &vdesc)))
-                return pio_err(ios, file, ierr, __FILE__, __LINE__);
-
-            if (vdesc->nreqs%PIO_REQUEST_ALLOC_CHUNK == 0 ){
-                vdesc->request = realloc(vdesc->request,
-                                         sizeof(int)*(vdesc->nreqs+PIO_REQUEST_ALLOC_CHUNK));
-            }
-            request = vdesc->request+vdesc->nreqs;
-
             if (ios->io_rank==0){
-                ierr = ncmpi_bput_varm_longlong(file->fh, varid, start, count, stride, imap, op, request);;
-            }else{
-                *request = PIO_REQ_NULL;
+                ierr = ncmpi_bput_varm_longlong(file->fh, varid, start, count, stride, imap, op, NULL);;
             }
-            vdesc->nreqs++;
             flush_output_buffer(file, false, 0);
             break;
 #endif
