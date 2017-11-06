@@ -347,6 +347,11 @@ extern "C" {
     void pio_init_logging(void);
     void pio_finalize_logging(void );
 
+    /* Internal mpi timer impl functions */
+    int mpi_mtimer_init(void );
+    int mpi_mtimer_finalize(void );
+    double mpi_mtimer_get_wtime(void );
+
     /* Write a netCDF decomp file. */
     int pioc_write_nc_decomp_int(iosystem_desc_t *ios, const char *filename, int cmode, int ndims,
                                  int *global_dimlen, int num_tasks, int *task_maplen, int *map,
