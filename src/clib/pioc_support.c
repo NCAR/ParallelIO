@@ -1737,6 +1737,10 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
     file->iosystem = ios;
     file->iotype = *iotype;
     file->buffer.ioid = -1;
+    /*
+    file->num_unlim_dimids = 0;
+    file->unlim_dimids = NULL;
+    */
     for (int i = 0; i < PIO_MAX_VARS; i++)
     {
         file->varlist[i].vname[0] = '\0';
@@ -1947,6 +1951,10 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
     file->iotype = *iotype;
     file->iosystem = ios;
     file->mode = mode;
+    /*
+    file->num_unlim_dimids = 0;
+    file->unlim_dimids = NULL;
+    */
 
     for (int i = 0; i < PIO_MAX_VARS; i++)
     {
@@ -2105,6 +2113,30 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
 
     LOG((2, "Opened file %s file->pio_ncid = %d file->fh = %d ierr = %d",
          filename, file->pio_ncid, file->fh, ierr));
+
+    /* Check if the file has unlimited dimensions */
+    if(!ios->async || !ios->ioproc)
+    {
+        ierr = PIOc_inq_unlimdims(*ncidp, &(file->num_unlim_dimids), NULL);
+        if(ierr != PIO_NOERR)
+        {
+            return pio_err(ios, file, ierr, __FILE__, __LINE__);
+        }
+        if(file->num_unlim_dimids > 0)
+        {
+            file->unlim_dimids = (int *)malloc(file->num_unlim_dimids * sizeof(int));
+            if(!file->unlim_dimids)
+            {
+                return pio_err(ios, file, PIO_ENOMEM, __FILE__, __LINE__);
+            }
+            ierr = PIOc_inq_unlimdims(*ncidp, NULL, file->unlim_dimids);
+            if(ierr != PIO_NOERR)
+            {
+                return pio_err(ios, file, ierr, __FILE__, __LINE__);
+            }
+        }
+        LOG((3, "File has %d unlimited dimensions", file->num_unlim_dimids));
+    }
 
     return ierr;
 }

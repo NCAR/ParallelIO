@@ -698,6 +698,12 @@ typedef struct file_desc_t
     /** List of variables in this file (deprecated). */
     struct var_desc_t varlist[PIO_MAX_VARS];
 
+    /* Number of unlimited dim ids, if no unlimited id present = 0 */
+    int num_unlim_dimids;
+
+    /* Unlimited dim ids, if no unlimited id present = NULL */
+    int *unlim_dimids;
+
     /** Mode used when file was opened. */
     int mode;
 

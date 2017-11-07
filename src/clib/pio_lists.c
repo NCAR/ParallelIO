@@ -131,6 +131,7 @@ int pio_delete_file_from_list(int ncid)
                 if ((ret = delete_var_desc(cfile->varlist2->varid, &cfile->varlist2)))
                     return pio_err(NULL, cfile, ret, __FILE__, __LINE__);
 
+            free(cfile->unlim_dimids);
             /* Free the memory used for this file. */
             free(cfile);
             

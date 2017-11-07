@@ -772,10 +772,7 @@ int PIOc_inq_var(int ncid, int varid, char *name, nc_type *xtypep, int *ndimsp,
         if (!ios->ioproc)
         {
             int msg = PIO_MSG_INQ_VAR;
-            /* Since we now always get the variable name and cache it name_present
-              * is always true
-              */
-            char name_present = true;
+            char name_present = name ? true : false;
             char xtype_present = xtypep ? true : false;
             char ndims_present = ndimsp ? true : false;
             char dimids_present = dimidsp ? true : false;
@@ -1865,6 +1862,7 @@ int PIOc_def_dim(int ncid, const char *name, PIO_Offset len, int *idp)
     file_desc_t *file;     /* Pointer to file information. */
     int ierr;              /* Return code from function calls. */
     int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI function codes. */
+    int tmp_id = -1;
 
     /* Find the info about this file. */
     if ((ierr = pio_get_file(ncid, &file)))
@@ -1874,6 +1872,11 @@ int PIOc_def_dim(int ncid, const char *name, PIO_Offset len, int *idp)
     /* User must provide name shorter than NC_MAX_NAME +1. */
     if (!name || strlen(name) > NC_MAX_NAME)
         return pio_err(ios, file, PIO_EINVAL, __FILE__, __LINE__);
+
+    if(!idp)
+    {
+        idp = &tmp_id;
+    }
 
     LOG((1, "PIOc_def_dim ncid = %d name = %s len = %d", ncid, name, len));
 
@@ -1917,6 +1920,7 @@ int PIOc_def_dim(int ncid, const char *name, PIO_Offset len, int *idp)
 
         if (file->iotype != PIO_IOTYPE_PNETCDF && file->do_io)
             ierr = nc_def_dim(file->fh, name, (size_t)len, idp);
+
     }
 
     /* Broadcast and check the return code. */
@@ -1929,6 +1933,19 @@ int PIOc_def_dim(int ncid, const char *name, PIO_Offset len, int *idp)
     if (idp)
         if ((mpierr = MPI_Bcast(idp , 1, MPI_INT, ios->ioroot, ios->my_comm)))
             check_mpi(file, mpierr, __FILE__, __LINE__);
+
+    if(len == PIO_UNLIMITED)
+    {
+        file->num_unlim_dimids++;
+        file->unlim_dimids = (int *)realloc(file->unlim_dimids,
+                                      file->num_unlim_dimids * sizeof(int));
+        if(!file->unlim_dimids)
+        {
+            return pio_err(ios, file, PIO_ENOMEM, __FILE__, __LINE__);
+        }
+        file->unlim_dimids[file->num_unlim_dimids-1] = *idp;
+        LOG((1, "pio_def_dim : %d dim is unlimited", *idp));
+    }
 
     LOG((2, "def_dim ierr = %d", ierr));
     return PIO_NOERR;
