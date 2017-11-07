@@ -222,14 +222,13 @@ PIO_Offset GCDblocksize(int arrlen, const PIO_Offset *arr_in)
             numgaps = ii;
         }
 
-        PIO_Offset *loc_arr = NULL;
-        if (arrlen > 1)
-        {
-            if (!(loc_arr = malloc((arrlen - 1) * sizeof(PIO_Offset))))
-                return pio_err(NULL, NULL, PIO_ENOMEM, __FILE__, __LINE__);
-        }
+        /* If numblks > 1 then arrlen must be > 1 */
+        PIO_Offset *loc_arr = calloc(arrlen - 1, sizeof(PIO_Offset));
+        if (!loc_arr)
+            return pio_err(NULL, NULL, PIO_ENOMEM, __FILE__, __LINE__);
 
         j = 0;
+        /* If numblks > 1 then n must be <= (arrlen - 1) */
         for (int i = 0; i < n; i++)
             loc_arr[i] = 1;
 
@@ -239,6 +238,7 @@ PIO_Offset GCDblocksize(int arrlen, const PIO_Offset *arr_in)
 
         blk_len[0] = loc_arr[0];
         blklensum = blk_len[0];
+        /* If numblks > 1 then numblks must be <= arrlen */
         for(int i = 1; i < numblks - 1; i++)
         {
             blk_len[i] = loc_arr[i] - loc_arr[i - 1];
