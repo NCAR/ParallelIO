@@ -338,7 +338,7 @@ int create_mpi_datatypes(MPI_Datatype mpitype, int msgcnt,
 
             if (len > 0)
             {
-                if (!(displace = malloc(len * sizeof(int))))
+                if (!(displace = calloc(len, sizeof(int))))
                     return pio_err(NULL, NULL, PIO_ENOMEM, __FILE__, __LINE__);
             }
 
