@@ -814,14 +814,40 @@ int PIOc_inq_var(int ncid, int varid, char *name, nc_type *xtypep, int *ndimsp,
 #ifdef _PNETCDF
         if (file->iotype == PIO_IOTYPE_PNETCDF)
         {
+            int *tmp_dimidsp = NULL;
             ierr = ncmpi_inq_varndims(file->fh, varid, &ndims);
             LOG((2, "from pnetcdf ndims = %d", ndims));
+            if(!ierr && (!dimidsp) && (file->num_unlim_dimids > 0))
+            {
+                tmp_dimidsp = (int *)malloc(ndims * sizeof(int));
+                if(!tmp_dimidsp)
+                {
+                    return pio_err(ios, file, PIO_ENOMEM, __FILE__, __LINE__);
+                }
+            }
             if (!ierr)
-                ierr = ncmpi_inq_var(file->fh, varid, my_name, xtypep, ndimsp, dimidsp, nattsp);
+                ierr = ncmpi_inq_var(file->fh, varid, my_name, xtypep, ndimsp, (dimidsp)?dimidsp:tmp_dimidsp, nattsp);
             if (!ierr && name)
             {
                 strncpy(name, my_name, PIO_MAX_NAME);
             }
+            if(!ierr && (file->num_unlim_dimids > 0))
+            {
+                int *p = (dimidsp) ? dimidsp : tmp_dimidsp;
+                int is_rec_var = file->varlist[varid].rec_var;
+                for(int i=0; (i<ndims) && (!is_rec_var); i++)
+                {
+                    for(int j=0; (j<file->num_unlim_dimids) && (!is_rec_var); j++)
+                    {
+                        if(p[i] == file->unlim_dimids[j])
+                        {
+                            is_rec_var = 1;
+                        }
+                    }
+                }
+                file->varlist[varid].rec_var = is_rec_var;
+            }
+            free(tmp_dimidsp);
         }
 #endif /* _PNETCDF */
 
@@ -850,6 +876,22 @@ int PIOc_inq_var(int ncid, int varid, char *name, nc_type *xtypep, int *ndimsp,
                     }
                     if (nattsp)
                         *nattsp = my_natts;
+
+                    if(file->num_unlim_dimids > 0)
+                    {
+                        int is_rec_var = file->varlist[varid].rec_var;
+                        for(int i=0; (i<ndims) && (!is_rec_var); i++)
+                        {
+                            for(int j=0; (j<file->num_unlim_dimids) && (!is_rec_var); j++)
+                            {
+                                if(my_dimids[i] == file->unlim_dimids[j])
+                                {
+                                    is_rec_var = 1;
+                                }
+                            }
+                        }
+                        file->varlist[varid].rec_var = is_rec_var;
+                    }
                 }
             }
         }
@@ -875,6 +917,9 @@ int PIOc_inq_var(int ncid, int varid, char *name, nc_type *xtypep, int *ndimsp,
         strncpy(name, my_name, PIO_MAX_NAME);
     }
     strncpy(file->varlist[varid].vname, my_name, PIO_MAX_NAME);
+
+    if ((mpierr = MPI_Bcast(&(file->varlist[varid].rec_var), 1, MPI_INT, ios->ioroot, ios->my_comm)))
+        return check_mpi(file, mpierr, __FILE__, __LINE__);
 
     if (xtypep)
         if ((mpierr = MPI_Bcast(xtypep, 1, MPI_INT, ios->ioroot, ios->my_comm)))
@@ -2052,6 +2097,21 @@ int PIOc_def_var(int ncid, const char *name, nc_type xtype, int ndims,
             check_mpi(file, mpierr, __FILE__, __LINE__);
 
     strncpy(file->varlist[*varidp].vname, name, PIO_MAX_NAME);
+    if(file->num_unlim_dimids > 0)
+    {
+        int is_rec_var = 0;
+        for(int i=0; (i<ndims) && (!is_rec_var); i++)
+        {
+            for(int j=0; (j<file->num_unlim_dimids) && (!is_rec_var); j++)
+            {
+                if(dimidsp[i] == file->unlim_dimids[j])
+                {
+                    is_rec_var = 1;
+                }
+            }
+        }
+        file->varlist[*varidp].rec_var = is_rec_var;
+    }
     return PIO_NOERR;
 }
 
