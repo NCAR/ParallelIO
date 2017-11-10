@@ -332,9 +332,16 @@ int create_mpi_datatypes(MPI_Datatype mpitype, int msgcnt,
         if (mcount[i] > 0)
         {
             int len = mcount[i] / blocksize;
-            int displace[len];
+            int *displace = NULL;
             LOG((3, "blocksize = %d i = %d mcount[%d] = %d len = %d", blocksize, i, i,
                  mcount[i], len));
+
+            if (len > 0)
+            {
+                if (!(displace = calloc(len, sizeof(int))))
+                    return pio_err(NULL, NULL, PIO_ENOMEM, __FILE__, __LINE__);
+            }
+
             if (blocksize == 1)
             {
                 if (!mfrom)
@@ -373,6 +380,9 @@ int create_mpi_datatypes(MPI_Datatype mpitype, int msgcnt,
             if ((mpierr = MPI_Type_create_indexed_block(len, blocksize, displace,
                                                         mpitype, &mtype[i])))
                 return check_mpi(NULL, mpierr, __FILE__, __LINE__);
+
+            free(displace);
+            displace = NULL;
 
             if (mtype[i] == PIO_DATATYPE_NULL)
                 return pio_err(NULL, NULL, PIO_EINVAL, __FILE__, __LINE__);
@@ -526,8 +536,9 @@ int compute_counts(iosystem_desc_t *ios, io_desc_t *iodesc,
     int nrecvs = 0;
     int ierr;
 
-    /* Check inputs. */
-    pioassert(ios && iodesc && dest_ioproc && dest_ioindex &&
+    /* Check inputs. If iodesc->ndof is 0, dest_ioproc and dest_ioindex can be NULL */
+    pioassert(ios && iodesc &&
+              (iodesc->ndof == 0 || (iodesc->ndof > 0 && dest_ioproc && dest_ioindex)) &&
               iodesc->rearranger == PIO_REARR_BOX && ios->num_uniontasks > 0,
               "invalid input", __FILE__, __LINE__);
     LOG((1, "compute_counts ios->num_uniontasks = %d", ios->num_uniontasks));
@@ -540,7 +551,12 @@ int compute_counts(iosystem_desc_t *ios, io_desc_t *iodesc,
     int recv_displs[ios->num_uniontasks];
 
     /* The list of indeces on each compute task */
-    PIO_Offset s2rindex[iodesc->ndof];
+    PIO_Offset *s2rindex = NULL;
+    if (iodesc->ndof > 0)
+    {
+        if (!(s2rindex = malloc(iodesc->ndof * sizeof(PIO_Offset))))
+          return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__);
+    }
 
     /* Allocate memory for the array of counts and init to zero. */
     if (!(iodesc->scount = calloc(ios->num_iotasks, sizeof(int))))
@@ -753,6 +769,9 @@ int compute_counts(iosystem_desc_t *ios, io_desc_t *iodesc,
                           recv_counts, recv_displs, sr_types, ios->union_comm,
                           &iodesc->rearr_opts.comp2io)))
         return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
+
+    free(s2rindex);
+    s2rindex = NULL;
 
     return PIO_NOERR;
 }
@@ -1183,8 +1202,8 @@ int box_rearrange_create(iosystem_desc_t *ios, int maplen, const PIO_Offset *com
          "ios->num_iotasks = %d", maplen, ndims, ios->num_comptasks, ios->num_iotasks));
 
     /* Allocate arrays needed for this function. */
-    int dest_ioproc[maplen]; /* Destination IO task for each data element on compute task. */
-    PIO_Offset dest_ioindex[maplen];    /* Offset into IO task array for each data element. */
+    int *dest_ioproc = NULL; /* Destination IO task for each data element on compute task. */
+    PIO_Offset *dest_ioindex = NULL;    /* Offset into IO task array for each data element. */
     int sendcounts[ios->num_uniontasks]; /* Send counts for swapm call. */
     int sdispls[ios->num_uniontasks];    /* Send displacements for swapm. */
     int recvcounts[ios->num_uniontasks]; /* Receive counts for swapm. */
@@ -1197,6 +1216,15 @@ int box_rearrange_create(iosystem_desc_t *ios, int maplen, const PIO_Offset *com
 
     /* Number of elements of data on compute node. */
     iodesc->ndof = maplen;
+
+    if (maplen > 0)
+    {
+        if (!(dest_ioproc = malloc(maplen * sizeof(int))))
+            return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__);
+
+        if (!(dest_ioindex = malloc(maplen * sizeof(PIO_Offset))))
+            return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__);
+    }
 
     /* Initialize array values. */
     for (int i = 0; i < maplen; i++)
@@ -1375,6 +1403,11 @@ int box_rearrange_create(iosystem_desc_t *ios, int maplen, const PIO_Offset *com
     LOG((2, "calling compute_counts maplen = %d", maplen));
     if ((ret = compute_counts(ios, iodesc, dest_ioproc, dest_ioindex)))
         return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+
+    free(dest_ioproc);
+    free(dest_ioindex);
+    dest_ioproc = NULL;
+    dest_ioindex = NULL;
 
     /* Compute the max io buffer size needed for an iodesc. */
     if (ios->ioproc)
@@ -1879,7 +1912,13 @@ int subset_rearrange_create(iosystem_desc_t *ios, int maplen, PIO_Offset *compma
         }
 
         /* Allocate and initialize a grid to fill in missing values. ??? */
-        PIO_Offset grid[thisgridsize[ios->io_rank]];
+        PIO_Offset *grid = NULL;
+        if (thisgridsize[ios->io_rank] > 0)
+        {
+            if (!(grid = malloc(thisgridsize[ios->io_rank] * sizeof(PIO_Offset))))
+                return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__);
+        }
+
         for (i = 0; i < thisgridsize[ios->io_rank]; i++)
             grid[i] = 0;
 
@@ -1921,6 +1960,8 @@ int subset_rearrange_create(iosystem_desc_t *ios, int maplen, PIO_Offset *compma
                     return pio_err(ios, NULL, PIO_EINVAL, __FILE__, __LINE__);
             }
         }
+        free(grid);
+        grid = NULL;
         maxregions = 0;
         iodesc->maxfillregions = 0;
         if (myfillgrid)
