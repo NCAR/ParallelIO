@@ -249,6 +249,9 @@ typedef struct var_desc_t
 
     /* Variable name - cached */
     char vname[PIO_MAX_NAME];
+
+    /* Variable description */
+    char vdesc[PIO_MAX_NAME];
     
     /* Non-zero if this is a record var (i.e. uses unlimited
      * dimension). */
@@ -272,6 +275,9 @@ typedef struct var_desc_t
 
     /* The size of the data type (2 for PIO_SHORT, 4 for PIO_INT, etc.) */
     PIO_Offset type_size;
+
+    /* Size of one record of the variable (number of bytes)*/
+    PIO_Offset vrsize;
 
     /** Non-zero if fill mode is turned on for this var. */
     int use_fill;
