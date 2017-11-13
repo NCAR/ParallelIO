@@ -1276,6 +1276,7 @@ int flush_output_buffer(file_desc_t *file, bool force, PIO_Offset addsize)
         for (int i = 0; i < PIO_MAX_VARS; i++)
         {
             vdesc = file->varlist + i;
+            vdesc->wb_pend = 0;
             if (vdesc->iobuf)
             {
 		LOG((3,"freeing variable buffer in flush_output_buffer"));
@@ -1288,6 +1289,7 @@ int flush_output_buffer(file_desc_t *file, bool force, PIO_Offset addsize)
                 vdesc->fillbuf = NULL;
             }
         }
+        file->wb_pend = 0;
     }
 
 #endif /* _PNETCDF */

@@ -353,10 +353,24 @@ int PIOc_write_darray_multi(int ncid, const int *varids, int ioid, int nvars,
         }
     }
 
-    /* Flush data to disk for pnetcdf. */
+    /* Only PNETCDF does non-blocking buffered writes, and hence
+     * needs an explicit flush/wait to make sure data is written
+     * to disk (if the buffer is full)
+     */
     if (ios->ioproc && file->iotype == PIO_IOTYPE_PNETCDF)
+    {
+        /* Flush data to disk for pnetcdf. */
         if ((ierr = flush_output_buffer(file, flushtodisk, 0)))
             return pio_err(ios, file, ierr, __FILE__, __LINE__);
+    }
+    else
+    {
+        for(int i=0; i<nvars; i++)
+        {
+            file->varlist[varids[i]].wb_pend = 0;
+        }
+        file->wb_pend = 0;
+    }
 
 #ifdef TIMING
     GPTLstop("PIO:PIOc_write_darray_multi");
@@ -487,6 +501,12 @@ int PIOc_write_darray(int ncid, int varid, int ioid, PIO_Offset arraylen, void *
         return pio_err(NULL, NULL, PIO_EBADID, __FILE__, __LINE__);
     ios = file->iosystem;
 
+    LOG((1, "PIOc_write_darray ncid=%d varid=%d wb_pend=%llu file_wb_pend=%llu",
+          ncid, varid,
+          (unsigned long long int) file->varlist[varid].wb_pend,
+          (unsigned long long int) file->wb_pend
+    ));
+
     /* Can we write to this file? */
     if (!(file->mode & PIO_WRITE))
         return pio_err(ios, file, PIO_EPERM, __FILE__, __LINE__);
@@ -604,6 +624,25 @@ int PIOc_write_darray(int ncid, int varid, int ioid, PIO_Offset arraylen, void *
          * called. */
         if ((ierr = flush_buffer(ncid, wmb, needsflush == 2)))
             return pio_err(ios, file, ierr, __FILE__, __LINE__);
+    }
+    else
+    {
+        if(file->varlist[varid].vrsize == 0)
+        {
+            ierr = calc_var_rec_sz(ncid, varid);
+            if(ierr != PIO_NOERR)
+            {
+                LOG((1, "Unable to calculate the variable record size"));
+            }
+        }
+        /* One record size (sum across all procs) of data is buffered */
+        file->varlist[varid].wb_pend += file->varlist[varid].vrsize;
+        file->wb_pend += file->varlist[varid].vrsize;
+        LOG((1, "Current pending bytes for ncid=%d, varid=%d var_wb_pend= %llu, file_wb_pend=%llu",
+              ncid, varid,
+              (unsigned long long int) file->varlist[varid].wb_pend,
+              (unsigned long long int) file->wb_pend
+        ));
     }
 
 #if PIO_USE_MALLOC
@@ -733,6 +772,11 @@ int PIOc_write_darray(int ncid, int varid, int ioid, PIO_Offset arraylen, void *
          "iodesc->ndof = %d iodesc->llen = %d", wmb->num_arrays,
          iodesc->maxbytes / iodesc->mpitype_size, iodesc->ndof, iodesc->llen));
 
+        LOG((1, "Write darray end : pending bytes for ncid=%d, varid=%d var_wb_pend=%llu file_wb_pend=%llu",
+              ncid, varid,
+              (unsigned long long int) file->varlist[varid].wb_pend,
+              (unsigned long long int) file->wb_pend
+        ));
 #ifdef TIMING
     GPTLstop("PIO:PIOc_write_darray");
 #endif
@@ -785,6 +829,18 @@ int PIOc_read_darray(int ncid, int varid, int ioid, PIO_Offset arraylen,
     else
         rlen = iodesc->llen;
 
+    if(file->varlist[varid].vrsize == 0)
+    {
+        ierr = calc_var_rec_sz(ncid, varid);
+        if(ierr != PIO_NOERR)
+        {
+            LOG((1, "Unable to calculate the variable record size"));
+        }
+    }
+
+    file->varlist[varid].rb_pend += file->varlist[varid].vrsize;
+    file->rb_pend += file->varlist[varid].vrsize;
+
     /* Allocate a buffer for one record. */
     if (ios->ioproc && rlen > 0)
         if (!(iobuf = bget(iodesc->mpitype_size * rlen)))
@@ -810,6 +866,10 @@ int PIOc_read_darray(int ncid, int varid, int ioid, PIO_Offset arraylen,
     /* Rearrange the data. */
     if ((ierr = rearrange_io2comp(ios, iodesc, iobuf, array)))
         return pio_err(ios, file, ierr, __FILE__, __LINE__);
+
+    /* We don't use non-blocking reads */
+    file->varlist[varid].rb_pend = 0;
+    file->rb_pend = 0;
 
     /* Free the buffer. */
     if (rlen > 0)

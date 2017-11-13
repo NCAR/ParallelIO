@@ -2574,11 +2574,16 @@ const char *get_var_desc_str(int ncid, int varid, const char *desc_prefix)
     assert(ios != NULL);
 
     snprintf(file->varlist[varid].vdesc, PIO_MAX_NAME,
-              "%s %s %s %llu",
+              "%s %s %s %llu %llu %llu %llu %llu",
               (desc_prefix)?desc_prefix:"",
               file->varlist[varid].vname,
               file->fname,
-              (long long int)file->varlist[varid].vrsize);
+              (unsigned long long int)file->varlist[varid].vrsize,
+              (unsigned long long int)file->varlist[varid].rb_pend,
+              (unsigned long long int)file->varlist[varid].wb_pend,
+              (unsigned long long int)file->rb_pend,
+              (unsigned long long int)file->wb_pend
+              );
 
     return file->varlist[varid].vdesc;
 }
