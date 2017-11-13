@@ -86,6 +86,11 @@ if (PIO_ENABLE_TIMING)
     PUBLIC TIMING)
 endif ()
 
+#====== PIO_MICRO_TIMING ======
+if (PIO_MICRO_TIMING)
+  target_compile_definitions(pioc PUBLIC PIO_MICRO_TIMING)
+endif ()
+
 #===== NetCDF-C =====
 find_package (NetCDF "4.3.3" COMPONENTS C)
 if (NetCDF_C_FOUND)

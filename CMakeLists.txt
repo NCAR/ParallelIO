@@ -24,6 +24,7 @@ option (PIO_TEST_BIG_ENDIAN  "Enable test to see if machine is big endian"  ON)
 option (PIO_USE_MPIIO        "Enable support for MPI-IO auto detect"        ON)
 option (PIO_USE_MPISERIAL    "Enable mpi-serial support (instead of MPI)"   OFF)
 option (PIO_USE_MALLOC       "Use native malloc (instead of bget package)"  OFF)
+option (PIO_MICRO_TIMING     "Enable internal micro timers"                 OFF)
 option (WITH_PNETCDF         "Require the use of PnetCDF"                   ON)
 
 # Set a variable that appears in the config.h.in file.

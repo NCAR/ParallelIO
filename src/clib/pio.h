@@ -239,6 +239,11 @@
 /** ??? */
 #define PIO_REQ_NULL (NC_REQ_NULL-1)
 
+#ifdef PIO_MICRO_TIMING
+/** Some fwd declarations to avoid including internal headers */
+typedef struct mtimer_info *mtimer_t;
+#endif
+
 /**
  * Variable description structure.
  */
@@ -284,6 +289,14 @@ typedef struct var_desc_t
 
     /* Bytes pending to be written out */
     PIO_Offset wb_pend;
+
+#ifdef PIO_MICRO_TIMING
+    mtimer_t rd_mtimer;
+    mtimer_t rd_rearr_mtimer;
+
+    mtimer_t wr_mtimer;
+    mtimer_t wr_rearr_mtimer;
+#endif
 
     /** Non-zero if fill mode is turned on for this var. */
     int use_fill;
