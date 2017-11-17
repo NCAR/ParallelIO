@@ -488,13 +488,15 @@ int PIOc_write_darray(int ncid, int varid, int ioid, PIO_Offset arraylen, void *
 
     /* Check that the local size of the variable passed in matches the
      * size expected by the io descriptor. Fail if arraylen is too
-     * small, just put a warning in the log if it is too big (the
-     * excess values will be ignored.) */
+     * small, just put a warning in the log and truncate arraylen
+     * if it is too big (the excess values will be ignored.) */
     if (arraylen < iodesc->ndof)
         return pio_err(ios, file, PIO_EINVAL, __FILE__, __LINE__);
     LOG((2, "%s arraylen = %d iodesc->ndof = %d",
-         (iodesc->ndof != arraylen) ? "WARNING: iodesc->ndof != arraylen" : "",
+         (arraylen > iodesc->ndof) ? "WARNING: arraylen > iodesc->ndof" : "",
          arraylen, iodesc->ndof));
+    if (arraylen > iodesc->ndof)
+        arraylen = iodesc->ndof;
 
     /* Get var description. */
     vdesc = &(file->varlist[varid]);
