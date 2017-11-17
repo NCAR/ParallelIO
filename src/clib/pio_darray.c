@@ -11,6 +11,9 @@
 #include <config.h>
 #include <pio.h>
 #include <pio_internal.h>
+#ifdef PIO_MICRO_TIMING
+#include "pio_timer.h"
+#endif
 
 /* 10MB default limit. */
 PIO_Offset pio_buffer_size_limit = 10485760;
@@ -368,6 +371,11 @@ int PIOc_write_darray_multi(int ncid, const int *varids, int ioid, int nvars,
         for(int i=0; i<nvars; i++)
         {
             file->varlist[varids[i]].wb_pend = 0;
+#ifdef PIO_MICRO_TIMING
+            /* No more async events pending (all buffered data is written out) */
+            mtimer_async_event_in_progress(file->varlist[varids[i]].wr_mtimer, false);
+            mtimer_flush(file->varlist[varids[i]].wr_mtimer, get_var_desc_str(file->pio_ncid, varids[i], NULL));
+#endif
         }
         file->wb_pend = 0;
     }
@@ -525,6 +533,10 @@ int PIOc_write_darray(int ncid, int varid, int ioid, PIO_Offset arraylen, void *
          (iodesc->ndof != arraylen) ? "WARNING: iodesc->ndof != arraylen" : "",
          arraylen, iodesc->ndof));
 
+#ifdef PIO_MICRO_TIMING
+    mtimer_start(file->varlist[varid].wr_mtimer);
+#endif
+
     /* Get var description. */
     vdesc = &(file->varlist[varid]);
     LOG((2, "vdesc record %d nreqs %d", vdesc->record, vdesc->nreqs));
@@ -606,6 +618,17 @@ int PIOc_write_darray(int ncid, int varid, int ioid, PIO_Offset arraylen, void *
         return check_mpi(file, mpierr, __FILE__, __LINE__);
     LOG((2, "needsflush = %d", needsflush));
 
+    if(!ios->async || !ios->ioproc)
+    {
+        if(file->varlist[varid].vrsize == 0)
+        {
+            ierr = calc_var_rec_sz(ncid, varid);
+            if(ierr != PIO_NOERR)
+            {
+                LOG((1, "Unable to calculate the variable record size"));
+            }
+        }
+    }
     /* Flush data if needed. */
     if (needsflush > 0)
     {
@@ -627,14 +650,6 @@ int PIOc_write_darray(int ncid, int varid, int ioid, PIO_Offset arraylen, void *
     }
     else
     {
-        if(file->varlist[varid].vrsize == 0)
-        {
-            ierr = calc_var_rec_sz(ncid, varid);
-            if(ierr != PIO_NOERR)
-            {
-                LOG((1, "Unable to calculate the variable record size"));
-            }
-        }
         /* One record size (sum across all procs) of data is buffered */
         file->varlist[varid].wb_pend += file->varlist[varid].vrsize;
         file->wb_pend += file->varlist[varid].vrsize;
@@ -643,6 +658,12 @@ int PIOc_write_darray(int ncid, int varid, int ioid, PIO_Offset arraylen, void *
               (unsigned long long int) file->varlist[varid].wb_pend,
               (unsigned long long int) file->wb_pend
         ));
+        /* Buffering data is considered an async event (to indicate
+          *that the event is not yet complete)
+          */
+#ifdef PIO_MICRO_TIMING
+        mtimer_async_event_in_progress(file->varlist[varid].wr_mtimer, true);
+#endif
     }
 
 #if PIO_USE_MALLOC
@@ -777,6 +798,9 @@ int PIOc_write_darray(int ncid, int varid, int ioid, PIO_Offset arraylen, void *
               (unsigned long long int) file->varlist[varid].wb_pend,
               (unsigned long long int) file->wb_pend
         ));
+#ifdef PIO_MICRO_TIMING
+    mtimer_stop(file->varlist[varid].wr_mtimer, get_var_desc_str(ncid, varid, NULL));
+#endif
 #ifdef TIMING
     GPTLstop("PIO:PIOc_write_darray");
 #endif
@@ -817,11 +841,17 @@ int PIOc_read_darray(int ncid, int varid, int ioid, PIO_Offset arraylen,
         return pio_err(NULL, NULL, PIO_EBADID, __FILE__, __LINE__);
     ios = file->iosystem;
 
+    LOG((1, "PIOc_read_darray (ncid=%d (%s), varid=%d (%s)", ncid, file->fname, varid, file->varlist[varid].vname));
+
     /* Get the iodesc. */
     if (!(iodesc = pio_get_iodesc_from_id(ioid)))
         return pio_err(ios, file, PIO_EBADID, __FILE__, __LINE__);
     pioassert(iodesc->rearranger == PIO_REARR_BOX || iodesc->rearranger == PIO_REARR_SUBSET,
               "unknown rearranger", __FILE__, __LINE__);
+
+#ifdef PIO_MICRO_TIMING
+    mtimer_start(file->varlist[varid].rd_mtimer);
+#endif
 
     /* ??? */
     if (ios->iomaster == MPI_ROOT)
@@ -829,12 +859,15 @@ int PIOc_read_darray(int ncid, int varid, int ioid, PIO_Offset arraylen,
     else
         rlen = iodesc->llen;
 
-    if(file->varlist[varid].vrsize == 0)
+    if(!ios->async || !ios->ioproc)
     {
-        ierr = calc_var_rec_sz(ncid, varid);
-        if(ierr != PIO_NOERR)
+        if(file->varlist[varid].vrsize == 0)
         {
-            LOG((1, "Unable to calculate the variable record size"));
+            ierr = calc_var_rec_sz(ncid, varid);
+            if(ierr != PIO_NOERR)
+            {
+                LOG((1, "Unable to calculate the variable record size"));
+            }
         }
     }
 
@@ -863,10 +896,16 @@ int PIOc_read_darray(int ncid, int varid, int ioid, PIO_Offset arraylen,
         return pio_err(NULL, NULL, PIO_EBADIOTYPE, __FILE__, __LINE__);
     }
 
+#ifdef PIO_MICRO_TIMING
+    mtimer_start(file->varlist[varid].rd_rearr_mtimer);
+#endif
     /* Rearrange the data. */
     if ((ierr = rearrange_io2comp(ios, iodesc, iobuf, array)))
         return pio_err(ios, file, ierr, __FILE__, __LINE__);
 
+#ifdef PIO_MICRO_TIMING
+    mtimer_stop(file->varlist[varid].rd_rearr_mtimer, get_var_desc_str(ncid, varid, NULL));
+#endif
     /* We don't use non-blocking reads */
     file->varlist[varid].rb_pend = 0;
     file->rb_pend = 0;
@@ -875,6 +914,9 @@ int PIOc_read_darray(int ncid, int varid, int ioid, PIO_Offset arraylen,
     if (rlen > 0)
         brel(iobuf);
 
+#ifdef PIO_MICRO_TIMING
+    mtimer_stop(file->varlist[varid].rd_mtimer, get_var_desc_str(ncid, varid, NULL));
+#endif
 #ifdef TIMING
     GPTLstop("PIO:PIOc_read_darray");
 #endif

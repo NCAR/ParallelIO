@@ -10,6 +10,9 @@
 #include <config.h>
 #include <pio.h>
 #include <pio_internal.h>
+#ifdef PIO_MICRO_TIMING
+#include "pio_timer.h"
+#endif
 
 /** The default error handler used when iosystem cannot be located. */
 int default_error_handler = PIO_INTERNAL_ERROR;
@@ -762,6 +765,15 @@ int PIOc_Init_Intracomm(MPI_Comm comp_comm, int num_iotasks, int stride, int bas
     /* Turn on the logging system. */
     pio_init_logging();
 
+#ifdef PIO_MICRO_TIMING
+    ret = mtimer_init(PIO_MICRO_MPI_WTIME_ROOT);
+    if(ret != PIO_NOERR)
+    {
+        LOG((1, "Initializing PIO micro timers failed"));
+        return pio_err(NULL, NULL, PIO_EINTERNAL, __FILE__, __LINE__);
+    }
+#endif
+
     /* Find the number of computation tasks. */
     if ((mpierr = MPI_Comm_size(comp_comm, &num_comptasks)))
         return check_mpi2(NULL, NULL, mpierr, __FILE__, __LINE__);
@@ -1073,6 +1085,13 @@ int PIOc_finalize(int iosysid)
     if ((ierr = pio_delete_iosystem_from_list(iosysid)))
         return pio_err(NULL, NULL, ierr, __FILE__, __LINE__);
 
+    ierr = mtimer_finalize();
+    if(ierr != PIO_NOERR)
+    {
+        /* log and continue */
+        LOG((1, "Finalizing micro timers failed"));
+    }
+
     LOG((1, "about to finalize logging"));
     pio_finalize_logging();
 
@@ -1258,6 +1277,14 @@ int PIOc_init_async(MPI_Comm world, int num_io_procs, int *io_proc_list,
     LOG((1, "PIOc_Init_Async num_io_procs = %d component_count = %d", num_io_procs,
          component_count));
 
+#ifdef PIO_MICRO_TIMING
+    ret = mtimer_init(PIO_MICRO_MPI_WTIME_ROOT);
+    if(ret != PIO_NOERR)
+    {
+        LOG((1, "Initializing PIO micro timers failed"));
+        return pio_err(NULL, NULL, PIO_EINTERNAL, __FILE__, __LINE__);
+    }
+#endif
     /* If the user did not supply a list of process numbers to use for
      * IO, create it. */
     if (!io_proc_list)
