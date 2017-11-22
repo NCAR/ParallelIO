@@ -190,7 +190,7 @@ int create_file_handler(iosystem_desc_t *ios)
 
     /* Call the create file function. */
     PIOc_createfile(ios->iosysid, &ncid, &iotype, filename, mode);
-    
+
     LOG((1, "create_file_handler succeeded!"));
     return PIO_NOERR;
 }
@@ -276,7 +276,7 @@ int inq_handler(iosystem_desc_t *ios)
 
     /* Call the inq function to get the values. */
     PIOc_inq(ncid, ndimsp, nvarsp, ngattsp, unlimdimidp);
-    
+
     return PIO_NOERR;
 }
 
@@ -1006,7 +1006,8 @@ int inq_var_handler(iosystem_desc_t *ios)
     char name[NC_MAX_NAME + 1], *namep = NULL;
     nc_type xtype, *xtypep = NULL;
     int *ndimsp = NULL, *dimidsp = NULL, *nattsp = NULL;
-    int ndims, dimids[NC_MAX_DIMS], natts;
+    int ndims, natts;
+    int dimids[PIO_MAX_DIMS];
     int mpierr;
 
     LOG((1, "inq_var_handler"));
@@ -1040,6 +1041,7 @@ int inq_var_handler(iosystem_desc_t *ios)
     if (ndims_present)
         ndimsp = &ndims;
     if (dimids_present)
+	assert(ndims_present);
         dimidsp = dimids;
     if (natts_present)
         nattsp = &natts;
@@ -1066,7 +1068,7 @@ int inq_var_chunking_handler(iosystem_desc_t *ios)
     int varid;
     char storage_present, chunksizes_present;
     int storage, *storagep = NULL;
-    PIO_Offset chunksizes[NC_MAX_DIMS], *chunksizesp = NULL;
+    PIO_Offset chunksizes[PIO_MAX_DIMS], *chunksizesp = NULL;
     int mpierr;
 
     assert(ios);
@@ -1492,7 +1494,7 @@ int def_var_chunking_handler(iosystem_desc_t *ios)
     int ndims;
     int storage;
     char chunksizes_present;
-    PIO_Offset chunksizes[NC_MAX_DIMS], *chunksizesp = NULL;
+    PIO_Offset chunksizes[PIO_MAX_DIMS], *chunksizesp = NULL;
     int mpierr;
 
     assert(ios);
@@ -2703,7 +2705,7 @@ int pio_msg_handler2(int io_rank, int component_count, iosystem_desc_t **iosys,
         /* If an error was returned by the handler, exit. */
         LOG((3, "pio_msg_handler2 ret %d msg %d index %d io_rank %d", ret, msg, index, io_rank));
         if (ret)
-            return pio_err(my_iosys, NULL, ret, __FILE__, __LINE__);            
+            return pio_err(my_iosys, NULL, ret, __FILE__, __LINE__);
 
         /* Listen for another msg from the component whose message we
          * just handled. */

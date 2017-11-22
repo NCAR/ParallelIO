@@ -41,7 +41,8 @@
 #define PIO_MAX_VARS NC_MAX_VARS
 
 /** The maximum number of dimensions allowed in a netCDF file. */
-#define PIO_MAX_DIMS NC_MAX_DIMS
+/* versions of pnetcdf 1.9 or newer and netcdf  4.5 or newer no longer use this */
+#define PIO_MAX_DIMS min(NC_MAX_DIMS, 1024)
 
 /** Pass this to PIOc_set_iosystem_error_handling() as the iosysid in
  * order to set default error handling. */
