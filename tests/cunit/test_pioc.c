@@ -130,7 +130,7 @@ int create_decomposition(int ntasks, int my_rank, int iosysid, int dim1_len, int
 /* Check the contents of the test file. */
 int check_darray_file(int iosysid, int ntasks, int my_rank, char *filename)
 {
-    int ncid;
+    int ncid, varid;
     int ndims, nvars, ngatts, unlimdimid;
     char dim_name_in[PIO_MAX_NAME + 1];
     PIO_Offset dim_len_in;
@@ -154,13 +154,15 @@ int check_darray_file(int iosysid, int ntasks, int my_rank, char *filename)
         return ret;
     if (strcmp(dim_name_in, DIM_NAME) || dim_len_in != DIM_LEN)
         return ERR_WRONG;
+    if ((ret = PIOc_inq_varid(ncid, VAR_NAME, &varid)))
+        return ret;
 
     /* Decompose the data over the tasks. */
     if ((ret = create_decomposition(ntasks, my_rank, iosysid, DIM_LEN, &ioid)))
         return ret;
 
     /* Read data. */
-    if ((ret = PIOc_read_darray(ncid, 0, ioid, arraylen, &data_in)))
+    if ((ret = PIOc_read_darray(ncid, varid, ioid, arraylen, &data_in)))
         return ret;
 
     /* Check data. */
