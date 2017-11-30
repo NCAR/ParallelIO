@@ -228,6 +228,35 @@ int PIOc_write_darray_multi(int ncid, const int *varids, int ioid, int nvars,
      * method.  */
     rlen = iodesc->maxiobuflen * nvars;
 
+#ifdef PIO_MICRO_TIMING
+    bool var_mtimer_was_running[nvars];
+    /* Use the timer on the first variable to capture the total
+      *time to rearrange data for all variables
+      */
+    ierr = mtimer_start(file->varlist[varids[0]].wr_rearr_mtimer);
+    if(ierr != PIO_NOERR)
+    {
+        LOG((1, "ERROR: Unable to start wr rearr timer"));
+        return pio_err(ios, file, ierr, __FILE__, __LINE__);
+    }
+    /* Stop any write timers that are running, thse timers will
+      *be updated later with the avg rearrange time 
+      * (wr_rearr_mtimer)
+      */
+    for(int i=0; i<nvars; i++)
+    {
+        var_mtimer_was_running[i] = false;
+        assert(mtimer_is_valid(file->varlist[varids[i]].wr_mtimer));
+        ierr = mtimer_pause(file->varlist[varids[i]].wr_mtimer,
+                &(var_mtimer_was_running[i]));
+        if(ierr != PIO_NOERR)
+        {
+            LOG((1, "ERROR: Unable to pause write timer"));
+            return pio_err(ios, file, ierr, __FILE__, __LINE__);
+        }
+    }
+#endif
+
     /* Allocate iobuf. */
     if (rlen > 0)
     {
@@ -261,6 +290,74 @@ int PIOc_write_darray_multi(int ncid, const int *varids, int ioid, int nvars,
     if ((ierr = rearrange_comp2io(ios, iodesc, array, vdesc0->iobuf, nvars)))
         return pio_err(ios, file, ierr, __FILE__, __LINE__);
 
+#ifdef PIO_MICRO_TIMING
+    double rearr_time = 0;
+    /* Use the timer on the first variable to capture the total
+      *time to rearrange data for all variables
+      */
+    ierr = mtimer_pause(file->varlist[varids[0]].wr_rearr_mtimer, NULL);
+    if(ierr != PIO_NOERR)
+    {
+        LOG((1, "ERROR: Unable to pause wr rearr timer"));
+        return pio_err(ios, file, ierr, __FILE__, __LINE__);
+    }
+
+    ierr = mtimer_get_wtime(file->varlist[varids[0]].wr_rearr_mtimer,
+            &rearr_time);
+    if(ierr != PIO_NOERR)
+    {
+        LOG((1, "ERROR: Unable to get wtime from wr rearr timer"));
+        return pio_err(ios, file, ierr, __FILE__, __LINE__);
+    }
+
+    /* Calculate the average rearrange time for a variable */
+    rearr_time /= nvars;
+    for(int i=0; i<nvars; i++)
+    {
+        /* Reset, update and flush each timer */
+        ierr = mtimer_reset(file->varlist[varids[i]].wr_rearr_mtimer);
+        if(ierr != PIO_NOERR)
+        {
+            LOG((1, "ERROR: Unable to reset wr rearr timer"));
+            return pio_err(ios, file, ierr, __FILE__, __LINE__);
+        }
+
+        /* Update the rearrange timer with avg rearrange time for a var */
+        ierr = mtimer_update(file->varlist[varids[i]].wr_rearr_mtimer,
+                rearr_time);
+        if(ierr != PIO_NOERR)
+        {
+            LOG((1, "ERROR: Unable to update wr rearr timer"));
+            return pio_err(ios, file, ierr, __FILE__, __LINE__);
+        }
+        ierr = mtimer_flush(file->varlist[varids[i]].wr_rearr_mtimer,
+                get_var_desc_str(file->pio_ncid, varids[i], NULL));
+        if(ierr != PIO_NOERR)
+        {
+            LOG((1, "ERROR: Unable to flush wr rearr timer"));
+            return pio_err(ios, file, ierr, __FILE__, __LINE__);
+        }
+        /* Update the write timer with avg rearrange time for a var */
+        ierr = mtimer_update(file->varlist[varids[i]].wr_mtimer,
+                rearr_time);
+        if(ierr != PIO_NOERR)
+        {
+            LOG((1, "ERROR: Unable to update wr timer"));
+            return pio_err(ios, file, ierr, __FILE__, __LINE__);
+        }
+
+        /* If the write timer was already running, resume it */
+        if(var_mtimer_was_running[i])
+        {
+            ierr = mtimer_resume(file->varlist[varids[i]].wr_mtimer);
+            if(ierr != PIO_NOERR)
+            {
+                LOG((1, "ERROR: Unable to resume wr timer"));
+                return pio_err(ios, file, ierr, __FILE__, __LINE__);
+            }
+        }
+    }
+#endif
     /* Write the darray based on the iotype. */
     LOG((2, "about to write darray for iotype = %d", file->iotype));
     switch (file->iotype)
