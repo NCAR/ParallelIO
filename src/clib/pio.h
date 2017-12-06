@@ -772,6 +772,24 @@ typedef struct adios_var_desc_t
      */
     int64_t adios_varid; // 0: undefined yet
 } adios_var_desc_t;
+
+/* Track attributes */
+typedef struct adios_att_desc_t
+{
+    /** Attribute name */
+    char *att_name;
+    /** NC type give at def_att time */
+    nc_type att_type;
+	/** length of attribute value */
+	PIO_Offset att_len;
+	/** ncid of the attribute */
+	int att_ncid; 
+	/** attribute varid */
+	int att_varid;
+    /** Type converted from NC type to adios type */
+    enum ADIOS_DATATYPES adios_type;
+} adios_att_desc_t;
+
 #endif
 /**
  * File descriptor structure.
@@ -809,6 +827,12 @@ typedef struct file_desc_t
     int num_vars;
     /** Number of global attributes defined. Needed to support PIOc_inq_nattrs() */
     int num_gattrs;
+
+	/* Track attributes */
+	/** attribute information. Allow PIO_MAX_VARS for now. */
+	struct adios_att_desc_t adios_attrs[PIO_MAX_VARS];
+	int    num_attrs;
+
     int fillmode;
     /** array for decompositions that has been written already (must write only once) */
     int n_written_ioids;

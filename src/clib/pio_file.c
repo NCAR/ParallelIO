@@ -300,12 +300,20 @@ int PIOc_closefile(int ncid)
             file->num_dim_vars = 0;
             for (int i=0; i<file->num_vars; i++)
             {
-                free(file->adios_vars[file->num_vars].name);
-                file->adios_vars[file->num_vars].name = NULL;
-                free(file->adios_vars[file->num_vars].gdimids);
-                file->adios_vars[file->num_vars].gdimids = NULL;
+                free(file->adios_vars[i].name);
+                file->adios_vars[i].name = NULL;
+                free(file->adios_vars[i].gdimids);
+                file->adios_vars[i].gdimids = NULL;
             }
             file->num_vars = 0;
+
+			/* Track attributes */
+			for (int i=0; i<file->num_attrs; i++) {
+				free(file->adios_attrs[i].att_name);
+				file->adios_attrs[i].att_name = NULL;
+			}
+			file->num_attrs = 0;
+
             free(file->filename);
             ierr = 0;
             break;
