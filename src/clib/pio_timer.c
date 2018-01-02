@@ -55,7 +55,7 @@ static int mtimer_flush_root(mtimer_t mt, const char *log_msg, MPI_Comm comm)
 int mtimer_init(mtimer_type_t type)
 {
     /* Note: entries in internal_timers correspond to mtimer_type_t */
-    assert(type != PIO_MICRO_NUM_TIMERS);
+    assert(type < PIO_MICRO_NUM_TIMERS);
 
     pio_timer_type = type;
 
