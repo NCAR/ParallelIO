@@ -239,7 +239,7 @@ int PIOc_write_darray_multi(int ncid, const int *varids, int ioid, int nvars,
         LOG((1, "ERROR: Unable to start wr rearr timer"));
         return pio_err(ios, file, ierr, __FILE__, __LINE__);
     }
-    /* Stop any write timers that are running, thse timers will
+    /* Stop any write timers that are running, these timers will
       *be updated later with the avg rearrange time 
       * (wr_rearr_mtimer)
       */
@@ -337,7 +337,9 @@ int PIOc_write_darray_multi(int ncid, const int *varids, int ioid, int nvars,
             LOG((1, "ERROR: Unable to flush wr rearr timer"));
             return pio_err(ios, file, ierr, __FILE__, __LINE__);
         }
-        /* Update the write timer with avg rearrange time for a var */
+        /* Update the write timer with avg rearrange time for a var
+         * i.e, the write timer includes the rearrange time
+         */
         ierr = mtimer_update(file->varlist[varids[i]].wr_mtimer,
                 rearr_time);
         if(ierr != PIO_NOERR)

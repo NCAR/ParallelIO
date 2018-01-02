@@ -766,6 +766,7 @@ int PIOc_Init_Intracomm(MPI_Comm comp_comm, int num_iotasks, int stride, int bas
     pio_init_logging();
 
 #ifdef PIO_MICRO_TIMING
+    /* Initialize the timer framework - MPI_Wtime() + output from root proc */
     ret = mtimer_init(PIO_MICRO_MPI_WTIME_ROOT);
     if(ret != PIO_NOERR)
     {
@@ -1278,6 +1279,7 @@ int PIOc_init_async(MPI_Comm world, int num_io_procs, int *io_proc_list,
          component_count));
 
 #ifdef PIO_MICRO_TIMING
+    /* Initialize the timer framework - MPI_Wtime() + output from root proc */
     ret = mtimer_init(PIO_MICRO_MPI_WTIME_ROOT);
     if(ret != PIO_NOERR)
     {

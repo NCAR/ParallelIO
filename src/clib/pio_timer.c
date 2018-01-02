@@ -2,6 +2,12 @@
 #include "pio_timer.h"
 #include "pio_internal.h"
 
+/* This structure stores information on a timer type
+ * init -> The init function for the timer
+ * finalize -> The finalize function for the timer
+ * get_wtime -> Function to retrieve wallclock time from the timer
+ * is_initialized -> Indicates if the timer type is initialized
+ */
 typedef struct internal_timer{
     int (*init) (void );
     int (*finalize) (void );
@@ -10,10 +16,14 @@ typedef struct internal_timer{
 } internal_timer_t;
 
 /* Note: entries here correspond to mtimer_type_t */
+/* Array of available timer types - init'ed in mtimer_init() */
 static internal_timer_t internal_timers[PIO_MICRO_NUM_TIMERS];
+/* Number of timers created by the user */
 static int pio_ntimers = 0;
+/* Timer type chosen by the user - init'ed in mtimer_init() */
 static mtimer_type_t pio_timer_type;
 
+/* Flush timer on the root process */
 static int mtimer_flush_root(mtimer_t mt, const char *log_msg, MPI_Comm comm)
 {
     int rank;

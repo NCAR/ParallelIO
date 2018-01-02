@@ -1253,6 +1253,7 @@ int flush_output_buffer(file_desc_t *file, bool force, PIO_Offset addsize)
         bool var_timer_was_running[maxreq];
         mtimer_t tmp_mt;
 
+        /* Temp timer to keep track of wait time */
         tmp_mt = mtimer_create("Temp_wait_timer", file->iosystem->my_comm, "piowaitlog");
         if(!mtimer_is_valid(tmp_mt))
         {
@@ -1272,6 +1273,9 @@ int flush_output_buffer(file_desc_t *file, bool force, PIO_Offset addsize)
         {
             vdesc = file->varlist + i;
 #ifdef PIO_MICRO_TIMING
+            /* Pause all timers, the temp wait timer is used to keep
+             * track of wait time
+             */
             var_timer_was_running[i] = false;
             var_has_pend_reqs[i] = (vdesc->nreqs > 0) ? true : false;
             if(mtimer_is_valid(vdesc->wr_mtimer))
@@ -1337,6 +1341,10 @@ int flush_output_buffer(file_desc_t *file, bool force, PIO_Offset addsize)
 
         /* Find avg wait time per variable */
         wait_time /= (nvars_with_reqs > 0) ? nvars_with_reqs : 1;
+
+        /* Update timers for vars with pending ops (with the avg
+         * wait time)
+         */
         for (int i = 0; i <= maxreq; i++)
         {
             vdesc = file->varlist + i;
@@ -1348,6 +1356,8 @@ int flush_output_buffer(file_desc_t *file, bool force, PIO_Offset addsize)
                     LOG((1, "Unable to update variable write timer"));
                     return ierr;
                 }
+
+                /* Wait complete - no more async events in progress */
                 ierr = mtimer_async_event_in_progress(vdesc->wr_mtimer, false);
                 if(ierr != PIO_NOERR)
                 {
