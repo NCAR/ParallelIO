@@ -49,8 +49,7 @@ test_darray_async_SOURCES = test_darray_async.c test_common.c pio_tests.h
 test_darray_async_many_SOURCES = test_darray_async_many.c test_common.c pio_tests.h
 test_darray_2sync_SOURCES = test_darray_2sync.c test_common.c pio_tests.h
 test_spmd_SOURCES = test_spmd.c test_common.c pio_tests.h
-test_intercomm2_SOURCES = test_async_simple.c test_common.c pio_tests.h
-test_async_3proc_SOURCES = test_async_3proc.c test_common.c pio_tests.h
+test_async_simple_SOURCES = test_async_simple.c test_common.c pio_tests.h
 test_async_multicomp_SOURCES = test_async_multicomp.c test_common.c pio_tests.h
 test_async_multi2_SOURCES = test_async_multi2.c test_common.c pio_tests.h
 test_async_manyproc_SOURCES = test_async_manyproc.c test_common.c pio_tests.h
@@ -65,4 +64,4 @@ TESTS = run_tests.sh
 EXTRA_DIST = run_tests.sh
 
 # Clean up files produced during testing.
-CLEANFILES = *.nc *.log *.txt
+CLEANFILES = *.nc *.log decomp*.txt
