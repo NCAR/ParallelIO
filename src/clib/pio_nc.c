@@ -2285,6 +2285,89 @@ int PIOc_def_var_fill(int ncid, int varid, int fill_mode, const void *fill_value
     return PIO_NOERR;
 }
 
+/** 
+ * Find a variables fill value.
+ *
+ * @param ncid File ID.
+ * @param varid Variable ID.
+ * @param xtype Type of variable.
+ * @param iotype The PIO IOType of the file access.
+ * @param fill_valuep Pointer that gets the fill value.
+ *
+ * @return ::PIO_NOERR No error.
+ * @author Ed Hartnett
+ */
+int find_fill_value(int ncid, int varid, int xtype, int iotype, void *fill_valuep)
+{
+    int ierr;
+
+    if (iotype == PIO_IOTYPE_NETCDF)
+        ierr = NC3_get_att(ncid, varid, _FillValue, fill_valuep, xtype);
+#ifdef _NETCDF4
+    if (iotype == PIO_IOTYPE_NETCDF4C || iotype == PIO_IOTYPE_NETCDF4P)
+        ierr = NC4_get_att(ncid, varid, _FillValue, fill_valuep, xtype);
+#endif /* _NETCDF4 */
+
+    if (ierr == NC_ENOTATT)
+    {
+        char char_fill_value = NC_FILL_CHAR;
+        signed char byte_fill_value = NC_FILL_BYTE;
+        short short_fill_value = NC_FILL_SHORT;
+        int int_fill_value = NC_FILL_INT;
+        float float_fill_value = NC_FILL_FLOAT;
+        double double_fill_value = NC_FILL_DOUBLE;
+#ifdef _NETCDF4
+        unsigned char ubyte_fill_value = NC_FILL_UBYTE;
+        unsigned short ushort_fill_value = NC_FILL_USHORT;
+        unsigned int uint_fill_value = NC_FILL_UINT;
+        long long int int64_fill_value = NC_FILL_INT64;
+        unsigned long long int uint64_fill_value = NC_FILL_UINT64;
+#endif /* _NETCDF4 */
+        switch (xtype)
+        {
+        case NC_BYTE:
+            memcpy(fill_valuep, &byte_fill_value, sizeof(signed char));
+            break;
+        case NC_CHAR:
+            memcpy(fill_valuep, &char_fill_value, sizeof(char));
+            break;
+        case NC_SHORT:
+            memcpy(fill_valuep, &short_fill_value, sizeof(short));
+            break;
+        case NC_INT:
+            memcpy(fill_valuep, &int_fill_value, sizeof(int));
+            break;
+        case NC_FLOAT:
+            memcpy(fill_valuep, &float_fill_value, sizeof(float));
+            break;
+        case NC_DOUBLE:
+            memcpy(fill_valuep, &double_fill_value, sizeof(double));
+            break;
+#ifdef _NETCDF4
+        case NC_UBYTE:
+            memcpy(fill_valuep, &ubyte_fill_value, sizeof(unsigned char));
+            break;
+        case NC_USHORT:
+            memcpy(fill_valuep, &ushort_fill_value, sizeof(unsigned short));
+            break;
+        case NC_UINT:
+            memcpy(fill_valuep, &uint_fill_value, sizeof(unsigned int));
+            break;
+        case NC_INT64:
+            memcpy(fill_valuep, &int64_fill_value, sizeof(long long int));
+            break;
+        case NC_UINT64:
+            memcpy(fill_valuep, &uint64_fill_value, sizeof(unsigned long long int));
+            break;
+#endif /* _NETCDF4 */
+        default:
+            return NC_EBADTYPE;
+        }
+        ierr = PIO_NOERR;
+    }
+    return ierr;
+}
+
 /**
  * The PIO-C interface for the NetCDF function nc_inq_var_fill.
  *
@@ -2392,9 +2475,9 @@ int PIOc_inq_var_fill(int ncid, int varid, int *no_fill, void *fill_valuep)
             {
                 if (file->writable)
                 {
-                    ierr = nc_set_fill(file->fh, NC_NOFILL, no_fill);
+                    ierr = NC3_set_fill(file->fh, NC_NOFILL, no_fill);
                     if (!ierr)
-                        ierr = nc_set_fill(file->fh, *no_fill, NULL);
+                        ierr = NC3_set_fill(file->fh, *no_fill, NULL);
                 }
                 else
                 {
@@ -2406,50 +2489,24 @@ int PIOc_inq_var_fill(int ncid, int varid, int *no_fill, void *fill_valuep)
 
             if (!ierr && fill_valuep)
             {
-                ierr = nc_get_att(file->fh, varid, _FillValue, fill_valuep);
-                if (ierr == NC_ENOTATT)
-                {
-                    char char_fill_value = NC_FILL_CHAR;
-                    signed char byte_fill_value = NC_FILL_BYTE;
-                    short short_fill_value = NC_FILL_SHORT;
-                    int int_fill_value = NC_FILL_INT;
-                    float float_fill_value = NC_FILL_FLOAT;
-                    double double_fill_value = NC_FILL_DOUBLE;
-                    switch (xtype)
-                    {
-                    case NC_BYTE:
-                        memcpy(fill_valuep, &byte_fill_value, sizeof(signed char));
-                        break;
-                    case NC_CHAR:
-                        memcpy(fill_valuep, &char_fill_value, sizeof(char));
-                        break;
-                    case NC_SHORT:
-                        memcpy(fill_valuep, &short_fill_value, sizeof(short));
-                        break;
-                    case NC_INT:
-                        memcpy(fill_valuep, &int_fill_value, sizeof(int));
-                        break;
-                    case NC_FLOAT:
-                        memcpy(fill_valuep, &float_fill_value, sizeof(float));
-                        break;
-                    case NC_DOUBLE:
-                        memcpy(fill_valuep, &double_fill_value, sizeof(double));
-                        break;
-                    default:
-                        return pio_err(ios, file, NC_EBADTYPE, __FILE__, __LINE__);
-                    }
-                    ierr = PIO_NOERR;
-                }
+                LOG((3, "about to check for fill value att with nc_get_att"));
+                ierr = find_fill_value(file->fh, varid, xtype, file->iotype, fill_valuep);
             }
         }
-        else
-        {
+        
 #ifdef _NETCDF4
+        if ((file->iotype == PIO_IOTYPE_NETCDF4C || file->iotype == PIO_IOTYPE_NETCDF4P) &&
+            file->do_io)
+        {
             /* The inq_var_fill is not supported in classic-only builds. */
-            if (file->do_io)
-                ierr = nc_inq_var_fill(file->fh, varid, no_fill, fill_valuep);
-#endif /* _NETCDF */
+            LOG((3, "netcdf 4 calling nc_inq_var_fill file->do_io %d", file->do_io));
+            ierr = NC4_inq_var_all(file->fh, varid, NULL, NULL, NULL, NULL,
+                                   NULL, NULL, NULL, NULL, NULL, NULL, NULL, no_fill,
+                                   fill_valuep, NULL, NULL, NULL, NULL);
+            if (no_fill)
+                ierr = find_fill_value(file->fh, varid, xtype, file->iotype, fill_valuep);
         }
+#endif /* _NETCDF4 */
         LOG((2, "after call to inq_var_fill, ierr = %d", ierr));
     }
 
