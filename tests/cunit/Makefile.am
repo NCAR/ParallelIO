@@ -55,17 +55,11 @@ test_async_multicomp_SOURCES = test_async_multicomp.c test_common.c pio_tests.h
 test_async_multi2_SOURCES = test_async_multi2.c test_common.c pio_tests.h
 test_async_manyproc_SOURCES = test_async_manyproc.c test_common.c pio_tests.h
 
-# Build the tests for the tests target.
-tests: ${PIO_TESTS}
-
 # Build the tests for make check.
 check_PROGRAMS = $(PIO_TESTS)
 
 # Tests will run from a bash script.
 TESTS = run_tests.sh
-
-# Bash script needs all tests built.
-run_tests.sh : tests
 
 # Distribute the test script.
 EXTRA_DIST = run_tests.sh
