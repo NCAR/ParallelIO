@@ -10,6 +10,9 @@
 #include <config.h>
 #include <pio.h>
 #include <pio_internal.h>
+#ifdef PIO_MICRO_TIMING
+#include "pio_timer.h"
+#endif
 
 /** The default error handler used when iosystem cannot be located. */
 int default_error_handler = PIO_INTERNAL_ERROR;
@@ -398,6 +401,9 @@ int PIOc_InitDecomp(int iosysid, int pio_type, int ndims, const int *gdimlen, in
     int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI function calls. */
     int ierr;              /* Return code. */
 
+#ifdef TIMING
+    GPTLstart("PIO:PIOc_initdecomp");
+#endif
     LOG((1, "PIOc_InitDecomp iosysid = %d pio_type = %d ndims = %d maplen = %d",
          iosysid, pio_type, ndims, maplen));
 
@@ -567,6 +573,9 @@ int PIOc_InitDecomp(int iosysid, int pio_type, int ndims, const int *gdimlen, in
      * PERFTUNE is set. */
     performance_tune_rearranger(ios, iodesc);
 
+#ifdef TIMING
+    GPTLstop("PIO:PIOc_initdecomp");
+#endif
     return PIO_NOERR;
 }
 
@@ -750,8 +759,21 @@ int PIOc_Init_Intracomm(MPI_Comm comp_comm, int num_iotasks, int stride, int bas
     int mpierr;        /* Return value for MPI calls. */
     int ret;           /* Return code for function calls. */
 
+#ifdef TIMING
+    GPTLstart("PIO:PIOc_Init_Intracomm");
+#endif
     /* Turn on the logging system. */
     pio_init_logging();
+
+#ifdef PIO_MICRO_TIMING
+    /* Initialize the timer framework - MPI_Wtime() + output from root proc */
+    ret = mtimer_init(PIO_MICRO_MPI_WTIME_ROOT);
+    if(ret != PIO_NOERR)
+    {
+        LOG((1, "Initializing PIO micro timers failed"));
+        return pio_err(NULL, NULL, PIO_EINTERNAL, __FILE__, __LINE__);
+    }
+#endif
 
     /* Find the number of computation tasks. */
     if ((mpierr = MPI_Comm_size(comp_comm, &num_comptasks)))
@@ -870,6 +892,9 @@ int PIOc_Init_Intracomm(MPI_Comm comp_comm, int num_iotasks, int stride, int bas
 
     LOG((2, "Init_Intracomm complete iosysid = %d", *iosysidp));
 
+#ifdef TIMING
+    GPTLstop("PIO:PIOc_Init_Intracomm");
+#endif
     return PIO_NOERR;
 }
 
@@ -967,6 +992,9 @@ int PIOc_finalize(int iosysid)
     int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI function codes. */
     int ierr = PIO_NOERR;
 
+#ifdef TIMING
+    GPTLstart("PIO:PIOc_finalize");
+#endif
     LOG((1, "PIOc_finalize iosysid = %d MPI_COMM_NULL = %d", iosysid,
          MPI_COMM_NULL));
 
@@ -1058,10 +1086,20 @@ int PIOc_finalize(int iosysid)
     if ((ierr = pio_delete_iosystem_from_list(iosysid)))
         return pio_err(NULL, NULL, ierr, __FILE__, __LINE__);
 
+    ierr = mtimer_finalize();
+    if(ierr != PIO_NOERR)
+    {
+        /* log and continue */
+        LOG((1, "Finalizing micro timers failed"));
+    }
+
     LOG((1, "about to finalize logging"));
     pio_finalize_logging();
 
     LOG((2, "PIOc_finalize completed successfully"));
+#ifdef TIMING
+    GPTLstop("PIO:PIOc_finalize");
+#endif
     return PIO_NOERR;
 }
 
@@ -1223,6 +1261,9 @@ int PIOc_init_async(MPI_Comm world, int num_io_procs, int *io_proc_list,
     int mpierr;           /* Return code from MPI functions. */
     int ret;              /* Return code. */
 
+#ifdef TIMING
+    GPTLstart("PIO:PIOc_init_async");
+#endif
     /* Check input parameters. */
     if (num_io_procs < 1 || component_count < 1 || !num_procs_per_comp || !iosysidp ||
         (rearranger != PIO_REARR_BOX && rearranger != PIO_REARR_SUBSET))
@@ -1237,6 +1278,15 @@ int PIOc_init_async(MPI_Comm world, int num_io_procs, int *io_proc_list,
     LOG((1, "PIOc_Init_Async num_io_procs = %d component_count = %d", num_io_procs,
          component_count));
 
+#ifdef PIO_MICRO_TIMING
+    /* Initialize the timer framework - MPI_Wtime() + output from root proc */
+    ret = mtimer_init(PIO_MICRO_MPI_WTIME_ROOT);
+    if(ret != PIO_NOERR)
+    {
+        LOG((1, "Initializing PIO micro timers failed"));
+        return pio_err(NULL, NULL, PIO_EINTERNAL, __FILE__, __LINE__);
+    }
+#endif
     /* If the user did not supply a list of process numbers to use for
      * IO, create it. */
     if (!io_proc_list)
@@ -1587,6 +1637,9 @@ int PIOc_init_async(MPI_Comm world, int num_io_procs, int *io_proc_list,
         return check_mpi(NULL, ret, __FILE__, __LINE__);
 
     LOG((2, "successfully done with PIO_Init_Async"));
+#ifdef TIMING
+    GPTLstop("PIO:PIOc_init_async");
+#endif
     return PIO_NOERR;
 }
 

@@ -17,6 +17,9 @@
 #include <config.h>
 #include <pio.h>
 #include <pio_internal.h>
+#ifdef PIO_MICRO_TIMING
+#include "pio_timer.h"
+#endif
 
 /**
  * @ingroup PIO_inq
@@ -754,7 +757,12 @@ int PIOc_inq_var(int ncid, int varid, char *name, nc_type *xtypep, int *ndimsp,
     iosystem_desc_t *ios;
     file_desc_t *file;
     int ndims = 0;    /* The number of dimensions for this variable. */
+    char my_name[PIO_MAX_NAME + 1];
+    int slen;
     int ierr;
+#ifdef PIO_MICRO_TIMING
+    char timer_log_fname[PIO_MAX_NAME];
+#endif
     int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI function codes. */
 
     LOG((1, "PIOc_inq_var ncid = %d varid = %d", ncid, varid));
@@ -812,10 +820,40 @@ int PIOc_inq_var(int ncid, int varid, char *name, nc_type *xtypep, int *ndimsp,
 #ifdef _PNETCDF
         if (file->iotype == PIO_IOTYPE_PNETCDF)
         {
+            int *tmp_dimidsp = NULL;
             ierr = ncmpi_inq_varndims(file->fh, varid, &ndims);
             LOG((2, "from pnetcdf ndims = %d", ndims));
+            if(!ierr && (!dimidsp) && (file->num_unlim_dimids > 0))
+            {
+                tmp_dimidsp = (int *)malloc(ndims * sizeof(int));
+                if(!tmp_dimidsp)
+                {
+                    return pio_err(ios, file, PIO_ENOMEM, __FILE__, __LINE__);
+                }
+            }
             if (!ierr)
-                ierr = ncmpi_inq_var(file->fh, varid, name, xtypep, ndimsp, dimidsp, nattsp);
+                ierr = ncmpi_inq_var(file->fh, varid, my_name, xtypep, ndimsp, (dimidsp)?dimidsp:tmp_dimidsp, nattsp);
+            if (!ierr && name)
+            {
+                strncpy(name, my_name, PIO_MAX_NAME);
+            }
+            if(!ierr && (file->num_unlim_dimids > 0))
+            {
+                int *p = (dimidsp) ? dimidsp : tmp_dimidsp;
+                int is_rec_var = file->varlist[varid].rec_var;
+                for(int i=0; (i<ndims) && (!is_rec_var); i++)
+                {
+                    for(int j=0; (j<file->num_unlim_dimids) && (!is_rec_var); j++)
+                    {
+                        if(p[i] == file->unlim_dimids[j])
+                        {
+                            is_rec_var = 1;
+                        }
+                    }
+                }
+                file->varlist[varid].rec_var = is_rec_var;
+            }
+            free(tmp_dimidsp);
         }
 #endif /* _PNETCDF */
 
@@ -825,7 +863,6 @@ int PIOc_inq_var(int ncid, int varid, char *name, nc_type *xtypep, int *ndimsp,
             LOG((3, "nc_inq_varndims called ndims = %d", ndims));
             if (!ierr)
             {
-                char my_name[NC_MAX_NAME + 1];
                 nc_type my_xtype;
                 int my_ndims = 0, my_dimids[ndims], my_natts = 0;
                 ierr = nc_inq_var(file->fh, varid, my_name, &my_xtype, &my_ndims, my_dimids, &my_natts);
@@ -845,6 +882,22 @@ int PIOc_inq_var(int ncid, int varid, char *name, nc_type *xtypep, int *ndimsp,
                     }
                     if (nattsp)
                         *nattsp = my_natts;
+
+                    if(file->num_unlim_dimids > 0)
+                    {
+                        int is_rec_var = file->varlist[varid].rec_var;
+                        for(int i=0; (i<ndims) && (!is_rec_var); i++)
+                        {
+                            for(int j=0; (j<file->num_unlim_dimids) && (!is_rec_var); j++)
+                            {
+                                if(my_dimids[i] == file->unlim_dimids[j])
+                                {
+                                    is_rec_var = 1;
+                                }
+                            }
+                        }
+                        file->varlist[varid].rec_var = is_rec_var;
+                    }
                 }
             }
         }
@@ -859,16 +912,63 @@ int PIOc_inq_var(int ncid, int varid, char *name, nc_type *xtypep, int *ndimsp,
         return check_netcdf(file, ierr, __FILE__, __LINE__);
 
     /* Broadcast the results for non-null pointers. */
+    if (ios->iomaster == MPI_ROOT)
+        slen = strlen(my_name);
+    if ((mpierr = MPI_Bcast(&slen, 1, MPI_INT, ios->ioroot, ios->my_comm)))
+        return check_mpi(file, mpierr, __FILE__, __LINE__);
+    if ((mpierr = MPI_Bcast((void *)my_name, slen + 1, MPI_CHAR, ios->ioroot, ios->my_comm)))
+        return check_mpi(file, mpierr, __FILE__, __LINE__);
     if (name)
     {
-        int slen;
-        if (ios->iomaster == MPI_ROOT)
-            slen = strlen(name);
-        if ((mpierr = MPI_Bcast(&slen, 1, MPI_INT, ios->ioroot, ios->my_comm)))
-            return check_mpi(file, mpierr, __FILE__, __LINE__);
-        if ((mpierr = MPI_Bcast((void *)name, slen + 1, MPI_CHAR, ios->ioroot, ios->my_comm)))
-            return check_mpi(file, mpierr, __FILE__, __LINE__);
+        strncpy(name, my_name, PIO_MAX_NAME);
     }
+    strncpy(file->varlist[varid].vname, my_name, PIO_MAX_NAME);
+
+#ifdef PIO_MICRO_TIMING
+    /* Create timers for the variable
+      * - Assuming that we don't reuse varids 
+      * - Also assuming that a timer is needed if we query about a var
+      * */
+    snprintf(timer_log_fname, PIO_MAX_NAME, "piorwinfo%010dwrank.dat", ios->ioroot);
+    if(!mtimer_is_valid(file->varlist[varid].rd_mtimer))
+    {
+        char tmp_timer_name[PIO_MAX_NAME];
+        snprintf(tmp_timer_name, PIO_MAX_NAME, "%s_%s", "rd", file->varlist[varid].vname);
+        file->varlist[varid].rd_mtimer = mtimer_create(tmp_timer_name, ios->my_comm, timer_log_fname);
+        if(!mtimer_is_valid(file->varlist[varid].rd_mtimer))
+        {
+            LOG((1, "Error creating timers (rd) for variable"));
+            return pio_err(ios, file, PIO_EINTERNAL, __FILE__, __LINE__);
+        }
+        assert(!mtimer_is_valid(file->varlist[varid].rd_rearr_mtimer));
+        snprintf(tmp_timer_name, PIO_MAX_NAME, "%s_%s", "rd_rearr", file->varlist[varid].vname);
+        file->varlist[varid].rd_rearr_mtimer = mtimer_create(tmp_timer_name, ios->my_comm, timer_log_fname);
+        if(!mtimer_is_valid(file->varlist[varid].rd_rearr_mtimer))
+        {
+            LOG((1, "Error creating timers (rd_rearr) for variable"));
+            return pio_err(ios, file, PIO_EINTERNAL, __FILE__, __LINE__);
+        }
+        snprintf(tmp_timer_name, PIO_MAX_NAME, "%s_%s", "wr", file->varlist[varid].vname);
+        file->varlist[varid].wr_mtimer = mtimer_create(tmp_timer_name, ios->my_comm, timer_log_fname);
+        if(!mtimer_is_valid(file->varlist[varid].wr_mtimer))
+        {
+            LOG((1, "Error creating timers (wr) for variable"));
+            return pio_err(ios, file, PIO_EINTERNAL, __FILE__, __LINE__);
+        }
+        assert(!mtimer_is_valid(file->varlist[varid].wr_rearr_mtimer));
+        snprintf(tmp_timer_name, PIO_MAX_NAME, "%s_%s", "wr_rearr", file->varlist[varid].vname);
+        file->varlist[varid].wr_rearr_mtimer = mtimer_create(tmp_timer_name, ios->my_comm, timer_log_fname);
+        if(!mtimer_is_valid(file->varlist[varid].wr_rearr_mtimer))
+        {
+            LOG((1, "Error creating timers (wr_rearr) for variable"));
+            return pio_err(ios, file, PIO_EINTERNAL, __FILE__, __LINE__);
+        }
+    }
+#endif
+
+    if ((mpierr = MPI_Bcast(&(file->varlist[varid].rec_var), 1, MPI_INT, ios->ioroot, ios->my_comm)))
+        return check_mpi(file, mpierr, __FILE__, __LINE__);
+
     if (xtypep)
         if ((mpierr = MPI_Bcast(xtypep, 1, MPI_INT, ios->ioroot, ios->my_comm)))
             return check_mpi(file, mpierr, __FILE__, __LINE__);
@@ -989,6 +1089,9 @@ int PIOc_inq_varid(int ncid, const char *name, int *varidp)
     iosystem_desc_t *ios;  /* Pointer to io system information. */
     file_desc_t *file;     /* Pointer to file information. */
     int ierr;              /* Return code from function calls. */
+#ifdef PIO_MICRO_TIMING
+    char timer_log_fname[PIO_MAX_NAME];
+#endif
     int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI function codes. */
 
     /* Get file info based on ncid. */
@@ -1051,6 +1154,47 @@ int PIOc_inq_varid(int ncid, const char *name, int *varidp)
         if ((mpierr = MPI_Bcast(varidp, 1, MPI_INT, ios->ioroot, ios->my_comm)))
             check_mpi(file, mpierr, __FILE__, __LINE__);
 
+#ifdef PIO_MICRO_TIMING
+    /* Create timers for the variable
+      * - Assuming that we don't reuse varids
+      * - Also assuming that a timer is needed if we query about a var
+      * */
+    snprintf(timer_log_fname, PIO_MAX_NAME, "piorwinfo%010dwrank.dat", ios->ioroot);
+    if(!mtimer_is_valid(file->varlist[*varidp].rd_mtimer))
+    {
+        char tmp_timer_name[PIO_MAX_NAME];
+        snprintf(tmp_timer_name, PIO_MAX_NAME, "%s_%s", "rd", name);
+        file->varlist[*varidp].rd_mtimer = mtimer_create(tmp_timer_name, ios->my_comm, timer_log_fname);
+        if(!mtimer_is_valid(file->varlist[*varidp].rd_mtimer))
+        {
+            LOG((1, "Error creating timers (rd) for variable"));
+            return pio_err(ios, file, PIO_EINTERNAL, __FILE__, __LINE__);
+        }
+        assert(!mtimer_is_valid(file->varlist[*varidp].rd_rearr_mtimer));
+        snprintf(tmp_timer_name, PIO_MAX_NAME, "%s_%s", "rd_rearr", name);
+        file->varlist[*varidp].rd_rearr_mtimer = mtimer_create(tmp_timer_name, ios->my_comm, timer_log_fname);
+        if(!mtimer_is_valid(file->varlist[*varidp].rd_rearr_mtimer))
+        {
+            LOG((1, "Error creating timers (rd_rearr) for variable"));
+            return pio_err(ios, file, PIO_EINTERNAL, __FILE__, __LINE__);
+        }
+        snprintf(tmp_timer_name, PIO_MAX_NAME, "%s_%s", "wr", name);
+        file->varlist[*varidp].wr_mtimer = mtimer_create(tmp_timer_name, ios->my_comm, timer_log_fname);
+        if(!mtimer_is_valid(file->varlist[*varidp].wr_mtimer))
+        {
+            LOG((1, "Error creating timers (wr) for variable"));
+            return pio_err(ios, file, PIO_EINTERNAL, __FILE__, __LINE__);
+        }
+        assert(!mtimer_is_valid(file->varlist[*varidp].wr_rearr_mtimer));
+        snprintf(tmp_timer_name, PIO_MAX_NAME, "%s_%s", "wr_rearr", name);
+        file->varlist[*varidp].wr_rearr_mtimer = mtimer_create(tmp_timer_name, ios->my_comm, timer_log_fname);
+        if(!mtimer_is_valid(file->varlist[*varidp].wr_rearr_mtimer))
+        {
+            LOG((1, "Error creating timers (wr_rearr) for variable"));
+            return pio_err(ios, file, PIO_EINTERNAL, __FILE__, __LINE__);
+        }
+    }
+#endif
     return PIO_NOERR;
 }
 
@@ -1855,6 +1999,7 @@ int PIOc_def_dim(int ncid, const char *name, PIO_Offset len, int *idp)
     file_desc_t *file;     /* Pointer to file information. */
     int ierr;              /* Return code from function calls. */
     int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI function codes. */
+    int tmp_id = -1;
 
     /* Find the info about this file. */
     if ((ierr = pio_get_file(ncid, &file)))
@@ -1864,6 +2009,11 @@ int PIOc_def_dim(int ncid, const char *name, PIO_Offset len, int *idp)
     /* User must provide name shorter than NC_MAX_NAME +1. */
     if (!name || strlen(name) > NC_MAX_NAME)
         return pio_err(ios, file, PIO_EINVAL, __FILE__, __LINE__);
+
+    if(!idp)
+    {
+        idp = &tmp_id;
+    }
 
     LOG((1, "PIOc_def_dim ncid = %d name = %s len = %d", ncid, name, len));
 
@@ -1907,6 +2057,7 @@ int PIOc_def_dim(int ncid, const char *name, PIO_Offset len, int *idp)
 
         if (file->iotype != PIO_IOTYPE_PNETCDF && file->do_io)
             ierr = nc_def_dim(file->fh, name, (size_t)len, idp);
+
     }
 
     /* Broadcast and check the return code. */
@@ -1919,6 +2070,19 @@ int PIOc_def_dim(int ncid, const char *name, PIO_Offset len, int *idp)
     if (idp)
         if ((mpierr = MPI_Bcast(idp , 1, MPI_INT, ios->ioroot, ios->my_comm)))
             check_mpi(file, mpierr, __FILE__, __LINE__);
+
+    if(len == PIO_UNLIMITED)
+    {
+        file->num_unlim_dimids++;
+        file->unlim_dimids = (int *)realloc(file->unlim_dimids,
+                                      file->num_unlim_dimids * sizeof(int));
+        if(!file->unlim_dimids)
+        {
+            return pio_err(ios, file, PIO_ENOMEM, __FILE__, __LINE__);
+        }
+        file->unlim_dimids[file->num_unlim_dimids-1] = *idp;
+        LOG((1, "pio_def_dim : %d dim is unlimited", *idp));
+    }
 
     LOG((2, "def_dim ierr = %d", ierr));
     return PIO_NOERR;
@@ -1945,6 +2109,9 @@ int PIOc_def_var(int ncid, const char *name, nc_type xtype, int ndims,
     iosystem_desc_t *ios;  /* Pointer to io system information. */
     file_desc_t *file;     /* Pointer to file information. */
     int ierr;              /* Return code from function calls. */
+#ifdef PIO_MICRO_TIMING
+    char timer_log_fname[PIO_MAX_NAME];
+#endif
     int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI function codes. */
 
     /* Get the file information. */
@@ -2019,10 +2186,68 @@ int PIOc_def_var(int ncid, const char *name, nc_type xtype, int ndims,
         return check_netcdf(file, ierr, __FILE__, __LINE__);
 
     /* Broadcast results. */
+    /* FIXME: varidp should be valid, no need to check it here */
     if (varidp)
         if ((mpierr = MPI_Bcast(varidp, 1, MPI_INT, ios->ioroot, ios->my_comm)))
             check_mpi(file, mpierr, __FILE__, __LINE__);
 
+    strncpy(file->varlist[*varidp].vname, name, PIO_MAX_NAME);
+    if(file->num_unlim_dimids > 0)
+    {
+        int is_rec_var = 0;
+        for(int i=0; (i<ndims) && (!is_rec_var); i++)
+        {
+            for(int j=0; (j<file->num_unlim_dimids) && (!is_rec_var); j++)
+            {
+                if(dimidsp[i] == file->unlim_dimids[j])
+                {
+                    is_rec_var = 1;
+                }
+            }
+        }
+        file->varlist[*varidp].rec_var = is_rec_var;
+    }
+#ifdef PIO_MICRO_TIMING
+    /* Create timers for the variable
+      * - Assuming that we don't reuse varids 
+      * - Also assuming that a timer is needed if we query about a var
+      * */
+    snprintf(timer_log_fname, PIO_MAX_NAME, "piorwinfo%010dwrank.dat", ios->ioroot);
+    if(!mtimer_is_valid(file->varlist[*varidp].rd_mtimer))
+    {
+        char tmp_timer_name[PIO_MAX_NAME];
+        snprintf(tmp_timer_name, PIO_MAX_NAME, "%s_%s", "rd", name);
+        file->varlist[*varidp].rd_mtimer = mtimer_create(tmp_timer_name, ios->my_comm, timer_log_fname);
+        if(!mtimer_is_valid(file->varlist[*varidp].rd_mtimer))
+        {
+            LOG((1, "Error creating timers (rd) for variable"));
+            return pio_err(ios, file, PIO_EINTERNAL, __FILE__, __LINE__);
+        }
+        assert(!mtimer_is_valid(file->varlist[*varidp].rd_rearr_mtimer));
+        snprintf(tmp_timer_name, PIO_MAX_NAME, "%s_%s", "rd_rearr", name);
+        file->varlist[*varidp].rd_rearr_mtimer = mtimer_create(tmp_timer_name, ios->my_comm, timer_log_fname);
+        if(!mtimer_is_valid(file->varlist[*varidp].rd_rearr_mtimer))
+        {
+            LOG((1, "Error creating timers (rd_rearr) for variable"));
+            return pio_err(ios, file, PIO_EINTERNAL, __FILE__, __LINE__);
+        }
+        snprintf(tmp_timer_name, PIO_MAX_NAME, "%s_%s", "wr", name);
+        file->varlist[*varidp].wr_mtimer = mtimer_create(tmp_timer_name, ios->my_comm, timer_log_fname);
+        if(!mtimer_is_valid(file->varlist[*varidp].wr_mtimer))
+        {
+            LOG((1, "Error creating timers (wr) for variable"));
+            return pio_err(ios, file, PIO_EINTERNAL, __FILE__, __LINE__);
+        }
+        assert(!mtimer_is_valid(file->varlist[*varidp].wr_rearr_mtimer));
+        snprintf(tmp_timer_name, PIO_MAX_NAME, "%s_%s", "wr_rearr", name);
+        file->varlist[*varidp].wr_rearr_mtimer = mtimer_create(tmp_timer_name, ios->my_comm, timer_log_fname);
+        if(!mtimer_is_valid(file->varlist[*varidp].wr_rearr_mtimer))
+        {
+            LOG((1, "Error creating timers (wr_rearr) for variable"));
+            return pio_err(ios, file, PIO_EINTERNAL, __FILE__, __LINE__);
+        }
+    }
+#endif
     return PIO_NOERR;
 }
 

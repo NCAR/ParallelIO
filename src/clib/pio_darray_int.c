@@ -12,6 +12,9 @@
 #include <config.h>
 #include <pio.h>
 #include <pio_internal.h>
+#ifdef PIO_MICRO_TIMING
+#include "pio_timer.h"
+#endif
 
 /* 10MB default limit. */
 extern PIO_Offset pio_buffer_size_limit;
@@ -1192,6 +1195,9 @@ int flush_output_buffer(file_desc_t *file, bool force, PIO_Offset addsize)
     int mpierr;  /* Return code from MPI functions. */
     int ierr = PIO_NOERR;
 
+#ifdef TIMING
+    GPTLstart("PIO:flush_output_buffer");
+#endif
 #ifdef _PNETCDF
     var_desc_t *vdesc;
     PIO_Offset usage = 0;
@@ -1226,6 +1232,7 @@ int flush_output_buffer(file_desc_t *file, bool force, PIO_Offset addsize)
         int rcnt;
         int  maxreq;
         int reqcnt;
+        int nvars_with_reqs = 0;
         maxreq = 0;
         reqcnt = 0;
         rcnt = 0;
@@ -1234,14 +1241,53 @@ int flush_output_buffer(file_desc_t *file, bool force, PIO_Offset addsize)
             vdesc = file->varlist + i;
             reqcnt += vdesc->nreqs;
             if (vdesc->nreqs > 0)
+            {
                 maxreq = i;
+                nvars_with_reqs++;
+            }
         }
         int request[reqcnt];
         int status[reqcnt];
+#ifdef PIO_MICRO_TIMING
+        bool var_has_pend_reqs[maxreq];
+        bool var_timer_was_running[maxreq];
+        mtimer_t tmp_mt;
+
+        /* Temp timer to keep track of wait time */
+        tmp_mt = mtimer_create("Temp_wait_timer", file->iosystem->my_comm, "piowaitlog");
+        if(!mtimer_is_valid(tmp_mt))
+        {
+            LOG((1, "Unable to create a temp timer"));
+            return pio_err(file->iosystem, file, PIO_EINTERNAL, __FILE__, __LINE__);
+        }
+
+        ierr = mtimer_start(tmp_mt);
+        if(ierr != PIO_NOERR)
+        {
+            LOG((1, "Unable to start the temp wait timer"));
+            return ierr;
+        }
+#endif
 
         for (int i = 0; i <= maxreq; i++)
         {
             vdesc = file->varlist + i;
+#ifdef PIO_MICRO_TIMING
+            /* Pause all timers, the temp wait timer is used to keep
+             * track of wait time
+             */
+            var_timer_was_running[i] = false;
+            var_has_pend_reqs[i] = (vdesc->nreqs > 0) ? true : false;
+            if(mtimer_is_valid(vdesc->wr_mtimer))
+            {
+                ierr = mtimer_pause(vdesc->wr_mtimer, &(var_timer_was_running[i]));
+                if(ierr != PIO_NOERR)
+                {
+                    LOG((1, "Unable to pause the timer"));
+                    return ierr;
+                }
+            }
+#endif
 #ifdef MPIO_ONESIDED
             /*onesided optimization requires that all of the requests in a wait_all call represent
               a contiguous block of data in the file */
@@ -1269,10 +1315,84 @@ int flush_output_buffer(file_desc_t *file, bool force, PIO_Offset addsize)
         if (rcnt > 0)
             ierr = ncmpi_wait_all(file->fh, rcnt, request, status);
 
+#ifdef PIO_MICRO_TIMING
+        ierr = mtimer_pause(tmp_mt, NULL);
+        if(ierr != PIO_NOERR)
+        {
+            LOG((1, "Unable to pause temp wait timer"));
+            return ierr;
+        }
+
+        /* Get the total wait time */
+        double wait_time = 0;
+        ierr = mtimer_get_wtime(tmp_mt, &wait_time);
+        if(ierr != PIO_NOERR)
+        {
+            LOG((1, "Error trying to get wallclock time (temp wait timer)"));
+            return ierr;
+        }
+
+        ierr = mtimer_destroy(&tmp_mt);
+        if(ierr != PIO_NOERR)
+        {
+            LOG((1, "Destroying temp wait timer failed"));
+            /* Continue */
+        }
+
+        /* Find avg wait time per variable */
+        wait_time /= (nvars_with_reqs > 0) ? nvars_with_reqs : 1;
+
+        /* Update timers for vars with pending ops (with the avg
+         * wait time)
+         */
+        for (int i = 0; i <= maxreq; i++)
+        {
+            vdesc = file->varlist + i;
+            if(var_has_pend_reqs[i] && mtimer_is_valid(vdesc->wr_mtimer))
+            {
+                ierr = mtimer_update(vdesc->wr_mtimer, wait_time);
+                if(ierr != PIO_NOERR)
+                {
+                    LOG((1, "Unable to update variable write timer"));
+                    return ierr;
+                }
+
+                /* Wait complete - no more async events in progress */
+                ierr = mtimer_async_event_in_progress(vdesc->wr_mtimer, false);
+                if(ierr != PIO_NOERR)
+                {
+                    LOG((1, "Unable to disable async events for var"));
+                    return ierr;
+                }
+                /* If timer was already running, restart it or else flush it */
+                if(var_timer_was_running[i])
+                {
+                    ierr = mtimer_resume(vdesc->wr_mtimer);
+                    if(ierr != PIO_NOERR)
+                    {
+                        LOG((1, "Unable to resume variable write timer"));
+                        return ierr;
+                    }
+                }
+                else
+                {
+                    ierr = mtimer_flush(vdesc->wr_mtimer,
+                            get_var_desc_str(file->pio_ncid, vdesc->varid, NULL));
+                    if(ierr != PIO_NOERR)
+                    {
+                        LOG((1, "Unable to flush timer"));
+                        return ierr;
+                    }
+                }
+            }
+        }
+#endif
+
         /* Release resources. */
         for (int i = 0; i < PIO_MAX_VARS; i++)
         {
             vdesc = file->varlist + i;
+            vdesc->wb_pend = 0;
             if (vdesc->iobuf)
             {
 		LOG((3,"freeing variable buffer in flush_output_buffer"));
@@ -1285,9 +1405,13 @@ int flush_output_buffer(file_desc_t *file, bool force, PIO_Offset addsize)
                 vdesc->fillbuf = NULL;
             }
         }
+        file->wb_pend = 0;
     }
 
 #endif /* _PNETCDF */
+#ifdef TIMING
+    GPTLstop("PIO:flush_output_buffer");
+#endif
     return ierr;
 }
 
@@ -1377,6 +1501,9 @@ int flush_buffer(int ncid, wmulti_buffer *wmb, bool flushtodisk)
     file_desc_t *file;
     int ret;
 
+#ifdef TIMING
+    GPTLstart("PIO:flush_buffer");
+#endif
     /* Check input. */
     pioassert(wmb, "invalid input", __FILE__, __LINE__);
 
@@ -1419,6 +1546,9 @@ int flush_buffer(int ncid, wmulti_buffer *wmb, bool flushtodisk)
             return pio_err(NULL, file, ret, __FILE__, __LINE__);
     }
 
+#ifdef TIMING
+    GPTLstop("PIO:flush_buffer");
+#endif
     return PIO_NOERR;
 }
 

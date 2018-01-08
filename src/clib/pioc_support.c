@@ -732,7 +732,11 @@ int PIOc_freedecomp(int iosysid, int ioid)
     iosystem_desc_t *ios;
     io_desc_t *iodesc;
     int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI function calls. */
+    int ret = 0;
 
+#ifdef TIMING
+    GPTLstart("PIO:PIOc_freedecomp");
+#endif
     if (!(ios = pio_get_iosystem_from_id(iosysid)))
         return pio_err(NULL, NULL, PIO_EBADID, __FILE__, __LINE__);
 
@@ -815,7 +819,12 @@ int PIOc_freedecomp(int iosysid, int ioid)
         if ((mpierr = MPI_Comm_free(&iodesc->subset_comm)))
             return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
 
-    return pio_delete_iodesc_from_list(ioid);
+    ret = pio_delete_iodesc_from_list(ioid);
+#ifdef TIMING
+    GPTLstop("PIO:PIOc_freedecomp");
+#endif
+
+    return ret;
 }
 
 /**
@@ -1700,6 +1709,9 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
     int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI function codes. */
     int ierr;              /* Return code from function calls. */
 
+#ifdef TIMING
+    GPTLstart("PIO:PIOc_createfile_int");
+#endif
     /* Get the IO system info from the iosysid. */
     if (!(ios = pio_get_iosystem_from_id(iosysid)))
         return pio_err(NULL, NULL, PIO_EBADID, __FILE__, __LINE__);
@@ -1721,11 +1733,17 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
 
     /* Fill in some file values. */
     file->fh = -1;
+    strncpy(file->fname, filename, PIO_MAX_NAME);
     file->iosystem = ios;
     file->iotype = *iotype;
     file->buffer.ioid = -1;
+    /*
+    file->num_unlim_dimids = 0;
+    file->unlim_dimids = NULL;
+    */
     for (int i = 0; i < PIO_MAX_VARS; i++)
     {
+        file->varlist[i].vname[0] = '\0';
         file->varlist[i].record = -1;
         file->varlist[i].request = NULL;
         file->varlist[i].nreqs = 0;
@@ -1871,6 +1889,9 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
     LOG((2, "Created file %s file->fh = %d file->pio_ncid = %d", filename,
          file->fh, file->pio_ncid));
 
+#ifdef TIMING
+    GPTLstop("PIO:PIOc_createfile_int");
+#endif
     return ierr;
 }
 
@@ -1926,12 +1947,20 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
 
     /* Fill in some file values. */
     file->fh = -1;
+    strncpy(file->fname, filename, PIO_MAX_NAME);
     file->iotype = *iotype;
     file->iosystem = ios;
     file->mode = mode;
+    /*
+    file->num_unlim_dimids = 0;
+    file->unlim_dimids = NULL;
+    */
 
     for (int i = 0; i < PIO_MAX_VARS; i++)
+    {
+        file->varlist[i].vname[0] = '\0';
         file->varlist[i].record = -1;
+    }
 
     /* Set to true if this task should participate in IO (only true
      * for one task with netcdf serial files. */
@@ -2085,6 +2114,30 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
     LOG((2, "Opened file %s file->pio_ncid = %d file->fh = %d ierr = %d",
          filename, file->pio_ncid, file->fh, ierr));
 
+    /* Check if the file has unlimited dimensions */
+    if(!ios->async || !ios->ioproc)
+    {
+        ierr = PIOc_inq_unlimdims(*ncidp, &(file->num_unlim_dimids), NULL);
+        if(ierr != PIO_NOERR)
+        {
+            return pio_err(ios, file, ierr, __FILE__, __LINE__);
+        }
+        if(file->num_unlim_dimids > 0)
+        {
+            file->unlim_dimids = (int *)malloc(file->num_unlim_dimids * sizeof(int));
+            if(!file->unlim_dimids)
+            {
+                return pio_err(ios, file, PIO_ENOMEM, __FILE__, __LINE__);
+            }
+            ierr = PIOc_inq_unlimdims(*ncidp, NULL, file->unlim_dimids);
+            if(ierr != PIO_NOERR)
+            {
+                return pio_err(ios, file, ierr, __FILE__, __LINE__);
+            }
+        }
+        LOG((3, "File has %d unlimited dimensions", file->num_unlim_dimids));
+    }
+
     return ierr;
 }
 
@@ -2142,6 +2195,8 @@ int openfile_int(int iosysid, int *ncidp, int *iotype, const char *filename,
         return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
 
     /* Create an entry in the varlist for each variable. */
+    /* FIXME : Until we start using varlist2, this code
+     * should be commented out - this code is costly */
     for (int v = 0; v < nvars; v++)
     {
         int rec_var = 0; /* Does var use unlimited dimension? */
@@ -2389,4 +2444,146 @@ int PIOc_set_rearr_opts(int iosysid, int comm_type, int fcd, bool enable_hs_c2i,
     ios->rearr_opts = user_rearr_opts;
 
     return PIO_NOERR;
+}
+
+/* Calculate and cache the variable record size 
+ * for the variable corresponding to varid
+ * Note: Since this function calls many PIOc_* functions
+ * only compute procs should call this function for async
+ * i/o calls
+ * */
+int calc_var_rec_sz(int ncid, int varid)
+{
+    iosystem_desc_t *ios;  /* Pointer to io system information. */
+    file_desc_t *file;     /* Pointer to file information. */
+    int ndims;
+    nc_type vtype;
+    PIO_Offset vtype_sz = 0;
+    int ierr, mpierr;
+
+    ierr = pio_get_file(ncid, &file);
+    if(ierr != PIO_NOERR)
+    {
+        LOG((1, "Unable to get file corresponding to ncid = %d", ncid));
+        return pio_err(NULL, NULL, PIO_EBADID, __FILE__, __LINE__);
+    }
+    ios = file->iosystem;
+    assert(ios != NULL);
+
+    /* Async io is still under development and write/read darrays need to
+     * be implemented correctly before we remove the check below
+     */
+    if(ios->async)
+    {
+        LOG((1, "WARNING: Cannot calculate record size (not supported for async)"));
+        return PIO_NOERR;
+    }
+
+    /* Calculate and cache the size of a single record/timestep */
+    ierr = PIOc_inq_var(ncid, varid, NULL, &vtype, &ndims, NULL, NULL);
+    if(ierr != PIO_NOERR)
+    {
+        LOG((1, "Unable to query ndims/type for var"));
+        return pio_err(ios, file, ierr, __FILE__, __LINE__);
+    }
+    if(ndims > 0)
+    {
+        int dimids[ndims];
+        PIO_Offset dimlen[ndims];
+
+        ierr = PIOc_inq_type(ncid, vtype, NULL, &vtype_sz);
+        if(ierr != PIO_NOERR)
+        {
+            LOG((1, "Unable to query type info"));
+            return pio_err(ios, file, ierr, __FILE__, __LINE__);
+        }
+
+        ierr = PIOc_inq_vardimid(ncid, varid, dimids);
+        if(ierr != PIO_NOERR)
+        {
+            LOG((1, "Unable to query dimids for var"));
+            return pio_err(ios, file, ierr, __FILE__, __LINE__);
+        }
+
+        for(int i=0; i<ndims; i++)
+        {
+            bool is_rec_dim = false;
+            /* For record variables check if dim is an unlimited
+              * dimension. For record dims set dimlen = 1
+              */ 
+            if(file->varlist[varid].rec_var)
+            {
+                for(int j=0; j<file->num_unlim_dimids; j++)
+                {
+                    if(dimids[i] == file->unlim_dimids[j])
+                    {
+                        is_rec_dim = true;
+                        dimlen[i] = 1;
+                        break;
+                    }
+                }
+            }
+            if(!is_rec_dim)
+            {
+                ierr = PIOc_inq_dim(ncid, dimids[i], NULL, &(dimlen[i]));
+                if(ierr != PIO_NOERR)
+                {
+                    LOG((1, "Unable to query dims"));
+                    return pio_err(ios, file, ierr, __FILE__, __LINE__);
+                }
+            }
+            file->varlist[varid].vrsize = 
+              ((file->varlist[varid].vrsize) ? file->varlist[varid].vrsize : 1)
+              * dimlen[i]; 
+        }
+    }
+    mpierr = MPI_Bcast(&(file->varlist[varid].vrsize), 1, MPI_OFFSET,
+                        ios->ioroot, ios->my_comm);
+    if(mpierr != MPI_SUCCESS)
+    {
+        LOG((1, "Unable to bcast vrsize"));
+        return check_mpi(file, mpierr, __FILE__, __LINE__);
+    }
+    return ierr;
+}
+
+/* Get a description of the variable 
+ * @param ncid PIO id for the file
+ * @param varid PIO id for the variable
+ * @param Any user string that needs to be prepended to the variable
+ * description, can optionally be NULL
+ * Returns a string that describes the variable associated with varid
+ * - The returned string should be copied by the user since the
+ *   contents of the buffer returned can change in the next call
+ *   to this function.
+ * */
+const char *get_var_desc_str(int ncid, int varid, const char *desc_prefix)
+{
+    iosystem_desc_t *ios;  /* Pointer to io system information. */
+    file_desc_t *file;     /* Pointer to file information. */
+    static const char EMPTY_STR[] = "";
+    int ierr;
+
+    ierr = pio_get_file(ncid, &file);
+    if(ierr != PIO_NOERR)
+    {
+        LOG((1, "Unable to get file corresponding to ncid = %d", ncid));
+        return EMPTY_STR;
+    }
+    ios = file->iosystem;
+    assert(ios != NULL);
+
+    snprintf(file->varlist[varid].vdesc, PIO_MAX_NAME,
+              "%s %s %s %llu %llu %llu %llu %llu",
+              (desc_prefix)?desc_prefix:"",
+              file->varlist[varid].vname,
+              file->fname,
+              (unsigned long long int)file->varlist[varid].vrsize,
+              (unsigned long long int)file->varlist[varid].rb_pend,
+              (unsigned long long int)file->varlist[varid].wb_pend,
+              (unsigned long long int)file->rb_pend,
+              (unsigned long long int)file->wb_pend
+              );
+
+    return file->varlist[varid].vdesc;
 }

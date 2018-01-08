@@ -5,6 +5,9 @@
 #include <config.h>
 #include <pio.h>
 #include <pio_internal.h>
+#ifdef PIO_MICRO_TIMING
+#include "pio_timer.h"
+#endif
 #include <string.h>
 #include <stdio.h>
 
@@ -123,14 +126,23 @@ int pio_delete_file_from_list(int ncid)
 
             /* Free any fill values that were allocated. */
             for (int v = 0; v < PIO_MAX_VARS; v++)
+            {
                 if (cfile->varlist[v].fillvalue)
                     free(cfile->varlist[v].fillvalue);
+#ifdef PIO_MICRO_TIMING
+                mtimer_destroy(&(cfile->varlist[v].rd_mtimer));
+                mtimer_destroy(&(cfile->varlist[v].rd_rearr_mtimer));
+                mtimer_destroy(&(cfile->varlist[v].wr_mtimer));
+                mtimer_destroy(&(cfile->varlist[v].wr_rearr_mtimer));
+#endif
+            }
 
             /* Free the varlist entries for this file. */
             while (cfile->varlist2)
                 if ((ret = delete_var_desc(cfile->varlist2->varid, &cfile->varlist2)))
                     return pio_err(NULL, cfile, ret, __FILE__, __LINE__);
 
+            free(cfile->unlim_dimids);
             /* Free the memory used for this file. */
             free(cfile);
             

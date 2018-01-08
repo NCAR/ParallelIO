@@ -250,6 +250,13 @@ module basic_tests
           call mpi_abort(MPI_COMM_WORLD, 0, ret_val2)
         end if
 
+        ret_val = PIO_inq_varid(pio_file, 'foo', pio_var)
+        if (ret_val .ne. PIO_NOERR) then
+          ! Error opening file
+          err_msg = "Could not inquire about var 'foo' in file"
+          call mpi_abort(MPI_COMM_WORLD, 0, ret_val2)
+        end if
+
         ! Try to write (should fail)
         if(master_task) write(*,"(6x,A)") "trying to write to readonly file, error expected ... "
         call mpi_barrier(MPI_COMM_WORLD,ret_val)

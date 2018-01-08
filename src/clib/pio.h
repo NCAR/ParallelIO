@@ -99,6 +99,150 @@
  * array-order. */
 #define DECOMP_FORTRAN_ORDER_STR "Fortran"
 
+#if defined( _PNETCDF) || defined(_NETCDF)
+
+#define PIO_GLOBAL NC_GLOBAL
+#define PIO_UNLIMITED NC_UNLIMITED
+
+/* NetCDF types. */
+#define PIO_BYTE   NC_BYTE
+#define PIO_CHAR   NC_CHAR
+#define PIO_SHORT  NC_SHORT
+#define PIO_INT    NC_INT
+#define PIO_FLOAT  NC_FLOAT
+#define PIO_REAL   NC_FLOAT
+#define PIO_DOUBLE NC_DOUBLE
+#define PIO_UBYTE  NC_UBYTE
+#define PIO_USHORT NC_USHORT
+#define PIO_UINT   NC_UINT
+#define PIO_INT64  NC_INT64
+#define PIO_UINT64 NC_UINT64
+#define PIO_STRING NC_STRING
+
+/* NetCDF flags. */
+#define PIO_WRITE  NC_WRITE
+#define PIO_NOWRITE  NC_NOWRITE
+#define PIO_CLOBBER NC_CLOBBER
+#define PIO_NOCLOBBER NC_NOCLOBBER
+#define PIO_FILL NC_FILL
+#define PIO_NOFILL NC_NOFILL
+#define PIO_MAX_NAME NC_MAX_NAME
+#define PIO_MAX_VAR_DIMS NC_MAX_VAR_DIMS
+#define PIO_64BIT_OFFSET NC_64BIT_OFFSET
+
+/** NC_64BIT_DATA This is a problem - need to define directly instead
+ * of using include file. */
+#define PIO_64BIT_DATA 0x0010
+
+/** Define the netCDF-based error codes. */
+#define PIO_NOERR  NC_NOERR
+#define PIO_EBADID NC_EBADID
+#define PIO_ENFILE NC_ENFILE
+#define PIO_EEXIST NC_EEXIST
+#define PIO_EINVAL NC_EINVAL
+#define PIO_EPERM NC_EPERM
+#define PIO_ENOTINDEFINE NC_ENOTINDEFINE
+#define PIO_EINDEFINE NC_EINDEFINE
+#define PIO_EINVALCOORDS NC_EINVALCOORDS
+#define PIO_EMAXDIMS NC_EMAXDIMS
+#define PIO_ENAMEINUSE NC_ENAMEINUSE
+#define PIO_ENOTATT NC_ENOTATT
+#define PIO_EMAXATTS NC_EMAXATTS
+#define PIO_EBADTYPE NC_EBADTYPE
+#define PIO_EBADDIM NC_EBADDIM
+#define PIO_EUNLIMPOS NC_EUNLIMPOS
+#define PIO_EMAXVARS NC_EMAXVARS
+#define PIO_ENOTVAR NC_ENOTVAR
+#define PIO_EGLOBAL NC_EGLOBAL
+#define PIO_ENOTNC NC_ENOTNC
+#define PIO_ESTS NC_ESTS
+#define PIO_EMAXNAME NC_EMAXNAME
+#define PIO_EUNLIMIT NC_EUNLIMIT
+#define PIO_ENORECVARS NC_ENORECVARS
+#define PIO_ECHAR NC_ECHAR
+#define PIO_EEDGE NC_EEDGE
+#define PIO_ESTRIDE NC_ESTRIDE
+#define PIO_EBADNAME NC_EBADNAME
+#define PIO_ERANGE NC_ERANGE
+#define PIO_ENOMEM NC_ENOMEM
+#define PIO_EVARSIZE NC_EVARSIZE
+#define PIO_EDIMSIZE NC_EDIMSIZE
+#define PIO_ETRUNC NC_ETRUNC
+#define PIO_EAXISTYPE NC_EAXISTYPE
+#define PIO_EDAP NC_EDAP
+#define PIO_ECURL NC_ECURL
+#define PIO_EIO NC_EIO
+#define PIO_ENODATA NC_ENODATA
+#define PIO_EDAPSVC NC_EDAPSVC
+#define PIO_EDAS NC_EDAS
+#define PIO_EDDS NC_EDDS
+#define PIO_EDATADDS NC_EDATADDS
+#define PIO_EDAPURL NC_EDAPURL
+#define PIO_EDAPCONSTRAINT NC_EDAPCONSTRAINT
+#define PIO_ETRANSLATION NC_ETRANSLATION
+#define PIO_EHDFERR NC_EHDFERR
+#define PIO_ECANTREAD NC_ECANTREAD
+#define PIO_ECANTWRITE NC_ECANTWRITE
+#define PIO_ECANTCREATE NC_ECANTCREATE
+#define PIO_EFILEMETA NC_EFILEMETA
+#define PIO_EDIMMETA NC_EDIMMETA
+#define PIO_EATTMETA NC_EATTMETA
+#define PIO_EVARMETA NC_EVARMETA
+#define PIO_ENOCOMPOUND NC_ENOCOMPOUND
+#define PIO_EATTEXISTS NC_EATTEXISTS
+#define PIO_ENOTNC4 NC_ENOTNC4
+#define PIO_ESTRICTNC3 NC_ESTRICTNC3
+#define PIO_ENOTNC3 NC_ENOTNC3
+#define PIO_ENOPAR NC_ENOPAR
+#define PIO_EPARINIT NC_EPARINIT
+#define PIO_EBADGRPID NC_EBADGRPID
+#define PIO_EBADTYPID NC_EBADTYPID
+#define PIO_ETYPDEFINED NC_ETYPDEFINED
+#define PIO_EBADFIELD NC_EBADFIELD
+#define PIO_EBADCLASS NC_EBADCLASS
+#define PIO_EMAPTYPE NC_EMAPTYPE
+#define PIO_ELATEFILL NC_ELATEFILL
+#define PIO_ELATEDEF NC_ELATEDEF
+#define PIO_EDIMSCALE NC_EDIMSCALE
+#define PIO_ENOGRP NC_ENOGRP
+#define PIO_ESTORAGE NC_ESTORAGE
+#define PIO_EBADCHUNK NC_EBADCHUNK
+#define PIO_ENOTBUILT NC_ENOTBUILT
+#define PIO_EDISKLESS NC_EDISKLESS
+
+/* These are the netCDF default fill values. */
+#define PIO_FILL_BYTE NC_FILL_BYTE
+#define PIO_FILL_CHAR NC_FILL_CHAR
+#define PIO_FILL_SHORT NC_FILL_SHORT
+#define PIO_FILL_INT NC_FILL_INT
+#define PIO_FILL_FLOAT NC_FILL_FLOAT
+#define PIO_FILL_DOUBLE NC_FILL_DOUBLE
+#define PIO_FILL_UBYTE NC_FILL_UBYTE
+#define PIO_FILL_USHORT NC_FILL_USHORT
+#define PIO_FILL_UINT NC_FILL_UINT
+#define PIO_FILL_INT64 NC_FILL_INT64
+#define PIO_FILL_UINT64 NC_FILL_UINT64
+#endif /*  defined( _PNETCDF) || defined(_NETCDF) */
+
+/** Define the extra error codes for the parallel-netcdf library. */
+#ifdef _PNETCDF
+#define PIO_EINDEP  NC_EINDEP
+#else  /* _PNETCDF */
+#define PIO_EINDEP  (-203)
+#endif /* _PNETCDF */
+
+/** Define error codes for PIO. */
+#define PIO_FIRST_ERROR_CODE (-500)
+#define PIO_EBADIOTYPE  (-500)
+#define PIO_EINTERNAL  (-501)
+
+/** ??? */
+#define PIO_REQ_NULL (NC_REQ_NULL-1)
+
+#ifdef PIO_MICRO_TIMING
+/** Some fwd declarations to avoid including internal headers */
+typedef struct mtimer_info *mtimer_t;
+#endif
 
 /**
  * Variable description structure.
@@ -107,6 +251,12 @@ typedef struct var_desc_t
 {
     /* Variable ID. */
     int varid;
+
+    /* Variable name - cached */
+    char vname[PIO_MAX_NAME];
+
+    /* Variable description */
+    char vdesc[PIO_MAX_NAME];
     
     /* Non-zero if this is a record var (i.e. uses unlimited
      * dimension). */
@@ -130,6 +280,23 @@ typedef struct var_desc_t
 
     /* The size of the data type (2 for PIO_SHORT, 4 for PIO_INT, etc.) */
     PIO_Offset type_size;
+
+    /* Size of one record of the variable (number of bytes)*/
+    PIO_Offset vrsize;
+
+    /* Bytes pending to be read */
+    PIO_Offset rb_pend;
+
+    /* Bytes pending to be written out */
+    PIO_Offset wb_pend;
+
+#ifdef PIO_MICRO_TIMING
+    mtimer_t rd_mtimer;
+    mtimer_t rd_rearr_mtimer;
+
+    mtimer_t wr_mtimer;
+    mtimer_t wr_rearr_mtimer;
+#endif
 
     /** Non-zero if fill mode is turned on for this var. */
     int use_fill;
@@ -541,6 +708,9 @@ typedef struct file_desc_t
      * (netcdf or pnetcdf). */
     int fh;
 
+    /* File name - cached */
+    char fname[PIO_MAX_NAME];
+
     /** The ncid that will be returned to the user. */
     int pio_ncid;
 
@@ -553,12 +723,24 @@ typedef struct file_desc_t
     /** List of variables in this file (deprecated). */
     struct var_desc_t varlist[PIO_MAX_VARS];
 
+    /* Number of unlimited dim ids, if no unlimited id present = 0 */
+    int num_unlim_dimids;
+
+    /* Unlimited dim ids, if no unlimited id present = NULL */
+    int *unlim_dimids;
+
     /** Mode used when file was opened. */
     int mode;
 
     /** The wmulti_buffer is used to aggregate multiple variables with
      * the same communication pattern prior to a write. */
     struct wmulti_buffer buffer;
+
+    /* Bytes pending to be read on this file*/
+    PIO_Offset rb_pend;
+
+    /* Bytes pending to be written out for this file */
+    PIO_Offset wb_pend;
 
     /** Pointer to the next file_desc_t in the list of open files. */
     struct file_desc_t *next;
@@ -614,144 +796,6 @@ enum PIO_ERROR_HANDLERS
     PIO_RETURN_ERROR = (-53)
 };
 
-#if defined( _PNETCDF) || defined(_NETCDF)
-
-#define PIO_GLOBAL NC_GLOBAL
-#define PIO_UNLIMITED NC_UNLIMITED
-
-/* NetCDF types. */
-#define PIO_BYTE   NC_BYTE
-#define PIO_CHAR   NC_CHAR
-#define PIO_SHORT  NC_SHORT
-#define PIO_INT    NC_INT
-#define PIO_FLOAT  NC_FLOAT
-#define PIO_REAL   NC_FLOAT
-#define PIO_DOUBLE NC_DOUBLE
-#define PIO_UBYTE  NC_UBYTE
-#define PIO_USHORT NC_USHORT
-#define PIO_UINT   NC_UINT
-#define PIO_INT64  NC_INT64
-#define PIO_UINT64 NC_UINT64
-#define PIO_STRING NC_STRING
-
-/* NetCDF flags. */
-#define PIO_WRITE  NC_WRITE
-#define PIO_NOWRITE  NC_NOWRITE
-#define PIO_CLOBBER NC_CLOBBER
-#define PIO_NOCLOBBER NC_NOCLOBBER
-#define PIO_FILL NC_FILL
-#define PIO_NOFILL NC_NOFILL
-#define PIO_MAX_NAME NC_MAX_NAME
-#define PIO_MAX_VAR_DIMS NC_MAX_VAR_DIMS
-#define PIO_64BIT_OFFSET NC_64BIT_OFFSET
-
-/** NC_64BIT_DATA This is a problem - need to define directly instead
- * of using include file. */
-#define PIO_64BIT_DATA 0x0010
-
-/** Define the netCDF-based error codes. */
-#define PIO_NOERR  NC_NOERR
-#define PIO_EBADID NC_EBADID
-#define PIO_ENFILE NC_ENFILE
-#define PIO_EEXIST NC_EEXIST
-#define PIO_EINVAL NC_EINVAL
-#define PIO_EPERM NC_EPERM
-#define PIO_ENOTINDEFINE NC_ENOTINDEFINE
-#define PIO_EINDEFINE NC_EINDEFINE
-#define PIO_EINVALCOORDS NC_EINVALCOORDS
-#define PIO_EMAXDIMS NC_EMAXDIMS
-#define PIO_ENAMEINUSE NC_ENAMEINUSE
-#define PIO_ENOTATT NC_ENOTATT
-#define PIO_EMAXATTS NC_EMAXATTS
-#define PIO_EBADTYPE NC_EBADTYPE
-#define PIO_EBADDIM NC_EBADDIM
-#define PIO_EUNLIMPOS NC_EUNLIMPOS
-#define PIO_EMAXVARS NC_EMAXVARS
-#define PIO_ENOTVAR NC_ENOTVAR
-#define PIO_EGLOBAL NC_EGLOBAL
-#define PIO_ENOTNC NC_ENOTNC
-#define PIO_ESTS NC_ESTS
-#define PIO_EMAXNAME NC_EMAXNAME
-#define PIO_EUNLIMIT NC_EUNLIMIT
-#define PIO_ENORECVARS NC_ENORECVARS
-#define PIO_ECHAR NC_ECHAR
-#define PIO_EEDGE NC_EEDGE
-#define PIO_ESTRIDE NC_ESTRIDE
-#define PIO_EBADNAME NC_EBADNAME
-#define PIO_ERANGE NC_ERANGE
-#define PIO_ENOMEM NC_ENOMEM
-#define PIO_EVARSIZE NC_EVARSIZE
-#define PIO_EDIMSIZE NC_EDIMSIZE
-#define PIO_ETRUNC NC_ETRUNC
-#define PIO_EAXISTYPE NC_EAXISTYPE
-#define PIO_EDAP NC_EDAP
-#define PIO_ECURL NC_ECURL
-#define PIO_EIO NC_EIO
-#define PIO_ENODATA NC_ENODATA
-#define PIO_EDAPSVC NC_EDAPSVC
-#define PIO_EDAS NC_EDAS
-#define PIO_EDDS NC_EDDS
-#define PIO_EDATADDS NC_EDATADDS
-#define PIO_EDAPURL NC_EDAPURL
-#define PIO_EDAPCONSTRAINT NC_EDAPCONSTRAINT
-#define PIO_ETRANSLATION NC_ETRANSLATION
-#define PIO_EHDFERR NC_EHDFERR
-#define PIO_ECANTREAD NC_ECANTREAD
-#define PIO_ECANTWRITE NC_ECANTWRITE
-#define PIO_ECANTCREATE NC_ECANTCREATE
-#define PIO_EFILEMETA NC_EFILEMETA
-#define PIO_EDIMMETA NC_EDIMMETA
-#define PIO_EATTMETA NC_EATTMETA
-#define PIO_EVARMETA NC_EVARMETA
-#define PIO_ENOCOMPOUND NC_ENOCOMPOUND
-#define PIO_EATTEXISTS NC_EATTEXISTS
-#define PIO_ENOTNC4 NC_ENOTNC4
-#define PIO_ESTRICTNC3 NC_ESTRICTNC3
-#define PIO_ENOTNC3 NC_ENOTNC3
-#define PIO_ENOPAR NC_ENOPAR
-#define PIO_EPARINIT NC_EPARINIT
-#define PIO_EBADGRPID NC_EBADGRPID
-#define PIO_EBADTYPID NC_EBADTYPID
-#define PIO_ETYPDEFINED NC_ETYPDEFINED
-#define PIO_EBADFIELD NC_EBADFIELD
-#define PIO_EBADCLASS NC_EBADCLASS
-#define PIO_EMAPTYPE NC_EMAPTYPE
-#define PIO_ELATEFILL NC_ELATEFILL
-#define PIO_ELATEDEF NC_ELATEDEF
-#define PIO_EDIMSCALE NC_EDIMSCALE
-#define PIO_ENOGRP NC_ENOGRP
-#define PIO_ESTORAGE NC_ESTORAGE
-#define PIO_EBADCHUNK NC_EBADCHUNK
-#define PIO_ENOTBUILT NC_ENOTBUILT
-#define PIO_EDISKLESS NC_EDISKLESS
-
-/* These are the netCDF default fill values. */
-#define PIO_FILL_BYTE NC_FILL_BYTE
-#define PIO_FILL_CHAR NC_FILL_CHAR
-#define PIO_FILL_SHORT NC_FILL_SHORT
-#define PIO_FILL_INT NC_FILL_INT
-#define PIO_FILL_FLOAT NC_FILL_FLOAT
-#define PIO_FILL_DOUBLE NC_FILL_DOUBLE
-#define PIO_FILL_UBYTE NC_FILL_UBYTE
-#define PIO_FILL_USHORT NC_FILL_USHORT
-#define PIO_FILL_UINT NC_FILL_UINT
-#define PIO_FILL_INT64 NC_FILL_INT64
-#define PIO_FILL_UINT64 NC_FILL_UINT64
-#endif /*  defined( _PNETCDF) || defined(_NETCDF) */
-
-/** Define the extra error codes for the parallel-netcdf library. */
-#ifdef _PNETCDF
-#define PIO_EINDEP  NC_EINDEP
-#else  /* _PNETCDF */
-#define PIO_EINDEP  (-203)
-#endif /* _PNETCDF */
-
-/** Define error codes for PIO. */
-#define PIO_FIRST_ERROR_CODE (-500)
-#define PIO_EBADIOTYPE  (-500)
-
-/** ??? */
-#define PIO_REQ_NULL (NC_REQ_NULL-1)
 
 #if defined(__cplusplus)
 extern "C" {

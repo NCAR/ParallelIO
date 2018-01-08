@@ -124,6 +124,10 @@ int PIOc_createfile(int iosysid, int *ncidp, int *iotype, const char *filename,
     iosystem_desc_t *ios;  /* Pointer to io system information. */
     int ret;               /* Return code from function calls. */
 
+#ifdef TIMING
+    GPTLstart("PIO:PIOc_createfile");
+#endif
+
     /* Get the IO system info from the id. */
     if (!(ios = pio_get_iosystem_from_id(iosysid)))
         return pio_err(NULL, NULL, PIO_EBADID, __FILE__, __LINE__);
@@ -143,6 +147,9 @@ int PIOc_createfile(int iosysid, int *ncidp, int *iotype, const char *filename,
             return ret;
     }
 
+#ifdef TIMING
+    GPTLstop("PIO:PIOc_createfile");
+#endif
     return ret;
 }
 
@@ -194,6 +201,9 @@ int PIOc_closefile(int ncid)
     int ierr = PIO_NOERR;  /* Return code from function calls. */
     int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI function codes. */
 
+#ifdef TIMING
+    GPTLstart("PIO:PIOc_closefile");
+#endif
     LOG((1, "PIOc_closefile ncid = %d", ncid));
 
     /* Find the info about this file. */
@@ -268,6 +278,9 @@ int PIOc_closefile(int ncid)
     /* Delete file from our list of open files. */
     pio_delete_file_from_list(ncid);
 
+#ifdef TIMING
+    GPTLstop("PIO:PIOc_closefile");
+#endif
     return ierr;
 }
 
@@ -286,6 +299,9 @@ int PIOc_deletefile(int iosysid, const char *filename)
      int msg = PIO_MSG_DELETE_FILE;
     size_t len;
 
+#ifdef TIMING
+    GPTLstart("PIO:PIOc_deletefile");
+#endif
     LOG((1, "PIOc_deletefile iosysid = %d filename = %s", iosysid, filename));
 
     /* Get the IO system info from the id. */
@@ -339,6 +355,9 @@ int PIOc_deletefile(int iosysid, const char *filename)
     if (ierr)
         return check_netcdf2(ios, NULL, ierr, __FILE__, __LINE__);
 
+#ifdef TIMING
+    GPTLstop("PIO:PIOc_deletefile");
+#endif
     return ierr;
 }
 
@@ -359,6 +378,10 @@ int PIOc_sync(int ncid)
     file_desc_t *file;     /* Pointer to file information. */
     int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI function codes. */
     int ierr = PIO_NOERR;  /* Return code from function calls. */
+
+#ifdef TIMING
+    GPTLstart("PIO:PIOc_sync");
+#endif
 
     LOG((1, "PIOc_sync ncid = %d", ncid));
 
@@ -454,5 +477,8 @@ int PIOc_sync(int ncid)
     if (ierr)
         return check_netcdf2(ios, NULL, ierr, __FILE__, __LINE__);
 
+#ifdef TIMING
+    GPTLstop("PIO:PIOc_sync");
+#endif
     return ierr;
 }

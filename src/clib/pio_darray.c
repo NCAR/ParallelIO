@@ -11,6 +11,9 @@
 #include <config.h>
 #include <pio.h>
 #include <pio_internal.h>
+#ifdef PIO_MICRO_TIMING
+#include "pio_timer.h"
+#endif
 
 /* 10MB default limit. */
 PIO_Offset pio_buffer_size_limit = 10485760;
@@ -112,6 +115,9 @@ int PIOc_write_darray_multi(int ncid, const int *varids, int ioid, int nvars,
     int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI function calls. */
     int ierr;              /* Return code. */
 
+#ifdef TIMING
+    GPTLstart("PIO:PIOc_write_darray_multi");
+#endif
     /* Get the file info. */
     if ((ierr = pio_get_file(ncid, &file)))
         return pio_err(NULL, NULL, PIO_EBADID, __FILE__, __LINE__);
@@ -222,6 +228,35 @@ int PIOc_write_darray_multi(int ncid, const int *varids, int ioid, int nvars,
      * method.  */
     rlen = iodesc->maxiobuflen * nvars;
 
+#ifdef PIO_MICRO_TIMING
+    bool var_mtimer_was_running[nvars];
+    /* Use the timer on the first variable to capture the total
+      *time to rearrange data for all variables
+      */
+    ierr = mtimer_start(file->varlist[varids[0]].wr_rearr_mtimer);
+    if(ierr != PIO_NOERR)
+    {
+        LOG((1, "ERROR: Unable to start wr rearr timer"));
+        return pio_err(ios, file, ierr, __FILE__, __LINE__);
+    }
+    /* Stop any write timers that are running, these timers will
+      *be updated later with the avg rearrange time 
+      * (wr_rearr_mtimer)
+      */
+    for(int i=0; i<nvars; i++)
+    {
+        var_mtimer_was_running[i] = false;
+        assert(mtimer_is_valid(file->varlist[varids[i]].wr_mtimer));
+        ierr = mtimer_pause(file->varlist[varids[i]].wr_mtimer,
+                &(var_mtimer_was_running[i]));
+        if(ierr != PIO_NOERR)
+        {
+            LOG((1, "ERROR: Unable to pause write timer"));
+            return pio_err(ios, file, ierr, __FILE__, __LINE__);
+        }
+    }
+#endif
+
     /* Allocate iobuf. */
     if (rlen > 0)
     {
@@ -255,6 +290,76 @@ int PIOc_write_darray_multi(int ncid, const int *varids, int ioid, int nvars,
     if ((ierr = rearrange_comp2io(ios, iodesc, array, vdesc0->iobuf, nvars)))
         return pio_err(ios, file, ierr, __FILE__, __LINE__);
 
+#ifdef PIO_MICRO_TIMING
+    double rearr_time = 0;
+    /* Use the timer on the first variable to capture the total
+      *time to rearrange data for all variables
+      */
+    ierr = mtimer_pause(file->varlist[varids[0]].wr_rearr_mtimer, NULL);
+    if(ierr != PIO_NOERR)
+    {
+        LOG((1, "ERROR: Unable to pause wr rearr timer"));
+        return pio_err(ios, file, ierr, __FILE__, __LINE__);
+    }
+
+    ierr = mtimer_get_wtime(file->varlist[varids[0]].wr_rearr_mtimer,
+            &rearr_time);
+    if(ierr != PIO_NOERR)
+    {
+        LOG((1, "ERROR: Unable to get wtime from wr rearr timer"));
+        return pio_err(ios, file, ierr, __FILE__, __LINE__);
+    }
+
+    /* Calculate the average rearrange time for a variable */
+    rearr_time /= nvars;
+    for(int i=0; i<nvars; i++)
+    {
+        /* Reset, update and flush each timer */
+        ierr = mtimer_reset(file->varlist[varids[i]].wr_rearr_mtimer);
+        if(ierr != PIO_NOERR)
+        {
+            LOG((1, "ERROR: Unable to reset wr rearr timer"));
+            return pio_err(ios, file, ierr, __FILE__, __LINE__);
+        }
+
+        /* Update the rearrange timer with avg rearrange time for a var */
+        ierr = mtimer_update(file->varlist[varids[i]].wr_rearr_mtimer,
+                rearr_time);
+        if(ierr != PIO_NOERR)
+        {
+            LOG((1, "ERROR: Unable to update wr rearr timer"));
+            return pio_err(ios, file, ierr, __FILE__, __LINE__);
+        }
+        ierr = mtimer_flush(file->varlist[varids[i]].wr_rearr_mtimer,
+                get_var_desc_str(file->pio_ncid, varids[i], NULL));
+        if(ierr != PIO_NOERR)
+        {
+            LOG((1, "ERROR: Unable to flush wr rearr timer"));
+            return pio_err(ios, file, ierr, __FILE__, __LINE__);
+        }
+        /* Update the write timer with avg rearrange time for a var
+         * i.e, the write timer includes the rearrange time
+         */
+        ierr = mtimer_update(file->varlist[varids[i]].wr_mtimer,
+                rearr_time);
+        if(ierr != PIO_NOERR)
+        {
+            LOG((1, "ERROR: Unable to update wr timer"));
+            return pio_err(ios, file, ierr, __FILE__, __LINE__);
+        }
+
+        /* If the write timer was already running, resume it */
+        if(var_mtimer_was_running[i])
+        {
+            ierr = mtimer_resume(file->varlist[varids[i]].wr_mtimer);
+            if(ierr != PIO_NOERR)
+            {
+                LOG((1, "ERROR: Unable to resume wr timer"));
+                return pio_err(ios, file, ierr, __FILE__, __LINE__);
+            }
+        }
+    }
+#endif
     /* Write the darray based on the iotype. */
     LOG((2, "about to write darray for iotype = %d", file->iotype));
     switch (file->iotype)
@@ -350,11 +455,33 @@ int PIOc_write_darray_multi(int ncid, const int *varids, int ioid, int nvars,
         }
     }
 
-    /* Flush data to disk for pnetcdf. */
+    /* Only PNETCDF does non-blocking buffered writes, and hence
+     * needs an explicit flush/wait to make sure data is written
+     * to disk (if the buffer is full)
+     */
     if (ios->ioproc && file->iotype == PIO_IOTYPE_PNETCDF)
+    {
+        /* Flush data to disk for pnetcdf. */
         if ((ierr = flush_output_buffer(file, flushtodisk, 0)))
             return pio_err(ios, file, ierr, __FILE__, __LINE__);
+    }
+    else
+    {
+        for(int i=0; i<nvars; i++)
+        {
+            file->varlist[varids[i]].wb_pend = 0;
+#ifdef PIO_MICRO_TIMING
+            /* No more async events pending (all buffered data is written out) */
+            mtimer_async_event_in_progress(file->varlist[varids[i]].wr_mtimer, false);
+            mtimer_flush(file->varlist[varids[i]].wr_mtimer, get_var_desc_str(file->pio_ncid, varids[i], NULL));
+#endif
+        }
+        file->wb_pend = 0;
+    }
 
+#ifdef TIMING
+    GPTLstop("PIO:PIOc_write_darray_multi");
+#endif
     return PIO_NOERR;
 }
 
@@ -470,6 +597,9 @@ int PIOc_write_darray(int ncid, int varid, int ioid, PIO_Offset arraylen, void *
     int mpierr = MPI_SUCCESS;  /* Return code from MPI functions. */
     int ierr = PIO_NOERR;  /* Return code. */
 
+#ifdef TIMING
+    GPTLstart("PIO:PIOc_write_darray");
+#endif
     LOG((1, "PIOc_write_darray ncid = %d varid = %d ioid = %d arraylen = %d",
          ncid, varid, ioid, arraylen));
 
@@ -477,6 +607,12 @@ int PIOc_write_darray(int ncid, int varid, int ioid, PIO_Offset arraylen, void *
     if ((ierr = pio_get_file(ncid, &file)))
         return pio_err(NULL, NULL, PIO_EBADID, __FILE__, __LINE__);
     ios = file->iosystem;
+
+    LOG((1, "PIOc_write_darray ncid=%d varid=%d wb_pend=%llu file_wb_pend=%llu",
+          ncid, varid,
+          (unsigned long long int) file->varlist[varid].wb_pend,
+          (unsigned long long int) file->wb_pend
+    ));
 
     /* Can we write to this file? */
     if (!(file->mode & PIO_WRITE))
@@ -497,6 +633,10 @@ int PIOc_write_darray(int ncid, int varid, int ioid, PIO_Offset arraylen, void *
          arraylen, iodesc->ndof));
     if (arraylen > iodesc->ndof)
         arraylen = iodesc->ndof;
+
+#ifdef PIO_MICRO_TIMING
+    mtimer_start(file->varlist[varid].wr_mtimer);
+#endif
 
     /* Get var description. */
     vdesc = &(file->varlist[varid]);
@@ -579,6 +719,17 @@ int PIOc_write_darray(int ncid, int varid, int ioid, PIO_Offset arraylen, void *
         return check_mpi(file, mpierr, __FILE__, __LINE__);
     LOG((2, "needsflush = %d", needsflush));
 
+    if(!ios->async || !ios->ioproc)
+    {
+        if(file->varlist[varid].vrsize == 0)
+        {
+            ierr = calc_var_rec_sz(ncid, varid);
+            if(ierr != PIO_NOERR)
+            {
+                LOG((1, "Unable to calculate the variable record size"));
+            }
+        }
+    }
     /* Flush data if needed. */
     if (needsflush > 0)
     {
@@ -597,6 +748,23 @@ int PIOc_write_darray(int ncid, int varid, int ioid, PIO_Offset arraylen, void *
          * called. */
         if ((ierr = flush_buffer(ncid, wmb, needsflush == 2)))
             return pio_err(ios, file, ierr, __FILE__, __LINE__);
+    }
+    else
+    {
+        /* One record size (sum across all procs) of data is buffered */
+        file->varlist[varid].wb_pend += file->varlist[varid].vrsize;
+        file->wb_pend += file->varlist[varid].vrsize;
+        LOG((1, "Current pending bytes for ncid=%d, varid=%d var_wb_pend= %llu, file_wb_pend=%llu",
+              ncid, varid,
+              (unsigned long long int) file->varlist[varid].wb_pend,
+              (unsigned long long int) file->wb_pend
+        ));
+        /* Buffering data is considered an async event (to indicate
+          *that the event is not yet complete)
+          */
+#ifdef PIO_MICRO_TIMING
+        mtimer_async_event_in_progress(file->varlist[varid].wr_mtimer, true);
+#endif
     }
 
 #if PIO_USE_MALLOC
@@ -726,6 +894,17 @@ int PIOc_write_darray(int ncid, int varid, int ioid, PIO_Offset arraylen, void *
          "iodesc->ndof = %d iodesc->llen = %d", wmb->num_arrays,
          iodesc->maxbytes / iodesc->mpitype_size, iodesc->ndof, iodesc->llen));
 
+        LOG((1, "Write darray end : pending bytes for ncid=%d, varid=%d var_wb_pend=%llu file_wb_pend=%llu",
+              ncid, varid,
+              (unsigned long long int) file->varlist[varid].wb_pend,
+              (unsigned long long int) file->wb_pend
+        ));
+#ifdef PIO_MICRO_TIMING
+    mtimer_stop(file->varlist[varid].wr_mtimer, get_var_desc_str(ncid, varid, NULL));
+#endif
+#ifdef TIMING
+    GPTLstop("PIO:PIOc_write_darray");
+#endif
     return PIO_NOERR;
 }
 
@@ -755,10 +934,15 @@ int PIOc_read_darray(int ncid, int varid, int ioid, PIO_Offset arraylen,
     size_t rlen = 0;       /* the length of data in iobuf. */
     int ierr;           /* Return code. */
 
+#ifdef TIMING
+    GPTLstart("PIO:PIOc_read_darray");
+#endif
     /* Get the file info. */
     if ((ierr = pio_get_file(ncid, &file)))
         return pio_err(NULL, NULL, PIO_EBADID, __FILE__, __LINE__);
     ios = file->iosystem;
+
+    LOG((1, "PIOc_read_darray (ncid=%d (%s), varid=%d (%s)", ncid, file->fname, varid, file->varlist[varid].vname));
 
     /* Get the iodesc. */
     if (!(iodesc = pio_get_iodesc_from_id(ioid)))
@@ -766,11 +950,30 @@ int PIOc_read_darray(int ncid, int varid, int ioid, PIO_Offset arraylen,
     pioassert(iodesc->rearranger == PIO_REARR_BOX || iodesc->rearranger == PIO_REARR_SUBSET,
               "unknown rearranger", __FILE__, __LINE__);
 
+#ifdef PIO_MICRO_TIMING
+    mtimer_start(file->varlist[varid].rd_mtimer);
+#endif
+
     /* ??? */
     if (ios->iomaster == MPI_ROOT)
         rlen = iodesc->maxiobuflen;
     else
         rlen = iodesc->llen;
+
+    if(!ios->async || !ios->ioproc)
+    {
+        if(file->varlist[varid].vrsize == 0)
+        {
+            ierr = calc_var_rec_sz(ncid, varid);
+            if(ierr != PIO_NOERR)
+            {
+                LOG((1, "Unable to calculate the variable record size"));
+            }
+        }
+    }
+
+    file->varlist[varid].rb_pend += file->varlist[varid].vrsize;
+    file->rb_pend += file->varlist[varid].vrsize;
 
     /* Allocate a buffer for one record. */
     if (ios->ioproc && rlen > 0)
@@ -794,13 +997,29 @@ int PIOc_read_darray(int ncid, int varid, int ioid, PIO_Offset arraylen,
         return pio_err(NULL, NULL, PIO_EBADIOTYPE, __FILE__, __LINE__);
     }
 
+#ifdef PIO_MICRO_TIMING
+    mtimer_start(file->varlist[varid].rd_rearr_mtimer);
+#endif
     /* Rearrange the data. */
     if ((ierr = rearrange_io2comp(ios, iodesc, iobuf, array)))
         return pio_err(ios, file, ierr, __FILE__, __LINE__);
+
+#ifdef PIO_MICRO_TIMING
+    mtimer_stop(file->varlist[varid].rd_rearr_mtimer, get_var_desc_str(ncid, varid, NULL));
+#endif
+    /* We don't use non-blocking reads */
+    file->varlist[varid].rb_pend = 0;
+    file->rb_pend = 0;
 
     /* Free the buffer. */
     if (rlen > 0)
         brel(iobuf);
 
+#ifdef PIO_MICRO_TIMING
+    mtimer_stop(file->varlist[varid].rd_mtimer, get_var_desc_str(ncid, varid, NULL));
+#endif
+#ifdef TIMING
+    GPTLstop("PIO:PIOc_read_darray");
+#endif
     return PIO_NOERR;
 }

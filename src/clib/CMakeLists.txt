@@ -6,7 +6,8 @@ project (PIOC C)
 #  DEFINE THE TARGET
 #==============================================================================
 
-add_library (pioc topology.c pio_file.c pioc_support.c pio_lists.c
+add_library (pioc topology.c pio_mpi_timer.c pio_timer.c pio_file.c
+  pioc_support.c pio_lists.c
   pioc.c pioc_sc.c pio_spmd.c pio_rearrange.c pio_nc4.c bget.c
   pio_nc.c pio_put_nc.c pio_get_nc.c pio_getput_int.c pio_msg.c pio_varm.c
   pio_darray.c pio_darray_int.c)
@@ -83,6 +84,11 @@ if (PIO_ENABLE_TIMING)
   endif ()
   target_compile_definitions (pioc
     PUBLIC TIMING)
+endif ()
+
+#====== PIO_MICRO_TIMING ======
+if (PIO_MICRO_TIMING)
+  target_compile_definitions(pioc PUBLIC PIO_MICRO_TIMING)
 endif ()
 
 #===== NetCDF-C =====
