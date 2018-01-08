@@ -45,6 +45,11 @@ function (platform_name RETURN_VARIABLE)
         
         set (${RETURN_VARIABLE} "alcf" PARENT_SCOPE)
         
+    # ALCF theta
+    elseif (SITENAME MATCHES "^theta")
+
+        set (${RETURN_VARIABLE} "alcf_theta" PARENT_SCOPE)
+
     # NERSC Machines
     elseif (SITENAME MATCHES "^edison" OR
         SITENAME MATCHES "^cori")
