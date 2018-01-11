@@ -22,7 +22,11 @@ elseif ("${CMAKE_C_COMPILER_ID}" STREQUAL "Clang")
 endif()
 
 SET(SRC adios2pio-nm.cxx)
-ADD_EXECUTABLE(adios2pio-nm ${SRC})
+# add_library(adios2pio-nm-lib adios2pio-nm-lib.cxx)
+
+# target_include_directories(adios2pio-nm-lib PUBLIC ${CMAKE_SOURCE_DIR}/src/clib ${ADIOS_INCLUDE_DIRS} ${NetCDF_C_INCLUDE_DIRS} ${PnetCDF_C_INCLUDE_DIRS} ${PIO_C_EXTRA_INCLUDE_DIRS})
+
+ADD_EXECUTABLE(adios2pio-nm ${SRC} adios2pio-nm-lib.cxx)
 TARGET_LINK_LIBRARIES(adios2pio-nm pioc)
 
 
