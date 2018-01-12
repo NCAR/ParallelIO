@@ -2,10 +2,12 @@
 #define _ADIOS2PIO_NM_LIB_H_ 
 
 #include <string>
+#include <mpi.h>
 
 using namespace std;
 
-int ConvertBPToNC(string infilepath, string outfilename, string piotype);
-void usage(string prgname, int mpirank);
+int ConvertBPToNC(string infilepath, string outfilename, string piotype, MPI_Comm comm_in);
+void usage(string prgname);
+void SetDebugOutput(int val);
 
 #endif /* #ifndef _ADIOS2PIO_NM_LIB_H_ */
