@@ -16,6 +16,7 @@ int mpi_mtimer_init(void )
 int mpi_mtimer_finalize(void )
 {
     /* Nothing to do here */
+    return PIO_NOERR;
 }
 
 double mpi_mtimer_get_wtime(void )
