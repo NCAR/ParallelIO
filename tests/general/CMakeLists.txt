@@ -22,6 +22,7 @@ SET(GENERATED_SRCS pio_file_simple_tests.F90
   pio_decomp_tests_3d.F90
   pio_sync_tests.F90
   pio_iodesc_tests.F90
+  pio_buf_lim_tests.F90
   pio_decomp_frame_tests.F90
   pio_decomp_fillval.F90
   pio_decomp_fillval2.F90
@@ -623,6 +624,25 @@ if (PIO_USE_MPISERIAL)
 else ()
   add_mpi_test(pio_sync_tests
     EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_sync_tests
+    NUMPROCS 4
+    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
+endif ()
+
+#===== pio_buf_lim_tests =====
+add_executable (pio_buf_lim_tests EXCLUDE_FROM_ALL
+  pio_buf_lim_tests.F90
+  ${CMAKE_CURRENT_SOURCE_DIR}/util/pio_tutil.F90)
+target_link_libraries (pio_buf_lim_tests piof)
+add_dependencies (tests pio_buf_lim_tests)
+
+if (PIO_USE_MPISERIAL)
+  add_test(NAME pio_buf_lim_tests
+    COMMAND pio_buf_lim_tests)
+  set_tests_properties(pio_buf_lim_tests
+    PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
+else ()
+  add_mpi_test(pio_buf_lim_tests
+    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_buf_lim_tests
     NUMPROCS 4
     TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 endif ()
