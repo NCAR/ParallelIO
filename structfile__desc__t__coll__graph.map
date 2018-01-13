@@ -1,5 +1,5 @@
 <map id="file_desc_t" name="file_desc_t">
-<area shape="rect" id="node2" href="$structwmulti__buffer.html" title="multi buffer. " alt="" coords="5,5,104,32"/>
-<area shape="rect" id="node3" href="$structvar__desc__t.html" title="Variable description structure. " alt="" coords="182,5,268,32"/>
-<area shape="rect" id="node4" href="$structiosystem__desc__t.html" title="IO system descriptor structure. " alt="" coords="293,5,413,32"/>
+<area shape="rect" id="node3" href="$structwmulti__buffer.html" title="The multi buffer holds data from one or more variables. " alt="" coords="5,5,104,32"/>
+<area shape="rect" id="node6" href="$structvar__desc__t.html" title="Variable description structure. " alt="" coords="181,5,269,32"/>
+<area shape="rect" id="node8" href="$structiosystem__desc__t.html" title="IO system descriptor structure. " alt="" coords="293,5,416,32"/>
 </map>

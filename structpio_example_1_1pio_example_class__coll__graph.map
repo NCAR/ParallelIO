@@ -1,0 +1,9 @@
+<map id="pioExample::pioExampleClass" name="pioExample::pioExampleClass">
+<area shape="rect" id="node2" href="$structio__desc__t.html" title="IO descriptor structure. " alt="" coords="83,213,161,240"/>
+<area shape="rect" id="node5" href="$structrearr__opt.html" title="Rearranger options. " alt="" coords="36,109,109,136"/>
+<area shape="rect" id="node7" href="$structrearr__comm__fc__opt.html" title="Rearranger comm flow control options. " alt="" coords="5,5,140,32"/>
+<area shape="rect" id="node9" href="$structio__region.html" title="IO region structure. " alt="" coords="135,109,213,136"/>
+<area shape="rect" id="node12" href="$structfile__desc__t.html" title="File descriptor structure. " alt="" coords="241,213,327,240"/>
+<area shape="rect" id="node14" href="$structvar__desc__t.html" title="Variable description structure. " alt="" coords="352,213,440,240"/>
+<area shape="rect" id="node16" href="$structiosystem__desc__t.html" title="IO system descriptor structure. " alt="" coords="464,213,587,240"/>
+</map>
