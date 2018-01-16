@@ -1,0 +1,273 @@
+PIO_TF_AUTO_TEST_SUB_BEGIN init_decomp_1d_get_loc_sz
+  implicit none
+  integer, parameter :: VEC_LOCAL_SZ = 7
+  integer, dimension(:), allocatable :: data_types
+  character(len=PIO_TF_MAX_STR_LEN), dimension(:), allocatable :: data_type_descs
+  type(io_desc_t) :: iodesc
+  integer, dimension(VEC_LOCAL_SZ) :: compdof, compdof_rel_disps
+  integer, dimension(1) :: dims
+  integer :: i, ntypes, lsz
+
+  do i=1,VEC_LOCAL_SZ
+    compdof_rel_disps(i) = i
+  end do
+  dims(1) = VEC_LOCAL_SZ * pio_tf_world_sz_
+  compdof = VEC_LOCAL_SZ * pio_tf_world_rank_ + compdof_rel_disps
+
+  call PIO_TF_Get_data_types(data_types, data_type_descs, ntypes)
+  do i=1,ntypes
+    PIO_TF_LOG(0,*) "Testing type : ", data_type_descs(i)
+    call PIO_initdecomp(pio_tf_iosystem_, data_types(i), dims, compdof, iodesc)
+    lsz = PIO_get_local_array_size(iodesc)
+    PIO_TF_PASSERT(lsz == VEC_LOCAL_SZ, "Checking the local array size")
+    call PIO_freedecomp(pio_tf_iosystem_, iodesc)
+  end do
+
+  if(allocated(data_types)) then
+    deallocate(data_types)
+    deallocate(data_type_descs)
+  end if
+PIO_TF_AUTO_TEST_SUB_END init_decomp_1d_get_loc_sz
+
+! Decomp shifted left "shift" positions, each rank contains VEC_LOCAL_SZ
+! elements. The shift is a global "cyclic left shift"
+! For VEC_LOCAL_SZ = 3,
+! e.g. For shift = 0
+! e.g. 1) [1, 2, 3] [4, 5, 6] 
+! e.g. 2) [1, 2, 3] [4, 5, 6] [6, 7, 8]
+! e.g. For shift = 1
+! e.g. 1) [2, 3, 4] [5, 6, 1] 
+! e.g. 1) [2, 3, 4] [5, 6, 7] [8, 9, 1]
+! e.g. For shift = 3
+! e.g. 1) [4, 5, 6] [1, 2, 3]  
+! e.g. 1) [4, 5, 6] [7, 8, 9] [1, 2, 3]  
+SUBROUTINE get_1d_bc_shift_decomp_info(rank, sz, dims, start, count, nlshift)
+  integer, intent(in) :: rank
+  integer, intent(in) :: sz
+  integer, dimension(1), intent(out) :: dims
+  integer, dimension(:), allocatable, intent(out) :: start
+  integer, dimension(:), allocatable, intent(out) :: count
+  integer, intent(in) :: nlshift
+
+  integer, parameter :: VEC_LOCAL_SZ = 7
+  integer :: start_idx, last_idx, i
+  ! Number of regions
+  integer :: nregs
+  
+  dims(1) = VEC_LOCAL_SZ * sz
+  start_idx = MOD((VEC_LOCAL_SZ * rank + 1) + nlshift, dims(1))
+  last_idx = start_idx + VEC_LOCAL_SZ - 1
+  if(last_idx <= dims(1)) then
+    nregs = 1
+  else
+    nregs = 2
+  end if
+  allocate(start(nregs))
+  allocate(count(nregs))
+  if(nregs == 1) then
+    start(1) = start_idx
+    count(1) = VEC_LOCAL_SZ
+  else
+    ! Two regions
+    start(1) = start_idx
+    count(1) = dims(1) - start(1) + 1
+
+    start(2) = 1
+    count(2) = last_idx - dims(1)
+  end if
+
+END SUBROUTINE
+
+! Write multiple frames of data, even frames with no shift - evenly
+! divided across all procs, and odd frames with data evenly divided
+! across all procs but with a global cyclic left shift
+PIO_TF_TEMPLATE<PIO_TF_PREDEF_TYPENAME PIO_TF_DATA_TYPE, PIO_TF_PREDEF_TYPENAME PIO_TF_FC_DATA_TYPE>
+PIO_TF_AUTO_TEST_SUB_BEGIN nc_wr_2d_two_iodescs
+  implicit none
+  interface
+    subroutine get_1d_bc_shift_decomp_info(rank, sz, dims, start, count, nlshift)
+      integer, intent(in) :: rank
+      integer, intent(in) :: sz
+      integer, dimension(1), intent(out) :: dims
+      integer, dimension(:), allocatable, intent(out) :: start
+      integer, dimension(:), allocatable, intent(out) :: count
+      integer, intent(in) :: nlshift
+    end subroutine get_1d_bc_shift_decomp_info
+  end interface
+  integer, parameter :: NDIMS = 2
+  integer, parameter :: NFRAMES = 6
+  integer, parameter :: NLSHIFT = 3
+  integer, parameter :: NOSHIFT = 0
+  type(var_desc_t)  :: pio_var
+  type(file_desc_t) :: pio_file
+  character(len=PIO_TF_MAX_STR_LEN) :: filename
+  type(io_desc_t) :: wr_iodesc, rd_iodesc, wr_iodesc_shifted
+  integer, dimension(:), allocatable :: compdof
+  integer, dimension(:), allocatable :: start, count
+  integer :: tot_count
+  PIO_TF_FC_DATA_TYPE, dimension(:,:), allocatable :: rbuf, wbuf, exp_val
+  PIO_TF_FC_DATA_TYPE, dimension(:,:), allocatable :: wbuf_shifted
+  integer, dimension(NDIMS-1) :: dims
+  integer, dimension(NDIMS) :: pio_dims
+  integer :: i, j, k, nrows, ierr, lsz
+  integer(kind=pio_offset_kind) :: f
+  logical :: is_even_frame
+  ! iotypes = valid io types
+  integer, dimension(:), allocatable :: iotypes
+  character(len=PIO_TF_MAX_STR_LEN), dimension(:), allocatable :: iotype_descs
+  integer :: num_iotypes
+
+  ! No left shift - data evenly distributed across all procs
+  ! even frames written out with no left shift
+  call get_1d_bc_shift_decomp_info(pio_tf_world_rank_, pio_tf_world_sz_,&
+        dims, start, count, NOSHIFT)
+
+  tot_count = 0
+  do i=1,size(count)
+    tot_count = tot_count + count(i)
+  end do
+
+  nrows = tot_count
+
+  allocate(wbuf(nrows, NFRAMES))
+  allocate(rbuf(nrows, NFRAMES))
+  rbuf = 0
+  allocate(exp_val(nrows, NFRAMES))
+  allocate(compdof(nrows))
+  k = 1
+  do i=1, size(start)
+    do j=0, count(i)-1
+      compdof(k) = start(i) + j
+      k = k + 1
+    end do
+  end do
+
+  if(allocated(start)) then
+    deallocate(start)
+  end if
+  if(allocated(count)) then
+    deallocate(count)
+  end if
+
+  do f=1,NFRAMES
+    do i=1,nrows
+      wbuf(i,f) = compdof(i) + (f-1) * dims(1)
+      exp_val(i,f) = wbuf(i,f)
+    end do
+  end do
+
+  call PIO_initdecomp(pio_tf_iosystem_, PIO_TF_DATA_TYPE, dims, compdof, wr_iodesc)
+
+  call PIO_initdecomp(pio_tf_iosystem_, PIO_TF_DATA_TYPE, dims, compdof, rd_iodesc)
+  deallocate(compdof)
+
+  ! Decomp with left shift of NLSHIFT - used to write odd frames
+  ! Note: dims is same irrespective of the shift
+  call get_1d_bc_shift_decomp_info(pio_tf_world_rank_, pio_tf_world_sz_,&
+        dims, start, count, NLSHIFT)
+
+  tot_count = 0
+  do i=1,size(count)
+    tot_count = tot_count + count(i)
+  end do
+
+  nrows = tot_count
+
+  allocate(wbuf_shifted(nrows, NFRAMES))
+  allocate(compdof(nrows))
+
+  k = 1
+  do i=1, size(start)
+    do j=0, count(i)-1
+      compdof(k) = start(i) + j
+      k = k + 1
+    end do
+  end do
+
+  if(allocated(start)) then
+    deallocate(start)
+  end if
+  if(allocated(count)) then
+    deallocate(count)
+  end if
+
+  do f=1,NFRAMES
+    do i=1,nrows
+      wbuf_shifted(i,f) = compdof(i) + (f-1) * dims(1)
+    end do
+  end do
+
+  call PIO_initdecomp(pio_tf_iosystem_, PIO_TF_DATA_TYPE, dims, compdof,&
+        wr_iodesc_shifted)
+  deallocate(compdof)
+
+  num_iotypes = 0
+  call PIO_TF_Get_nc_iotypes(iotypes, iotype_descs, num_iotypes)
+  filename = "test_pio_decomp_simple_tests.testfile"
+  do i=1,num_iotypes
+    PIO_TF_LOG(0,*) "Testing : PIO_TF_DATA_TYPE : ", iotype_descs(i)
+    ierr = PIO_createfile(pio_tf_iosystem_, pio_file, iotypes(i), filename, PIO_CLOBBER) 
+    PIO_TF_CHECK_ERR(ierr, "Could not create file " // trim(filename))
+
+    ierr = PIO_def_dim(pio_file, 'PIO_TF_test_dim_row', dims(1), pio_dims(1))
+    PIO_TF_CHECK_ERR(ierr, "Failed to define a dim : " // trim(filename))
+
+    ierr = PIO_def_dim(pio_file, 'PIO_TF_test_dim_time', pio_unlimited, pio_dims(2))
+    PIO_TF_CHECK_ERR(ierr, "Failed to define a dim : " // trim(filename))
+
+    ierr = PIO_def_var(pio_file, 'PIO_TF_test_var', PIO_TF_DATA_TYPE, pio_dims, pio_var)
+    PIO_TF_CHECK_ERR(ierr, "Failed to define a var : " // trim(filename))
+
+    ierr = PIO_enddef(pio_file)
+    PIO_TF_CHECK_ERR(ierr, "Failed to end redef mode : " // trim(filename))
+
+    do f=1,NFRAMES
+      if(mod(f,2) == 0) then
+        is_even_frame = .true.
+      else
+        is_even_frame = .false.
+      end if
+
+      call PIO_setframe(pio_file, pio_var, f)
+      ! Write the current frame - even frames have no shift, odd frames are
+      ! left shifted by NLSHIFT elements
+      if(is_even_frame) then
+        call PIO_write_darray(pio_file, pio_var, wr_iodesc, wbuf(:,f), ierr)
+      else
+        call PIO_write_darray(pio_file, pio_var, wr_iodesc_shifted,&
+               wbuf_shifted(:,f), ierr)
+      end if
+      PIO_TF_CHECK_ERR(ierr, "Failed to write darray : " // trim(filename))
+    end do
+
+    call PIO_syncfile(pio_file)
+
+    ! Read data - with no shift
+    do f=1,NFRAMES
+      call PIO_setframe(pio_file, pio_var, f)
+      call PIO_read_darray(pio_file, pio_var, rd_iodesc, rbuf(:,f), ierr)
+      PIO_TF_CHECK_ERR(ierr, "Failed to read darray : " // trim(filename))
+    end do
+
+    do f=1,NFRAMES
+      PIO_TF_CHECK_VAL((rbuf(:,f), exp_val(:,f)), "Got wrong val, frame=", f)
+    end do
+
+    call PIO_closefile(pio_file)
+    
+    call PIO_deletefile(pio_tf_iosystem_, filename);
+  end do
+
+  if(allocated(iotypes)) then
+    deallocate(iotypes)
+    deallocate(iotype_descs)
+  end if
+
+  call PIO_freedecomp(pio_tf_iosystem_, rd_iodesc)
+  call PIO_freedecomp(pio_tf_iosystem_, wr_iodesc)
+  call PIO_freedecomp(pio_tf_iosystem_, wr_iodesc_shifted)
+  deallocate(exp_val)
+  deallocate(rbuf)
+  deallocate(wbuf)
+  deallocate(wbuf_shifted)
+PIO_TF_AUTO_TEST_SUB_END nc_wr_2d_two_iodescs
