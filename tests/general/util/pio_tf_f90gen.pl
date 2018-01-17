@@ -563,7 +563,13 @@ sub parse_and_store_gen_templ_funcs
                         $ifline_num, \$is_transformed);
   }
   if($annotate_source){
-    $out_line = $out_line . "   ! $base_file_name:$ifline_num" . "\n";
+    $_ = $out_line;
+    if(/^(\s*)[!#](.*)$/s){
+      $out_line = $out_line . "\n";
+    }
+    else{
+      $out_line = $out_line . "   ! $base_file_name:$ifline_num" . "\n";
+    }
   }
   if($verbose) { print "Adding \"$out_line\" to ${$ref_templ_funcname}\n"; }
   if(exists $template_funcs{${$ref_templ_funcname}}){
