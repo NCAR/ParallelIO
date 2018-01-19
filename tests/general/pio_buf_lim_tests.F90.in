@@ -1,0 +1,248 @@
+! Get the iobuf size
+! lbuf_sz -> local buffer size
+! lbuf_type_sz -> local buffer type size
+! nbufs -> number of buffers before a flush
+! The size of iobuf is calculated so that a flush is
+! called every nbufs 
+! (iobuf_sz < lbuf_sz * lbuf_type_sz * nbufs)
+SUBROUTINE get_iobuf_sz(lbuf_sz, lbuf_type_sz, nbufs, iobuf_sz)
+  use pio_tutil
+  implicit none
+  integer, intent(in) :: lbuf_sz
+  integer, intent(in) :: lbuf_type_sz
+  integer, intent(in) :: nbufs
+  integer(kind=pio_offset_kind), intent(out) :: iobuf_sz
+
+  !print *, "lbuf_sz = ", lbuf_sz, "lbuf_type_sz = ", lbuf_type_sz,&
+  !          "nbufs = ", nbufs, "iobuf_sz = ", iobuf_sz
+  iobuf_sz = lbuf_sz * lbuf_type_sz * nbufs - 1
+  if(iobuf_sz < 0) then
+    PIO_TF_LOG(0,*) "IO buffer size < 0, resetting to 0"
+    iobuf_sz = 0
+  end if
+END SUBROUTINE
+
+! Test that writes out multiple variables with buffer limit set to 0
+PIO_TF_TEMPLATE<PIO_TF_PREDEF_TYPENAME PIO_TF_DATA_TYPE, PIO_TF_PREDEF_TYPENAME PIO_TF_FC_DATA_TYPE>
+PIO_TF_AUTO_TEST_SUB_BEGIN nc_wr_buf_limit_zero
+  implicit none
+  integer, parameter :: VEC_LOCAL_SZ = 7
+  integer(kind=pio_offset_kind), parameter :: PIO_BUFFER_SZ_ZERO = 0
+  type(var_desc_t)  :: pio_var
+  type(file_desc_t) :: pio_file
+  character(len=PIO_TF_MAX_STR_LEN) :: filename
+  type(io_desc_t) :: iodesc
+  integer, dimension(VEC_LOCAL_SZ) :: compdof, compdof_rel_disps
+  PIO_TF_FC_DATA_TYPE, dimension(VEC_LOCAL_SZ) :: wbuf, rbuf
+  integer, dimension(1) :: dims
+  integer :: pio_dim
+  integer :: i, ierr, lsz
+  ! iotypes = valid io types
+  integer, dimension(:), allocatable :: iotypes
+  character(len=PIO_TF_MAX_STR_LEN), dimension(:), allocatable :: iotype_descs
+  integer :: num_iotypes
+
+  do i=1,VEC_LOCAL_SZ
+    compdof_rel_disps(i) = i
+  end do
+  dims(1) = VEC_LOCAL_SZ * pio_tf_world_sz_
+  compdof = VEC_LOCAL_SZ * pio_tf_world_rank_ + compdof_rel_disps
+  wbuf = pio_tf_world_rank_;
+
+  call PIO_initdecomp(pio_tf_iosystem_, PIO_TF_DATA_TYPE, dims, compdof, iodesc)
+
+  num_iotypes = 0
+  call PIO_TF_Get_nc_iotypes(iotypes, iotype_descs, num_iotypes)
+  filename = "test_pio_decomp_simple_tests.testfile"
+  do i=1,num_iotypes
+    PIO_TF_LOG(0,*) "Testing : PIO_TF_DATA_TYPE : ", iotype_descs(i)
+    ierr = PIO_createfile(pio_tf_iosystem_, pio_file, iotypes(i), filename, PIO_CLOBBER) 
+    PIO_TF_CHECK_ERR(ierr, "Could not create file " // trim(filename))
+
+    ierr = PIO_def_dim(pio_file, 'PIO_TF_test_dim', dims(1), pio_dim)
+    PIO_TF_CHECK_ERR(ierr, "Failed to define a dim : " // trim(filename))
+
+    ierr = PIO_def_var(pio_file, 'PIO_TF_test_var', PIO_TF_DATA_TYPE, (/pio_dim/), pio_var)
+    PIO_TF_CHECK_ERR(ierr, "Failed to define a var : " // trim(filename))
+
+    ierr = PIO_enddef(pio_file)
+    PIO_TF_CHECK_ERR(ierr, "Failed to end redef mode : " // trim(filename))
+
+    call pio_set_buffer_size_limit(PIO_BUFFER_SZ_ZERO)
+
+    ! Write the variable out
+    call PIO_write_darray(pio_file, pio_var, iodesc, wbuf, ierr)
+    PIO_TF_CHECK_ERR(ierr, "Failed to write darray : " // trim(filename))
+
+    call PIO_syncfile(pio_file)
+
+    rbuf = 0
+    call PIO_read_darray(pio_file, pio_var, iodesc, rbuf, ierr)
+    PIO_TF_CHECK_ERR(ierr, "Failed to read darray : " // trim(filename))
+
+    PIO_TF_CHECK_VAL((rbuf, wbuf), "Got wrong val")
+
+    call PIO_closefile(pio_file)
+    call PIO_deletefile(pio_tf_iosystem_, filename);
+  end do
+  if(allocated(iotypes)) then
+    deallocate(iotypes)
+    deallocate(iotype_descs)
+  end if
+
+  call PIO_freedecomp(pio_tf_iosystem_, iodesc)
+PIO_TF_AUTO_TEST_SUB_END nc_wr_buf_limit_zero
+
+! Test that writes out multiple variables with implicit flush
+! The flush is not explicitly invoked using pio_syncfile, instead
+! implicitly invoked due to the buffer size limit set for the io
+! procs
+PIO_TF_TEMPLATE<PIO_TF_PREDEF_TYPENAME PIO_TF_DATA_TYPE, PIO_TF_PREDEF_TYPENAME PIO_TF_FC_DATA_TYPE>
+PIO_TF_AUTO_TEST_SUB_BEGIN nc_wr_mvar_impl_flush
+#ifndef NO_C_SIZEOF
+  use iso_c_binding, only : C_SIZEOF
+#define TYPE_SIZEOF(x) (C_SIZEOF(x)/SIZE(x))
+#else
+#define TYPE_SIZEOF(x) (SIZE(TRANSFER(x,bbuf))/SIZE(x))
+#endif
+  implicit none
+  integer, parameter :: VEC_LOCAL_SZ = 7
+  integer(kind=pio_offset_kind) :: iobuf_sz
+  integer :: type_sz
+  type(var_desc_t)  :: pio_var1, pio_var2, pio_var3
+  type(file_desc_t) :: pio_file
+  character(len=PIO_TF_MAX_STR_LEN) :: filename
+  type(io_desc_t) :: iodesc
+  integer, dimension(VEC_LOCAL_SZ) :: compdof, compdof_rel_disps
+  PIO_TF_FC_DATA_TYPE, dimension(VEC_LOCAL_SZ) :: wbuf, rbuf
+  byte, dimension(VEC_LOCAL_SZ) :: bbuf
+  integer, dimension(1) :: dims
+  integer :: pio_dim
+  integer :: i, ierr, lsz
+  ! iotypes = valid io types
+  integer, dimension(:), allocatable :: iotypes
+  character(len=PIO_TF_MAX_STR_LEN), dimension(:), allocatable :: iotype_descs
+  integer :: num_iotypes
+
+  type_sz = TYPE_SIZEOF(wbuf)
+
+  do i=1,VEC_LOCAL_SZ
+    compdof_rel_disps(i) = i
+  end do
+  dims(1) = VEC_LOCAL_SZ * pio_tf_world_sz_
+  compdof = VEC_LOCAL_SZ * pio_tf_world_rank_ + compdof_rel_disps
+  wbuf = pio_tf_world_rank_;
+
+  call PIO_initdecomp(pio_tf_iosystem_, PIO_TF_DATA_TYPE, dims, compdof, iodesc)
+
+  num_iotypes = 0
+  call PIO_TF_Get_nc_iotypes(iotypes, iotype_descs, num_iotypes)
+  filename = "test_pio_decomp_simple_tests.testfile"
+  do i=1,num_iotypes
+    PIO_TF_LOG(0,*) "Testing : PIO_TF_DATA_TYPE : ", iotype_descs(i)
+    ierr = PIO_createfile(pio_tf_iosystem_, pio_file, iotypes(i), filename, PIO_CLOBBER) 
+    PIO_TF_CHECK_ERR(ierr, "Could not create file " // trim(filename))
+
+    ierr = PIO_def_dim(pio_file, 'PIO_TF_test_dim', dims(1), pio_dim)
+    PIO_TF_CHECK_ERR(ierr, "Failed to define a dim : " // trim(filename))
+
+    ierr = PIO_def_var(pio_file, 'PIO_TF_test_var1', PIO_TF_DATA_TYPE, (/pio_dim/), pio_var1)
+    PIO_TF_CHECK_ERR(ierr, "Failed to define a var1 : " // trim(filename))
+
+    ierr = PIO_def_var(pio_file, 'PIO_TF_test_var2', PIO_TF_DATA_TYPE, (/pio_dim/), pio_var2)
+    PIO_TF_CHECK_ERR(ierr, "Failed to define a var2 : " // trim(filename))
+
+    ierr = PIO_def_var(pio_file, 'PIO_TF_test_var3', PIO_TF_DATA_TYPE, (/pio_dim/), pio_var3)
+    PIO_TF_CHECK_ERR(ierr, "Failed to define a var3 : " // trim(filename))
+
+    ierr = PIO_enddef(pio_file)
+    PIO_TF_CHECK_ERR(ierr, "Failed to end redef mode : " // trim(filename))
+
+    ! ============ Flush every var ======================
+    call get_iobuf_sz(size(wbuf), type_sz, 1, iobuf_sz)
+    call PIO_set_buffer_size_limit(iobuf_sz)
+    PIO_TF_LOG(0,*) "Testing : Flush every var : buffer limit = ", iobuf_sz
+
+    ! Write the variable out
+    call PIO_write_darray(pio_file, pio_var1, iodesc, wbuf, ierr)
+    PIO_TF_CHECK_ERR(ierr, "Failed to write darray(var1) : " // trim(filename))
+
+    call PIO_syncfile(pio_file)
+
+    rbuf = 0
+    call PIO_read_darray(pio_file, pio_var1, iodesc, rbuf, ierr)
+    PIO_TF_CHECK_ERR(ierr, "Failed to read darray(var1) : " // trim(filename))
+
+    PIO_TF_CHECK_VAL((rbuf, wbuf), "Got wrong val")
+
+    ! ============ Flush every 2 vars ======================
+    call get_iobuf_sz(size(wbuf), type_sz, 2, iobuf_sz)
+    call PIO_set_buffer_size_limit(iobuf_sz)
+    PIO_TF_LOG(0,*) "Testing : Flush every 2 vars : buffer limit = ", iobuf_sz
+
+    ! Write the variable out
+    call PIO_write_darray(pio_file, pio_var1, iodesc, wbuf, ierr)
+    PIO_TF_CHECK_ERR(ierr, "Failed to write darray(var1) : " // trim(filename))
+
+    call PIO_write_darray(pio_file, pio_var2, iodesc, wbuf, ierr)
+    PIO_TF_CHECK_ERR(ierr, "Failed to write darray(var2) : " // trim(filename))
+
+    call PIO_syncfile(pio_file)
+
+    rbuf = 0
+    call PIO_read_darray(pio_file, pio_var1, iodesc, rbuf, ierr)
+    PIO_TF_CHECK_ERR(ierr, "Failed to read darray(var1) : " // trim(filename))
+
+    PIO_TF_CHECK_VAL((rbuf, wbuf), "Got wrong val (var 1)")
+
+    rbuf = 0
+    call PIO_read_darray(pio_file, pio_var2, iodesc, rbuf, ierr)
+    PIO_TF_CHECK_ERR(ierr, "Failed to read darray(var2) : " // trim(filename))
+
+    PIO_TF_CHECK_VAL((rbuf, wbuf), "Got wrong val (var 2)")
+
+    ! ============ Flush every 3 vars ======================
+    call get_iobuf_sz(size(wbuf), type_sz, 3, iobuf_sz)
+    call PIO_set_buffer_size_limit(iobuf_sz)
+    PIO_TF_LOG(0,*) "Testing : Flush every 3 vars : buffer limit = ", iobuf_sz
+
+    ! Write the variable out
+    call PIO_write_darray(pio_file, pio_var1, iodesc, wbuf, ierr)
+    PIO_TF_CHECK_ERR(ierr, "Failed to write darray(var1) : " // trim(filename))
+
+    call PIO_write_darray(pio_file, pio_var2, iodesc, wbuf, ierr)
+    PIO_TF_CHECK_ERR(ierr, "Failed to write darray(var2) : " // trim(filename))
+
+    call PIO_write_darray(pio_file, pio_var3, iodesc, wbuf, ierr)
+    PIO_TF_CHECK_ERR(ierr, "Failed to write darray(var3) : " // trim(filename))
+
+    call PIO_syncfile(pio_file)
+
+    rbuf = 0
+    call PIO_read_darray(pio_file, pio_var1, iodesc, rbuf, ierr)
+    PIO_TF_CHECK_ERR(ierr, "Failed to read darray(var1) : " // trim(filename))
+
+    PIO_TF_CHECK_VAL((rbuf, wbuf), "Got wrong val (var 1)")
+
+    rbuf = 0
+    call PIO_read_darray(pio_file, pio_var2, iodesc, rbuf, ierr)
+    PIO_TF_CHECK_ERR(ierr, "Failed to read darray(var2) : " // trim(filename))
+
+    PIO_TF_CHECK_VAL((rbuf, wbuf), "Got wrong val (var 2)")
+
+    rbuf = 0
+    call PIO_read_darray(pio_file, pio_var3, iodesc, rbuf, ierr)
+    PIO_TF_CHECK_ERR(ierr, "Failed to read darray(var3) : " // trim(filename))
+
+    PIO_TF_CHECK_VAL((rbuf, wbuf), "Got wrong val (var 3)")
+
+    call PIO_closefile(pio_file)
+    call PIO_deletefile(pio_tf_iosystem_, filename);
+  end do
+  if(allocated(iotypes)) then
+    deallocate(iotypes)
+    deallocate(iotype_descs)
+  end if
+
+  call PIO_freedecomp(pio_tf_iosystem_, iodesc)
+PIO_TF_AUTO_TEST_SUB_END nc_wr_mvar_impl_flush
