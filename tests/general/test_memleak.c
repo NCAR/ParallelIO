@@ -181,9 +181,11 @@ main(int argc, char **argv)
     int ret;
 
 #ifdef TIMING
+#ifndef TIMING_INTERNAL
     /* Initialize the GPTL timing library. */
     if ((ret = GPTLinitialize ()))
 	return ret;
+#endif
 #endif
 
     /* Initialize MPI. */
@@ -342,9 +344,11 @@ main(int argc, char **argv)
     MPI_Finalize();
 
 #ifdef TIMING
+#ifndef TIMING_INTERNAL
     /* Finalize the GPTL timing library. */
     if ((ret = GPTLfinalize ()))
 	return ret;
+#endif
 #endif
 
     return 0;
