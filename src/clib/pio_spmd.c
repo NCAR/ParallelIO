@@ -128,6 +128,9 @@ int pio_swapm(void *sendbuf, int *sendcounts, int *sdispls, MPI_Datatype *sendty
         if ((mpierr = MPI_Alltoallw(sendbuf, sendcounts, sdispls, sendtypes, recvbuf,
                                     recvcounts, rdispls, recvtypes, comm)))
             return check_mpi(NULL, mpierr, __FILE__, __LINE__);
+#ifdef TIMING
+        GPTLstop("PIO:pio_swapm");
+#endif
         return PIO_NOERR;
     }
 
@@ -174,7 +177,12 @@ int pio_swapm(void *sendbuf, int *sendcounts, int *sdispls, MPI_Datatype *sendty
     /* When send to self is complete there is nothing left to do if
      * ntasks==1. */
     if (ntasks == 1)
+    {
+#ifdef TIMING
+        GPTLstop("PIO:pio_swapm");
+#endif
         return PIO_NOERR;
+    }
 
     for (int i = 0; i < ntasks; i++)
     {
@@ -201,7 +209,12 @@ int pio_swapm(void *sendbuf, int *sendcounts, int *sdispls, MPI_Datatype *sendty
     LOG((3, "steps=%d", steps));
 
     if (steps == 0)
+    {
+#ifdef TIMING
+        GPTLstop("PIO:pio_swapm");
+#endif
         return PIO_NOERR;
+    }
 
     if (steps == 1)
     {
