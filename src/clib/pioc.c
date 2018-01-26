@@ -764,7 +764,7 @@ int PIOc_Init_Intracomm(MPI_Comm comp_comm, int num_iotasks, int stride, int bas
  */
 #ifdef TIMING
 #ifdef TIMING_INTERNAL
-    GPTLinitialize();
+    pio_init_gptl();
 #endif
     GPTLstart("PIO:PIOc_Init_Intracomm");
 #endif
@@ -1115,7 +1115,7 @@ int PIOc_finalize(int iosysid)
         GPTLpr_file(gptl_log_fname);
         LOG((2, "Finished writing gptl summary"));
     }
-    GPTLfinalize();
+    pio_finalize_gptl();
 #endif
 #endif
     if (ios->union_comm != MPI_COMM_NULL)
@@ -1294,7 +1294,7 @@ int PIOc_init_async(MPI_Comm world, int num_io_procs, int *io_proc_list,
  */
 #ifdef TIMING
 #ifdef TIMING_INTERNAL
-    GPTLinitialize();
+    pio_init_gptl();
 #endif
     GPTLstart("PIO:PIOc_init_async");
 #endif

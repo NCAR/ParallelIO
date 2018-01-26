@@ -353,6 +353,10 @@ extern "C" {
     void pio_init_logging(void);
     void pio_finalize_logging(void );
 
+    /* Initialize and finalize GPTL timers. */
+    void pio_init_gptl(void);
+    void pio_finalize_gptl(void );
+
     /* Internal mpi timer impl functions */
     int mpi_mtimer_init(void );
     int mpi_mtimer_finalize(void );
