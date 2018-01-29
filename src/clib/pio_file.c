@@ -134,7 +134,12 @@ int PIOc_createfile(int iosysid, int *ncidp, int *iotype, const char *filename,
 
     /* Create the file. */
     if ((ret = PIOc_createfile_int(iosysid, ncidp, iotype, filename, mode)))
+    {
+#ifdef TIMING
+        GPTLstop("PIO:PIOc_createfile");
+#endif
         return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+    }
 
     /* Run this on all tasks if async is not in use, but only on
      * non-IO tasks if async is in use. (Because otherwise, in async
@@ -475,7 +480,12 @@ int PIOc_sync(int ncid)
     if ((mpierr = MPI_Bcast(&ierr, 1, MPI_INT, ios->ioroot, ios->my_comm)))
         return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
     if (ierr)
+    {
+#ifdef TIMING
+        GPTLstop("PIO:PIOc_sync");
+#endif
         return check_netcdf2(ios, NULL, ierr, __FILE__, __LINE__);
+    }
 
 #ifdef TIMING
     GPTLstop("PIO:PIOc_sync");
