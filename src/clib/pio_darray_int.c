@@ -1249,8 +1249,8 @@ int flush_output_buffer(file_desc_t *file, bool force, PIO_Offset addsize)
         int request[reqcnt];
         int status[reqcnt];
 #ifdef PIO_MICRO_TIMING
-        bool var_has_pend_reqs[maxreq];
-        bool var_timer_was_running[maxreq];
+        bool var_has_pend_reqs[maxreq + 1];
+        bool var_timer_was_running[maxreq + 1];
         mtimer_t tmp_mt;
 
         /* Temp timer to keep track of wait time */
