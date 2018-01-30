@@ -1230,10 +1230,10 @@ int flush_output_buffer(file_desc_t *file, bool force, PIO_Offset addsize)
     if (force || usage >= pio_buffer_size_limit)
     {
         int rcnt;
-        int  maxreq;
+        int  maxreq; /* Index of the last vdesc with pending requests */
         int reqcnt;
         int nvars_with_reqs = 0;
-        maxreq = 0;
+        maxreq = -1;
         reqcnt = 0;
         rcnt = 0;
         for (int i = 0; i < PIO_MAX_VARS; i++)
