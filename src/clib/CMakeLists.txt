@@ -84,6 +84,10 @@ if (PIO_ENABLE_TIMING)
   endif ()
   target_compile_definitions (pioc
     PUBLIC TIMING)
+  if (PIO_ENABLE_INTERNAL_TIMING)
+    target_compile_definitions (pioc
+      PUBLIC TIMING_INTERNAL)
+  endif ()
 endif ()
 
 #====== PIO_MICRO_TIMING ======

@@ -15,6 +15,7 @@ mark_as_advanced(VERSION_MAJOR VERSION_MINOR VERSION_PATCH)
 #===== Library Options =====
 option (PIO_ENABLE_FORTRAN   "Enable the Fortran library builds"            ON)
 option (PIO_ENABLE_TIMING    "Enable the use of the GPTL timing library"    ON)
+option (PIO_ENABLE_INTERNAL_TIMING    "Gather and print GPTL timing stats"  OFF)
 option (PIO_ENABLE_LOGGING   "Enable debug logging (large output possible)" OFF)
 option (PIO_ENABLE_DOC       "Enable building PIO documentation"            ON)
 option (PIO_ENABLE_COVERAGE  "Enable code coverage"                         OFF)

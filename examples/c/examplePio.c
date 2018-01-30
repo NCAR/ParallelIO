@@ -576,10 +576,12 @@ int main(int argc, char* argv[])
     struct examplePioClass* pioExInst = epc_new(verbose);
     
 #ifdef TIMING    
+#ifndef TIMING_INTERNAL
     /* Initialize the GPTL timing library. */
     int ret;
     if ((ret = GPTLinitialize ()))
       return ret;
+#endif
 #endif    
     
     pioExInst->init(pioExInst);
@@ -592,9 +594,11 @@ int main(int argc, char* argv[])
     pioExInst->cleanUp(pioExInst);
     
 #ifdef TIMING    
+#ifndef TIMING_INTERNAL
 	/* Finalize the GPTL timing library. */
 	if ((ret = GPTLfinalize ()))
 	    return ret;
+#endif
 #endif    
 
     free(pioExInst);

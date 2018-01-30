@@ -24,6 +24,7 @@ int pio_log_ref_cnt = 0;
 int my_rank;
 FILE *LOG_FILE = NULL;
 #endif /* PIO_ENABLE_LOGGING */
+int pio_timer_ref_cnt = 0;
 
 /**
  * The PIO library maintains its own set of ncids. This is the next
@@ -165,6 +166,36 @@ void pio_finalize_logging(void)
                  pio_log_ref_cnt));
     }
 #endif /* PIO_ENABLE_LOGGING */
+}
+
+/**
+ * Initialize GPTL timer library, if needed
+ * The library is only initialized if the timing is internal
+ */
+void pio_init_gptl(void )
+{
+#ifdef TIMING_INTERNAL
+    pio_timer_ref_cnt += 1;
+    if(pio_timer_ref_cnt == 1)
+    {
+        GPTLinitialize();
+    }
+#endif
+}
+
+/**
+ * Finalize GPTL timer library, if needed
+ * The library is only finalized if the timing is internal
+ */
+void pio_finalize_gptl(void)
+{
+#ifdef TIMING_INTERNAL
+    pio_timer_ref_cnt -= 1;
+    if(pio_timer_ref_cnt == 0)
+    {
+        GPTLfinalize();
+    }
+#endif
 }
 
 #if PIO_ENABLE_LOGGING

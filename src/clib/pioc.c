@@ -759,7 +759,13 @@ int PIOc_Init_Intracomm(MPI_Comm comp_comm, int num_iotasks, int stride, int bas
     int mpierr;        /* Return value for MPI calls. */
     int ret;           /* Return code for function calls. */
 
+/* TIMING_INTERNAL implies that the timing statistics are gathered/
+ * displayed by pio
+ */
 #ifdef TIMING
+#ifdef TIMING_INTERNAL
+    pio_init_gptl();
+#endif
     GPTLstart("PIO:PIOc_Init_Intracomm");
 #endif
     /* Turn on the logging system. */
@@ -991,6 +997,10 @@ int PIOc_finalize(int iosysid)
     int niosysid;          /* The number of currently open IO systems. */
     int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI function codes. */
     int ierr = PIO_NOERR;
+#ifdef TIMING_INTERNAL
+    char gptl_iolog_fname[PIO_MAX_NAME];
+    char gptl_log_fname[PIO_MAX_NAME];
+#endif
 
 #ifdef TIMING
     GPTLstart("PIO:PIOc_finalize");
@@ -1068,10 +1078,6 @@ int PIOc_finalize(int iosysid)
      * handed into init_intercomm. So they need to be freed by MPI. */
     if (ios->intercomm != MPI_COMM_NULL)
         MPI_Comm_free(&ios->intercomm);
-    if (ios->union_comm != MPI_COMM_NULL)
-        MPI_Comm_free(&ios->union_comm);
-    if (ios->io_comm != MPI_COMM_NULL)
-        MPI_Comm_free(&ios->io_comm);
     if (ios->comp_comm != MPI_COMM_NULL)
         MPI_Comm_free(&ios->comp_comm);
     if (ios->my_comm != MPI_COMM_NULL)
@@ -1080,11 +1086,6 @@ int PIOc_finalize(int iosysid)
     /* Free the MPI Info object. */
     if (ios->info != MPI_INFO_NULL)
         MPI_Info_free(&ios->info);
-
-    /* Delete the iosystem_desc_t data associated with this id. */
-    LOG((2, "About to delete iosysid %d.", iosysid));
-    if ((ierr = pio_delete_iosystem_from_list(iosysid)))
-        return pio_err(NULL, NULL, ierr, __FILE__, __LINE__);
 
 #ifdef PIO_MICRO_TIMING
     ierr = mtimer_finalize();
@@ -1101,7 +1102,32 @@ int PIOc_finalize(int iosysid)
     LOG((2, "PIOc_finalize completed successfully"));
 #ifdef TIMING
     GPTLstop("PIO:PIOc_finalize");
+#ifdef TIMING_INTERNAL
+    if(ios->io_comm != MPI_COMM_NULL)
+    {
+        snprintf(gptl_iolog_fname, PIO_MAX_NAME, "piorwgptlioinfo%010dwrank.dat", ios->ioroot);
+        GPTLpr_summary_file(ios->io_comm, gptl_iolog_fname);
+        LOG((2, "Finished writing gptl io proc summary"));
+    }
+    snprintf(gptl_log_fname, PIO_MAX_NAME, "piorwgptlinfo%010dwrank.dat", ios->ioroot);
+    if(ios->io_rank == 0)
+    {
+        GPTLpr_file(gptl_log_fname);
+        LOG((2, "Finished writing gptl summary"));
+    }
+    pio_finalize_gptl();
 #endif
+#endif
+    if (ios->union_comm != MPI_COMM_NULL)
+        MPI_Comm_free(&ios->union_comm);
+    if (ios->io_comm != MPI_COMM_NULL)
+        MPI_Comm_free(&ios->io_comm);
+
+    /* Delete the iosystem_desc_t data associated with this id. */
+    LOG((2, "About to delete iosysid %d.", iosysid));
+    if ((ierr = pio_delete_iosystem_from_list(iosysid)))
+        return pio_err(NULL, NULL, ierr, __FILE__, __LINE__);
+
     return PIO_NOERR;
 }
 
@@ -1263,7 +1289,13 @@ int PIOc_init_async(MPI_Comm world, int num_io_procs, int *io_proc_list,
     int mpierr;           /* Return code from MPI functions. */
     int ret;              /* Return code. */
 
+/* TIMING_INTERNAL implies that the timing statistics are gathered/
+ * displayed by pio
+ */
 #ifdef TIMING
+#ifdef TIMING_INTERNAL
+    pio_init_gptl();
+#endif
     GPTLstart("PIO:PIOc_init_async");
 #endif
     /* Check input parameters. */

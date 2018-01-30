@@ -124,7 +124,9 @@ CONTAINS
     CALL MPI_COMM_RANK(pio_tf_comm_, pio_tf_world_rank_, ierr)
     CALL MPI_COMM_SIZE(pio_tf_comm_, pio_tf_world_sz_, ierr)
 #ifdef TIMING
+#ifndef TIMING_INTERNAL
     call t_initf('gptl.nl')
+#endif
 #endif
 
 
@@ -197,7 +199,9 @@ CONTAINS
     CALL MPI_COMM_FREE(pio_tf_comm_, ierr);
 
 #ifdef TIMING
+#ifndef TIMING_INTERNAL
     call t_finalizef()
+#endif
 #endif
   END SUBROUTINE PIO_TF_Finalize_
 
