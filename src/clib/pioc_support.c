@@ -1893,6 +1893,9 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
     if (ierr)
     {
         free(file);
+#ifdef TIMING
+        GPTLstop("PIO:PIOc_createfile_int");
+#endif
         return check_netcdf2(ios, NULL, ierr, __FILE__, __LINE__);
     }
 
