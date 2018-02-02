@@ -749,23 +749,21 @@ int PIOc_write_darray(int ncid, int varid, int ioid, PIO_Offset arraylen, void *
         if ((ierr = flush_buffer(ncid, wmb, needsflush == 2)))
             return pio_err(ios, file, ierr, __FILE__, __LINE__);
     }
-    else
-    {
-        /* One record size (sum across all procs) of data is buffered */
-        file->varlist[varid].wb_pend += file->varlist[varid].vrsize;
-        file->wb_pend += file->varlist[varid].vrsize;
-        LOG((1, "Current pending bytes for ncid=%d, varid=%d var_wb_pend= %llu, file_wb_pend=%llu",
-              ncid, varid,
-              (unsigned long long int) file->varlist[varid].wb_pend,
-              (unsigned long long int) file->wb_pend
-        ));
-        /* Buffering data is considered an async event (to indicate
-          *that the event is not yet complete)
-          */
+
+    /* One record size (sum across all procs) of data is buffered */
+    file->varlist[varid].wb_pend += file->varlist[varid].vrsize;
+    file->wb_pend += file->varlist[varid].vrsize;
+    LOG((1, "Current pending bytes for ncid=%d, varid=%d var_wb_pend= %llu, file_wb_pend=%llu",
+          ncid, varid,
+          (unsigned long long int) file->varlist[varid].wb_pend,
+          (unsigned long long int) file->wb_pend
+    ));
+    /* Buffering data is considered an async event (to indicate
+      *that the event is not yet complete)
+      */
 #ifdef PIO_MICRO_TIMING
-        mtimer_async_event_in_progress(file->varlist[varid].wr_mtimer, true);
+    mtimer_async_event_in_progress(file->varlist[varid].wr_mtimer, true);
 #endif
-    }
 
 #if PIO_USE_MALLOC
     /* Try realloc again if there is a flush. */
