@@ -100,6 +100,13 @@ foreach (HDF5_comp IN LISTS HDF5_FIND_VALID_COMPONENTS)
                     endif ()
                 endif ()
                 
+                # DEPENDENCY: LIBDE (Optional)
+                find_package (LIBDE)
+                if (LIBDE_FOUND)
+                    list (APPEND HDF5_C_INCLUDE_DIRS ${LIBDE_INCLUDE_DIRS})
+                    list (APPEND HDF5_C_LIBRARIES ${LIBDE_LIBRARIES})
+                endif ()
+                
             elseif (NOT HDF5_${HDF5_comp}_IS_SHARED)
     
                 # DEPENDENCY: HDF5

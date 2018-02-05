@@ -25,4 +25,7 @@
 /** Size of MPI_Offset type. */
 #define SIZEOF_MPI_OFFSET @SIZEOF_MPI_OFFSET@
 
+/** Set to non-zero to dump the decomposition information from PIO programs. */
+#define PIO_SAVE_DECOMPS @SAVE_DECOMPS@
+
 #endif /* _PIO_CONFIG_ */

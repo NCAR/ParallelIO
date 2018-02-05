@@ -48,6 +48,7 @@ void bpool_free(void *p)
  * @param ios pointer to the iosystem descriptor which will use the
  * new buffer.
  * @returns 0 for success, error code otherwise.
+ * @author Jim Edwards
  */
 int compute_buffer_init(iosystem_desc_t *ios)
 {
@@ -85,6 +86,7 @@ int compute_buffer_init(iosystem_desc_t *ios)
  * values.
  * @return 0 for success, error code otherwise.
  * @ingroup PIO_write_darray
+ * @author Ed Hartnett
  */
 int find_start_count(int ndims, int fndims, var_desc_t *vdesc,
                      io_region *region, const int *frame, size_t *start,
@@ -158,6 +160,7 @@ int find_start_count(int ndims, int fndims, var_desc_t *vdesc,
  * in iobuf. NULL if this iodesc contains non-record vars.
  * @return 0 for success, error code otherwise.
  * @ingroup PIO_write_darray
+ * @author Jim Edwards, Ed Hartnett
  */
 int write_darray_multi_par(file_desc_t *file, int nvars, int fndims, const int *varids,
                            io_desc_t *iodesc, int fill, const int *frame)
@@ -190,7 +193,7 @@ int write_darray_multi_par(file_desc_t *file, int nvars, int fndims, const int *
     int num_regions = fill ? iodesc->maxfillregions: iodesc->maxregions;
     io_region *region = fill ? iodesc->fillregion : iodesc->firstregion;
     PIO_Offset llen = fill ? iodesc->holegridsize : iodesc->llen;
-    void *iobuf = fill ? vdesc->fillbuf : vdesc->iobuf;
+    void *iobuf = fill ? vdesc->fillbuf : file->iobuf;
 
     /* If this is an IO task write the data. */
     if (ios->ioproc)
@@ -233,8 +236,54 @@ int write_darray_multi_par(file_desc_t *file, int nvars, int fndims, const int *
                     ierr = nc_var_par_access(file->fh, varids[nv], NC_COLLECTIVE);
 
                     /* Write the data for this variable. */
+                    /*
                     if (!ierr)
                         ierr = nc_put_vara(file->fh, varids[nv], (size_t *)start, (size_t *)count, bufptr);
+                    */
+                    if (!ierr)
+                    {
+                        switch (iodesc->piotype)
+                        {
+                        case PIO_BYTE:
+                            ierr = nc_put_vara_schar(file->fh, varids[nv], start, count, (signed char*)bufptr);
+                            break;
+                        case PIO_CHAR:
+                            ierr = nc_put_vara_text(file->fh, varids[nv], start, count, (char*)bufptr);
+                            break;
+                        case PIO_SHORT:
+                            ierr = nc_put_vara_short(file->fh, varids[nv], start, count, (short*)bufptr);
+                            break;
+                        case PIO_INT:
+                            ierr = nc_put_vara_int(file->fh, varids[nv], start, count, (int*)bufptr);
+                            break;
+                        case PIO_FLOAT:
+                            ierr = nc_put_vara_float(file->fh, varids[nv], start, count, (float*)bufptr);
+                            break;
+                        case PIO_DOUBLE:
+                            ierr = nc_put_vara_double(file->fh, varids[nv], start, count, (double*)bufptr);
+                            break;
+                        case PIO_UBYTE:
+                            ierr = nc_put_vara_uchar(file->fh, varids[nv], start, count, (unsigned char*)bufptr);
+                            break;
+                        case PIO_USHORT:
+                            ierr = nc_put_vara_ushort(file->fh, varids[nv], start, count, (unsigned short*)bufptr);
+                            break;
+                        case PIO_UINT:
+                            ierr = nc_put_vara_uint(file->fh, varids[nv], start, count, (unsigned int*)bufptr);
+                            break;
+                        case PIO_INT64:
+                            ierr = nc_put_vara_longlong(file->fh, varids[nv], start, count, (long long*)bufptr);
+                            break;
+                        case PIO_UINT64:
+                            ierr = nc_put_vara_ulonglong(file->fh, varids[nv], start, count, (unsigned long long*)bufptr);
+                            break;
+                        case PIO_STRING:
+                            ierr = nc_put_vara_string(file->fh, varids[nv], start, count, (const char**)bufptr);
+                            break;
+                        default:
+                            return pio_err(ios, file, PIO_EBADTYPE, __FILE__, __LINE__);
+                        }
+                    }
                 }
                 break;
 #endif
@@ -361,6 +410,7 @@ int write_darray_multi_par(file_desc_t *file, int nvars, int fndims, const int *
  * regions.
  * @returns 0 for success, error code otherwise.
  * @ingroup PIO_read_darray
+ * @author Jim Edwards, Ed Hartnett
  **/
 int find_all_start_count(io_region *region, int maxregions, int fndims,
                          int iodesc_ndims, var_desc_t *vdesc, size_t *tmp_start,
@@ -427,7 +477,8 @@ int find_all_start_count(io_region *region, int maxregions, int fndims,
  *
  * @return 0 for success, error code otherwise.
  * @ingroup PIO_write_darray
- **/
+ * @author Jim Edwards, Ed Hartnett
+ */
 int send_all_start_count(iosystem_desc_t *ios, io_desc_t *iodesc, PIO_Offset llen,
                          int maxregions, int nvars, int fndims, size_t *tmp_start,
                          size_t *tmp_count, void *iobuf)
@@ -505,6 +556,7 @@ int send_all_start_count(iosystem_desc_t *ios, io_desc_t *iodesc, PIO_Offset lle
  * iobuf.
  * @return 0 for success, error code otherwise.
  * @ingroup PIO_write_darray
+ * @author Jim Edwards, Ed Hartnett
  */
 int recv_and_write_data(file_desc_t *file, const int *varids, const int *frame,
                         io_desc_t *iodesc, PIO_Offset llen, int maxregions, int nvars,
@@ -618,7 +670,54 @@ int recv_and_write_data(file_desc_t *file, const int *varids, const int *frame,
                     }
 
                     /* Call the netCDF functions to write the data. */
+                    /*
                     if ((ierr = nc_put_vara(file->fh, varids[nv], start, count, bufptr)))
+                        return check_netcdf2(ios, NULL, ierr, __FILE__, __LINE__);
+                    */
+                    switch (iodesc->piotype)
+                    {
+                    case PIO_BYTE:
+                        ierr = nc_put_vara_schar(file->fh, varids[nv], start, count, (signed char*)bufptr);
+                        break;
+                    case PIO_CHAR:
+                        ierr = nc_put_vara_text(file->fh, varids[nv], start, count, (char*)bufptr);
+                        break;
+                    case PIO_SHORT:
+                        ierr = nc_put_vara_short(file->fh, varids[nv], start, count, (short*)bufptr);
+                        break;
+                    case PIO_INT:
+                        ierr = nc_put_vara_int(file->fh, varids[nv], start, count, (int*)bufptr);
+                        break;
+                    case PIO_FLOAT:
+                        ierr = nc_put_vara_float(file->fh, varids[nv], start, count, (float*)bufptr);
+                        break;
+                    case PIO_DOUBLE:
+                        ierr = nc_put_vara_double(file->fh, varids[nv], start, count, (double*)bufptr);
+                        break;
+#ifdef _NETCDF4
+                    case PIO_UBYTE:
+                        ierr = nc_put_vara_uchar(file->fh, varids[nv], start, count, (unsigned char*)bufptr);
+                        break;
+                    case PIO_USHORT:
+                        ierr = nc_put_vara_ushort(file->fh, varids[nv], start, count, (unsigned short*)bufptr);
+                        break;
+                    case PIO_UINT:
+                        ierr = nc_put_vara_uint(file->fh, varids[nv], start, count, (unsigned int*)bufptr);
+                        break;
+                    case PIO_INT64:
+                        ierr = nc_put_vara_longlong(file->fh, varids[nv], start, count, (long long*)bufptr);
+                        break;
+                    case PIO_UINT64:
+                        ierr = nc_put_vara_ulonglong(file->fh, varids[nv], start, count, (unsigned long long*)bufptr);
+                        break;
+                    case PIO_STRING:
+                        ierr = nc_put_vara_string(file->fh, varids[nv], start, count, (const char**)bufptr);
+                        break;
+#endif /* _NETCDF4 */
+                    default:
+                        return pio_err(ios, file, PIO_EBADTYPE, __FILE__, __LINE__);
+                    }
+                    if (ierr)
                         return check_netcdf2(ios, NULL, ierr, __FILE__, __LINE__);
 
                 } /* next var */
@@ -657,6 +756,7 @@ int recv_and_write_data(file_desc_t *file, const int *varids, const int *frame,
  * in iobuf. NULL if this iodesc contains non-record vars.
  * @return 0 for success, error code otherwise.
  * @ingroup PIO_write_darray
+ * @author Jim Edwards, Ed Hartnett
  */
 int write_darray_multi_serial(file_desc_t *file, int nvars, int fndims, const int *varids,
                               io_desc_t *iodesc, int fill, const int *frame)
@@ -685,7 +785,7 @@ int write_darray_multi_serial(file_desc_t *file, int nvars, int fndims, const in
     int num_regions = fill ? iodesc->maxfillregions: iodesc->maxregions;
     io_region *region = fill ? iodesc->fillregion : iodesc->firstregion;
     PIO_Offset llen = fill ? iodesc->holegridsize : iodesc->llen;
-    void *iobuf = fill ? vdesc->fillbuf : vdesc->iobuf; 
+    void *iobuf = fill ? vdesc->fillbuf : file->iobuf; 
 
 #ifdef TIMING
     /* Start timing this function. */
@@ -749,6 +849,7 @@ int write_darray_multi_serial(file_desc_t *file, int nvars, int fndims, const in
  * iobuf.
  * @return 0 on success, error code otherwise.
  * @ingroup PIO_read_darray
+ * @author Jim Edwards, Ed Hartnett
  */
 int pio_read_darray_nc(file_desc_t *file, io_desc_t *iodesc, int vid, void *iobuf)
 {
@@ -865,7 +966,48 @@ int pio_read_darray_nc(file_desc_t *file, io_desc_t *iodesc, int vid, void *iobu
             {
 #ifdef _NETCDF4
             case PIO_IOTYPE_NETCDF4P:
-                ierr = nc_get_vara(file->fh, vid, start, count, bufptr);
+                /* ierr = nc_get_vara(file->fh, vid, start, count, bufptr); */
+                switch (iodesc->piotype)
+                {
+                case PIO_BYTE:
+                    ierr = nc_get_vara_schar(file->fh, vid, start, count, (signed char*)bufptr);
+                    break;
+                case PIO_CHAR:
+                    ierr = nc_get_vara_text(file->fh, vid, start, count, (char*)bufptr);
+                    break;
+                case PIO_SHORT:
+                    ierr = nc_get_vara_short(file->fh, vid, start, count, (short*)bufptr);
+                    break;
+                case PIO_INT:
+                    ierr = nc_get_vara_int(file->fh, vid, start, count, (int*)bufptr);
+                    break;
+                case PIO_FLOAT:
+                    ierr = nc_get_vara_float(file->fh, vid, start, count, (float*)bufptr);
+                    break;
+                case PIO_DOUBLE:
+                    ierr = nc_get_vara_double(file->fh, vid, start, count, (double*)bufptr);
+                    break;
+                case PIO_UBYTE:
+                    ierr = nc_get_vara_uchar(file->fh, vid, start, count, (unsigned char*)bufptr);
+                    break;
+                case PIO_USHORT:
+                    ierr = nc_get_vara_ushort(file->fh, vid, start, count, (unsigned short*)bufptr);
+                    break;
+                case PIO_UINT:
+                    ierr = nc_get_vara_uint(file->fh, vid, start, count, (unsigned int*)bufptr);
+                    break;
+                case PIO_INT64:
+                    ierr = nc_get_vara_longlong(file->fh, vid, start, count, (long long*)bufptr);
+                    break;
+                case PIO_UINT64:
+                    ierr = nc_get_vara_ulonglong(file->fh, vid, start, count, (unsigned long long*)bufptr);
+                    break;
+                case PIO_STRING:
+                    ierr = nc_get_vara_string(file->fh, vid, start, count, (char**)bufptr);
+                    break;
+                default:
+                    return pio_err(ios, file, PIO_EBADTYPE, __FILE__, __LINE__);
+                }
                 break;
 #endif
 #ifdef _PNETCDF
@@ -945,6 +1087,7 @@ int pio_read_darray_nc(file_desc_t *file, io_desc_t *iodesc, int vid, void *iobu
  * iobuf.
  * @returns 0 for success, error code otherwise.
  * @ingroup PIO_read_darray
+ * @author Jim Edwards, Ed Hartnett
  */
 int pio_read_darray_nc_serial(file_desc_t *file, io_desc_t *iodesc, int vid,
                               void *iobuf)
@@ -1152,7 +1295,50 @@ int pio_read_darray_nc_serial(file_desc_t *file, io_desc_t *iodesc, int vid,
                     loffset += regionsize;
 
                     /* Read the data. */
-                    ierr = nc_get_vara(file->fh, vid, start, count, bufptr);
+                    /* ierr = nc_get_vara(file->fh, vid, start, count, bufptr); */
+                    switch (iodesc->piotype)
+                    {
+                    case PIO_BYTE:
+                        ierr = nc_get_vara_schar(file->fh, vid, start, count, (signed char*)bufptr);
+                        break;
+                    case PIO_CHAR:
+                        ierr = nc_get_vara_text(file->fh, vid, start, count, (char*)bufptr);
+                        break;
+                    case PIO_SHORT:
+                        ierr = nc_get_vara_short(file->fh, vid, start, count, (short*)bufptr);
+                        break;
+                    case PIO_INT:
+                        ierr = nc_get_vara_int(file->fh, vid, start, count, (int*)bufptr);
+                        break;
+                    case PIO_FLOAT:
+                        ierr = nc_get_vara_float(file->fh, vid, start, count, (float*)bufptr);
+                        break;
+                    case PIO_DOUBLE:
+                        ierr = nc_get_vara_double(file->fh, vid, start, count, (double*)bufptr);
+                        break;
+#ifdef _NETCDF4
+                    case PIO_UBYTE:
+                        ierr = nc_get_vara_uchar(file->fh, vid, start, count, (unsigned char*)bufptr);
+                        break;
+                    case PIO_USHORT:
+                        ierr = nc_get_vara_ushort(file->fh, vid, start, count, (unsigned short*)bufptr);
+                        break;
+                    case PIO_UINT:
+                        ierr = nc_get_vara_uint(file->fh, vid, start, count, (unsigned int*)bufptr);
+                        break;
+                    case PIO_INT64:
+                        ierr = nc_get_vara_longlong(file->fh, vid, start, count, (long long*)bufptr);
+                        break;
+                    case PIO_UINT64:
+                        ierr = nc_get_vara_ulonglong(file->fh, vid, start, count, (unsigned long long*)bufptr);
+                        break;
+                    case PIO_STRING:
+                        ierr = nc_get_vara_string(file->fh, vid, start, count, (char**)bufptr);
+                        break;
+#endif /* _NETCDF4 */
+                    default:
+                        return pio_err(ios, file, PIO_EBADTYPE, __FILE__, __LINE__);
+                    }
 
                     /* Check error code of netCDF call. */
                     if (ierr)
@@ -1189,6 +1375,7 @@ int pio_read_darray_nc_serial(file_desc_t *file, io_desc_t *iodesc, int vid,
  * @param addsize additional size to add to buffer (in bytes)
  * @return 0 for success, error code otherwise.
  * @ingroup PIO_write_darray
+ * @author Jim Edwards, Ed Hartnett
  */
 int flush_output_buffer(file_desc_t *file, bool force, PIO_Offset addsize)
 {
@@ -1389,16 +1576,16 @@ int flush_output_buffer(file_desc_t *file, bool force, PIO_Offset addsize)
 #endif
 
         /* Release resources. */
+        if (file->iobuf)
+        {
+            LOG((3,"freeing variable buffer in flush_output_buffer"));
+            brel(file->iobuf);
+            file->iobuf = NULL;
+        }
         for (int i = 0; i < PIO_MAX_VARS; i++)
         {
             vdesc = file->varlist + i;
             vdesc->wb_pend = 0;
-            if (vdesc->iobuf)
-            {
-		LOG((3,"freeing variable buffer in flush_output_buffer"));
-                brel(vdesc->iobuf);
-                vdesc->iobuf = NULL;
-            }
             if (vdesc->fillbuf)
             {
                 brel(vdesc->fillbuf);
@@ -1422,6 +1609,7 @@ int flush_output_buffer(file_desc_t *file, bool force, PIO_Offset addsize)
  * @param ios pointer to the IO system structure
  * @param collective true if collective report is desired
  * @ingroup PIO_write_darray
+ * @author Jim Edwards
  */
 void cn_buffer_report(iosystem_desc_t *ios, bool collective)
 {
@@ -1470,6 +1658,7 @@ void cn_buffer_report(iosystem_desc_t *ios, bool collective)
  *
  * @param ios pointer to the IO system structure.
  * @ingroup PIO_write_darray
+ * @author Jim Edwards
  */
 void free_cn_buffer_pool(iosystem_desc_t *ios)
 {
@@ -1495,6 +1684,7 @@ void free_cn_buffer_pool(iosystem_desc_t *ios)
  * @param flushtodisk if true, then flush data to disk.
  * @returns 0 for success, error code otherwise.
  * @ingroup PIO_write_darray
+ * @author Jim Edwards, Ed Hartnett
  */
 int flush_buffer(int ncid, wmulti_buffer *wmb, bool flushtodisk)
 {
@@ -1559,6 +1749,7 @@ int flush_buffer(int ncid, wmulti_buffer *wmb, bool flushtodisk)
  * @param ios pointer to the IO system structure.
  * @param iodesc a pointer to decomposition description.
  * @returns 0 for success, error code otherwise.
+ * @author Jim Edwards
  */
 int compute_maxaggregate_bytes(iosystem_desc_t *ios, io_desc_t *iodesc)
 {

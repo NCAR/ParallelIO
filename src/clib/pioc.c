@@ -14,6 +14,11 @@
 #include "pio_timer.h"
 #endif
 
+#if PIO_SAVE_DECOMPS
+static int counter = 0;
+static bool fortran_order = false;
+#endif
+
 /** The default error handler used when iosystem cannot be located. */
 int default_error_handler = PIO_INTERNAL_ERROR;
 
@@ -28,6 +33,7 @@ extern int blocksize;
  * @param active pointer that gets true if IO system is active, false
  * otherwise.
  * @returns 0 on success, error code otherwise
+ * @author Jim Edwards
  */
 int PIOc_iosystem_is_active(int iosysid, bool *active)
 {
@@ -52,6 +58,7 @@ int PIOc_iosystem_is_active(int iosysid, bool *active)
  *
  * @param ncid the ncid of an open file
  * @returns 1 if file is open, 0 otherwise.
+ * @author Jim Edwards
  */
 int PIOc_File_is_Open(int ncid)
 {
@@ -78,6 +85,7 @@ int PIOc_File_is_Open(int ncid)
  * @param method the error handling method
  * @returns old error handler
  * @ingroup PIO_error_method
+ * @author Jim Edwards
  */
 int PIOc_Set_File_Error_Handling(int ncid, int method)
 {
@@ -108,6 +116,7 @@ int PIOc_Set_File_Error_Handling(int ncid, int method)
  * @param ncid the ncid of the open file
  * @param varid the variable ID
  * @returns 0 on success, error code otherwise
+ * @author Jim Edwards, Ed Hartnett
  */
 int PIOc_advanceframe(int ncid, int varid)
 {
@@ -165,6 +174,7 @@ int PIOc_advanceframe(int ncid, int varid)
  * first record, 1 for the second
  * @return PIO_NOERR for no error, or error code.
  * @ingroup PIO_setframe
+ * @author Jim Edwards, Ed Hartnett
  */
 int PIOc_setframe(int ncid, int varid, int frame)
 {
@@ -224,6 +234,7 @@ int PIOc_setframe(int ncid, int varid, int frame)
  * @param numiotasks a pointer taht gets the number of IO
  * tasks. Ignored if NULL.
  * @returns 0 on success, error code otherwise
+ * @author Ed Hartnett
  */
 int PIOc_get_numiotasks(int iosysid, int *numiotasks)
 {
@@ -243,6 +254,7 @@ int PIOc_get_numiotasks(int iosysid, int *numiotasks)
  *
  * @param ioid IO descrption ID.
  * @returns the size of the array.
+ * @author Jim Edwards
  */
 int PIOc_get_local_array_size(int ioid)
 {
@@ -264,6 +276,7 @@ int PIOc_get_local_array_size(int ioid)
  * @param method the error handling method
  * @returns old error handler
  * @ingroup PIO_error_method
+ * @author Jim Edwards
  */
 int PIOc_Set_IOSystem_Error_Handling(int iosysid, int method)
 {
@@ -293,6 +306,7 @@ int PIOc_Set_IOSystem_Error_Handling(int iosysid, int method)
  * if NULL.
  * @returns 0 for success, error code otherwise.
  * @ingroup PIO_error_method
+ * @author Jim Edwards, Ed Hartnett
  */
 int PIOc_set_iosystem_error_handling(int iosysid, int method, int *old_method)
 {
@@ -391,6 +405,7 @@ int PIOc_set_iosystem_error_handling(int iosysid, int method, int *old_method)
  * iostarts are generated.
  * @returns 0 on success, error code otherwise
  * @ingroup PIO_initdecomp
+ * @author Jim Edwards, Ed Hartnett
  */
 int PIOc_InitDecomp(int iosysid, int pio_type, int ndims, const int *gdimlen, int maplen,
                     const PIO_Offset *compmap, int *ioidp, const int *rearranger,
@@ -470,6 +485,31 @@ int PIOc_InitDecomp(int iosysid, int pio_type, int ndims, const int *gdimlen, in
         if (mpierr)
             return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
     }
+
+#if PIO_SAVE_DECOMPS
+    char filename[NC_MAX_NAME];
+    if (ios->num_comptasks < 100)
+        sprintf(filename, "piodecomp%2.2dtasks%2.2dio%2.2ddims%2.2d.dat", ios->num_comptasks, ios->num_iotasks, ndims, counter);
+    else if (ios->num_comptasks < 10000)
+        sprintf(filename, "piodecomp%4.4dtasks%4.4dio%2.2ddims%2.2d.dat", ios->num_comptasks, ios->num_iotasks, ndims, counter);
+    else
+        sprintf(filename, "piodecomp%6.6dtasks%6.6dio%2.2ddims%2.2d.dat", ios->num_comptasks, ios->num_iotasks, ndims, counter);
+
+    LOG((2, "Saving decomp map to %s", filename));
+
+    if (fortran_order)
+    {
+        int gdimlen_reversed[ndims];
+        for (int i = 0; i < ndims; i++)
+            gdimlen_reversed[i] = gdimlen[ndims - 1 - i];
+
+        PIOc_writemap(filename, ndims, gdimlen_reversed, maplen, (PIO_Offset *)compmap, ios->my_comm);
+    }
+    else
+        PIOc_writemap(filename, ndims, gdimlen, maplen, (PIO_Offset *)compmap, ios->my_comm);
+
+    counter++;
+#endif
 
     /* Allocate space for the iodesc info. This also allocates the
      * first region and copies the rearranger opts into this
@@ -604,6 +644,7 @@ int PIOc_InitDecomp(int iosysid, int pio_type, int ndims, const int *gdimlen, in
  * decompositions. If NULL ???
  * @returns 0 on success, error code otherwise
  * @ingroup PIO_initdecomp
+ * @author Jim Edwards, Ed Hartnett
  */
 int PIOc_init_decomp(int iosysid, int pio_type, int ndims, const int *gdimlen, int maplen,
                      const PIO_Offset *compmap, int *ioidp, int rearranger,
@@ -646,6 +687,7 @@ int PIOc_init_decomp(int iosysid, int pio_type, int ndims, const int *gdimlen, i
  * @param pointer that gets the IO ID.
  * @returns 0 for success, error code otherwise
  * @ingroup PIO_initdecomp
+ * @author Jim Edwards
  */
 int PIOc_InitDecomp_bc(int iosysid, int pio_type, int ndims, const int *gdimlen,
                        const long int *start, const long int *count, int *ioidp)
@@ -749,6 +791,7 @@ int PIOc_InitDecomp_bc(int iosysid, int pio_type, int ndims, const int *gdimlen,
  * @param iosysidp index of the defined system descriptor.
  * @return 0 on success, otherwise a PIO error code.
  * @ingroup PIO_init
+ * @author Jim Edwards, Ed Hartnett
  */
 int PIOc_Init_Intracomm(MPI_Comm comp_comm, int num_iotasks, int stride, int base,
                         int rearr, int *iosysidp)
@@ -915,12 +958,16 @@ int PIOc_Init_Intracomm(MPI_Comm comp_comm, int num_iotasks, int stride, int bas
  * @param rearr_opts the rearranger options
  * @param iosysidp a pointer that gets the IO system ID
  * @returns 0 for success, error code otherwise
+ * @author Jim Edwards
  */
 int PIOc_Init_Intracomm_from_F90(int f90_comp_comm,
                                  const int num_iotasks, const int stride,
                                  const int base, const int rearr,
                                  rearr_opt_t *rearr_opts, int *iosysidp)
 {
+#if PIO_SAVE_DECOMPS
+    fortran_order = true;
+#endif
     int ret = PIO_NOERR;
     ret = PIOc_Init_Intracomm(MPI_Comm_f2c(f90_comp_comm), num_iotasks,
                               stride, base, rearr,
@@ -953,6 +1000,7 @@ int PIOc_Init_Intracomm_from_F90(int f90_comp_comm,
  * @param hint the hint for MPI
  * @param hintval the value of the hint
  * @returns 0 for success, or PIO_BADID if iosysid can't be found.
+ * @author Jim Edwards, Ed Hartnett
  */
 int PIOc_set_hint(int iosysid, const char *hint, const char *hintval)
 {
@@ -1138,6 +1186,7 @@ int PIOc_finalize(int iosysid)
  * @param ioproc a pointer that gets 1 if task is an IO task, 0
  * otherwise. Ignored if NULL.
  * @returns 0 for success, or PIO_BADID if iosysid can't be found.
+ * @author Jim Edwards
  */
 int PIOc_iam_iotask(int iosysid, bool *ioproc)
 {
@@ -1160,6 +1209,7 @@ int PIOc_iam_iotask(int iosysid, bool *ioproc)
  * @param iorank a pointer that gets the io rank, or -1 if task is not
  * in the IO communicator. Ignored if NULL.
  * @returns 0 for success, or PIO_BADID if iosysid can't be found.
+ * @author Jim Edwards
  */
 int PIOc_iotask_rank(int iosysid, int *iorank)
 {
@@ -1179,6 +1229,7 @@ int PIOc_iotask_rank(int iosysid, int *iorank)
  *
  * @param iotype the io type to check
  * @returns 1 if iotype is in build, 0 if not.
+ * @author Jim Edwards
  */
 int PIOc_iotype_available(int iotype)
 {
@@ -1277,6 +1328,7 @@ int PIOc_iotype_available(int iotype)
  *
  * @return PIO_NOERR on success, error code otherwise.
  * @ingroup PIO_init
+ * @author Ed Hartnett
  */
 int PIOc_init_async(MPI_Comm world, int num_io_procs, int *io_proc_list,
                     int component_count, int *num_procs_per_comp, int **proc_list,
@@ -1683,6 +1735,7 @@ int PIOc_init_async(MPI_Comm world, int num_io_procs, int *io_proc_list,
  * @param newblocksize the new blocksize.
  * @returns 0 for success.
  * @ingroup PIO_set_blocksize
+ * @author Jim Edwards
  */
 int PIOc_set_blocksize(int newblocksize)
 {

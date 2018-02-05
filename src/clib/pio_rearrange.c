@@ -21,6 +21,7 @@
  * of data.
  * @param dim_list array of length ndims that will get the dimensions
  * corresponding to this index.
+ * @author Jim Edwards, Ed Hartnett
  */
 void idx_to_dim_list(int ndims, const int *gdimlen, PIO_Offset idx,
                      PIO_Offset *dim_list)
@@ -66,6 +67,7 @@ void idx_to_dim_list(int ndims, const int *gdimlen, PIO_Offset idx,
  * @param max_size array of size dim + 1 that contains the maximum
  * sizes along that dimension.
  * @param count array of size dim + 1 that gets the new counts.
+ * @author Jim Edwards
  */
 void expand_region(int dim, const int *gdimlen, int maplen, const PIO_Offset *map,
                    int region_size, int region_stride, const int *max_size,
@@ -142,6 +144,7 @@ void expand_region(int dim, const int *gdimlen, int maplen, const PIO_Offset *ma
  * @param count array (length ndims) that will get counts of found
  * region.
  * @returns length of the region found.
+ * @author Jim Edwards
  */
 PIO_Offset find_region(int ndims, const int *gdimlen, int maplen, const PIO_Offset *map,
                        PIO_Offset *start, PIO_Offset *count)
@@ -188,6 +191,7 @@ PIO_Offset find_region(int ndims, const int *gdimlen, int maplen, const PIO_Offs
  * @param lcoord pointer to an offset.
  * @param count array of counts.
  * @returns the local array index.
+ * @author Jim Edwards
  */
 PIO_Offset coord_to_lindex(int ndims, const PIO_Offset *lcoord, const PIO_Offset *count)
 {
@@ -214,6 +218,7 @@ PIO_Offset coord_to_lindex(int ndims, const PIO_Offset *lcoord, const PIO_Offset
  * @param io_comm the IO communicator
  * @param iodesc a pointer to the io_desc_t struct.
  * @returns 0 for success, error code otherwise.
+ * @author Jim Edwards
  */
 int compute_maxIObuffersize(MPI_Comm io_comm, io_desc_t *iodesc)
 {
@@ -263,6 +268,7 @@ int compute_maxIObuffersize(MPI_Comm io_comm, io_desc_t *iodesc)
  * @param mtype pointer to an array (length msgcnt) which gets the
  * created datatypes. Will be NULL when iodesc->nrecvs == 0.
  * @returns 0 on success, error code otherwise.
+ * @author Jim Edwards
  */
 int create_mpi_datatypes(MPI_Datatype mpitype, int msgcnt,
                          const PIO_Offset *mindex, const int *mcount, int *mfrom,
@@ -422,6 +428,7 @@ int create_mpi_datatypes(MPI_Datatype mpitype, int msgcnt,
  * @param ios pointer to the iosystem_desc_t struct.
  * @param iodesc a pointer to the io_desc_t struct.
  * @returns 0 on success, error code otherwise.
+ * @author Jim Edwards
  */
 int define_iodesc_datatypes(iosystem_desc_t *ios, io_desc_t *iodesc)
 {
@@ -528,6 +535,7 @@ int define_iodesc_datatypes(iosystem_desc_t *ios, io_desc_t *iodesc)
  * @param dest_ioproc an array (length maplen) of IO task numbers.
  * @param dest_ioindex an array (length maplen) of IO indicies.
  * @returns 0 on success, error code otherwise.
+ * @author Jim Edwards
  */
 int compute_counts(iosystem_desc_t *ios, io_desc_t *iodesc,
                    const int *dest_ioproc, const PIO_Offset *dest_ioindex)
@@ -786,6 +794,7 @@ int compute_counts(iosystem_desc_t *ios, io_desc_t *iodesc,
  * @param rbuf receive buffer. May be NULL.
  * @param nvars number of variables.
  * @returns 0 on success, error code otherwise.
+ * @author Jim Edwards
  */
 int rearrange_comp2io(iosystem_desc_t *ios, io_desc_t *iodesc, void *sbuf,
                       void *rbuf, int nvars)
@@ -981,6 +990,7 @@ int rearrange_comp2io(iosystem_desc_t *ios, io_desc_t *iodesc, void *sbuf,
  * @param sbuf send buffer.
  * @param rbuf receive buffer.
  * @returns 0 on success, error code otherwise.
+ * @author Jim Edwards
  */
 int rearrange_io2comp(iosystem_desc_t *ios, io_desc_t *iodesc, void *sbuf,
                       void *rbuf)
@@ -1108,6 +1118,7 @@ int rearrange_io2comp(iosystem_desc_t *ios, io_desc_t *iodesc, void *sbuf,
  * entire var (for non-record vars).
  * @param compmap only used for the box communicator.
  * @returns 0 on success, error code otherwise.
+ * @author Jim Edwards
  */
 int determine_fill(iosystem_desc_t *ios, io_desc_t *iodesc, const int *gdimlen,
                    const PIO_Offset *compmap)
@@ -1189,6 +1200,7 @@ int determine_fill(iosystem_desc_t *ios, io_desc_t *iodesc, const int *gdimlen,
  * @param iodesc a pointer to the io_desc_t struct, which must be
  * allocated before this function is called.
  * @returns 0 on success, error code otherwise.
+ * @author Jim Edwards
  */
 int box_rearrange_create(iosystem_desc_t *ios, int maplen, const PIO_Offset *compmap,
                          const int *gdimlen, int ndims, io_desc_t *iodesc)
@@ -1439,6 +1451,7 @@ int box_rearrange_create(iosystem_desc_t *ios, int maplen, const PIO_Offset *com
  * @param a pointer to an offset.
  * @param b pointer to another offset.
  * @returns 0 if offsets are the same or either pointer is NULL.
+ * @author Jim Edwards
  */
 int compare_offsets(const void *a, const void *b)
 {
@@ -1466,6 +1479,7 @@ int compare_offsets(const void *a, const void *b)
  * @param maxregions
  * @param firstregion pointer to the first region.
  * @returns 0 on success, error code otherwise.
+ * @author Jim Edwards
  */
 int get_regions(int ndims, const int *gdimlen, int maplen, const PIO_Offset *map,
                 int *maxregions, io_region *firstregion)
@@ -1552,6 +1566,7 @@ int get_regions(int ndims, const int *gdimlen, int maplen, const PIO_Offset *map
  * @param ios pointer to the iosystem_desc_t struct.
  * @param iodesc a pointer to the io_desc_t struct.
  * @returns 0 on success, error code otherwise.
+ * @author Jim Edwards
  */
 int default_subset_partition(iosystem_desc_t *ios, io_desc_t *iodesc)
 {
@@ -1633,6 +1648,7 @@ int default_subset_partition(iosystem_desc_t *ios, io_desc_t *iodesc)
  * @param ndims the number of dimensions.
  * @param iodesc a pointer to the io_desc_t struct.
  * @returns 0 on success, error code otherwise.
+ * @author Jim Edwards
  */
 int subset_rearrange_create(iosystem_desc_t *ios, int maplen, PIO_Offset *compmap,
                             const int *gdimlen, int ndims, io_desc_t *iodesc)
@@ -2054,6 +2070,7 @@ int subset_rearrange_create(iosystem_desc_t *ios, int maplen, PIO_Offset *compma
  * @param ios pointer to the iosystem description struct.
  * @param iodesc pointer to the IO description struct.
  * @returns 0 on success, error code otherwise.
+ * @author Jim Edwards
  */
 void performance_tune_rearranger(iosystem_desc_t *ios, io_desc_t *iodesc)
 {

@@ -26,6 +26,7 @@ option (PIO_USE_MPIIO        "Enable support for MPI-IO auto detect"        ON)
 option (PIO_USE_MPISERIAL    "Enable mpi-serial support (instead of MPI)"   OFF)
 option (PIO_USE_MALLOC       "Use native malloc (instead of bget package)"  OFF)
 option (PIO_MICRO_TIMING     "Enable internal micro timers"                 OFF)
+option (PIO_SAVE_DECOMPS     "Dump the decomposition information"           OFF)
 option (WITH_PNETCDF         "Require the use of PnetCDF"                   ON)
 
 # Set a variable that appears in the config.h.in file.
@@ -46,6 +47,12 @@ if(PIO_USE_MPISERIAL)
   set(USE_MPI_SERIAL 1)
 else()
   set(USE_MPI_SERIAL 0)
+endif()
+
+if(PIO_SAVE_DECOMPS)
+  set(SAVE_DECOMPS 1)
+else()
+  set(SAVE_DECOMPS 0)
 endif()
 
 #==============================================================================

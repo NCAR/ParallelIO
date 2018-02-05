@@ -101,6 +101,7 @@ PIO_Offset PIOc_set_buffer_size_limit(PIO_Offset limit)
  * @param flushtodisk non-zero to cause buffers to be flushed to disk.
  * @return 0 for success, error code otherwise.
  * @ingroup PIO_write_darray
+ * @author Jim Edwards, Ed Hartnett
  */
 int PIOc_write_darray_multi(int ncid, const int *varids, int ioid, int nvars,
                             PIO_Offset arraylen, void *array, const int *frame,
@@ -215,10 +216,10 @@ int PIOc_write_darray_multi(int ncid, const int *varids, int ioid, int nvars,
     }
 
     /* if the buffer is already in use in pnetcdf we need to flush first */
-    if (file->iotype == PIO_IOTYPE_PNETCDF && vdesc0->iobuf)
+    if (file->iotype == PIO_IOTYPE_PNETCDF && file->iobuf)
 	flush_output_buffer(file, 1, 0);
 
-    pioassert(!vdesc0->iobuf, "buffer overwrite",__FILE__, __LINE__);
+    pioassert(!file->iobuf, "buffer overwrite",__FILE__, __LINE__);
 
     /* Determine total size of aggregated data (all vars/records).
      * For netcdf serial writes we collect the data on io nodes and
@@ -261,7 +262,7 @@ int PIOc_write_darray_multi(int ncid, const int *varids, int ioid, int nvars,
     if (rlen > 0)
     {
         /* Allocate memory for the buffer for all vars/records. */
-        if (!(vdesc0->iobuf = bget(iodesc->mpitype_size * (size_t)rlen)))
+        if (!(file->iobuf = bget(iodesc->mpitype_size * (size_t)rlen)))
             return pio_err(ios, file, PIO_ENOMEM, __FILE__, __LINE__);
         LOG((3, "allocated %lld bytes for variable buffer", (size_t)rlen * iodesc->mpitype_size));
 
@@ -272,7 +273,7 @@ int PIOc_write_darray_multi(int ncid, const int *varids, int ioid, int nvars,
             LOG((3, "inerting fill values iodesc->maxiobuflen = %d", iodesc->maxiobuflen));
             for (int nv = 0; nv < nvars; nv++)
                 for (int i = 0; i < iodesc->maxiobuflen; i++)
-                    memcpy(&((char *)vdesc0->iobuf)[iodesc->mpitype_size * (i + nv * iodesc->maxiobuflen)],
+                    memcpy(&((char *)file->iobuf)[iodesc->mpitype_size * (i + nv * iodesc->maxiobuflen)],
                            &((char *)fillvalue)[nv * iodesc->mpitype_size], iodesc->mpitype_size);
         }
     }
@@ -281,13 +282,13 @@ int PIOc_write_darray_multi(int ncid, const int *varids, int ioid, int nvars,
 	/* this assures that iobuf is allocated on all iotasks thus
 	 assuring that the flush_output_buffer call above is called
 	 collectively (from all iotasks) */
-        if (!(vdesc0->iobuf = bget(1)))
+        if (!(file->iobuf = bget(1)))
             return pio_err(ios, file, PIO_ENOMEM, __FILE__, __LINE__);
         LOG((3, "allocated token for variable buffer"));
     }
 
     /* Move data from compute to IO tasks. */
-    if ((ierr = rearrange_comp2io(ios, iodesc, array, vdesc0->iobuf, nvars)))
+    if ((ierr = rearrange_comp2io(ios, iodesc, array, file->iobuf, nvars)))
         return pio_err(ios, file, ierr, __FILE__, __LINE__);
 
 #ifdef PIO_MICRO_TIMING
@@ -385,11 +386,11 @@ int PIOc_write_darray_multi(int ncid, const int *varids, int ioid, int nvars,
     if (file->iotype != PIO_IOTYPE_PNETCDF)
     {
         /* Release resources. */
-        if (vdesc0->iobuf)
+        if (file->iobuf)
         {
 	    LOG((3,"freeing variable buffer in pio_darray"));
-            brel(vdesc0->iobuf);
-            vdesc0->iobuf = NULL;
+            brel(file->iobuf);
+            file->iobuf = NULL;
         }
     }
 
@@ -493,7 +494,8 @@ int PIOc_write_darray_multi(int ncid, const int *varids, int ioid, int nvars,
  * @param vdesc pointer to var_desc_t info for this var.
  * @returns 0 for success, non-zero error code for failure.
  * @ingroup PIO_write_darray
- */
+ * @author Ed Hartnett 
+*/
 int find_var_fillvalue(file_desc_t *file, int varid, var_desc_t *vdesc)
 {
     iosystem_desc_t *ios;  /* Pointer to io system information. */    
@@ -575,6 +577,7 @@ int find_var_fillvalue(file_desc_t *file, int varid, var_desc_t *vdesc)
  * data.
  * @returns 0 for success, non-zero error code for failure.
  * @ingroup PIO_write_darray
+ * @author Jim Edwards, Ed Hartnett
  */
 int PIOc_write_darray(int ncid, int varid, int ioid, PIO_Offset arraylen, void *array,
                       void *fillvalue)
@@ -921,6 +924,7 @@ int PIOc_write_darray(int ncid, int varid, int ioid, PIO_Offset arraylen, void *
  * processor.
  * @return 0 for success, error code otherwise.
  * @ingroup PIO_read_darray
+ * @author Jim Edwards, Ed Hartnett
  */
 int PIOc_read_darray(int ncid, int varid, int ioid, PIO_Offset arraylen,
                      void *array)
