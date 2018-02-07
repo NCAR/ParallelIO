@@ -561,10 +561,16 @@ contains
   subroutine get_tstamp(wall, sys, usr)
     use perf_mod
     double precision, intent(out) :: wall, sys, usr
-    external :: gptlstamp
+    interface
+      function gptlstamp(wall, sys, usr)
+        integer :: gptlstamp
+        double precision, intent(out) :: wall, sys, usr
+      end function
+    end interface
+    integer :: ierr
 
     if(use_gptl) then
-      call gptlstamp(wall, sys, usr)
+      ierr = gptlstamp(wall, sys, usr)
     else
       call t_stampf(wall, sys, usr)
     end if
