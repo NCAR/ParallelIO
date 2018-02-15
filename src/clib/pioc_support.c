@@ -2577,7 +2577,7 @@ int calc_var_rec_sz(int ncid, int varid)
     }
 
     /* Calculate and cache the size of a single record/timestep */
-    ierr = PIOc_inq_var(ncid, varid, NULL, &vtype, &ndims, NULL, NULL);
+    ierr = PIOc_inq_var(ncid, varid, NULL, 0, &vtype, &ndims, NULL, NULL);
     if(ierr != PIO_NOERR)
     {
         LOG((1, "Unable to query ndims/type for var"));

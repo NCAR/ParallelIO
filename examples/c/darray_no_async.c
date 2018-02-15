@@ -134,7 +134,7 @@ int check_file(int iosysid, int ntasks, char *filename, int iotype,
     }
 
     /* Check the variable. */
-    if ((ret = PIOc_inq_var(ncid, 0, var_name, &xtype, &ndims, dimids, &natts)))
+    if ((ret = PIOc_inq_var(ncid, 0, var_name, NC_MAX_NAME, &xtype, &ndims, dimids, &natts)))
         return ret;
     if (xtype != NC_INT || ndims != NDIM3 || dimids[0] != 0 || dimids[1] != 1 ||
             dimids[2] != 2 || natts != 0)

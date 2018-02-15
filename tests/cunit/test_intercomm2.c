@@ -161,14 +161,14 @@ int check_file(int iosysid, int format, char *filename, int my_rank)
         ERR(ERR_WRONG);
 
     /* Check out the variable. */
-    if ((ret = PIOc_inq_var(ncid, 0, varname, &vartype, &varndims, &vardimids, &varnatts)))
+    if ((ret = PIOc_inq_var(ncid, 0, varname, NC_MAX_NAME + 1, &vartype, &varndims, &vardimids, &varnatts)))
         ERR(ret);
     if (strcmp(varname, VAR_NAME) || vartype != NC_INT || varndims != NDIM ||
         vardimids != 0 || varnatts != 0)
         ERR(ERR_WRONG);
 
     /* Check the other functions that get these values. */
-    if ((ret = PIOc_inq_varname(ncid, 0, varname2)))
+    if ((ret = PIOc_inq_varname(ncid, 0, varname2, NC_MAX_NAME + 1)))
         ERR(ret);
     if (strcmp(varname2, VAR_NAME))
         ERR(ERR_WRONG);
@@ -421,7 +421,7 @@ int main(int argc, char **argv)
 		printf("%d test_intercomm2 defining variable %s\n", my_rank, VAR_NAME);
                 if ((ret = PIOc_def_var(ncid, FIRST_VAR_NAME, NC_INT, NDIM, &dimid, &varid)))
                     ERR(ret);
-                if ((ret = PIOc_inq_varname(ncid, 0, varname2)))
+                if ((ret = PIOc_inq_varname(ncid, 0, varname2, NC_MAX_NAME + 1)))
                     ERR(ret);
                 if (strcmp(varname2, FIRST_VAR_NAME))
                     ERR(ERR_WRONG);
