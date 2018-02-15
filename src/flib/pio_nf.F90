@@ -1219,16 +1219,17 @@ contains
     integer                                                 , intent(in) :: varid
     character(len=*)                                        , intent(out)    :: name
     interface
-       integer(C_INT) function PIOc_inq_varname(ncid        ,varid,name) &
+       integer(C_INT) function PIOc_inq_varname(ncid        ,varid,name,namelen) &
             bind(C                                          ,name="PIOc_inq_varname")
          use iso_c_binding
          integer(C_INT)                                     , value :: ncid
          integer(C_INT)                                     , value :: varid
          character(C_CHAR) :: name(*)
+         integer(C_INT)                                     , value :: namelen
        end function PIOc_inq_varname
     end interface
     name = C_NULL_CHAR
-    ierr = PIOc_inq_varname(ncid                            ,varid-1,name)
+    ierr = PIOc_inq_varname(ncid                            ,varid-1,name,len(name))
     call replace_c_null(name)
 
   end function inq_varname_id

@@ -765,7 +765,7 @@ int PIOc_inq_dimid(int ncid, const char *name, int *idp)
  * @return PIO_NOERR for success, error code otherwise.
  * @author Jim Edwards, Ed Hartnett
  */
-int PIOc_inq_var(int ncid, int varid, char *name, nc_type *xtypep, int *ndimsp,
+int PIOc_inq_var(int ncid, int varid, char *name, int namelen, nc_type *xtypep, int *ndimsp,
                  int *dimidsp, int *nattsp)
 {
     iosystem_desc_t *ios;
@@ -847,9 +847,10 @@ int PIOc_inq_var(int ncid, int varid, char *name, nc_type *xtypep, int *ndimsp,
             }
             if (!ierr)
                 ierr = ncmpi_inq_var(file->fh, varid, my_name, xtypep, ndimsp, (dimidsp)?dimidsp:tmp_dimidsp, nattsp);
-            if (!ierr && name)
+            if (!ierr && name && namelen > 0)
             {
-                strncpy(name, my_name, PIO_MAX_NAME);
+                assert(namelen <= PIO_MAX_NAME + 1);
+                strncpy(name, my_name, namelen);
             }
             if(!ierr && (file->num_unlim_dimids > 0))
             {
@@ -932,9 +933,10 @@ int PIOc_inq_var(int ncid, int varid, char *name, nc_type *xtypep, int *ndimsp,
         return check_mpi(file, mpierr, __FILE__, __LINE__);
     if ((mpierr = MPI_Bcast((void *)my_name, slen + 1, MPI_CHAR, ios->ioroot, ios->my_comm)))
         return check_mpi(file, mpierr, __FILE__, __LINE__);
-    if (name)
+    if (name && namelen > 0)
     {
-        strncpy(name, my_name, PIO_MAX_NAME);
+        assert(namelen <= PIO_MAX_NAME + 1);
+        strncpy(name, my_name, namelen);
     }
     strncpy(file->varlist[varid].vname, my_name, PIO_MAX_NAME);
 
@@ -1016,12 +1018,13 @@ int PIOc_inq_var(int ncid, int varid, char *name, nc_type *xtypep, int *ndimsp,
  * @param ncid the ncid of the open file.
  * @param varid the variable ID.
  * @param name a pointer that will get the variable name.
+ * @param namelen the size of the user buffer pointed by name.
  * @return PIO_NOERR for success, error code otherwise.
  * @author Jim Edwards, Ed Hartnett
  */
-int PIOc_inq_varname(int ncid, int varid, char *name)
+int PIOc_inq_varname(int ncid, int varid, char *name, int namelen)
 {
-    return PIOc_inq_var(ncid, varid, name, NULL, NULL, NULL, NULL);
+    return PIOc_inq_var(ncid, varid, name, namelen, NULL, NULL, NULL, NULL);
 }
 
 /**
@@ -1037,7 +1040,7 @@ int PIOc_inq_varname(int ncid, int varid, char *name)
  */
 int PIOc_inq_vartype(int ncid, int varid, nc_type *xtypep)
 {
-    return PIOc_inq_var(ncid, varid, NULL, xtypep, NULL, NULL, NULL);
+    return PIOc_inq_var(ncid, varid, NULL, 0, xtypep, NULL, NULL, NULL);
 }
 
 /**
@@ -1053,7 +1056,7 @@ int PIOc_inq_vartype(int ncid, int varid, nc_type *xtypep)
  */
 int PIOc_inq_varndims(int ncid, int varid, int *ndimsp)
 {
-    return PIOc_inq_var(ncid, varid, NULL, NULL, ndimsp, NULL, NULL);
+    return PIOc_inq_var(ncid, varid, NULL, 0, NULL, ndimsp, NULL, NULL);
 }
 
 /**
@@ -1069,7 +1072,7 @@ int PIOc_inq_varndims(int ncid, int varid, int *ndimsp)
  */
 int PIOc_inq_vardimid(int ncid, int varid, int *dimidsp)
 {
-    return PIOc_inq_var(ncid, varid, NULL, NULL, NULL, dimidsp, NULL);
+    return PIOc_inq_var(ncid, varid, NULL, 0, NULL, NULL, dimidsp, NULL);
 }
 
 /**
@@ -1085,7 +1088,7 @@ int PIOc_inq_vardimid(int ncid, int varid, int *dimidsp)
  */
 int PIOc_inq_varnatts(int ncid, int varid, int *nattsp)
 {
-    return PIOc_inq_var(ncid, varid, NULL, NULL, NULL, NULL, nattsp);
+    return PIOc_inq_var(ncid, varid, NULL, 0, NULL, NULL, NULL, nattsp);
 }
 
 /**
