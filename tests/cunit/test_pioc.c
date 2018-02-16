@@ -295,7 +295,7 @@ int check_var_name(int my_rank, int ncid, MPI_Comm test_comm)
         MPIERR(ret);
 
     memset(var_name, 0, sizeof(var_name));
-    if ((ret = PIOc_inq_varname(ncid, 0, var_name)))
+    if ((ret = PIOc_inq_varname(ncid, 0, var_name, PIO_MAX_NAME + 1)))
         return ret;
     printf("my_rank %d var name %s\n", my_rank, var_name);
 
@@ -823,13 +823,13 @@ int check_metadata(int ncid, int my_rank, int flavor)
     }
 
     /* Check the variable. */
-    if (PIOc_inq_var(ncid + 1, 0, name_in, &xtype_in, &ndims, dimid, &natts) != PIO_EBADID)
+    if (PIOc_inq_var(ncid + 1, 0, name_in, PIO_MAX_NAME + 1, &xtype_in, &ndims, dimid, &natts) != PIO_EBADID)
         return ERR_WRONG;
-    if (PIOc_inq_var(ncid, 45, name_in, &xtype_in, &ndims, dimid, &natts) != PIO_ENOTVAR)
+    if (PIOc_inq_var(ncid, 45, name_in, PIO_MAX_NAME + 1, &xtype_in, &ndims, dimid, &natts) != PIO_ENOTVAR)
         return ERR_WRONG;
-    if ((ret = PIOc_inq_var(ncid, 0, name_in, NULL, NULL, NULL, NULL)))
+    if ((ret = PIOc_inq_var(ncid, 0, name_in, PIO_MAX_NAME + 1, NULL, NULL, NULL, NULL)))
         return ret;
-    if ((ret = PIOc_inq_var(ncid, 0, name_in, &xtype_in, &ndims, dimid, &natts)))
+    if ((ret = PIOc_inq_var(ncid, 0, name_in, PIO_MAX_NAME + 1, &xtype_in, &ndims, dimid, &natts)))
         return ret;
     if (strcmp(name_in, VAR_NAME) || xtype_in != PIO_INT || ndims != NDIM ||
         dimid[0] != 0 || dimid[1] != 1 || dimid[2] != 2 || natts != 1)
@@ -1310,9 +1310,9 @@ int test_nc4(int iosysid, int num_flavors, int *flavor, int my_rank)
 
             /* Check that the inq_varname function works. */
             printf("%d Checking varname\n", my_rank);
-            if ((ret = PIOc_inq_varname(ncid, 0, NULL)))
+            if ((ret = PIOc_inq_varname(ncid, 0, NULL, 0)))
                 ERR(ret);
-            if ((ret = PIOc_inq_varname(ncid, 0, varname_in)))
+            if ((ret = PIOc_inq_varname(ncid, 0, varname_in, PIO_MAX_NAME)))
                 ERR(ret);
 
             /* Check that the inq_var_chunking function works. */
@@ -1423,7 +1423,7 @@ int check_scalar_var(int ncid, int varid, int flavor)
     int ret;
 
     /* Learn the var metadata. */
-    if ((ret = PIOc_inq_var(ncid, varid, var_name_in, &var_type_in, &ndims_in, NULL,
+    if ((ret = PIOc_inq_var(ncid, varid, var_name_in, PIO_MAX_NAME + 1, &var_type_in, &ndims_in, NULL,
                             &natts_in)))
         return ret;
 

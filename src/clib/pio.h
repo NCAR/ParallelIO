@@ -253,10 +253,10 @@ typedef struct var_desc_t
     int varid;
 
     /* Variable name - cached */
-    char vname[PIO_MAX_NAME];
+    char vname[PIO_MAX_NAME + 1];
 
     /* Variable description */
-    char vdesc[PIO_MAX_NAME];
+    char vdesc[PIO_MAX_NAME + 1];
     
     /* Non-zero if this is a record var (i.e. uses unlimited
      * dimension). */
@@ -706,7 +706,7 @@ typedef struct file_desc_t
     int fh;
 
     /* File name - cached */
-    char fname[PIO_MAX_NAME];
+    char fname[PIO_MAX_NAME + 1];
 
     /** The ncid that will be returned to the user. */
     int pio_ncid;
@@ -922,9 +922,9 @@ extern "C" {
 
     /* Variables. */
     int PIOc_inq_varid(int ncid, const char *name, int *varidp);
-    int PIOc_inq_var(int ncid, int varid, char *name, nc_type *xtypep, int *ndimsp, int *dimidsp,
-                     int *nattsp);
-    int PIOc_inq_varname(int ncid, int varid, char *name);
+    int PIOc_inq_var(int ncid, int varid, char *name, int namelen, nc_type *xtypep, int *ndimsp,
+                     int *dimidsp, int *nattsp);
+    int PIOc_inq_varname(int ncid, int varid, char *name, int namelen);
     int PIOc_inq_vartype(int ncid, int varid, nc_type *xtypep);
     int PIOc_inq_varndims(int ncid, int varid, int *ndimsp);
     int PIOc_inq_vardimid(int ncid, int varid, int *dimidsp);

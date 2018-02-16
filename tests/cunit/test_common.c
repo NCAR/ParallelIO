@@ -563,7 +563,7 @@ check_nc_sample_1(int iosysid, int format, char *filename, int my_rank, int *nci
         return ERR_WRONG;
 
     /* Check out the variable. */
-    if ((ret = PIOc_inq_var(ncid, 0, varname, &vartype, &varndims, &vardimids, &varnatts)))
+    if ((ret = PIOc_inq_var(ncid, 0, varname, NC_MAX_NAME + 1, &vartype, &varndims, &vardimids, &varnatts)))
         return ret;
     if (strcmp(varname, VAR_NAME_S1) || vartype != NC_INT || varndims != NDIM_S1 ||
         vardimids != 0 || varnatts != 0)
@@ -621,7 +621,7 @@ create_nc_sample_2(int iosysid, int format, char *filename, int my_rank, int *nc
     printf("%d defining variable %s\n", my_rank, VAR_NAME_S2);
     if ((ret = PIOc_def_var(ncid, FIRST_VAR_NAME_S2, NC_INT, NDIM_S2, &dimid, &varid)))
         return ret;
-    if ((ret = PIOc_inq_varname(ncid, 0, varname2)))
+    if ((ret = PIOc_inq_varname(ncid, 0, varname2, NC_MAX_NAME + 1)))
         return ret;
     if (strcmp(varname2, FIRST_VAR_NAME_S2))
         return ERR_WRONG;
@@ -799,14 +799,14 @@ check_nc_sample_2(int iosysid, int format, char *filename, int my_rank, int *nci
         return ERR_WRONG;
 
     /* Check out the variable. */
-    if ((ret = PIOc_inq_var(ncid, 0, varname, &vartype, &varndims, &vardimids, &varnatts)))
+    if ((ret = PIOc_inq_var(ncid, 0, varname, NC_MAX_NAME + 1, &vartype, &varndims, &vardimids, &varnatts)))
         return ERR_CHECK;
     if (strcmp(varname, VAR_NAME_S2) || vartype != NC_INT || varndims != NDIM_S2 ||
         vardimids != 0 || varnatts != 0)
         return ERR_WRONG;
 
     /* Check the other functions that get these values. */
-    if ((ret = PIOc_inq_varname(ncid, 0, varname2)))
+    if ((ret = PIOc_inq_varname(ncid, 0, varname2, NC_MAX_NAME + 1)))
         return ERR_CHECK;
     if (strcmp(varname2, VAR_NAME_S2))
         return ERR_WRONG;

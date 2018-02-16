@@ -1078,7 +1078,7 @@ int inq_var_handler(iosystem_desc_t *ios)
         nattsp = &natts;
 
     /* Call the inq function to get the values. */
-    if ((ret = PIOc_inq_var(ncid, varid, namep, xtypep, ndimsp, dimidsp, nattsp)))
+    if ((ret = PIOc_inq_var(ncid, varid, namep, NC_MAX_NAME + 1, xtypep, ndimsp, dimidsp, nattsp)))
         return pio_err(ios, NULL, ret, __FILE__, __LINE__);
 
     if (ndims_present)
