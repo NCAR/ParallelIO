@@ -214,7 +214,9 @@ void ProcessGlobalAttributes(ADIOS_FILE **infile, int ncid)
     }
 }
 
-Decomposition ProcessOneDecomposition(ADIOS_FILE **infile, int ncid, const char *varname, std::vector<int>& wfiles, int iosysid, int mpirank,
+Decomposition ProcessOneDecomposition(ADIOS_FILE **infile, int ncid, const char *varname, std::vector<int>& wfiles, 
+		int iosysid, 
+		int mpirank,
 		int nproc,
         int forced_type=NC_NAT)
 {
@@ -324,7 +326,7 @@ Decomposition GetNewDecomposition(DecompositionMap& decompmap, string decompname
     if (it == decompmap.end())
     {
         string varname = "/__pio__/decomp/" + decompname;
-        d = ProcessOneDecomposition(infile, ncid, varname.c_str(), wfiles, nctype, iosysid, mpirank, nproc);
+        d = ProcessOneDecomposition(infile, ncid, varname.c_str(), wfiles, iosysid, mpirank, nproc, nctype);
         decompmap[key] = d;
     }
     else
