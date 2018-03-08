@@ -186,6 +186,16 @@ int PIOc_setframe(int ncid, int varid, int frame)
     LOG((1, "PIOc_setframe ncid = %d varid = %d frame = %d", ncid,
          varid, frame));
 
+    /* Reset all invalid frame values to -1. We reset the frame number
+     * instead of returning an error since PIO does not define a value'
+     * for frame numbers for variables with no record dimension
+     */
+    if(frame < 0)
+    {
+        LOG((2, "Resetting invalid frame number %d to -1", frame));
+        frame = -1;
+    }
+
     /* Get file info. */
     if ((ret = pio_get_file(ncid, &file)))
         return pio_err(NULL, NULL, ret, __FILE__, __LINE__);
