@@ -442,7 +442,15 @@ PIO_TF_AUTO_TEST_SUB_BEGIN write_with_rearr_opts
                       call PIO_write_darray(pio_file, pio_var, iodesc, wbuf, ret)
                       PIO_TF_CHECK_ERR(ret, dup_comm, "Writing var failed fname="//trim(tgv_fname))
 
+#ifdef PIO_TEST_CLOSE_OPEN_FOR_SYNC
+                      call PIO_closefile(pio_file)
+
+                      call open_file_and_get_var(dup_iosys, pio_file, iotypes(i),&
+                              pio_var, dims, ret)
+                      PIO_TF_CHECK_ERR(ret, dup_comm, "Reopening file/decomp/var reqd for test failed :" // trim(tgv_fname))
+#else
                       call PIO_syncfile(pio_file)
+#endif
 
                       call PIO_read_darray(pio_file, pio_var, iodesc, rbuf, ret)
                       PIO_TF_CHECK_ERR(ret, dup_comm, "Reading var failed fname="//trim(tgv_fname))

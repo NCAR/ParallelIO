@@ -133,6 +133,9 @@ PIO_TF_AUTO_TEST_SUB_BEGIN test_data_conversion
   type(var_desc_t)  :: pio_var_int, pio_var_real, pio_var_double
   type(file_desc_t) :: pio_file
   character(len=PIO_TF_MAX_STR_LEN) :: data_fname = "pio_test_data_conversion.nc"
+  character(len=*), parameter :: PIO_VAR_INT_NAME = 'PIO_TF_test_var_int'
+  character(len=*), parameter :: PIO_VAR_REAL_NAME = 'PIO_TF_test_var_real'
+  character(len=*), parameter :: PIO_VAR_DBL_NAME = 'PIO_TF_test_var_dbl'
   type(io_desc_t) :: wiodesc, riodesc
   integer, dimension(VEC_LOCAL_SZ) :: compdof, compdof_rel_disps
   PIO_TF_FC_DATA_TYPE, dimension(VEC_LOCAL_SZ) :: wbuf, rbuf
@@ -159,13 +162,13 @@ PIO_TF_AUTO_TEST_SUB_BEGIN test_data_conversion
   ierr = PIO_def_dim(pio_file, 'PIO_TF_test_dim', dims(1), pio_dim)
   PIO_TF_CHECK_ERR(ierr, "Failed to define a dim : " // trim(data_fname))
 
-  ierr = PIO_def_var(pio_file, 'PIO_TF_test_var_int', PIO_int, (/pio_dim/), pio_var_int)
+  ierr = PIO_def_var(pio_file, PIO_VAR_INT_NAME, PIO_int, (/pio_dim/), pio_var_int)
   PIO_TF_CHECK_ERR(ierr, "Failed to define a var of int type : " // trim(data_fname))
 
-  ierr = PIO_def_var(pio_file, 'PIO_TF_test_var_real', PIO_real, (/pio_dim/), pio_var_real)
+  ierr = PIO_def_var(pio_file, PIO_VAR_REAL_NAME, PIO_real, (/pio_dim/), pio_var_real)
   PIO_TF_CHECK_ERR(ierr, "Failed to define a var of real type : " // trim(data_fname))
 
-  ierr = PIO_def_var(pio_file, 'PIO_TF_test_var', PIO_double, (/pio_dim/), pio_var_double)
+  ierr = PIO_def_var(pio_file, PIO_VAR_DBL_NAME, PIO_double, (/pio_dim/), pio_var_double)
   PIO_TF_CHECK_ERR(ierr, "Failed to define a var of double type : " // trim(data_fname))
 
   ierr = PIO_enddef(pio_file)
@@ -183,7 +186,23 @@ PIO_TF_AUTO_TEST_SUB_BEGIN test_data_conversion
   call PIO_write_darray(pio_file, pio_var_double, wiodesc, wbuf, ierr)
   PIO_TF_CHECK_ERR(ierr, "Failed to write darray on a var of double type : " // trim(data_fname))
 
+#ifdef PIO_TEST_CLOSE_OPEN_FOR_SYNC
+  call PIO_closefile(pio_file)
+
+  ierr = PIO_openfile(pio_tf_iosystem_, pio_file, tgv_iotype, data_fname, PIO_nowrite)
+  PIO_TF_CHECK_ERR(ierr, "Could not reopen file " // trim(data_fname))
+
+  ierr = PIO_inq_varid(pio_file, PIO_VAR_INT_NAME, pio_var_int)
+  PIO_TF_CHECK_ERR(ierr, "Cannot inq int var " // trim(data_fname))
+
+  ierr = PIO_inq_varid(pio_file, PIO_VAR_REAL_NAME, pio_var_real)
+  PIO_TF_CHECK_ERR(ierr, "Cannot inq real var " // trim(data_fname))
+
+  ierr = PIO_inq_varid(pio_file, PIO_VAR_DBL_NAME, pio_var_double)
+  PIO_TF_CHECK_ERR(ierr, "Cannot inq double var " // trim(data_fname))
+#else
   call PIO_syncfile(pio_file)
+#endif
 
   ! Read the int type variable back (data conversion might occur: int => real, int => double)
   rbuf = 0

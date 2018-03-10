@@ -107,6 +107,7 @@ set (PIO_FILESYSTEM_HINTS IGNORE CACHE STRING "Filesystem hints (lustre or gpfs)
 option (PIO_ENABLE_TESTS  "Enable the testing builds"                           ON)
 option (PIO_ENABLE_LARGE_TESTS  "Enable large (file, processes) tests"         OFF)
 option (PIO_VALGRIND_CHECK  "Enable memory leak check using valgrind"           OFF)
+option (PIO_TEST_CLOSE_OPEN_FOR_SYNC  "PIO fortran tests will close+open for sync"  OFF)
 
 #==============================================================================
 #  BACKWARDS COMPATIBILITY

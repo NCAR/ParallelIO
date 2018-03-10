@@ -50,6 +50,10 @@ if (CMAKE_Fortran_COMPILER_ID STREQUAL "NAG")
   #        PRIVATE -mismatch_all)
 endif ()
 
+if (PIO_TEST_CLOSE_OPEN_FOR_SYNC)
+  add_definitions(-DPIO_TEST_CLOSE_OPEN_FOR_SYNC)
+endif()
+
 #==============================================================================
 #  DEFINE THE TARGETS AND TESTS
 #==============================================================================
