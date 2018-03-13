@@ -6,9 +6,10 @@
 #include <vector>
 #include <map>
 #include <stdexcept>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <unistd.h> // usleep
 #include <mpi.h>
-#include <sys/types.h>
 #include <dirent.h>
 #include "pio.h"
 #include "adios_read.h"
@@ -935,10 +936,21 @@ int GetNumOfFiles(string infilename)
 		fprintf(stderr, "Folder %s does not exist.\n",foldername.c_str());
 		return -1;
 	}
+
     struct dirent * dp;
+	char fname[256];
+	struct stat buf;
     while ((dp = readdir(dirp)) != NULL) {
-		if (dp->d_type==DT_REG) file_count++;
+		if (dp->d_type==DT_REG) 
+			file_count++;
+		else if (dp->d_type==DT_UNKNOWN) {
+			sprintf(fname,"%s%s",foldername.c_str(),dp->d_name);
+			stat(fname,&buf);
+			if (S_ISREG(buf.st_mode)) 
+				file_count++;
+		}
     }
+
     closedir(dirp);	
 	return file_count;
 }
