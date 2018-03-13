@@ -128,6 +128,8 @@ PIO_TF_AUTO_TEST_SUB_BEGIN test_put_get_0dvar
   CHARACTER(len=1) :: pcval, gcval
   integer, dimension(:), allocatable :: iotypes
   character(len=PIO_TF_MAX_STR_LEN), dimension(:), allocatable :: iotype_descs
+  character(len=*), parameter :: PIO_VAR_NAME = 'dummy_scalar_var_put_val'
+  character(len=*), parameter :: PIO_CVAR_NAME = 'dummy_scalar_var_put_cval'
   integer :: num_iotypes
   integer :: i, ret
   
@@ -142,10 +144,10 @@ PIO_TF_AUTO_TEST_SUB_BEGIN test_put_get_0dvar
     PIO_TF_CHECK_ERR(ret, "Failed to open:" // trim(filename))
 
     ! Since file is just created no need to enter redef
-    ret = PIO_def_var(pio_file, 'dummy_scalar_var_put_val', PIO_TF_DATA_TYPE, pio_var)
+    ret = PIO_def_var(pio_file, PIO_VAR_NAME, PIO_TF_DATA_TYPE, pio_var)
     PIO_TF_CHECK_ERR(ret, "Failed to define scalar var:" // trim(filename))
 
-    ret = PIO_def_var(pio_file, 'dummy_scalar_var_put_cval', PIO_char, pio_cvar)
+    ret = PIO_def_var(pio_file, PIO_CVAR_NAME, PIO_char, pio_cvar)
     PIO_TF_CHECK_ERR(ret, "Failed to define scalar char var:" // trim(filename))
 
     ret = PIO_enddef(pio_file)
@@ -157,7 +159,20 @@ PIO_TF_AUTO_TEST_SUB_BEGIN test_put_get_0dvar
     ret = PIO_put_var(pio_file, pio_cvar, pcval);
     PIO_TF_CHECK_ERR(ret, "Failed to put scalar char var:" // trim(filename))
 
+#ifdef PIO_TEST_CLOSE_OPEN_FOR_SYNC
+    call PIO_closefile(pio_file)
+
+    ret = PIO_openfile(pio_tf_iosystem_, pio_file, iotypes(i), filename, PIO_nowrite)
+    PIO_TF_CHECK_ERR(ret, "Failed to reopen:" // trim(filename))
+
+    ret = PIO_inq_varid(pio_file, PIO_VAR_NAME, pio_var)
+    PIO_TF_CHECK_ERR(ret, "Failed to get scalar var:" // trim(filename))
+
+    ret = PIO_inq_varid(pio_file, PIO_CVAR_NAME, pio_cvar)
+    PIO_TF_CHECK_ERR(ret, "Failed to get scalar char var:" // trim(filename))
+#else
     call PIO_syncfile(pio_file)
+#endif
 
     ret = PIO_get_var(pio_file, pio_var, gval);
     PIO_TF_CHECK_ERR(ret, "Failed to get scalar var:" // trim(filename))
@@ -191,6 +206,8 @@ PIO_TF_AUTO_TEST_SUB_BEGIN test_put_get_1dvar
   CHARACTER(len=DIM_LEN) :: pcval, gcval
   integer, dimension(:), allocatable :: iotypes
   character(len=PIO_TF_MAX_STR_LEN), dimension(:), allocatable :: iotype_descs
+  character(len=*), parameter :: PIO_VAR_NAME = 'dummy_var_put_val'
+  character(len=*), parameter :: PIO_CVAR_NAME = 'dummy_var_put_cval'
   integer :: num_iotypes
   integer :: i, ret
   
@@ -208,10 +225,10 @@ PIO_TF_AUTO_TEST_SUB_BEGIN test_put_get_1dvar
     ret = PIO_def_dim(pio_file, 'dummy_dim_put_val', DIM_LEN, pio_dim)
     PIO_TF_CHECK_ERR(ret, "Failed to define dim:" // trim(filename))
 
-    ret = PIO_def_var(pio_file, 'dummy_var_put_val', PIO_TF_DATA_TYPE, (/pio_dim/), pio_var)
+    ret = PIO_def_var(pio_file, PIO_VAR_NAME, PIO_TF_DATA_TYPE, (/pio_dim/), pio_var)
     PIO_TF_CHECK_ERR(ret, "Failed to define var:" // trim(filename))
 
-    ret = PIO_def_var(pio_file, 'dummy_var_put_cval', PIO_char, (/pio_dim/), pio_cvar)
+    ret = PIO_def_var(pio_file, PIO_CVAR_NAME, PIO_char, (/pio_dim/), pio_cvar)
     PIO_TF_CHECK_ERR(ret, "Failed to define char var:" // trim(filename))
 
     ret = PIO_enddef(pio_file)
@@ -223,7 +240,20 @@ PIO_TF_AUTO_TEST_SUB_BEGIN test_put_get_1dvar
     ret = PIO_put_var(pio_file, pio_cvar, pcval);
     PIO_TF_CHECK_ERR(ret, "Failed to put char var:" // trim(filename))
 
+#ifdef PIO_TEST_CLOSE_OPEN_FOR_SYNC
+    call PIO_closefile(pio_file)
+
+    ret = PIO_openfile(pio_tf_iosystem_, pio_file, iotypes(i), filename, PIO_nowrite)
+    PIO_TF_CHECK_ERR(ret, "Failed to reopen:" // trim(filename))
+
+    ret = PIO_inq_varid(pio_file, PIO_VAR_NAME, pio_var)
+    PIO_TF_CHECK_ERR(ret, "Failed to get scalar var:" // trim(filename))
+
+    ret = PIO_inq_varid(pio_file, PIO_CVAR_NAME, pio_cvar)
+    PIO_TF_CHECK_ERR(ret, "Failed to get scalar char var:" // trim(filename))
+#else
     call PIO_syncfile(pio_file)
+#endif
 
     ret = PIO_get_var(pio_file, pio_var, gval);
     PIO_TF_CHECK_ERR(ret, "Failed to get var:" // trim(filename))
@@ -251,6 +281,7 @@ PIO_TF_AUTO_TEST_SUB_BEGIN test_put_get_1dvar_slice
   Implicit none
   type(file_desc_t) :: pio_file
   character(len=PIO_TF_MAX_STR_LEN) :: filename
+  character(len=*), parameter :: PIO_VAR_NAME = 'dummy_var_put_val'
   type(var_desc_t)  :: pio_var, pio_cvar
   integer :: pio_dim
   integer, parameter :: MAX_ROW_DIM_LEN = 100
@@ -284,7 +315,7 @@ PIO_TF_AUTO_TEST_SUB_BEGIN test_put_get_1dvar_slice
     ret = PIO_def_dim(pio_file, 'dummy_dim_put_val', MAX_ROW_DIM_LEN, pio_dim)
     PIO_TF_CHECK_ERR(ret, "Failed to define dim:" // trim(filename))
 
-    ret = PIO_def_var(pio_file, 'dummy_var_put_val', PIO_TF_DATA_TYPE, (/pio_dim/), pio_var)
+    ret = PIO_def_var(pio_file, PIO_VAR_NAME, PIO_TF_DATA_TYPE, (/pio_dim/), pio_var)
     PIO_TF_CHECK_ERR(ret, "Failed to define var:" // trim(filename))
 
     ret = PIO_enddef(pio_file)
@@ -293,7 +324,17 @@ PIO_TF_AUTO_TEST_SUB_BEGIN test_put_get_1dvar_slice
     ret = PIO_put_var(pio_file, pio_var, start, count, pval(:,COL_WRITE_DIM));
     PIO_TF_CHECK_ERR(ret, "Failed to put var:" // trim(filename))
 
+#ifdef PIO_TEST_CLOSE_OPEN_FOR_SYNC
+    call PIO_closefile(pio_file)
+
+    ret = PIO_openfile(pio_tf_iosystem_, pio_file, iotypes(i), filename, PIO_nowrite)
+    PIO_TF_CHECK_ERR(ret, "Failed to reopen:" // trim(filename))
+
+    ret = PIO_inq_varid(pio_file, PIO_VAR_NAME, pio_var)
+    PIO_TF_CHECK_ERR(ret, "Failed to get scalar var:" // trim(filename))
+#else
     call PIO_syncfile(pio_file)
+#endif
 
     ret = PIO_get_var(pio_file, pio_var, gval);
     PIO_TF_CHECK_ERR(ret, "Failed to get var:" // trim(filename))
@@ -315,6 +356,7 @@ PIO_TF_AUTO_TEST_SUB_BEGIN test_put_get_1dvar_4parts
   Implicit none
   type(file_desc_t) :: pio_file
   character(len=PIO_TF_MAX_STR_LEN) :: filename
+  character(len=*), parameter :: PIO_VAR_NAME = 'dummy_var_put_val'
   type(var_desc_t)  :: pio_var, pio_cvar
   integer :: pio_dim
   integer, parameter :: DIM_LEN = 16
@@ -341,7 +383,7 @@ PIO_TF_AUTO_TEST_SUB_BEGIN test_put_get_1dvar_4parts
     ret = PIO_def_dim(pio_file, 'dummy_dim_put_val', DIM_LEN, pio_dim)
     PIO_TF_CHECK_ERR(ret, "Failed to define dim:" // trim(filename))
 
-    ret = PIO_def_var(pio_file, 'dummy_var_put_val', PIO_TF_DATA_TYPE, (/pio_dim/), pio_var)
+    ret = PIO_def_var(pio_file, PIO_VAR_NAME, PIO_TF_DATA_TYPE, (/pio_dim/), pio_var)
     PIO_TF_CHECK_ERR(ret, "Failed to define var:" // trim(filename))
 
     ret = PIO_enddef(pio_file)
@@ -363,7 +405,17 @@ PIO_TF_AUTO_TEST_SUB_BEGIN test_put_get_1dvar_4parts
     ret = PIO_put_var(pio_file, pio_var, start, count, pval(PART_LEN * 3 + 1 : DIM_LEN))
     PIO_TF_CHECK_ERR(ret, "Failed to put var (4th part):" // trim(filename))
 
+#ifdef PIO_TEST_CLOSE_OPEN_FOR_SYNC
+    call PIO_closefile(pio_file)
+
+    ret = PIO_openfile(pio_tf_iosystem_, pio_file, iotypes(i), filename, PIO_nowrite)
+    PIO_TF_CHECK_ERR(ret, "Failed to reopen:" // trim(filename))
+
+    ret = PIO_inq_varid(pio_file, PIO_VAR_NAME, pio_var)
+    PIO_TF_CHECK_ERR(ret, "Failed to get scalar var:" // trim(filename))
+#else
     call PIO_syncfile(pio_file)
+#endif
 
     start = PART_LEN * 3 + 1
     ret = PIO_get_var(pio_file, pio_var, start, count, gval(PART_LEN * 3 + 1 : DIM_LEN))
@@ -399,6 +451,9 @@ PIO_TF_AUTO_TEST_SUB_BEGIN test_put_get_md2mdplus1_var
   Implicit none
   type(file_desc_t) :: pio_file
   character(len=PIO_TF_MAX_STR_LEN) :: filename
+  character(len=*), parameter :: PIO_2DVAR_NAME = '2d_val'
+  character(len=*), parameter :: PIO_3DVAR_NAME = '3d_val'
+  character(len=*), parameter :: PIO_4DVAR_NAME = '4d_val'
   integer, parameter :: MAX_DIMS = 4
   integer, parameter :: MAX_ROWS = 10
   integer, parameter :: MAX_COLS = 10
@@ -443,15 +498,15 @@ PIO_TF_AUTO_TEST_SUB_BEGIN test_put_get_md2mdplus1_var
     ret = PIO_def_dim(pio_file, 'timesteps', MAX_TIMES, pio_dims(4))
     PIO_TF_CHECK_ERR(ret, "Failed to define dim:" // trim(filename))
 
-    ret = PIO_def_var(pio_file, '2d_val', PIO_TF_DATA_TYPE,&
+    ret = PIO_def_var(pio_file, PIO_2DVAR_NAME, PIO_TF_DATA_TYPE,&
               (/pio_dims(1),pio_dims(4)/), pio_2dvar)
     PIO_TF_CHECK_ERR(ret, "Failed to define var:" // trim(filename))
 
-    ret = PIO_def_var(pio_file, '3d_val', PIO_TF_DATA_TYPE,&
+    ret = PIO_def_var(pio_file, PIO_3DVAR_NAME, PIO_TF_DATA_TYPE,&
               (/pio_dims(1),pio_dims(2),pio_dims(4)/), pio_3dvar)
     PIO_TF_CHECK_ERR(ret, "Failed to define var:" // trim(filename))
 
-    ret = PIO_def_var(pio_file, '4d_val', PIO_TF_DATA_TYPE,&
+    ret = PIO_def_var(pio_file, PIO_4DVAR_NAME, PIO_TF_DATA_TYPE,&
               pio_dims, pio_4dvar)
     PIO_TF_CHECK_ERR(ret, "Failed to define var:" // trim(filename))
 
@@ -536,7 +591,23 @@ PIO_TF_AUTO_TEST_SUB_BEGIN test_put_get_md2mdplus1_var
       PIO_TF_CHECK_ERR(ret, "Failed to put 4d var:" // trim(filename))
     end do
 
+#ifdef PIO_TEST_CLOSE_OPEN_FOR_SYNC
+    call PIO_closefile(pio_file)
+
+    ret = PIO_openfile(pio_tf_iosystem_, pio_file, iotypes(i), filename, PIO_nowrite)
+    PIO_TF_CHECK_ERR(ret, "Failed to reopen:" // trim(filename))
+
+    ret = PIO_inq_varid(pio_file, PIO_2DVAR_NAME, pio_2dvar)
+    PIO_TF_CHECK_ERR(ret, "Failed to inq 2d var" // trim(filename))
+
+    ret = PIO_inq_varid(pio_file, PIO_3DVAR_NAME, pio_3dvar)
+    PIO_TF_CHECK_ERR(ret, "Failed to inq 3d var" // trim(filename))
+
+    ret = PIO_inq_varid(pio_file, PIO_4DVAR_NAME, pio_4dvar)
+    PIO_TF_CHECK_ERR(ret, "Failed to inq 4d var" // trim(filename))
+#else
     call PIO_syncfile(pio_file)
+#endif
 
     ret = PIO_get_var(pio_file, pio_2dvar, gval_2d)
     PIO_TF_CHECK_ERR(ret, "Failed to get 2d var:" // trim(filename))

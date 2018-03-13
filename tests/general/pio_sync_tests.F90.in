@@ -115,6 +115,9 @@ PIO_TF_AUTO_TEST_SUB_BEGIN nc_mvar_wr_rd_1d_bc
   type(var_desc_t)  :: pio_var1, pio_var2, pio_var3
   type(file_desc_t) :: pio_file
   character(len=PIO_TF_MAX_STR_LEN) :: filename
+  character(len=*), parameter :: PIO_VAR1_NAME = 'PIO_TF_test_var1'
+  character(len=*), parameter :: PIO_VAR2_NAME = 'PIO_TF_test_var2'
+  character(len=*), parameter :: PIO_VAR3_NAME = 'PIO_TF_test_var3'
   type(io_desc_t) :: wr_iodesc, rd_iodesc
   integer, dimension(:), allocatable :: compdof
   integer, dimension(:), allocatable :: start, count
@@ -173,13 +176,13 @@ PIO_TF_AUTO_TEST_SUB_BEGIN nc_mvar_wr_rd_1d_bc
     ierr = PIO_def_dim(pio_file, 'PIO_TF_test_dim', dims(1), pio_dim)
     PIO_TF_CHECK_ERR(ierr, "Failed to define a dim : " // trim(filename))
 
-    ierr = PIO_def_var(pio_file, 'PIO_TF_test_var1', PIO_TF_DATA_TYPE, (/pio_dim/), pio_var1)
+    ierr = PIO_def_var(pio_file, PIO_VAR1_NAME, PIO_TF_DATA_TYPE, (/pio_dim/), pio_var1)
     PIO_TF_CHECK_ERR(ierr, "Failed to define a var : " // trim(filename))
 
-    ierr = PIO_def_var(pio_file, 'PIO_TF_test_var2', PIO_TF_DATA_TYPE, (/pio_dim/), pio_var2)
+    ierr = PIO_def_var(pio_file, PIO_VAR2_NAME, PIO_TF_DATA_TYPE, (/pio_dim/), pio_var2)
     PIO_TF_CHECK_ERR(ierr, "Failed to define a var : " // trim(filename))
 
-    ierr = PIO_def_var(pio_file, 'PIO_TF_test_var3', PIO_TF_DATA_TYPE, (/pio_dim/), pio_var3)
+    ierr = PIO_def_var(pio_file, PIO_VAR3_NAME, PIO_TF_DATA_TYPE, (/pio_dim/), pio_var3)
     PIO_TF_CHECK_ERR(ierr, "Failed to define a var : " // trim(filename))
 
     ierr = PIO_enddef(pio_file)
@@ -195,7 +198,23 @@ PIO_TF_AUTO_TEST_SUB_BEGIN nc_mvar_wr_rd_1d_bc
     call PIO_write_darray(pio_file, pio_var3, wr_iodesc, wbuf, ierr)
     PIO_TF_CHECK_ERR(ierr, "Failed to write darray : " // trim(filename))
 
+#ifdef PIO_TEST_CLOSE_OPEN_FOR_SYNC
+    call PIO_closefile(pio_file)
+
+    ierr = PIO_openfile(pio_tf_iosystem_, pio_file, iotypes(i), filename, PIO_nowrite)
+    PIO_TF_CHECK_ERR(ierr, "Could not reopen file " // trim(filename))
+
+    ierr = PIO_inq_varid(pio_file, PIO_VAR1_NAME, pio_var1)
+    PIO_TF_CHECK_ERR(ierr, "Could not inq var1 :" // trim(filename))
+
+    ierr = PIO_inq_varid(pio_file, PIO_VAR2_NAME, pio_var2)
+    PIO_TF_CHECK_ERR(ierr, "Could not inq var2 :" // trim(filename))
+
+    ierr = PIO_inq_varid(pio_file, PIO_VAR3_NAME, pio_var3)
+    PIO_TF_CHECK_ERR(ierr, "Could not inq var3 :" // trim(filename))
+#else
     call PIO_syncfile(pio_file)
+#endif
 
     rbuf = 0
     call PIO_read_darray(pio_file, pio_var1, rd_iodesc, rbuf, ierr)
@@ -408,6 +427,10 @@ PIO_TF_AUTO_TEST_SUB_BEGIN nc_mvar_mreg_wr_rd_1d_bc
   type(var_desc_t)  :: pio_var1, pio_var2, pio_var3, pio_var4
   type(file_desc_t) :: pio_file
   character(len=PIO_TF_MAX_STR_LEN) :: filename
+  character(len=*), parameter :: PIO_VAR1_NAME = 'PIO_TF_test_var1_mreg'
+  character(len=*), parameter :: PIO_VAR2_NAME = 'PIO_TF_test_var2'
+  character(len=*), parameter :: PIO_VAR3_NAME = 'PIO_TF_test_var3_mreg'
+  character(len=*), parameter :: PIO_VAR4_NAME = 'PIO_TF_test_var4'
   type(io_desc_t) :: iodesc_mreg, iodesc
   integer, dimension(:), allocatable :: compdof
   integer, dimension(:), allocatable :: start, count
@@ -484,16 +507,16 @@ PIO_TF_AUTO_TEST_SUB_BEGIN nc_mvar_mreg_wr_rd_1d_bc
     ierr = PIO_def_dim(pio_file, 'PIO_TF_test_dim_mreg', dims_mreg(1), pio_dim_mreg)
     PIO_TF_CHECK_ERR(ierr, "Failed to define a dim (mreg) : " // trim(filename))
 
-    ierr = PIO_def_var(pio_file, 'PIO_TF_test_var1_mreg', PIO_TF_DATA_TYPE, (/pio_dim_mreg/), pio_var1)
+    ierr = PIO_def_var(pio_file, PIO_VAR1_NAME, PIO_TF_DATA_TYPE, (/pio_dim_mreg/), pio_var1)
     PIO_TF_CHECK_ERR(ierr, "Failed to define a var (var1) : " // trim(filename))
 
-    ierr = PIO_def_var(pio_file, 'PIO_TF_test_var2', PIO_TF_DATA_TYPE, (/pio_dim/), pio_var2)
+    ierr = PIO_def_var(pio_file, PIO_VAR2_NAME, PIO_TF_DATA_TYPE, (/pio_dim/), pio_var2)
     PIO_TF_CHECK_ERR(ierr, "Failed to define a var (var2) : " // trim(filename))
 
-    ierr = PIO_def_var(pio_file, 'PIO_TF_test_var3_mreg', PIO_TF_DATA_TYPE, (/pio_dim_mreg/), pio_var3)
+    ierr = PIO_def_var(pio_file, PIO_VAR3_NAME, PIO_TF_DATA_TYPE, (/pio_dim_mreg/), pio_var3)
     PIO_TF_CHECK_ERR(ierr, "Failed to define a var (var3) : " // trim(filename))
 
-    ierr = PIO_def_var(pio_file, 'PIO_TF_test_var4', PIO_TF_DATA_TYPE, (/pio_dim/), pio_var4)
+    ierr = PIO_def_var(pio_file, PIO_VAR4_NAME, PIO_TF_DATA_TYPE, (/pio_dim/), pio_var4)
     PIO_TF_CHECK_ERR(ierr, "Failed to define a var (var4) : " // trim(filename))
 
     ierr = PIO_enddef(pio_file)
@@ -512,7 +535,26 @@ PIO_TF_AUTO_TEST_SUB_BEGIN nc_mvar_mreg_wr_rd_1d_bc
     call PIO_write_darray(pio_file, pio_var4, iodesc, wbuf, ierr)
     PIO_TF_CHECK_ERR(ierr, "Failed to write darray (var4) : " // trim(filename))
 
+#ifdef PIO_TEST_CLOSE_OPEN_FOR_SYNC
+    call PIO_closefile(pio_file)
+
+    ierr = PIO_openfile(pio_tf_iosystem_, pio_file, iotypes(i), filename, PIO_nowrite)
+    PIO_TF_CHECK_ERR(ierr, "Could not reopen file " // trim(filename))
+
+    ierr = PIO_inq_varid(pio_file, PIO_VAR1_NAME, pio_var1)
+    PIO_TF_CHECK_ERR(ierr, "Could not inq var1 :" // trim(filename))
+
+    ierr = PIO_inq_varid(pio_file, PIO_VAR2_NAME, pio_var2)
+    PIO_TF_CHECK_ERR(ierr, "Could not inq var2 :" // trim(filename))
+
+    ierr = PIO_inq_varid(pio_file, PIO_VAR3_NAME, pio_var3)
+    PIO_TF_CHECK_ERR(ierr, "Could not inq var3 :" // trim(filename))
+
+    ierr = PIO_inq_varid(pio_file, PIO_VAR4_NAME, pio_var4)
+    PIO_TF_CHECK_ERR(ierr, "Could not inq var4 :" // trim(filename))
+#else
     call PIO_syncfile(pio_file)
+#endif
 
     rbuf_mreg = 0
     call PIO_read_darray(pio_file, pio_var1, iodesc_mreg, rbuf_mreg, ierr)
