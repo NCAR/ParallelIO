@@ -276,7 +276,8 @@ PIO_TF_AUTO_TEST_SUB_BEGIN nc_mvar_msync_1d_bc
   integer, parameter :: SYNC_STRIDE_INC = 1
   type(var_desc_t)  :: pio_vars(NVARS)
   type(file_desc_t) :: pio_file
-  character(len=PIO_TF_MAX_STR_LEN) :: filename, vname
+  character(len=PIO_TF_MAX_STR_LEN) :: filename
+  character(len=PIO_TF_MAX_STR_LEN) :: vnames(NVARS)
   type(io_desc_t) :: wr_iodesc, rd_iodesc
   integer, dimension(:), allocatable :: compdof
   integer, dimension(:), allocatable :: start, count
@@ -336,9 +337,9 @@ PIO_TF_AUTO_TEST_SUB_BEGIN nc_mvar_msync_1d_bc
     PIO_TF_CHECK_ERR(ierr, "Failed to define a dim : " // trim(filename))
 
     do j=1,NVARS
-      vname = ""
-      write(vname, "(A15,I6.6)") "PIO_TF_test_var", j
-      ierr = PIO_def_var(pio_file, trim(vname), PIO_TF_DATA_TYPE, (/pio_dim/), pio_vars(j))
+      vnames(j) = ""
+      write(vnames(j), "(A15,I6.6)") "PIO_TF_test_var", j
+      ierr = PIO_def_var(pio_file, trim(vnames(j)), PIO_TF_DATA_TYPE, (/pio_dim/), pio_vars(j))
       PIO_TF_CHECK_ERR(ierr, "Failed to define a var : " // trim(filename))
     end do
 
@@ -356,7 +357,19 @@ PIO_TF_AUTO_TEST_SUB_BEGIN nc_mvar_msync_1d_bc
       call PIO_write_darray(pio_file, pio_vars(j), wr_iodesc, wbuf, ierr)
       PIO_TF_CHECK_ERR(ierr, "Failed to write darray : " // trim(filename))
       if(j == isync) then
+#ifdef PIO_TEST_CLOSE_OPEN_FOR_SYNC
+        call PIO_closefile(pio_file)
+
+        ierr = PIO_openfile(pio_tf_iosystem_, pio_file, iotypes(i), filename, PIO_write)
+        PIO_TF_CHECK_ERR(ierr, "Could not reopen file " // trim(filename))
+
+        do k=1,NVARS
+          ierr = PIO_inq_varid(pio_file, vnames(k), pio_vars(k))
+          PIO_TF_CHECK_ERR(ierr, "Could not inq var :" // trim(filename))
+        end do
+#else
         call PIO_syncfile(pio_file)
+#endif
         do k=prev_isync+1, isync
           rbuf = 0
           call PIO_read_darray(pio_file, pio_vars(k), rd_iodesc, rbuf, ierr)
@@ -370,7 +383,19 @@ PIO_TF_AUTO_TEST_SUB_BEGIN nc_mvar_msync_1d_bc
       end if
     end do
 
+#ifdef PIO_TEST_CLOSE_OPEN_FOR_SYNC
+    call PIO_closefile(pio_file)
+
+    ierr = PIO_openfile(pio_tf_iosystem_, pio_file, iotypes(i), filename, PIO_nowrite)
+    PIO_TF_CHECK_ERR(ierr, "Could not reopen file " // trim(filename))
+
+    do k=1,NVARS
+      ierr = PIO_inq_varid(pio_file, vnames(k), pio_vars(k))
+      PIO_TF_CHECK_ERR(ierr, "Could not inq var :" // trim(filename))
+    end do
+#else
     call PIO_syncfile(pio_file)
+#endif
 
     if(prev_isync < NVARS) then
       do k=prev_isync+1,NVARS
@@ -597,4 +622,181 @@ PIO_TF_AUTO_TEST_SUB_BEGIN nc_mvar_mreg_wr_rd_1d_bc
   deallocate(wbuf)
   deallocate(wbuf_mreg)
 PIO_TF_AUTO_TEST_SUB_END nc_mvar_mreg_wr_rd_1d_bc
+
+! Test reading data from a file while writes are pending
+PIO_TF_TEMPLATE<PIO_TF_PREDEF_TYPENAME PIO_TF_DATA_TYPE, PIO_TF_PREDEF_TYPENAME PIO_TF_FC_DATA_TYPE>
+PIO_TF_AUTO_TEST_SUB_BEGIN nc_rd_while_pend_wr_1d
+  implicit none
+  interface
+    subroutine get_1d_bc_info(rank, sz, dims, start, count, force_rearrange)
+      integer, intent(in) :: rank
+      integer, intent(in) :: sz
+      integer, dimension(1), intent(out) :: dims
+      integer, dimension(:), allocatable, intent(out) :: start
+      integer, dimension(:), allocatable, intent(out) :: count
+      logical, intent(in) :: force_rearrange
+    end subroutine get_1d_bc_info
+  end interface
+  type(var_desc_t)  :: pio_var1, pio_var2, pio_var3
+  type(file_desc_t) :: pio_file
+  character(len=PIO_TF_MAX_STR_LEN) :: filename
+  character(len=*), parameter :: PIO_VAR1_NAME = 'PIO_TF_test_var1'
+  character(len=*), parameter :: PIO_VAR2_NAME = 'PIO_TF_test_var2'
+  character(len=*), parameter :: PIO_VAR3_NAME = 'PIO_TF_test_var3'
+  type(io_desc_t) :: wr_iodesc, rd_iodesc
+  integer, dimension(:), allocatable :: compdof
+  integer, dimension(:), allocatable :: start, count
+  PIO_TF_FC_DATA_TYPE, dimension(:), allocatable :: rbuf, wbuf, exp_val
+  integer, dimension(1) :: dims
+  integer :: pio_dim
+  integer :: i, ierr, lsz
+  ! iotypes = valid io types
+  integer, dimension(:), allocatable :: iotypes
+  character(len=PIO_TF_MAX_STR_LEN), dimension(:), allocatable :: iotype_descs
+  integer :: num_iotypes
+
+  ! Set the decomposition for writing data - forcing rearrangement
+  call get_1d_bc_info(pio_tf_world_rank_, pio_tf_world_sz_, dims,&
+         start, count, .true.)
+  allocate(wbuf(count(1)))
+  allocate(compdof(count(1)))
+  do i=1,count(1)
+    wbuf(i) = start(1) + i - 1
+    compdof(i) = start(1) + i - 1
+  end do
+  if(allocated(start))then
+    deallocate(start)
+  end if
+
+  if(allocated(count))then
+    deallocate(count)
+  end if
+
+  call PIO_initdecomp(pio_tf_iosystem_, PIO_TF_DATA_TYPE, dims, compdof, wr_iodesc)
+  deallocate(compdof)
+
+  ! Set the decomposition for reading data - different from the write decomp
+  call get_1d_bc_info(pio_tf_world_rank_, pio_tf_world_sz_, dims,&
+         start, count, .false.)
+  allocate(rbuf(count(1)))
+  allocate(compdof(count(1)))
+  allocate(exp_val(count(1)))
+  do i=1,count(1)
+    compdof(i) = start(1) + i -1
+    ! Expected value, after reading, is the same as the compdof
+    exp_val(i) = compdof(i)
+  end do
+
+  call PIO_initdecomp(pio_tf_iosystem_, PIO_TF_DATA_TYPE, dims, compdof, rd_iodesc)
+  deallocate(compdof)
+
+  num_iotypes = 0
+  call PIO_TF_Get_nc_iotypes(iotypes, iotype_descs, num_iotypes)
+  filename = "test_pio_decomp_simple_tests.testfile"
+  do i=1,num_iotypes
+    PIO_TF_LOG(0,*) "Testing : PIO_TF_DATA_TYPE : ", iotype_descs(i)
+    ierr = PIO_createfile(pio_tf_iosystem_, pio_file, iotypes(i), filename, PIO_CLOBBER) 
+    PIO_TF_CHECK_ERR(ierr, "Could not create file " // trim(filename))
+
+    ierr = PIO_def_dim(pio_file, 'PIO_TF_test_dim', dims(1), pio_dim)
+    PIO_TF_CHECK_ERR(ierr, "Failed to define a dim : " // trim(filename))
+
+    ierr = PIO_def_var(pio_file, PIO_VAR1_NAME, PIO_TF_DATA_TYPE, (/pio_dim/), pio_var1)
+    PIO_TF_CHECK_ERR(ierr, "Failed to define a var : " // trim(filename))
+
+    ierr = PIO_def_var(pio_file, PIO_VAR2_NAME, PIO_TF_DATA_TYPE, (/pio_dim/), pio_var2)
+    PIO_TF_CHECK_ERR(ierr, "Failed to define a var : " // trim(filename))
+
+    ierr = PIO_def_var(pio_file, PIO_VAR3_NAME, PIO_TF_DATA_TYPE, (/pio_dim/), pio_var3)
+    PIO_TF_CHECK_ERR(ierr, "Failed to define a var : " // trim(filename))
+
+    ierr = PIO_enddef(pio_file)
+    PIO_TF_CHECK_ERR(ierr, "Failed to end redef mode : " // trim(filename))
+
+    ! Write the variables out
+    call PIO_write_darray(pio_file, pio_var1, wr_iodesc, wbuf, ierr)
+    PIO_TF_CHECK_ERR(ierr, "Failed to write darray : " // trim(filename))
+
+#ifdef PIO_TEST_CLOSE_OPEN_FOR_SYNC
+    call PIO_closefile(pio_file)
+
+    ierr = PIO_openfile(pio_tf_iosystem_, pio_file, iotypes(i), filename, PIO_write)
+    PIO_TF_CHECK_ERR(ierr, "Could not reopen file " // trim(filename))
+
+    ierr = PIO_inq_varid(pio_file, PIO_VAR1_NAME, pio_var1)
+    PIO_TF_CHECK_ERR(ierr, "Could not inq var1 :" // trim(filename))
+
+    ierr = PIO_inq_varid(pio_file, PIO_VAR2_NAME, pio_var2)
+    PIO_TF_CHECK_ERR(ierr, "Could not inq var2 :" // trim(filename))
+
+    ierr = PIO_inq_varid(pio_file, PIO_VAR3_NAME, pio_var3)
+    PIO_TF_CHECK_ERR(ierr, "Could not inq var3 :" // trim(filename))
+#else
+    call PIO_syncfile(pio_file)
+#endif
+
+    call PIO_write_darray(pio_file, pio_var2, wr_iodesc, wbuf, ierr)
+    PIO_TF_CHECK_ERR(ierr, "Failed to write darray : " // trim(filename))
+
+    call PIO_write_darray(pio_file, pio_var3, wr_iodesc, wbuf, ierr)
+    PIO_TF_CHECK_ERR(ierr, "Failed to write darray : " // trim(filename))
+
+
+    ! The data written out for pio_var1 is already synced and should be
+    ! available to read. Note that two writes above are potentially
+    ! pending since we haven't synced it yet
+
+    rbuf = 0
+    call PIO_read_darray(pio_file, pio_var1, rd_iodesc, rbuf, ierr)
+    PIO_TF_CHECK_ERR(ierr, "Failed to read darray (var1) : " // trim(filename))
+
+    PIO_TF_CHECK_VAL((rbuf, exp_val), "Got wrong val (var1)")
+
+    ! Sync pio_var2 and pio_var3
+#ifdef PIO_TEST_CLOSE_OPEN_FOR_SYNC
+    call PIO_closefile(pio_file)
+
+    ierr = PIO_openfile(pio_tf_iosystem_, pio_file, iotypes(i), filename, PIO_nowrite)
+    PIO_TF_CHECK_ERR(ierr, "Could not reopen file " // trim(filename))
+
+    ierr = PIO_inq_varid(pio_file, PIO_VAR1_NAME, pio_var1)
+    PIO_TF_CHECK_ERR(ierr, "Could not inq var1 :" // trim(filename))
+
+    ierr = PIO_inq_varid(pio_file, PIO_VAR2_NAME, pio_var2)
+    PIO_TF_CHECK_ERR(ierr, "Could not inq var2 :" // trim(filename))
+
+    ierr = PIO_inq_varid(pio_file, PIO_VAR3_NAME, pio_var3)
+    PIO_TF_CHECK_ERR(ierr, "Could not inq var3 :" // trim(filename))
+#else
+    call PIO_syncfile(pio_file)
+#endif
+
+    rbuf = 0
+    call PIO_read_darray(pio_file, pio_var2, rd_iodesc, rbuf, ierr)
+    PIO_TF_CHECK_ERR(ierr, "Failed to read darray (var2) : " // trim(filename))
+
+    PIO_TF_CHECK_VAL((rbuf, exp_val), "Got wrong val (var2)")
+
+    rbuf = 0
+    call PIO_read_darray(pio_file, pio_var3, rd_iodesc, rbuf, ierr)
+    PIO_TF_CHECK_ERR(ierr, "Failed to read darray (var3) : " // trim(filename))
+
+    PIO_TF_CHECK_VAL((rbuf, exp_val), "Got wrong val (var3)")
+
+    call PIO_closefile(pio_file)
+
+    call PIO_deletefile(pio_tf_iosystem_, filename);
+  end do
+
+  if(allocated(iotypes)) then
+    deallocate(iotypes)
+    deallocate(iotype_descs)
+  end if
+
+  call PIO_freedecomp(pio_tf_iosystem_, rd_iodesc)
+  call PIO_freedecomp(pio_tf_iosystem_, wr_iodesc)
+  deallocate(exp_val)
+  deallocate(rbuf)
+  deallocate(wbuf)
+PIO_TF_AUTO_TEST_SUB_END nc_rd_while_pend_wr_1d
 
