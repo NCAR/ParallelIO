@@ -24,9 +24,11 @@
 #ifdef _PNETCDF
 #include <pnetcdf.h>
 #endif
+
 #ifdef _ADIOS
 #include <adios.h>
 #include <adios_read.h> // we only need adios_type_size() at the moment
+#define _ADIOS_ALL_PROCS 1  /* ADIOS: assume all procs are also IO tasks */
 #endif
 
 #ifndef MPI_OFFSET
@@ -827,6 +829,11 @@ typedef struct file_desc_t
     int num_vars;
     /** Number of global attributes defined. Needed to support PIOc_inq_nattrs() */
     int num_gattrs;
+
+#ifdef _ADIOS_ALL_PROCS 
+	/* ADIOS: assume all procs are also IO tasks */
+	int adios_iomaster;
+#endif
 
 	/* Track attributes */
 	/** attribute information. Allow PIO_MAX_VARS for now. */

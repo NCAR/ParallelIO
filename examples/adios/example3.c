@@ -32,7 +32,7 @@
  * integers in our data, and responsibilty for writing and reading
  * them will be spread between all the processors used to run this
  * example. */
-#define DIM_LEN_FOO 16
+#define DIM_LEN_FOO 64 
 #define DIM_LEN_BAR (2*DIM_LEN_FOO)
 
 /** The name of the dimension in the netCDF output file. */

@@ -257,7 +257,7 @@ main(int argc, char **argv)
 
     /* Use PIO to create the example file in each of the four
      * available ways. */
-    for (int fmt = 0; fmt < NUM_NETCDF_FLAVORS; fmt++)
+    for (int fmt = 4; fmt < NUM_NETCDF_FLAVORS; fmt++)
     {
 #ifdef HAVE_MPE
         /* Log with MPE that we are starting CREATE. */

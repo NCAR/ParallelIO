@@ -479,39 +479,39 @@ int PIOc_write_darray_multi(int ncid, const int *varids, int ioid, int nvars,
 /**
  * Find the fillvalue that should be used for a variable.
  *
- * @param file Info about file we are writing to. 
+ * @param file Info about file we are writing to.
  * @param varid the variable ID.
  * @param vdesc pointer to var_desc_t info for this var.
  * @returns 0 for success, non-zero error code for failure.
  * @ingroup PIO_write_darray
- * @author Ed Hartnett 
+ * @author Ed Hartnett
 */
 int find_var_fillvalue(file_desc_t *file, int varid, var_desc_t *vdesc)
 {
-    iosystem_desc_t *ios;  /* Pointer to io system information. */    
+    iosystem_desc_t *ios;  /* Pointer to io system information. */
     int no_fill;
     int ierr = PIO_NOERR;
 
     /* Check inputs. */
     pioassert(file && file->iosystem && vdesc, "invalid input", __FILE__, __LINE__);
     ios = file->iosystem;
-    
+
     LOG((3, "find_var_fillvalue file->pio_ncid = %d varid = %d", file->pio_ncid, varid));
-    
+
     /* Find out PIO data type of var. */
     if ((ierr = PIOc_inq_vartype(file->pio_ncid, varid, &vdesc->pio_type)))
         return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
-    
+
     /* Find out length of type. */
     if ((ierr = PIOc_inq_type(file->pio_ncid, vdesc->pio_type, NULL, &vdesc->type_size)))
         return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
     LOG((3, "getting fill value for varid = %d pio_type = %d type_size = %d",
          varid, vdesc->pio_type, vdesc->type_size));
-    
+
     /* Allocate storage for the fill value. */
     if (!(vdesc->fillvalue = malloc(vdesc->type_size)))
         return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__);
-    
+
     /* Get the fill value. */
     if ((ierr = PIOc_inq_var_fill(file->pio_ncid, varid, &no_fill, vdesc->fillvalue)))
         return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
@@ -602,7 +602,11 @@ static void PIOc_write_decomp_adios(file_desc_t *file, int ioid)
        type = adios_long;
     int64_t vid = adios_define_var(file->adios_group, name, "", type, ldim,"","");
     adios_write_byid(file->adios_fh, vid, iodesc->map);
+#ifdef _ADIOS_ALL_PROCS /* ADIOS: assume all procs are also IO tasks */
+    if (file->adios_iomaster == MPI_ROOT)
+#else
     if (file->iosystem->iomaster == MPI_ROOT)
+#endif
     {
         adios_define_attribute_byvalue(file->adios_group,"piotype",name,adios_integer,1,&iodesc->piotype);
         adios_define_attribute_byvalue(file->adios_group,"ndims",name,adios_integer,1,&iodesc->ndims);
@@ -631,7 +635,11 @@ static int PIOc_write_darray_adios(
         {
             if (iodesc->piotype == PIO_DOUBLE && av->nc_type == PIO_FLOAT)
             {
+#ifdef _ADIOS_ALL_PROCS
+                if (file->adios_iomaster == MPI_ROOT)
+#else
                 if (file->iosystem->iomaster == MPI_ROOT)
+#endif /* _ADIOS_ALL_PROCS */
                     LOG((2,"Darray '%s' decomp type is %d (size=%d) but target type is %d. We need conversion\n",
                             file->adios_vars[varid].name, iodesc->piotype, iodesc->piotype_size,
                             av->nc_type));
@@ -639,7 +647,11 @@ static int PIOc_write_darray_adios(
             else
             {
                 atype = PIOc_get_adios_type(iodesc->piotype);
+#ifdef _ADIOS_ALL_PROCS
+                if (file->adios_iomaster == MPI_ROOT)
+#else
                 if (file->iosystem->iomaster == MPI_ROOT)
+#endif /* _ADIOS_ALL_PROCS */
                     LOG((2,"Darray '%s' decomp type is %d (size=%d) but target type is %d. "
                             "ADIOS cannot do type conversion and therefore the data will be "
                             "corrupt for this variable when converting from .bp to .nc with adios2pio\n",
@@ -650,7 +662,11 @@ static int PIOc_write_darray_adios(
 
         av->adios_varid = adios_define_var(file->adios_group, av->name, "", atype, ldims,"","");
 
+#ifdef _ADIOS_ALL_PROCS
+        if (file->adios_iomaster == MPI_ROOT)
+#else
         if (file->iosystem->iomaster == MPI_ROOT)
+#endif  /* _ADIOS_ALL_PROCS */
         {
             adios_define_attribute_byvalue(file->adios_group,"__pio__/ndims",av->name,adios_integer,1,&av->ndims);
             adios_define_attribute_byvalue(file->adios_group,"__pio__/nctype",av->name,adios_integer,1,&av->nc_type);
@@ -693,7 +709,11 @@ static int PIOc_write_darray_adios(
             }
             else
             {
-                if (file->iosystem->iomaster == MPI_ROOT)
+#ifdef _ADIOS_ALL_PROCS
+        		if (file->adios_iomaster == MPI_ROOT)
+#else
+            if (file->iosystem->iomaster == MPI_ROOT)
+#endif /* _ADIOS_ALL_PROCS */
                     LOG((2,"Darray '%s' decomp type is double but the target type is float. "
                             "ADIOS cannot do type conversion because memory could not be allocated."
                             "Therefore the data will be corrupt for this variable in the .bp output\n",
@@ -862,7 +882,7 @@ int PIOc_write_darray(int ncid, int varid, int ioid, PIO_Offset arraylen, void *
     /* If we don't know the fill value for this var, get it. */
     if (!vdesc->fillvalue)
         if ((ierr = find_var_fillvalue(file, varid, vdesc)))
-            return pio_err(ios, file, PIO_EBADID, __FILE__, __LINE__);            
+            return pio_err(ios, file, PIO_EBADID, __FILE__, __LINE__);
 
     /* Is this a record variable? The user must set the vdesc->record
      * value by calling PIOc_setframe() before calling this

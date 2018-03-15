@@ -70,6 +70,29 @@ int PIOc_inq(int ncid, int *ndimsp, int *nvarsp, int *ngattsp, int *unlimdimidp)
         }
     }
 
+	/* ADIOS: assume all procs are also IO tasks */
+#ifdef _ADIOS
+#ifdef _ADIOS_ALL_PROCS
+    if (file->iotype == PIO_IOTYPE_ADIOS)
+    {
+            if (ndimsp) *ndimsp = file->num_dim_vars;
+            if (nvarsp) *nvarsp = file->num_vars;
+            if (ngattsp) *ngattsp = file->num_gattrs;
+            if (unlimdimidp)
+            {
+                *unlimdimidp = -1;
+                for (int i=0; i < file->num_dim_vars; ++i)
+                {
+                    if (file->dim_values[i] == PIO_UNLIMITED)
+                        *unlimdimidp = i;
+                }
+            }
+            ierr = 0;
+     }
+#endif /* _ADIOS_ALL_PROCS */
+#endif
+ 
+
     /* If this is an IO task, then call the netCDF function. */
     if (ios->ioproc)
     {
@@ -82,6 +105,7 @@ int PIOc_inq(int ncid, int *ndimsp, int *nvarsp, int *ngattsp, int *unlimdimidp)
         }
 #endif /* _PNETCDF */
 #ifdef _ADIOS
+#ifndef _ADIOS_ALL_PROCS /* ADIOS: assume all procs are also IO tasks */
         if (file->iotype == PIO_IOTYPE_ADIOS)
         {
             if (ndimsp) *ndimsp = file->num_dim_vars;
@@ -98,7 +122,9 @@ int PIOc_inq(int ncid, int *ndimsp, int *nvarsp, int *ngattsp, int *unlimdimidp)
             }
             ierr = 0;
         }
-#endif
+#endif /* _ADIOS_ALL_PROCS */
+#endif 
+
 #ifdef _NETCDF
         if (file->iotype == PIO_IOTYPE_NETCDF && file->do_io)
         {
@@ -328,14 +354,27 @@ int PIOc_inq_unlimdims(int ncid, int *nunlimdimsp, int *unlimdimidsp)
         }
 #endif /* _NETCDF4 */
 #ifdef _ADIOS
+#ifndef _ADIOS_ALL_PROCS /* ADIOS: assume all procs are also IO tasks */
         else if (file->iotype == PIO_IOTYPE_ADIOS)
         {
             LOG((2,"ADIOS missing %s:%s\n", __FILE__, __func__));
             ierr = 0;
         }
+#endif /* _ADIOS_ALL_PROCS */
 #endif
         LOG((2, "PIOc_inq_unlimdims netcdf call returned %d", ierr));
     }
+
+	/* ADIOS: assume all procs are also IO tasks */
+#ifdef _ADIOS
+#ifdef _ADIOS_ALL_PROCS
+    if (file->iotype == PIO_IOTYPE_ADIOS)
+    {
+         LOG((2,"ADIOS missing %s:%s\n", __FILE__, __func__));
+         ierr = 0;
+    }
+#endif /* _ADIOS_ALL_PROCS */ 
+#endif
 
     /* A failure to inquire is not fatal */
     mpierr = MPI_Bcast(&ierr, 1, MPI_INT, ios->ioroot, ios->my_comm);
@@ -403,6 +442,22 @@ int PIOc_inq_type(int ncid, nc_type xtype, char *name, PIO_Offset *sizep)
         }
     }
 
+	/* ADIOS: assume all procs are also IO tasks */
+#ifdef _ADIOS
+#ifdef _ADIOS_ALL_PROCS
+    if (file->iotype == PIO_IOTYPE_ADIOS)
+    {
+            if (sizep)
+            {
+                enum ADIOS_DATATYPES atype = PIOc_get_adios_type(xtype);
+                int asize = adios_type_size(atype,NULL);
+                *sizep = (PIO_Offset) asize;
+            }
+            ierr = 0;
+    }
+#endif /* _ADIOS_ALL_PROCS */
+#endif
+ 
     /* If this is an IO task, then call the netCDF function. */
     if (ios->ioproc)
     {
@@ -411,6 +466,7 @@ int PIOc_inq_type(int ncid, nc_type xtype, char *name, PIO_Offset *sizep)
             ierr = pioc_pnetcdf_inq_type(ncid, xtype, name, sizep);
 #endif /* _PNETCDF */
 #ifdef _ADIOS
+#ifndef _ADIOS_ALL_PROCS /* ADIOS: assume all procs are also IO tasks */
         if (file->iotype == PIO_IOTYPE_ADIOS)
         {
             if (sizep)
@@ -421,7 +477,8 @@ int PIOc_inq_type(int ncid, nc_type xtype, char *name, PIO_Offset *sizep)
             }
             ierr = 0;
         }
-#endif
+#endif /* _ADIOS_ALL_PROCS */
+#endif 
 #ifdef _NETCDF
         if (file->iotype != PIO_IOTYPE_PNETCDF && file->iotype != PIO_IOTYPE_ADIOS && file->do_io)
             ierr = nc_inq_type(file->fh, xtype, name, (size_t *)sizep);
@@ -492,6 +549,17 @@ int PIOc_inq_format(int ncid, int *formatp)
         }
     }
 
+	/* ADIOS: assume all procs are also IO tasks */
+#ifdef _ADIOS
+#ifdef _ADIOS_ALL_PROCS
+    if (file->iotype == PIO_IOTYPE_ADIOS)
+    {
+         *formatp = 1;
+         ierr = 0;
+    }
+#endif /* _ADIOS_ALL_PROCS */
+#endif
+ 
     /* If this is an IO task, then call the netCDF function. */
     if (ios->ioproc)
     {
@@ -500,12 +568,14 @@ int PIOc_inq_format(int ncid, int *formatp)
             ierr = ncmpi_inq_format(file->fh, formatp);
 #endif /* _PNETCDF */
 #ifdef _ADIOS
+#ifdef _ADIOS_ALL_PROCS
         if (file->iotype == PIO_IOTYPE_ADIOS)
         {
             LOG((2,"ADIOS missing %s:%s\n", __FILE__, __func__));
             ierr = 0;
         }
-#endif
+#endif /* _ADIOS_ALL_PROCS */
+#endif 
 #ifdef _NETCDF
         if (file->iotype != PIO_IOTYPE_PNETCDF && file->iotype != PIO_IOTYPE_ADIOS && file->do_io)
             ierr = nc_inq_format(file->fh, formatp);
@@ -572,6 +642,38 @@ int PIOc_inq_dim(int ncid, int dimid, char *name, PIO_Offset *lenp)
         }
     }
 
+	/* ADIOS: assume all procs are also IO tasks */
+#ifdef _ADIOS
+#ifdef _ADIOS_ALL_PROCS
+    if (file->iotype == PIO_IOTYPE_ADIOS)
+    {
+            if (0 <= dimid && dimid < file->num_dim_vars)
+            {
+                if (name) strcpy(name, file->dim_names[dimid]);
+                if (lenp) *lenp = file->dim_values[dimid];
+                ierr = 0;
+            }
+            else
+            {
+                /*printf("WARNING: ncid %d: PIOc_inq_dim() invalid id=%d, only have 0..%d. " 
+                       "Dimensions defined: ",
+                       ncid, dimid, file->num_dim_vars);*/
+                for (int i=0; i < file->num_dim_vars; i++)
+                {
+                    printf("%s", file->dim_names[i]);
+                    if (i < file->num_dim_vars-1)
+                        printf(", ");
+                }
+                printf("\n");
+                if (name) name[0]='\0';
+                if (lenp) *lenp = 0;
+                ierr = PIO_EBADDIM;
+            }
+    }
+#endif /* _ADIOS_ALL_PROCS */
+#endif
+ 
+
     /* If this is an IO task, then call the netCDF function. */
     if (ios->ioproc)
     {
@@ -583,6 +685,7 @@ int PIOc_inq_dim(int ncid, int dimid, char *name, PIO_Offset *lenp)
         }
 #endif /* _PNETCDF */
 #ifdef _ADIOS
+#ifndef _ADIOS_ALL_PROCS /* ADIOS: assume all procs are also IO tasks */
         if (file->iotype == PIO_IOTYPE_ADIOS)
         {
             if (0 <= dimid && dimid < file->num_dim_vars)
@@ -608,7 +711,9 @@ int PIOc_inq_dim(int ncid, int dimid, char *name, PIO_Offset *lenp)
                 ierr = PIO_EBADDIM;
             }
         }
-#endif
+#endif /* _ADIOS_ALL_PROCS */
+#endif 
+
 #ifdef _NETCDF
         if (file->iotype != PIO_IOTYPE_PNETCDF && file->iotype != PIO_IOTYPE_ADIOS && file->do_io)
         {
@@ -733,6 +838,37 @@ int PIOc_inq_dimid(int ncid, const char *name, int *idp)
         }
     }
 
+	/* ADIOS: assume all procs are also IO tasks */
+#ifdef _ADIOS
+#ifdef _ADIOS_ALL_PROCS
+    if (file->iotype == PIO_IOTYPE_ADIOS)
+    {
+            ierr = PIO_EBADDIM;
+            for (int i=0; i < file->num_dim_vars; i++)
+            {
+                if (!strcmp(name, file->dim_names[i]))
+                {
+                    /*printf("WARNING: ncid %d: PIOc_inq_dimid(%s) found id=%d\n", ncid, name, i);*/
+                    *idp = i;
+                    ierr = PIO_NOERR;
+                    break;
+                }
+            }
+            if (ierr == PIO_EBADDIM) {
+                /*printf("WARNING: ncid %d: PIOc_inq_dimid(%s) did not find this dimension. "
+                        "Available dimensions: ", ncid, name);*/
+                for (int i=0; i < file->num_dim_vars; i++)
+                {
+                    printf("%s", file->dim_names[i]);
+                    if (i < file->num_dim_vars-1)
+                        printf(", ");
+                }
+                printf("\n");
+            }
+    }
+#endif /* _ADIOS_ALL_PROCS */
+#endif
+ 
     /* IO tasks call the netCDF functions. */
     if (ios->ioproc)
     {
@@ -741,6 +877,7 @@ int PIOc_inq_dimid(int ncid, const char *name, int *idp)
             ierr = ncmpi_inq_dimid(file->fh, name, idp);
 #endif /* _PNETCDF */
 #ifdef _ADIOS
+#ifndef _ADIOS_ALL_PROCS /* ADIOS: assume all procs are also IO tasks */
         if (file->iotype == PIO_IOTYPE_ADIOS)
         {
             ierr = PIO_EBADDIM;
@@ -766,6 +903,7 @@ int PIOc_inq_dimid(int ncid, const char *name, int *idp)
                 printf("\n");
             }
         }
+#endif /* _ADIOS_ALL_PROCS */
 #endif
 #ifdef _NETCDF
         if (file->iotype != PIO_IOTYPE_PNETCDF && file->iotype != PIO_IOTYPE_ADIOS && file->do_io)
@@ -850,6 +988,28 @@ int PIOc_inq_var(int ncid, int varid, char *name, int namelen, nc_type *xtypep, 
         }
     }
 
+	/* ADIOS: assume all procs are also IO tasks */
+#ifdef _ADIOS
+#ifdef _ADIOS_ALL_PROCS
+    if (file->iotype == PIO_IOTYPE_ADIOS)
+    {
+            if (varid < file->num_vars)
+            {
+                if (name)    strcpy(name, file->adios_vars[varid].name);
+                if (xtypep)  *xtypep = file->adios_vars[varid].nc_type;
+                if (ndimsp)  *ndimsp = file->adios_vars[varid].ndims;
+                if (dimidsp)
+                    memcpy(dimidsp, file->adios_vars[varid].gdimids,
+                            file->adios_vars[varid].ndims * sizeof(int));
+                if (nattsp)  *nattsp = file->adios_vars[varid].nattrs;
+                ierr = 0;
+            }
+            else ierr = PIO_EBADID;
+    }
+#endif /* _ADIOS_ALL_PROCS */
+#endif
+
+
     /* Call the netCDF layer. */
     if (ios->ioproc)
     {
@@ -896,6 +1056,7 @@ int PIOc_inq_var(int ncid, int varid, char *name, int namelen, nc_type *xtypep, 
 #endif /* _PNETCDF */
 
 #ifdef _ADIOS
+#ifndef _ADIOS_ALL_PROCS /* ADIOS: assume all procs are also IO tasks */
         if (file->iotype == PIO_IOTYPE_ADIOS)
         {
             if (varid < file->num_vars)
@@ -911,6 +1072,7 @@ int PIOc_inq_var(int ncid, int varid, char *name, int namelen, nc_type *xtypep, 
             }
             else ierr = PIO_EBADID;
         }
+#endif /* _ADIOS_ALL_PROCS */
 #endif
 
 #ifdef _NETCDF
@@ -1188,6 +1350,27 @@ int PIOc_inq_varid(int ncid, const char *name, int *varidp)
         }
     }
 
+	/* ADIOS: assume all procs are also IO tasks */
+#ifdef _ADIOS
+#ifdef _ADIOS_ALL_PROCS
+    if (file->iotype == PIO_IOTYPE_ADIOS)
+    {
+            ierr = PIO_ENOTVAR;
+            int i;
+            for (i=0; i < file->num_vars; i++)
+            {
+                if (!strcmp(name, file->adios_vars[i].name))
+                {
+                    *varidp = i;
+                    ierr = 0;
+                    break;
+                }
+            }
+    }
+#endif /* _ADIOS_ALL_PROCS */
+#endif
+
+
     /* If this is an IO task, then call the netCDF function. */
     if (ios->ioproc)
     {
@@ -1196,6 +1379,7 @@ int PIOc_inq_varid(int ncid, const char *name, int *varidp)
             ierr = ncmpi_inq_varid(file->fh, name, varidp);
 #endif /* _PNETCDF */
 #ifdef _ADIOS
+#ifndef _ADIOS_ALL_PROCS /* ADIOS: assume all procs are also IO tasks */
         if (file->iotype == PIO_IOTYPE_ADIOS)
         {
             ierr = PIO_ENOTVAR;
@@ -1210,6 +1394,7 @@ int PIOc_inq_varid(int ncid, const char *name, int *varidp)
                 }
             }
         }
+#endif /* _ADIOS_ALL_PROCS */
 #endif
 
 #ifdef _NETCDF
@@ -1329,6 +1514,28 @@ int PIOc_inq_att(int ncid, int varid, const char *name, nc_type *xtypep,
         } 
     }
 
+	/* ADIOS: assume all procs are also IO tasks */
+#ifdef _ADIOS
+#ifdef _ADIOS_ALL_PROCS
+    if (file->iotype == PIO_IOTYPE_ADIOS)
+    {
+            /* LOG((2,"ADIOS missing %s:%s\n", __FILE__, __func__)); */
+			/* Track attributes */
+            ierr = PIO_ENOTATT;
+			for (int i=0;i<file->num_attrs;i++) {
+				if (!strcmp(name,file->adios_attrs[i].att_name) && 
+					file->adios_attrs[i].att_varid==varid &&
+					file->adios_attrs[i].att_ncid==ncid) {
+					ierr    = PIO_NOERR;
+					*xtypep = (nc_type) (file->adios_attrs[i].att_type);
+					*lenp   = (PIO_Offset) (file->adios_attrs[i].att_len);
+					i = file->num_attrs+1;
+				}
+			}
+    }
+#endif /* _ADIOS_ALL_PROCS */
+#endif
+ 
     /* If this is an IO task, then call the netCDF function. */
     if (ios->ioproc)
     {
@@ -1337,6 +1544,7 @@ int PIOc_inq_att(int ncid, int varid, const char *name, nc_type *xtypep,
             ierr = ncmpi_inq_att(file->fh, varid, name, xtypep, lenp);
 #endif /* _PNETCDF */
 #ifdef _ADIOS
+#ifndef _ADIOS_ALL_PROCS /* ADIOS: assume all procs are also IO tasks */
         if (file->iotype == PIO_IOTYPE_ADIOS)
         {
             /* LOG((2,"ADIOS missing %s:%s\n", __FILE__, __func__)); */
@@ -1353,6 +1561,7 @@ int PIOc_inq_att(int ncid, int varid, const char *name, nc_type *xtypep,
 				}
 			}
         }
+#endif /* _ADIOS_ALL_PROCS */
 #endif
 #ifdef _NETCDF
         if (file->iotype != PIO_IOTYPE_PNETCDF && file->iotype != PIO_IOTYPE_ADIOS && file->do_io)
@@ -1462,6 +1671,17 @@ int PIOc_inq_attname(int ncid, int varid, int attnum, char *name)
         }
     }
 
+	/* ADIOS: assume all procs are also IO tasks */
+#ifdef _ADIOS
+#ifdef _ADIOS_ALL_PROCS
+    if (file->iotype == PIO_IOTYPE_ADIOS)
+    {
+            LOG((2,"ADIOS missing %s:%s\n", __FILE__, __func__));
+            ierr = 0;
+    }
+#endif /* _ADIOS_ALL_PROCS */
+#endif
+ 
     /* If this is an IO task, then call the netCDF function. */
     if (ios->ioproc)
     {
@@ -1470,11 +1690,13 @@ int PIOc_inq_attname(int ncid, int varid, int attnum, char *name)
             ierr = ncmpi_inq_attname(file->fh, varid, attnum, name);
 #endif /* _PNETCDF */
 #ifdef _ADIOS
+#ifndef _ADIOS_ALL_PROCS /* ADIOS: assume all procs are also IO tasks */
         if (file->iotype == PIO_IOTYPE_ADIOS)
         {
             LOG((2,"ADIOS missing %s:%s\n", __FILE__, __func__));
             ierr = 0;
         }
+#endif /* _ADIOS_ALL_PROCS */
 #endif
 #ifdef _NETCDF
         if (file->iotype != PIO_IOTYPE_PNETCDF && file->iotype != PIO_IOTYPE_ADIOS && file->do_io)
@@ -1553,6 +1775,17 @@ int PIOc_inq_attid(int ncid, int varid, const char *name, int *idp)
         }
     }
 
+	/* ADIOS: assume all procs are also IO tasks */
+#ifdef _ADIOS
+#ifdef _ADIOS_ALL_PROCS
+    if (file->iotype == PIO_IOTYPE_ADIOS)
+    {
+            LOG((2,"ADIOS missing %s:%s\n", __FILE__, __func__));
+            ierr = 0;
+    }
+#endif /* _ADIOS_ALL_PROCS */
+#endif
+ 
     /* If this is an IO task, then call the netCDF function. */
     if (ios->ioproc)
     {
@@ -1561,11 +1794,13 @@ int PIOc_inq_attid(int ncid, int varid, const char *name, int *idp)
             ierr = ncmpi_inq_attid(file->fh, varid, name, idp);
 #endif /* _PNETCDF */
 #ifdef _ADIOS
+#ifndef _ADIOS_ALL_PROCS /* ADIOS: assume all procs are also IO tasks */
         if (file->iotype == PIO_IOTYPE_ADIOS)
         {
             LOG((2,"ADIOS missing %s:%s\n", __FILE__, __func__));
             ierr = 0;
         }
+#endif /* _ADIOS_ALL_PROCS */
 #endif
 #ifdef _NETCDF
         if (file->iotype != PIO_IOTYPE_PNETCDF && file->iotype != PIO_IOTYPE_ADIOS && file->do_io)
@@ -1639,7 +1874,17 @@ int PIOc_rename_dim(int ncid, int dimid, const char *name)
         }
     }
 
-
+	/* ADIOS: assume all procs are also IO tasks */
+#ifdef _ADIOS
+#ifdef _ADIOS_ALL_PROCS
+    if (file->iotype == PIO_IOTYPE_ADIOS)
+    {
+            LOG((2,"ADIOS missing %s:%s\n", __FILE__, __func__));
+            ierr = 0;
+    }
+#endif /* _ADIOS_ALL_PROCS */
+#endif
+ 
     /* If this is an IO task, then call the netCDF function. */
     if (ios->ioproc)
     {
@@ -1648,11 +1893,13 @@ int PIOc_rename_dim(int ncid, int dimid, const char *name)
             ierr = ncmpi_rename_dim(file->fh, dimid, name);
 #endif /* _PNETCDF */
 #ifdef _ADIOS
+#ifndef _ADIOS_ALL_PROCS /* ADIOS: assume all procs are also IO tasks */
         if (file->iotype == PIO_IOTYPE_ADIOS)
         {
             LOG((2,"ADIOS missing %s:%s\n", __FILE__, __func__));
             ierr = 0;
         }
+#endif /* _ADIOS_ALL_PROCS */
 #endif
 #ifdef _NETCDF
         if (file->iotype != PIO_IOTYPE_PNETCDF && file->iotype != PIO_IOTYPE_ADIOS && file->do_io)
@@ -1717,7 +1964,17 @@ int PIOc_rename_var(int ncid, int varid, const char *name)
         }
     }
 
-
+	/* ADIOS: assume all procs are also IO tasks */
+#ifdef _ADIOS
+#ifdef _ADIOS_ALL_PROCS
+    if (file->iotype == PIO_IOTYPE_ADIOS)
+    {
+            LOG((2,"ADIOS missing %s:%s\n", __FILE__, __func__));
+            ierr = 0;
+    }
+#endif /* _ADIOS_ALL_PROCS */
+#endif
+ 
     /* If this is an IO task, then call the netCDF function. */
     if (ios->ioproc)
     {
@@ -1726,11 +1983,13 @@ int PIOc_rename_var(int ncid, int varid, const char *name)
             ierr = ncmpi_rename_var(file->fh, varid, name);
 #endif /* _PNETCDF */
 #ifdef _ADIOS
+#ifndef _ADIOS_ALL_PROCS /* ADIOS: assume all procs are also IO tasks */
         if (file->iotype == PIO_IOTYPE_ADIOS)
         {
             LOG((2,"ADIOS missing %s:%s\n", __FILE__, __func__));
             ierr = 0;
         }
+#endif /* _ADIOS_ALL_PROCS */
 #endif
 #ifdef _NETCDF
         if (file->iotype != PIO_IOTYPE_PNETCDF && file->iotype != PIO_IOTYPE_ADIOS && file->do_io)
@@ -1801,6 +2060,17 @@ int PIOc_rename_att(int ncid, int varid, const char *name,
         }
     }
 
+	/* ADIOS: assume all procs are also IO tasks */
+#ifdef _ADIOS
+#ifdef _ADIOS_ALL_PROCS
+    if (file->iotype == PIO_IOTYPE_ADIOS)
+    {
+            LOG((2,"ADIOS missing %s:%s\n", __FILE__, __func__));
+            ierr = 0;
+    }
+#endif /* _ADIOS_ALL_PROCS */
+#endif
+ 
     /* If this is an IO task, then call the netCDF function. */
     if (ios->ioproc)
     {
@@ -1809,11 +2079,13 @@ int PIOc_rename_att(int ncid, int varid, const char *name,
             ierr = ncmpi_rename_att(file->fh, varid, name, newname);
 #endif /* _PNETCDF */
 #ifdef _ADIOS
+#ifndef _ADIOS_ALL_PROCS /* ADIOS: assume all procs are also IO tasks */
         if (file->iotype == PIO_IOTYPE_ADIOS)
         {
             LOG((2,"ADIOS missing %s:%s\n", __FILE__, __func__));
             ierr = 0;
         }
+#endif /* _ADIOS_ALL_PROCS */
 #endif
 #ifdef _NETCDF
         if (file->iotype != PIO_IOTYPE_PNETCDF && file->iotype != PIO_IOTYPE_ADIOS && file->do_io)
@@ -1879,6 +2151,17 @@ int PIOc_del_att(int ncid, int varid, const char *name)
         }
     }
 
+	/* ADIOS: assume all procs are also IO tasks */
+#ifdef _ADIOS
+#ifdef _ADIOS_ALL_PROCS
+    if (file->iotype == PIO_IOTYPE_ADIOS)
+    {
+            LOG((2,"ADIOS missing %s:%s\n", __FILE__, __func__));
+            ierr = 0;
+    }
+#endif /* _ADIOS_ALL_PROCS */
+#endif
+ 
     /* If this is an IO task, then call the netCDF function. */
     if (ios->ioproc)
     {
@@ -1887,12 +2170,14 @@ int PIOc_del_att(int ncid, int varid, const char *name)
             ierr = ncmpi_del_att(file->fh, varid, name);
 #endif /* _PNETCDF */
 #ifdef _ADIOS
+#ifndef _ADIOS_ALL_PROCS /* ADIOS: assume all procs are also IO tasks */
         if (file->iotype == PIO_IOTYPE_ADIOS)
         {
             if (old_modep) *old_modep = file->fillmode;
             file->fillmode = fillmode;
             ierr = 0;
         }
+#endif /* _ADIOS_ALL_PROCS */
 #endif
 #ifdef _NETCDF
         if (file->iotype != PIO_IOTYPE_PNETCDF && file->iotype != PIO_IOTYPE_ADIOS && file->do_io)
@@ -1953,6 +2238,18 @@ int PIOc_set_fill(int ncid, int fillmode, int *old_modep)
         }
     }
 
+	/* ADIOS: assume all procs are also IO tasks */
+#ifdef _ADIOS
+#ifdef _ADIOS_ALL_PROCS
+    if (file->iotype == PIO_IOTYPE_ADIOS)
+    {
+            if (old_modep) *old_modep = file->fillmode;
+            file->fillmode = fillmode;
+            ierr = 0;
+    }
+#endif /* _ADIOS_ALL_PROCS */
+#endif
+ 
     /* If this is an IO task, then call the netCDF function. */
     if (ios->ioproc)
     {
@@ -1964,11 +2261,13 @@ int PIOc_set_fill(int ncid, int fillmode, int *old_modep)
         }
 #endif /* _PNETCDF */
 #ifdef _ADIOS
+#ifndef _ADIOS_ALL_PROCS /* ADIOS: assume all procs are also IO tasks */
         if (file->iotype == PIO_IOTYPE_ADIOS)
         {
             LOG((2,"ADIOS missing %s:%s\n", __FILE__, __func__));
             ierr = 0;
         }
+#endif /* _ADIOS_ALL_PROCS */
 #endif
 #ifdef _NETCDF
         if (file->iotype != PIO_IOTYPE_PNETCDF && file->iotype != PIO_IOTYPE_ADIOS && file->do_io)
@@ -2085,6 +2384,26 @@ int PIOc_def_dim(int ncid, const char *name, PIO_Offset len, int *idp)
         }
     }
 
+	/* ADIOS: assume all procs are also IO tasks */
+#ifdef _ADIOS
+#ifdef _ADIOS_ALL_PROCS
+    if (file->iotype == PIO_IOTYPE_ADIOS)
+    {
+            LOG((2,"ADIOS define dimension %s with size %llu, id = %d\n",
+                    name, (unsigned long long)len, file->num_dim_vars));
+            char dimname[128];
+            snprintf(dimname, sizeof(dimname), "/__pio__/dim/%s", name);
+            adios_define_var(file->adios_group, dimname, "", adios_unsigned_long, "","","");
+            file->dim_names[file->num_dim_vars] = strdup(name);
+            file->dim_values[file->num_dim_vars] = len;
+            *idp = file->num_dim_vars;
+            ++file->num_dim_vars;
+            adios_write(file->adios_fh,dimname,&len);
+            ierr = 0;
+    }
+#endif /* _ADIOS_ALL_PROCS */
+#endif
+ 
     /* If this is an IO task, then call the netCDF function. */
     if (ios->ioproc)
     {
@@ -2093,6 +2412,7 @@ int PIOc_def_dim(int ncid, const char *name, PIO_Offset len, int *idp)
             ierr = ncmpi_def_dim(file->fh, name, len, idp);
 #endif /* _PNETCDF */
 #ifdef _ADIOS
+#ifndef _ADIOS_ALL_PROCS /* ADIOS: assume all procs are also IO tasks */
         if (file->iotype == PIO_IOTYPE_ADIOS)
         {
             LOG((2,"ADIOS define dimension %s with size %llu, id = %d\n",
@@ -2107,6 +2427,7 @@ int PIOc_def_dim(int ncid, const char *name, PIO_Offset len, int *idp)
             adios_write(file->adios_fh,dimname,&len);
             ierr = 0;
         }
+#endif /* _ADIOS_ALL_PROCS */
 #endif
 #ifdef _NETCDF
         if (file->iotype != PIO_IOTYPE_PNETCDF && file->iotype != PIO_IOTYPE_ADIOS && file->do_io)
@@ -2227,6 +2548,27 @@ int PIOc_def_var(int ncid, const char *name, nc_type xtype, int ndims,
     if (invalid_unlim_dim)
             return PIO_EINVAL;
 
+	/* ADIOS: assume all procs are also IO tasks */
+#ifdef _ADIOS
+#ifdef _ADIOS_ALL_PROCS
+    if (file->iotype == PIO_IOTYPE_ADIOS)
+    {
+            LOG((2,"ADIOS pre-define variable %s (%d dimensions, type %d)\n", name, ndims, xtype));
+            file->adios_vars[file->num_vars].name = strdup(name);
+            file->adios_vars[file->num_vars].nc_type = xtype;
+            file->adios_vars[file->num_vars].adios_type = PIOc_get_adios_type(xtype);
+            file->adios_vars[file->num_vars].nattrs = 0;
+            file->adios_vars[file->num_vars].ndims = ndims;
+            file->adios_vars[file->num_vars].adios_varid = 0;
+            file->adios_vars[file->num_vars].gdimids = (int*) malloc(ndims*sizeof(int));
+            memcpy(file->adios_vars[file->num_vars].gdimids, dimidsp, ndims*sizeof(int));
+            *varidp = file->num_vars;
+            file->num_vars++;
+            ierr = 0;
+    }
+#endif /* _ADIOS_ALL_PROCS */
+#endif
+ 
     /* If this is an IO task, then call the netCDF function. */
     if (ios->ioproc)
     {
@@ -2235,6 +2577,7 @@ int PIOc_def_var(int ncid, const char *name, nc_type xtype, int ndims,
             ierr = ncmpi_def_var(file->fh, name, xtype, ndims, dimidsp, varidp);
 #endif /* _PNETCDF */
 #ifdef _ADIOS
+#ifndef _ADIOS_ALL_PROCS /* ADIOS: assume all procs are also IO tasks */
         if (file->iotype == PIO_IOTYPE_ADIOS)
         {
             LOG((2,"ADIOS pre-define variable %s (%d dimensions, type %d)\n", name, ndims, xtype));
@@ -2250,6 +2593,7 @@ int PIOc_def_var(int ncid, const char *name, nc_type xtype, int ndims,
             file->num_vars++;
             ierr = 0;
         }
+#endif /* _ADIOS_ALL_PROCS */
 #endif
 #ifdef _NETCDF
         if (file->iotype != PIO_IOTYPE_PNETCDF && file->iotype != PIO_IOTYPE_ADIOS && file->do_io)
@@ -2460,16 +2804,29 @@ int PIOc_def_var_fill(int ncid, int varid, int fill_mode, const void *fill_value
                 ierr = nc_def_var_fill(file->fh, varid, fill_mode, fill_valuep);
 #endif
 #ifdef _ADIOS
+#ifndef _ADIOS_ALL_PROCS /* ADIOS: assume all procs are also IO tasks */
         if (file->iotype == PIO_IOTYPE_ADIOS)
         {
             LOG((2,"ADIOS missing %s:%s\n", __FILE__, __func__));
             ierr = 0;
         }
+#endif /* _ADIOS_ALL_PROCS */
 #endif
         }
         LOG((2, "after def_var_fill ierr = %d", ierr));
     }
 
+	/* ADIOS: assume all procs are also IO tasks */
+#ifdef _ADIOS
+#ifdef _ADIOS_ALL_PROCS
+    if (file->iotype == PIO_IOTYPE_ADIOS)
+    {
+            LOG((2,"ADIOS missing %s:%s\n", __FILE__, __func__));
+            ierr = 0;
+    }
+#endif /* _ADIOS_ALL_PROCS */
+#endif
+ 
     ierr = check_netcdf(NULL, file, ierr, __FILE__, __LINE__);
     if(ierr != PIO_NOERR){
         LOG((1, "nc*_def_var_fill failed, ierr = %d", ierr));
@@ -2626,14 +2983,27 @@ int PIOc_inq_var_fill(int ncid, int varid, int *no_fill, void *fill_valuep)
 #endif /* _NETCDF */
         }
 #ifdef _ADIOS
+#ifndef _ADIOS_ALL_PROCS /* ADIOS: assume all procs are also IO tasks */
         if (file->iotype == PIO_IOTYPE_ADIOS)
         {
             LOG((2,"ADIOS missing %s:%s\n", __FILE__, __func__));
             ierr = 0;
         }
+#endif /* _ADIOS_ALL_PROCS */
 #endif
         LOG((2, "after call to inq_var_fill, ierr = %d", ierr));
     }
+
+	/* ADIOS: assume all procs are also IO tasks */
+#ifdef _ADIOS
+#ifdef _ADIOS_ALL_PROCS
+    if (file->iotype == PIO_IOTYPE_ADIOS)
+    {
+         LOG((2,"ADIOS missing %s:%s\n", __FILE__, __func__));
+         ierr = 0;
+    }
+#endif /* _ADIOS_ALL_PROCS */
+#endif
 
     ierr = check_netcdf(NULL, file, ierr, __FILE__, __LINE__);
     if(ierr != PIO_NOERR){

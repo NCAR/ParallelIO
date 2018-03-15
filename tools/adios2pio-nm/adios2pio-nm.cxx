@@ -15,7 +15,7 @@ int main (int argc, char *argv[])
     MPI_Comm_rank(comm_in, &mpirank);
 
     if (argc < 4) {
-		if (!mpirank) usage(argv[0]);
+		if (!mpirank) usage_nm(argv[0]);
         return 1;
     }
 

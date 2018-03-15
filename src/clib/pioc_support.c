@@ -1875,6 +1875,54 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
         }
     }
 
+	/* ADIOS: assume all procs are also IO tasks */
+#ifdef _ADIOS
+#ifdef _ADIOS_ALL_PROCS
+    if (file->iotype == PIO_IOTYPE_ADIOS) 
+	{
+            LOG((2, "Calling adios_open mode = %d", file->mode));
+            /* Create a new ADIOS variable group, names the same as the filename for
+             * lack of better solution here */
+            int len = strlen(filename);
+            file->filename = malloc(len+3+3);
+            sprintf(file->filename, "%s.bp", filename);
+            adios_declare_group(&file->adios_group, file->filename, NULL, adios_stat_default);
+            int do_aggregate = (ios->num_comptasks != ios->num_iotasks);
+            if (do_aggregate)
+            {
+                sprintf(file->transport,"%s","MPI_AGGREGATE");
+                sprintf(file->params,"num_aggregators=%d,striping=0,have_metadata_file=0", ios->num_iotasks);
+            }
+            else
+            {
+                sprintf(file->transport,"%s","MPI_AGGREGATE");
+                sprintf(file->params,"num_aggregators=%d,striping=0,have_metadata_file=0", ios->num_comptasks/16);
+                /*sprintf(file->transport,"%s","POSIX");
+                file->params[0] = '\0';*/
+            }
+            /*adios_set_time_aggregation(file->adios_group,100000000,NULL);*/
+            adios_select_method(file->adios_group,file->transport,file->params,"");
+            /*adios_set_max_buffer_size(32);*/
+            ierr = adios_open(&file->adios_fh,file->filename,file->filename,"w", ios->union_comm);
+            memset(file->dim_names, 0, sizeof(file->dim_names));
+            file->num_dim_vars = 0;
+            file->num_vars = 0;
+            file->num_gattrs = 0;
+            file->fillmode = NC_NOFILL;
+            file->n_written_ioids = 0;
+
+			if (ios->union_rank==0) 
+				file->adios_iomaster = MPI_ROOT;
+
+			/* Track attributes */
+			file->num_attrs = 0;
+
+            int64_t vid = adios_define_var(file->adios_group, "/__pio__/info/nproc", "", adios_integer, "","","");
+            adios_write_byid(file->adios_fh, vid, &ios->num_uniontasks);
+	}
+#endif
+#endif
+ 
     /* If this task is in the IO component, do the IO. */
     if (ios->ioproc)
     {
@@ -1999,7 +2047,9 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
                 ierr = ncmpi_buffer_attach(file->fh, pio_buffer_size_limit);
             break;
 #endif
+
 #ifdef _ADIOS
+#ifndef _ADIOS_ALL_PROCS /* ADIOS: assume all procs are also IO tasks */
         case PIO_IOTYPE_ADIOS:
             LOG((2, "Calling adios_open mode = %d", file->mode));
             /* Create a new ADIOS variable group, names the same as the filename for
@@ -2039,6 +2089,7 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
             adios_write_byid(file->adios_fh, vid, &ios->num_iotasks);
 
             break;
+#endif /* _ADIOS_ALL_PROCS */
 #endif
         }
     }
