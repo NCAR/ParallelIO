@@ -296,6 +296,8 @@ int PIOc_closefile(int ncid)
 			}
 			file->num_attrs = 0;
 
+#define CONVERT_TEST
+#ifdef CONVERT_TEST /* TAHSIN -- comment out for large scale run */
             /* Convert XXXX.nc.bp to XXXX.nc */
             len = strlen(file->filename);
             assert(len > 6 && len <= PIO_MAX_NAME);
@@ -304,6 +306,7 @@ int PIOc_closefile(int ncid)
 		printf("CONVERTING: %s\n",file->filename); fflush(stdout);
             C_API_ConvertBPToNC(file->filename, outfilename, "pnetcdf", ios->union_comm);
 		printf("DONE CONVERTING: %s\n",file->filename); fflush(stdout);
+#endif 
 
             free(file->filename);
             ierr = 0;
@@ -377,12 +380,15 @@ int PIOc_closefile(int ncid)
 			}
 			file->num_attrs = 0;
 
+#undef CONVERT_TEST
+#ifdef CONVERT_TEST /* TAHSIN -- commented out for large scale run */
             /* Convert XXXX.nc.bp to XXXX.nc */
             len = strlen(file->filename);
             assert(len > 6 && len <= PIO_MAX_NAME);
             strncpy(outfilename, file->filename, len - 3);
             outfilename[len - 3] = '\0';
             C_API_ConvertBPToNC(file->filename, outfilename, "pnetcdf", ios->io_comm);
+#endif /* CONVERT_TEST */
 
             free(file->filename);
             ierr = 0;
