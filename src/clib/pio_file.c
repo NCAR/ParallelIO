@@ -380,8 +380,8 @@ int PIOc_closefile(int ncid)
 			}
 			file->num_attrs = 0;
 
-#undef CONVERT_TEST
-#ifdef CONVERT_TEST /* TAHSIN -- commented out for large scale run */
+#define CONVERT_TEST
+#ifdef CONVERT_TEST /* TAHSIN -- comment out for large scale run */
             /* Convert XXXX.nc.bp to XXXX.nc */
             len = strlen(file->filename);
             assert(len > 6 && len <= PIO_MAX_NAME);
