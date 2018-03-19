@@ -2172,7 +2172,13 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
 
                 /* open netcdf file serially on main task */
                 if (ios->io_rank == 0)
+                {
                     ierr = nc_open(filename, file->mode, &file->fh);
+                    if(ierr == NC_NOERR)
+                    {
+                        printf("PIO: Opening file (%s) with iotype=%d failed. Switching iotype to PIO_IOTYPE_NETCDF\n", filename, *iotype);
+                    }
+                }
                 else
                     file->do_io = 0;
             }
