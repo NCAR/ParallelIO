@@ -561,6 +561,122 @@ static bufsize pool_len = 0;          /* 0: no bpool calls have been made
 
 #define ESent   ((bufsize) (-(((1L << (sizeof(bufsize) * 8 - 2)) - 1) * 2) - 2))
 
+#if PIO_USE_MALLOC
+/* Total free memory available (in bytes)*/
+static bufsize pio_use_malloc_totavail = 0;
+#ifdef BufStats
+/* Total overhead due to buffer statistics collection (in bytes)*/
+static bufsize pio_use_malloc_totoverhead = 0;
+/* PIO_USE_MALLOC bypasses all the memory framework implemented
+ * by bget and uses malloc() and free() directly to allocate/free
+ * memory/buffers
+ * i.e., bget no longer maintains chunks of allocated buffers etc
+ * and lets the C runtime maintain it
+ * Internal buffer : Internal buffer maintained by bget that is
+ *                    allocated using malloc
+ * User buffer : Part of the internal buffer returned to the user
+ */
+/* The header for the internal buffer/memory allocated using malloc */
+struct ibufmhdr{
+  /* The size of the user buffer allocated in bytes,
+   * does not include the header
+   */
+  bufsize sz;
+};
+
+/* Memory alignment guaranteed (in bytes) = 16 */
+const unsigned int PIO_USE_MALLOC_MEM_ALIGN_SHIFT = 4;
+#define PIO_USE_MALLOC_MEM_ALIGN (0x1 << PIO_USE_MALLOC_MEM_ALIGN_SHIFT)
+/* Make sure that the header size ensures that the user buffer is aligned to
+ * PIO_USE_MALLOC_MEM_ALIGN bytes. So allocate headers in PIO_USE_MALLOC_MEM_ALIGN
+ * boundaries (size of header is a multiple of PIO_USE_MALLOC_MEM_ALIGN bytes)
+ */
+#define PIO_USE_MALLOC_IBUF_HDR_SZ (((sizeof(struct ibufmhdr) + PIO_USE_MALLOC_MEM_ALIGN - 1) >> PIO_USE_MALLOC_MEM_ALIGN_SHIFT) << PIO_USE_MALLOC_MEM_ALIGN_SHIFT)
+
+/* Size of the internal buffer required for a user buffer request of ubuf_sz */
+#define PIO_USE_MALLOC_IBUF_SZ(ubuf_sz) (PIO_USE_MALLOC_IBUF_HDR_SZ + ubuf_sz)
+/* Get user buffer pointer from internal buffer pointer and vice versa */
+#define PIO_USE_MALLOC_IBUF2UBUF(ibufp)  ((ibufp) ? ((void *)(((char *)ibufp) + PIO_USE_MALLOC_IBUF_HDR_SZ)) : NULL)
+#define PIO_USE_MALLOC_UBUF2IBUF(ubufp)  ((ubufp) ? ((void *) ((char *)ubufp - PIO_USE_MALLOC_IBUF_HDR_SZ)) : NULL)
+
+/* Allocate user buffer of size ubuf_sz */
+static inline void *pio_ubuf_malloc(bufsize ubuf_sz)
+{
+    void *ubuf = NULL;
+    /* If the request size == 0, don't allocate any space for header */
+    if(ubuf_sz == 0)
+    {
+        return NULL;
+    }
+    void *ibuf = malloc(PIO_USE_MALLOC_IBUF_SZ(ubuf_sz));
+    if(ibuf)
+    {
+        struct ibufmhdr *hdr = (struct ibufmhdr *)ibuf;
+        hdr->sz = ubuf_sz;
+        totalloc += ubuf_sz;
+        pio_use_malloc_totoverhead += PIO_USE_MALLOC_IBUF_HDR_SZ;
+        ubuf = PIO_USE_MALLOC_IBUF2UBUF(ibuf);
+        /* printf("malloc: total mem allocated = %lld, mem overhead = %lld\n", totalloc, pio_use_malloc_totoverhead); */
+    }
+
+    return ubuf;
+}
+
+/* Reallocate user buffer of size ubuf_sz */
+static inline void *pio_ubuf_realloc(void *ubuf, bufsize ubuf_sz)
+{
+    void *ibuf = NULL;
+    if(ubuf)
+    {
+        ibuf = PIO_USE_MALLOC_UBUF2IBUF(ubuf);
+        struct ibufmhdr *hdr = (struct ibufmhdr *)ibuf;
+        totalloc -= hdr->sz;
+        /* printf("realloc 1: total mem allocated = %lld, mem overhead = %lld\n", totalloc, pio_use_malloc_totoverhead); */
+    }
+
+    ibuf = realloc(ibuf, PIO_USE_MALLOC_IBUF_SZ(ubuf_sz));
+    if(ibuf)
+    {
+        struct ibufmhdr *hdr = (struct ibufmhdr *)ibuf;
+        hdr->sz = ubuf_sz;
+        totalloc += ubuf_sz;
+        /* No change in overhead if the ubuf was valid,
+         * since the new header has the same sz
+         * if ubuf is NULL, realloc behaves like malloc
+         */
+        if(!ubuf)
+        {
+            pio_use_malloc_totoverhead += PIO_USE_MALLOC_IBUF_HDR_SZ;
+        }
+        ubuf = PIO_USE_MALLOC_IBUF2UBUF(ibuf);
+        /* printf("realloc 2: total mem allocated = %lld, mem overhead = %lld\n", totalloc, pio_use_malloc_totoverhead); */
+    }
+    else
+    {
+        ubuf = NULL;
+    }
+
+    return ubuf;
+}
+
+static inline void pio_ubuf_free(void *ubuf)
+{
+    void *ibuf = ubuf;
+    if(ubuf)
+    {
+        ibuf = PIO_USE_MALLOC_UBUF2IBUF(ubuf);
+        struct ibufmhdr *hdr = (struct ibufmhdr *)ibuf;
+        totalloc -= hdr->sz;
+        pio_use_malloc_totoverhead -= PIO_USE_MALLOC_IBUF_HDR_SZ;
+        /* printf("free: total mem allocated = %lld, mem overhead = %lld\n", totalloc, pio_use_malloc_totoverhead); */
+    }
+    free(ibuf);
+}
+
+#endif /* BufStats */
+
+#endif /* PIO_USE_MALLOC */
+
 /* added for PIO so that a bpool can be freed and another allocated */
 void bpoolrelease()
 {
@@ -619,10 +735,15 @@ bufsize requested_size;
     //   maxsize=requested_size;
     //   printf("%s %d %d\n",__FILE__,__LINE__,maxsize);
     // }
+#ifdef BufStats
+    buf = pio_ubuf_malloc(requested_size);
+#else
     buf = malloc(requested_size);
-    //    printf("bget allocate %ld %x\n",requested_size,buf);
+#endif /* BufStats */
+    //    printf("bget allocated %ld %x\n",requested_size,buf);
+    numget++;
     return(buf);
-#endif
+#endif /* PIO_USE_MALLOC */
 
 
     if(size<=0)
@@ -848,8 +969,12 @@ bufsize size;
     struct bhead *b;
 
 #if PIO_USE_MALLOC
+#ifdef BufStats
+    return(pio_ubuf_realloc(buf, size));
+#else
     return(realloc(buf, size));
-#endif
+#endif /* BufStats */
+#endif /* PIO_USE_MALLOC */
     if ((nbuf = bget(size)) == NULL) { /* Acquire new buffer */
         return NULL;
     }
@@ -884,9 +1009,14 @@ void *buf;
 
 #if PIO_USE_MALLOC
     //    printf("bget free %d %x\n",__LINE__,buf);
+#ifdef BufStats
+    pio_ubuf_free(buf);
+#else
     free(buf);
+#endif /* BufStats */
+    numrel++;
     return;
-#endif
+#endif /* PIO_USE_MALLOC */
 
 
     if(buf==NULL) return;       /* allow for null buffer */
@@ -1055,6 +1185,13 @@ void bpool(buf, len)
 void *buf;
 bufsize len;
 {
+#if PIO_USE_MALLOC
+    pio_use_malloc_totavail += len;
+    /* Ignore the pool buffer provided, we are using malloc/free
+     * directly to allocate/free memory
+     */
+    return;
+#endif /* PIO_USE_MALLOC */
     struct bfhead *b = BFH(buf);
     struct bhead *bn;
 
@@ -1120,6 +1257,23 @@ bufsize len;
 
 void bfreespace(bufsize *totfree, bufsize *maxfree)
 {
+#if PIO_USE_MALLOC
+#ifdef BufStats
+    *totfree = pio_use_malloc_totavail - totalloc;
+    if(*totfree < 0){
+        *totfree = 0;
+    }
+    *maxfree = *totfree;
+#else
+    /* Since we don't gather buffer statistics we need to
+     * assume that memory is always available
+     */
+    *totfree = pio_use_malloc_totavail;
+    *maxfree = pio_use_malloc_totavail;
+#endif /* BufStats */
+    return;
+#endif /* PIO_USE_MALLOC */
+
     struct bfhead *b = freelist.ql.flink;
     *totfree = 0;
     *maxfree = -1;

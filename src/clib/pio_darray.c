@@ -692,7 +692,7 @@ int PIOc_write_darray(int ncid, int varid, int ioid, PIO_Offset arraylen, void *
     /* Try realloc first and call flush if realloc fails. */
     if (arraylen > 0)
     {
-        realloc_data = realloc(wmb->data, (1 + wmb->num_arrays) * arraylen * iodesc->mpitype_size);
+        realloc_data = bgetr(wmb->data, (1 + wmb->num_arrays) * arraylen * iodesc->mpitype_size);
         if (realloc_data)
         {
             needsflush = 0;
@@ -772,7 +772,7 @@ int PIOc_write_darray(int ncid, int varid, int ioid, PIO_Offset arraylen, void *
     /* Try realloc again if there is a flush. */
     if (arraylen > 0 && needsflush > 0)
     {
-        if (!(wmb->data = realloc(wmb->data, (1 + wmb->num_arrays) * arraylen * iodesc->mpitype_size)))
+        if (!(wmb->data = bgetr(wmb->data, (1 + wmb->num_arrays) * arraylen * iodesc->mpitype_size)))
             return pio_err(ios, file, PIO_ENOMEM, __FILE__, __LINE__);
         LOG((2, "after a flush, realloc got %ld bytes for data", (1 + wmb->num_arrays) * arraylen * iodesc->mpitype_size));
     }
