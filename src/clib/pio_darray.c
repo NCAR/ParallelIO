@@ -765,9 +765,12 @@ int PIOc_write_darray(int ncid, int varid, int ioid, PIO_Offset arraylen, void *
 #endif /* PIO_ENABLE_LOGGING */
 #endif /* !PIO_USE_MALLOC */
 
-        /* If needsflush == 2 flush to disk otherwise just flush to io
-         * node. This will cause PIOc_write_darray_multi() to be
-         * called. */
+        /* Flush buffer to I/O processes - rearrange data and
+         * start writing data from the I/O processes
+         * Note : Setting the last flag in flush_buffer to
+         * true will force flush the buffer to disk for all
+         * iotypes (wait for write to complete for PnetCDF)
+         */
         if ((ierr = flush_buffer(ncid, wmb, (needsflush == 2))))
             return pio_err(ios, file, ierr, __FILE__, __LINE__);
     }
