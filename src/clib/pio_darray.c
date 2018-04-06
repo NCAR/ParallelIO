@@ -536,21 +536,31 @@ int find_var_fillvalue(file_desc_t *file, int varid, var_desc_t *vdesc)
  * arraylen : The length of the new array that needs to be cached in this wmb
  *            (The array is not cached yet)
  * iodesc : io descriptor for the data cached in the write multi buffer
- * Returns 1 if a flush is required, 0 otherwise
+ * A disk flush implies that data needs to be rearranged and write needs to be
+ * completed. Rearranging and writing data frees up cache is compute and I/O
+ * processes
+ * An I/O flush implies that data needs to be rearranged and write needs to be
+ * started (for iotypes other than PnetCDF write also completes). This would
+ * free up cache in compute processes (I/O processes still need to cache the
+ * rearranged data until the write completes)
+ * Returns 2 if a disk flush is required, 1 if an I/O flush is required, 0 otherwise
  */
 static int PIO_wmb_needs_flush(wmulti_buffer *wmb, int arraylen, io_desc_t *iodesc)
 {
     bufsize curalloc, totfree, maxfree;
     long nget, nrel;
-    const int NEEDS_FLUSH=1, NO_FLUSH=0;
+    const int NEEDS_DISK_FLUSH=2, NEEDS_IO_FLUSH=1, NO_FLUSH=0;
 
     assert(wmb && iodesc);
     /* Find out how much free, contiguous space is available. */
     bstats(&curalloc, &totfree, &maxfree, &nget, &nrel);
 
+    /* We have exceeded the set buffer write cache limit, write data to
+     * disk
+     */
     if(curalloc >= pio_buffer_size_limit)
     {
-        return NEEDS_FLUSH;
+        return NEEDS_DISK_FLUSH;
     }
 
     PIO_Offset array_sz_bytes = arraylen * iodesc->mpitype_size;
@@ -568,7 +578,7 @@ static int PIO_wmb_needs_flush(wmulti_buffer *wmb, int arraylen, io_desc_t *iode
      */ 
     if(maxfree <= 1.1 * wmb_req_cache_sz)
     {
-        return NEEDS_FLUSH;
+        return NEEDS_IO_FLUSH;
     }
 
     return NO_FLUSH;
