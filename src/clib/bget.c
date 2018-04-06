@@ -717,8 +717,7 @@ void bpoolrelease()
 
 /*  BGET  --  Allocate a buffer.  */
 
-void *bget(requested_size)
-bufsize requested_size;
+void *bget(bufsize requested_size)
 {
     bufsize size = requested_size;
     struct bfhead *b;
@@ -930,8 +929,7 @@ bufsize requested_size;
     the  entire  contents  of  the buffer to zero, not just the
     region requested by the caller. */
 
-void *bgetz(size)
-bufsize size;
+void *bgetz(bufsize size)
 {
     char *buf = (char *) bget(size);
 
@@ -960,9 +958,7 @@ bufsize size;
     enhanced to allow the buffer to grow into adjacent free
     blocks and to avoid moving data unnecessarily.  */
 
-void *bgetr(buf, size)
-void *buf;
-bufsize size;
+void *bgetr(void *buf, bufsize size)
 {
     void *nbuf;
     bufsize osize;                    /* Old size of buffer */
@@ -1002,8 +998,7 @@ bufsize size;
 
 /*  BREL  --  Release a buffer.  */
 
-void brel(buf)
-void *buf;
+void brel(void *buf)
 {
     struct bfhead *b, *bn;
 
@@ -1166,11 +1161,11 @@ void *buf;
 
 /*  BECTL  --  Establish automatic pool expansion control  */
 
-void bectl(compact, acquire, release, pool_incr)
-    int (*compact)(bufsize sizereq, int sequence);
-void *(*acquire)(bufsize size);
-void (*release)(void *buf);
-bufsize pool_incr;
+void bectl(
+  int (*compact)(bufsize sizereq, int sequence),
+  void *(*acquire)(bufsize size),
+  void (*release)(void *buf),
+  bufsize pool_incr)
 {
     compfcn = compact;
     acqfcn = acquire;
@@ -1181,9 +1176,7 @@ bufsize pool_incr;
 
 /*  BPOOL  --  Add a region of memory to the buffer pool.  */
 
-void bpool(buf, len)
-void *buf;
-bufsize len;
+void bpool(void *buf, bufsize len)
 {
 #if PIO_USE_MALLOC
     pio_use_malloc_totavail += len;
@@ -1289,9 +1282,8 @@ void bfreespace(bufsize *totfree, bufsize *maxfree)
 
 /*  BSTATS  --  Return buffer allocation free space statistics.  */
 
-void bstats(curalloc, totfree, maxfree, nget, nrel)
-    bufsize *curalloc, *totfree, *maxfree;
-long *nget, *nrel;
+void bstats(bufsize *curalloc, bufsize *totfree,
+    bufsize *maxfree, long *nget, long *nrel)
 {
     *nget = numget;
     *nrel = numrel;
@@ -1303,9 +1295,8 @@ long *nget, *nrel;
 
 /*  BSTATSE  --  Return extended statistics  */
 
-void bstatse(pool_incr, npool, npget, nprel, ndget, ndrel)
-bufsize *pool_incr;
-long *npool, *npget, *nprel, *ndget, *ndrel;
+void bstatse(bufsize *pool_incr,
+  long *npool, long *npget, long *nprel, long *ndget, long *ndrel)
 {
     *pool_incr = (pool_len < 0) ? -exp_incr : exp_incr;
     *npool = numpblk;
@@ -1323,8 +1314,7 @@ long *npool, *npget, *nprel, *ndget, *ndrel;
     data pointer, and backs up to the buffer header.  It will
     dump either a free block or an allocated one.       */
 
-void bufdump(buf)
-void *buf;
+void bufdump(void *buf)
 {
     struct bfhead *b;
     unsigned char *bdump;
@@ -1383,9 +1373,7 @@ void *buf;
     dumped as well.  If FreeWipe  checking      is  enabled,  free
     blocks      which  have  been clobbered will always be dumped. */
 
-void bpoold(buf, dumpalloc, dumpfree)
-void *buf;
-int dumpalloc, dumpfree;
+void bpoold(void *buf, int dumpalloc, int dumpfree)
 {
     struct bfhead *b = BFH(buf);
 
@@ -1432,8 +1420,7 @@ int dumpalloc, dumpfree;
 /*  BPOOLV  --  Validate a buffer pool.  If NDEBUG isn't defined,
     any error generates an assertion failure.  */
 
-int bpoolv(buf)
-void *buf;
+int bpoolv(void *buf)
 {
     struct bfhead *b = BFH(buf);
 
@@ -1530,8 +1517,7 @@ int rand()
 
 /* Set seed for random generator */
 
-void srand(seed)
-unsigned int seed;
+void srand(unsigned int seed)
 {
     next = seed;
 }
@@ -1539,8 +1525,7 @@ unsigned int seed;
 
 /*  STATS  --  Edit statistics returned by bstats() or bstatse().  */
 
-static void stats(when)
-char *when;
+static void stats(char *when)
 {
     bufsize cural, totfree, maxfree;
     long nget, nfree;
@@ -1567,9 +1552,7 @@ static int protect = 0;               /* Disable compaction during bgetr() */
 
 /*  BCOMPACT  --  Compaction call-back function.  */
 
-static int bcompact(bsize, seq)
-bufsize bsize;
-int seq;
+static int bcompact(bufsize bsize, int seq)
 {
 #ifdef CompactTries
     char *bc = bchain;
@@ -1614,8 +1597,7 @@ int seq;
 
 /*  BEXPAND  --  Expand pool call-back function.  */
 
-static void *bexpand(size)
-bufsize size;
+static void *bexpand(bufsize size)
 {
     void *np = NULL;
     bufsize cural, totfree, maxfree;
@@ -1637,8 +1619,7 @@ bufsize size;
 
 /*  BSHRINK  --  Shrink buffer pool call-back function.  */
 
-static void bshrink(buf)
-void *buf;
+static void bshrink(void *buf)
 {
     if (((char *) buf) == bp) {
 #ifdef EXPTRACE
@@ -1657,8 +1638,7 @@ void *buf;
 /*  Restrict buffer requests to those large enough to contain our pointer and
     small enough for the CPU architecture.  */
 
-static bufsize blimit(bs)
-bufsize bs;
+static bufsize blimit(bufsize bs)
 {
     if (bs < sizeof(char *)) {
         bs = sizeof(char *);
