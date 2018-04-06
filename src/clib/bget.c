@@ -535,9 +535,9 @@ static long numdget = 0, numdrel = 0; /* Number of direct gets and rels */
 
 /* Automatic expansion block management functions */
 
-static int (*compfcn) _((bufsize sizereq, int sequence)) = NULL;
-static void *(*acqfcn) _((bufsize size)) = NULL;
-static void (*relfcn) _((void *buf)) = NULL;
+static int (*compfcn)(bufsize sizereq, int sequence) = NULL;
+static void *(*acqfcn)(bufsize size) = NULL;
+static void (*relfcn)(void *buf) = NULL;
 
 static bufsize exp_incr = 0;          /* Expansion block size */
 static bufsize pool_len = 0;          /* 0: no bpool calls have been made
@@ -1167,9 +1167,9 @@ void *buf;
 /*  BECTL  --  Establish automatic pool expansion control  */
 
 void bectl(compact, acquire, release, pool_incr)
-    int (*compact) _((bufsize sizereq, int sequence));
-void *(*acquire) _((bufsize size));
-void (*release) _((void *buf));
+    int (*compact)(bufsize sizereq, int sequence);
+void *(*acquire)(bufsize size);
+void (*release)(void *buf);
 bufsize pool_incr;
 {
     compfcn = compact;
