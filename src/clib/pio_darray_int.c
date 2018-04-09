@@ -1715,7 +1715,7 @@ int flush_buffer(int ncid, wmulti_buffer *wmb, bool flushtodisk)
         wmb->num_arrays = 0;
 
         /* Release the list of variable IDs. */
-        brel(wmb->vid);
+        free(wmb->vid);
         wmb->vid = NULL;
 
         /* Release the data memory. */
@@ -1729,7 +1729,7 @@ int flush_buffer(int ncid, wmulti_buffer *wmb, bool flushtodisk)
 
         /* Release the record number. */
         if (wmb->frame)
-            brel(wmb->frame);
+            free(wmb->frame);
         wmb->frame = NULL;
 
         if (ret)
