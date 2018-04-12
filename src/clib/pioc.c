@@ -1740,6 +1740,42 @@ int PIOc_init_async(MPI_Comm world, int num_io_procs, int *io_proc_list,
 }
 
 /**
+ * Interface to call pio_init (from fortran)
+ * This is a collective call.  Input parameters are read on comp_rank=0
+ * values on other tasks are ignored.
+ * This variation of PIO_init sets up a distinct set of tasks.
+ * To handle IO, these tasks do not return from this call. Instead they
+ * go to an internal loop and wait to receive further instructions from
+ * the computational tasks
+ * @param component_count The number of computational components to
+ * associate with this IO component
+ * @param peer_comm  The communicator from which all other communicator
+ * arguments are derived
+ * @param comp_comms The computational communicator for each of the
+ * computational components
+ * @param io_comm The io communicator
+ * @param iosysidp a pointer that gets the IO system ID
+ * @returns 0 for success, error code otherwise
+ * operations (defined in PIO_types).*
+ */
+int PIOc_Init_Intercomm_from_F90(int component_count, int peer_comm,
+                                  int *comp_comms, int io_comm,
+                                  int *iosysidps)
+{
+#if PIO_SAVE_DECOMPS
+    fortran_order = true;
+#endif
+    int ret = PIO_NOERR;
+    if (ret != PIO_NOERR)
+    {
+        LOG((1, "PIOc_Init_Intercomm failed"));
+        return ret;
+    }
+
+    return ret;
+}
+
+/**
  * Set the target blocksize for the box rearranger.
  *
  * @param newblocksize the new blocksize.
