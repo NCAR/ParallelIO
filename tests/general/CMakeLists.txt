@@ -6,6 +6,7 @@ include (LibMPI)
 
 SET(GENERATED_SRCS pio_file_simple_tests.F90
   pio_init_finalize.F90
+  pio_async_init_finalize.F90
   pio_fail.F90
   pio_file_fail.F90
   pio_large_file_tests.F90
@@ -98,6 +99,35 @@ else ()
     EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_init_finalize
     ARGUMENTS --pio-tf-stride=2 --pio-tf-num-aggregators=2
     NUMPROCS 2
+    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
+endif ()
+
+#===== pio_async_init_finalize =====
+add_executable (pio_async_init_finalize EXCLUDE_FROM_ALL
+  pio_async_init_finalize.F90
+  ${CMAKE_CURRENT_SOURCE_DIR}/util/pio_tutil.F90)
+target_link_libraries (pio_async_init_finalize piof)
+add_dependencies (tests pio_async_init_finalize)
+
+if (PIO_USE_MPISERIAL)
+  add_test(NAME async_init_finalize_1_proc
+    COMMAND pio_async_init_finalize)
+  set_tests_properties(async_init_finalize_1_proc
+    PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
+else ()
+  add_mpi_test(async_init_finalize_2_proc
+    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_async_init_finalize
+    NUMPROCS 2
+    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
+
+  add_mpi_test(async_init_finalize_3_proc
+    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_async_init_finalize
+    NUMPROCS 3
+    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
+
+  add_mpi_test(async_init_finalize_4_proc
+    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_async_init_finalize
+    NUMPROCS 4
     TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 endif ()
 
