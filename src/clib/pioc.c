@@ -1740,32 +1740,553 @@ int PIOc_init_async(MPI_Comm world, int num_io_procs, int *io_proc_list,
 }
 
 /**
+ * This variation of PIO_init supports I/O as an asynchronous service.
+ *
+ * A set of processes, I/O processes, are used to provide this
+ * asynchronous service. A set (or multiple sets) of processes, compute
+ * processes, that is disjoint from the set of I/O processes use this
+ * service (provided by the I/O processes) by internally passing
+ * messages.
+ *
+ * From the user/application side, all I/O processes will wait (until
+ * finalize) in PIO_init(). So this function call does not return
+ * until finalize for I/O processes.
+ *
+ * Meanwhile PIO_init() will return on all compute processes and the
+ * application can perform I/O using the regular PIO interfaces.
+ * The user (application) needs to provide:
+ * io_comm => The communicator for all I/O procs (Only one io comm
+ * is supported)
+ * comp_comms => One or more communicators for the compute processes
+ * (All compute processes in a computational component can be part
+ * of one comp_comm). All compute processes in the comp_comms use
+ * I/O processes (via the async I/O service) in io_comm for I/O.
+ * peer_comm => Parent communicator to all compute and I/O comms. The
+ * compute and I/O communicators are derived from this comm.
+ *
+ * @param component_count Number of components (determines the number
+ * of comp_comms and iosysidps)
+ * @param peer_comm The parent communicator used to create comp_comms
+ * and io_comm, this comm is valid on all procs
+ * @param ucomp_comms An array of communicators that represent sets of
+ * compute processes (that use I/O processes that are part of io_comm
+ * to perform I/O), comp_comms[i] is valid only on procs that are
+ * part of comp_comms[i]
+ * @param uio_comm The communicator representing all I/O processes.
+ * This communicator is valid (!= MPI_COMM_NULL) only on the I/O
+ * procs
+ * @param rearranger The rearranger to use for I/O
+ * @param iosysidps An array to store the iosystem ids returned (each
+ * iosystem id in the array is for the corresponding comp_comm in the
+ * comp_comms array)
+ */
+
+int PIOc_init_intercomm(int component_count, const MPI_Comm peer_comm,
+                        const MPI_Comm *ucomp_comms, const MPI_Comm uio_comm,
+                        int rearranger, int *iosysidps)
+{
+    int ret;
+/* TIMING_INTERNAL implies that the timing statistics are gathered/
+ * displayed by pio
+ */
+#ifdef TIMING
+#ifdef TIMING_INTERNAL
+    pio_init_gptl();
+#endif
+    GPTLstart("PIO:PIOc_init_intercomm");
+#endif
+    assert((component_count > 0) && ucomp_comms && iosysidps);
+
+    /* Turn on the logging system for PIO. */
+    pio_init_logging();
+    LOG((1, "PIOc_init_intercomm component_count = %d", component_count));
+
+#ifdef PIO_MICRO_TIMING
+    /* Initialize the timer framework - MPI_Wtime() + output from root proc */
+    ret = mtimer_init(PIO_MICRO_MPI_WTIME_ROOT);
+    if(ret != PIO_NOERR)
+    {
+        LOG((1, "Initializing PIO micro timers failed"));
+        return pio_err(NULL, NULL, PIO_EINTERNAL, __FILE__, __LINE__);
+    }
+#endif
+    /* Dup the comp comms from the user, since we cache
+     * these communicators inside PIO
+     */
+    MPI_Comm *comp_comms = calloc(component_count, sizeof(MPI_Comm));
+    if(comp_comms)
+    {
+        for(int i=0; i<component_count; i++)
+        {
+            comp_comms[i] = MPI_COMM_NULL;
+            if(ucomp_comms[i] != MPI_COMM_NULL)
+            {
+                ret = MPI_Comm_dup(ucomp_comms[i], &(comp_comms[i]));
+                if(ret != MPI_SUCCESS)
+                {
+                    return check_mpi(NULL, ret, __FILE__, __LINE__);
+                }
+            }
+        }
+    }
+    else
+    {
+        return pio_err(NULL, NULL, PIO_ENOMEM, __FILE__, __LINE__);
+    }
+
+    /* Allocate iosystems for all comp comms
+     * Each iosystem here includes comp_comms[i] and io_comm
+     */
+    iosystem_desc_t *iosys[component_count];
+    for(int i=0; i<component_count; i++)
+    {
+        iosys[i] = (iosystem_desc_t *) calloc(1, sizeof(iosystem_desc_t));
+        if(!iosys[i])
+        {
+            return pio_err(NULL, NULL, PIO_ENOMEM, __FILE__, __LINE__);
+        }
+
+        /* Initialize the iosystem */
+        iosys[i]->iosysid = -1;
+        iosys[i]->union_comm = MPI_COMM_NULL;
+        iosys[i]->io_comm = MPI_COMM_NULL;
+        iosys[i]->comp_comm = MPI_COMM_NULL;
+        iosys[i]->intercomm = MPI_COMM_NULL;
+        iosys[i]->my_comm = MPI_COMM_NULL;
+
+        iosys[i]->compgroup = MPI_GROUP_NULL;
+        iosys[i]->iogroup = MPI_GROUP_NULL;
+
+        iosys[i]->iomaster = MPI_PROC_NULL;
+        iosys[i]->compmaster = MPI_PROC_NULL;
+
+        iosys[i]->error_handler = default_error_handler;
+        iosys[i]->default_rearranger = rearranger;
+
+        iosys[i]->info = MPI_INFO_NULL;
+
+        iosys[i]->rearr_opts.comm_type = PIO_REARR_COMM_COLL;
+        iosys[i]->rearr_opts.fcd = PIO_REARR_COMM_FC_2D_DISABLE;
+
+        iosys[i]->comp_idx = -1;
+    }
+    /* For each component in comp_comms create the necessary comms
+     * with the io_comm, and initialize the iosystem including
+     * comp_comms[i] and io_comm
+     */
+    for(int i=0; i<component_count; i++)
+    {
+        /* Ranks of io and comp leaders in io_comm and comp_comms[i]
+         * respectively
+         */
+        const int IO_LEADER_LRANK = 0;
+        const int COMP_LEADER_LRANK = 0;
+
+        /* I/O and comp roots in the union comm (union of io_comm and
+         * comp_comms[i]
+         */
+        const int IO_ROOT_URANK = 0;
+        const int COMP_ROOT_URANK = 0;
+
+        /* MPI tag used during intercomm merge */
+        int tag_intercomm_comm = i;
+
+        /* Ranks of io and comp leaders in peer_comm */
+        int io_leader_grank = -1;
+        int comp_leader_grank = -1;
+        LOG((3, "Async I/O Service : processing compute component %d", i));
+
+        iosys[i]->async = true;
+
+        /* Dup the io comm since its cached in the iosystem */
+        MPI_Comm io_comm = uio_comm;
+        if(uio_comm != MPI_COMM_NULL)
+        {
+            ret = MPI_Comm_dup(uio_comm, &io_comm);
+            if(ret != MPI_SUCCESS)
+            {
+                return check_mpi(NULL, ret, __FILE__, __LINE__);
+            }
+        }
+        /* The compute comm is comp_comms[i] and the io comm is io_comm
+         * In the compute procs io_comm is NULL and on the io procs the
+         * comp_comms are NULL
+         * In the compute procs comp_comms[i] is only valid (!= MPI_COMM_NULL)
+         * for comms that the compute proc belongs.
+         * Also note that this implies that all compute procs agree on
+         * the indices in comp_comms, but can have different values in
+         * comp_comms depending on whether the current compute proc belongs
+         * to the comp_comms[i]
+         * Since peer_comm is the parent communicator for io_comm and comp_comm
+         * it is used for all global communication across all comms
+         * */
+        iosys[i]->io_comm = io_comm;
+        iosys[i]->comp_comm = comp_comms[i];
+        iosys[i]->comp_idx = i;
+        /* Rank of io process and comp process in peer_comm */
+        int io_grank = -1, comp_grank = -1;
+        if(io_comm != MPI_COMM_NULL)
+        {
+            /* I/O process */
+            iosys[i]->ioproc = true;
+            iosys[i]->comp_rank = -1;
+            iosys[i]->compproc = false;
+            iosys[i]->num_comptasks = 0;
+
+            ret = MPI_Comm_rank(io_comm, &(iosys[i]->io_rank));
+            if(ret != MPI_SUCCESS)
+            {
+                return check_mpi(NULL, ret, __FILE__, __LINE__);
+            }
+
+            ret = MPI_Comm_size(io_comm, &(iosys[i]->num_iotasks));
+            if(ret != MPI_SUCCESS)
+            {
+                return check_mpi(NULL, ret, __FILE__, __LINE__);
+            }
+
+            io_grank = -1;
+            comp_grank = -1;
+            io_leader_grank = -1;
+            comp_leader_grank = -1;
+            ret = MPI_Comm_rank(peer_comm, &io_grank);
+            if(ret != MPI_SUCCESS)
+            {
+                return check_mpi(NULL, ret, __FILE__, __LINE__);
+            }
+            /* Find the io leader for intercomm */
+            if(iosys[i]->io_rank == IO_LEADER_LRANK)
+            {
+                io_leader_grank = io_grank;
+                iosys[i]->iomaster = MPI_ROOT;
+            }
+            else
+            {
+                iosys[i]->iomaster = MPI_PROC_NULL;
+            }
+            iosys[i]->compmaster = COMP_LEADER_LRANK;
+
+            int tmp_io_leader_grank = io_leader_grank;
+            ret = MPI_Allreduce(&tmp_io_leader_grank, &io_leader_grank, 1, MPI_INT, MPI_MAX, peer_comm);
+            if(ret != MPI_SUCCESS)
+            {
+                return check_mpi(NULL, ret, __FILE__, __LINE__);
+            }
+
+            /* Find the comp leader for intercomm */
+            int tmp_comp_leader_grank = comp_leader_grank;
+            ret = MPI_Allreduce(&tmp_comp_leader_grank, &comp_leader_grank, 1, MPI_INT, MPI_MAX, peer_comm);
+            if(ret != MPI_SUCCESS)
+            {
+                return check_mpi(NULL, ret, __FILE__, __LINE__);
+            }
+
+            /* Create the intercomm between io_comm and comp_comms[i] */
+            ret = MPI_Intercomm_create(io_comm, IO_LEADER_LRANK, peer_comm, comp_leader_grank, tag_intercomm_comm, &(iosys[i]->intercomm));
+            if(ret != MPI_SUCCESS)
+            {
+                return check_mpi(NULL, ret, __FILE__, __LINE__);
+            }
+
+            /* Create the union comm between io_comm and comp_comms[i] */
+            /* Make sure that the io procs are in the "high group" in the union comm,
+             * This ensures that io procs are placed after compute procs in the
+             * union comm
+             */
+            int is_high_group = 1;
+            ret = MPI_Intercomm_merge(iosys[i]->intercomm, is_high_group, &(iosys[i]->union_comm));
+            if(ret != MPI_SUCCESS)
+            {
+                return check_mpi(NULL, ret, __FILE__, __LINE__);
+            }
+
+            ret = MPI_Comm_size(iosys[i]->union_comm, &(iosys[i]->num_uniontasks));
+            if(ret != MPI_SUCCESS)
+            {
+                return check_mpi(NULL, ret, __FILE__, __LINE__);
+            }
+
+            if(iosys[i]->num_uniontasks > 0)
+            {
+                ret = MPI_Comm_rank(iosys[i]->union_comm, &(iosys[i]->union_rank));
+                if(ret != MPI_SUCCESS)
+                {
+                    return check_mpi(NULL, ret, __FILE__, __LINE__);
+                }
+
+                iosys[i]->num_comptasks = iosys[i]->num_uniontasks - iosys[i]->num_iotasks;
+                /* Since in the intercomm io procs are always in the "high group" the
+                 * ranks for the I/O processes start at iosys[i]->num_comptasks
+                 * The compute procs start at rank == 0 ("low group")
+                 */
+                iosys[i]->comproot = COMP_ROOT_URANK;
+                iosys[i]->ioroot = iosys[i]->num_comptasks + IO_ROOT_URANK;
+
+                iosys[i]->ioranks = malloc(iosys[i]->num_iotasks * sizeof(int));
+                if(!(iosys[i]->ioranks))
+                {
+                    return pio_err(NULL, NULL, PIO_ENOMEM, __FILE__, __LINE__);
+                }
+                for(int j=0; j<iosys[i]->num_iotasks; j++)
+                {
+                    iosys[i]->ioranks[j] = iosys[i]->num_comptasks + j;
+                }
+
+                iosys[i]->compranks = malloc(iosys[i]->num_comptasks * sizeof(int));
+                if(!(iosys[i]->compranks))
+                {
+                    return pio_err(NULL, NULL, PIO_ENOMEM, __FILE__, __LINE__);
+                }
+                for(int j=0; j<iosys[i]->num_comptasks; j++)
+                {
+                    iosys[i]->compranks[j] = j;
+                }
+
+                MPI_Group union_comm_group;
+                ret = MPI_Comm_group(iosys[i]->union_comm, &union_comm_group);
+                if(ret != MPI_SUCCESS)
+                {
+                    return check_mpi(NULL, ret, __FILE__, __LINE__);
+                }
+
+                ret = MPI_Group_incl(union_comm_group, iosys[i]->num_comptasks, iosys[i]->compranks, &(iosys[i]->compgroup));
+                if(ret != MPI_SUCCESS)
+                {
+                    return check_mpi(NULL, ret, __FILE__, __LINE__);
+                }
+
+                ret = MPI_Group_incl(union_comm_group, iosys[i]->num_iotasks, iosys[i]->ioranks, &(iosys[i]->iogroup));
+                if(ret != MPI_SUCCESS)
+                {
+                    return check_mpi(NULL, ret, __FILE__, __LINE__);
+                }
+
+                MPI_Group_free(&union_comm_group);
+            }
+        }
+        else
+        {
+            /* Compute process - belonging to any of comp_comms[i] */
+            iosys[i]->comp_rank = -1;
+            iosys[i]->io_rank = -1;
+            iosys[i]->num_comptasks = 0;
+            iosys[i]->ioproc = false;
+            iosys[i]->compproc = false;
+
+            io_grank = -1;
+            comp_grank = -1;
+            io_leader_grank = -1;
+            comp_leader_grank = -1;
+
+            if(comp_comms[i] != MPI_COMM_NULL)
+            {
+                iosys[i]->compproc = true;
+
+                ret = MPI_Comm_rank(comp_comms[i], &(iosys[i]->comp_rank));
+                if(ret != MPI_SUCCESS)
+                {
+                    return check_mpi(NULL, ret, __FILE__, __LINE__);
+                }
+                ret = MPI_Comm_size(comp_comms[i], &(iosys[i]->num_comptasks));
+                if(ret != MPI_SUCCESS)
+                {
+                    return check_mpi(NULL, ret, __FILE__, __LINE__);
+                }
+
+                ret = MPI_Comm_rank(peer_comm, &comp_grank);
+                if(ret != MPI_SUCCESS)
+                {
+                    return check_mpi(NULL, ret, __FILE__, __LINE__);
+                }
+
+                if(iosys[i]->comp_rank == COMP_LEADER_LRANK)
+                {
+                    comp_leader_grank = comp_grank;
+                    iosys[i]->compmaster = MPI_ROOT;
+                }
+                else
+                {
+                    iosys[i]->compmaster = MPI_PROC_NULL;
+                }
+                iosys[i]->iomaster = IO_LEADER_LRANK;
+            }
+            /* Find the io leader for intercomm */
+            int tmp_io_leader_grank = io_leader_grank;
+            ret = MPI_Allreduce(&tmp_io_leader_grank, &io_leader_grank, 1, MPI_INT, MPI_MAX, peer_comm);
+            if(ret != MPI_SUCCESS)
+            {
+                return check_mpi(NULL, ret, __FILE__, __LINE__);
+            }
+
+            /* Find the comp leader for intercomm */
+            int tmp_comp_leader_grank = comp_leader_grank;
+            ret = MPI_Allreduce(&tmp_comp_leader_grank, &comp_leader_grank, 1, MPI_INT, MPI_MAX, peer_comm);
+            if(ret != MPI_SUCCESS)
+            {
+                return check_mpi(NULL, ret, __FILE__, __LINE__);
+            }
+
+            /* Create the intercomm between io_comm and comp_comms[i] */
+            ret = MPI_Intercomm_create(comp_comms[i], COMP_LEADER_LRANK, peer_comm, io_leader_grank, tag_intercomm_comm, &(iosys[i]->intercomm));
+            if(ret != MPI_SUCCESS)
+            {
+                return check_mpi(NULL, ret, __FILE__, __LINE__);
+            }
+
+            /* Create the union comm between io_comm and comp_comms[i] */
+            /* Make sure that the comp procs are in the "low group" in the union comm,
+             * This ensures that comp procs are placed before io procs in the
+             * union comm
+             */
+            int is_high_group = 0;
+            ret = MPI_Intercomm_merge(iosys[i]->intercomm, is_high_group, &(iosys[i]->union_comm));
+            if(ret != MPI_SUCCESS)
+            {
+                return check_mpi(NULL, ret, __FILE__, __LINE__);
+            }
+
+            ret = MPI_Comm_size(iosys[i]->union_comm, &(iosys[i]->num_uniontasks));
+            if(ret != MPI_SUCCESS)
+            {
+                return check_mpi(NULL, ret, __FILE__, __LINE__);
+            }
+
+            if(iosys[i]->num_uniontasks > 0)
+            {
+                ret = MPI_Comm_rank(iosys[i]->union_comm, &(iosys[i]->union_rank));
+                if(ret != MPI_SUCCESS)
+                {
+                    return check_mpi(NULL, ret, __FILE__, __LINE__);
+                }
+
+                iosys[i]->num_iotasks = iosys[i]->num_uniontasks - iosys[i]->num_comptasks;
+                /* Since in the intercomm io procs are always in the "high group" the
+                 * ranks for the I/O processes start at iosys[i]->num_comptasks
+                 * The compute procs start at rank == 0 ("low group")
+                 */
+                iosys[i]->comproot = COMP_ROOT_URANK;
+                iosys[i]->ioroot = iosys[i]->num_comptasks + IO_ROOT_URANK;
+
+                iosys[i]->ioranks = malloc(iosys[i]->num_iotasks * sizeof(int));
+                if(!(iosys[i]->ioranks))
+                {
+                    return pio_err(NULL, NULL, PIO_ENOMEM, __FILE__, __LINE__);
+                }
+                for(int j=0; j<iosys[i]->num_iotasks; j++)
+                {
+                    iosys[i]->ioranks[j] = iosys[i]->num_comptasks + j;
+                }
+
+                iosys[i]->compranks = malloc(iosys[i]->num_comptasks * sizeof(int));
+                if(!(iosys[i]->compranks))
+                {
+                    return pio_err(NULL, NULL, PIO_ENOMEM, __FILE__, __LINE__);
+                }
+                for(int j=0; j<iosys[i]->num_comptasks; j++)
+                {
+                    iosys[i]->compranks[j] = j;
+                }
+
+                MPI_Group union_comm_group;
+                ret = MPI_Comm_group(iosys[i]->union_comm, &union_comm_group);
+                if(ret != MPI_SUCCESS)
+                {
+                    return check_mpi(NULL, ret, __FILE__, __LINE__);
+                }
+
+                ret = MPI_Group_incl(union_comm_group, iosys[i]->num_comptasks, iosys[i]->compranks, &(iosys[i]->compgroup));
+                if(ret != MPI_SUCCESS)
+                {
+                    return check_mpi(NULL, ret, __FILE__, __LINE__);
+                }
+
+                ret = MPI_Group_incl(union_comm_group, iosys[i]->num_iotasks, iosys[i]->ioranks, &(iosys[i]->iogroup));
+                if(ret != MPI_SUCCESS)
+                {
+                    return check_mpi(NULL, ret, __FILE__, __LINE__);
+                }
+
+                MPI_Group_free(&union_comm_group);
+            }
+        }
+
+        iosys[i]->my_comm = iosys[i]->union_comm;
+
+        /* Add this id to the list of PIO iosystem ids. */
+        iosysidps[i] = pio_add_to_iosystem_list(iosys[i]);
+        LOG((2, "PIOc_init_intercomm : iosys[%d]->ioid=%d, iosys[%d]->uniontasks = %d, iosys[%d]->union_rank=%d, %s", i, iosys[i]->iosysid, i, iosys[i]->num_uniontasks, i, iosys[i]->union_rank, ((iosys[i]->ioproc) ? ("IS IO PROC"):((iosys[i]->compproc) ? ("IS COMPUTE PROC") : ("NEITHER IO NOR COMPUTE PROC"))) ));
+        LOG((2, "New IOsystem added to iosystem_list iosysid = %d", iosysidps[i]));
+    }
+
+    /* The comp_comms array is freed. The communicators will be freed internally
+     * in PIO - during finalize
+     */
+    free(comp_comms);
+
+    /* Invoke the message handler for I/O procs. The message handler goes
+     * into a continuous loop to handle messages from compute procs and
+     * only returns after compute procs call PIOc_finalize() for the
+     * iosystem
+     */
+    if(uio_comm != MPI_COMM_NULL)
+    {
+        /* Note since component_count > 0 iosys[0] should be valid */
+        LOG((2, "Starting message handler io_rank = %d component_count = %d",
+             iosys[0]->io_rank, component_count));
+        ret = pio_msg_handler2(iosys[0]->io_rank, component_count, iosys, iosys[0]->io_comm);
+        if(ret != PIO_NOERR)
+        {
+            return pio_err(NULL, NULL, ret, __FILE__, __LINE__);
+            LOG((2, "Returned from pio_msg_handler2(), Msg handler failed, ret = %d", ret));
+        }
+        LOG((2, "Returned from pio_msg_handler2() ret = %d", ret));
+    }
+
+#ifdef TIMING
+    GPTLstop("PIO:PIOc_init_intercomm");
+#endif
+    return PIO_NOERR;
+}
+
+/**
  * Interface to call pio_init (from fortran)
- * This is a collective call.  Input parameters are read on comp_rank=0
- * values on other tasks are ignored.
- * This variation of PIO_init sets up a distinct set of tasks.
- * To handle IO, these tasks do not return from this call. Instead they
- * go to an internal loop and wait to receive further instructions from
- * the computational tasks
+ *
  * @param component_count The number of computational components to
  * associate with this IO component
- * @param peer_comm  The communicator from which all other communicator
+ * @param f90_peer_comm  The communicator from which all other communicator
  * arguments are derived
- * @param comp_comms The computational communicator for each of the
+ * @param f90_comp_comms The computational communicator for each of the
  * computational components
- * @param io_comm The io communicator
+ * @param f90_io_comm The io communicator
  * @param iosysidp a pointer that gets the IO system ID
  * @returns 0 for success, error code otherwise
  * operations (defined in PIO_types).*
  */
-int PIOc_Init_Intercomm_from_F90(int component_count, int peer_comm,
-                                  int *comp_comms, int io_comm,
-                                  int *iosysidps)
+int PIOc_Init_Intercomm_from_F90(int component_count, int f90_peer_comm,
+                                  const int *f90_comp_comms, int f90_io_comm,
+                                  int rearranger, int *iosysidps)
 {
 #if PIO_SAVE_DECOMPS
     fortran_order = true;
 #endif
+    MPI_Comm peer_comm = MPI_Comm_f2c(f90_peer_comm);
+    MPI_Comm io_comm = MPI_Comm_f2c(f90_io_comm);
     int ret = PIO_NOERR;
+
+    if((component_count <= 0) || (!f90_comp_comms) || (!iosysidps))
+    {
+        return pio_err(NULL, NULL, PIO_EINVAL, __FILE__, __LINE__);
+    }
+
+    MPI_Comm comp_comms[component_count];
+    for(int i=0; i<component_count; i++)
+    {
+        comp_comms[i] = MPI_Comm_f2c(f90_comp_comms[i]);
+        iosysidps[i] = -1;
+    }
+
+    ret = PIOc_init_intercomm(component_count, peer_comm, comp_comms,
+            io_comm, rearranger, iosysidps);
     if (ret != PIO_NOERR)
     {
         LOG((1, "PIOc_Init_Intercomm failed"));
