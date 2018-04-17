@@ -424,7 +424,7 @@ int PIOc_sync(int ncid)
                 }
                 else
                 {
-                    brel(twmb);
+                    free(twmb);
                 }
             }
         }
