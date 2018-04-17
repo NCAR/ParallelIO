@@ -103,6 +103,10 @@ extern "C" {
     int pio_msg_handler2(int io_rank, int component_count, iosystem_desc_t **iosys,
                          MPI_Comm io_comm);
 
+    /* Create and delete the global async i/o message communicator */
+    int create_async_service_msg_comm(const MPI_Comm io_comm, MPI_Comm *msg_comm);
+    void delete_async_service_msg_comm(void );
+
     void pio_get_env(void);
     int  pio_add_to_iodesc_list(io_desc_t *iodesc);
     io_desc_t *pio_get_iodesc_from_id(int ioid);

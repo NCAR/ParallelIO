@@ -17,6 +17,53 @@ extern int my_rank;
 extern int pio_log_level;
 #endif /* PIO_ENABLE_LOGGING */
 
+/* A global MPI communicator for waiting on async I/O service messages */
+MPI_Comm pio_async_service_msg_comm = MPI_COMM_NULL;
+
+/* Create the global MPI communicator for async service messaging.
+ * This communicator is used by the async I/O service message handler to
+ * communicate the iosystem id between the I/O procs. It is a dup of the
+ * io_comm
+ * @param io_comm The I/O communicator used for creating the async service
+ * message communicator
+ * @param msg_comm Pointer to the newly created (global) asynchronous I/O
+ * message communicator
+ * @returns PIO_NOERR on success, a pio error code otherwise
+ */
+int create_async_service_msg_comm(const MPI_Comm io_comm, MPI_Comm *msg_comm)
+{
+    int ret = PIO_NOERR;
+
+    assert(msg_comm && (pio_async_service_msg_comm == MPI_COMM_NULL));
+
+    LOG((2, "Creating global async I/O service msg comm"));
+    *msg_comm = MPI_COMM_NULL;
+
+    if(io_comm != MPI_COMM_NULL)
+    {
+        ret = MPI_Comm_dup(io_comm, &pio_async_service_msg_comm);
+        if(ret != MPI_SUCCESS)
+        {
+            return check_mpi(NULL, ret, __FILE__, __LINE__);
+        }
+        *msg_comm = pio_async_service_msg_comm;
+    }
+    return ret;
+}
+
+/* Delete/free the global MPI communicator used for asynchronous I/O service
+ * messaging
+ */
+void delete_async_service_msg_comm(void )
+{
+    if(pio_async_service_msg_comm != MPI_COMM_NULL)
+    {
+        LOG((2, "Deleting global async I/O service msg comm"));
+        MPI_Comm_free(&pio_async_service_msg_comm);
+        pio_async_service_msg_comm = MPI_COMM_NULL;
+    }
+}
+
 /** 
  * This function is run on the IO tasks to handle nc_inq_type*()
  * functions.
@@ -2806,8 +2853,20 @@ int pio_msg_handler2(int io_rank, int component_count, iosystem_desc_t **iosys,
 
         /* If there are no more open components, exit. */
         if (msg == -1)
-            if (--open_components)
+        {
+            open_components -= 1;
+            if(open_components != 0)
+            {
+                /* Reset msg. There are open components don't exit */
                 msg = PIO_MSG_EXIT;
+            }
+            else
+            {
+                /* msg == -1, No more open components, will exit the loop */
+                /* Delete the global MPI communicator used for messaging */
+                delete_async_service_msg_comm();
+            }
+        }
     }
 
     LOG((3, "returning from pio_msg_handler2"));
