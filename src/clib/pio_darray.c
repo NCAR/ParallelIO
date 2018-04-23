@@ -531,6 +531,59 @@ int find_var_fillvalue(file_desc_t *file, int varid, var_desc_t *vdesc)
     return PIO_NOERR;
 }
 
+/* Check if the write multi buffer requires a flush
+ * wmb : A write multi buffer that might already contain data
+ * arraylen : The length of the new array that needs to be cached in this wmb
+ *            (The array is not cached yet)
+ * iodesc : io descriptor for the data cached in the write multi buffer
+ * A disk flush implies that data needs to be rearranged and write needs to be
+ * completed. Rearranging and writing data frees up cache is compute and I/O
+ * processes
+ * An I/O flush implies that data needs to be rearranged and write needs to be
+ * started (for iotypes other than PnetCDF write also completes). This would
+ * free up cache in compute processes (I/O processes still need to cache the
+ * rearranged data until the write completes)
+ * Returns 2 if a disk flush is required, 1 if an I/O flush is required, 0 otherwise
+ */
+static int PIO_wmb_needs_flush(wmulti_buffer *wmb, int arraylen, io_desc_t *iodesc)
+{
+    bufsize curalloc, totfree, maxfree;
+    long nget, nrel;
+    const int NEEDS_DISK_FLUSH=2, NEEDS_IO_FLUSH=1, NO_FLUSH=0;
+
+    assert(wmb && iodesc);
+    /* Find out how much free, contiguous space is available. */
+    bstats(&curalloc, &totfree, &maxfree, &nget, &nrel);
+
+    /* We have exceeded the set buffer write cache limit, write data to
+     * disk
+     */
+    if(curalloc >= pio_buffer_size_limit)
+    {
+        return NEEDS_DISK_FLUSH;
+    }
+
+    PIO_Offset array_sz_bytes = arraylen * iodesc->mpitype_size;
+    /* Total cache size required to cache this array
+     * - including existing data cached in wmb
+     * Note that all the arrays are cached in an wmb in a single
+     * contiguous block of memory.
+     */
+    PIO_Offset wmb_req_cache_sz = (1 + wmb->num_arrays) * array_sz_bytes;
+    /* maxfree is the maximum amount of contiguous memory available.
+     * if maxfree <= 110% of the current size of wmb cache, it is close
+     * to being exhausted/filled, flush so that we have enough space
+     * to satisfy future requests
+     * FIXME: What is the logic for using 110% here?
+     */ 
+    if(maxfree <= 1.1 * wmb_req_cache_sz)
+    {
+        return NEEDS_IO_FLUSH;
+    }
+
+    return NO_FLUSH;
+}
+
 /**
  * Write a distributed array to the output file.
  *
@@ -686,32 +739,8 @@ int PIOc_write_darray(int ncid, int varid, int ioid, PIO_Offset arraylen, void *
     LOG((2, "wmb->num_arrays = %d arraylen = %d iodesc->mpitype_size = %d\n",
          wmb->num_arrays, arraylen, iodesc->mpitype_size));
 
-#if PIO_USE_MALLOC
-    /* Try realloc first and call flush if realloc fails. */
-    if (arraylen > 0)
-    {
-        realloc_data = realloc(wmb->data, (1 + wmb->num_arrays) * arraylen * iodesc->mpitype_size);
-        if (realloc_data)
-        {
-            needsflush = 0;
-            wmb->data = realloc_data;
-            LOG((2, "realloc got %ld bytes for data", (1 + wmb->num_arrays) * arraylen * iodesc->mpitype_size));
-        }
-        else /* Failed to realloc, but wmb->data is still valid for a flush. */
-        {
-            needsflush = 1;
-            LOG((2, "realloc failed to get %ld bytes for data", (1 + wmb->num_arrays) * arraylen * iodesc->mpitype_size));
-        }
-    }
-#else
-    /* Find out how much free, contiguous space is available. */
-    bfreespace(&totfree, &maxfree);
-
-    /* maxfree is the available memory. If that is < 10% greater than
-     * the size of the current request needsflush is true. */
-    if (needsflush == 0)
-        needsflush = (maxfree <= 1.1 * (1 + wmb->num_arrays) * arraylen * iodesc->mpitype_size);
-#endif
+    needsflush = PIO_wmb_needs_flush(wmb, arraylen, iodesc);
+    assert(needsflush >= 0);
 
     /* Tell all tasks on the computation communicator whether we need
      * to flush data. */
@@ -744,10 +773,13 @@ int PIOc_write_darray(int ncid, int varid, int ioid, PIO_Offset arraylen, void *
 #endif /* PIO_ENABLE_LOGGING */
 #endif /* !PIO_USE_MALLOC */
 
-        /* If needsflush == 2 flush to disk otherwise just flush to io
-         * node. This will cause PIOc_write_darray_multi() to be
-         * called. */
-        if ((ierr = flush_buffer(ncid, wmb, needsflush == 2)))
+        /* Flush buffer to I/O processes - rearrange data and
+         * start writing data from the I/O processes
+         * Note : Setting the last flag in flush_buffer to
+         * true will force flush the buffer to disk for all
+         * iotypes (wait for write to complete for PnetCDF)
+         */
+        if ((ierr = flush_buffer(ncid, wmb, (needsflush == 2))))
             return pio_err(ios, file, ierr, __FILE__, __LINE__);
     }
 
@@ -766,15 +798,6 @@ int PIOc_write_darray(int ncid, int varid, int ioid, PIO_Offset arraylen, void *
     mtimer_async_event_in_progress(file->varlist[varid].wr_mtimer, true);
 #endif
 
-#if PIO_USE_MALLOC
-    /* Try realloc again if there is a flush. */
-    if (arraylen > 0 && needsflush > 0)
-    {
-        if (!(wmb->data = realloc(wmb->data, (1 + wmb->num_arrays) * arraylen * iodesc->mpitype_size)))
-            return pio_err(ios, file, PIO_ENOMEM, __FILE__, __LINE__);
-        LOG((2, "after a flush, realloc got %ld bytes for data", (1 + wmb->num_arrays) * arraylen * iodesc->mpitype_size));
-    }
-#else
     /* Get memory for data. */
     if (arraylen > 0)
     {
@@ -782,7 +805,6 @@ int PIOc_write_darray(int ncid, int varid, int ioid, PIO_Offset arraylen, void *
             return pio_err(ios, file, PIO_ENOMEM, __FILE__, __LINE__);
         LOG((2, "got %ld bytes for data", (1 + wmb->num_arrays) * arraylen * iodesc->mpitype_size));
     }
-#endif
 
     /* vid is an array of variable ids in the wmb list, grow the list
      * and add the new entry. */

@@ -52,7 +52,9 @@ void bpool_free(void *p)
  */
 int compute_buffer_init(iosystem_desc_t *ios)
 {
-#if !PIO_USE_MALLOC
+#if PIO_USE_MALLOC
+    bpool(NULL, pio_cnbuffer_limit);
+#else
 
     if (!CN_bpool)
     {
@@ -65,7 +67,7 @@ int compute_buffer_init(iosystem_desc_t *ios)
 
         bectl(NULL, malloc, bpool_free, pio_cnbuffer_limit);
     }
-#endif
+#endif /* PIO_USE_MALLOC */
     LOG((2, "compute_buffer_init complete"));
 
     return PIO_NOERR;
