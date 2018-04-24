@@ -28,4 +28,7 @@
 /** Set to non-zero to dump the decomposition information from PIO programs. */
 #define PIO_SAVE_DECOMPS @SAVE_DECOMPS@
 
+/** Maximum number of non-contiguous regions cached in a single IO process. */
+#define PIO_MAX_CACHED_IO_REGIONS @PIO_MAX_CACHED_IO_REGIONS@
+
 #endif /* _PIO_CONFIG_ */

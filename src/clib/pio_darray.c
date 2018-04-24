@@ -650,6 +650,8 @@ int PIOc_write_darray(int ncid, int varid, int ioid, PIO_Offset arraylen, void *
     bufsize totfree;       /* Amount of free space in the buffer. */
     bufsize maxfree;       /* Max amount of free space in buffer. */
 #endif
+    PIO_Offset decomp_max_regions; /* Max non-contiguous regions in the IO decomposition */
+    PIO_Offset io_max_regions; /* Max non-contiguous regions cached in a single IO process */
     int mpierr = MPI_SUCCESS;  /* Return code from MPI functions. */
     int ierr = PIO_NOERR;  /* Return code. */
 
@@ -741,6 +743,22 @@ int PIOc_write_darray(int ncid, int varid, int ioid, PIO_Offset arraylen, void *
 
     needsflush = PIO_wmb_needs_flush(wmb, arraylen, iodesc);
     assert(needsflush >= 0);
+
+    /* When using PIO with PnetCDF + SUBSET rearranger the number
+       of non-contiguous regions cached in a single IO process can
+       grow to a large number. PnetCDF is not efficient at handling
+       very large number of regions (sub-array requests) in the
+       data written out. We typically run out of memory or the
+       write is very slow.
+
+       We need to set a limit on the potential (after rearrangement)
+       maximum number of non-contiguous regions in an IO process and
+       forcefully flush out user data cached by a compute process
+       when that limit has been reached. */
+    decomp_max_regions = (iodesc->maxregions >= iodesc->maxfillregions)? iodesc->maxregions : iodesc->maxfillregions;
+    io_max_regions = (1 + wmb->num_arrays) * decomp_max_regions;
+    if (io_max_regions > PIO_MAX_CACHED_IO_REGIONS)
+        needsflush = 2;
 
     /* Tell all tasks on the computation communicator whether we need
      * to flush data. */

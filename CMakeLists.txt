@@ -55,6 +55,13 @@ else()
   set(SAVE_DECOMPS 0)
 endif()
 
+if(PIO_MAX_CACHED_IO_REGIONS)
+  message (STATUS "Using PIO_MAX_CACHED_IO_REGIONS = " ${PIO_MAX_CACHED_IO_REGIONS})
+else()
+  set(PIO_MAX_CACHED_IO_REGIONS 65536)
+  message (STATUS "Using PIO_MAX_CACHED_IO_REGIONS = " ${PIO_MAX_CACHED_IO_REGIONS} " (default)")
+endif()
+
 #==============================================================================
 #  PREPEND TO CMAKE MODULE PATH
 #==============================================================================
