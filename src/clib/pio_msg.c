@@ -2198,6 +2198,10 @@ int initdecomp_dof_handler(iosystem_desc_t *ios)
         iocountp = iocount;
 
     /* Call the function. */
+    /* The I/O procs don't have any user data, they gather data from compute
+     * procs and write it out. So ignore compmap
+     */
+    maplen = 0;
     ret = PIOc_InitDecomp(iosysid, pio_type, ndims, dims, maplen, compmap, &ioid, rearrangerp,
                           iostartp, iocountp);
     
