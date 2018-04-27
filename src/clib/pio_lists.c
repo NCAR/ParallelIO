@@ -185,19 +185,36 @@ int pio_delete_iosystem_from_list(int piosysid)
     return PIO_EBADID;
 }
 
-/** 
- * Add iosystem info to list.
+/**
+ * Add iosystem info to a global list.
+ * This function guarantees that iosystems (ioid of the
+ * iosystems) are unique across the comm provided
  *
  * @param ios pointer to the iosystem_desc_t info to add.
- * @returns 0 on success, error code otherwise
- * @author Jim Edwards
+ * @param comm MPI Communicator across which the iosystems
+ * need to be unique
+ * @returns the id of the newly added iosystem.
  */
-int pio_add_to_iosystem_list(iosystem_desc_t *ios)
+#define PIO_IOSYSTEM_START_ID 2048
+int pio_add_to_iosystem_list(iosystem_desc_t *ios, MPI_Comm comm)
 {
+    /* Using an arbitrary start id for iosystem ids helps
+     * in debugging, to distinguish between ids assigned
+     * to different structures in the code
+     */
+    static int pio_iosystem_next_ioid = PIO_IOSYSTEM_START_ID;
     iosystem_desc_t *cios;
-    int i = 1;
 
     assert(ios);
+
+    if(comm != MPI_COMM_NULL)
+    {
+        int tmp_id = pio_iosystem_next_ioid;
+        int mpierr = MPI_Allreduce(&tmp_id, &pio_iosystem_next_ioid, 1, MPI_INT, MPI_MAX, comm);
+        assert(mpierr == MPI_SUCCESS);
+    }
+    ios->iosysid = pio_iosystem_next_ioid;
+    pio_iosystem_next_ioid += 1;
 
     ios->next = NULL;
     cios = pio_iosystem_list;
@@ -205,16 +222,12 @@ int pio_add_to_iosystem_list(iosystem_desc_t *ios)
         pio_iosystem_list = ios;
     else
     {
-        i++;
         while (cios->next)
         {
             cios = cios->next;
-            i++;
         }
         cios->next = ios;
     }
-
-    ios->iosysid = i << 16;
 
     return ios->iosysid;
 }

@@ -943,7 +943,7 @@ int PIOc_Init_Intracomm(MPI_Comm comp_comm, int num_iotasks, int stride, int bas
     ios->union_rank = ios->comp_rank;
 
     /* Add this ios struct to the list in the PIO library. */
-    *iosysidp = pio_add_to_iosystem_list(ios);
+    *iosysidp = pio_add_to_iosystem_list(ios, MPI_COMM_NULL);
 
     /* Allocate buffer space for compute nodes. */
     if ((ret = compute_buffer_init(ios)))
@@ -1686,7 +1686,7 @@ int PIOc_init_async(MPI_Comm world, int num_io_procs, int *io_proc_list,
         }
 
         /* Add this id to the list of PIO iosystem ids. */
-        iosysidp[cmp] = pio_add_to_iosystem_list(my_iosys);
+        iosysidp[cmp] = pio_add_to_iosystem_list(my_iosys, MPI_COMM_NULL);
         LOG((2, "new iosys ID added to iosystem_list iosysid = %d", iosysidp[cmp]));
     } /* next computational component */
 
@@ -2211,7 +2211,7 @@ int PIOc_init_intercomm(int component_count, const MPI_Comm peer_comm,
         iosys[i]->my_comm = iosys[i]->union_comm;
 
         /* Add this id to the list of PIO iosystem ids. */
-        iosysidps[i] = pio_add_to_iosystem_list(iosys[i]);
+        iosysidps[i] = pio_add_to_iosystem_list(iosys[i], peer_comm);
         LOG((2, "PIOc_init_intercomm : iosys[%d]->ioid=%d, iosys[%d]->uniontasks = %d, iosys[%d]->union_rank=%d, %s", i, iosys[i]->iosysid, i, iosys[i]->num_uniontasks, i, iosys[i]->union_rank, ((iosys[i]->ioproc) ? ("IS IO PROC"):((iosys[i]->compproc) ? ("IS COMPUTE PROC") : ("NEITHER IO NOR COMPUTE PROC"))) ));
         LOG((2, "New IOsystem added to iosystem_list iosysid = %d", iosysidps[i]));
     }
