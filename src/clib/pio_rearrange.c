@@ -1575,6 +1575,7 @@ int default_subset_partition(iosystem_desc_t *ios, io_desc_t *iodesc)
 {
     int color;
     int key;
+    MPI_Comm union_comm;
     int mpierr; /* Return value from MPI functions. */
 
     pioassert(ios && iodesc, "invalid input", __FILE__, __LINE__);
@@ -1597,8 +1598,22 @@ int default_subset_partition(iosystem_desc_t *ios, io_desc_t *iodesc)
     LOG((3, "key = %d color = %d", key, color));
 
     /* Create new communicators. */
-    if ((mpierr = MPI_Comm_split(ios->comp_comm, color, key, &iodesc->subset_comm)))
+    if(ios->async)
+    {
+        /* In the asynchronous I/O service case, comp_comms and io_comms
+         * are disjoint. All communication occurs through the union comm,
+         * union of io_comm and comp_comm
+         */
+        union_comm = ios->union_comm;
+    }
+    else
+    {
+        union_comm = ios->comp_comm;
+    }
+    if ((mpierr = MPI_Comm_split(union_comm, color, key, &(iodesc->subset_comm))))
         return check_mpi(NULL, mpierr, __FILE__, __LINE__);
+
+    LOG((2, "Finished Splitting comm = %x, key = %d, color = %d", union_comm, key, color));
 
     return PIO_NOERR;
 }
@@ -1690,6 +1705,7 @@ int subset_rearrange_create(iosystem_desc_t *ios, int maplen, PIO_Offset *compma
     if ((mpierr = MPI_Comm_size(iodesc->subset_comm, &ntasks)))
         return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
 
+    LOG((2, "subset_comm = %x, MPI_COMM_NULL = %x, rank = %d, ntasks = %d", iodesc->subset_comm, MPI_COMM_NULL, rank, ntasks));
     /* Check rank for correctness. */
     if (ios->ioproc)
         pioassert(rank == 0, "Bad io rank in subset create", __FILE__, __LINE__);
