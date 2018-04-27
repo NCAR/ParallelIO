@@ -838,6 +838,7 @@ int write_darray_multi_serial(file_desc_t *file, int nvars, int fndims, const in
  *
  * @param file a pointer to the open file descriptor for the file
  * that will be written to
+ * @param fndims The number of dims in the file
  * @param iodesc a pointer to the defined iodescriptor for the buffer
  * @param vid the variable id to be read
  * @param iobuf the buffer to be read into from this mpi task. May be
@@ -851,16 +852,15 @@ int write_darray_multi_serial(file_desc_t *file, int nvars, int fndims, const in
  * @ingroup PIO_read_darray
  * @author Jim Edwards, Ed Hartnett
  */
-int pio_read_darray_nc(file_desc_t *file, io_desc_t *iodesc, int vid, void *iobuf)
+int pio_read_darray_nc(file_desc_t *file, int fndims, io_desc_t *iodesc, int vid, void *iobuf)
 {
     iosystem_desc_t *ios;  /* Pointer to io system information. */
     var_desc_t *vdesc;     /* Information about the variable. */
     int ndims;             /* Number of dims in decomposition. */
-    int fndims;            /* Number of dims for this var in file. */
-    int ierr;              /* Return code from netCDF functions. */
+    int ierr = PIO_NOERR;  /* Return code from netCDF functions. */
 
     /* Check inputs. */
-    pioassert(file && file->iosystem && iodesc && vid <= PIO_MAX_VARS, "invalid input",
+    pioassert(file && (fndims > 0) && file->iosystem && iodesc && vid <= PIO_MAX_VARS, "invalid input",
               __FILE__, __LINE__);
 
 #ifdef TIMING
@@ -876,10 +876,6 @@ int pio_read_darray_nc(file_desc_t *file, io_desc_t *iodesc, int vid, void *iobu
 
     /* Get the number of dimensions in the decomposition. */
     ndims = iodesc->ndims;
-
-    /* Get the number of dims for this var in the file. */
-    if ((ierr = PIOc_inq_varndims(file->pio_ncid, vid, &fndims)))
-        return pio_err(ios, file, ierr, __FILE__, __LINE__);
 
     /* Is this a non-record var? */
     if (fndims == ndims)
@@ -1076,6 +1072,7 @@ int pio_read_darray_nc(file_desc_t *file, io_desc_t *iodesc, int vid, void *iobu
  *
  * @param file a pointer to the open file descriptor for the file
  * that will be written to
+ * @param fndims The number of dims in the file
  * @param iodesc a pointer to the defined iodescriptor for the buffer
  * @param vid the variable id to be read.
  * @param iobuf the buffer to be written from this mpi task. May be
@@ -1089,19 +1086,18 @@ int pio_read_darray_nc(file_desc_t *file, io_desc_t *iodesc, int vid, void *iobu
  * @ingroup PIO_read_darray
  * @author Jim Edwards, Ed Hartnett
  */
-int pio_read_darray_nc_serial(file_desc_t *file, io_desc_t *iodesc, int vid,
+int pio_read_darray_nc_serial(file_desc_t *file, int fndims, io_desc_t *iodesc, int vid,
                               void *iobuf)
 {
     iosystem_desc_t *ios;  /* Pointer to io system information. */
     var_desc_t *vdesc;     /* Information about the variable. */
     int ndims;             /* Number of dims in decomposition. */
-    int fndims;            /* Number of dims for this var in file. */
     MPI_Status status;
-    int mpierr;  /* Return code from MPI functions. */
-    int ierr;
+    int mpierr = MPI_SUCCESS;  /* Return code from MPI functions. */
+    int ierr = PIO_NOERR;
 
     /* Check inputs. */
-    pioassert(file && file->iosystem && iodesc && vid >= 0 && vid <= PIO_MAX_VARS,
+    pioassert(file && (fndims > 0) && file->iosystem && iodesc && vid >= 0 && vid <= PIO_MAX_VARS,
               "invalid input", __FILE__, __LINE__);
 
 #ifdef TIMING
@@ -1115,10 +1111,6 @@ int pio_read_darray_nc_serial(file_desc_t *file, io_desc_t *iodesc, int vid,
 
     /* Get the number of dims in our decomposition. */
     ndims = iodesc->ndims;
-
-    /* Get number of dims for this var. */
-    if ((ierr = PIOc_inq_varndims(file->pio_ncid, vid, &fndims)))
-        return pio_err(ios, file, ierr, __FILE__, __LINE__);
 
     /* Is this a non-record var? */
     if (fndims == ndims)

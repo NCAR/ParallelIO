@@ -2333,8 +2333,34 @@ int write_darray_multi_handler(iosystem_desc_t *ios)
  */
 int readdarray_handler(iosystem_desc_t *ios)
 {
+    int ncid, varid, ioid;
+    int mpierr, ierr;
+
+    LOG((1, "read_darray_handler"));
     assert(ios);
-    return PIO_NOERR;
+    mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm);
+    if(mpierr != MPI_SUCCESS)
+    {
+        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
+    }
+    mpierr = MPI_Bcast(&varid, 1, MPI_INT, 0, ios->intercomm);
+    if(mpierr != MPI_SUCCESS)
+    {
+        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
+    }
+    mpierr = MPI_Bcast(&ioid, 1, MPI_INT, 0, ios->intercomm);
+    if(mpierr != MPI_SUCCESS)
+    {
+        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
+    }
+
+    LOG((1, "PIOc_read_darray(ncid=%d, varid=%d, ioid=%d, 0, NULL)", ncid, varid, ioid));
+    /* On the I/O procs we don't have any user buffers,
+     * i.e., arraylen == 0
+     */
+    ierr = PIOc_read_darray(ncid, varid, ioid, 0, NULL);
+
+    return ierr;
 }
 
 /** 

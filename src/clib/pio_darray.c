@@ -934,7 +934,8 @@ int PIOc_read_darray(int ncid, int varid, int ioid, PIO_Offset arraylen,
     io_desc_t *iodesc;     /* Pointer to IO description information. */
     void *iobuf = NULL;    /* holds the data as read on the io node. */
     size_t rlen = 0;       /* the length of data in iobuf. */
-    int ierr;           /* Return code. */
+    int ierr, mpierr;           /* Return code. */
+    int fndims = 0;
 
 #ifdef TIMING
     GPTLstart("PIO:PIOc_read_darray");
@@ -956,6 +957,16 @@ int PIOc_read_darray(int ncid, int varid, int ioid, PIO_Offset arraylen,
     mtimer_start(file->varlist[varid].rd_mtimer);
 #endif
 
+    /* Run these on all tasks if async is not in use, but only on
+     * non-IO tasks if async is in use. */
+    if (!ios->async || !ios->ioproc)
+    {
+        /* Get the number of dims for this var. */
+        LOG((3, "about to call PIOc_inq_varndims varid = %d", varid));
+        if ((ierr = PIOc_inq_varndims(file->pio_ncid, varid, &fndims)))
+            return check_netcdf(file, ierr, __FILE__, __LINE__);
+        LOG((3, "called PIOc_inq_varndims varid = %d fndims = %d", varid, fndims));
+    }
     /* ??? */
     if (ios->iomaster == MPI_ROOT)
         rlen = iodesc->maxiobuflen;
@@ -982,21 +993,68 @@ int PIOc_read_darray(int ncid, int varid, int ioid, PIO_Offset arraylen,
         if (!(iobuf = bget(iodesc->mpitype_size * rlen)))
             return pio_err(ios, file, PIO_ENOMEM, __FILE__, __LINE__);
 
-    /* Call the correct darray read function based on iotype. */
-    switch (file->iotype)
+    if(ios->async)
     {
-    case PIO_IOTYPE_NETCDF:
-    case PIO_IOTYPE_NETCDF4C:
-        if ((ierr = pio_read_darray_nc_serial(file, iodesc, varid, iobuf)))
+        if(!ios->ioproc)
+        {
+            /* Send relevant args from compute procs to I/O procs */
+            int msg = PIO_MSG_READDARRAY;
+
+            if(ios->compmaster == MPI_ROOT)
+            {
+                mpierr = MPI_Send(&msg, 1, MPI_INT, ios->ioroot, 1, ios->union_comm);
+            }
+            if(!mpierr)
+            {
+                mpierr = MPI_Bcast(&ncid, 1, MPI_INT, ios->compmaster, ios->intercomm);
+            }
+            if(!mpierr)
+            {
+                mpierr = MPI_Bcast(&varid, 1, MPI_INT, ios->compmaster, ios->intercomm);
+            }
+            if(!mpierr)
+            {
+                mpierr = MPI_Bcast(&ioid, 1, MPI_INT, ios->compmaster, ios->intercomm);
+            }
+        }
+
+        ierr = MPI_Bcast(&mpierr, 1, MPI_INT, ios->comproot, ios->my_comm);
+        if(ierr != MPI_SUCCESS)
+        {
+            return check_mpi(file, ierr, __FILE__, __LINE__);
+        }
+        if(mpierr != MPI_SUCCESS)
+        {
+            return check_mpi(file, mpierr, __FILE__, __LINE__);
+        }
+
+        /* Share results known only on computation tasks with IO tasks. */
+        mpierr = MPI_Bcast(&fndims, 1, MPI_INT, ios->comproot, ios->my_comm);
+        if(mpierr != MPI_SUCCESS)
+        {
+            check_mpi(file, mpierr, __FILE__, __LINE__);
+        }
+        LOG((3, "shared fndims = %d", fndims));
+    }
+
+    /* Call the correct darray read function based on iotype. */
+    if(!ios->async || ios->ioproc)
+    {
+        switch (file->iotype)
+        {
+        case PIO_IOTYPE_NETCDF:
+        case PIO_IOTYPE_NETCDF4C:
+            if ((ierr = pio_read_darray_nc_serial(file, fndims, iodesc, varid, iobuf)))
+                    return pio_err(ios, file, ierr, __FILE__, __LINE__);
+            break;
+        case PIO_IOTYPE_PNETCDF:
+        case PIO_IOTYPE_NETCDF4P:
+            if ((ierr = pio_read_darray_nc(file, fndims, iodesc, varid, iobuf)))
                 return pio_err(ios, file, ierr, __FILE__, __LINE__);
-        break;
-    case PIO_IOTYPE_PNETCDF:
-    case PIO_IOTYPE_NETCDF4P:
-        if ((ierr = pio_read_darray_nc(file, iodesc, varid, iobuf)))
-            return pio_err(ios, file, ierr, __FILE__, __LINE__);
-        break;
-    default:
-        return pio_err(NULL, NULL, PIO_EBADIOTYPE, __FILE__, __LINE__);
+            break;
+        default:
+            return pio_err(NULL, NULL, PIO_EBADIOTYPE, __FILE__, __LINE__);
+        }
     }
 
 #ifdef PIO_MICRO_TIMING

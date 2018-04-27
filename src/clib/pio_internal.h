@@ -320,8 +320,8 @@ extern "C" {
     int write_darray_multi_serial(file_desc_t *file, int nvars, int fndims, const int *vid,
                                   io_desc_t *iodesc, int fill, const int *frame);
 
-    int pio_read_darray_nc(file_desc_t *file, io_desc_t *iodesc, int vid, void *iobuf);
-    int pio_read_darray_nc_serial(file_desc_t *file, io_desc_t *iodesc, int vid, void *iobuf);
+    int pio_read_darray_nc(file_desc_t *file, int fndims, io_desc_t *iodesc, int vid, void *iobuf);
+    int pio_read_darray_nc_serial(file_desc_t *file, int fndims, io_desc_t *iodesc, int vid, void *iobuf);
 
     /* Read atts with type conversion. */
     int PIOc_get_att_tc(int ncid, int varid, const char *name, nc_type memtype, void *ip);
