@@ -922,35 +922,38 @@ int rearrange_comp2io(iosystem_desc_t *ios, io_desc_t *iodesc, void *sbuf,
 
     /* On compute tasks loop over iotasks and create a data type for
      * each exchange.  */
-    for (int i = 0; i < niotasks; i++)
+    if(!ios->async || ios->compproc)
     {
-        int io_comprank = ios->ioranks[i];
-        LOG((3, "ios->ioranks[%d] = %d", i, ios->ioranks[i]));
-        if (iodesc->rearranger == PIO_REARR_SUBSET)
-            io_comprank = 0;
-
-        LOG((3, "i = %d iodesc->scount[i] = %d", i, iodesc->scount[i]));
-        if (iodesc->scount[i] > 0 && sbuf)
+        for (int i = 0; i < niotasks; i++)
         {
-            LOG((3, "io task %d creating sendtypes[%d]", i, io_comprank));
-            sendcounts[io_comprank] = 1;
-#if PIO_USE_MPISERIAL
-            if ((mpierr = MPI_Type_hvector(nvars, 1, (MPI_Aint)iodesc->ndof * iodesc->mpitype_size,
-                                           iodesc->stype[i], &sendtypes[io_comprank])))
-                return check_mpi(NULL, mpierr, __FILE__, __LINE__);
-#else
-            if ((mpierr = MPI_Type_create_hvector(nvars, 1, (MPI_Aint)iodesc->ndof * iodesc->mpitype_size,
-                                                  iodesc->stype[i], &sendtypes[io_comprank])))
-                return check_mpi(NULL, mpierr, __FILE__, __LINE__);
-#endif /* PIO_USE_MPISERIAL */
-            pioassert(sendtypes[io_comprank] != PIO_DATATYPE_NULL,  "bad mpi type", __FILE__, __LINE__);
+            int io_comprank = ios->ioranks[i];
+            LOG((3, "ios->ioranks[%d] = %d", i, ios->ioranks[i]));
+            if (iodesc->rearranger == PIO_REARR_SUBSET)
+                io_comprank = 0;
 
-            if ((mpierr = MPI_Type_commit(&sendtypes[io_comprank])))
-                return check_mpi(NULL, mpierr, __FILE__, __LINE__);
-        }
-        else
-        {
-            sendcounts[io_comprank] = 0;
+            LOG((3, "i = %d iodesc->scount[i] = %d", i, iodesc->scount[i]));
+            if (iodesc->scount[i] > 0 && sbuf)
+            {
+                LOG((3, "io task %d creating sendtypes[%d]", i, io_comprank));
+                sendcounts[io_comprank] = 1;
+    #if PIO_USE_MPISERIAL
+                if ((mpierr = MPI_Type_hvector(nvars, 1, (MPI_Aint)iodesc->ndof * iodesc->mpitype_size,
+                                               iodesc->stype[i], &sendtypes[io_comprank])))
+                    return check_mpi(NULL, mpierr, __FILE__, __LINE__);
+    #else
+                if ((mpierr = MPI_Type_create_hvector(nvars, 1, (MPI_Aint)iodesc->ndof * iodesc->mpitype_size,
+                                                      iodesc->stype[i], &sendtypes[io_comprank])))
+                    return check_mpi(NULL, mpierr, __FILE__, __LINE__);
+    #endif /* PIO_USE_MPISERIAL */
+                pioassert(sendtypes[io_comprank] != PIO_DATATYPE_NULL,  "bad mpi type", __FILE__, __LINE__);
+
+                if ((mpierr = MPI_Type_commit(&sendtypes[io_comprank])))
+                    return check_mpi(NULL, mpierr, __FILE__, __LINE__);
+            }
+            else
+            {
+                sendcounts[io_comprank] = 0;
+            }
         }
     }
     
