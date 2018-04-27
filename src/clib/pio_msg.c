@@ -2855,7 +2855,7 @@ int pio_msg_handler2(int io_rank, int component_count, iosystem_desc_t **iosys,
         case PIO_MSG_SET_FILL:
             set_fill_handler(my_iosys);
             break;
-        case PIO_MSG_EXIT:
+        case PIO_MSG_FINALIZE:
             finalize_handler(my_iosys, index);
             msg = -1;
             break;
@@ -2890,7 +2890,7 @@ int pio_msg_handler2(int io_rank, int component_count, iosystem_desc_t **iosys,
             if(open_components != 0)
             {
                 /* Reset msg. There are open components don't exit */
-                msg = PIO_MSG_EXIT;
+                msg = PIO_MSG_FINALIZE;
             }
             else
             {

@@ -1078,13 +1078,13 @@ int PIOc_finalize(int iosysid)
     if (!(ios = pio_get_iosystem_from_id(iosysid)))
         return pio_err(NULL, NULL, PIO_EBADID, __FILE__, __LINE__);
 
-    /* If asynch IO is in use, send the PIO_MSG_EXIT message from the
+    /* If asynch IO is in use, send the PIO_MSG_FINALIZE message from the
      * comp master to the IO processes. This may be called by
      * componets for other components iosysid. So don't send unless
      * there is a valid union_comm. */
     if (ios->async && ios->union_comm != MPI_COMM_NULL)
     {
-        int msg = PIO_MSG_EXIT;
+        int msg = PIO_MSG_FINALIZE;
 
         LOG((3, "found iosystem info comproot = %d union_comm = %d comp_idx = %d",
              ios->comproot, ios->union_comm, ios->comp_idx));
@@ -1699,7 +1699,7 @@ int PIOc_init_async(MPI_Comm world, int num_io_procs, int *io_proc_list,
     } /* next computational component */
 
     /* Now call the function from which the IO tasks will not return
-     * until the PIO_MSG_EXIT message is sent. This will handle all
+     * until the PIO_MSG_FINALIZE message is sent. This will handle all
      * components. */
     if (in_io)
     {
