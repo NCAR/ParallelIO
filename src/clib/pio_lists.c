@@ -275,29 +275,47 @@ int pio_num_iosystem(int *niosysid)
 }
 
 /** 
- * Add an iodesc.
+ * Add an iodesc to a global list.
+ * This function guarantees that iodescs (id of the
+ * iodescs) are unique across the comm provided
  *
  * @param io_desc_t pointer to data to add to list.
+ * @param comm MPI Communicator across which the iosystems
+ * need to be unique
  * @returns the ioid of the newly added iodesc.
- * @author Jim Edwards
  */
-int pio_add_to_iodesc_list(io_desc_t *iodesc)
+#define PIO_IODESC_START_ID 512
+int pio_add_to_iodesc_list(io_desc_t *iodesc, MPI_Comm comm)
 {
-    io_desc_t *ciodesc;
-    int imax = 512;
+    /* Using an arbitrary start id for iodesc ids helps
+     * in debugging, to distinguish between ids assigned
+     * to different structures in the code
+     */
+    static int pio_iodesc_next_id = PIO_IODESC_START_ID;
+    io_desc_t *ciodesc = pio_iodesc_list;
 
+    if(comm != MPI_COMM_NULL)
+    {
+        int tmp_id = pio_iodesc_next_id;
+        int mpierr = MPI_Allreduce(&tmp_id, &pio_iodesc_next_id, 1, MPI_INT, MPI_MAX, comm);
+        assert(mpierr == MPI_SUCCESS);
+    }
+    iodesc->ioid = pio_iodesc_next_id;
+    pio_iodesc_next_id++;
     iodesc->next = NULL;
+
+    /* Add to the global list */
     if (pio_iodesc_list == NULL)
         pio_iodesc_list = iodesc;
     else
     {
-        imax++;
-        for (ciodesc = pio_iodesc_list; ciodesc->next;
-             ciodesc = ciodesc->next, imax = ciodesc->ioid + 1)
-            ;
+        /* pio_desc_list has atleast one node */
+        while(ciodesc->next)
+        {
+            ciodesc = ciodesc->next;
+        }
         ciodesc->next = iodesc;
     }
-    iodesc->ioid = imax;
     current_iodesc = iodesc;
 
     return iodesc->ioid;

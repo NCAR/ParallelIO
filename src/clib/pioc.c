@@ -606,7 +606,15 @@ int PIOc_InitDecomp(int iosysid, int pio_type, int ndims, const int *gdimlen, in
     }
 
     /* Add this IO description to the list. */
-    *ioidp = pio_add_to_iodesc_list(iodesc);
+    MPI_Comm comm = MPI_COMM_NULL;
+    if(ios->async)
+    {
+        /* For asynchronous I/O service, the iodescs (iodesc ids) need to
+         * be unique across the union_comm (union of I/O and compute comms)
+         */
+        comm = ios->union_comm;
+    }
+    *ioidp = pio_add_to_iodesc_list(iodesc, comm);
 
 #if PIO_ENABLE_LOGGING
     /* Log results. */
