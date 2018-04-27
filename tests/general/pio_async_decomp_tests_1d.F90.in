@@ -176,10 +176,12 @@ PIO_TF_AUTO_TEST_SUB_BEGIN async_2comp_wr_1d
 #endif
 
           rbuf = -1
-          !call PIO_read_darray(pio_file, pio_var, iodesc, rbuf, ret)
-          !PIO_TF_CHECK_ERR(ret, new_comm, "Could read var :" // trim(fnames(gcomp_idx)))
+          call PIO_read_darray(pio_file, pio_var, iodesc, rbuf, ret)
+          PIO_TF_CHECK_ERR(ret, new_comm, "Could read var :" // trim(fnames(gcomp_idx)))
 
+          ! FIXME: We don't have a PIO_TF_CHECK_VAL for a comm
           !PIO_TF_CHECK_VAL((rbuf, wbuf), "Got wrong val")
+          PIO_TF_ASSERT(ALL(rbuf == wbuf), "Got wrong val")
 
           call PIO_closefile(pio_file)
           call PIO_deletefile(iosys(gcomp_idx), fnames(gcomp_idx))
