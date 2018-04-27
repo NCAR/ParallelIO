@@ -1909,18 +1909,17 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
        to know if its set. */
     file->mode = file->mode | PIO_WRITE;
 
-    /* Assign the PIO ncid, necessary because files may be opened
-     * on mutilple iosystems, causing the underlying library to
-     * reuse ncids. Hilarious confusion ensues. */
-    file->pio_ncid = pio_next_ncid++;
-    LOG((2, "file->fh = %d file->pio_ncid = %d", file->fh, file->pio_ncid));
-
-    /* Return the ncid to the caller. */
-    *ncidp = file->pio_ncid;
-
     /* Add the struct with this files info to the global list of
      * open files. */
-    pio_add_to_file_list(file);
+    MPI_Comm comm = MPI_COMM_NULL;
+    if(ios->async)
+    {
+        /* For asynchronous I/O service, since file ids are passed across
+         * disjoint comms we need it to be unique across the union comm
+         */
+        comm = ios->union_comm;
+    }
+    *ncidp = pio_add_to_file_list(file, comm);
 
     LOG((2, "Created file %s file->fh = %d file->pio_ncid = %d", filename,
          file->fh, file->pio_ncid));
@@ -2205,16 +2204,16 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
     if ((mpierr = MPI_Bcast(&file->mode, 1, MPI_INT, ios->ioroot, ios->my_comm)))
         return check_mpi(file, mpierr, __FILE__, __LINE__);
 
-    /* Create the ncid that the user will see. This is necessary
-     * because otherwise ncids will be reused if files are opened
-     * on multiple iosystems. */
-    file->pio_ncid = pio_next_ncid++;
-
-    /* Return the PIO ncid to the user. */
-    *ncidp = file->pio_ncid;
-
     /* Add this file to the list of currently open files. */
-    pio_add_to_file_list(file);
+    MPI_Comm comm = MPI_COMM_NULL;
+    if(ios->async)
+    {
+        /* For asynchronous I/O service, since file ids are passed across
+         * disjoint comms we need it to be unique across the union comm
+         */
+        comm = ios->union_comm;
+    }
+    *ncidp = pio_add_to_file_list(file, comm);
 
     LOG((2, "Opened file %s file->pio_ncid = %d file->fh = %d ierr = %d",
          filename, file->pio_ncid, file->fh, ierr));

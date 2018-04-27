@@ -115,7 +115,7 @@ extern "C" {
 
     int pio_get_file(int ncid, file_desc_t **filep);
     int pio_delete_file_from_list(int ncid);
-    void pio_add_to_file_list(file_desc_t *file);
+    int pio_add_to_file_list(file_desc_t *file, MPI_Comm comm);
     /* Add a var_desc_t to a varlist. */
     int add_to_varlist(int varid, int rec_var, var_desc_t **varlist);
 

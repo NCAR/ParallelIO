@@ -20,15 +20,36 @@ static file_desc_t *current_file = NULL;
 /** 
  * Add a new entry to the global list of open files.
  *
+ * This function guarantees that files (id of the
+ * files) are unique across the comm provided
+ *
  * @param file pointer to the file_desc_t struct for the new file.
- * @author Jim Edwards
+ * @param comm MPI Communicator across which the files
+ * need to be unique
+ * @returns The id for the file added to the list
  */
-void pio_add_to_file_list(file_desc_t *file)
+#define PIO_FILE_START_ID 16
+int pio_add_to_file_list(file_desc_t *file, MPI_Comm comm)
 {
+    /* Using an arbitrary start id for file ids helps
+     * in debugging, to distinguish between ids assigned
+     * to different structures in the code
+     * Also note that NetCDF ids start at 4, PnetCDF ids
+     * start at 0 and NetCDF4 ids start at 65xxx
+     */
+    static int pio_file_next_id = PIO_FILE_START_ID;
     file_desc_t *cfile;
 
     assert(file);
 
+    if(comm != MPI_COMM_NULL)
+    {
+        int tmp_id = pio_file_next_id;
+        int mpierr = MPI_Allreduce(&tmp_id, &pio_file_next_id, 1, MPI_INT, MPI_MAX, comm);
+        assert(mpierr == MPI_SUCCESS);
+    }
+    file->pio_ncid = pio_file_next_id;
+    pio_file_next_id++;
     /* This file will be at the end of the list, and have no next. */
     file->next = NULL;
 
@@ -48,6 +69,8 @@ void pio_add_to_file_list(file_desc_t *file)
             cfile = cfile->next;
         cfile->next = file;
     }
+
+    return file->pio_ncid;
 }
 
 /** 

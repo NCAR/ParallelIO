@@ -6,12 +6,6 @@
 #include <pio.h>
 #include <pio_internal.h>
 
-/* This is the next ncid that will be used when a file is opened or
-   created. We start at 16 so that it will be easy for us to notice
-   that it's not netcdf (starts at 4), pnetcdf (starts at 0) or
-   netCDF-4/HDF5 (starts at 65xxx). */
-int pio_next_ncid = 16;
-
 /**
  * Open an existing file using PIO library.
  *
