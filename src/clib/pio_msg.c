@@ -2645,7 +2645,7 @@ int pio_msg_handler2(int io_rank, int component_count, iosystem_desc_t **iosys,
 {
     iosystem_desc_t *my_iosys;
     int msgs[component_count];
-    int msg = 0;
+    int msg = PIO_MSG_INVALID;
     MPI_Request req[component_count];
     MPI_Status status;
     int index;
@@ -2672,7 +2672,7 @@ int pio_msg_handler2(int io_rank, int component_count, iosystem_desc_t **iosys,
     }
 
     /* If the message is not -1, keep processing messages. */
-    while (msg != -1)
+    do
     {
         LOG((3, "pio_msg_handler2 at top of loop"));
 
@@ -2857,7 +2857,6 @@ int pio_msg_handler2(int io_rank, int component_count, iosystem_desc_t **iosys,
             break;
         case PIO_MSG_FINALIZE:
             finalize_handler(my_iosys, index);
-            msg = -1;
             break;
         default:
             LOG((0, "unknown message received %d", msg));
@@ -2869,7 +2868,7 @@ int pio_msg_handler2(int io_rank, int component_count, iosystem_desc_t **iosys,
 
         /* Listen for another msg from the component whose message we
          * just handled. */
-        if (!io_rank && msg != -1)
+        if (!io_rank && (msg != PIO_MSG_FINALIZE))
         {
             my_iosys = iosys[index];
             LOG((3, "pio_msg_handler2 about to Irecv index = %d comproot = %d union_comm = %d",
@@ -2884,22 +2883,18 @@ int pio_msg_handler2(int io_rank, int component_count, iosystem_desc_t **iosys,
              msg, open_components));
 
         /* If there are no more open components, exit. */
-        if (msg == -1)
+        if (msg == PIO_MSG_FINALIZE)
         {
             open_components -= 1;
-            if(open_components != 0)
+            if(open_components == 0)
             {
-                /* Reset msg. There are open components don't exit */
-                msg = PIO_MSG_FINALIZE;
-            }
-            else
-            {
-                /* msg == -1, No more open components, will exit the loop */
+                /* No more open components, will exit the loop */
+                msg = PIO_MSG_EXIT;
                 /* Delete the global MPI communicator used for messaging */
                 delete_async_service_msg_comm();
             }
         }
-    }
+    } while(msg != PIO_MSG_EXIT);
 
     LOG((3, "returning from pio_msg_handler2"));
     return PIO_NOERR;

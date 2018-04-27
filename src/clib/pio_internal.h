@@ -384,6 +384,7 @@ extern "C" {
  * async is being used. */
 enum PIO_MSG
 {
+    PIO_MSG_INVALID = 0,
     PIO_MSG_OPEN_FILE,
     PIO_MSG_CREATE_FILE,
     PIO_MSG_INQ_ATT,
@@ -592,7 +593,8 @@ enum PIO_MSG
     PIO_MSG_GET_ATT,
     PIO_MSG_PUT_ATT,
     PIO_MSG_INQ_TYPE,
-    PIO_MSG_INQ_UNLIMDIMS
+    PIO_MSG_INQ_UNLIMDIMS,
+    PIO_MSG_EXIT
 };
 
 #endif /* __PIO_INTERNAL__ */
