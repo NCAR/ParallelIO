@@ -705,6 +705,7 @@ static int send_async_msg_valist(iosystem_desc_t *ios, int msg, va_list args)
         LOG((1, "Error bcasting (send) async msg valist "));
         return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
     }
+
     return PIO_NOERR;
 }
 
@@ -909,6 +910,33 @@ static int recv_async_msg_valist(iosystem_desc_t *ios, int msg, va_list args)
     return PIO_NOERR;
 }
 
+static int send_async_msg_hdr(iosystem_desc_t *ios, int msg, int seq_num, int prev_msg)
+{
+    int mpierr = MPI_SUCCESS;
+
+    assert(ios && ((msg > PIO_MSG_INVALID) && (msg < PIO_MAX_MSGS)) && !ios->ioproc);
+    assert((prev_msg >= PIO_MSG_INVALID) && (prev_msg < PIO_MAX_MSGS));
+    if(ios->compmaster == MPI_ROOT)
+    {
+        mpierr = MPI_Send(&msg, 1, MPI_INT, ios->ioroot, 1, ios->union_comm);
+    }
+
+    if(mpierr == MPI_SUCCESS)
+    {
+        mpierr = MPI_Bcast(&seq_num, 1, MPI_INT, ios->compmaster, ios->intercomm);
+    }
+    if(mpierr == MPI_SUCCESS)
+    {
+        mpierr = MPI_Bcast(&prev_msg, 1, MPI_INT, ios->compmaster, ios->intercomm);
+    }
+    if(mpierr != MPI_SUCCESS)
+    {
+        LOG((1, "Error bcasting MPI error code"));
+        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
+    }
+    return PIO_NOERR;
+}
+
 int send_async_msg(iosystem_desc_t *ios, int msg, ...)
 {
     int mpierr = MPI_SUCCESS, mpierr2 = MPI_SUCCESS;
@@ -918,13 +946,19 @@ int send_async_msg(iosystem_desc_t *ios, int msg, ...)
     assert(strlen(pio_async_msg_sign[msg]) > 0);
     assert(ios->async);
 
+
     if(!ios->ioproc)
     {
+        int seq_num = ios->async_ios_msg_info.seq_num;
+        int prev_msg = ios->async_ios_msg_info.prev_msg;
+
         /* Send message header */
-        if(ios->compmaster == MPI_ROOT)
+        ret = send_async_msg_hdr(ios, msg, seq_num, prev_msg);
+        if(ret != PIO_NOERR)
         {
-            mpierr = MPI_Send(&msg, 1, MPI_INT, ios->ioroot, 1, ios->union_comm);
-        }
+            LOG((1, "Could not bcast async msg header"));
+            return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+        } 
 
         /* Send message */
         va_list args;
@@ -936,6 +970,9 @@ int send_async_msg(iosystem_desc_t *ios, int msg, ...)
             return pio_err(ios, NULL, ret, __FILE__, __LINE__);
         } 
         va_end(args);
+
+        ios->async_ios_msg_info.seq_num++;
+        ios->async_ios_msg_info.prev_msg = msg;
     }
 
     /* Bcast error code to all procs (union_comm) from compute proc root */
@@ -954,6 +991,34 @@ int send_async_msg(iosystem_desc_t *ios, int msg, ...)
     return PIO_NOERR;
 }
 
+static int recv_async_msg_hdr(iosystem_desc_t *ios, int msg, int eseq_num, int eprev_msg)
+{
+    int mpierr = MPI_SUCCESS;
+
+    assert(ios && ((msg > PIO_MSG_INVALID) && (msg < PIO_MAX_MSGS)) && ios->ioproc);
+    assert(eseq_num >= PIO_MSG_START_SEQ_NUM);
+    assert((eprev_msg >= PIO_MSG_INVALID) && (eprev_msg < PIO_MAX_MSGS));
+
+    /* Message header includes message type, msg, that is already
+     * received
+     */
+
+    int seq_num, prev_msg;
+    mpierr = MPI_Bcast(&seq_num, 1, MPI_INT, ios->compmaster, ios->intercomm);
+    if(mpierr == MPI_SUCCESS)
+    {
+        assert(seq_num == eseq_num);
+        mpierr = MPI_Bcast(&prev_msg, 1, MPI_INT, ios->compmaster, ios->intercomm);
+    }
+    if(mpierr != MPI_SUCCESS)
+    {
+        LOG((1, "Error bcasting MPI error code"));
+        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
+    }
+    assert(prev_msg == eprev_msg);
+    return PIO_NOERR;
+}
+
 int recv_async_msg(iosystem_desc_t *ios, int msg, ...)
 {
     int mpierr = MPI_SUCCESS;
@@ -963,9 +1028,18 @@ int recv_async_msg(iosystem_desc_t *ios, int msg, ...)
     assert(strlen(pio_async_msg_sign[msg]) > 0);
     assert(ios->async && ios->ioproc);
 
-    /* Message header includes message type, msg, that is already
-     * received
-     */
+    /* Recv message header */
+
+    /* Expected seq number and parent/previous msg */
+    int eseq_num = ios->async_ios_msg_info.seq_num;
+    int eprev_msg = ios->async_ios_msg_info.prev_msg;
+
+    ret = recv_async_msg_hdr(ios, msg, eseq_num, eprev_msg);
+    if(ret != PIO_NOERR)
+    {
+        LOG((1, "Could not bcast (recv) async msg header"));
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+    } 
 
     /* Recv message */
     va_list args;
@@ -977,6 +1051,9 @@ int recv_async_msg(iosystem_desc_t *ios, int msg, ...)
         return pio_err(ios, NULL, ret, __FILE__, __LINE__);
     } 
     va_end(args);
+    ios->async_ios_msg_info.seq_num++;
+    ios->async_ios_msg_info.prev_msg = msg;
+
     return PIO_NOERR;
 }
 

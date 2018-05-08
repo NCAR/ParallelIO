@@ -384,6 +384,8 @@ extern "C" {
 }
 #endif
 
+/* Asynchronous I/O services start with the following seq num */
+static const int PIO_MSG_START_SEQ_NUM = 1024;
 /** These are the messages that can be sent over the intercomm when
  * async is being used. */
 enum PIO_MSG

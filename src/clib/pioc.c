@@ -907,6 +907,10 @@ int PIOc_Init_Intracomm(MPI_Comm comp_comm, int num_iotasks, int stride, int bas
     /* Rank in the union comm is the same as rank in the comp comm. */
     ios->union_rank = ios->comp_rank;
 
+    /* Async I/O service message info - not used here */
+    ios->async_ios_msg_info.seq_num = PIO_MSG_START_SEQ_NUM;
+    ios->async_ios_msg_info.prev_msg = PIO_MSG_INVALID;
+
     /* Add this ios struct to the list in the PIO library. */
     *iosysidp = pio_add_to_iosystem_list(ios, MPI_COMM_NULL);
 
@@ -1636,6 +1640,10 @@ int PIOc_init_async(MPI_Comm world, int num_io_procs, int *io_proc_list,
             LOG((3, "intercomm created for cmp = %d", cmp));
         }
 
+        /* Async I/O service message info */
+        my_iosys->async_ios_msg_info.seq_num = PIO_MSG_START_SEQ_NUM;
+        my_iosys->async_ios_msg_info.prev_msg = PIO_MSG_INVALID;
+
         /* Add this id to the list of PIO iosystem ids. */
         iosysidp[cmp] = pio_add_to_iosystem_list(my_iosys, MPI_COMM_NULL);
         LOG((2, "new iosys ID added to iosystem_list iosysid = %d", iosysidp[cmp]));
@@ -2168,6 +2176,9 @@ int PIOc_init_intercomm(int component_count, const MPI_Comm peer_comm,
         }
 
         iosys[i]->my_comm = iosys[i]->union_comm;
+        /* Async I/O service message info */
+        iosys[i]->async_ios_msg_info.seq_num = PIO_MSG_START_SEQ_NUM;
+        iosys[i]->async_ios_msg_info.prev_msg = PIO_MSG_INVALID;
 
         /* Add this id to the list of PIO iosystem ids. */
         iosysidps[i] = pio_add_to_iosystem_list(iosys[i], peer_comm);
