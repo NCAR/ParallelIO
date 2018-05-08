@@ -55,36 +55,19 @@ int PIOc_inq(int ncid, int *ndimsp, int *nvarsp, int *ngattsp, int *unlimdimidp)
     /* If async is in use, and this is not an IO task, bcast the parameters. */
     if (ios->async)
     {
-        if (!ios->ioproc)
+        int msg = PIO_MSG_INQ; /* Message for async notification. */
+        char ndims_present = ndimsp ? true : false;
+        char nvars_present = nvarsp ? true : false;
+        char ngatts_present = ngattsp ? true : false;
+        char unlimdimid_present = unlimdimidp ? true : false;
+
+        PIO_SEND_ASYNC_MSG(ios, msg, &ierr, ncid, ndims_present, nvars_present,
+            ngatts_present, unlimdimid_present);
+        if(ierr != PIO_NOERR)
         {
-            int msg = PIO_MSG_INQ; /* Message for async notification. */
-            char ndims_present = ndimsp ? true : false;
-            char nvars_present = nvarsp ? true : false;
-            char ngatts_present = ngattsp ? true : false;
-            char unlimdimid_present = unlimdimidp ? true : false;
-
-            if (ios->compmaster == MPI_ROOT)
-                mpierr = MPI_Send(&msg, 1, MPI_INT, ios->ioroot, 1, ios->union_comm);
-
-            if (!mpierr)
-                mpierr = MPI_Bcast(&ncid, 1, MPI_INT, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&ndims_present, 1, MPI_CHAR, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&nvars_present, 1, MPI_CHAR, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&ngatts_present, 1, MPI_CHAR, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&unlimdimid_present, 1, MPI_CHAR, ios->compmaster, ios->intercomm);
-            LOG((2, "PIOc_inq ncid = %d ndims_present = %d nvars_present = %d ngatts_present = %d unlimdimid_present = %d",
-                 ncid, ndims_present, nvars_present, ngatts_present, unlimdimid_present));
+            LOG((1, "Error sending async mesg for PIO_MSG_INQ"));
+            return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
         }
-
-        /* Handle MPI errors. */
-        if ((mpierr2 = MPI_Bcast(&mpierr, 1, MPI_INT, ios->comproot, ios->my_comm)))
-            return check_mpi(file, mpierr2, __FILE__, __LINE__);
-        if (mpierr)
-            return check_mpi(file, mpierr, __FILE__, __LINE__);
     }
 
     /* If this is an IO task, then call the netCDF function. */
@@ -246,30 +229,17 @@ int PIOc_inq_unlimdims(int ncid, int *nunlimdimsp, int *unlimdimidsp)
     /* If async is in use, and this is not an IO task, bcast the parameters. */
     if (ios->async)
     {
-        if (!ios->ioproc)
+        int msg = PIO_MSG_INQ_UNLIMDIMS; /* Message for async notification. */
+        char nunlimdimsp_present = nunlimdimsp ? true : false;
+        char unlimdimidsp_present = unlimdimidsp ? true : false;
+
+        PIO_SEND_ASYNC_MSG(ios, msg, &ierr, ncid,
+            nunlimdimsp_present, unlimdimidsp_present);
+        if(ierr != PIO_NOERR)
         {
-            int msg = PIO_MSG_INQ_UNLIMDIMS; /* Message for async notification. */
-            char nunlimdimsp_present = nunlimdimsp ? true : false;
-            char unlimdimidsp_present = unlimdimidsp ? true : false;
-
-            if (ios->compmaster == MPI_ROOT)
-                mpierr = MPI_Send(&msg, 1, MPI_INT, ios->ioroot, 1, ios->union_comm);
-
-            if (!mpierr)
-                mpierr = MPI_Bcast(&ncid, 1, MPI_INT, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&nunlimdimsp_present, 1, MPI_CHAR, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&unlimdimidsp_present, 1, MPI_CHAR, ios->compmaster, ios->intercomm);
-            LOG((2, "PIOc_inq_unlimdims ncid = %d nunlimdimsp_present = %d unlimdimidsp_present = %d",
-                 ncid, nunlimdimsp_present, unlimdimidsp_present));
+            LOG((1, "Error sending async msg for PIO_MSG_INQ_UNLIMDIMS"));
+            return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
         }
-
-        /* Handle MPI errors. */
-        if ((mpierr2 = MPI_Bcast(&mpierr, 1, MPI_INT, ios->comproot, ios->my_comm)))
-            return check_mpi(file, mpierr2, __FILE__, __LINE__);
-        if (mpierr)
-            return check_mpi(file, mpierr, __FILE__, __LINE__);
     }
 
     LOG((2, "file->iotype = %d", file->iotype));
@@ -381,30 +351,16 @@ int PIOc_inq_type(int ncid, nc_type xtype, char *name, PIO_Offset *sizep)
     /* If async is in use, and this is not an IO task, bcast the parameters. */
     if (ios->async)
     {
-        if (!ios->ioproc)
+        int msg = PIO_MSG_INQ_TYPE; /* Message for async notification. */
+        char name_present = name ? true : false;
+        char size_present = sizep ? true : false;
+
+        PIO_SEND_ASYNC_MSG(ios, msg, &ierr, ncid, xtype, name_present, size_present);
+        if(ierr != PIO_NOERR)
         {
-            int msg = PIO_MSG_INQ_TYPE; /* Message for async notification. */
-            char name_present = name ? true : false;
-            char size_present = sizep ? true : false;
-
-            if (ios->compmaster == MPI_ROOT)
-                mpierr = MPI_Send(&msg, 1,MPI_INT, ios->ioroot, 1, ios->union_comm);
-
-            if (!mpierr)
-                mpierr = MPI_Bcast(&ncid, 1, MPI_INT, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&xtype, 1, MPI_INT, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&name_present, 1, MPI_CHAR, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&size_present, 1, MPI_CHAR, ios->compmaster, ios->intercomm);
+            LOG((1, "Error sending async msg for PIO_MSG_INQ_TYPE"));
+            return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
         }
-
-        /* Handle MPI errors. */
-        if ((mpierr2 = MPI_Bcast(&mpierr, 1, MPI_INT, ios->comproot, ios->my_comm)))
-            return check_mpi(file, mpierr2, __FILE__, __LINE__);
-        if (mpierr)
-            return check_mpi(file, mpierr, __FILE__, __LINE__);
     }
 
     /* If this is an IO task, then call the netCDF function. */
@@ -471,25 +427,15 @@ int PIOc_inq_format(int ncid, int *formatp)
     /* If async is in use, and this is not an IO task, bcast the parameters. */
     if (ios->async)
     {
-        if (!ios->ioproc)
+        int msg = PIO_MSG_INQ_FORMAT;
+        char format_present = formatp ? true : false;
+
+        PIO_SEND_ASYNC_MSG(ios, msg, &ierr, ncid, format_present);
+        if(ierr != PIO_NOERR)
         {
-            int msg = PIO_MSG_INQ_FORMAT;
-            char format_present = formatp ? true : false;
-
-            if (ios->compmaster == MPI_ROOT)
-                mpierr = MPI_Send(&msg, 1,MPI_INT, ios->ioroot, 1, ios->union_comm);
-
-            if (!mpierr)
-                mpierr = MPI_Bcast(&ncid, 1, MPI_INT, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&format_present, 1, MPI_CHAR, ios->compmaster, ios->intercomm);
+            LOG((1, "Error while sending async msg for PIO_MSG_INQ_FORMAT"));
+            return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
         }
-
-        /* Handle MPI errors. */
-        if ((mpierr2 = MPI_Bcast(&mpierr, 1, MPI_INT, ios->comproot, ios->my_comm)))
-            return check_mpi(file, mpierr2, __FILE__, __LINE__);
-        if (mpierr)
-            return check_mpi(file, mpierr, __FILE__, __LINE__);
     }
 
     /* If this is an IO task, then call the netCDF function. */
@@ -551,32 +497,16 @@ int PIOc_inq_dim(int ncid, int dimid, char *name, PIO_Offset *lenp)
     /* If async is in use, and this is not an IO task, bcast the parameters. */
     if (ios->async)
     {
-        if (!ios->ioproc)
+        int msg = PIO_MSG_INQ_DIM;
+        char name_present = name ? true : false;
+        char len_present = lenp ? true : false;
+
+        PIO_SEND_ASYNC_MSG(ios, msg, &ierr, ncid, dimid, name_present, len_present);
+        if(ierr != PIO_NOERR)
         {
-            int msg = PIO_MSG_INQ_DIM;
-            char name_present = name ? true : false;
-            char len_present = lenp ? true : false;
-
-            if (ios->compmaster == MPI_ROOT)
-                mpierr = MPI_Send(&msg, 1,MPI_INT, ios->ioroot, 1, ios->union_comm);
-
-            if (!mpierr)
-                mpierr = MPI_Bcast(&ncid, 1, MPI_INT, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&dimid, 1, MPI_INT, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&name_present, 1, MPI_CHAR, ios->compmaster, ios->intercomm);
-            LOG((2, "PIOc_inq netcdf Bcast name_present = %d", name_present));
-            if (!mpierr)
-                mpierr = MPI_Bcast(&len_present, 1, MPI_CHAR, ios->compmaster, ios->intercomm);
-            LOG((2, "PIOc_inq netcdf Bcast len_present = %d", len_present));
+            LOG((1, "Error sending async msg for PIO_MSG_INQ_DIM"));
+            return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
         }
-
-        /* Handle MPI errors. */
-        if ((mpierr2 = MPI_Bcast(&mpierr, 1, MPI_INT, ios->comproot, ios->my_comm)))
-            return check_mpi(file, mpierr2, __FILE__, __LINE__);
-        if (mpierr)
-            return check_mpi(file, mpierr, __FILE__, __LINE__);
     }
 
     /* If this is an IO task, then call the netCDF function. */
@@ -695,30 +625,16 @@ int PIOc_inq_dimid(int ncid, const char *name, int *idp)
     /* If using async, and not an IO task, then send parameters. */
     if (ios->async)
     {
-        if (!ios->ioproc)
+        int msg = PIO_MSG_INQ_DIMID;
+        char id_present = idp ? true : false;
+        int namelen = strlen(name) + 1;
+
+        PIO_SEND_ASYNC_MSG(ios, msg, &ierr, ncid, namelen, name, id_present);
+        if(ierr != PIO_NOERR)
         {
-            int msg = PIO_MSG_INQ_DIMID;
-            char id_present = idp ? true : false;
-
-            if (ios->compmaster == MPI_ROOT)
-                mpierr = MPI_Send(&msg, 1,MPI_INT, ios->ioroot, 1, ios->union_comm);
-
-            if (!mpierr)
-                mpierr = MPI_Bcast(&ncid, 1, MPI_INT, ios->compmaster, ios->intercomm);
-            int namelen = strlen(name);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&namelen, 1, MPI_INT, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast((void *)name, namelen + 1, MPI_CHAR, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&id_present, 1, MPI_CHAR, ios->compmaster, ios->intercomm);
+            LOG((1, "Error sending async msg for PIO_MSG_INQ_DIMID"));
+            return pio_err(ios, file, ierr, __FILE__, __LINE__);
         }
-
-        /* Handle MPI errors. */
-        if ((mpierr2 = MPI_Bcast(&mpierr, 1, MPI_INT, ios->comproot, ios->my_comm)))
-            return check_mpi(file, mpierr2, __FILE__, __LINE__);
-        if (mpierr)
-            return check_mpi(file, mpierr, __FILE__, __LINE__);
     }
 
     /* IO tasks call the netCDF functions. */
@@ -789,42 +705,20 @@ int PIOc_inq_var(int ncid, int varid, char *name, int namelen, nc_type *xtypep, 
     /* If async is in use, and this is not an IO task, bcast the parameters. */
     if (ios->async)
     {
-        if (!ios->ioproc)
+        int msg = PIO_MSG_INQ_VAR;
+        char name_present = name ? true : false;
+        char xtype_present = xtypep ? true : false;
+        char ndims_present = ndimsp ? true : false;
+        char dimids_present = dimidsp ? true : false;
+        char natts_present = nattsp ? true : false;
+
+        PIO_SEND_ASYNC_MSG(ios, msg, &ierr, ncid, varid, name_present,
+            xtype_present, ndims_present, dimids_present, natts_present);
+        if(ierr != PIO_NOERR)
         {
-            int msg = PIO_MSG_INQ_VAR;
-            char name_present = name ? true : false;
-            char xtype_present = xtypep ? true : false;
-            char ndims_present = ndimsp ? true : false;
-            char dimids_present = dimidsp ? true : false;
-            char natts_present = nattsp ? true : false;
-
-            if (ios->compmaster == MPI_ROOT)
-                mpierr = MPI_Send(&msg, 1,MPI_INT, ios->ioroot, 1, ios->union_comm);
-
-            if (!mpierr)
-                mpierr = MPI_Bcast(&ncid, 1, MPI_INT, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&varid, 1, MPI_INT, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&name_present, 1, MPI_CHAR, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&xtype_present, 1, MPI_CHAR, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&ndims_present, 1, MPI_CHAR, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&dimids_present, 1, MPI_CHAR, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&natts_present, 1, MPI_CHAR, ios->compmaster, ios->intercomm);
-            LOG((2, "PIOc_inq_var name_present = %d xtype_present = %d ndims_present = %d "
-                 "dimids_present = %d, natts_present = %d nattsp = %d",
-                 name_present, xtype_present, ndims_present, dimids_present, natts_present, nattsp));
+            LOG((1, "Error sending async msg for PIO_MSG_INQ_VAR"));
+            return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
         }
-
-        /* Handle MPI errors. */
-        if ((mpierr2 = MPI_Bcast(&mpierr, 1, MPI_INT, ios->comproot, ios->my_comm)))
-            return check_mpi(file, mpierr2, __FILE__, __LINE__);
-        if (mpierr)
-            return check_mpi(file, mpierr, __FILE__, __LINE__);
     }
 
     /* Call the netCDF layer. */
@@ -1130,28 +1024,14 @@ int PIOc_inq_varid(int ncid, const char *name, int *varidp)
 
     if (ios->async)
     {
-        if (!ios->ioproc)
+        int msg = PIO_MSG_INQ_VARID;
+        int namelen = strlen(name) + 1;
+        PIO_SEND_ASYNC_MSG(ios, msg, &ierr, ncid, namelen, name);
+        if(ierr != PIO_NOERR)
         {
-            int msg = PIO_MSG_INQ_VARID;
-
-            if (ios->compmaster == MPI_ROOT)
-                mpierr = MPI_Send(&msg, 1,MPI_INT, ios->ioroot, 1, ios->union_comm);
-
-            if (!mpierr)
-                mpierr = MPI_Bcast(&ncid, 1, MPI_INT, ios->compmaster, ios->intercomm);
-            int namelen;
-            namelen = strlen(name);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&namelen, 1, MPI_INT, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast((void *)name, namelen + 1, MPI_CHAR, ios->compmaster, ios->intercomm);
+            LOG((1, "Error while sending async msg for PIO_MSG_INQ_VARID"));
+            return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
         }
-
-        /* Handle MPI errors. */
-        if ((mpierr2 = MPI_Bcast(&mpierr, 1, MPI_INT, ios->comproot, ios->my_comm)))
-            check_mpi(file, mpierr2, __FILE__, __LINE__);
-        if (mpierr)
-            return check_mpi(file, mpierr, __FILE__, __LINE__);
     }
 
     /* If this is an IO task, then call the netCDF function. */
@@ -1261,34 +1141,15 @@ int PIOc_inq_att(int ncid, int varid, const char *name, nc_type *xtypep,
     /* If async is in use, and this is not an IO task, bcast the parameters. */
     if (ios->async)
     {
-        if (!ios->ioproc)
+        bool xtype_present = (xtypep) ? true : false;
+        bool len_present = (lenp) ? true : false;
+        int namelen = strlen(name) + 1;
+        PIO_SEND_ASYNC_MSG(ios, msg, &ierr, ncid, varid, namelen, name, xtype_present, len_present);
+        if(ierr != PIO_NOERR)
         {
-            char xtype_present = xtypep ? true : false;
-            char len_present = lenp ? true : false;
-            int namelen = strlen(name);
-
-            if (ios->compmaster == MPI_ROOT)
-                mpierr = MPI_Send(&msg, 1,MPI_INT, ios->ioroot, 1, ios->union_comm);
-
-            if (!mpierr)
-                mpierr = MPI_Bcast(&ncid, 1, MPI_INT, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&varid, 1, MPI_INT, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&namelen, 1, MPI_INT,  ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast((void *)name, namelen + 1, MPI_CHAR, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&xtype_present, 1, MPI_CHAR, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&len_present, 1, MPI_CHAR, ios->compmaster, ios->intercomm);
-        }
-
-        /* Handle MPI errors. */
-        if ((mpierr2 = MPI_Bcast(&mpierr, 1, MPI_INT, ios->comproot, ios->my_comm)))
-            check_mpi(file, mpierr2, __FILE__, __LINE__);
-        if (mpierr)
-            return check_mpi(file, mpierr, __FILE__, __LINE__);
+            LOG((1, "Sending async message for PIO_MSG_INQ_ATT failed"));
+            return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
+        } 
     }
 
     /* If this is an IO task, then call the netCDF function. */
@@ -1389,29 +1250,15 @@ int PIOc_inq_attname(int ncid, int varid, int attnum, char *name)
     /* If async is in use, and this is not an IO task, bcast the parameters. */
     if (ios->async)
     {
-        if (!ios->ioproc)
+        int msg = PIO_MSG_INQ_ATTNAME;
+        char name_present = name ? true : false;
+
+        PIO_SEND_ASYNC_MSG(ios, msg, &ierr, ncid, varid, attnum, name_present);
+        if(ierr != PIO_NOERR)
         {
-            int msg = PIO_MSG_INQ_ATTNAME;
-            char name_present = name ? true : false;
-
-            if (ios->compmaster == MPI_ROOT)
-                mpierr = MPI_Send(&msg, 1,MPI_INT, ios->ioroot, 1, ios->union_comm);
-
-            if (!mpierr)
-                mpierr = MPI_Bcast(&ncid, 1, MPI_INT, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&varid, 1, MPI_INT, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&attnum, 1, MPI_INT, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&name_present, 1, MPI_CHAR, ios->compmaster, ios->intercomm);
+            LOG((1, "Error sending async msg for PIO_MSG_INQ_ATTNAME"));
+            return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
         }
-
-        /* Handle MPI errors. */
-        if ((mpierr2 = MPI_Bcast(&mpierr, 1, MPI_INT, ios->comproot, ios->my_comm)))
-            check_mpi(file, mpierr2, __FILE__, __LINE__);
-        if (mpierr)
-            return check_mpi(file, mpierr, __FILE__, __LINE__);
     }
 
     /* If this is an IO task, then call the netCDF function. */
@@ -1484,32 +1331,16 @@ int PIOc_inq_attid(int ncid, int varid, const char *name, int *idp)
     /* If async is in use, and this is not an IO task, bcast the parameters. */
     if (ios->async)
     {
-        if (!ios->ioproc)
+        int msg = PIO_MSG_INQ_ATTID;
+        int namelen = strlen(name) + 1;
+        char id_present = idp ? true : false;
+
+        PIO_SEND_ASYNC_MSG(ios, msg, &ierr, ncid, varid, namelen, name, id_present);
+        if(ierr != PIO_NOERR)
         {
-            int msg = PIO_MSG_INQ_ATTID;
-            int namelen = strlen(name);
-            char id_present = idp ? true : false;
-
-            if (ios->compmaster == MPI_ROOT)
-                mpierr = MPI_Send(&msg, 1,MPI_INT, ios->ioroot, 1, ios->union_comm);
-
-            if (!mpierr)
-                mpierr = MPI_Bcast(&ncid, 1, MPI_INT, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&varid, 1, MPI_INT, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&namelen, 1, MPI_INT, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast((char *)name, namelen + 1, MPI_CHAR, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&id_present, 1, MPI_CHAR, ios->compmaster, ios->intercomm);
+            LOG((1, "Error sending async msg for PIO_MSG_INQ_ATTID"));
+            return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
         }
-
-        /* Handle MPI errors. */
-        if ((mpierr2 = MPI_Bcast(&mpierr, 1, MPI_INT, ios->comproot, ios->my_comm)))
-            check_mpi(file, mpierr2, __FILE__, __LINE__);
-        if (mpierr)
-            return check_mpi(file, mpierr, __FILE__, __LINE__);
     }
 
     /* If this is an IO task, then call the netCDF function. */
@@ -1574,31 +1405,15 @@ int PIOc_rename_dim(int ncid, int dimid, const char *name)
     /* If async is in use, and this is not an IO task, bcast the parameters. */
     if (ios->async)
     {
-        if (!ios->ioproc)
+        int msg = PIO_MSG_RENAME_DIM; /* Message for async notification. */
+        int namelen = strlen(name) + 1;
+
+        PIO_SEND_ASYNC_MSG(ios, msg, &ierr, ncid, dimid, namelen, name);
+        if(ierr != PIO_NOERR)
         {
-            int msg = PIO_MSG_RENAME_DIM; /* Message for async notification. */
-            int namelen = strlen(name);
-
-            if (ios->compmaster == MPI_ROOT)
-                mpierr = MPI_Send(&msg, 1,MPI_INT, ios->ioroot, 1, ios->union_comm);
-
-            if (!mpierr)
-                mpierr = MPI_Bcast(&ncid, 1, MPI_INT, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&dimid, 1, MPI_INT, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&namelen, 1, MPI_INT,  ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast((void *)name, namelen + 1, MPI_CHAR, ios->compmaster, ios->intercomm);
-            LOG((2, "PIOc_rename_dim Bcast file->fh = %d dimid = %d namelen = %d name = %s",
-                 file->fh, dimid, namelen, name));
+            LOG((1, "Error sending async msg for PIO-MSG_RENAME_DIM"));
+            return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
         }
-
-        /* Handle MPI errors. */
-        if ((mpierr2 = MPI_Bcast(&mpierr, 1, MPI_INT, ios->comproot, ios->my_comm)))
-            check_mpi(file, mpierr2, __FILE__, __LINE__);
-        if (mpierr)
-            return check_mpi(file, mpierr, __FILE__, __LINE__);
     }
 
 
@@ -1660,31 +1475,15 @@ int PIOc_rename_var(int ncid, int varid, const char *name)
     /* If async is in use, and this is not an IO task, bcast the parameters. */
     if (ios->async)
     {
-        if (!ios->ioproc)
+        int msg = PIO_MSG_RENAME_VAR; /* Message for async notification. */
+        int namelen = strlen(name) + 1;
+
+        PIO_SEND_ASYNC_MSG(ios, msg, &ierr, ncid, varid, namelen, name);
+        if(ierr != PIO_NOERR)
         {
-            int msg = PIO_MSG_RENAME_VAR; /* Message for async notification. */
-            int namelen = strlen(name);
-
-            if (ios->compmaster == MPI_ROOT)
-                mpierr = MPI_Send(&msg, 1,MPI_INT, ios->ioroot, 1, ios->union_comm);
-
-            if (!mpierr)
-                mpierr = MPI_Bcast(&ncid, 1, MPI_INT, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&varid, 1, MPI_INT, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&namelen, 1, MPI_INT,  ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast((void *)name, namelen + 1, MPI_CHAR, ios->compmaster, ios->intercomm);
-            LOG((2, "PIOc_rename_var Bcast file->fh = %d varid = %d namelen = %d name = %s",
-                 file->fh, varid, namelen, name));
+            LOG((1, "Error sending async msg for PIO_MSG_RENAME_VAR"));
+            return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
         }
-
-        /* Handle MPI errors. */
-        if ((mpierr2 = MPI_Bcast(&mpierr, 1, MPI_INT, ios->comproot, ios->my_comm)))
-            check_mpi(file, mpierr2, __FILE__, __LINE__);
-        if (mpierr)
-            return check_mpi(file, mpierr, __FILE__, __LINE__);
     }
 
 
@@ -1750,34 +1549,17 @@ int PIOc_rename_att(int ncid, int varid, const char *name,
     /* If async is in use, and this is not an IO task, bcast the parameters. */
     if (ios->async)
     {
-        if (!ios->ioproc)
+        int msg = PIO_MSG_RENAME_ATT; /* Message for async notification. */
+        int namelen = strlen(name) + 1;
+        int newnamelen = strlen(newname) + 1;
+
+        PIO_SEND_ASYNC_MSG(ios, msg, &ierr, ncid, varid, namelen, name,
+          newnamelen, newname);
+        if(ierr != PIO_NOERR)
         {
-            int msg = PIO_MSG_RENAME_ATT; /* Message for async notification. */
-            int namelen = strlen(name);
-            int newnamelen = strlen(newname);
-
-            if (ios->compmaster == MPI_ROOT)
-                mpierr = MPI_Send(&msg, 1, MPI_INT, ios->ioroot, 1, ios->union_comm);
-
-            if (!mpierr)
-                mpierr = MPI_Bcast(&ncid, 1, MPI_INT, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&varid, 1, MPI_INT, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&namelen, 1, MPI_INT,  ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast((char *)name, namelen + 1, MPI_CHAR, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&newnamelen, 1, MPI_INT,  ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast((char *)newname, newnamelen + 1, MPI_CHAR, ios->compmaster, ios->intercomm);
+            LOG((1, "Error while sending async msg PIO_MSG_RENAME_ATT"));
+            return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
         }
-
-        /* Handle MPI errors. */
-        if ((mpierr2 = MPI_Bcast(&mpierr, 1, MPI_INT, ios->comproot, ios->my_comm)))
-            check_mpi(file, mpierr2, __FILE__, __LINE__);
-        if (mpierr)
-            return check_mpi(file, mpierr, __FILE__, __LINE__);
     }
 
     /* If this is an IO task, then call the netCDF function. */
@@ -1839,29 +1621,15 @@ int PIOc_del_att(int ncid, int varid, const char *name)
     /* If async is in use, and this is not an IO task, bcast the parameters. */
     if (ios->async)
     {
-        if (!ios->ioproc)
+        int msg = PIO_MSG_DEL_ATT;
+        int namelen = strlen(name) + 1; /* Length of name string. */
+
+        PIO_SEND_ASYNC_MSG(ios, msg, &ierr, ncid, varid, namelen, name);
+        if(ierr != PIO_NOERR)
         {
-            int msg = PIO_MSG_DEL_ATT;
-            int namelen = strlen(name); /* Length of name string. */
-
-            if (ios->compmaster == MPI_ROOT)
-                mpierr = MPI_Send(&msg, 1,MPI_INT, ios->ioroot, 1, ios->union_comm);
-
-            if (!mpierr)
-                mpierr = MPI_Bcast(&ncid, 1, MPI_INT, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&varid, 1, MPI_INT, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&namelen, 1, MPI_INT,  ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast((char *)name, namelen + 1, MPI_CHAR, ios->compmaster, ios->intercomm);
+            LOG((1, "Error sending async msg PIO_MSG_DEL_ATT"));
+            return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
         }
-
-        /* Handle MPI errors. */
-        if ((mpierr2 = MPI_Bcast(&mpierr, 1, MPI_INT, ios->comproot, ios->my_comm)))
-            check_mpi(file, mpierr2, __FILE__, __LINE__);
-        if (mpierr)
-            return check_mpi(file, mpierr, __FILE__, __LINE__);
     }
 
     /* If this is an IO task, then call the netCDF function. */
@@ -1918,29 +1686,15 @@ int PIOc_set_fill(int ncid, int fillmode, int *old_modep)
     /* If async is in use, and this is not an IO task, bcast the parameters. */
     if (ios->async)
     {
-        if (!ios->ioproc)
+        int msg = PIO_MSG_SET_FILL;
+        int old_modep_present = old_modep ? 1 : 0;
+
+        PIO_SEND_ASYNC_MSG(ios, msg, &ierr, ncid, fillmode, old_modep_present);
+        if(ierr != PIO_NOERR)
         {
-            int msg = PIO_MSG_SET_FILL;
-            int old_modep_present = old_modep ? 1 : 0;
-
-            if (ios->compmaster == MPI_ROOT)
-                mpierr = MPI_Send(&msg, 1,MPI_INT, ios->ioroot, 1, ios->union_comm);
-
-            if (!mpierr)
-                mpierr = MPI_Bcast(&ncid, 1, MPI_INT, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&fillmode, 1, MPI_INT, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&old_modep_present, 1, MPI_INT, ios->compmaster, ios->intercomm);
-            LOG((2, "PIOc_set_fill sent ncid = %d fillmode = %d old_modep_present = %d", ncid, fillmode,
-                 old_modep_present));
+            LOG((1, "Error sending async msg for PIO_MSG_SET_FILL"));
+            return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
         }
-
-        /* Handle MPI errors. */
-        if ((mpierr2 = MPI_Bcast(&mpierr, 1, MPI_INT, ios->comproot, ios->my_comm)))
-            check_mpi(file, mpierr2, __FILE__, __LINE__);
-        if (mpierr)
-            return check_mpi(file, mpierr, __FILE__, __LINE__);
     }
 
     /* If this is an IO task, then call the netCDF function. */
@@ -2056,31 +1810,15 @@ int PIOc_def_dim(int ncid, const char *name, PIO_Offset len, int *idp)
     /* If async is in use, and this is not an IO task, bcast the parameters. */
     if (ios->async)
     {
-        if (!ios->ioproc)
+        int msg = PIO_MSG_DEF_DIM;
+        int namelen = strlen(name) + 1;
+
+        PIO_SEND_ASYNC_MSG(ios, msg, &ierr, ncid, namelen, name, len);
+        if(ierr != PIO_NOERR)
         {
-            int msg = PIO_MSG_DEF_DIM;
-            int namelen = strlen(name);
-
-            if (ios->compmaster == MPI_ROOT)
-                mpierr = MPI_Send(&msg, 1,MPI_INT, ios->ioroot, 1, ios->union_comm);
-
-            if (!mpierr)
-                mpierr = MPI_Bcast(&ncid, 1, MPI_INT, ios->compmaster, ios->intercomm);
-
-            if (!mpierr)
-                mpierr = MPI_Bcast(&namelen, 1, MPI_INT,  ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast((void *)name, namelen + 1, MPI_CHAR, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&len, 1, MPI_INT,  ios->compmaster, ios->intercomm);
+            LOG((1, "Error sending async msg for PIO_MSG_DEF_DIM"));
+            return pio_err(ios, file, ierr, __FILE__, __LINE__);
         }
-
-
-        /* Handle MPI errors. */
-        if ((mpierr2 = MPI_Bcast(&mpierr, 1, MPI_INT, ios->comproot, ios->my_comm)))
-            check_mpi(file, mpierr2, __FILE__, __LINE__);
-        if (mpierr)
-            return check_mpi(file, mpierr, __FILE__, __LINE__);
     }
 
     /* If this is an IO task, then call the netCDF function. */
@@ -2183,33 +1921,18 @@ int PIOc_def_var(int ncid, const char *name, nc_type xtype, int ndims,
     /* If using async, and not an IO task, then send parameters. */
     if (ios->async)
     {
-        if (!ios->ioproc)
+        int msg = PIO_MSG_DEF_VAR;
+        int namelen = strlen(name) + 1;
+        /* A place holder for scalars with ndims == 0 */
+        int amsg_dimids = 0;
+
+        PIO_SEND_ASYNC_MSG(ios, msg, &ierr, ncid, namelen, name, xtype,
+            ndims, (ndims > 0) ? ndims : 1, (ndims > 0) ? dimidsp : &amsg_dimids);
+        if(ierr != PIO_NOERR)
         {
-            int msg = PIO_MSG_DEF_VAR;
-            int namelen = strlen(name);
-
-            if (ios->compmaster == MPI_ROOT)
-                mpierr = MPI_Send(&msg, 1, MPI_INT, ios->ioroot, 1, ios->union_comm);
-
-            if (!mpierr)
-                mpierr = MPI_Bcast(&(ncid), 1, MPI_INT, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&namelen, 1, MPI_INT,  ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast((void *)name, namelen + 1, MPI_CHAR, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&xtype, 1, MPI_INT, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&ndims, 1, MPI_INT, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast((void *)dimidsp, ndims, MPI_INT, ios->compmaster, ios->intercomm);
+            LOG((1, "Error sending async msg for PIO_MSG_DEF_VAR"));
+            return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
         }
-
-        /* Handle MPI errors. */
-        if ((mpierr2 = MPI_Bcast(&mpierr, 1, MPI_INT, ios->comproot, ios->my_comm)))
-            check_mpi(file, mpierr2, __FILE__, __LINE__);
-        if (mpierr)
-            return check_mpi(file, mpierr, __FILE__, __LINE__);
 
         /* Broadcast values currently only known on computation tasks to IO tasks. */
         if ((mpierr = MPI_Bcast(&invalid_unlim_dim, 1, MPI_INT, ios->comproot, ios->my_comm)))
@@ -2378,36 +2101,27 @@ int PIOc_def_var_fill(int ncid, int varid, int fill_mode, const void *fill_value
     /* If async is in use, and this is not an IO task, bcast the parameters. */
     if (ios->async)
     {
-        if (!ios->ioproc)
+        int msg = PIO_MSG_DEF_VAR_FILL;
+        char fill_value_present = fill_valuep ? true : false;
+        void *amsg_fillvalue_p = NULL;
+        if(!fill_value_present)
         {
-            int msg = PIO_MSG_DEF_VAR_FILL;
-            char fill_value_present = fill_valuep ? true : false;
-
-            if (ios->compmaster == MPI_ROOT)
-                mpierr = MPI_Send(&msg, 1,MPI_INT, ios->ioroot, 1, ios->union_comm);
-
-            if (!mpierr)
-                mpierr = MPI_Bcast(&ncid, 1, MPI_INT, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&varid, 1, MPI_INT, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&fill_mode, 1, MPI_INT, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&type_size, 1, MPI_OFFSET, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&fill_value_present, 1, MPI_CHAR, ios->compmaster, ios->intercomm);
-            if (!mpierr && fill_value_present)
-                mpierr = MPI_Bcast((PIO_Offset *)fill_valuep, type_size, MPI_CHAR, ios->compmaster,
-                                   ios->intercomm);
-            LOG((2, "PIOc_def_var_fill ncid = %d varid = %d fill_mode = %d type_size = %d fill_value_present = %d",
-                 ncid, varid, fill_mode, type_size, fill_value_present));
+            amsg_fillvalue_p = calloc(type_size, sizeof(char));
         }
 
-        /* Handle MPI errors. */
-        if ((mpierr2 = MPI_Bcast(&mpierr, 1, MPI_INT, ios->comproot, ios->my_comm)))
-            return check_mpi(file, mpierr2, __FILE__, __LINE__);
-        if (mpierr)
-            return check_mpi(file, mpierr, __FILE__, __LINE__);
+        PIO_SEND_ASYNC_MSG(ios, msg, &ierr, ncid, varid, fill_mode,
+            type_size, fill_value_present, type_size,
+            (fill_value_present) ? fill_valuep : amsg_fillvalue_p);
+        if(ierr != PIO_NOERR)
+        {
+            LOG((1, "Error sending async msg for PIO_MSG_DEF_VAR_FILL"));
+            return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
+        }
+
+        if(!fill_value_present)
+        {
+            free(amsg_fillvalue_p);
+        }
 
         /* Broadcast values currently only known on computation tasks to IO tasks. */
         if ((mpierr = MPI_Bcast(&xtype, 1, MPI_INT, ios->comproot, ios->my_comm)))
@@ -2501,35 +2215,17 @@ int PIOc_inq_var_fill(int ncid, int varid, int *no_fill, void *fill_valuep)
     /* If async is in use, and this is not an IO task, bcast the parameters. */
     if (ios->async)
     {
-        if (!ios->ioproc)
+        int msg = PIO_MSG_INQ_VAR_FILL;
+        char no_fill_present = no_fill ? true : false;
+        char fill_value_present = fill_valuep ? true : false;
+
+        PIO_SEND_ASYNC_MSG(ios, msg, &ierr, ncid, varid, type_size,
+            no_fill_present, fill_value_present);
+        if(ierr != PIO_NOERR)
         {
-            int msg = PIO_MSG_INQ_VAR_FILL;
-            char no_fill_present = no_fill ? true : false;
-            char fill_value_present = fill_valuep ? true : false;
-
-            LOG((2, "sending msg type_size = %d", type_size));
-            if (ios->compmaster == MPI_ROOT)
-                mpierr = MPI_Send(&msg, 1,MPI_INT, ios->ioroot, 1, ios->union_comm);
-
-            if (!mpierr)
-                mpierr = MPI_Bcast(&ncid, 1, MPI_INT, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&varid, 1, MPI_INT, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&type_size, 1, MPI_OFFSET, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&no_fill_present, 1, MPI_CHAR, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&fill_value_present, 1, MPI_CHAR, ios->compmaster, ios->intercomm);
-            LOG((2, "PIOc_inq_var_fill ncid = %d varid = %d type_size = %lld no_fill_present = %d fill_value_present = %d",
-                 ncid, varid, type_size, no_fill_present, fill_value_present));
+            LOG((1, "Error sending async msg for PIO_MSG_INQ_VAR_FILL"));
+            return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
         }
-
-        /* Handle MPI errors. */
-        if ((mpierr2 = MPI_Bcast(&mpierr, 1, MPI_INT, ios->comproot, ios->my_comm)))
-            check_mpi(file, mpierr2, __FILE__, __LINE__);
-        if (mpierr)
-            return check_mpi(file, mpierr, __FILE__, __LINE__);
 
         /* Broadcast values currently only known on computation tasks to IO tasks. */
         if ((mpierr = MPI_Bcast(&xtype, 1, MPI_INT, ios->comproot, ios->my_comm)))

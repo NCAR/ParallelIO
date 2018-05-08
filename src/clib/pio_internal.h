@@ -107,6 +107,10 @@ extern "C" {
     int create_async_service_msg_comm(const MPI_Comm io_comm, MPI_Comm *msg_comm);
     void delete_async_service_msg_comm(void );
 
+    int init_async_msgs_sign(void );
+    int send_async_msg(iosystem_desc_t *ios, int msg, ...);
+    int recv_async_msg(iosystem_desc_t *ios, int msg, ...);
+
     void pio_get_env(void);
     int  pio_add_to_iodesc_list(io_desc_t *iodesc, MPI_Comm comm);
     io_desc_t *pio_get_iodesc_from_id(int ioid);
@@ -594,7 +598,42 @@ enum PIO_MSG
     PIO_MSG_PUT_ATT,
     PIO_MSG_INQ_TYPE,
     PIO_MSG_INQ_UNLIMDIMS,
-    PIO_MSG_EXIT
+    PIO_MSG_EXIT,
+    PIO_MAX_MSGS
 };
+
+/* Max number of arguments in an asynchronous message */
+#define PIO_MAX_ASYNC_MSG_ARGS 32
+
+/* Return the (PIO_MAX_ASYNC_MSG_ARGS + 1), 33rd, arg */
+#define PIO_VARNARGS_IMPL(_1, _2, _3, _4, _5, _6, _7, _8,\
+                          _9, _10, _11, _12, _13, _14, _15, _16,\
+                          _17, _18, _19, _20, _21, _22, _23, _24,\
+                          _25, _26, _27, _28, _29, _30, _31, _32,\
+                          N,...) N
+/* Find the number of args in a variadic macro
+ * Add extra arguments to the user arguments such that the 
+ * PIO_MAX_ASYNC_MSG_ARGS + 1 argument indicates the number
+ * of user arguments
+ */
+#define PIO_VARNARGS(...) PIO_VARNARGS_IMPL(__VA_ARGS__,\
+                                              32, 31, 30, 29, 28, 27, 26, 25,\
+                                              24, 23, 22, 21, 20, 19, 18, 17,\
+                                              16, 15, 14, 13, 12, 11, 10, 9,\
+                                              8, 7, 6, 5, 4, 3, 2, 1)
+
+extern char pio_async_msg_sign[PIO_MAX_MSGS][PIO_MAX_ASYNC_MSG_ARGS];
+/* Note: Using macros allows us to perform sanity checks on the number
+ * of arguments passed to these functions
+ */
+#define PIO_SEND_ASYNC_MSG(ios, msg, retp, ...) do{\
+            assert(PIO_VARNARGS(__VA_ARGS__) == strlen(pio_async_msg_sign[msg]));\
+            *retp = send_async_msg(ios, msg, __VA_ARGS__);\
+        }while(0)
+
+#define PIO_RECV_ASYNC_MSG(ios, msg, retp, ...) do{\
+            assert(PIO_VARNARGS(__VA_ARGS__) == strlen(pio_async_msg_sign[msg]));\
+            *retp = recv_async_msg(ios, msg, __VA_ARGS__);\
+        }while(0)
 
 #endif /* __PIO_INTERNAL__ */

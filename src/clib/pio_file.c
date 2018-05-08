@@ -225,22 +225,14 @@ int PIOc_closefile(int ncid)
      * to the IO tasks. */
     if (ios->async)
     {
-        if (!ios->ioproc)
+        int msg = PIO_MSG_CLOSE_FILE;
+
+        PIO_SEND_ASYNC_MSG(ios, msg, &ierr, ncid);
+        if(ierr != PIO_NOERR)
         {
-            int msg = PIO_MSG_CLOSE_FILE;
-
-            if (ios->compmaster == MPI_ROOT)
-                mpierr = MPI_Send(&msg, 1, MPI_INT, ios->ioroot, 1, ios->union_comm);
-
-            if (!mpierr)
-                mpierr = MPI_Bcast(&ncid, 1, MPI_INT, ios->compmaster, ios->intercomm);
+            LOG((1, "Error sending async msg for PIO_MSG_CLOSE_FILE"));
+            return pio_err(ios, file, ierr, __FILE__, __LINE__);
         }
-
-        /* Handle MPI errors. */
-        if ((mpierr2 = MPI_Bcast(&mpierr, 1, MPI_INT, ios->comproot, ios->my_comm)))
-            return check_mpi(file, mpierr2, __FILE__, __LINE__);
-        if (mpierr)
-            return check_mpi(file, mpierr, __FILE__, __LINE__);
     }
 
     /* If this is an IO task, then call the netCDF function. */
@@ -314,26 +306,14 @@ int PIOc_deletefile(int iosysid, const char *filename)
     /* If async is in use, send message to IO master task. */
     if (ios->async)
     {
-        if (!ios->ioproc)
+        len = strlen(filename) + 1;
+
+        PIO_SEND_ASYNC_MSG(ios, msg, &ierr, len, filename);
+        if(ierr != PIO_NOERR)
         {
-            if (ios->comp_rank==0)
-                mpierr = MPI_Send(&msg, 1,MPI_INT, ios->ioroot, 1, ios->union_comm);
-
-            len = strlen(filename);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&len, 1, MPI_INT, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast((void *)filename, len + 1, MPI_CHAR, ios->compmaster,
-                                   ios->intercomm);
-            LOG((2, "Bcast len = %d filename = %s", len, filename));
+            LOG((1, "Error sending async msg for PIO_MSG_DELETE_FILE"));
+            return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
         }
-
-        /* Handle MPI errors. */
-        if ((mpierr2 = MPI_Bcast(&mpierr, 1, MPI_INT, ios->comproot, ios->my_comm)))
-            return check_mpi2(ios, NULL, mpierr2, __FILE__, __LINE__);
-        if (mpierr)
-            return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-        LOG((3, "done hanlding errors mpierr = %d", mpierr));
     }
 
     /* If this is an IO task, then call the netCDF function. The
@@ -427,22 +407,14 @@ int PIOc_sync(int ncid)
     /* If async is in use, send message to IO master tasks. */
     if (ios->async)
     {
-        if (!ios->ioproc)
+        int msg = PIO_MSG_SYNC;
+
+        PIO_SEND_ASYNC_MSG(ios, msg, &ierr, ncid);
+        if(ierr != PIO_NOERR)
         {
-            int msg = PIO_MSG_SYNC;
-
-            if (ios->compmaster == MPI_ROOT)
-                mpierr = MPI_Send(&msg, 1, MPI_INT, ios->ioroot, 1, ios->union_comm);
-
-            if (!mpierr)
-                mpierr = MPI_Bcast(&ncid, 1, MPI_INT, ios->compmaster, ios->intercomm);
+            LOG((1, "Error sending async msg for PIO_MSG_SYNC"));
+            return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
         }
-
-        /* Handle MPI errors. */
-        if ((mpierr2 = MPI_Bcast(&mpierr, 1, MPI_INT, ios->comproot, ios->my_comm)))
-            check_mpi(file, mpierr2, __FILE__, __LINE__);
-        if (mpierr)
-            return check_mpi(file, mpierr, __FILE__, __LINE__);
     }
 
     /* Call the sync function on IO tasks. */

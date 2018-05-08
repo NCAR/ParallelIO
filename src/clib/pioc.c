@@ -139,24 +139,14 @@ int PIOc_advanceframe(int ncid, int varid)
     /* If using async, and not an IO task, then send parameters. */
     if (ios->async)
     {
-        if (!ios->ioproc)
+        int msg = PIO_MSG_ADVANCEFRAME;
+
+        PIO_SEND_ASYNC_MSG(ios, msg, &ret, ncid, varid);
+        if(ret != PIO_NOERR)
         {
-            int msg = PIO_MSG_ADVANCEFRAME;
-            
-            if (ios->compmaster == MPI_ROOT)
-                mpierr = MPI_Send(&msg, 1, MPI_INT, ios->ioroot, 1, ios->union_comm);
-            
-            if (!mpierr)
-                mpierr = MPI_Bcast(&ncid, 1, MPI_INT, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&varid, 1, MPI_INT, ios->compmaster, ios->intercomm);
+            LOG((1, "Error sending async msg for PIO_MSG_ADVANCEFRAME"));
+            return pio_err(ios, file, ret, __FILE__, __LINE__);
         }
-        
-        /* Handle MPI errors. */
-        if ((mpierr2 = MPI_Bcast(&mpierr, 1, MPI_INT, ios->comproot, ios->my_comm)))
-            check_mpi2(ios, NULL, mpierr2, __FILE__, __LINE__);
-        if (mpierr)
-            return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
     }
 
     /* Increment the record number. */
@@ -208,26 +198,13 @@ int PIOc_setframe(int ncid, int varid, int frame)
     /* If using async, and not an IO task, then send parameters. */
     if (ios->async)
     {
-        if (!ios->ioproc)
+        int msg = PIO_MSG_SETFRAME;
+        PIO_SEND_ASYNC_MSG(ios, msg, &ret, ncid, varid, frame);
+        if(ret != PIO_NOERR)
         {
-            int msg = PIO_MSG_SETFRAME;
-            
-            if (ios->compmaster == MPI_ROOT)
-                mpierr = MPI_Send(&msg, 1, MPI_INT, ios->ioroot, 1, ios->union_comm);
-            
-            if (!mpierr)
-                mpierr = MPI_Bcast(&ncid, 1, MPI_INT, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&varid, 1, MPI_INT, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&frame, 1, MPI_INT, ios->compmaster, ios->intercomm);
+            LOG((1, "Error sending async msg for PIO_MSG_SETFRAME"));
+            return pio_err(ios, file, ret, __FILE__, __LINE__);
         }
-        
-        /* Handle MPI errors. */
-        if ((mpierr2 = MPI_Bcast(&mpierr, 1, MPI_INT, ios->comproot, ios->my_comm)))
-            check_mpi2(ios, NULL, mpierr2, __FILE__, __LINE__);
-        if (mpierr)
-            return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
     }
 
     /* Set the record dimension value for this variable. This will be
@@ -322,6 +299,7 @@ int PIOc_set_iosystem_error_handling(int iosysid, int method, int *old_method)
 {
     iosystem_desc_t *ios = NULL;
     int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI function codes. */
+    int ret = PIO_NOERR;
 
     LOG((1, "PIOc_set_iosystem_error_handling iosysid = %d method = %d", iosysid,
          method));
@@ -340,25 +318,15 @@ int PIOc_set_iosystem_error_handling(int iosysid, int method, int *old_method)
     if (iosysid != PIO_DEFAULT)
         if (ios->async)
         {
-            if (!ios->ioproc)
+            int msg = PIO_MSG_SETERRORHANDLING;
+            bool old_method_present = old_method ? true : false;
+
+            PIO_SEND_ASYNC_MSG(ios, msg, &ret, method, old_method_present);
+            if(ret != PIO_NOERR)
             {
-                int msg = PIO_MSG_SETERRORHANDLING;
-                char old_method_present = old_method ? true : false;
-
-                if (ios->compmaster == MPI_ROOT)
-                    mpierr = MPI_Send(&msg, 1, MPI_INT, ios->ioroot, 1, ios->union_comm);
-
-                if (!mpierr)
-                    mpierr = MPI_Bcast(&method, 1, MPI_INT, ios->compmaster, ios->intercomm);
-                if (!mpierr)
-                    mpierr = MPI_Bcast(&old_method_present, 1, MPI_CHAR, ios->compmaster, ios->intercomm);
+                LOG((1, "Error sending async msg for PIO_MSG_SETERRORHANDLING"));
+                return pio_err(ios, NULL, ret, __FILE__, __LINE__);
             }
-
-            /* Handle MPI errors. */
-            if ((mpierr2 = MPI_Bcast(&mpierr, 1, MPI_INT, ios->comproot, ios->my_comm)))
-                check_mpi2(ios, NULL, mpierr2, __FILE__, __LINE__);
-            if (mpierr)
-                return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
         }
 
     /* Return the current handler. */
@@ -448,52 +416,41 @@ int PIOc_InitDecomp(int iosysid, int pio_type, int ndims, const int *gdimlen, in
     /* If async is in use, and this is not an IO task, bcast the parameters. */
     if (ios->async)
     {
-        if (!ios->ioproc)
+        int msg = PIO_MSG_INITDECOMP_DOF; /* Message for async notification. */
+        char rearranger_present = rearranger ? true : false;
+        int amsg_rearranger = (rearranger) ? (*rearranger) : 0;
+        char iostart_present = iostart ? true : false;
+        char iocount_present = iocount ? true : false;
+        PIO_Offset *amsg_iostart = NULL, *amsg_iocount = NULL;
+
+        if(!iostart_present)
         {
-            int msg = PIO_MSG_INITDECOMP_DOF; /* Message for async notification. */
-            char rearranger_present = rearranger ? true : false;
-            char iostart_present = iostart ? true : false;
-            char iocount_present = iocount ? true : false;
-
-            if (ios->compmaster == MPI_ROOT)
-                mpierr = MPI_Send(&msg, 1, MPI_INT, ios->ioroot, 1, ios->union_comm);
-
-            if (!mpierr)
-                mpierr = MPI_Bcast(&iosysid, 1, MPI_INT, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&pio_type, 1, MPI_INT, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&ndims, 1, MPI_INT, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast((int *)gdimlen, ndims, MPI_INT, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&maplen, 1, MPI_INT, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast((PIO_Offset *)compmap, maplen, MPI_OFFSET, ios->compmaster, ios->intercomm);
-
-            if (!mpierr)
-                mpierr = MPI_Bcast(&rearranger_present, 1, MPI_CHAR, ios->compmaster, ios->intercomm);
-            if (rearranger_present && !mpierr)
-                mpierr = MPI_Bcast((int *)rearranger, 1, MPI_INT, ios->compmaster, ios->intercomm);
-
-            if (!mpierr)
-                mpierr = MPI_Bcast(&iostart_present, 1, MPI_CHAR, ios->compmaster, ios->intercomm);
-            if (iostart_present && !mpierr)
-                mpierr = MPI_Bcast((PIO_Offset *)iostart, ndims, MPI_OFFSET, ios->compmaster, ios->intercomm);
-
-            if (!mpierr)
-                mpierr = MPI_Bcast(&iocount_present, 1, MPI_CHAR, ios->compmaster, ios->intercomm);
-            if (iocount_present && !mpierr)
-                mpierr = MPI_Bcast((PIO_Offset *)iocount, ndims, MPI_OFFSET, ios->compmaster, ios->intercomm);
-            LOG((2, "PIOc_InitDecomp iosysid = %d pio_type = %d ndims = %d maplen = %d rearranger_present = %d iostart_present = %d "
-                 "iocount_present = %d ", iosysid, pio_type, ndims, maplen, rearranger_present, iostart_present, iocount_present));
+            amsg_iostart = calloc(ndims, sizeof(PIO_Offset));
+        }
+        if(!iocount_present)
+        {
+            amsg_iocount = calloc(ndims, sizeof(PIO_Offset));
+        }
+        if(!amsg_iostart || !amsg_iocount)
+        {
+            return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__);
         }
 
-        /* Handle MPI errors. */
-        if ((mpierr2 = MPI_Bcast(&mpierr, 1, MPI_INT, ios->comproot, ios->my_comm)))
-            return check_mpi2(ios, NULL, mpierr2, __FILE__, __LINE__);
-        if (mpierr)
-            return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
+        PIO_SEND_ASYNC_MSG(ios, msg, &ierr, iosysid, pio_type, ndims,
+            gdimlen, maplen, compmap, rearranger_present, amsg_rearranger,
+            iostart_present, ndims,
+            (iostart_present) ? iostart : amsg_iostart,
+            iocount_present, ndims,
+            (iocount_present) ? iocount : amsg_iocount);
+
+        if(!iostart_present)
+        {
+            free(amsg_iostart);
+        }
+        if(!iocount_present)
+        {
+            free(amsg_iocount);
+        }
     }
 
 #if PIO_SAVE_DECOMPS
@@ -1088,27 +1045,13 @@ int PIOc_finalize(int iosysid)
 
         LOG((3, "found iosystem info comproot = %d union_comm = %d comp_idx = %d",
              ios->comproot, ios->union_comm, ios->comp_idx));
-        if (!ios->ioproc)
+
+        PIO_SEND_ASYNC_MSG(ios, msg, &ierr, iosysid);
+        if(ierr != PIO_NOERR)
         {
-            LOG((2, "sending msg = %d ioroot = %d union_comm = %d", msg,
-                 ios->ioroot, ios->union_comm));
-
-            /* Send the message to the message handler. */
-            if (ios->compmaster == MPI_ROOT)
-                mpierr = MPI_Send(&msg, 1, MPI_INT, ios->ioroot, 1, ios->union_comm);
-
-            /* Send the parameters of the function call. */
-            if (!mpierr)
-                mpierr = MPI_Bcast((int *)&iosysid, 1, MPI_INT, ios->compmaster, ios->intercomm);
+            LOG((1, "Error sending async msg for PIO_MSG_FINALIZE"));
+            return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
         }
-
-        /* Handle MPI errors. */
-        LOG((3, "handling async errors mpierr = %d my_comm = %d", mpierr, ios->my_comm));
-        if ((mpierr2 = MPI_Bcast(&mpierr, 1, MPI_INT, ios->comproot, ios->my_comm)))
-            return check_mpi2(ios, NULL, mpierr2, __FILE__, __LINE__);
-        if (mpierr)
-            return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-        LOG((3, "async errors bcast"));
     }
 
     /* Free this memory that was allocated in init_intracomm. */
@@ -1698,6 +1641,14 @@ int PIOc_init_async(MPI_Comm world, int num_io_procs, int *io_proc_list,
         LOG((2, "new iosys ID added to iosystem_list iosysid = %d", iosysidp[cmp]));
     } /* next computational component */
 
+    /* Initialize async message signatures */
+    ret = init_async_msgs_sign();
+    if(ret != PIO_NOERR)
+    {
+        LOG((1, "Initializing async msgs failed"));
+        return pio_err(NULL, NULL, ret, __FILE__, __LINE__);
+    }
+
     /* Now call the function from which the IO tasks will not return
      * until the PIO_MSG_FINALIZE message is sent. This will handle all
      * components. */
@@ -2228,6 +2179,14 @@ int PIOc_init_intercomm(int component_count, const MPI_Comm peer_comm,
      * in PIO - during finalize
      */
     free(comp_comms);
+    
+    /* Initialize async message signatures */
+    ret = init_async_msgs_sign();
+    if(ret != PIO_NOERR)
+    {
+        LOG((1, "Initializing async msgs failed"));
+        return pio_err(NULL, NULL, ret, __FILE__, __LINE__);
+    }
 
     /* Invoke the message handler for I/O procs. The message handler goes
      * into a continuous loop to handle messages from compute procs and

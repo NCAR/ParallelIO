@@ -162,52 +162,38 @@ int PIOc_write_darray_multi(int ncid, const int *varids, int ioid, int nvars,
     /* If async is in use, and this is not an IO task, bcast the parameters. */
     if (ios->async)
     {
-        if (!ios->ioproc)
+        int msg = PIO_MSG_WRITEDARRAYMULTI;
+        char frame_present = frame ? true : false;         /* Is frame non-NULL? */
+        char fillvalue_present = fillvalue ? true : false; /* Is fillvalue non-NULL? */
+        int flushtodisk_int = flushtodisk; /* Need this to be int not boolean. */
+
+        int *amsg_frame = NULL;
+        void *amsg_fillvalue = fillvalue;
+
+        if(!frame_present)
         {
-            int msg = PIO_MSG_WRITEDARRAYMULTI;
-            char frame_present = frame ? true : false;         /* Is frame non-NULL? */
-            char fillvalue_present = fillvalue ? true : false; /* Is fillvalue non-NULL? */
-            int flushtodisk_int = flushtodisk; /* Need this to be int not boolean. */
-
-            if (ios->compmaster == MPI_ROOT)
-                mpierr = MPI_Send(&msg, 1, MPI_INT, ios->ioroot, 1, ios->union_comm);
-
-            /* Send the function parameters and associated informaiton
-             * to the msg handler. */
-            if (!mpierr)
-                mpierr = MPI_Bcast(&ncid, 1, MPI_INT, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&nvars, 1, MPI_INT, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast((void *)varids, nvars, MPI_INT, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&ioid, 1, MPI_INT, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&arraylen, 1, MPI_OFFSET, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(array, arraylen * iodesc->piotype_size, MPI_CHAR, ios->compmaster,
-                                   ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&frame_present, 1, MPI_CHAR, ios->compmaster, ios->intercomm);
-            if (!mpierr && frame_present)
-                mpierr = MPI_Bcast((void *)frame, nvars, MPI_INT, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&fillvalue_present, 1, MPI_CHAR, ios->compmaster, ios->intercomm);
-            if (!mpierr && fillvalue_present)
-                mpierr = MPI_Bcast((void *)fillvalue, nvars * iodesc->piotype_size, MPI_CHAR,
-                                   ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&flushtodisk_int, 1, MPI_INT, ios->compmaster, ios->intercomm);
-            LOG((2, "PIOc_write_darray_multi file->pio_ncid = %d nvars = %d ioid = %d arraylen = %d "
-                 "frame_present = %d fillvalue_present = %d flushtodisk = %d", file->pio_ncid, nvars,
-                 ioid, arraylen, frame_present, fillvalue_present, flushtodisk));
+            amsg_frame = (int *)calloc(nvars, sizeof(int));
+        }
+        if(!fillvalue_present)
+        {
+            amsg_fillvalue = calloc(nvars * iodesc->piotype_size, sizeof(char ));
         }
 
-        /* Handle MPI errors. */
-        if ((mpierr2 = MPI_Bcast(&mpierr, 1, MPI_INT, ios->comproot, ios->my_comm)))
-            return check_mpi(file, mpierr2, __FILE__, __LINE__);
-        if (mpierr)
-            return check_mpi(file, mpierr, __FILE__, __LINE__);
+        PIO_SEND_ASYNC_MSG(ios, msg, &ierr,
+            ncid, nvars, nvars, varids, ioid, arraylen,
+            arraylen * iodesc->piotype_size, array, frame_present,
+            nvars,
+            (frame_present) ? frame : amsg_frame, fillvalue_present,
+            nvars * iodesc->piotype_size, amsg_fillvalue, flushtodisk_int);
+
+        if(!frame_present)
+        {
+            free(amsg_frame);
+        }
+        if(!fillvalue_present)
+        {
+            free(amsg_fillvalue);
+        }
 
         /* Share results known only on computation tasks with IO tasks. */
         if ((mpierr = MPI_Bcast(&fndims, 1, MPI_INT, ios->comproot, ios->my_comm)))
@@ -995,37 +981,14 @@ int PIOc_read_darray(int ncid, int varid, int ioid, PIO_Offset arraylen,
 
     if(ios->async)
     {
-        if(!ios->ioproc)
+        /* Send relevant args from compute procs to I/O procs */
+        int msg = PIO_MSG_READDARRAY;
+        
+        PIO_SEND_ASYNC_MSG(ios, msg, &ierr, ncid, varid, ioid);
+        if(ierr != PIO_NOERR)
         {
-            /* Send relevant args from compute procs to I/O procs */
-            int msg = PIO_MSG_READDARRAY;
-
-            if(ios->compmaster == MPI_ROOT)
-            {
-                mpierr = MPI_Send(&msg, 1, MPI_INT, ios->ioroot, 1, ios->union_comm);
-            }
-            if(!mpierr)
-            {
-                mpierr = MPI_Bcast(&ncid, 1, MPI_INT, ios->compmaster, ios->intercomm);
-            }
-            if(!mpierr)
-            {
-                mpierr = MPI_Bcast(&varid, 1, MPI_INT, ios->compmaster, ios->intercomm);
-            }
-            if(!mpierr)
-            {
-                mpierr = MPI_Bcast(&ioid, 1, MPI_INT, ios->compmaster, ios->intercomm);
-            }
-        }
-
-        ierr = MPI_Bcast(&mpierr, 1, MPI_INT, ios->comproot, ios->my_comm);
-        if(ierr != MPI_SUCCESS)
-        {
-            return check_mpi(file, ierr, __FILE__, __LINE__);
-        }
-        if(mpierr != MPI_SUCCESS)
-        {
-            return check_mpi(file, mpierr, __FILE__, __LINE__);
+            LOG((1, "Error sending async msg for PIO_MSG_READDARRAY"));
+            return pio_err(ios, file, ierr, __FILE__, __LINE__);
         }
 
         /* Share results known only on computation tasks with IO tasks. */
