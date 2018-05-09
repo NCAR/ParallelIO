@@ -604,6 +604,9 @@ enum PIO_MSG
     PIO_MAX_MSGS
 };
 
+/* Tag for the asynchronous I/O service message hdr */
+static const int PIO_ASYNC_MSG_HDR_TAG = 512;
+
 /* Max number of arguments in an asynchronous message */
 #define PIO_MAX_ASYNC_MSG_ARGS 32
 
