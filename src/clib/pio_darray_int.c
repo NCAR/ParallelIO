@@ -970,6 +970,8 @@ int pio_read_darray_nc(file_desc_t *file, io_desc_t *iodesc, int vid, void *iobu
     pioassert(file && file->iosystem && iodesc && vid <= PIO_MAX_VARS, "invalid input",
               __FILE__, __LINE__);
 
+    LOG((2, "pio_read_darray_nc vid %d", vid));
+
 #ifdef TIMING
     /* Start timing this function. */
     GPTLstart("PIO:read_darray_nc");
@@ -992,6 +994,7 @@ int pio_read_darray_nc(file_desc_t *file, io_desc_t *iodesc, int vid, void *iobu
     if(!ios->async || !ios->ioproc)
 	ierr = get_gdim0(file, iodesc, vid, fndims, &gdim0);
 #endif
+    LOG((3, "fndims %d", fndims));
 
     /* IO procs will read the data. */
     if (ios->ioproc)
@@ -1259,6 +1262,7 @@ int pio_read_darray_nc_serial(file_desc_t *file, io_desc_t *iodesc, int vid,
     /* Get number of dims for this var. */
     if ((ierr = PIOc_inq_varndims(file->pio_ncid, vid, &fndims)))
         return pio_err(ios, file, ierr, __FILE__, __LINE__);
+    LOG((2, "ndims %d fndims %d vdesc->record %d", ndims, fndims, vdesc->record));
 
     /* If setframe was not called, use a default value of 0. This is
      * required for backward compatibility. */

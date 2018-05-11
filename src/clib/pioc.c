@@ -428,8 +428,11 @@ int PIOc_InitDecomp(int iosysid, int pio_type, int ndims, const int *gdimlen, in
 
     /* Check the dim lengths. */
     for (int i = 0; i < ndims; i++)
+    {
         if (gdimlen[i] <= 0)
             return pio_err(ios, NULL, PIO_EINVAL, __FILE__, __LINE__);
+        LOG((3, "gdimlen[%d] %d", i, gdimlen[i]));
+    }
 
     /* If async is in use, and this is not an IO task, bcast the parameters. */
     if (ios->async)

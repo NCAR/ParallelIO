@@ -31,16 +31,24 @@
 
 /* Test with and without specifying a fill value to
  * PIOc_write_darray(). */
-#define NUM_TEST_CASES_FILLVALUE 2
+#define NUM_TEST_CASES_FILLVALUE 1
 
+#define NDIM4 4
+#define NDIM3 3
 #define NDIM1 1
-#define MAPLEN 7
+#define MAPLEN 12
+#define MAPLEN_12 12
+#define MAPLEN_8 8
+#define NUM_RECS 6
+#define REC_NUM_ELEM 40
 
 /* Length of the dimensions in the sample data. */
-int dim_len[NDIM1] = {28};
+int dim_len[NDIM3] = {2, 10, 2};
+int dim_len4[NDIM4] = {NC_UNLIMITED, 2, 10, 2};
 
 /* Run test for each of the rearrangers. */
-#define NUM_REARRANGERS_TO_TEST 2
+/* #define NUM_REARRANGERS_TO_TEST 2 */
+#define NUM_REARRANGERS_TO_TEST 1
 
 /* Run tests for darray functions. */
 int main(int argc, char **argv)
@@ -54,7 +62,7 @@ int main(int argc, char **argv)
 
     /* Initialize test. */
     if ((ret = pio_test_init2(argc, argv, &my_rank, &ntasks, MIN_NTASKS,
-                              MIN_NTASKS, -1, &test_comm)))
+                              MIN_NTASKS, 4, &test_comm)))
         ERR(ERR_INIT);
 
     if ((ret = PIOc_set_iosystem_error_handling(PIO_DEFAULT, PIO_RETURN_ERROR, NULL)))
@@ -67,10 +75,19 @@ int main(int argc, char **argv)
         int ioproc_stride = 1;    /* Stride in the mpi rank between io tasks. */
         int ioproc_start = 0;     /* Zero based rank of first processor to be used for I/O. */
         int wioid, rioid;
-        int maplen = MAPLEN;
-        MPI_Offset wcompmap[MAPLEN];
-        MPI_Offset rcompmap[MAPLEN];
-        int rearranger[NUM_REARRANGERS_TO_TEST] = {PIO_REARR_BOX, PIO_REARR_SUBSET};
+        int maplen;
+        int rmaplen;
+        MPI_Offset wcomp[TARGET_NTASKS][MAPLEN_12] = {{5, 6, 7, 8, 9, 10, 25, 26, 27, 28, 29, 30},
+                                                      {1, 2, 3, 4, 21, 22, 23, 24, -1, -1, -1, -1},
+                                                      {15, 16, 17, 18, 19, 20, 35, 36, 37, 38, 39, 40},
+                                                      {11, 12, 13, 14, 31, 32, 33, 34, -1, -1, -1, -1}};
+        MPI_Offset rcomp[TARGET_NTASKS][MAPLEN_12] = {{1, 2, 3, 4, 21, 22, 23, 24, -1, -1, -1, -1},
+                                                      {5, 6, 7, 8, 9, 10, 25, 26, 27, 28, 29, 30},
+                                                      {11, 12, 13, 14, 31, 32, 33, 34, -1, -1, -1, -1},
+                                                      {15, 16, 17, 18, 19, 20, 35, 36, 37, 38, 39, 40}};
+        MPI_Offset rd_compmap[MAPLEN];
+        /* int rearranger[NUM_REARRANGERS_TO_TEST] = {PIO_REARR_BOX, PIO_REARR_SUBSET}; */
+        int rearranger[NUM_REARRANGERS_TO_TEST] = {PIO_REARR_BOX};
 
         /* Data we will write for each type. */
         signed char byte_data[MAPLEN];
@@ -134,12 +151,15 @@ int main(int argc, char **argv)
 
         int ret;      /* Return code. */
 
+        /* Set maplen. */
+        maplen = my_rank % 2 ? 8 : 12;
+        rmaplen = my_rank % 2 ? 12 : 8;
+
         /* Set up the compmaps. Don't forget these are 1-based
          * numbers, like in Fortran! */
         for (int i = 0; i < MAPLEN; i++)
         {
-            wcompmap[i] = i % 2 ? my_rank * MAPLEN + i + 1 : 0; /* Even values missing. */
-            rcompmap[i] = my_rank * MAPLEN + i + 1;
+            rd_compmap[i] = my_rank * MAPLEN + i + 1;
         }
 
         /* Figure out iotypes. */
@@ -158,15 +178,18 @@ int main(int argc, char **argv)
             /* Test with and without custom fill values. */
             for (int fv = 0; fv < NUM_TEST_CASES_FILLVALUE; fv++)
             {
-#ifndef _NETCDF4
-#define NUM_TYPES 6
-                int test_type[NUM_TYPES] = {PIO_BYTE, PIO_CHAR, PIO_SHORT, PIO_INT, PIO_FLOAT, PIO_DOUBLE};
-#else
-#define NUM_TYPES 11
-                int test_type[NUM_TYPES] = {PIO_BYTE, PIO_CHAR, PIO_SHORT, PIO_INT, PIO_FLOAT, PIO_DOUBLE,
-                                            PIO_UBYTE, PIO_USHORT, PIO_UINT, PIO_INT64, PIO_UINT64};
+/* #ifndef _NETCDF4 */
+/* #define NUM_TYPES 6 */
+/*                 int test_type[NUM_TYPES] = {PIO_BYTE, PIO_CHAR, PIO_SHORT, PIO_INT, PIO_FLOAT, PIO_DOUBLE}; */
+/* #else */
+/* #define NUM_TYPES 11 */
+/*                 int test_type[NUM_TYPES] = {PIO_BYTE, PIO_CHAR, PIO_SHORT, PIO_INT, PIO_FLOAT, PIO_DOUBLE, */
+/*                                             PIO_UBYTE, PIO_USHORT, PIO_UINT, PIO_INT64, PIO_UINT64}; */
                 
-#endif /* _NETCDF4 */
+/* #endif /\* _NETCDF4 *\/ */
+                #define NUM_TYPES 1
+                int test_type[NUM_TYPES] = {PIO_INT};
+
 
                 /* Determine what data to write. Put value of 42 into
                  * array elements that will not get written. Due to
@@ -215,7 +238,9 @@ int main(int argc, char **argv)
                     void *expected;
                     void *fill;
                     void *data;
-                    int ncid, dimid, varid;
+                    int ncid, dimid[NDIM4], varid;
+                    char dim_name[NDIM4][NC_MAX_NAME + 1] = {"PIO_TF_test_dim_time", "PIO_TF_test_dim_hgt",
+                                                             "PIO_TF_test_dim_col", "PIO_TF_test_dim_row"};
                     char filename[NC_MAX_NAME + 1];
 
                     switch (test_type[t])
@@ -282,15 +307,15 @@ int main(int argc, char **argv)
                     }
 
                     /* Initialize decompositions. */
-                    if ((ret = PIOc_InitDecomp(iosysid, test_type[t], NDIM1, dim_len, maplen, wcompmap,
+                    if ((ret = PIOc_InitDecomp(iosysid, test_type[t], NDIM3, dim_len, maplen, wcomp[my_rank],
                                                &wioid, &rearranger[r], NULL, NULL)))
                         return ret;
-                    if ((ret = PIOc_InitDecomp(iosysid, test_type[t], NDIM1, dim_len, maplen, rcompmap,
+                    if ((ret = PIOc_InitDecomp(iosysid, test_type[t], NDIM3, dim_len, rmaplen, rcomp[my_rank],
                                                &rioid, &rearranger[r], NULL, NULL)))
                         return ret;
 
                     /* Create the test file in each of the available iotypes. */
-                    for (int fmt = 0; fmt < num_flavors; fmt++)
+                    for (int fmt = 3; fmt < num_flavors; fmt++)
                     {
                         PIO_Offset type_size;
                         void *data_in;
@@ -313,19 +338,35 @@ int main(int argc, char **argv)
                             return ret;
 
                         /* Define metadata. */
-                        if ((ret = PIOc_def_dim(ncid, DIM_NAME, dim_len[0], &dimid)))
+                        for (int d = 0; d < NDIM4; d++)
+                            if ((ret = PIOc_def_dim(ncid, dim_name[d], dim_len4[d], &dimid[d])))
+                                return ret;
+                        if ((ret = PIOc_def_var(ncid, VAR_NAME, test_type[t], NDIM4, dimid, &varid)))
                             return ret;
-                        if ((ret = PIOc_def_var(ncid, VAR_NAME, test_type[t], NDIM1, &dimid, &varid)))
-                            return ret;
-                        if ((ret = PIOc_put_att(ncid, varid, FILL_VALUE_NAME, test_type[t],
-                                                1, fill)))
-                            return ret;
+                        /* if ((ret = PIOc_put_att(ncid, varid, FILL_VALUE_NAME, test_type[t], */
+                        /*                         1, fill))) */
+                        /*     return ret; */
                         if ((ret = PIOc_enddef(ncid)))
                             return ret;
 
-                        /* Write some data. */
-                        if ((ret = PIOc_write_darray(ncid, varid, wioid, MAPLEN, data, fill)))
-                            return ret;
+                        /* Write some records of data. */
+                        for (int f = 0; f < NUM_RECS; f++)
+                        {
+                            int data1[maplen];
+                            
+                            /* Put together data to write. */
+                            for (int m = 0; m < maplen; m++)
+                                data1[m] = wcomp[my_rank][m] + f * REC_NUM_ELEM;
+                            
+                            /* Set the record number. */
+                            if ((ret = PIOc_setframe(ncid, varid, f)))
+                                return ret;
+
+                            /* Write some data. */
+                            if ((ret = PIOc_write_darray(ncid, varid, wioid, maplen, data1, fill)))
+                                return ret;
+                        }
+                        
                         if ((ret = PIOc_sync(ncid)))
                             return ret;
 
@@ -334,16 +375,22 @@ int main(int argc, char **argv)
                             return ret;
 
                         /* Allocate space to read data into. */
-                        if (!(data_in = malloc(type_size * MAPLEN)))
+                        if (!(data_in = malloc(type_size * maplen)))
                             return PIO_ENOMEM;
 
                         /* Read the data. */
-                        if ((ret = PIOc_read_darray(ncid, varid, rioid, MAPLEN, data_in)))
-                            return ret;
+                        for (int f = 0; f < NUM_RECS; f++)
+                        {
+                            /* Set the record number. */
+                            if ((ret = PIOc_setframe(ncid, varid, f)))
+                                return ret;
+                            if ((ret = PIOc_read_darray(ncid, varid, rioid, rmaplen, data_in)))
+                                return ret;
+                        }
 
-                        /* Check results. */
-                        if (memcmp(data_in, expected, type_size * MAPLEN))
-                            return ERR_AWFUL;
+                        /* /\* Check results. *\/ */
+                        /* if (memcmp(data_in, expected, type_size * MAPLEN)) */
+                        /*     return ERR_AWFUL; */
 
                         /* Release storage. */
                         free(data_in);
