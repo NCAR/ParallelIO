@@ -852,6 +852,8 @@ int PIOc_read_darray(int ncid, int varid, int ioid, PIO_Offset arraylen,
         rlen = iodesc->maxiobuflen;
     else
         rlen = iodesc->llen;
+    LOG((3, "rlen %d iodesc->llen %d iodesc->maxiobuflen %d file->iotype %d", rlen,
+         iodesc->llen, iodesc->maxiobuflen, file->iotype));
 
     /* Allocate a buffer for one record. */
     if (ios->ioproc && rlen > 0)

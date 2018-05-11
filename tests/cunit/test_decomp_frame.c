@@ -176,8 +176,9 @@ int main(int argc, char **argv)
                 return ret;
 
             /* Test with and without custom fill values. */
-            for (int fv = 0; fv < NUM_TEST_CASES_FILLVALUE; fv++)
+            /* for (int fv = 0; fv < NUM_TEST_CASES_FILLVALUE; fv++) */
             {
+                int fv = 1;
 /* #ifndef _NETCDF4 */
 /* #define NUM_TYPES 6 */
 /*                 int test_type[NUM_TYPES] = {PIO_BYTE, PIO_CHAR, PIO_SHORT, PIO_INT, PIO_FLOAT, PIO_DOUBLE}; */
@@ -375,7 +376,7 @@ int main(int argc, char **argv)
                             return ret;
 
                         /* Allocate space to read data into. */
-                        if (!(data_in = malloc(type_size * maplen)))
+                        if (!(data_in = malloc(type_size * rmaplen)))
                             return PIO_ENOMEM;
 
                         /* Read the data. */
