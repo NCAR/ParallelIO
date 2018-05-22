@@ -339,11 +339,14 @@ int main(int argc, char **argv)
                             return ret;
 
                         /* Define metadata. */
-                        for (int d = 0; d < NDIM4; d++)
+                        for (int d = NDIM4 - 1; d >= 0; d--)
                             if ((ret = PIOc_def_dim(ncid, dim_name[d], dim_len4[d], &dimid[d])))
                                 return ret;
                         if ((ret = PIOc_def_var(ncid, VAR_NAME, test_type[t], NDIM4, dimid, &varid)))
                             return ret;
+                        /* if ((ret = PIOc_def_var_fill(ncid, varid, NC_FILL, fill))) */
+                        /*     return ret; */
+                        
                         /* if ((ret = PIOc_put_att(ncid, varid, FILL_VALUE_NAME, test_type[t], */
                         /*                         1, fill))) */
                         /*     return ret; */

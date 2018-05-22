@@ -1058,6 +1058,7 @@ int pio_read_darray_nc(file_desc_t *file, io_desc_t *iodesc, int vid, void *iobu
                     {
                         start[i] = region->start[i-1];
                         count[i] = region->count[i-1];
+                        LOG((4, "pio_read_darray_nc start[%d] %d count[%d] %d", i, start[i], i, count[i]));
                     }
 
                     /* Read one record. */
