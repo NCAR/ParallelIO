@@ -13,7 +13,7 @@ module piolib_mod
   !--------------
   use pio_types, only : file_desc_t, iosystem_desc_t, var_desc_t, io_desc_t, &
         pio_iotype_netcdf, pio_iotype_pnetcdf, pio_iotype_netcdf4p, pio_iotype_netcdf4c, &
-        pio_noerr, pio_rearr_subset, pio_rearr_opt_t
+        pio_noerr, pio_rearr_subset, pio_rearr_box, pio_rearr_opt_t
   !--------------
   use pio_support, only : piodie, debug, debugio, debugasync, checkmpireturn
   use pio_nf, only : pio_set_log_level
@@ -924,17 +924,19 @@ contains
 !! @param comp_comms The computational communicator for each of the computational components
 !! @param io_comm    The io communicator
 !! @param iosystem a derived type which can be used in subsequent pio operations (defined in PIO_types).
+!! @param rearranger The rearranger to use (optional)
 !<
-  subroutine init_intercom(component_count, peer_comm, comp_comms, io_comm, rearranger, iosystem)
+  subroutine init_intercom(component_count, peer_comm, comp_comms, io_comm, iosystem, rearranger)
     use iso_c_binding
     integer, intent(in) :: component_count
     integer, intent(in) :: peer_comm
     integer, target, intent(in) :: comp_comms(component_count)   !  The compute communicator
     integer, intent(in) :: io_comm     !  The io communicator
-    integer, intent(in) :: rearranger  ! The rearranger to use
     type (iosystem_desc_t), intent(out)  :: iosystem(component_count)  ! io descriptor to initalize
+    integer, intent(in), optional :: rearranger  ! The rearranger to use
 
     integer :: i, ierr
+    integer :: lrearranger = pio_rearr_box
     integer, target :: iosystem_ioids(component_count)
     type(C_PTR) :: cptr_iosystem_ioids
     type(C_PTR) :: cptr_comp_comms
@@ -961,7 +963,10 @@ contains
       iosystem_ioids(i) = -1
     end do
     cptr_iosystem_ioids = C_LOC(iosystem_ioids)
-    ierr = PIOc_Init_Intercomm_from_F90(component_count, peer_comm, cptr_comp_comms, io_comm, rearranger, cptr_iosystem_ioids)
+    if(present(rearranger)) then
+      lrearranger = rearranger
+    end if
+    ierr = PIOc_Init_Intercomm_from_F90(component_count, peer_comm, cptr_comp_comms, io_comm, lrearranger, cptr_iosystem_ioids)
     do i=1,component_count
       iosystem(i)%iosysid = iosystem_ioids(i)
     end do

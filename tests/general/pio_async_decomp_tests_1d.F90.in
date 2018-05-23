@@ -127,13 +127,13 @@ PIO_TF_AUTO_TEST_SUB_BEGIN async_2comp_wr_1d
         ! I/O proc
         io_comm = new_comm
         call PIO_init(NUM_COMPONENTS, pio_tf_comm_, comp_comms, io_comm,&
-              rearrs(i), iosys)
+              iosys, rearrs(i))
       else
         ! Compute proc
         comp_comms(gcomp_idx) = new_comm
         io_comm = MPI_COMM_NULL
         call PIO_init(NUM_COMPONENTS, pio_tf_comm_, comp_comms, io_comm,&
-              rearrs(i), iosys)
+              iosys, rearrs(i))
 
         ! Only compute procs send data 
         dims(1) = VEC_LOCAL_SZ * new_size

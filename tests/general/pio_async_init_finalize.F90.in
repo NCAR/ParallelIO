@@ -108,13 +108,13 @@ PIO_TF_AUTO_TEST_SUB_BEGIN async_1comp_init_finalize
         comp_comms(1) = odd_even_comm
         io_comm = MPI_COMM_NULL
         call PIO_init(NUM_COMPONENTS, pio_tf_comm_, comp_comms, io_comm,&
-              rearrs(i), iosys)
+              iosys, rearrs(i))
       else
         ! I/O proc
         comp_comms(1) = MPI_COMM_NULL
         io_comm = odd_even_comm
         call PIO_init(NUM_COMPONENTS, pio_tf_comm_, comp_comms, io_comm,&
-              rearrs(i), iosys)
+              iosys, rearrs(i))
       end if
       ! Only compute procs call PIO function calls, I/O proc
       ! waits inside PIO_init() waiting for commands from the
@@ -167,13 +167,13 @@ PIO_TF_AUTO_TEST_SUB_BEGIN async_loop_init_finalize
           comp_comms(1) = odd_even_comm
           io_comm = MPI_COMM_NULL
           call PIO_init(NUM_COMPONENTS, pio_tf_comm_, comp_comms, io_comm,&
-                rearrs(i), iosys)
+                iosys, rearrs(i))
         else
           ! I/O proc
           comp_comms(1) = MPI_COMM_NULL
           io_comm = odd_even_comm
           call PIO_init(NUM_COMPONENTS, pio_tf_comm_, comp_comms, io_comm,&
-                rearrs(i), iosys)
+                iosys, rearrs(i))
         end if
         ! Only compute procs call PIO function calls, I/O proc
         ! waits inside PIO_init() waiting for commands from the
@@ -233,13 +233,13 @@ PIO_TF_AUTO_TEST_SUB_BEGIN async_2comp_init_finalize
         ! I/O proc
         io_comm = new_comm
         call PIO_init(NUM_COMPONENTS, pio_tf_comm_, comp_comms, io_comm,&
-              rearrs(i), iosys)
+              iosys, rearrs(i))
       else
         ! Compute proc
         comp_comms(gcomp_idx) = new_comm
         io_comm = MPI_COMM_NULL
         call PIO_init(NUM_COMPONENTS, pio_tf_comm_, comp_comms, io_comm,&
-              rearrs(i), iosys)
+              iosys, rearrs(i))
       end if
       ! Only compute procs call PIO function calls, I/O proc
       ! waits inside PIO_init() waiting for commands from the
