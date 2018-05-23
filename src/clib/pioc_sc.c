@@ -289,12 +289,16 @@ int CalcStartandCount(int pio_type, int ndims, const int *gdims, int num_io_proc
     pgdims = 1;
     for (i = 0; i < ndims; i++)
         pgdims *= (long int)gdims[i];
+    LOG((3, "blocksize %d minbytes %d minblocksize %d pgdims %d", blocksize,
+         minbytes, minblocksize, pgdims));
 
     /* Find the number of ioprocs that are needed so that we have
-     * blocksize data on each iotask*/
-    use_io_procs = max(1, min((int)((float)pgdims / (float)minblocksize + 0.5), num_io_procs));
+     * blocksize data on each iotask. */
+    use_io_procs = max(1, min((int)((float)pgdims / (float)minblocksize + 0.5),
+                              num_io_procs));
 
     maxbytes = max(blocksize, pgdims * basesize / use_io_procs) + 256;
+    LOG((3, "use_io_procs %d maxbytes %d", use_io_procs, maxbytes));
 
     /* Initialize to 0. */
     converged = 0;
@@ -319,10 +323,12 @@ int CalcStartandCount(int pio_type, int ndims, const int *gdims, int num_io_proc
                 count[i] = gdims[i];
             }
             ldims = ndims - 1;
+            LOG((4, "ldims %d basesize %lld", ldims, basesize));
             p = basesize;
             for (i = ndims - 1; i >= 0; i--)
             {
                 p = p * gdims[i];
+                LOG((4, "i %d p %lld p / use_io_procs %d", i, p, p / use_io_procs));
                 if (p / use_io_procs > maxbytes)
                 {
                     ldims = i;
@@ -350,7 +356,7 @@ int CalcStartandCount(int pio_type, int ndims, const int *gdims, int num_io_proc
                         piodie("Start plus count exceeds dimension bound",__FILE__,__LINE__);
                     }
                 }
-                else if(gdims[i] > 1)
+                else if (gdims[i] > 1)
                 {
                     tioprocs = gdims[i];
                     tiorank = (iorank * tioprocs) / ioprocs;
@@ -371,7 +377,7 @@ int CalcStartandCount(int pio_type, int ndims, const int *gdims, int num_io_proc
             }
             pknt = 1;
 
-            for(i = 0; i < ndims; i++)
+            for (i = 0; i < ndims; i++)
                 pknt *= count[i];
 
             tpsize += pknt;
@@ -381,7 +387,7 @@ int CalcStartandCount(int pio_type, int ndims, const int *gdims, int num_io_proc
                 converged = true;
                 break;
             }
-            else if(tpsize >= pgdims)
+            else if (tpsize >= pgdims)
             {
                 break;
             }
@@ -391,6 +397,7 @@ int CalcStartandCount(int pio_type, int ndims, const int *gdims, int num_io_proc
         {
             tpsize = 0;
             use_io_procs--;
+            LOG((4, "not converged! use_io_procs %d", use_io_procs));
         }
     }
 

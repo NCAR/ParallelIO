@@ -383,7 +383,8 @@ int main(int argc, char **argv)
                             return PIO_ENOMEM;
 
                         /* Read the data. */
-                        for (int f = 0; f < NUM_RECS; f++)
+                        /* for (int f = 0; f < NUM_RECS; f++) */
+                        for (int f = 0; f < 1; f++)
                         {
                             /* Set the record number. */
                             if ((ret = PIOc_setframe(ncid, varid, f)))
