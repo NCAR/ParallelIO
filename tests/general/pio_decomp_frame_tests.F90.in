@@ -1,6 +1,6 @@
 ! Get a 3D column decomposition
 ! If force_rearrange is FALSE, the decomposition is such that
-! # All even procs have VEC_HGT_SZ blocks of 
+! # All even procs have VEC_HGT_SZ blocks of
 ! (VEC_COL_SZ rows x VEC_ROW_SZ columns) elements
 ! # All odd procs have  VEC_HGT_SZ blocks of
 ! (VEC_COL_SZ rows x VEC_ROW_SZ + 1 columns) elements
@@ -118,7 +118,7 @@ PIO_TF_AUTO_TEST_SUB_BEGIN nc_write_read_4d_col_decomp
   nrows = count(1)
   ncols = count(2)
   nhgts = count(3)
-  
+
   allocate(wbuf(nrows, ncols, nhgts, NFRAMES))
   allocate(compdof(nrows * ncols * nhgts))
   do f=1,NFRAMES
@@ -143,7 +143,7 @@ PIO_TF_AUTO_TEST_SUB_BEGIN nc_write_read_4d_col_decomp
   nrows = count(1)
   ncols = count(2)
   nhgts = count(3)
-  
+
   allocate(rbuf(nrows, ncols, nhgts, NFRAMES))
   allocate(compdof(nrows * ncols * nhgts))
   allocate(exp_val(nrows, ncols, nhgts, NFRAMES))
@@ -169,7 +169,7 @@ PIO_TF_AUTO_TEST_SUB_BEGIN nc_write_read_4d_col_decomp
   filename = "test_pio_decomp_simple_tests.testfile"
   do i=1,num_iotypes
     PIO_TF_LOG(0,*) "Testing : PIO_TF_DATA_TYPE : ", iotype_descs(i)
-    ierr = PIO_createfile(pio_tf_iosystem_, pio_file, iotypes(i), filename, PIO_CLOBBER) 
+    ierr = PIO_createfile(pio_tf_iosystem_, pio_file, iotypes(i), filename, PIO_CLOBBER)
     PIO_TF_CHECK_ERR(ierr, "Could not create file " // trim(filename))
 
     ierr = PIO_def_dim(pio_file, 'PIO_TF_test_dim_row', dims(1), pio_dims(1))
@@ -197,7 +197,9 @@ PIO_TF_AUTO_TEST_SUB_BEGIN nc_write_read_4d_col_decomp
       PIO_TF_CHECK_ERR(ierr, "Failed to write darray : " // trim(filename))
     end do
 
-    call PIO_syncfile(pio_file)
+    call PIO_closefile(pio_file)
+    ierr = PIO_openfile(pio_tf_iosystem_, pio_file, iotypes(i), trim(filename))
+    PIO_TF_CHECK_ERR(ierr, "Failed to open file to read : " // trim(filename))
 
     do f=1,NFRAMES
       call PIO_setframe(pio_file, pio_var, f)
@@ -210,7 +212,7 @@ PIO_TF_AUTO_TEST_SUB_BEGIN nc_write_read_4d_col_decomp
     end do
 
     call PIO_closefile(pio_file)
-    
+
     call PIO_deletefile(pio_tf_iosystem_, filename);
   end do
 
@@ -256,7 +258,7 @@ PIO_TF_AUTO_TEST_SUB_BEGIN nc_reuse_3d_decomp
   nrows = count(1)
   ncols = count(2)
   nhgts = count(3)
-  
+
   ! Initialize the 4d var
   allocate(wbuf4d(nrows, ncols, nhgts, NFRAMES))
   do f=1,NFRAMES
@@ -280,7 +282,7 @@ PIO_TF_AUTO_TEST_SUB_BEGIN nc_reuse_3d_decomp
     end do
   end do
   ! Initialize the 3d var
-  allocate(wbuf3d(nrows, ncols, nhgts)) 
+  allocate(wbuf3d(nrows, ncols, nhgts))
   do k=1,nhgts
     do j=1,ncols
       do i=1,nrows
@@ -298,7 +300,7 @@ PIO_TF_AUTO_TEST_SUB_BEGIN nc_reuse_3d_decomp
   nrows = count(1)
   ncols = count(2)
   nhgts = count(3)
-  
+
   allocate(rbuf4d(nrows, ncols, nhgts, NFRAMES))
   rbuf4d = 0
   ! Expected val for 4d var
@@ -345,7 +347,7 @@ PIO_TF_AUTO_TEST_SUB_BEGIN nc_reuse_3d_decomp
   filename = "test_pio_decomp_simple_tests.testfile"
   do i=1,num_iotypes
     PIO_TF_LOG(0,*) "Testing : PIO_TF_DATA_TYPE : ", iotype_descs(i)
-    ierr = PIO_createfile(pio_tf_iosystem_, pio_file, iotypes(i), filename, PIO_CLOBBER) 
+    ierr = PIO_createfile(pio_tf_iosystem_, pio_file, iotypes(i), filename, PIO_CLOBBER)
     PIO_TF_CHECK_ERR(ierr, "Could not create file " // trim(filename))
 
     ierr = PIO_def_dim(pio_file, 'PIO_TF_test_dim_row', dims(1), pio_dims(1))
@@ -378,7 +380,10 @@ PIO_TF_AUTO_TEST_SUB_BEGIN nc_reuse_3d_decomp
       call PIO_write_darray(pio_file, pio_var4d, wr_iodesc, wbuf4d(:,:,:,f), ierr)
       PIO_TF_CHECK_ERR(ierr, "Failed to write 4d darray : " // trim(filename))
     end do
-    call PIO_syncfile(pio_file)
+!    call PIO_syncfile(pio_file)
+    call PIO_closefile(pio_file)
+    ierr = PIO_openfile(pio_tf_iosystem_, pio_file, iotypes(i), trim(filename))
+    PIO_TF_CHECK_ERR(ierr, "Failed to open file to read : " // trim(filename))
 
     rbuf4d = 0
     rbuf3d = 0
@@ -398,7 +403,7 @@ PIO_TF_AUTO_TEST_SUB_BEGIN nc_reuse_3d_decomp
     PIO_TF_CHECK_VAL((rbuf3d, exp_val3d), "Got wrong 3dd val")
 
     call PIO_closefile(pio_file)
-    
+
     call PIO_deletefile(pio_tf_iosystem_, filename);
   end do
 
@@ -446,7 +451,7 @@ PIO_TF_AUTO_TEST_SUB_BEGIN nc_test_limited_time_dim
   nrows = count(1)
   ncols = count(2)
   nhgts = count(3)
-  
+
   allocate(wbuf(nrows, ncols, nhgts, NFRAMES))
   allocate(compdof(nrows * ncols * nhgts))
   do f=1,NFRAMES
@@ -471,7 +476,7 @@ PIO_TF_AUTO_TEST_SUB_BEGIN nc_test_limited_time_dim
   nrows = count(1)
   ncols = count(2)
   nhgts = count(3)
-  
+
   allocate(rbuf(nrows, ncols, nhgts, NFRAMES))
   allocate(compdof(nrows * ncols * nhgts))
   allocate(exp_val(nrows, ncols, nhgts, NFRAMES))
@@ -497,7 +502,7 @@ PIO_TF_AUTO_TEST_SUB_BEGIN nc_test_limited_time_dim
   filename = "test_pio_decomp_simple_tests.testfile"
   do i=1,num_iotypes
     PIO_TF_LOG(0,*) "Testing : PIO_TF_DATA_TYPE : ", iotype_descs(i)
-    ierr = PIO_createfile(pio_tf_iosystem_, pio_file, iotypes(i), filename, PIO_CLOBBER) 
+    ierr = PIO_createfile(pio_tf_iosystem_, pio_file, iotypes(i), filename, PIO_CLOBBER)
     PIO_TF_CHECK_ERR(ierr, "Could not create file " // trim(filename))
 
     ierr = PIO_def_dim(pio_file, 'PIO_TF_test_dim_row', dims(1), pio_dims(1))
@@ -525,7 +530,10 @@ PIO_TF_AUTO_TEST_SUB_BEGIN nc_test_limited_time_dim
       PIO_TF_CHECK_ERR(ierr, "Failed to write darray : " // trim(filename))
     end do
 
-    call PIO_syncfile(pio_file)
+!    call PIO_syncfile(pio_file)
+    call PIO_closefile(pio_file)
+    ierr = PIO_openfile(pio_tf_iosystem_, pio_file, iotypes(i), trim(filename))
+    PIO_TF_CHECK_ERR(ierr, "Failed to open file to read : " // trim(filename))
 
     do f=1,NFRAMES
       call PIO_setframe(pio_file, pio_var, f)
@@ -538,7 +546,7 @@ PIO_TF_AUTO_TEST_SUB_BEGIN nc_test_limited_time_dim
     end do
 
     call PIO_closefile(pio_file)
-    
+
     call PIO_deletefile(pio_tf_iosystem_, filename);
   end do
 
