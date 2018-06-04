@@ -922,35 +922,38 @@ int rearrange_comp2io(iosystem_desc_t *ios, io_desc_t *iodesc, void *sbuf,
 
     /* On compute tasks loop over iotasks and create a data type for
      * each exchange.  */
-    for (int i = 0; i < niotasks; i++)
+    if(!ios->async || ios->compproc)
     {
-        int io_comprank = ios->ioranks[i];
-        LOG((3, "ios->ioranks[%d] = %d", i, ios->ioranks[i]));
-        if (iodesc->rearranger == PIO_REARR_SUBSET)
-            io_comprank = 0;
-
-        LOG((3, "i = %d iodesc->scount[i] = %d", i, iodesc->scount[i]));
-        if (iodesc->scount[i] > 0 && sbuf)
+        for (int i = 0; i < niotasks; i++)
         {
-            LOG((3, "io task %d creating sendtypes[%d]", i, io_comprank));
-            sendcounts[io_comprank] = 1;
-#if PIO_USE_MPISERIAL
-            if ((mpierr = MPI_Type_hvector(nvars, 1, (MPI_Aint)iodesc->ndof * iodesc->mpitype_size,
-                                           iodesc->stype[i], &sendtypes[io_comprank])))
-                return check_mpi(NULL, mpierr, __FILE__, __LINE__);
-#else
-            if ((mpierr = MPI_Type_create_hvector(nvars, 1, (MPI_Aint)iodesc->ndof * iodesc->mpitype_size,
-                                                  iodesc->stype[i], &sendtypes[io_comprank])))
-                return check_mpi(NULL, mpierr, __FILE__, __LINE__);
-#endif /* PIO_USE_MPISERIAL */
-            pioassert(sendtypes[io_comprank] != PIO_DATATYPE_NULL,  "bad mpi type", __FILE__, __LINE__);
+            int io_comprank = ios->ioranks[i];
+            LOG((3, "ios->ioranks[%d] = %d", i, ios->ioranks[i]));
+            if (iodesc->rearranger == PIO_REARR_SUBSET)
+                io_comprank = 0;
 
-            if ((mpierr = MPI_Type_commit(&sendtypes[io_comprank])))
-                return check_mpi(NULL, mpierr, __FILE__, __LINE__);
-        }
-        else
-        {
-            sendcounts[io_comprank] = 0;
+            LOG((3, "i = %d iodesc->scount[i] = %d", i, iodesc->scount[i]));
+            if (iodesc->scount[i] > 0 && sbuf)
+            {
+                LOG((3, "io task %d creating sendtypes[%d]", i, io_comprank));
+                sendcounts[io_comprank] = 1;
+    #if PIO_USE_MPISERIAL
+                if ((mpierr = MPI_Type_hvector(nvars, 1, (MPI_Aint)iodesc->ndof * iodesc->mpitype_size,
+                                               iodesc->stype[i], &sendtypes[io_comprank])))
+                    return check_mpi(NULL, mpierr, __FILE__, __LINE__);
+    #else
+                if ((mpierr = MPI_Type_create_hvector(nvars, 1, (MPI_Aint)iodesc->ndof * iodesc->mpitype_size,
+                                                      iodesc->stype[i], &sendtypes[io_comprank])))
+                    return check_mpi(NULL, mpierr, __FILE__, __LINE__);
+    #endif /* PIO_USE_MPISERIAL */
+                pioassert(sendtypes[io_comprank] != PIO_DATATYPE_NULL,  "bad mpi type", __FILE__, __LINE__);
+
+                if ((mpierr = MPI_Type_commit(&sendtypes[io_comprank])))
+                    return check_mpi(NULL, mpierr, __FILE__, __LINE__);
+            }
+            else
+            {
+                sendcounts[io_comprank] = 0;
+            }
         }
     }
     
@@ -1572,6 +1575,7 @@ int default_subset_partition(iosystem_desc_t *ios, io_desc_t *iodesc)
 {
     int color;
     int key;
+    MPI_Comm union_comm;
     int mpierr; /* Return value from MPI functions. */
 
     pioassert(ios && iodesc, "invalid input", __FILE__, __LINE__);
@@ -1594,8 +1598,22 @@ int default_subset_partition(iosystem_desc_t *ios, io_desc_t *iodesc)
     LOG((3, "key = %d color = %d", key, color));
 
     /* Create new communicators. */
-    if ((mpierr = MPI_Comm_split(ios->comp_comm, color, key, &iodesc->subset_comm)))
+    if(ios->async)
+    {
+        /* In the asynchronous I/O service case, comp_comms and io_comms
+         * are disjoint. All communication occurs through the union comm,
+         * union of io_comm and comp_comm
+         */
+        union_comm = ios->union_comm;
+    }
+    else
+    {
+        union_comm = ios->comp_comm;
+    }
+    if ((mpierr = MPI_Comm_split(union_comm, color, key, &(iodesc->subset_comm))))
         return check_mpi(NULL, mpierr, __FILE__, __LINE__);
+
+    LOG((2, "Finished Splitting comm = %x, key = %d, color = %d", union_comm, key, color));
 
     return PIO_NOERR;
 }
@@ -1687,6 +1705,7 @@ int subset_rearrange_create(iosystem_desc_t *ios, int maplen, PIO_Offset *compma
     if ((mpierr = MPI_Comm_size(iodesc->subset_comm, &ntasks)))
         return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
 
+    LOG((2, "subset_comm = %x, MPI_COMM_NULL = %x, rank = %d, ntasks = %d", iodesc->subset_comm, MPI_COMM_NULL, rank, ntasks));
     /* Check rank for correctness. */
     if (ios->ioproc)
         pioassert(rank == 0, "Bad io rank in subset create", __FILE__, __LINE__);

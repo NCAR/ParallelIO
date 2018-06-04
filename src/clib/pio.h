@@ -642,6 +642,12 @@ typedef struct iosystem_desc_t
     /** MPI Info object. */
     MPI_Info info;
 
+    /** Async I/O service message info */
+    struct async_ios_msg_info_{
+      int seq_num;
+      int prev_msg;
+    } async_ios_msg_info;
+
     /** Index of this component in the list of components. */
     int comp_idx;
 

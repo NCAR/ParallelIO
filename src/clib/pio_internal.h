@@ -103,15 +103,23 @@ extern "C" {
     int pio_msg_handler2(int io_rank, int component_count, iosystem_desc_t **iosys,
                          MPI_Comm io_comm);
 
+    /* Create and delete the global async i/o message communicator */
+    int create_async_service_msg_comm(const MPI_Comm io_comm, MPI_Comm *msg_comm);
+    void delete_async_service_msg_comm(void );
+
+    int init_async_msgs_sign(void );
+    int send_async_msg(iosystem_desc_t *ios, int msg, ...);
+    int recv_async_msg(iosystem_desc_t *ios, int msg, ...);
+
     void pio_get_env(void);
-    int  pio_add_to_iodesc_list(io_desc_t *iodesc);
+    int  pio_add_to_iodesc_list(io_desc_t *iodesc, MPI_Comm comm);
     io_desc_t *pio_get_iodesc_from_id(int ioid);
     int pio_delete_iodesc_from_list(int ioid);
     int pio_num_iosystem(int *niosysid);
 
     int pio_get_file(int ncid, file_desc_t **filep);
     int pio_delete_file_from_list(int ncid);
-    void pio_add_to_file_list(file_desc_t *file);
+    int pio_add_to_file_list(file_desc_t *file, MPI_Comm comm);
     /* Add a var_desc_t to a varlist. */
     int add_to_varlist(int varid, int rec_var, var_desc_t **varlist);
 
@@ -142,7 +150,7 @@ extern "C" {
                             const char *filename, int mode, int retry);
 
     iosystem_desc_t *pio_get_iosystem_from_id(int iosysid);
-    int pio_add_to_iosystem_list(iosystem_desc_t *ios);
+    int pio_add_to_iosystem_list(iosystem_desc_t *ios, MPI_Comm comm);
 
     /* Check the return code from a netCDF call. */
     int check_netcdf(file_desc_t *file, int status, const char *fname, int line);
@@ -316,8 +324,8 @@ extern "C" {
     int write_darray_multi_serial(file_desc_t *file, int nvars, int fndims, const int *vid,
                                   io_desc_t *iodesc, int fill, const int *frame);
 
-    int pio_read_darray_nc(file_desc_t *file, io_desc_t *iodesc, int vid, void *iobuf);
-    int pio_read_darray_nc_serial(file_desc_t *file, io_desc_t *iodesc, int vid, void *iobuf);
+    int pio_read_darray_nc(file_desc_t *file, int fndims, io_desc_t *iodesc, int vid, void *iobuf);
+    int pio_read_darray_nc_serial(file_desc_t *file, int fndims, io_desc_t *iodesc, int vid, void *iobuf);
 
     /* Read atts with type conversion. */
     int PIOc_get_att_tc(int ncid, int varid, const char *name, nc_type memtype, void *ip);
@@ -376,10 +384,13 @@ extern "C" {
 }
 #endif
 
+/* Asynchronous I/O services start with the following seq num */
+static const int PIO_MSG_START_SEQ_NUM = 1024;
 /** These are the messages that can be sent over the intercomm when
  * async is being used. */
 enum PIO_MSG
 {
+    PIO_MSG_INVALID = 0,
     PIO_MSG_OPEN_FILE,
     PIO_MSG_CREATE_FILE,
     PIO_MSG_INQ_ATT,
@@ -584,11 +595,50 @@ enum PIO_MSG
     PIO_MSG_FREEDECOMP,
     PIO_MSG_CLOSE_FILE,
     PIO_MSG_DELETE_FILE,
-    PIO_MSG_EXIT,
+    PIO_MSG_FINALIZE,
     PIO_MSG_GET_ATT,
     PIO_MSG_PUT_ATT,
     PIO_MSG_INQ_TYPE,
-    PIO_MSG_INQ_UNLIMDIMS
+    PIO_MSG_INQ_UNLIMDIMS,
+    PIO_MSG_EXIT,
+    PIO_MAX_MSGS
 };
+
+/* Tag for the asynchronous I/O service message hdr */
+static const int PIO_ASYNC_MSG_HDR_TAG = 512;
+
+/* Max number of arguments in an asynchronous message */
+#define PIO_MAX_ASYNC_MSG_ARGS 32
+
+/* Return the (PIO_MAX_ASYNC_MSG_ARGS + 1), 33rd, arg */
+#define PIO_VARNARGS_IMPL(_1, _2, _3, _4, _5, _6, _7, _8,\
+                          _9, _10, _11, _12, _13, _14, _15, _16,\
+                          _17, _18, _19, _20, _21, _22, _23, _24,\
+                          _25, _26, _27, _28, _29, _30, _31, _32,\
+                          N,...) N
+/* Find the number of args in a variadic macro
+ * Add extra arguments to the user arguments such that the 
+ * PIO_MAX_ASYNC_MSG_ARGS + 1 argument indicates the number
+ * of user arguments
+ */
+#define PIO_VARNARGS(...) PIO_VARNARGS_IMPL(__VA_ARGS__,\
+                                              32, 31, 30, 29, 28, 27, 26, 25,\
+                                              24, 23, 22, 21, 20, 19, 18, 17,\
+                                              16, 15, 14, 13, 12, 11, 10, 9,\
+                                              8, 7, 6, 5, 4, 3, 2, 1)
+
+extern char pio_async_msg_sign[PIO_MAX_MSGS][PIO_MAX_ASYNC_MSG_ARGS];
+/* Note: Using macros allows us to perform sanity checks on the number
+ * of arguments passed to these functions
+ */
+#define PIO_SEND_ASYNC_MSG(ios, msg, retp, ...) do{\
+            assert(PIO_VARNARGS(__VA_ARGS__) == strlen(pio_async_msg_sign[msg]));\
+            *retp = send_async_msg(ios, msg, __VA_ARGS__);\
+        }while(0)
+
+#define PIO_RECV_ASYNC_MSG(ios, msg, retp, ...) do{\
+            assert(PIO_VARNARGS(__VA_ARGS__) == strlen(pio_async_msg_sign[msg]));\
+            *retp = recv_async_msg(ios, msg, __VA_ARGS__);\
+        }while(0)
 
 #endif /* __PIO_INTERNAL__ */

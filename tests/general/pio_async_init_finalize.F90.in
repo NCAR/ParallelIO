@@ -1,0 +1,257 @@
+! Split comm world into two comms (one with even procs and the other
+! with odd procs
+SUBROUTINE split_world_odd_even(new_comm, new_rank, new_size, is_even)
+  use mpi
+  use pio_tutil
+  implicit none
+  integer, intent(inout) :: new_comm
+  integer, intent(inout) :: new_rank
+  integer, intent(inout) :: new_size
+  logical, intent(inout) :: is_even
+
+  integer :: ierr
+  integer :: color
+
+  new_comm = MPI_COMM_NULL
+  new_rank = 0
+  new_size = 0
+
+  if(mod(pio_tf_world_rank_, 2) == 0) then
+    is_even = .true.
+    color = 1
+  else
+    is_even = .false.
+    color = 0
+  end if
+
+  call MPI_Comm_split(pio_tf_comm_, color, 0, new_comm, ierr)
+
+  call MPI_Comm_rank(new_comm, new_rank, ierr)
+  call MPI_Comm_size(new_comm, new_size, ierr)
+END SUBROUTINE split_world_odd_even
+
+! Split comm world into n disjoint comms
+! The processes are divided evenly across the n comms
+! gcomm_idx is a global index (among the comms) of the new_comm
+! Note: The function assumes that there are atleast ncomms
+! procs
+SUBROUTINE split_world_ncomms(ncomms, new_comm, new_rank, new_size, gcomm_idx)
+  use mpi
+  use pio_tutil
+  implicit none
+  integer, intent(inout) :: ncomms
+  integer, intent(inout) :: new_comm
+  integer, intent(inout) :: new_rank
+  integer, intent(inout) :: new_size
+  integer, intent(inout) :: gcomm_idx
+
+  integer :: nprocs_per_comm
+  logical :: is_last_comm
+  integer :: ierr
+  integer :: color
+
+  new_comm = MPI_COMM_NULL
+  new_rank = 0
+  new_size = 0
+  gcomm_idx = 0
+
+  ! We need at least one proc in each disjoint comm
+  if(pio_tf_world_sz_ < ncomms) then
+    return
+  end if
+
+  nprocs_per_comm = pio_tf_world_sz_/ncomms
+  is_last_comm = .false.
+  if(pio_tf_world_rank_ >= nprocs_per_comm * (ncomms - 1)) then
+    is_last_comm = .true.
+  end if
+
+  color = pio_tf_world_rank_/nprocs_per_comm
+  ! Make sure that every proc in the last set (all remaining procs
+  ! are included in the last set/comm) gets the same color
+  if(is_last_comm) then
+    color = ncomms - 1
+  end if
+  gcomm_idx = color + 1
+
+  call MPI_Comm_split(pio_tf_comm_, color, 0, new_comm, ierr)
+
+  call MPI_Comm_size(new_comm, new_size, ierr)
+  call MPI_Comm_rank(new_comm, new_rank, ierr)
+END SUBROUTINE split_world_ncomms
+
+! Async I/O as service test with 1 compute comm and an io comm
+PIO_TF_AUTO_TEST_SUB_BEGIN async_1comp_init_finalize
+  use mpi
+  implicit none
+  integer, parameter :: NUM_COMPONENTS = 1
+  integer :: comp_comms(NUM_COMPONENTS)
+  type(iosystem_desc_t) :: iosys(NUM_COMPONENTS)
+  integer :: odd_even_comm, io_comm
+  integer :: rank, sz, i
+  logical :: is_even
+  integer, parameter :: NUM_REARRANGERS = 2
+  integer :: rearrs(NUM_REARRANGERS) = (/pio_rearr_subset,pio_rearr_box/)
+  character(len=PIO_TF_MAX_STR_LEN) :: rearrs_info(NUM_REARRANGERS) = (/"PIO_REARR_SUBSET","PIO_REARR_BOX   "/)
+  integer :: ret = PIO_NOERR
+
+  do i=1,NUM_REARRANGERS
+    PIO_TF_LOG(0,*) "Testing rearr : ", trim(rearrs_info(i))
+    if(pio_tf_world_sz_ > 1) then
+      ! Create two disjoint sets of IO procs and compute procs
+      call split_world_odd_even(odd_even_comm, rank, sz, is_even)
+
+      ! All even procs are compute procs and all odd procs are
+      ! io procs
+      if(is_even) then
+        ! Compute proc
+        comp_comms(1) = odd_even_comm
+        io_comm = MPI_COMM_NULL
+        call PIO_init(NUM_COMPONENTS, pio_tf_comm_, comp_comms, io_comm,&
+              iosys, rearrs(i))
+      else
+        ! I/O proc
+        comp_comms(1) = MPI_COMM_NULL
+        io_comm = odd_even_comm
+        call PIO_init(NUM_COMPONENTS, pio_tf_comm_, comp_comms, io_comm,&
+              iosys, rearrs(i))
+      end if
+      ! Only compute procs call PIO function calls, I/O proc
+      ! waits inside PIO_init() waiting for commands from the
+      ! compute processes
+      if(is_even) then
+        call PIO_finalize(iosys(1), ret)
+      end if
+      call MPI_Comm_free(odd_even_comm, ret)
+      PIO_TF_CHECK_ERR(ret, "PIO_init()/Finalize() failed")
+    end if
+  end do
+PIO_TF_AUTO_TEST_SUB_END async_1comp_init_finalize
+
+
+! Async I/O as service test with 1 compute comm and an io comm
+! Multiple calls to PIO_init() with alternating compute and
+! I/O procs
+PIO_TF_AUTO_TEST_SUB_BEGIN async_loop_init_finalize
+  use mpi
+  implicit none
+  integer, parameter :: NUM_LOOPS = 5
+  integer, parameter :: NUM_COMPONENTS = 1
+  integer :: comp_comms(NUM_COMPONENTS)
+  type(iosystem_desc_t) :: iosys(NUM_COMPONENTS)
+  integer :: odd_even_comm, io_comm
+  integer :: rank, sz, i, k
+  logical :: is_even, is_compute
+  integer, parameter :: NUM_REARRANGERS = 2
+  integer :: rearrs(NUM_REARRANGERS) = (/pio_rearr_subset,pio_rearr_box/)
+  character(len=PIO_TF_MAX_STR_LEN) :: rearrs_info(NUM_REARRANGERS) = (/"PIO_REARR_SUBSET","PIO_REARR_BOX   "/)
+  integer :: ret = PIO_NOERR
+
+  do k=1,NUM_LOOPS
+    do i=1,NUM_REARRANGERS
+      PIO_TF_LOG(0,*) "Testing rearr : ", trim(rearrs_info(i))
+      if(pio_tf_world_sz_ > 1) then
+        ! Create two disjoint sets of IO procs and compute procs
+        call split_world_odd_even(odd_even_comm, rank, sz, is_even)
+
+        ! On even counts  : All even procs are compute procs and all
+        !                     odd procs are io procs
+        ! On odd counts   : All odd procs are compute procs and all
+        !                     even procs are io procs
+        is_compute = is_even
+        if(mod(k, 2) /= 0) then
+          is_compute = .not. is_even
+        end if
+        if(is_compute) then
+          ! Compute proc
+          comp_comms(1) = odd_even_comm
+          io_comm = MPI_COMM_NULL
+          call PIO_init(NUM_COMPONENTS, pio_tf_comm_, comp_comms, io_comm,&
+                iosys, rearrs(i))
+        else
+          ! I/O proc
+          comp_comms(1) = MPI_COMM_NULL
+          io_comm = odd_even_comm
+          call PIO_init(NUM_COMPONENTS, pio_tf_comm_, comp_comms, io_comm,&
+                iosys, rearrs(i))
+        end if
+        ! Only compute procs call PIO function calls, I/O proc
+        ! waits inside PIO_init() waiting for commands from the
+        ! compute processes
+        if(is_compute) then
+          call PIO_finalize(iosys(1), ret)
+        end if
+        call MPI_Comm_free(odd_even_comm, ret)
+        PIO_TF_CHECK_ERR(ret, "PIO_init()/Finalize() failed")
+      end if
+    end do
+  end do
+PIO_TF_AUTO_TEST_SUB_END async_loop_init_finalize
+
+! Async I/O as service test with 2 compute comms and 1 io comm
+PIO_TF_AUTO_TEST_SUB_BEGIN async_2comp_init_finalize
+  use mpi
+  implicit none
+  ! Number of compute components
+  integer, parameter :: NUM_COMPONENTS = 2
+  ! Total number of comms = comms for each of NUM_COMPONENTS + io comm
+  integer :: ncomms = NUM_COMPONENTS + 1
+  ! We need to have at least one proc in each of comm
+  integer, parameter :: MIN_NUM_PROCS = NUM_COMPONENTS + 1
+  integer :: comp_comms(NUM_COMPONENTS)
+  type(iosystem_desc_t) :: iosys(NUM_COMPONENTS)
+  integer :: new_comm, io_comm
+  integer :: new_rank, new_size, i, j
+  ! gcomm_idx => Global index for the MPI comms
+  ! gcomp_idx => Global index for the compute components
+  integer :: gcomm_idx, gcomp_idx
+  ! is_io == .true. if proc is part of the io comp
+  logical :: is_io = .false.
+  integer, parameter :: NUM_REARRANGERS = 2
+  integer :: rearrs(NUM_REARRANGERS) = (/pio_rearr_subset,pio_rearr_box/)
+  character(len=PIO_TF_MAX_STR_LEN) :: rearrs_info(NUM_REARRANGERS) = (/"PIO_REARR_SUBSET","PIO_REARR_BOX   "/)
+  integer :: ret = PIO_NOERR
+
+  do i=1,NUM_REARRANGERS
+    PIO_TF_LOG(0,*) "Testing rearr : ", trim(rearrs_info(i))
+    if(pio_tf_world_sz_ >= MIN_NUM_PROCS) then
+      ! Create three disjoint sets of IO procs and compute procs
+      call split_world_ncomms(ncomms, new_comm, new_rank, new_size, gcomm_idx)
+
+      do j=1,NUM_COMPONENTS
+        comp_comms(j) = MPI_COMM_NULL
+      end do
+
+      ! Use first comm as the IO proc
+      is_io = .false.
+      if(gcomm_idx == 1) then
+        is_io = .true.
+      end if
+      gcomp_idx = gcomm_idx - 1
+
+      if(is_io) then
+        ! I/O proc
+        io_comm = new_comm
+        call PIO_init(NUM_COMPONENTS, pio_tf_comm_, comp_comms, io_comm,&
+              iosys, rearrs(i))
+      else
+        ! Compute proc
+        comp_comms(gcomp_idx) = new_comm
+        io_comm = MPI_COMM_NULL
+        call PIO_init(NUM_COMPONENTS, pio_tf_comm_, comp_comms, io_comm,&
+              iosys, rearrs(i))
+      end if
+      ! Only compute procs call PIO function calls, I/O proc
+      ! waits inside PIO_init() waiting for commands from the
+      ! compute processes
+      if(.not. is_io) then
+        do j=1,NUM_COMPONENTS
+          call PIO_finalize(iosys(j), ret)
+        end do
+      end if
+      call MPI_Comm_free(new_comm, ret)
+      PIO_TF_CHECK_ERR(ret, "PIO_init()/Finalize() failed")
+    end if
+  end do
+PIO_TF_AUTO_TEST_SUB_END async_2comp_init_finalize
+

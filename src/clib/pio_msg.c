@@ -9,6 +9,7 @@
  */
 
 #include <config.h>
+#include <stdarg.h>
 #include <pio.h>
 #include <pio_internal.h>
 
@@ -16,6 +17,1045 @@
 extern int my_rank;
 extern int pio_log_level;
 #endif /* PIO_ENABLE_LOGGING */
+
+/* A global MPI communicator for waiting on async I/O service messages */
+MPI_Comm pio_async_service_msg_comm = MPI_COMM_NULL;
+
+/* Create the global MPI communicator for async service messaging.
+ * This communicator is used by the async I/O service message handler to
+ * communicate the iosystem id between the I/O procs. It is a dup of the
+ * io_comm
+ * @param io_comm The I/O communicator used for creating the async service
+ * message communicator
+ * @param msg_comm Pointer to the newly created (global) asynchronous I/O
+ * message communicator
+ * @returns PIO_NOERR on success, a pio error code otherwise
+ */
+int create_async_service_msg_comm(const MPI_Comm io_comm, MPI_Comm *msg_comm)
+{
+    int ret = PIO_NOERR;
+
+    assert(msg_comm && (pio_async_service_msg_comm == MPI_COMM_NULL));
+
+    LOG((2, "Creating global async I/O service msg comm"));
+    *msg_comm = MPI_COMM_NULL;
+
+    if(io_comm != MPI_COMM_NULL)
+    {
+        ret = MPI_Comm_dup(io_comm, &pio_async_service_msg_comm);
+        if(ret != MPI_SUCCESS)
+        {
+            return check_mpi(NULL, ret, __FILE__, __LINE__);
+        }
+        *msg_comm = pio_async_service_msg_comm;
+    }
+    return ret;
+}
+
+/* Delete/free the global MPI communicator used for asynchronous I/O service
+ * messaging
+ */
+void delete_async_service_msg_comm(void )
+{
+    if(pio_async_service_msg_comm != MPI_COMM_NULL)
+    {
+        LOG((2, "Deleting global async I/O service msg comm"));
+        MPI_Comm_free(&pio_async_service_msg_comm);
+        pio_async_service_msg_comm = MPI_COMM_NULL;
+    }
+}
+
+char pio_async_msg_sign[PIO_MAX_MSGS][PIO_MAX_ASYNC_MSG_ARGS];
+int init_async_msgs_sign(void )
+{
+    /* Format for function signatures:
+     * i => integer value
+     * f => float value
+     * o => PIO_Offset value
+     * b => bytes/char value
+     * s => integer, length/size of a string or array that follows
+     * S => PIO_Offset, length/size of a string or array that follows
+     * m => integer, length/size of a string or array that follows,
+     *      the array needs a malloc on the recv side
+     * M => PIO_Offset, length/size of a string or array that follows,
+     *      the array needs a malloc on the recv side
+     * c => string, needs to be prefixed by L/M
+     * I => integer array, needs to be prefixed by L/M
+     * F => float array, needs to be prefixed by L/M
+     * O => PIO_Offset array, needs to be prefixed by L/M
+     * B => byte array, needs to be prefixed by L/M
+     */
+    strncpy(pio_async_msg_sign[PIO_MSG_INVALID], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /* PIO_MSG_OPEN_FILE message sends 1 int/len + 1 string + 1 int + 1 int */
+    strncpy(pio_async_msg_sign[PIO_MSG_OPEN_FILE], "scii", PIO_MAX_ASYNC_MSG_ARGS);
+    /* PIO_MSG_CREATE_FILE message sends 1 int/len + 1 string + 1 int + 1 int */
+    strncpy(pio_async_msg_sign[PIO_MSG_CREATE_FILE], "scii", PIO_MAX_ASYNC_MSG_ARGS);
+    /* PIO_MSG_INQ_ATT message sends 
+     * 1 int + 1 int + 1 int/len + 1 string +1 bool + 1 bool
+     */
+    strncpy(pio_async_msg_sign[PIO_MSG_INQ_ATT], "iiscbb", PIO_MAX_ASYNC_MSG_ARGS);
+    /* PIO_MSG_INQ_FORMAT sends 1 int + 1 char/byte */
+    strncpy(pio_async_msg_sign[PIO_MSG_INQ_FORMAT], "ib", PIO_MAX_ASYNC_MSG_ARGS);
+    /* PIO_MSG_INQ_VARID sends 1 int + 1 int/len + 1 string */
+    strncpy(pio_async_msg_sign[PIO_MSG_INQ_VARID], "isc", PIO_MAX_ASYNC_MSG_ARGS);
+    /* PIO_MSG_DEF_VAR sends 
+     * 1 int + 1 int/len + 1 string + 1 int + 1 int + 1 int/len + 1 int array
+     */
+    strncpy(pio_async_msg_sign[PIO_MSG_DEF_VAR], "isciisI", PIO_MAX_ASYNC_MSG_ARGS);
+    /* PIO_MSG_INQ_VAR sends 2 ints and 5 bytes/chars */
+    strncpy(pio_async_msg_sign[PIO_MSG_INQ_VAR], "iibbbbb", PIO_MAX_ASYNC_MSG_ARGS);
+    /* PIO_MSG_PUT_ATT_DOUBLE is not used */
+    strncpy(pio_async_msg_sign[PIO_MSG_PUT_ATT_DOUBLE], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /* PIO_MSG_PUT_ATT_INT is not used */
+    strncpy(pio_async_msg_sign[PIO_MSG_PUT_ATT_INT], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /* PIO_MSG_RENAME_ATT sends 2 ints + 2 * (1 int/len + 1 string) */
+    strncpy(pio_async_msg_sign[PIO_MSG_RENAME_ATT], "iiscsc", PIO_MAX_ASYNC_MSG_ARGS);
+    /* PIO_MSG_DEL_ATT sends 2 ints + 1 len/int + 1 string */
+    strncpy(pio_async_msg_sign[PIO_MSG_DEL_ATT], "iisc", PIO_MAX_ASYNC_MSG_ARGS);
+    /* PIO_MSG_INQ sends 1 int and 4 bytes/chars */
+    strncpy(pio_async_msg_sign[PIO_MSG_INQ], "ibbbb", PIO_MAX_ASYNC_MSG_ARGS);
+    /* PIO_MSG_GET_ATT_TEXT is not used */
+    strncpy(pio_async_msg_sign[PIO_MSG_GET_ATT_TEXT], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /* PIO_MSG_GET_ATT_SHORT is not used */
+    strncpy(pio_async_msg_sign[PIO_MSG_GET_ATT_SHORT], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /* PIO_MSG_GET_ATT_LONG is not used */
+    strncpy(pio_async_msg_sign[PIO_MSG_GET_ATT_LONG], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /* PIO_MSG_REDEF sends 1 int */
+    strncpy(pio_async_msg_sign[PIO_MSG_REDEF], "i", PIO_MAX_ASYNC_MSG_ARGS);
+    /* PIO_MSG_SET_FILL sends 3 ints */
+    strncpy(pio_async_msg_sign[PIO_MSG_SET_FILL], "iii", PIO_MAX_ASYNC_MSG_ARGS);
+    /* PIO_MSG_ENDDEF sends 1 int */
+    strncpy(pio_async_msg_sign[PIO_MSG_ENDDEF], "i", PIO_MAX_ASYNC_MSG_ARGS);
+    /* PIO_MSG_RENAME_VAR sends 2 ints, 1 len/int, 1 string */
+    strncpy(pio_async_msg_sign[PIO_MSG_RENAME_VAR], "iisc", PIO_MAX_ASYNC_MSG_ARGS);
+    /* PIO_MSG_PUT_ATT_SHORT is not used */
+    strncpy(pio_async_msg_sign[PIO_MSG_PUT_ATT_SHORT], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /* PIO_MSG_PUT_ATT_TEXT is not used */
+    strncpy(pio_async_msg_sign[PIO_MSG_PUT_ATT_TEXT], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /* PIO_MSG_INQ_ATTNAME sends 3 ints, 1 char/byte */
+    strncpy(pio_async_msg_sign[PIO_MSG_INQ_ATTNAME], "iiib", PIO_MAX_ASYNC_MSG_ARGS);
+    /* PIO_MSG_GET_ATT_ULONGLONG is not used */
+    strncpy(pio_async_msg_sign[PIO_MSG_GET_ATT_ULONGLONG], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /* PIO_MSG_GET_ATT_USHORT is not used */
+    strncpy(pio_async_msg_sign[PIO_MSG_GET_ATT_USHORT], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /* PIO_MSG_PUT_ATT_ULONGLONG is not used */
+    strncpy(pio_async_msg_sign[PIO_MSG_PUT_ATT_ULONGLONG], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /* PIO_MSG_PUT_ATT_USHORT is not used */
+    strncpy(pio_async_msg_sign[PIO_MSG_PUT_ATT_USHORT], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /* PIO_MSG_GET_ATT_UINT is not used */
+    strncpy(pio_async_msg_sign[PIO_MSG_GET_ATT_UINT], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /* PIO_MSG_GET_ATT_LONGLONG is not used */
+    strncpy(pio_async_msg_sign[PIO_MSG_GET_ATT_LONGLONG], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /* PIO_MSG_PUT_ATT_SCHAR is not used */
+    strncpy(pio_async_msg_sign[PIO_MSG_PUT_ATT_SCHAR], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /* PIO_MSG_PUT_ATT_FLOAT is not used */
+    strncpy(pio_async_msg_sign[PIO_MSG_PUT_ATT_FLOAT], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /* PIO_MSG_RENAME_DIM sends 2 ints + 1 len/int + 1 string */
+    strncpy(pio_async_msg_sign[PIO_MSG_RENAME_DIM], "iisc", PIO_MAX_ASYNC_MSG_ARGS);
+    /* PIO_MSG_GET_ATT_LONG is not used */
+    strncpy(pio_async_msg_sign[PIO_MSG_GET_ATT_LONG], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /* PIO_MSG_INQ_DIM sends 2 ints and 2 bytes/chars */
+    strncpy(pio_async_msg_sign[PIO_MSG_INQ_DIM], "iibb", PIO_MAX_ASYNC_MSG_ARGS);
+    /* PIO_MSG_INQ_DIMID sends 1 int + 1 int/len + 1 string + 1 bytes/char */
+    strncpy(pio_async_msg_sign[PIO_MSG_INQ_DIMID], "iscb", PIO_MAX_ASYNC_MSG_ARGS);
+    /* PIO_MSG_PUT_ATT_USHORT is not used */
+    strncpy(pio_async_msg_sign[PIO_MSG_PUT_ATT_USHORT], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /* PIO_MSG_GET_ATT_FLOAT is not used */
+    strncpy(pio_async_msg_sign[PIO_MSG_GET_ATT_FLOAT], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /* PIO_MSG_SYNC sends 1 int */
+    strncpy(pio_async_msg_sign[PIO_MSG_SYNC], "i", PIO_MAX_ASYNC_MSG_ARGS);
+    /* PIO_MSG_PUT_ATT_LONGLONG is not used */
+    strncpy(pio_async_msg_sign[PIO_MSG_PUT_ATT_LONGLONG], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /* PIO_MSG_PUT_ATT_UINT is not used */
+    strncpy(pio_async_msg_sign[PIO_MSG_PUT_ATT_UINT], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /* PIO_MSG_GET_ATT_SCHAR is not used */
+    strncpy(pio_async_msg_sign[PIO_MSG_GET_ATT_SCHAR], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /* PIO_MSG_INQ_ATTID sends 2 ints, 1 int/len + 1 string + 1 byte/char */
+    strncpy(pio_async_msg_sign[PIO_MSG_INQ_ATTID], "iiscb", PIO_MAX_ASYNC_MSG_ARGS);
+    /* PIO_MSG_DEF_DIM sends 1 int + 1 len/int + 1 string + 1 int */
+    strncpy(pio_async_msg_sign[PIO_MSG_DEF_DIM], "isci", PIO_MAX_ASYNC_MSG_ARGS);
+    /* PIO_MSG_GET_ATT_INT is not used */
+    strncpy(pio_async_msg_sign[PIO_MSG_GET_ATT_INT], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /* PIO_MSG_GET_ATT_DOUBLE is not used */
+    strncpy(pio_async_msg_sign[PIO_MSG_GET_ATT_DOUBLE], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /* PIO_MSG_PUT_ATT_UCHAR is not used */
+    strncpy(pio_async_msg_sign[PIO_MSG_PUT_ATT_UCHAR], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /* PIO_MSG_GET_ATT_UCHAR is not used */
+    strncpy(pio_async_msg_sign[PIO_MSG_GET_ATT_UCHAR], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /* PIO_MSG_PUT_VARS_UCHAR is not used */
+    strncpy(pio_async_msg_sign[PIO_MSG_PUT_VARS_UCHAR], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /* PIO_MSG_GET_VAR1_SCHAR is not used */
+    strncpy(pio_async_msg_sign[PIO_MSG_GET_VAR1_SCHAR], "", PIO_MAX_ASYNC_MSG_ARGS);
+    
+    /*  PIO_MSG_GET_VARS_ULONGLONG  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_GET_VARS_ULONGLONG ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_GET_VARM_UCHAR  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_GET_VARM_UCHAR ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_GET_VARM_SCHAR  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_GET_VARM_SCHAR ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_GET_VARS_SHORT  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_GET_VARS_SHORT ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_GET_VAR_DOUBLE  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_GET_VAR_DOUBLE ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_GET_VARA_DOUBLE  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_GET_VARA_DOUBLE ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_GET_VAR_INT  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_GET_VAR_INT ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_GET_VAR_USHORT  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_GET_VAR_USHORT ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_PUT_VARS_USHORT  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_PUT_VARS_USHORT ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_GET_VARA_TEXT  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_GET_VARA_TEXT ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_PUT_VARS_ULONGLONG  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_PUT_VARS_ULONGLONG ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_GET_VARA_INT  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_GET_VARA_INT ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_PUT_VARM  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_PUT_VARM ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_GET_VAR1_FLOAT  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_GET_VAR1_FLOAT ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_GET_VAR1_SHORT  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_GET_VAR1_SHORT ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_GET_VARS_INT  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_GET_VARS_INT ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_PUT_VARS_UINT  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_PUT_VARS_UINT ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_GET_VAR_TEXT  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_GET_VAR_TEXT ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_GET_VARM_DOUBLE  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_GET_VARM_DOUBLE ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_PUT_VARM_UCHAR  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_PUT_VARM_UCHAR ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_PUT_VAR_USHORT  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_PUT_VAR_USHORT ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_GET_VARS_SCHAR  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_GET_VARS_SCHAR ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_GET_VARA_USHORT  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_GET_VARA_USHORT ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_PUT_VAR1_LONGLONG  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_PUT_VAR1_LONGLONG ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_PUT_VARA_UCHAR  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_PUT_VARA_UCHAR ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_PUT_VARM_SHORT  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_PUT_VARM_SHORT ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_PUT_VAR1_LONG  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_PUT_VAR1_LONG ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_PUT_VARS_LONG  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_PUT_VARS_LONG ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_GET_VAR1_USHORT  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_GET_VAR1_USHORT ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_PUT_VAR_SHORT  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_PUT_VAR_SHORT ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_PUT_VARA_INT  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_PUT_VARA_INT ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_GET_VAR_FLOAT  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_GET_VAR_FLOAT ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_PUT_VAR1_USHORT  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_PUT_VAR1_USHORT ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_PUT_VARA_TEXT  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_PUT_VARA_TEXT ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_PUT_VARM_TEXT  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_PUT_VARM_TEXT ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_GET_VARS_UCHAR  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_GET_VARS_UCHAR ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_GET_VAR  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_GET_VAR ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_PUT_VARM_USHORT  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_PUT_VARM_USHORT ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_GET_VAR1_LONGLONG  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_GET_VAR1_LONGLONG ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_GET_VARS_USHORT  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_GET_VARS_USHORT ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_GET_VAR_LONG  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_GET_VAR_LONG ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_GET_VAR1_DOUBLE  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_GET_VAR1_DOUBLE ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_PUT_VAR_ULONGLONG  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_PUT_VAR_ULONGLONG ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_PUT_VAR_INT  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_PUT_VAR_INT ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_GET_VARA_UINT  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_GET_VARA_UINT ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_PUT_VAR_LONGLONG  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_PUT_VAR_LONGLONG ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_GET_VARS_LONGLONG  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_GET_VARS_LONGLONG ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_PUT_VAR_SCHAR  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_PUT_VAR_SCHAR ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_PUT_VAR_UINT  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_PUT_VAR_UINT ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_PUT_VAR  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_PUT_VAR ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_PUT_VARA_USHORT  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_PUT_VARA_USHORT ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_GET_VAR_LONGLONG  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_GET_VAR_LONGLONG ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_GET_VARA_SHORT  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_GET_VARA_SHORT ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_PUT_VARS_SHORT  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_PUT_VARS_SHORT ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_PUT_VARA_UINT  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_PUT_VARA_UINT ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_PUT_VARA_SCHAR  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_PUT_VARA_SCHAR ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_PUT_VARM_ULONGLONG  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_PUT_VARM_ULONGLONG ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_PUT_VAR1_UCHAR  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_PUT_VAR1_UCHAR ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_PUT_VARM_INT  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_PUT_VARM_INT ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_PUT_VARS_SCHAR  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_PUT_VARS_SCHAR ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_GET_VARA_LONG  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_GET_VARA_LONG ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_PUT_VAR1  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_PUT_VAR1 ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_GET_VAR1_INT  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_GET_VAR1_INT ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_GET_VAR1_ULONGLONG  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_GET_VAR1_ULONGLONG ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_GET_VAR_UCHAR  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_GET_VAR_UCHAR ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_PUT_VARA_FLOAT  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_PUT_VARA_FLOAT ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_GET_VARA_UCHAR  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_GET_VARA_UCHAR ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_GET_VARS_FLOAT  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_GET_VARS_FLOAT ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_PUT_VAR1_FLOAT  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_PUT_VAR1_FLOAT ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_PUT_VARM_FLOAT  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_PUT_VARM_FLOAT ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_PUT_VAR1_TEXT  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_PUT_VAR1_TEXT ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_PUT_VARS_TEXT  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_PUT_VARS_TEXT ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_PUT_VARM_LONG  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_PUT_VARM_LONG ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_GET_VARS_LONG  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_GET_VARS_LONG ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_PUT_VARS_DOUBLE  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_PUT_VARS_DOUBLE ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_GET_VAR1  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_GET_VAR1 ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_GET_VAR_UINT  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_GET_VAR_UINT ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_PUT_VARA_LONGLONG  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_PUT_VARA_LONGLONG ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_GET_VARA  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_GET_VARA ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_PUT_VAR_DOUBLE  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_PUT_VAR_DOUBLE ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_GET_VARA_SCHAR  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_GET_VARA_SCHAR ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_PUT_VAR_FLOAT  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_PUT_VAR_FLOAT ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_GET_VAR1_UINT  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_GET_VAR1_UINT ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_GET_VARS_UINT  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_GET_VARS_UINT ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_PUT_VAR1_ULONGLONG  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_PUT_VAR1_ULONGLONG ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_PUT_VARM_UINT  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_PUT_VARM_UINT ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_PUT_VAR1_UINT  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_PUT_VAR1_UINT ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_PUT_VAR1_INT  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_PUT_VAR1_INT ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_GET_VARA_FLOAT  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_GET_VARA_FLOAT ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_GET_VARM_TEXT  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_GET_VARM_TEXT ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_PUT_VARS_FLOAT  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_PUT_VARS_FLOAT ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_GET_VAR1_TEXT  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_GET_VAR1_TEXT ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_PUT_VARA_SHORT  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_PUT_VARA_SHORT ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_PUT_VAR1_SCHAR  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_PUT_VAR1_SCHAR ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_PUT_VARA_ULONGLONG  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_PUT_VARA_ULONGLONG ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_PUT_VARM_DOUBLE  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_PUT_VARM_DOUBLE ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_GET_VARM_INT  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_GET_VARM_INT ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_PUT_VARA  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_PUT_VARA ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_PUT_VARA_LONG  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_PUT_VARA_LONG ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_GET_VARM_UINT  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_GET_VARM_UINT ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_GET_VARM  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_GET_VARM ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_PUT_VAR1_DOUBLE  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_PUT_VAR1_DOUBLE ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_GET_VARS_DOUBLE  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_GET_VARS_DOUBLE ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_GET_VARA_LONGLONG  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_GET_VARA_LONGLONG ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_GET_VAR_ULONGLONG  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_GET_VAR_ULONGLONG ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_PUT_VARM_SCHAR  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_PUT_VARM_SCHAR ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_GET_VARA_ULONGLONG  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_GET_VARA_ULONGLONG ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_GET_VAR_SHORT  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_GET_VAR_SHORT ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_GET_VARM_FLOAT  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_GET_VARM_FLOAT ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_PUT_VAR_TEXT  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_PUT_VAR_TEXT ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_PUT_VARS_INT  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_PUT_VARS_INT ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_GET_VAR1_LONG  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_GET_VAR1_LONG ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_GET_VARM_LONG  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_GET_VARM_LONG ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_GET_VARM_USHORT  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_GET_VARM_USHORT ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_PUT_VAR1_SHORT  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_PUT_VAR1_SHORT ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_PUT_VARS_LONGLONG  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_PUT_VARS_LONGLONG ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_GET_VARM_LONGLONG  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_GET_VARM_LONGLONG ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_GET_VARS_TEXT  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_GET_VARS_TEXT ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_PUT_VARA_DOUBLE  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_PUT_VARA_DOUBLE ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_PUT_VARS  sends
+     *  3 ints + 
+     *  1 char/byte + 1 int/len + 1 PIO_Offset array +
+     *  1 char/byte + 1 int/len + 1 PIO_Offset array +
+     *  1 char/byte + 1 int/len + 1 PIO_Offset array +
+     *  1 int + 1 PIO_Offset + 1 PIO_Offset +
+     *  1 int/len +
+     *  1 Byte array (that requires mem alloc on recv)
+     */
+     strncpy(pio_async_msg_sign[ PIO_MSG_PUT_VARS ], "iiibsObsObsOiooMB", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_PUT_VAR_UCHAR  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_PUT_VAR_UCHAR ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_GET_VAR1_UCHAR  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_GET_VAR1_UCHAR ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_PUT_VAR_LONG  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_PUT_VAR_LONG ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_GET_VARS  sends
+     * 3 ints +
+     *  1 char/byte + 1 int/len + 1 PIO_Offset array +
+     *  1 char/byte + 1 int/len + 1 PIO_Offset array +
+     *  1 char/byte + 1 int/len + 1 PIO_Offset array +
+     *  1 int + 1 PIO_Offset + 1 PIO_Offset
+     */
+     strncpy(pio_async_msg_sign[ PIO_MSG_GET_VARS ], "iiibsObsObsOioo", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_GET_VARM_SHORT  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_GET_VARM_SHORT ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_GET_VARM_ULONGLONG  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_GET_VARM_ULONGLONG ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_PUT_VARM_LONGLONG  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_PUT_VARM_LONGLONG ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_GET_VAR_SCHAR  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_GET_VAR_SCHAR ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_GET_ATT_UBYTE  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_GET_ATT_UBYTE ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_PUT_ATT_STRING  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_PUT_ATT_STRING ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_GET_ATT_STRING  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_GET_ATT_STRING ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_PUT_ATT_UBYTE  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_PUT_ATT_UBYTE ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_INQ_VAR_FILL  sends 2 ints + 1 pio_offset + 2 bytes/chars */
+     strncpy(pio_async_msg_sign[ PIO_MSG_INQ_VAR_FILL ], "iiobb", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_DEF_VAR_FILL  sends 3 ints + 1 pio_offset + 1 byte/char +
+     *  1 int/len + 1 byte array */
+     strncpy(pio_async_msg_sign[ PIO_MSG_DEF_VAR_FILL ], "iiiobMB", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_DEF_VAR_DEFLATE sends
+     *  5 ints */
+     strncpy(pio_async_msg_sign[ PIO_MSG_DEF_VAR_DEFLATE ], "iiiii", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_INQ_VAR_DEFLATE  sends 2 ints + 3 * (1 char/byte + 1 int)*/
+     strncpy(pio_async_msg_sign[ PIO_MSG_INQ_VAR_DEFLATE ], "iibibibi", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_INQ_VAR_SZIP  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_INQ_VAR_SZIP ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_DEF_VAR_FLETCHER32  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_DEF_VAR_FLETCHER32 ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_INQ_VAR_FLETCHER32  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_INQ_VAR_FLETCHER32 ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_DEF_VAR_CHUNKING  sends
+     *  4 ints, 1 char/byte + 1 int/len + 1 PIO_Offset array */
+     strncpy(pio_async_msg_sign[ PIO_MSG_DEF_VAR_CHUNKING ], "iiiibsO", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_INQ_VAR_CHUNKING  sends
+     *  2 ints + 2 bytes/chars */
+     strncpy(pio_async_msg_sign[ PIO_MSG_INQ_VAR_CHUNKING ], "iibb", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_DEF_VAR_ENDIAN  sends 3 ints */
+     strncpy(pio_async_msg_sign[ PIO_MSG_DEF_VAR_ENDIAN ], "iii", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_INQ_VAR_ENDIAN  sends 2 ints + 1 char */
+     strncpy(pio_async_msg_sign[ PIO_MSG_INQ_VAR_ENDIAN ], "iib", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_SET_CHUNK_CACHE  sends 2 ints, 2 pio-offsets, 1 float */
+     strncpy(pio_async_msg_sign[ PIO_MSG_SET_CHUNK_CACHE ], "iioof", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_GET_CHUNK_CACHE sends 2 int, 3 char/byte */
+     strncpy(pio_async_msg_sign[ PIO_MSG_GET_CHUNK_CACHE ], "iibbb", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_SET_VAR_CHUNK_CACHE  sends 2 ints, 2 pio_offsets, 1 float */
+     strncpy(pio_async_msg_sign[ PIO_MSG_SET_VAR_CHUNK_CACHE ], "iioof", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_GET_VAR_CHUNK_CACHE  sends 2 ints + 3 chars/bytes */
+     strncpy(pio_async_msg_sign[ PIO_MSG_GET_VAR_CHUNK_CACHE ], "iibbb", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_INITDECOMP_DOF  sends
+     *  2 ints + 1 int/len + 1 int array +
+     *  1 int/len + 1 pio_offset array (needs mem alloc on recv) +
+     *  1 char/byte + 1 int 
+     *  + 1 char/byte + 1 int/len + 1 pio_offset array +
+     *  + 1 char/byte + 1 int/len + 1 pio_offset array */
+     strncpy(pio_async_msg_sign[ PIO_MSG_INITDECOMP_DOF ], "iisImObibsObsO", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_WRITEDARRAY  is not used */
+     strncpy(pio_async_msg_sign[ PIO_MSG_WRITEDARRAY ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_WRITEDARRAYMULTI  sends
+     *  1 int + 1 int
+     *  1 int/len + 1 int array (needs malloc) +
+     *  1 int +
+     *  1 pio_offset +
+     *  1 pio_offset/len + 1 array of chars/bytes (needs malloc) +
+     *  1 char/byte +
+     *  1 int/len + 1 int array + 1 char/byte (needs malloc) +
+     *  1 char/byte +
+     *  1 int/len + 1 byte/char array (needs malloc) +
+     *  1 int
+     */
+     strncpy(pio_async_msg_sign[ PIO_MSG_WRITEDARRAYMULTI ], "iimIioMBbmIbmBi", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_SETFRAME  sends 3 ints */
+     strncpy(pio_async_msg_sign[ PIO_MSG_SETFRAME ], "iii", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_ADVANCEFRAME  sends 2 ints */
+     strncpy(pio_async_msg_sign[ PIO_MSG_ADVANCEFRAME ], "ii", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_READDARRAY  sends 3 ints*/
+     strncpy(pio_async_msg_sign[ PIO_MSG_READDARRAY ], "iii", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_SETERRORHANDLING  sends 1 int + 1 char/byte */
+     strncpy(pio_async_msg_sign[ PIO_MSG_SETERRORHANDLING ], "ib", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_FREEDECOMP  sends 2 ints */
+     strncpy(pio_async_msg_sign[ PIO_MSG_FREEDECOMP ], "ii", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_CLOSE_FILE  sends 1 int */
+     strncpy(pio_async_msg_sign[ PIO_MSG_CLOSE_FILE ], "i", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_DELETE_FILE  sends 1 int/len + 1 string */
+     strncpy(pio_async_msg_sign[ PIO_MSG_DELETE_FILE ], "sc", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_FINALIZE  sends 1 int */
+     strncpy(pio_async_msg_sign[ PIO_MSG_FINALIZE ], "i", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_GET_ATT  sends
+     *  2 ints + 1 int/len + 1 string +
+     *  2 ints + 2 pio_offsets
+     *  1 int +  1 pio_offset*/
+     strncpy(pio_async_msg_sign[ PIO_MSG_GET_ATT ], "iisciiooio", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_PUT_ATT  sends
+     *  2 ints + 1 int/len + 1 stirng +
+     *  1 int + 2 offsets + 1 int + 1 offset +
+     *  1 offset/len + 1 char/byte array(needs malloc)*/
+     strncpy(pio_async_msg_sign[ PIO_MSG_PUT_ATT ], "iisciooioMB", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_INQ_TYPE  sends 2 ints + 2 chars/bytes */
+     strncpy(pio_async_msg_sign[ PIO_MSG_INQ_TYPE ], "iibb", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_INQ_UNLIMDIMS  sends 1 int and 2 chars/bytes */
+     strncpy(pio_async_msg_sign[ PIO_MSG_INQ_UNLIMDIMS ], "ibb", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_EXIT  is a local message, never sent between compute and I/O procs  */
+     strncpy(pio_async_msg_sign[ PIO_MSG_EXIT ], "", PIO_MAX_ASYNC_MSG_ARGS);
+    return PIO_NOERR;
+}
+
+static int send_async_msg_valist(iosystem_desc_t *ios, int msg, va_list args)
+{
+    int mpierr = MPI_SUCCESS;
+    char *fmt = pio_async_msg_sign[msg];
+    int nargs = strlen(fmt);
+    int sz = 0, msz = 0;
+
+    assert(ios && (msg > PIO_MSG_INVALID) && (msg < PIO_MAX_MSGS));
+
+    for(int i=0; i<nargs; i++)
+    {
+        if(mpierr == MPI_SUCCESS)
+        {
+            if(fmt[i] == 'c')
+            {
+                if(sz == 0)
+                {
+                    assert(msz > 0);
+                    sz = msz;
+                }
+                char *str = va_arg(args, char *);
+                mpierr = MPI_Bcast((void *)str, sz, MPI_CHAR, ios->compmaster, ios->intercomm);
+                sz = 0;
+                msz = 0;
+            }
+            else if(fmt[i] == 's')
+            {
+                /* Length/Size of the first string/array that follows it */
+                int iarg = va_arg(args, int);
+                sz = iarg;
+                assert(sz > 0);
+                mpierr = MPI_Bcast(&iarg, 1, MPI_INT, ios->compmaster, ios->intercomm);
+            }
+            else if(fmt[i] == 'S')
+            {
+                /* Length/Size of the first string/array that follows it */
+                PIO_Offset oarg = va_arg(args, PIO_Offset);
+                /* MPI only allows int counts */
+                sz = (int )oarg;
+                assert(sz > 0);
+                mpierr = MPI_Bcast(&oarg, 1, MPI_OFFSET, ios->compmaster, ios->intercomm);
+            }
+            else if(fmt[i] == 'm')
+            {
+                /* Length of the first string/array that follows it */
+                int iarg = va_arg(args, int);
+                msz = iarg;
+                assert(msz > 0);
+                mpierr = MPI_Bcast(&iarg, 1, MPI_INT, ios->compmaster, ios->intercomm);
+            }
+            else if(fmt[i] == 'M')
+            {
+                /* Length of the first string/array that follows it */
+                PIO_Offset oarg = va_arg(args, PIO_Offset);
+                /* MPI only allows int counts */
+                msz = (int )oarg;
+                assert(msz > 0);
+                mpierr = MPI_Bcast(&oarg, 1, MPI_OFFSET, ios->compmaster, ios->intercomm);
+            }
+            else if(fmt[i] == 'i')
+            {
+                int iarg = va_arg(args, int);
+                mpierr = MPI_Bcast(&iarg, 1, MPI_INT, ios->compmaster, ios->intercomm);
+            }
+            else if(fmt[i] == 'I')
+            {
+                if(sz == 0)
+                {
+                    assert(msz > 0);
+                    sz = msz;
+                }
+                int *iargp = va_arg(args, int *);
+                assert(sz > 0);
+                mpierr = MPI_Bcast((void *)iargp, sz, MPI_INT, ios->compmaster, ios->intercomm);
+                sz = 0;
+                msz = 0;
+            }
+            else if(fmt[i] == 'f')
+            {
+                /* float is promoted to double in varargs */
+                float farg = (float )va_arg(args, double);
+                mpierr = MPI_Bcast(&farg, 1, MPI_FLOAT, ios->compmaster, ios->intercomm);
+            }
+            else if(fmt[i] == 'F')
+            {
+                if(sz == 0)
+                {
+                    assert(msz > 0);
+                    sz = msz;
+                }
+                float *fargp = va_arg(args, float *);
+                assert(sz > 0);
+                mpierr = MPI_Bcast((void *)fargp, sz, MPI_FLOAT, ios->compmaster, ios->intercomm);
+                sz = 0;
+                msz = 0;
+            }
+            else if(fmt[i] == 'o')
+            {
+                PIO_Offset oarg = va_arg(args, PIO_Offset);
+                mpierr = MPI_Bcast(&oarg, 1, MPI_OFFSET, ios->compmaster, ios->intercomm);
+            }
+            else if(fmt[i] == 'O')
+            {
+                if(sz == 0)
+                {
+                    assert(msz > 0);
+                    sz = msz;
+                }
+                PIO_Offset *oargp = va_arg(args, PIO_Offset *);
+                assert(sz > 0);
+                mpierr = MPI_Bcast((void *)oargp, sz, MPI_OFFSET, ios->compmaster, ios->intercomm);
+                sz = 0;
+                msz = 0;
+            }
+            else if(fmt[i] == 'b')
+            {
+                /* FIXME: Individual bytes are sent as chars while a byte array is
+                 * sent as an array of bytes. Distinguish explicitly between chars
+                 * and bytes
+                 */
+                /* char is promoted to int in varargs */
+                char carg = (char )va_arg(args, int);
+                mpierr = MPI_Bcast(&carg, 1, MPI_CHAR, ios->compmaster, ios->intercomm);
+            }
+            else if(fmt[i] == 'B')
+            {
+                if(sz == 0)
+                {
+                    assert(msz > 0);
+                    sz = msz;
+                }
+                char *cargp = va_arg(args, char *);
+                assert(sz > 0);
+                mpierr = MPI_Bcast(cargp, sz, MPI_BYTE, ios->compmaster, ios->intercomm);
+                sz = 0;
+                msz = 0;
+            }
+            else
+            {
+                LOG((1, "Invalid fmt for arg"));
+                assert(0);
+            }
+        }
+    }
+    if(mpierr != MPI_SUCCESS)
+    {
+        LOG((1, "Error bcasting (send) async msg valist "));
+        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
+    }
+
+    return PIO_NOERR;
+}
+
+static int recv_async_msg_valist(iosystem_desc_t *ios, int msg, va_list args)
+{
+    int mpierr = MPI_SUCCESS;
+    char *fmt = pio_async_msg_sign[msg];
+    int nargs = strlen(fmt);
+    int sz = 0, msz = 0;
+
+    assert(ios && (msg > PIO_MSG_INVALID) && (msg < PIO_MAX_MSGS));
+
+    for(int i=0; i<nargs; i++)
+    {
+        if(mpierr == MPI_SUCCESS)
+        {
+            if(fmt[i] == 'c')
+            {
+                char *str = NULL;
+                if(sz != 0)
+                {
+                    str = va_arg(args, char *);
+                }
+                else
+                {
+                    assert(msz > 0);
+                    sz = msz;
+                    char **strp = va_arg(args, char **);
+                    *strp = (char *)malloc(sz * sizeof(char ));
+                    str = *strp;
+                    if(!str)
+                    {
+                        return pio_err(NULL, NULL, PIO_ENOMEM, __FILE__, __LINE__);
+                    }
+                }
+                mpierr = MPI_Bcast((void *)str, sz, MPI_CHAR, ios->compmaster, ios->intercomm);
+                sz = 0;
+                msz = 0;
+            }
+            else if(fmt[i] == 's')
+            {
+                /* Length of the first character string that follows it */
+                int *iargp = va_arg(args, int *);
+                mpierr = MPI_Bcast(iargp, 1, MPI_INT, ios->compmaster, ios->intercomm);
+                sz = *iargp;
+                assert(sz > 0);
+            }
+            else if(fmt[i] == 'S')
+            {
+                /* Length of the first character string that follows it */
+                PIO_Offset *oargp = va_arg(args, PIO_Offset *);
+                mpierr = MPI_Bcast(oargp, 1, MPI_OFFSET, ios->compmaster, ios->intercomm);
+                /* MPI only allows int counts */
+                sz = (int )*oargp;
+                assert(sz > 0);
+            }
+            else if(fmt[i] == 'm')
+            {
+                /* Length of the first character string that follows it */
+                int *iargp = va_arg(args, int *);
+                mpierr = MPI_Bcast(iargp, 1, MPI_INT, ios->compmaster, ios->intercomm);
+                msz = *iargp;
+                assert(msz > 0);
+            }
+            else if(fmt[i] == 'M')
+            {
+                /* Length of the first character string that follows it */
+                PIO_Offset *oargp = va_arg(args, PIO_Offset *);
+                mpierr = MPI_Bcast(oargp, 1, MPI_OFFSET, ios->compmaster, ios->intercomm);
+                /* MPI only allows int counts */
+                msz = (int ) *oargp;
+                assert(msz > 0);
+            }
+            else if(fmt[i] == 'i')
+            {
+                int *iargp = va_arg(args, int *);
+                mpierr = MPI_Bcast(iargp, 1, MPI_INT, ios->compmaster, ios->intercomm);
+            }
+            else if(fmt[i] == 'I')
+            {
+                int *iargp = NULL;
+                if(sz != 0)
+                {
+                    iargp = va_arg(args, int *);
+                }
+                else
+                {
+                    assert(msz > 0);
+                    sz = msz;
+                    int **iargpp = va_arg(args, int **);
+                    *iargpp = (int *)malloc(sz * sizeof(int));
+                    iargp = *iargpp;
+                    if(!iargp)
+                    {
+                        return pio_err(NULL, NULL, PIO_ENOMEM, __FILE__, __LINE__);
+                    }
+                }
+                mpierr = MPI_Bcast(iargp, sz, MPI_INT, ios->compmaster, ios->intercomm);
+                sz = 0;
+                msz = 0;
+            }
+            else if(fmt[i] == 'f')
+            {
+                float *fargp = va_arg(args, float *);
+                mpierr = MPI_Bcast(fargp, 1, MPI_FLOAT, ios->compmaster, ios->intercomm);
+            }
+            else if(fmt[i] == 'F')
+            {
+                float *fargp = NULL;
+                if(sz != 0)
+                {
+                    fargp = va_arg(args, float *);
+                }
+                else
+                {
+                    assert(msz > 0);
+                    sz = msz;
+                    float **fargpp = va_arg(args, float **);
+                    *fargpp = (float *)malloc(sz * sizeof(float));
+                    fargp = *fargpp;
+                    if(!fargp)
+                    {
+                        return pio_err(NULL, NULL, PIO_ENOMEM, __FILE__, __LINE__);
+                    }
+                }
+                mpierr = MPI_Bcast(fargp, sz, MPI_FLOAT, ios->compmaster, ios->intercomm);
+                sz = 0;
+                msz = 0;
+            }
+            else if(fmt[i] == 'o')
+            {
+                PIO_Offset *oargp = va_arg(args, PIO_Offset *);
+                mpierr = MPI_Bcast((void *)oargp, 1, MPI_OFFSET, ios->compmaster, ios->intercomm);
+            }
+            else if(fmt[i] == 'O')
+            {
+                PIO_Offset *oargp = NULL;
+                if(sz != 0)
+                {
+                    oargp = va_arg(args, PIO_Offset *);
+                }
+                else
+                {
+                    assert(msz > 0);
+                    sz = msz;
+                    PIO_Offset **oargpp = va_arg(args, PIO_Offset **);
+                    *oargpp = (PIO_Offset *)malloc(sz * sizeof(PIO_Offset));
+                    oargp = *oargpp;
+                    if(!oargp)
+                    {
+                        return pio_err(NULL, NULL, PIO_ENOMEM, __FILE__, __LINE__);
+                    }
+                }
+                mpierr = MPI_Bcast((void *)oargp, sz, MPI_OFFSET, ios->compmaster, ios->intercomm);
+                sz = 0;
+                msz = 0;
+            }
+            else if(fmt[i] == 'b')
+            {
+                /* FIXME: Individual bytes are recvd as chars while a byte array is
+                 * recvd as an array of bytes. Distinguish explicitly between chars
+                 * and bytes
+                 */
+                char *cargp = va_arg(args, char *);
+                mpierr = MPI_Bcast(cargp, 1, MPI_CHAR, ios->compmaster, ios->intercomm);
+            }
+            else if(fmt[i] == 'B')
+            {
+                char *cargp = NULL;
+                if(sz != 0)
+                {
+                    cargp = va_arg(args, char *);
+                }
+                else
+                {
+                    assert(msz > 0);
+                    sz = msz;
+                    char **cargpp = va_arg(args, char **);
+                    *cargpp = (char *)malloc(sz * sizeof(char));
+                    cargp = *cargpp;
+                    if(!cargp)
+                    {
+                        return pio_err(NULL, NULL, PIO_ENOMEM, __FILE__, __LINE__);
+                    }
+                }
+                mpierr = MPI_Bcast((void *)cargp, sz, MPI_BYTE, ios->compmaster, ios->intercomm);
+                sz = 0;
+                msz = 0;
+            }
+            else
+            {
+                LOG((1, "Invalid fmt for arg"));
+                assert(0);
+            }
+        }
+    }
+    if(mpierr != MPI_SUCCESS)
+    {
+        LOG((1, "Error bcasting (recv) async msg valist "));
+        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
+    }
+    return PIO_NOERR;
+}
+
+static int send_async_msg_hdr(iosystem_desc_t *ios, int msg, int seq_num, int prev_msg)
+{
+    int mpierr = MPI_SUCCESS;
+
+    assert(ios && ((msg > PIO_MSG_INVALID) && (msg < PIO_MAX_MSGS)) && !ios->ioproc);
+    assert((prev_msg >= PIO_MSG_INVALID) && (prev_msg < PIO_MAX_MSGS));
+    if(ios->compmaster == MPI_ROOT)
+    {
+        mpierr = MPI_Send(&msg, 1, MPI_INT, ios->ioroot, PIO_ASYNC_MSG_HDR_TAG, ios->union_comm);
+    }
+
+    if(mpierr == MPI_SUCCESS)
+    {
+        mpierr = MPI_Bcast(&seq_num, 1, MPI_INT, ios->compmaster, ios->intercomm);
+    }
+    if(mpierr == MPI_SUCCESS)
+    {
+        mpierr = MPI_Bcast(&prev_msg, 1, MPI_INT, ios->compmaster, ios->intercomm);
+    }
+    if(mpierr != MPI_SUCCESS)
+    {
+        LOG((1, "Error bcasting MPI error code"));
+        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
+    }
+    return PIO_NOERR;
+}
+
+int send_async_msg(iosystem_desc_t *ios, int msg, ...)
+{
+    int mpierr = MPI_SUCCESS, mpierr2 = MPI_SUCCESS;
+    int ret = PIO_NOERR;
+    
+    assert(ios && (msg > PIO_MSG_INVALID) && (msg < PIO_MAX_MSGS));
+    assert(strlen(pio_async_msg_sign[msg]) > 0);
+    assert(ios->async);
+
+
+    if(!ios->ioproc)
+    {
+        int seq_num = ios->async_ios_msg_info.seq_num;
+        int prev_msg = ios->async_ios_msg_info.prev_msg;
+
+        /* Send message header */
+        ret = send_async_msg_hdr(ios, msg, seq_num, prev_msg);
+        if(ret != PIO_NOERR)
+        {
+            LOG((1, "Could not bcast async msg header"));
+            return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+        } 
+
+        /* Send message */
+        va_list args;
+        va_start(args, msg);
+        ret = send_async_msg_valist(ios, msg, args);
+        if(ret != PIO_NOERR)
+        {
+            LOG((1, "Could not bcast async msg body"));
+            return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+        } 
+        va_end(args);
+
+        ios->async_ios_msg_info.seq_num++;
+        ios->async_ios_msg_info.prev_msg = msg;
+    }
+
+    /* Bcast error code to all procs (union_comm) from compute proc root */
+    mpierr2 = MPI_Bcast(&mpierr, 1, MPI_INT, ios->comproot, ios->my_comm);
+    if(mpierr2 != MPI_SUCCESS)
+    {
+        LOG((1, "Error bcasting MPI error code"));
+        return check_mpi2(ios, NULL, mpierr2, __FILE__, __LINE__);
+    }
+    if(mpierr != MPI_SUCCESS)
+    {
+        LOG((1, "Error sending async msg"));
+        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
+    }
+
+    return PIO_NOERR;
+}
+
+static int recv_async_msg_hdr(iosystem_desc_t *ios, int msg, int eseq_num, int eprev_msg)
+{
+    int mpierr = MPI_SUCCESS;
+
+    assert(ios && ((msg > PIO_MSG_INVALID) && (msg < PIO_MAX_MSGS)) && ios->ioproc);
+    assert(eseq_num >= PIO_MSG_START_SEQ_NUM);
+    assert((eprev_msg >= PIO_MSG_INVALID) && (eprev_msg < PIO_MAX_MSGS));
+
+    /* Message header includes message type, msg, that is already
+     * received
+     */
+
+    int seq_num, prev_msg;
+    mpierr = MPI_Bcast(&seq_num, 1, MPI_INT, ios->compmaster, ios->intercomm);
+    if(mpierr == MPI_SUCCESS)
+    {
+        assert(seq_num == eseq_num);
+        mpierr = MPI_Bcast(&prev_msg, 1, MPI_INT, ios->compmaster, ios->intercomm);
+    }
+    if(mpierr != MPI_SUCCESS)
+    {
+        LOG((1, "Error bcasting MPI error code"));
+        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
+    }
+    assert(prev_msg == eprev_msg);
+    return PIO_NOERR;
+}
+
+int recv_async_msg(iosystem_desc_t *ios, int msg, ...)
+{
+    int mpierr = MPI_SUCCESS;
+    int ret = PIO_NOERR;
+    
+    assert(ios && (msg > PIO_MSG_INVALID) && (msg < PIO_MAX_MSGS));
+    assert(strlen(pio_async_msg_sign[msg]) > 0);
+    assert(ios->async && ios->ioproc);
+
+    /* Recv message header */
+
+    /* Expected seq number and parent/previous msg */
+    int eseq_num = ios->async_ios_msg_info.seq_num;
+    int eprev_msg = ios->async_ios_msg_info.prev_msg;
+
+    ret = recv_async_msg_hdr(ios, msg, eseq_num, eprev_msg);
+    if(ret != PIO_NOERR)
+    {
+        LOG((1, "Could not bcast (recv) async msg header"));
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+    } 
+
+    /* Recv message */
+    va_list args;
+    va_start(args, msg);
+    ret = recv_async_msg_valist(ios, msg, args);
+    if(ret != PIO_NOERR)
+    {
+        LOG((1, "Could not bcast (recv) async msg body"));
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+    } 
+    va_end(args);
+    ios->async_ios_msg_info.seq_num++;
+    ios->async_ios_msg_info.prev_msg = msg;
+
+    return PIO_NOERR;
+}
 
 /** 
  * This function is run on the IO tasks to handle nc_inq_type*()
@@ -42,14 +1082,13 @@ int inq_type_handler(iosystem_desc_t *ios)
 
     /* Get the parameters for this function that the the comp master
      * task is broadcasting. */
-    if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&xtype, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&name_present, 1, MPI_CHAR, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&size_present, 1, MPI_CHAR, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
+    PIO_RECV_ASYNC_MSG(ios, PIO_MSG_INQ_TYPE, &ret, &ncid, &xtype,
+        &name_present, &size_present);
+    if(ret != PIO_NOERR)
+    {
+        LOG((1, "Error receiving async msg for PIO_MSG_INQ_TYPE"));
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+    }
 
     /* Handle null pointer issues. */
     if (name_present)
@@ -88,12 +1127,12 @@ int inq_format_handler(iosystem_desc_t *ios)
 
     /* Get the parameters for this function that the the comp master
      * task is broadcasting. */
-    if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&format_present, 1, MPI_CHAR, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    LOG((2, "inq_format_handler got parameters ncid = %d format_present = %d",
-         ncid, format_present));
+    PIO_RECV_ASYNC_MSG(ios, PIO_MSG_INQ_FORMAT, &ret, &ncid, &format_present);
+    if(ret != PIO_NOERR)
+    {
+        LOG((1, "Error received async msg for PIO_MSG_INQ_FORMAT"));
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+    }
 
     /* Manage NULL pointers. */
     if (format_present)
@@ -132,12 +1171,12 @@ int set_fill_handler(iosystem_desc_t *ios)
 
     /* Get the parameters for this function that the the comp master
      * task is broadcasting. */
-    if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&fillmode, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&old_modep_present, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
+    PIO_RECV_ASYNC_MSG(ios, PIO_MSG_SET_FILL, &ret, &ncid, &fillmode, &old_modep_present);
+    if(ret != PIO_NOERR)
+    {
+        LOG((1, "Error receiving async message for PIO_MSG_SET_FILL"));
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+    }
     LOG((2, "set_fill_handler got parameters ncid = %d fillmode = %d old_modep_present = %d",
          ncid, fillmode, old_modep_present));
 
@@ -175,22 +1214,13 @@ int create_file_handler(iosystem_desc_t *ios)
     LOG((1, "create_file_handler comproot = %d", ios->comproot));
     assert(ios);
 
-    /* Get the parameters for this function that the he comp master
-     * task is broadcasting. */
-    if ((mpierr = MPI_Bcast(&len, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-
-    /* Get space for the filename. */
-    char filename[len + 1];
-
-    if ((mpierr = MPI_Bcast(filename, len + 1, MPI_CHAR, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&iotype, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&mode, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    LOG((1, "create_file_handler got parameters len = %d filename = %s iotype = %d mode = %d",
-         len, filename, iotype, mode));
+    char filename[PIO_MAX_NAME+1];
+    PIO_RECV_ASYNC_MSG(ios, PIO_MSG_CREATE_FILE, &ret, &len, filename, &iotype, &mode);
+    if(ret != PIO_NOERR)
+    {
+        LOG((1, "create_file_handler() failed, unable to receive async msg"));
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+    }
 
     /* Call the create file function. */
     if ((ret = PIOc_createfile(ios->iosysid, &ncid, &iotype, filename, mode)))
@@ -221,8 +1251,12 @@ int close_file_handler(iosystem_desc_t *ios)
 
     /* Get the parameters for this function that the the comp master
      * task is broadcasting. */
-    if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
+    PIO_RECV_ASYNC_MSG(ios, PIO_MSG_CLOSE_FILE, &ret, &ncid);
+    if(ret != PIO_NOERR)
+    {
+        LOG((1, "Error receiving async msg for PIO_MSG_CLOSE_FILE"));
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+    }
     LOG((1, "create_file_handler got parameter ncid = %d", ncid));
 
     /* Call the close file function. */
@@ -257,16 +1291,13 @@ int inq_handler(iosystem_desc_t *ios)
 
     /* Get the parameters for this function that the the comp master
      * task is broadcasting. */
-    if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&ndims_present, 1, MPI_CHAR, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&nvars_present, 1, MPI_CHAR, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&ngatts_present, 1, MPI_CHAR, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&unlimdimid_present, 1, MPI_CHAR, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
+    PIO_RECV_ASYNC_MSG(ios, PIO_MSG_INQ, &ret, &ncid, &ndims_present,
+        &nvars_present, &ngatts_present, &unlimdimid_present);
+    if(ret != PIO_NOERR)
+    {
+        LOG((1, "Error receiving async msg for PIO_MSG_INQ"));
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+    }
     LOG((1, "inq_handler ndims_present = %d nvars_present = %d ngatts_present = %d unlimdimid_present = %d",
          ndims_present, nvars_present, ngatts_present, unlimdimid_present));
 
@@ -305,7 +1336,7 @@ int inq_unlimdims_handler(iosystem_desc_t *ios)
     int nunlimdims;
     int unlimdimids;
     int *nunlimdimsp = NULL, *unlimdimidsp = NULL;
-    char nunlimdimsp_present, unlimdimidsp_present;
+    bool nunlimdimsp_present = false, unlimdimidsp_present = false;
     int mpierr;
     int ret;
 
@@ -314,12 +1345,13 @@ int inq_unlimdims_handler(iosystem_desc_t *ios)
 
     /* Get the parameters for this function that the the comp master
      * task is broadcasting. */
-    if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&nunlimdimsp_present, 1, MPI_CHAR, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&unlimdimidsp_present, 1, MPI_CHAR, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
+    PIO_RECV_ASYNC_MSG(ios, PIO_MSG_INQ_UNLIMDIMS, &ret, &ncid,
+        &nunlimdimsp_present, &unlimdimidsp_present);
+    if(ret != PIO_NOERR)
+    {
+        LOG((1, "Error receiving async msg for PIO_MSG_INQ_UNLIMDIMS"));
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+    }
     LOG((1, "inq_unlimdims_handler nunlimdimsp_present = %d unlimdimidsp_present = %d",
          nunlimdimsp_present, unlimdimidsp_present));
 
@@ -366,14 +1398,12 @@ int inq_dim_handler(iosystem_desc_t *ios, int msg)
 
     /* Get the parameters for this function that the the comp master
      * task is broadcasting. */
-    if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&dimid, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&name_present, 1, MPI_CHAR, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&len_present, 1, MPI_CHAR, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
+    PIO_RECV_ASYNC_MSG(ios, msg, &ret, &ncid, &dimid, &name_present, &len_present);
+    if(ret != PIO_NOERR)
+    {
+        LOG((1, "Error receiving async msg for PIO_MSG_INQ_DIM"));
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+    }
     LOG((2, "inq_handler name_present = %d len_present = %d", name_present,
          len_present));
 
@@ -414,14 +1444,12 @@ int inq_dimid_handler(iosystem_desc_t *ios)
 
     /* Get the parameters for this function that the the comp master
      * task is broadcasting. */
-    if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&namelen, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(name, namelen + 1, MPI_CHAR, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&id_present, 1, MPI_CHAR, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
+    PIO_RECV_ASYNC_MSG(ios, PIO_MSG_INQ_DIMID, &ret, &ncid, &namelen, name, &id_present);
+    if(ret != PIO_NOERR)
+    {
+        LOG((1, "Error receiving async msg for PIO_MSG_INQ_DIMID"));
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+    }
     LOG((1, "inq_dimid_handler ncid = %d namelen = %d name = %s id_present = %d",
          ncid, namelen, name, id_present));
 
@@ -453,7 +1481,7 @@ int inq_att_handler(iosystem_desc_t *ios)
     int mpierr;
     int ret;
     char name[PIO_MAX_NAME + 1];
-    int namelen;
+    int namelen = PIO_MAX_NAME + 1;
     nc_type xtype, *xtypep = NULL;
     PIO_Offset len, *lenp = NULL;
     char xtype_present, len_present;
@@ -463,19 +1491,13 @@ int inq_att_handler(iosystem_desc_t *ios)
 
     /* Get the parameters for this function that the the comp master
      * task is broadcasting. */
-    if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&varid, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&namelen, 1, MPI_INT,  ios->compmaster, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(name, namelen + 1, MPI_CHAR, ios->compmaster,
-                            ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&xtype_present, 1, MPI_CHAR, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&len_present, 1, MPI_CHAR, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
+    PIO_RECV_ASYNC_MSG(ios, PIO_MSG_INQ_ATT, &ret, &ncid, &varid,
+        &namelen, name, &xtype_present, &len_present);
+    if(ret != PIO_NOERR)
+    {
+        LOG((1, "Error while recieving PIO_MSG_INQ_ATT msg"));
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+    }
 
     /* Match NULLs in collective function call. */
     if (xtype_present)
@@ -515,14 +1537,13 @@ int inq_attname_handler(iosystem_desc_t *ios)
 
     /* Get the parameters for this function that the the comp master
      * task is broadcasting. */
-    if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&varid, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&attnum, 1, MPI_INT,  ios->compmaster, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&name_present, 1, MPI_CHAR, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
+    PIO_RECV_ASYNC_MSG(ios, PIO_MSG_INQ_ATTNAME, &ret,
+        &ncid, &varid, &attnum, &name_present);
+    if(ret != PIO_NOERR)
+    {
+        LOG((1, "Error receiving async msg for PIO_MSG_INQ_ATTNAME"));
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+    }
     LOG((2, "inq_attname_handler got ncid = %d varid = %d attnum = %d name_present = %d",
          ncid, varid, attnum, name_present));
 
@@ -552,7 +1573,7 @@ int inq_attid_handler(iosystem_desc_t *ios)
     int ncid;
     int varid;
     char name[PIO_MAX_NAME + 1];
-    int namelen;
+    int namelen = PIO_MAX_NAME + 1;
     int id, *idp = NULL;
     char id_present;
     int mpierr;
@@ -563,16 +1584,12 @@ int inq_attid_handler(iosystem_desc_t *ios)
 
     /* Get the parameters for this function that the the comp master
      * task is broadcasting. */
-    if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&varid, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&namelen, 1, MPI_INT,  ios->compmaster, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(name, namelen + 1, MPI_CHAR,  ios->compmaster, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&id_present, 1, MPI_CHAR, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
+    PIO_RECV_ASYNC_MSG(ios, PIO_MSG_INQ_ATTID, &ret, &ncid, &varid, &namelen, name, &id_present);
+    if(ret != PIO_NOERR)
+    {
+        LOG((1, "Error receiving async msg for PIO_MSG_INQ_ATTID"));
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+    }
     LOG((2, "inq_attid_handler got ncid = %d varid = %d id_present = %d",
          ncid, varid, id_present));
 
@@ -609,39 +1626,21 @@ int att_put_handler(iosystem_desc_t *ios)
     PIO_Offset atttype_len; /* Length in bytes of one elementy of type atttype. */
     nc_type memtype;    /* Type of att data in memory. */
     PIO_Offset memtype_len; /* Length of element of memtype. */
-    void *op;
+    void *op = NULL;
+    PIO_Offset op_sz;
 
     LOG((1, "att_put_handler"));
     assert(ios);
 
     /* Get the parameters for this function that the the comp master
      * task is broadcasting. */
-    if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&varid, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&namelen, 1, MPI_INT,  ios->compmaster, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(name, namelen + 1, MPI_CHAR, ios->compmaster, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&atttype, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&attlen, 1, MPI_OFFSET, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&atttype_len, 1, MPI_OFFSET, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&memtype, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&memtype_len, 1, MPI_OFFSET, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-
-    /* Allocate memory for the attribute data. */
-    if (!(op = malloc(attlen * memtype_len)))
-        return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(op, attlen * memtype_len, MPI_BYTE, 0, ios->intercomm)))
+    PIO_RECV_ASYNC_MSG(ios, PIO_MSG_PUT_ATT, &ret, &ncid, &varid,
+        &namelen, name, &atttype, &attlen, &atttype_len, &memtype, &memtype_len,
+        &op_sz, &op);
+    if(ret != PIO_NOERR)
     {
-        free(op);
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
+        LOG((1, "Error receiving async msg for PIO_MSG_PUT_ATT"));
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
     }
     LOG((1, "att_put_handler ncid = %d varid = %d namelen = %d name = %s"
          "atttype = %d attlen = %d atttype_len = %d memtype = %d memtype_len = 5d",
@@ -691,26 +1690,14 @@ int att_get_handler(iosystem_desc_t *ios)
 
     /* Get the parameters for this function that the the comp master
      * task is broadcasting. */
-    if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&varid, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&namelen, 1, MPI_INT,  ios->compmaster, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(name, namelen + 1, MPI_CHAR, ios->compmaster, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&iotype, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&atttype, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&attlen, 1, MPI_OFFSET, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&atttype_len, 1, MPI_OFFSET, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&memtype, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&memtype_len, 1, MPI_OFFSET, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
+    PIO_RECV_ASYNC_MSG(ios, PIO_MSG_GET_ATT, &ret, &ncid, &varid,
+        &namelen, name, &iotype, &atttype, &attlen, &atttype_len,
+        &memtype, &memtype_len);
+    if(ret != PIO_NOERR)
+    {
+        LOG((1, "Error receiving async msg for PIO_MSG_GET_ATT"));
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+    }
     LOG((1, "att_get_handler ncid = %d varid = %d namelen = %d name = %s iotype = %d"
          " atttype = %d attlen = %d atttype_len = %d memtype = %d memtype_len = %d",
          ncid, varid, namelen, name, iotype, atttype, attlen, atttype_len, memtype, memtype_len));
@@ -752,60 +1739,38 @@ int put_vars_handler(iosystem_desc_t *ios)
     PIO_Offset *startp = NULL;
     PIO_Offset *countp = NULL;
     PIO_Offset *stridep = NULL;
-    int ndims;           /* Number of dimensions. */
-    void *buf;           /* Buffer for data storage. */
+    int ndims = 0;           /* Number of dimensions. */
+    void *buf = NULL;           /* Buffer for data storage. */
+    PIO_Offset buf_sz = 0;
     PIO_Offset num_elem; /* Number of data elements in the buffer. */
     int mpierr;          /* Error code from MPI function calls. */
+    int ret = PIO_NOERR;
 
     LOG((1, "put_vars_handler"));
     assert(ios);
 
+    PIO_Offset start[NC_MAX_DIMS], count[NC_MAX_DIMS], stride[NC_MAX_DIMS];
+    int nstart=0, ncount=0, nstride=0;
+
     /* Get the parameters for this function that the the comp master
      * task is broadcasting. */
-    if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&varid, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&ndims, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
+    PIO_RECV_ASYNC_MSG(ios, PIO_MSG_PUT_VARS, &ret,
+        &ncid, &varid, &ndims,
+        &start_present, &nstart, start,
+        &count_present, &ncount, count,
+        &stride_present, &nstride, stride,
+        &xtype, &num_elem, &typelen,
+        &buf_sz, &buf);
+    if(ret != PIO_NOERR)
+    {
+        LOG((1, "Error receiving async msg PIO_MSG_PUT_VARS"));
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+    }
 
-    /* Now we know how big to make these arrays. */
-    PIO_Offset start[ndims], count[ndims], stride[ndims];
-
-    if ((mpierr = MPI_Bcast(&start_present, 1, MPI_CHAR, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if (start_present)    
-        if ((mpierr = MPI_Bcast(start, ndims, MPI_OFFSET, 0, ios->intercomm)))
-            return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    LOG((1, "put_vars_handler getting start[0] = %d ndims = %d", start[0], ndims));
-    if ((mpierr = MPI_Bcast(&count_present, 1, MPI_CHAR, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if (count_present)    
-        if ((mpierr = MPI_Bcast(count, ndims, MPI_OFFSET, 0, ios->intercomm)))
-            return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&stride_present, 1, MPI_CHAR, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if (stride_present)
-        if ((mpierr = MPI_Bcast(stride, ndims, MPI_OFFSET, 0, ios->intercomm)))
-            return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&xtype, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&num_elem, 1, MPI_OFFSET, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&typelen, 1, MPI_OFFSET, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
     LOG((1, "put_vars_handler ncid = %d varid = %d ndims = %d "
          "start_present = %d count_present = %d stride_present = %d xtype = %d "
          "num_elem = %d typelen = %d", ncid, varid, ndims, start_present, count_present,
          stride_present, xtype, num_elem, typelen));
-
-    /* Allocate room for our data. */
-    if (!(buf = malloc(num_elem * typelen)))
-        return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__);
-
-    /* Get the data. */
-    if ((mpierr = MPI_Bcast(buf, num_elem * typelen, MPI_BYTE, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
 
     /* Set the non-NULL pointers. */
     if (start_present)
@@ -814,7 +1779,7 @@ int put_vars_handler(iosystem_desc_t *ios)
         countp = count;
     if (stride_present)
         stridep = stride;
-
+    
     /* Call the function to write the data. No need to check return
      * values, they are bcast to computation tasks inside function. */
     switch(xtype)
@@ -884,64 +1849,38 @@ int get_vars_handler(iosystem_desc_t *ios)
     int ncid;
     int varid;
     int mpierr;
+    int ret = PIO_NOERR;
     PIO_Offset typelen; /** Length (in bytes) of this type. */
     nc_type xtype; /** 
                     * Type of the data being written. */
-    PIO_Offset *start;
-    PIO_Offset *count;
-    PIO_Offset *stride;
+    PIO_Offset start[NC_MAX_DIMS];
+    PIO_Offset count[NC_MAX_DIMS];
+    PIO_Offset stride[NC_MAX_DIMS];
     char start_present;
     char count_present;
     char stride_present;
+    int nstart=0, ncount=0, nstride=0;
     PIO_Offset *startp = NULL, *countp = NULL, *stridep = NULL;
-    int ndims; /** Number of dimensions. */
-    void *buf; /** Buffer for data storage. */
-    PIO_Offset num_elem; /** Number of data elements in the buffer. */
+    int ndims = 0; /** Number of dimensions. */
+    void *buf = NULL; /** Buffer for data storage. */
+    PIO_Offset num_elem = 0; /** Number of data elements in the buffer. */
 
     LOG((1, "get_vars_handler"));
     assert(ios);
 
     /* Get the parameters for this function that the the comp master
      * task is broadcasting. */
-    if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&varid, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&ndims, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&start_present, 1, MPI_CHAR, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if (start_present)
+    PIO_RECV_ASYNC_MSG(ios, PIO_MSG_GET_VARS, &ret,
+        &ncid, &varid, &ndims,
+        &start_present, &nstart, start,
+        &count_present, &ncount, count,
+        &stride_present, &nstride, stride,
+        &xtype, &num_elem, &typelen);
+    if(ret != PIO_NOERR)
     {
-        if (!(start = malloc(ndims * sizeof(PIO_Offset))))
-            return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__);            
-        if ((mpierr = MPI_Bcast(start, ndims, MPI_OFFSET, 0, ios->intercomm)))
-            return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
+        LOG((1, "Error receiving async msg for PIO_MSG_GET_VARS"));
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
     }
-    if ((mpierr = MPI_Bcast(&count_present, 1, MPI_CHAR, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if (count_present)
-    {
-        if (!(count = malloc(ndims * sizeof(PIO_Offset))))
-            return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__);            
-        if ((mpierr = MPI_Bcast(count, ndims, MPI_OFFSET, 0, ios->intercomm)))
-            return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    }
-    if ((mpierr = MPI_Bcast(&stride_present, 1, MPI_CHAR, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if (stride_present)
-    {
-        if (!(stride = malloc(ndims * sizeof(PIO_Offset))))
-            return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__);            
-        if ((mpierr = MPI_Bcast(stride, ndims, MPI_OFFSET, 0, ios->intercomm)))
-            return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    }
-    if ((mpierr = MPI_Bcast(&xtype, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&num_elem, 1, MPI_OFFSET, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&typelen, 1, MPI_OFFSET, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
     LOG((1, "get_vars_handler ncid = %d varid = %d ndims = %d "
          "stride_present = %d xtype = %d num_elem = %d typelen = %d",
          ncid, varid, ndims, stride_present, xtype, num_elem, typelen));
@@ -1012,12 +1951,6 @@ int get_vars_handler(iosystem_desc_t *ios)
 
     /* Free resourses. */
     free(buf);
-    if (start_present)
-        free(start);
-    if (count_present)
-        free(count);
-    if (stride_present)
-        free(stride);
     
     LOG((1, "get_vars_handler succeeded!"));
     return PIO_NOERR;
@@ -1047,20 +1980,15 @@ int inq_var_handler(iosystem_desc_t *ios)
 
     /* Get the parameters for this function that the the comp master
      * task is broadcasting. */
-    if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&varid, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&name_present, 1, MPI_CHAR, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&xtype_present, 1, MPI_CHAR, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&ndims_present, 1, MPI_CHAR, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&dimids_present, 1, MPI_CHAR, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&natts_present, 1, MPI_CHAR, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
+    PIO_RECV_ASYNC_MSG(ios, PIO_MSG_INQ_VAR, &ret, &ncid, &varid,
+        &name_present, &xtype_present, &ndims_present,
+        &dimids_present, &natts_present);
+    if(ret != PIO_NOERR)
+    {
+        LOG((1, "Error received async msg for PIO_MSG_INQ_VAR"));
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+    }
+
     LOG((2,"inq_var_handler ncid = %d varid = %d name_present = %d xtype_present = %d ndims_present = %d "
          "dimids_present = %d natts_present = %d",
          ncid, varid, name_present, xtype_present, ndims_present, dimids_present, natts_present));
@@ -1109,14 +2037,13 @@ int inq_var_chunking_handler(iosystem_desc_t *ios)
 
     /* Get the parameters for this function that the the comp master
      * task is broadcasting. */
-    if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&varid, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&storage_present, 1, MPI_CHAR, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&chunksizes_present, 1, MPI_CHAR, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
+    PIO_RECV_ASYNC_MSG(ios, PIO_MSG_INQ_VAR_CHUNKING, &ret,
+        &ncid, &varid, &storage_present, &chunksizes_present);
+    if(ret != PIO_NOERR)
+    {
+        LOG((1, "Error receiving async msg for PIO_MSG_INQ_VAR_CHUNKING"));
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+    }
     LOG((2,"inq_var_handler ncid = %d varid = %d storage_present = %d chunksizes_present = %d",
          ncid, varid, storage_present, chunksizes_present));
 
@@ -1148,23 +2075,20 @@ int inq_var_fill_handler(iosystem_desc_t *ios)
     PIO_Offset type_size;
     int fill_mode, *fill_modep = NULL;
     PIO_Offset *fill_value, *fill_valuep = NULL;
-    int mpierr;
+    int mpierr, ret = PIO_NOERR;
 
     assert(ios);
     LOG((1, "inq_var_fill_handler"));
 
     /* Get the parameters for this function that the the comp master
      * task is broadcasting. */
-    if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&varid, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&type_size, 1, MPI_OFFSET, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&fill_mode_present, 1, MPI_CHAR, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&fill_value_present, 1, MPI_CHAR, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
+    PIO_RECV_ASYNC_MSG(ios, PIO_MSG_INQ_VAR_FILL, &ret,
+        &ncid, &varid, &type_size, &fill_mode_present, &fill_value_present);
+    if(ret != PIO_NOERR)
+    {
+        LOG((1, "Error receiving async msg for PIO_MSG_INQ_VAR_FILL"));
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+    }
     LOG((2,"inq_var_fill_handler ncid = %d varid = %d type_size = %lld, fill_mode_present = %d fill_value_present = %d",
          ncid, varid, type_size, fill_mode_present, fill_value_present));
 
@@ -1201,7 +2125,7 @@ int inq_var_endian_handler(iosystem_desc_t *ios)
     int ncid;
     int varid;
     char endian_present;
-    int endian, *endianp = NULL;
+    int endian = 0, *endianp = NULL;
     int mpierr;
     int ret;
 
@@ -1210,12 +2134,12 @@ int inq_var_endian_handler(iosystem_desc_t *ios)
 
     /* Get the parameters for this function that the the comp master
      * task is broadcasting. */
-    if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&varid, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&endian_present, 1, MPI_CHAR, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
+    PIO_RECV_ASYNC_MSG(ios, PIO_MSG_INQ_VAR_ENDIAN, &ret, &ncid, &varid, &endian_present);
+    if(ret != PIO_NOERR)
+    {
+        LOG((1, "Receiving async msg failed for PIO_MSG_INQ_VAR_ENDIAN"));
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+    }
     LOG((2,"inq_var_endian_handler ncid = %d varid = %d endian_present = %d", ncid, varid,
          endian_present));
 
@@ -1255,25 +2179,15 @@ int inq_var_deflate_handler(iosystem_desc_t *ios)
 
     /* Get the parameters for this function that the the comp master
      * task is broadcasting. */
-    if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&varid, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&shuffle_present, 1, MPI_CHAR, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if (shuffle_present && !mpierr)
-        if ((mpierr = MPI_Bcast(&shuffle, 1, MPI_INT, 0, ios->intercomm)))
-            return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&deflate_present, 1, MPI_CHAR, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if (deflate_present && !mpierr)
-        if ((mpierr = MPI_Bcast(&deflate, 1, MPI_INT, 0, ios->intercomm)))
-            return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&deflate_level_present, 1, MPI_CHAR, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if (deflate_level_present && !mpierr)
-        if ((mpierr = MPI_Bcast(&deflate_level, 1, MPI_INT, 0, ios->intercomm)))
-            return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
+    PIO_RECV_ASYNC_MSG(ios, PIO_MSG_INQ_VAR_DEFLATE, &ret,
+        &ncid, &varid, &shuffle_present, &shuffle,
+        &deflate_present, &deflate,
+        &deflate_level_present, &deflate_level);
+    if(ret != PIO_NOERR)
+    {
+        LOG((1, "Error receiving async msg for PIO_MSG_INQ_VAR_DEFLATE"));
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+    }
     LOG((2, "inq_var_handler ncid = %d varid = %d shuffle_present = %d deflate_present = %d "
          "deflate_level_present = %d", ncid, varid, shuffle_present, deflate_present,
          deflate_level_present));
@@ -1308,19 +2222,19 @@ int inq_varid_handler(iosystem_desc_t *ios)
     int varid;
     int mpierr;
     int ret;
-    int namelen;
+    int namelen = PIO_MAX_NAME + 1;
     char name[PIO_MAX_NAME + 1];
 
     assert(ios);
 
     /* Get the parameters for this function that the the comp master
      * task is broadcasting. */
-    if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&namelen, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(name, namelen + 1, MPI_CHAR, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
+    PIO_RECV_ASYNC_MSG(ios, PIO_MSG_INQ_VARID, &ret, &ncid, &namelen, name);
+    if(ret != PIO_NOERR)
+    {
+        LOG((1, "Error receiving async msg for PIO_MSG_INQ_VARID"));
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+    }
 
     /* Call the inq_dimid function. */
     if ((ret = PIOc_inq_varid(ncid, name, &varid)))
@@ -1349,8 +2263,12 @@ int sync_file_handler(iosystem_desc_t *ios)
 
     /* Get the parameters for this function that the comp master
      * task is broadcasting. */
-    if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
+    PIO_RECV_ASYNC_MSG(ios, PIO_MSG_SYNC, &ret, &ncid);
+    if(ret != PIO_NOERR)
+    {
+        LOG((1, "Error receiving async msg for PIO_MSG_SYNC"));
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+    }
     LOG((1, "sync_file_handler got parameter ncid = %d", ncid));
 
     /* Call the sync file function. */
@@ -1384,12 +2302,12 @@ int setframe_handler(iosystem_desc_t *ios)
 
     /* Get the parameters for this function that the comp master
      * task is broadcasting. */
-    if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&varid, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&frame, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
+    PIO_RECV_ASYNC_MSG(ios, PIO_MSG_SETFRAME, &ret, &ncid, &varid, &frame);
+    if(ret != PIO_NOERR)
+    {
+        LOG((1, "Error receiving async msg for PIO_MSG_SETFRAME"));
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+    }
     LOG((1, "setframe_handler got parameter ncid = %d varid = %d frame = %d",
          ncid, varid, frame));
 
@@ -1423,10 +2341,12 @@ int advanceframe_handler(iosystem_desc_t *ios)
 
     /* Get the parameters for this function that the comp master
      * task is broadcasting. */
-    if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&varid, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
+    PIO_RECV_ASYNC_MSG(ios, PIO_MSG_ADVANCEFRAME, &ret, &ncid, &varid);
+    if(ret != PIO_NOERR)
+    {
+        LOG((1, "Error receiving async msg for PIO_MSG_ADVANCEFRAME"));
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+    }
     LOG((1, "advanceframe_handler got parameter ncid = %d varid = %d",
          ncid, varid));
 
@@ -1451,14 +2371,19 @@ int change_def_file_handler(iosystem_desc_t *ios, int msg)
 {
     int ncid;
     int mpierr;
+    int ret;
 
     LOG((1, "change_def_file_handler"));
     assert(ios);
 
     /* Get the parameters for this function that the comp master
      * task is broadcasting. */
-    if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
+    PIO_RECV_ASYNC_MSG(ios, msg, &ret, &ncid);
+    if(ret != PIO_NOERR)
+    {
+        LOG((1, "Error receiving async msg for PIO_MSG_ENDDEF/REDEF"));
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+    }
 
     /* Call the function. */
     if (msg == PIO_MSG_ENDDEF)
@@ -1483,49 +2408,37 @@ int change_def_file_handler(iosystem_desc_t *ios, int msg)
 int def_var_handler(iosystem_desc_t *ios)
 {
     int ncid;
-    int namelen;
+    int namelen = PIO_MAX_NAME + 1;
     char name[PIO_MAX_NAME + 1];
     int mpierr;
     int ret;
     int varid;
     nc_type xtype;
     int ndims;
-    int *dimids;
+    int dimids_sz;
+    int dimids[NC_MAX_DIMS];
 
     LOG((1, "def_var_handler comproot = %d", ios->comproot));
     assert(ios);
 
     /* Get the parameters for this function that the he comp master
      * task is broadcasting. */
-    if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&namelen, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(name, namelen + 1, MPI_CHAR, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&xtype, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&ndims, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if (!(dimids = malloc(ndims * sizeof(int))))
-        return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(dimids, ndims, MPI_INT, 0, ios->intercomm)))
+    PIO_RECV_ASYNC_MSG(ios, PIO_MSG_DEF_VAR, &ret,
+      &ncid, &namelen, name, &xtype, &ndims, &dimids_sz, dimids);
+    if(ret != PIO_NOERR)
     {
-        free(dimids);
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
+        LOG((1, "Error while receiving async msg for PIO_MSG_DEF_VAR"));
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
     }
+
     LOG((1, "def_var_handler got parameters namelen = %d "
          "name = %s ncid = %d", namelen, name, ncid));
 
     /* Call the function. */
     if ((ret = PIOc_def_var(ncid, name, xtype, ndims, dimids, &varid)))
     {
-        free(dimids);
         return pio_err(ios, NULL, ret, __FILE__, __LINE__);
     }
-
-    /* Free resources. */
-    free(dimids);
 
     LOG((1, "def_var_handler succeeded!"));
     return PIO_NOERR;
@@ -1545,6 +2458,7 @@ int def_var_chunking_handler(iosystem_desc_t *ios)
     int ndims;
     int storage;
     char chunksizes_present;
+    int chunksizes_sz = 0;
     PIO_Offset chunksizes[NC_MAX_DIMS], *chunksizesp = NULL;
     int mpierr;
     int ret;
@@ -1554,19 +2468,14 @@ int def_var_chunking_handler(iosystem_desc_t *ios)
 
     /* Get the parameters for this function that the he comp master
      * task is broadcasting. */
-    if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&varid, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&storage, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&ndims, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&chunksizes_present, 1, MPI_CHAR, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if (chunksizes_present)
-        if ((mpierr = MPI_Bcast(chunksizes, ndims, MPI_OFFSET, 0, ios->intercomm)))
-            return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
+    PIO_RECV_ASYNC_MSG(ios, PIO_MSG_DEF_VAR_CHUNKING, &ret,
+        &ncid, &varid, &storage, &ndims, &chunksizes_present,
+        &chunksizes_sz, chunksizes);
+    if(ret != PIO_NOERR)
+    {
+        LOG((1, "Error receiving async msg for PIO_MSG_DEF_VAR_CHUNKING"));
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+    }
     LOG((1, "def_var_chunking_handler got parameters ncid = %d varid = %d storage = %d "
          "ndims = %d chunksizes_present = %d", ncid, varid, storage, ndims, chunksizes_present));
 
@@ -1595,40 +2504,24 @@ int def_var_fill_handler(iosystem_desc_t *ios)
     int varid;
     int fill_mode;
     char fill_value_present;
-    PIO_Offset type_size;
+    PIO_Offset type_size, fill_value_sz;
     PIO_Offset *fill_valuep = NULL;
-    int mpierr;
+    int mpierr, ret = PIO_NOERR;
 
     assert(ios);
     LOG((1, "def_var_fill_handler comproot = %d", ios->comproot));
 
     /* Get the parameters for this function that the he comp master
      * task is broadcasting. */
-    if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&varid, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&fill_mode, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&type_size, 1, MPI_OFFSET, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&fill_value_present, 1, MPI_CHAR, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if (fill_value_present)
-    {
-        if (!(fill_valuep = malloc(type_size)))
-            return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__);
-        if ((mpierr = MPI_Bcast(fill_valuep, type_size, MPI_CHAR, 0, ios->intercomm)))
-        {
-            free(fill_valuep);
-            return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-        }
-    }
+    PIO_RECV_ASYNC_MSG(ios, PIO_MSG_DEF_VAR_FILL, &ret,
+        &ncid, &varid, &fill_mode, &type_size, &fill_value_present,
+        &fill_value_sz, &fill_valuep);
+
     LOG((1, "def_var_fill_handler got parameters ncid = %d varid = %d fill_mode = %d "
          "type_size = %lld fill_value_present = %d", ncid, varid, fill_mode, type_size, fill_value_present));
 
     /* Call the function. */
-    PIOc_def_var_fill(ncid, varid, fill_mode, fill_valuep);
+    PIOc_def_var_fill(ncid, varid, fill_mode, (fill_value_present) ? (fill_valuep) : NULL);
 
     /* Free memory allocated for the fill value. */
     if (fill_valuep)
@@ -1658,12 +2551,13 @@ int def_var_endian_handler(iosystem_desc_t *ios)
 
     /* Get the parameters for this function that the he comp master
      * task is broadcasting. */
-    if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&varid, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&endian, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
+    PIO_RECV_ASYNC_MSG(ios, PIO_MSG_DEF_VAR_ENDIAN, &ret, &ncid, &varid, &endian);
+    if(ret != PIO_NOERR)
+    {
+        LOG((1, "Error receiving async msg for PIO_MSG_DEF_VAR_ENDIAN"));
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+    }
+      
     LOG((1, "def_var_endian_handler got parameters ncid = %d varid = %d endain = %d ",
          ncid, varid, endian));
 
@@ -1697,16 +2591,13 @@ int def_var_deflate_handler(iosystem_desc_t *ios)
 
     /* Get the parameters for this function that the he comp master
      * task is broadcasting. */
-    if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&varid, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&shuffle, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&deflate, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&deflate_level, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
+    PIO_RECV_ASYNC_MSG(ios, PIO_MSG_DEF_VAR_DEFLATE, &ret,
+        &ncid, &varid, &shuffle, &deflate, &deflate_level);
+    if(ret != PIO_NOERR)
+    {
+        LOG((1, "Error receiving async msg for PIO_MSG_DEF_VAR_DEFLATE"));
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+    }
     LOG((1, "def_var_deflate_handler got parameters ncid = %d varid = %d shuffle = %d ",
          "deflate = %d deflate_level = %d", ncid, varid, shuffle, deflate, deflate_level));
 
@@ -1740,16 +2631,8 @@ int set_var_chunk_cache_handler(iosystem_desc_t *ios)
 
     /* Get the parameters for this function that the he comp master
      * task is broadcasting. */
-    if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&varid, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&size, 1, MPI_OFFSET, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&nelems, 1, MPI_OFFSET, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&preemption, 1, MPI_FLOAT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
+    PIO_RECV_ASYNC_MSG(ios, PIO_MSG_SET_VAR_CHUNK_CACHE, &ret,
+        &ncid, &varid, &size, &nelems, &preemption);
     LOG((1, "set_var_chunk_cache_handler got params ncid = %d varid = %d size = %d "
          "nelems = %d preemption = %g", ncid, varid, size, nelems, preemption));
 
@@ -1785,14 +2668,12 @@ int def_dim_handler(iosystem_desc_t *ios)
 
     /* Get the parameters for this function that the he comp master
      * task is broadcasting. */
-    if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&namelen, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(name, namelen + 1, MPI_CHAR, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&len, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
+    PIO_RECV_ASYNC_MSG(ios, PIO_MSG_DEF_DIM, &ret, &ncid, &namelen, name, &len);
+    if(ret != PIO_NOERR)
+    {
+        LOG((1, "Error receiving async msg for PIO_MSG_DEF_DIM"));
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+    }
     LOG((2, "def_dim_handler got parameters namelen = %d "
          "name = %s len = %d ncid = %d", namelen, name, len, ncid));
 
@@ -1828,14 +2709,13 @@ int rename_dim_handler(iosystem_desc_t *ios)
 
     /* Get the parameters for this function that the he comp master
      * task is broadcasting. */
-    if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&dimid, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&namelen, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(name, namelen + 1, MPI_CHAR, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
+    PIO_RECV_ASYNC_MSG(ios, PIO_MSG_RENAME_DIM, &ret,
+        &ncid, &dimid, &namelen, name);
+    if(ret != PIO_NOERR)
+    {
+        LOG((1, "Error receiving async msg for PIO_MSG_RENAME_DIM"));
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+    }
     LOG((2, "rename_dim_handler got parameters namelen = %d "
          "name = %s ncid = %d dimid = %d", namelen, name, ncid, dimid));
 
@@ -1871,14 +2751,13 @@ int rename_var_handler(iosystem_desc_t *ios)
 
     /* Get the parameters for this function that the he comp master
      * task is broadcasting. */
-    if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&varid, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&namelen, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(name, namelen + 1, MPI_CHAR, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
+    PIO_RECV_ASYNC_MSG(ios, PIO_MSG_RENAME_VAR, &ret,
+        &ncid, &varid, &namelen, name);
+    if(ret != PIO_NOERR)
+    {
+        LOG((1, "Error receiving async msg for PIO_MSG_RENAME_VAR"));
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+    }
     LOG((2, "rename_var_handler got parameters namelen = %d "
          "name = %s ncid = %d varid = %d", namelen, name, ncid, varid));
 
@@ -1914,18 +2793,13 @@ int rename_att_handler(iosystem_desc_t *ios)
 
     /* Get the parameters for this function that the he comp master
      * task is broadcasting. */
-    if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&varid, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&namelen, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(name, namelen + 1, MPI_CHAR, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&newnamelen, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(newname, newnamelen + 1, MPI_CHAR, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
+    PIO_RECV_ASYNC_MSG(ios, PIO_MSG_RENAME_ATT, &ret, &ncid, &varid,
+        &namelen, name, &newnamelen, newname);
+    if(ret != PIO_NOERR)
+    {
+        LOG((1, "Error receiving message for PIO_MSG_RENAME_ATT"));
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+    }
     LOG((2, "rename_att_handler got parameters namelen = %d name = %s ncid = %d varid = %d "
          "newnamelen = %d newname = %s", namelen, name, ncid, varid, newnamelen, newname));
 
@@ -1961,14 +2835,13 @@ int delete_att_handler(iosystem_desc_t *ios)
 
     /* Get the parameters for this function that the he comp master
      * task is broadcasting. */
-    if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&varid, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&namelen, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(name, namelen + 1, MPI_CHAR, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
+    PIO_RECV_ASYNC_MSG(ios, PIO_MSG_DEL_ATT, &ret, &ncid, &varid,
+        &namelen, name);
+    if(ret != PIO_NOERR)
+    {
+        LOG((1, "Error while receiving async msg for PIO_MSG_DEL_ATT"));
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+    }
     LOG((2, "delete_att_handler namelen = %d name = %s ncid = %d varid = %d ",
          namelen, name, ncid, varid));
 
@@ -1997,25 +2870,20 @@ int open_file_handler(iosystem_desc_t *ios)
     int iotype;
     int mode;
     int mpierr;
+    int ret = PIO_NOERR;
 
     LOG((1, "open_file_handler comproot = %d", ios->comproot));
     assert(ios);
 
     /* Get the parameters for this function that the he comp master
      * task is broadcasting. */
-    if ((mpierr = MPI_Bcast(&len, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    LOG((2, "open_file_handler got parameter len = %d", len));
-
-    /* Get space for the filename. */
-    char filename[len + 1];
-
-    if ((mpierr = MPI_Bcast(filename, len + 1, MPI_CHAR, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&iotype, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&mode, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
+    char filename[PIO_MAX_NAME+1];
+    PIO_RECV_ASYNC_MSG(ios, PIO_MSG_OPEN_FILE, &ret, &len, filename, &iotype, &mode);
+    if(ret != PIO_NOERR)
+    {
+        LOG((1, "open_file_handler() failed : Unable to get async msg"));
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+    }
 
     LOG((2, "open_file_handler got parameters len = %d filename = %s iotype = %d mode = %d",
          len, filename, iotype, mode));
@@ -2039,6 +2907,7 @@ int open_file_handler(iosystem_desc_t *ios)
  */
 int delete_file_handler(iosystem_desc_t *ios)
 {
+    char filename[PIO_MAX_NAME+1];
     int len;
     int mpierr;
     int ret;
@@ -2048,14 +2917,12 @@ int delete_file_handler(iosystem_desc_t *ios)
 
     /* Get the parameters for this function that the he comp master
      * task is broadcasting. */
-    if ((mpierr = MPI_Bcast(&len, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-
-    /* Get space for the filename. */
-    char filename[len + 1];
-
-    if ((mpierr = MPI_Bcast(filename, len + 1, MPI_CHAR, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
+    PIO_RECV_ASYNC_MSG(ios, PIO_MSG_DELETE_FILE, &ret, &len, filename);
+    if(ret != PIO_NOERR)
+    {
+        LOG((1, "Error receiving async msg for PIO_MSG_DELETE_FILE"));
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+    }
     LOG((1, "delete_file_handler got parameters len = %d filename = %s",
          len, filename));
 
@@ -2081,6 +2948,7 @@ int initdecomp_dof_handler(iosystem_desc_t *ios)
     int ndims;
     int maplen;
     int ioid;
+    PIO_Offset *compmap = NULL;
     char rearranger_present;
     int rearranger;
     int *rearrangerp = NULL;
@@ -2096,48 +2964,21 @@ int initdecomp_dof_handler(iosystem_desc_t *ios)
 
     /* Get the parameters for this function that the the comp master
      * task is broadcasting. */
-    if ((mpierr = MPI_Bcast(&iosysid, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&pio_type, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&ndims, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
+    int dims[NC_MAX_DIMS];
+    int niostart = 0, niocount = 0;
+    PIO_Offset iostart[NC_MAX_DIMS];
+    PIO_Offset iocount[NC_MAX_DIMS];
 
-    /* Now we know the size of these arrays. */
-    int dims[ndims];
-    PIO_Offset iostart[ndims];
-    PIO_Offset iocount[ndims];
-
-    if ((mpierr = MPI_Bcast(dims, ndims, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&maplen, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-
-    PIO_Offset compmap[maplen];
-
-    if ((mpierr = MPI_Bcast(compmap, maplen, MPI_OFFSET, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-
-    if ((mpierr = MPI_Bcast(&rearranger_present, 1, MPI_CHAR, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-
-    if (rearranger_present)
-        if ((mpierr = MPI_Bcast(&rearranger, 1, MPI_INT, 0, ios->intercomm)))
-            return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-
-    if ((mpierr = MPI_Bcast(&iostart_present, 1, MPI_CHAR, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-
-    if (iostart_present)
-        if ((mpierr = MPI_Bcast(iostart, ndims, MPI_OFFSET, 0, ios->intercomm)))
-            return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-
-    if ((mpierr = MPI_Bcast(&iocount_present, 1, MPI_CHAR, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-
-    if (iocount_present)
-        if ((mpierr = MPI_Bcast(iocount, ndims, MPI_OFFSET, 0, ios->intercomm)))
-            return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
+    PIO_RECV_ASYNC_MSG(ios, PIO_MSG_INITDECOMP_DOF, &ret,
+        &iosysid, &pio_type, &ndims, dims, &maplen, &compmap,
+        &rearranger_present, &rearranger, &iostart_present,
+        &niostart, iostart, &iocount_present, &niocount,
+        iocount);
+    if(ret != PIO_NOERR)
+    {
+        LOG((1, "Error receiving async msg for PIO_MSG_INITDECOMP_DOF"));
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+    }
 
     LOG((2, "initdecomp_dof_handler iosysid = %d pio_type = %d ndims = %d maplen = %d "
          "rearranger_present = %d iostart_present = %d iocount_present = %d ",
@@ -2151,8 +2992,17 @@ int initdecomp_dof_handler(iosystem_desc_t *ios)
         iocountp = iocount;
 
     /* Call the function. */
+    /* The I/O procs don't have any user data, they gather data from compute
+     * procs and write it out. So ignore compmap
+     */
+    maplen = 0;
     ret = PIOc_InitDecomp(iosysid, pio_type, ndims, dims, maplen, compmap, &ioid, rearrangerp,
                           iostartp, iocountp);
+
+    if(compmap)
+    {
+        free(compmap);
+    }
     
     LOG((1, "PIOc_InitDecomp returned %d", ret));
     return PIO_NOERR;
@@ -2177,12 +3027,12 @@ int write_darray_multi_handler(iosystem_desc_t *ios)
     io_desc_t *iodesc;     /* The IO description. */
     char frame_present;
     int *framep = NULL;
-    int *frame;
+    int *frame = NULL;
     PIO_Offset arraylen;
-    void *array;
+    void *array = NULL;
     char fillvalue_present;
     void *fillvaluep = NULL;
-    void *fillvalue;
+    void *fillvalue = NULL;
     int flushtodisk;
     int mpierr;
     int ret;
@@ -2190,49 +3040,23 @@ int write_darray_multi_handler(iosystem_desc_t *ios)
     LOG((1, "write_darray_multi_handler"));
     assert(ios);
 
+    int varids_sz = 0;
+    int *varids = NULL;
+    PIO_Offset array_sz = 0;
+    int nframes = 0, nfillvalues = 0;
+
     /* Get the parameters for this function that the the comp master
      * task is broadcasting. */
-    if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&nvars, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    int varids[nvars];
-    if ((mpierr = MPI_Bcast(varids, nvars, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&ioid, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-
-    /* Get decomposition information. */
-    if (!(iodesc = pio_get_iodesc_from_id(ioid)))
-        return pio_err(ios, file, PIO_EBADID, __FILE__, __LINE__);
-
-    if ((mpierr = MPI_Bcast(&arraylen, 1, MPI_OFFSET, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if (!(array = malloc(arraylen * iodesc->piotype_size)))
-        return pio_err(NULL, NULL, PIO_ENOMEM, __FILE__, __LINE__);    
-    if ((mpierr = MPI_Bcast(array, arraylen * iodesc->piotype_size, MPI_CHAR, 0,
-                            ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&frame_present, 1, MPI_CHAR, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if (frame_present)
+    PIO_RECV_ASYNC_MSG(ios, PIO_MSG_WRITEDARRAYMULTI, &ret,
+        &ncid, &nvars, &varids_sz, &varids, &ioid, &arraylen,
+        &array_sz, &array, &frame_present, &nframes, &frame,
+        &fillvalue_present, &nfillvalues, &fillvalue, &flushtodisk);
+    if(ret != PIO_NOERR)
     {
-        if (!(frame = malloc(nvars * sizeof(int))))
-            return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__);            
-        if ((mpierr = MPI_Bcast(frame, nvars, MPI_INT, 0, ios->intercomm)))
-            return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
+        LOG((1, "Error receiving async msg for PIO_MSG_WRITEDARRAYMULTI"));
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
     }
-    if ((mpierr = MPI_Bcast(&fillvalue_present, 1, MPI_CHAR, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if (fillvalue_present)
-    {
-        if (!(fillvalue = malloc(nvars * iodesc->piotype_size)))
-            return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__);            
-        if ((mpierr = MPI_Bcast(fillvalue, nvars * iodesc->piotype_size, MPI_CHAR, 0, ios->intercomm)))
-            return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    }
-    if ((mpierr = MPI_Bcast(&flushtodisk, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
+
     LOG((1, "write_darray_multi_handler ncid = %d nvars = %d ioid = %d arraylen = %d "
          "frame_present = %d fillvalue_present flushtodisk = %d", ncid, nvars,
          ioid, arraylen, frame_present, fillvalue_present, flushtodisk));
@@ -2259,10 +3083,18 @@ int write_darray_multi_handler(iosystem_desc_t *ios)
                             fillvaluep, flushtodisk);
 
     /* Free resources. */
-    if (frame_present)
+    if(varids_sz > 0)
+    {
+        free(varids);
+    }
+    if(nframes > 0)
+    {
         free(frame);
-    if (fillvalue_present)
+    }
+    if(nfillvalues > 0)
+    {
         free(fillvalue);
+    }
     free(array);
     
     LOG((1, "write_darray_multi_handler succeeded!"));
@@ -2282,8 +3114,26 @@ int write_darray_multi_handler(iosystem_desc_t *ios)
  */
 int readdarray_handler(iosystem_desc_t *ios)
 {
+    int ncid, varid, ioid;
+    int mpierr, ierr;
+
+    LOG((1, "read_darray_handler"));
     assert(ios);
-    return PIO_NOERR;
+
+    PIO_RECV_ASYNC_MSG(ios, PIO_MSG_READDARRAY, &ierr, &ncid, &varid, &ioid);
+    if(ierr != PIO_NOERR)
+    {
+        LOG((1, "Error receiving async msg for PIO_MSG_READDARRAY"));
+        return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
+    }
+
+    LOG((1, "PIOc_read_darray(ncid=%d, varid=%d, ioid=%d, 0, NULL)", ncid, varid, ioid));
+    /* On the I/O procs we don't have any user buffers,
+     * i.e., arraylen == 0
+     */
+    ierr = PIOc_read_darray(ncid, varid, ioid, 0, NULL);
+
+    return ierr;
 }
 
 /** 
@@ -2299,7 +3149,7 @@ int readdarray_handler(iosystem_desc_t *ios)
 int seterrorhandling_handler(iosystem_desc_t *ios)
 {
     int method;
-    int old_method_present;
+    bool old_method_present;
     int old_method;
     int *old_methodp = NULL;
     int mpierr;
@@ -2310,10 +3160,12 @@ int seterrorhandling_handler(iosystem_desc_t *ios)
 
     /* Get the parameters for this function that the he comp master
      * task is broadcasting. */
-    if ((mpierr = MPI_Bcast(&method, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&old_method_present, 1, MPI_CHAR, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
+    PIO_RECV_ASYNC_MSG(ios, PIO_MSG_SETERRORHANDLING, &ret, &method, &old_method_present);
+    if(ret != PIO_NOERR)
+    {
+        LOG((1, "Error receiving async msg for PIO_MSG_SETERRORHANDLING"));
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+    }
 
     LOG((1, "seterrorhandling_handler got parameters method = %d old_method_present = %d",
          method, old_method_present));
@@ -2353,16 +3205,13 @@ int set_chunk_cache_handler(iosystem_desc_t *ios)
 
     /* Get the parameters for this function that the the comp master
      * task is broadcasting. */
-    if ((mpierr = MPI_Bcast(&iosysid, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&iotype, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&size, 1, MPI_OFFSET, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&nelems, 1, MPI_OFFSET, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&preemption, 1, MPI_FLOAT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
+    PIO_RECV_ASYNC_MSG(ios, PIO_MSG_SET_CHUNK_CACHE, &ret, &iosysid,
+        &iotype, &size, &nelems, &preemption);
+    if(ret != PIO_NOERR)
+    {
+        LOG((1, "Error receiving async msg for PIO_MSG_SET_CHUNK_CACHE"));
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+    }
     LOG((1, "set_chunk_cache_handler got params iosysid = %d iotype = %d size = %d "
          "nelems = %d preemption = %g", iosysid, iotype, size, nelems, preemption));
 
@@ -2399,16 +3248,13 @@ int get_chunk_cache_handler(iosystem_desc_t *ios)
 
     /* Get the parameters for this function that the the comp master
      * task is broadcasting. */
-    if ((mpierr = MPI_Bcast(&iosysid, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&iotype, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&size_present, 1, MPI_CHAR, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&nelems_present, 1, MPI_CHAR, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&preemption_present, 1, MPI_CHAR, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
+    PIO_RECV_ASYNC_MSG(ios, PIO_MSG_GET_CHUNK_CACHE, &ret,
+        &iosysid, &iotype, &size_present, &nelems_present, &preemption_present);
+    if(ret != PIO_NOERR)
+    {
+        LOG((1, "Error receiving async msg for PIO_MSG_GET_CHUNK_CACHE"));
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+    }
     LOG((1, "get_chunk_cache_handler got params iosysid = %d iotype = %d size_present = %d "
          "nelems_present = %d preemption_present = %g", iosysid, iotype, size_present,
          nelems_present, preemption_present));
@@ -2454,16 +3300,13 @@ int get_var_chunk_cache_handler(iosystem_desc_t *ios)
 
     /* Get the parameters for this function that the the comp master
      * task is broadcasting. */
-    if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&varid, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&size_present, 1, MPI_CHAR, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&nelems_present, 1, MPI_CHAR, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&preemption_present, 1, MPI_CHAR, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
+    PIO_RECV_ASYNC_MSG(ios, PIO_MSG_GET_VAR_CHUNK_CACHE, &ret,
+        &ncid, &varid, &size_present, &nelems_present, &preemption_present);
+    if(ret != PIO_NOERR)
+    {
+        LOG((1, "Error receiving async msg for PIO_MSG_GET_VAR_CHUNK_CACHE"));
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+    }
     LOG((1, "get_var_chunk_cache_handler got params ncid = %d varid = %d size_present = %d "
          "nelems_present = %d preemption_present = %g", ncid, varid, size_present,
          nelems_present, preemption_present));
@@ -2504,10 +3347,12 @@ int freedecomp_handler(iosystem_desc_t *ios)
 
     /* Get the parameters for this function that the the comp master
      * task is broadcasting. */
-    if ((mpierr = MPI_Bcast(&iosysid, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&ioid, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
+    PIO_RECV_ASYNC_MSG(ios, PIO_MSG_FREEDECOMP, &ret, &iosysid, &ioid);
+    if(ret != PIO_NOERR)
+    {
+        LOG((1, "Error receiving async msg for PIO_MSG_FREEDECOMP"));
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+    }
     LOG((2, "freedecomp_handler iosysid = %d ioid = %d", iosysid, ioid));
 
     /* Call the function. */
@@ -2538,8 +3383,12 @@ int finalize_handler(iosystem_desc_t *ios, int index)
 
     /* Get the parameters for this function that the the comp master
      * task is broadcasting. */
-    if ((mpierr = MPI_Bcast(&iosysid, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
+    PIO_RECV_ASYNC_MSG(ios, PIO_MSG_FINALIZE, &ret, &iosysid);
+    if(ret != PIO_NOERR)
+    {
+        LOG((1, "Error receiving async msg for PIO_MSG_FINALIZE"));
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+    }
     LOG((1, "finalize_handler got parameter iosysid = %d", iosysid));
 
     /* Call the function. */
@@ -2567,7 +3416,8 @@ int pio_msg_handler2(int io_rank, int component_count, iosystem_desc_t **iosys,
                      MPI_Comm io_comm)
 {
     iosystem_desc_t *my_iosys;
-    int msg = 0;
+    int msgs[component_count];
+    int msg = PIO_MSG_INVALID;
     MPI_Request req[component_count];
     MPI_Status status;
     int index;
@@ -2586,15 +3436,15 @@ int pio_msg_handler2(int io_rank, int component_count, iosystem_desc_t **iosys,
         {
             my_iosys = iosys[cmp];
             LOG((1, "about to call MPI_Irecv union_comm = %d", my_iosys->union_comm));
-            if ((mpierr = MPI_Irecv(&msg, 1, MPI_INT, my_iosys->comproot, MPI_ANY_TAG,
-                                    my_iosys->union_comm, &req[cmp])))
+            if ((mpierr = MPI_Irecv(&msgs[cmp], 1, MPI_INT, my_iosys->comproot,
+                                    PIO_ASYNC_MSG_HDR_TAG, my_iosys->union_comm, &req[cmp])))
                 return check_mpi(NULL, mpierr, __FILE__, __LINE__);
             LOG((1, "MPI_Irecv req[%d] = %d", cmp, req[cmp]));
         }
     }
 
     /* If the message is not -1, keep processing messages. */
-    while (msg != -1)
+    do
     {
         LOG((3, "pio_msg_handler2 at top of loop"));
 
@@ -2621,6 +3471,7 @@ int pio_msg_handler2(int io_rank, int component_count, iosystem_desc_t **iosys,
 
         /* Set the correct iosys depending on the index. */
         my_iosys = iosys[index];
+        msg = msgs[index];
 
         /* Broadcast the msg value to the rest of the IO tasks. */
         LOG((3, "about to call msg MPI_Bcast my_iosys->io_comm = %d", my_iosys->io_comm));
@@ -2776,9 +3627,8 @@ int pio_msg_handler2(int io_rank, int component_count, iosystem_desc_t **iosys,
         case PIO_MSG_SET_FILL:
             set_fill_handler(my_iosys);
             break;
-        case PIO_MSG_EXIT:
+        case PIO_MSG_FINALIZE:
             finalize_handler(my_iosys, index);
-            msg = -1;
             break;
         default:
             LOG((0, "unknown message received %d", msg));
@@ -2790,12 +3640,12 @@ int pio_msg_handler2(int io_rank, int component_count, iosystem_desc_t **iosys,
 
         /* Listen for another msg from the component whose message we
          * just handled. */
-        if (!io_rank && msg != -1)
+        if (!io_rank && (msg != PIO_MSG_FINALIZE))
         {
             my_iosys = iosys[index];
             LOG((3, "pio_msg_handler2 about to Irecv index = %d comproot = %d union_comm = %d",
                  index, my_iosys->comproot, my_iosys->union_comm));
-            if ((mpierr = MPI_Irecv(&msg, 1, MPI_INT, my_iosys->comproot, MPI_ANY_TAG, my_iosys->union_comm,
+            if ((mpierr = MPI_Irecv(&msgs[index], 1, MPI_INT, my_iosys->comproot, PIO_ASYNC_MSG_HDR_TAG, my_iosys->union_comm,
                                     &req[index])))
                 return check_mpi(NULL, mpierr, __FILE__, __LINE__);
             LOG((3, "pio_msg_handler2 called MPI_Irecv req[%d] = %d", index, req[index]));
@@ -2805,10 +3655,18 @@ int pio_msg_handler2(int io_rank, int component_count, iosystem_desc_t **iosys,
              msg, open_components));
 
         /* If there are no more open components, exit. */
-        if (msg == -1)
-            if (--open_components)
+        if (msg == PIO_MSG_FINALIZE)
+        {
+            open_components -= 1;
+            if(open_components == 0)
+            {
+                /* No more open components, will exit the loop */
                 msg = PIO_MSG_EXIT;
-    }
+                /* Delete the global MPI communicator used for messaging */
+                delete_async_service_msg_comm();
+            }
+        }
+    } while(msg != PIO_MSG_EXIT);
 
     LOG((3, "returning from pio_msg_handler2"));
     return PIO_NOERR;

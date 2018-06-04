@@ -6,6 +6,7 @@ include (LibMPI)
 
 SET(GENERATED_SRCS pio_file_simple_tests.F90
   pio_init_finalize.F90
+  pio_async_init_finalize.F90
   pio_fail.F90
   pio_file_fail.F90
   pio_large_file_tests.F90
@@ -13,11 +14,14 @@ SET(GENERATED_SRCS pio_file_simple_tests.F90
   ncdf_get_put.F90
   ncdf_fail.F90
   ncdf_inq.F90
+  pio_async_file_tests.F90
   pio_rearr.F90
   pio_rearr_opts.F90
   pio_rearr_opts2.F90
   pio_decomp_tests.F90
   pio_decomp_tests_1d.F90
+  pio_async_decomp_tests.F90
+  pio_async_decomp_tests_1d.F90
   pio_decomp_tests_2d.F90
   pio_decomp_tests_3d.F90
   pio_sync_tests.F90
@@ -98,6 +102,35 @@ else ()
     EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_init_finalize
     ARGUMENTS --pio-tf-stride=2 --pio-tf-num-aggregators=2
     NUMPROCS 2
+    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
+endif ()
+
+#===== pio_async_init_finalize =====
+add_executable (pio_async_init_finalize EXCLUDE_FROM_ALL
+  pio_async_init_finalize.F90
+  ${CMAKE_CURRENT_SOURCE_DIR}/util/pio_tutil.F90)
+target_link_libraries (pio_async_init_finalize piof)
+add_dependencies (tests pio_async_init_finalize)
+
+if (PIO_USE_MPISERIAL)
+  add_test(NAME async_init_finalize_1_proc
+    COMMAND pio_async_init_finalize)
+  set_tests_properties(async_init_finalize_1_proc
+    PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
+else ()
+  add_mpi_test(async_init_finalize_2_proc
+    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_async_init_finalize
+    NUMPROCS 2
+    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
+
+  add_mpi_test(async_init_finalize_3_proc
+    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_async_init_finalize
+    NUMPROCS 3
+    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
+
+  add_mpi_test(async_init_finalize_4_proc
+    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_async_init_finalize
+    NUMPROCS 4
     TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 endif ()
 
@@ -267,6 +300,30 @@ else ()
         TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 endif ()
 
+#===== pio_async_file_tests =====
+add_executable (pio_async_file_tests EXCLUDE_FROM_ALL
+  pio_async_file_tests.F90
+  ${CMAKE_CURRENT_SOURCE_DIR}/util/pio_tutil.F90)
+target_link_libraries (pio_async_file_tests piof)
+add_dependencies (tests pio_async_file_tests)
+
+if (PIO_USE_MPISERIAL)
+  add_test(NAME pio_async_file_tests_1_proc
+    COMMAND pio_async_file_tests)
+  set_tests_properties(pio_async_file_tests_1_proc
+    PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
+else ()
+  add_mpi_test(pio_async_file_tests_3_proc
+    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_async_file_tests
+    NUMPROCS 3
+    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
+
+  add_mpi_test(pio_async_file_tests_4_proc
+    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_async_file_tests
+    NUMPROCS 4
+    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
+endif ()
+
 #===== pio_rearr_opts =====
 add_executable (pio_rearr_opts EXCLUDE_FROM_ALL
     pio_rearr_opts.F90
@@ -388,6 +445,30 @@ else ()
     TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 endif ()
 
+#===== pio_async_decomp_tests =====
+add_executable (pio_async_decomp_tests EXCLUDE_FROM_ALL
+  pio_async_decomp_tests.F90
+  ${CMAKE_CURRENT_SOURCE_DIR}/util/pio_tutil.F90)
+target_link_libraries (pio_async_decomp_tests piof)
+add_dependencies (tests pio_async_decomp_tests)
+
+if (PIO_USE_MPISERIAL)
+  add_test(NAME pio_async_decomp_tests_1p
+    COMMAND pio_async_decomp_tests)
+  set_tests_properties(pio_async_decomp_tests_1p
+    PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
+else ()
+  add_mpi_test(pio_async_decomp_tests_3p
+    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_async_decomp_tests
+    NUMPROCS 3
+    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
+
+  add_mpi_test(pio_async_decomp_tests_4p
+    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_async_decomp_tests
+    NUMPROCS 4
+    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
+endif ()
+
 #===== pio_decomp_tests_1d =====
 add_executable (pio_decomp_tests_1d EXCLUDE_FROM_ALL
   pio_decomp_tests_1d.F90
@@ -459,6 +540,30 @@ else ()
   add_mpi_test(pio_decomp_tests_1d_4p_2iop_2str
     EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_tests_1d
     ARGUMENTS --pio-tf-num-io-tasks=2 --pio-tf-stride=2
+    NUMPROCS 4
+    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
+endif ()
+
+#===== pio_async_decomp_tests_1d =====
+add_executable (pio_async_decomp_tests_1d EXCLUDE_FROM_ALL
+  pio_async_decomp_tests_1d.F90
+  ${CMAKE_CURRENT_SOURCE_DIR}/util/pio_tutil.F90)
+target_link_libraries (pio_async_decomp_tests_1d piof)
+add_dependencies (tests pio_async_decomp_tests_1d)
+
+if (PIO_USE_MPISERIAL)
+  add_test(NAME pio_async_decomp_tests_1d_1p
+    COMMAND pio_async_decomp_tests_1d)
+  set_tests_properties(pio_async_decomp_tests_1d_1p
+    PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
+else ()
+  add_mpi_test(pio_async_decomp_tests_1d_3p
+    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_async_decomp_tests_1d
+    NUMPROCS 3
+    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
+
+  add_mpi_test(pio_async_decomp_tests_1d_4p
+    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_async_decomp_tests_1d
     NUMPROCS 4
     TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 endif ()

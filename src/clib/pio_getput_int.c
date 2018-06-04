@@ -76,45 +76,17 @@ int PIOc_put_att_tc(int ncid, int varid, const char *name, nc_type atttype,
     /* If async is in use, and this is not an IO task, bcast the parameters. */
     if (ios->async)
     {
-        if (!ios->ioproc)
+        int msg = PIO_MSG_PUT_ATT;
+        int namelen = strlen(name) + 1;
+
+        PIO_SEND_ASYNC_MSG(ios, msg, &ierr, ncid, varid, namelen, name,
+            atttype, len, atttype_len, memtype, memtype_len,
+            len * memtype_len, op);
+        if(ierr != PIO_NOERR)
         {
-            int msg = PIO_MSG_PUT_ATT;
-
-            if (ios->compmaster == MPI_ROOT)
-                mpierr = MPI_Send(&msg, 1, MPI_INT, ios->ioroot, 1, ios->union_comm);
-
-            if (!mpierr)
-                mpierr = MPI_Bcast(&ncid, 1, MPI_INT, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&varid, 1, MPI_INT, ios->compmaster, ios->intercomm);
-            int namelen = strlen(name);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&namelen, 1, MPI_INT,  ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast((void *)name, namelen + 1, MPI_CHAR, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&atttype, 1, MPI_INT,  ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&len, 1, MPI_OFFSET,  ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&atttype_len, 1, MPI_OFFSET,  ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&memtype, 1, MPI_INT,  ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&memtype_len, 1, MPI_OFFSET,  ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast((void *)op, len * memtype_len, MPI_BYTE, ios->compmaster,
-                                   ios->intercomm);
-            LOG((2, "PIOc_put_att finished bcast ncid = %d varid = %d namelen = %d name = %s "
-                 "len = %d atttype_len = %d memtype = %d memtype_len = %d", ncid, varid, namelen,
-                 name, len, atttype_len, memtype, memtype_len));
+            LOG((1, "Error sending async mesg for PIO_MSG_PUT_ATT"));
+            return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
         }
-
-        /* Handle MPI errors. */
-        if ((mpierr2 = MPI_Bcast(&mpierr, 1, MPI_INT, ios->comproot, ios->my_comm)))
-            check_mpi(file, mpierr2, __FILE__, __LINE__);
-        if (mpierr)
-            return check_mpi(file, mpierr, __FILE__, __LINE__);
 
         /* Broadcast values currently only known on computation tasks to IO tasks. */
         if ((mpierr = MPI_Bcast(&atttype_len, 1, MPI_OFFSET, ios->comproot, ios->my_comm)))
@@ -297,48 +269,15 @@ int PIOc_get_att_tc(int ncid, int varid, const char *name, nc_type memtype, void
      * parameters and the attribute and type information we fetched. */
     if (ios->async)
     {
-        if (!ios->ioproc)
+        int msg = PIO_MSG_GET_ATT;
+        int namelen = strlen(name) + 1;
+        PIO_SEND_ASYNC_MSG(ios, msg, &ierr, ncid, varid, namelen, name,
+            file->iotype, atttype, attlen, atttype_len, memtype, memtype_len);
+        if(ierr != PIO_NOERR)
         {
-            int msg = PIO_MSG_GET_ATT;
-            LOG((2, "sending parameters"));
-
-            /* Send the message to IO master. */
-            if (ios->compmaster == MPI_ROOT)
-                mpierr = MPI_Send(&msg, 1,MPI_INT, ios->ioroot, 1, ios->union_comm);
-
-            /* Send the function parameters. */
-            if (!mpierr)
-                mpierr = MPI_Bcast(&ncid, 1, MPI_INT, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&varid, 1, MPI_INT, ios->compmaster, ios->intercomm);
-            int namelen = strlen(name);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&namelen, 1, MPI_INT,  ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast((void *)name, namelen + 1, MPI_CHAR, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&file->iotype, 1, MPI_INT, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&atttype, 1, MPI_INT, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&attlen, 1, MPI_OFFSET, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&atttype_len, 1, MPI_OFFSET, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&memtype, 1, MPI_INT, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&memtype_len, 1, MPI_OFFSET, ios->compmaster, ios->intercomm);
-            LOG((2, "Bcast complete ncid = %d varid = %d namelen = %d name = %s iotype = %d "
-                 "atttype = %d attlen = %d atttype_len = %d", ncid, varid, namelen, name, file->iotype,
-                 atttype, attlen, atttype_len));
+            LOG((1, "Error sending async msg for PIO_MSG_GET_ATT"));
+            return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
         }
-
-        /* Handle MPI errors. */
-        if ((mpierr2 = MPI_Bcast(&mpierr, 1, MPI_INT, ios->comproot, ios->my_comm)))
-            check_mpi(file, mpierr2, __FILE__, __LINE__);
-        if (mpierr)
-            return check_mpi(file, mpierr, __FILE__, __LINE__);
-        LOG((2, "mpi errors handled"));
 
         /* Broadcast values currently only known on computation tasks to IO tasks. */
         LOG((2, "PIOc_get_att_tc bcast from comproot = %d attlen = %d atttype_len = %d", ios->comproot, attlen, atttype_len));
@@ -565,49 +504,51 @@ int PIOc_get_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
     /* If async is in use, and this is not an IO task, bcast the parameters. */
     if (ios->async)
     {
-        if (!ios->ioproc)
+        int msg = PIO_MSG_GET_VARS;
+        PIO_Offset *amsg_startp = NULL, *amsg_countp = NULL, *amsg_stridep = NULL;
+        /* Handle scalars too, ndims == 0 */
+        int start_sz = (ndims > 0) ? ndims : 1;
+        int count_sz = (ndims > 0) ? ndims : 1;
+        int stride_sz = (ndims > 0) ? ndims : 1;
+        if(!start_present)
         {
-            int msg = PIO_MSG_GET_VARS;
-
-            if (ios->compmaster == MPI_ROOT)
-                mpierr = MPI_Send(&msg, 1, MPI_INT, ios->ioroot, 1, ios->union_comm);
-
-            /* Send the function parameters and associated informaiton
-             * to the msg handler. */
-            if (!mpierr)
-                mpierr = MPI_Bcast(&ncid, 1, MPI_INT, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&varid, 1, MPI_INT, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&ndims, 1, MPI_INT, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&start_present, 1, MPI_CHAR, ios->compmaster, ios->intercomm);
-            if (!mpierr && start_present)
-                mpierr = MPI_Bcast((PIO_Offset *)start, ndims, MPI_OFFSET, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&count_present, 1, MPI_CHAR, ios->compmaster, ios->intercomm);
-            if (!mpierr && count_present)
-                mpierr = MPI_Bcast((PIO_Offset *)count, ndims, MPI_OFFSET, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&stride_present, 1, MPI_CHAR, ios->compmaster, ios->intercomm);
-            if (!mpierr && stride_present)
-                mpierr = MPI_Bcast((PIO_Offset *)stride, ndims, MPI_OFFSET, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&xtype, 1, MPI_INT, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&num_elem, 1, MPI_OFFSET, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&typelen, 1, MPI_OFFSET, ios->compmaster, ios->intercomm);
-            LOG((2, "PIOc_get_vars_tc ncid = %d varid = %d ndims = %d start_present = %d "
-                 "count_present = %d stride_present = %d xtype = %d num_elem = %d", ncid, varid,
-                 ndims, start_present, count_present, stride_present, xtype, num_elem));
+            amsg_startp = calloc(start_sz, sizeof(PIO_Offset));
+        }
+        if(!count_present)
+        {
+            amsg_countp = calloc(count_sz, sizeof(PIO_Offset));
+        }
+        if(!stride_present)
+        {
+            amsg_stridep = calloc(stride_sz, sizeof(PIO_Offset));
         }
 
-        /* Handle MPI errors. */
-        if ((mpierr2 = MPI_Bcast(&mpierr, 1, MPI_INT, ios->comproot, ios->my_comm)))
-            return check_mpi(file, mpierr2, __FILE__, __LINE__);
-        if (mpierr)
-            return check_mpi(file, mpierr, __FILE__, __LINE__);
+        PIO_SEND_ASYNC_MSG(ios, msg, &ierr, ncid, varid, ndims,
+                            start_present, start_sz,
+                            (start_present) ? start : amsg_startp, 
+                            count_present, count_sz,
+                            (count_present) ? count : amsg_countp, 
+                            stride_present, stride_sz,
+                            (stride_present) ? stride : amsg_stridep,
+                            xtype, num_elem, typelen);
+        if(ierr != PIO_NOERR)
+        {
+            LOG((1, "Error sending async msg for PIO_MSG_GET_VARS"));
+            return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
+        }
+
+        if(!start_present)
+        {
+            free(amsg_startp);
+        }
+        if(!count_present)
+        {
+            free(amsg_countp);
+        }
+        if(!stride_present)
+        {
+            free(amsg_stridep);
+        }
 
         /* Broadcast values currently only known on computation tasks to IO tasks. */
         if ((mpierr = MPI_Bcast(&num_elem, 1, MPI_OFFSET, ios->comproot, ios->my_comm)))
@@ -967,55 +908,52 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
     /* If async is in use, and this is not an IO task, bcast the parameters. */
     if (ios->async)
     {
-        if (!ios->ioproc)
+        int msg = PIO_MSG_PUT_VARS;
+        PIO_Offset *amsg_startp = NULL, *amsg_countp = NULL, *amsg_stridep = NULL;
+        /* Make sure we handle scalars too, ndims == 0 */
+        int start_sz = (ndims > 0) ? ndims : 1;
+        int count_sz = (ndims > 0) ? ndims : 1;
+        int stride_sz = (ndims > 0) ? ndims : 1;
+        if(!start_present)
         {
-            int msg = PIO_MSG_PUT_VARS;
-
-            if (ios->compmaster == MPI_ROOT)
-                mpierr = MPI_Send(&msg, 1, MPI_INT, ios->ioroot, 1, ios->union_comm);
-
-            /* Send the function parameters and associated informaiton
-             * to the msg handler. */
-            if (!mpierr)
-                mpierr = MPI_Bcast(&ncid, 1, MPI_INT, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&varid, 1, MPI_INT, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&ndims, 1, MPI_INT, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&start_present, 1, MPI_CHAR, ios->compmaster, ios->intercomm);
-            if (!mpierr && start_present)
-                mpierr = MPI_Bcast((PIO_Offset *)start, ndims, MPI_OFFSET, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&count_present, 1, MPI_CHAR, ios->compmaster, ios->intercomm);
-            if (!mpierr && count_present)
-                mpierr = MPI_Bcast((PIO_Offset *)count, ndims, MPI_OFFSET, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&stride_present, 1, MPI_CHAR, ios->compmaster, ios->intercomm);
-            if (!mpierr && stride_present)
-                mpierr = MPI_Bcast((PIO_Offset *)stride, ndims, MPI_OFFSET, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&xtype, 1, MPI_INT, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&num_elem, 1, MPI_OFFSET, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&typelen, 1, MPI_OFFSET, ios->compmaster, ios->intercomm);
-            LOG((2, "PIOc_put_vars_tc ncid = %d varid = %d ndims = %d start_present = %d "
-                 "count_present = %d stride_present = %d xtype = %d num_elem = %d", ncid, varid,
-                 ndims, start_present, count_present, stride_present, xtype, num_elem));
-
-            /* Send the data. */
-            if (!mpierr)
-                mpierr = MPI_Bcast((void *)buf, num_elem * typelen, MPI_BYTE, ios->compmaster,
-                                   ios->intercomm);
+            amsg_startp = calloc(start_sz, sizeof(PIO_Offset));
+        }
+        if(!count_present)
+        {
+            amsg_countp = calloc(count_sz, sizeof(PIO_Offset));
+        }
+        if(!stride_present)
+        {
+            amsg_stridep = calloc(stride_sz, sizeof(PIO_Offset));
         }
 
-        /* Handle MPI errors. */
-        if ((mpierr2 = MPI_Bcast(&mpierr, 1, MPI_INT, ios->comproot, ios->my_comm)))
-            return check_mpi(file, mpierr2, __FILE__, __LINE__);
-        if (mpierr)
-            check_mpi(file, mpierr, __FILE__, __LINE__);
-        LOG((2, "PIOc_put_vars_tc checked mpierr = %d", mpierr));
+        PIO_SEND_ASYNC_MSG(ios, msg, &ierr, ncid, varid, ndims,
+                            start_present, start_sz,
+                            (start_present) ? start : amsg_startp, 
+                            count_present, count_sz,
+                            (count_present) ? count : amsg_countp, 
+                            stride_present, stride_sz,
+                            (stride_present) ? stride : amsg_stridep,
+                            xtype, num_elem, typelen,
+                            num_elem * typelen, buf); 
+        if(ierr != PIO_NOERR)
+        {
+            LOG((1, "Error sending async msg for PIO_MSG_PUT_VARS"));
+            return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
+        }
+
+        if(!start_present)
+        {
+            free(amsg_startp);
+        }
+        if(!count_present)
+        {
+            free(amsg_countp);
+        }
+        if(!stride_present)
+        {
+            free(amsg_stridep);
+        }
 
         /* Broadcast values currently only known on computation tasks to IO tasks. */
         LOG((2, "PIOc_put_vars_tc bcast from comproot"));

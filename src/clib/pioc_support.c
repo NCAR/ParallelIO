@@ -779,25 +779,14 @@ int PIOc_freedecomp(int iosysid, int ioid)
     /* If async is in use, and this is not an IO task, bcast the parameters. */
     if (ios->async)
     {
-        if (!ios->ioproc)
+        int msg = PIO_MSG_FREEDECOMP; /* Message for async notification. */
+
+        PIO_SEND_ASYNC_MSG(ios, msg, &ret, iosysid, ioid);
+        if(ret != PIO_NOERR)
         {
-            int msg = PIO_MSG_FREEDECOMP; /* Message for async notification. */
-
-            if (ios->compmaster == MPI_ROOT)
-                mpierr = MPI_Send(&msg, 1, MPI_INT, ios->ioroot, 1, ios->union_comm);
-
-            if (!mpierr)
-                mpierr = MPI_Bcast(&iosysid, 1, MPI_INT, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&ioid, 1, MPI_INT, ios->compmaster, ios->intercomm);
-            LOG((2, "PIOc_freedecomp iosysid = %d ioid = %d", iosysid, ioid));
+            LOG((1, "Error sending async msg for PIO_MSG_FREEDECOMP"));
+            return pio_err(ios, NULL, ret, __FILE__, __LINE__);
         }
-
-        /* Handle MPI errors. */
-        if ((mpierr2 = MPI_Bcast(&mpierr, 1, MPI_INT, ios->comproot, ios->my_comm)))
-            return check_mpi(NULL, mpierr2, __FILE__, __LINE__);
-        if (mpierr)
-            return check_mpi(NULL, mpierr, __FILE__, __LINE__);
     }
 
     /* Free the map. */
@@ -1802,33 +1791,14 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
     if (ios->async)
     {
         int msg = PIO_MSG_CREATE_FILE;
-        size_t len = strlen(filename);
+        size_t len = strlen(filename) + 1;
 
-        if (!ios->ioproc)
+        PIO_SEND_ASYNC_MSG(ios, msg, &ierr, len, filename, file->iotype, file->mode);
+        if(ierr != PIO_NOERR)
         {
-            /* Send the message to the message handler. */
-            if (ios->compmaster == MPI_ROOT)
-                mpierr = MPI_Send(&msg, 1, MPI_INT, ios->ioroot, 1, ios->union_comm);
-
-            /* Send the parameters of the function call. */
-            if (!mpierr)
-                mpierr = MPI_Bcast(&len, 1, MPI_INT, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast((void *)filename, len + 1, MPI_CHAR, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&file->iotype, 1, MPI_INT, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&file->mode, 1, MPI_INT, ios->compmaster, ios->intercomm);
-            LOG((2, "len = %d filename = %s iotype = %d mode = %d", len, filename,
-                 file->iotype, file->mode));
+            LOG((1, "Sending async message, to create a file, failed"));
+            return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
         }
-
-        /* Handle MPI errors. */
-        LOG((2, "handling mpi errors mpierr = %d", mpierr));
-        if ((mpierr2 = MPI_Bcast(&mpierr, 1, MPI_INT, ios->comproot, ios->my_comm)))
-            return check_mpi(file, mpierr2, __FILE__, __LINE__);
-        if (mpierr)
-            return check_mpi(file, mpierr, __FILE__, __LINE__);
     }
 
     /* If this task is in the IO component, do the IO. */
@@ -1909,18 +1879,17 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
        to know if its set. */
     file->mode = file->mode | PIO_WRITE;
 
-    /* Assign the PIO ncid, necessary because files may be opened
-     * on mutilple iosystems, causing the underlying library to
-     * reuse ncids. Hilarious confusion ensues. */
-    file->pio_ncid = pio_next_ncid++;
-    LOG((2, "file->fh = %d file->pio_ncid = %d", file->fh, file->pio_ncid));
-
-    /* Return the ncid to the caller. */
-    *ncidp = file->pio_ncid;
-
     /* Add the struct with this files info to the global list of
      * open files. */
-    pio_add_to_file_list(file);
+    MPI_Comm comm = MPI_COMM_NULL;
+    if(ios->async)
+    {
+        /* For asynchronous I/O service, since file ids are passed across
+         * disjoint comms we need it to be unique across the union comm
+         */
+        comm = ios->union_comm;
+    }
+    *ncidp = pio_add_to_file_list(file, comm);
 
     LOG((2, "Created file %s file->fh = %d file->pio_ncid = %d", filename,
          file->fh, file->pio_ncid));
@@ -2061,34 +2030,15 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
         ios->io_rank == 0)
         file->do_io = 1;
 
-    /* If async is in use, and this is not an IO task, bcast the parameters. */
-    if (ios->async)
+    /* If async is in use, bcast the parameters from compute to I/O procs. */
+    if(ios->async)
     {
-        int msg = PIO_MSG_OPEN_FILE;
-        size_t len = strlen(filename);
-
-        if (!ios->ioproc)
+        int len = strlen(filename) + 1;
+        PIO_SEND_ASYNC_MSG(ios, PIO_MSG_OPEN_FILE, &ierr, len, filename, file->iotype, file->mode);
+        if(ierr != PIO_NOERR)
         {
-            /* Send the message to the message handler. */
-            if (ios->compmaster == MPI_ROOT)
-                mpierr = MPI_Send(&msg, 1, MPI_INT, ios->ioroot, 1, ios->union_comm);
-
-            /* Send the parameters of the function call. */
-            if (!mpierr)
-                mpierr = MPI_Bcast(&len, 1, MPI_INT, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast((void *)filename, len + 1, MPI_CHAR, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&file->iotype, 1, MPI_INT, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&file->mode, 1, MPI_INT, ios->compmaster, ios->intercomm);
+            return pio_err(ios, file, ierr, __FILE__, __LINE__);
         }
-
-        /* Handle MPI errors. */
-        if ((mpierr2 = MPI_Bcast(&mpierr, 1, MPI_INT, ios->comproot, ios->my_comm)))
-            return check_mpi(file, mpierr2, __FILE__, __LINE__);
-        if (mpierr)
-            return check_mpi(file, mpierr, __FILE__, __LINE__);
     }
 
     /* If this is an IO task, then call the netCDF function. */
@@ -2205,16 +2155,16 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
     if ((mpierr = MPI_Bcast(&file->mode, 1, MPI_INT, ios->ioroot, ios->my_comm)))
         return check_mpi(file, mpierr, __FILE__, __LINE__);
 
-    /* Create the ncid that the user will see. This is necessary
-     * because otherwise ncids will be reused if files are opened
-     * on multiple iosystems. */
-    file->pio_ncid = pio_next_ncid++;
-
-    /* Return the PIO ncid to the user. */
-    *ncidp = file->pio_ncid;
-
     /* Add this file to the list of currently open files. */
-    pio_add_to_file_list(file);
+    MPI_Comm comm = MPI_COMM_NULL;
+    if(ios->async)
+    {
+        /* For asynchronous I/O service, since file ids are passed across
+         * disjoint comms we need it to be unique across the union comm
+         */
+        comm = ios->union_comm;
+    }
+    *ncidp = pio_add_to_file_list(file, comm);
 
     LOG((2, "Opened file %s file->pio_ncid = %d file->fh = %d ierr = %d",
          filename, file->pio_ncid, file->fh, ierr));
@@ -2401,23 +2351,14 @@ int pioc_change_def(int ncid, int is_enddef)
     /* If async is in use, and this is not an IO task, bcast the parameters. */
     if (ios->async)
     {
-        if (!ios->ioproc)
+        int msg = is_enddef ? PIO_MSG_ENDDEF : PIO_MSG_REDEF;
+        
+        PIO_SEND_ASYNC_MSG(ios, msg, &ierr, ncid);
+        if(ierr != PIO_NOERR)
         {
-            int msg = is_enddef ? PIO_MSG_ENDDEF : PIO_MSG_REDEF;
-            if (ios->compmaster == MPI_ROOT)
-                mpierr = MPI_Send(&msg, 1, MPI_INT, ios->ioroot, 1, ios->union_comm);
-
-            if (!mpierr)
-                mpierr = MPI_Bcast(&ncid, 1, MPI_INT, ios->compmaster, ios->intercomm);
-            LOG((3, "pioc_change_def ncid = %d mpierr = %d", ncid, mpierr));
+            LOG((1, "Error sending async msg for PIO_MSG_ENDDEF/PIO_MSG_REDEF"));
+            return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
         }
-
-        /* Handle MPI errors. */
-        LOG((3, "pioc_change_def handling MPI errors"));
-        if ((mpierr2 = MPI_Bcast(&mpierr, 1, MPI_INT, ios->comproot, ios->my_comm)))
-            check_mpi(file, mpierr2, __FILE__, __LINE__);
-        if (mpierr)
-            return check_mpi(file, mpierr, __FILE__, __LINE__);
     }
 
     /* If this is an IO task, then call the netCDF function. */
