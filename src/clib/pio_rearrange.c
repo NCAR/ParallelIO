@@ -1330,8 +1330,15 @@ int box_rearrange_create(iosystem_desc_t *ios, int maplen, const PIO_Offset *com
          * compute tasks. */
         if (iomaplen[i] > 0)
         {
-            PIO_Offset start[ndims];
-            PIO_Offset count[ndims];
+            PIO_Offset start_count_send[ndims * 2];
+            PIO_Offset start_count_recv[ndims * 2];
+
+            /* start/count array to be sent: 1st half for start, 2nd half for count */
+            for (int j = 0; j < ndims; j++)
+            {
+                start_count_send[j] = iodesc->firstregion->start[j];
+                start_count_send[ndims + j] = iodesc->firstregion->count[j];
+            }
 
             /* Set up send/recv parameters for all to all gather of
              * counts and starts. */
@@ -1342,25 +1349,21 @@ int box_rearrange_create(iosystem_desc_t *ios, int maplen, const PIO_Offset *com
                 rdispls[j] = 0;
                 recvcounts[j] = 0;
                 if (ios->union_rank == ios->ioranks[i])
-                    sendcounts[j] = ndims;
+                    sendcounts[j] = ndims * 2;
             }
-            recvcounts[ios->ioranks[i]] = ndims;
+            recvcounts[ios->ioranks[i]] = ndims * 2;
 
-            /* The count array from iotask i is sent to all compute tasks. */
-            LOG((3, "about to call pio_swapm with count from iotask %d ndims = %d",
+            /* The start/count array from iotask i is sent to all compute tasks. */
+            LOG((3, "about to call pio_swapm with start/count from iotask %d ndims = %d",
                  i, ndims));
-            if ((ret = pio_swapm(iodesc->firstregion->count, sendcounts, sdispls, dtypes, count,
+            if ((ret = pio_swapm(start_count_send, sendcounts, sdispls, dtypes, start_count_recv,
                                  recvcounts, rdispls, dtypes, ios->union_comm,
                                  &iodesc->rearr_opts.io2comp)))
                 return pio_err(ios, NULL, ret, __FILE__, __LINE__);
 
-            /* The start array from iotask i is sent to all compute tasks. */
-            LOG((3, "about to call pio_swapm with start from iotask %d ndims = %d",
-                 i, ndims));
-            if ((ret = pio_swapm(iodesc->firstregion->start,  sendcounts, sdispls, dtypes,
-                                 start, recvcounts, rdispls, dtypes, ios->union_comm,
-                                 &iodesc->rearr_opts.io2comp)))
-                return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+            /* start/count array received: 1st half for start, 2nd half for count */
+            PIO_Offset *start = start_count_recv;
+            PIO_Offset *count = start_count_recv + ndims;
 
 #if PIO_ENABLE_LOGGING
             for (int d = 0; d < ndims; d++)
