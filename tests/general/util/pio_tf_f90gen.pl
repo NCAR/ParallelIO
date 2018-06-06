@@ -55,10 +55,10 @@ sub init_predef_types
   $template_predef_typename_types{"PIO_TF_FC_DATA_TYPE"} = [];
   push(@{$template_predef_typename_types{"PIO_TF_DATA_TYPE"}}, "PIO_int");
   push(@{$template_predef_typename_types{"PIO_TF_FC_DATA_TYPE"}}, "integer");
-  push(@{$template_predef_typename_types{"PIO_TF_DATA_TYPE"}}, "PIO_real");
-  push(@{$template_predef_typename_types{"PIO_TF_FC_DATA_TYPE"}}, "real(kind=fc_real)");
-  push(@{$template_predef_typename_types{"PIO_TF_DATA_TYPE"}}, "PIO_double");
-  push(@{$template_predef_typename_types{"PIO_TF_FC_DATA_TYPE"}}, "real(kind=fc_double)");
+#  push(@{$template_predef_typename_types{"PIO_TF_DATA_TYPE"}}, "PIO_real");
+#  push(@{$template_predef_typename_types{"PIO_TF_FC_DATA_TYPE"}}, "real(kind=fc_real)");
+#  push(@{$template_predef_typename_types{"PIO_TF_DATA_TYPE"}}, "PIO_double");
+#  push(@{$template_predef_typename_types{"PIO_TF_FC_DATA_TYPE"}}, "real(kind=fc_double)");
 }
 
 # Generates the generic template function bodies (or names)
@@ -563,7 +563,7 @@ sub parse_and_store_gen_templ_funcs
                         $ifline_num, \$is_transformed);
   }
   if($annotate_source){
-      if($out_line =~ /[^#]/){      
+      if($out_line =~ /[^#]/){
 	  $out_line .= "\n";
       }else{
 	  $out_line = $out_line . "   ! $base_file_name:$ifline_num" . "\n";
@@ -605,9 +605,9 @@ sub get_default_test_main
   $out_line = $out_line . "  PROGRAM PIO_TF_Test_main_\n";
   $out_line = $out_line . "    USE pio_tutil\n";
   $out_line = $out_line . "    IMPLICIT NONE\n";
-  $out_line = $out_line . "    INTEGER, PARAMETER :: NREARRS = 2\n";
-  $out_line = $out_line . "    INTEGER :: rearrs(NREARRS) = (/pio_rearr_subset,pio_rearr_box/)\n";
-  $out_line = $out_line . "    CHARACTER(LEN=PIO_TF_MAX_STR_LEN) :: rearrs_info(NREARRS) = (/\"PIO_REARR_SUBSET\",\"PIO_REARR_BOX   \"/)\n";
+  $out_line = $out_line . "    INTEGER, PARAMETER :: NREARRS = 1\n";
+  $out_line = $out_line . "    INTEGER :: rearrs(NREARRS) = (/pio_rearr_box/)\n";
+  $out_line = $out_line . "    CHARACTER(LEN=PIO_TF_MAX_STR_LEN) :: rearrs_info(NREARRS) = (/\"PIO_REARR_BOX   \"/)\n";
   $out_line = $out_line . "    INTEGER i, ierr\n";
   $out_line = $out_line . "\n";
   $out_line = $out_line . "    pio_tf_nerrs_total_=0\n";
