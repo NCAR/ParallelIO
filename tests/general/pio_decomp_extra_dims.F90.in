@@ -1,0 +1,896 @@
+! Write a 1d non-record variable, use a 1d decomposition
+! that has no extra outermost dimensions
+PIO_TF_TEMPLATE<PIO_TF_PREDEF_TYPENAME PIO_TF_DATA_TYPE, PIO_TF_PREDEF_TYPENAME PIO_TF_FC_DATA_TYPE>
+PIO_TF_AUTO_TEST_SUB_BEGIN decomp_no_extra_dims
+  implicit none
+  integer, parameter :: VEC_LOCAL_SZ = 7
+  type(var_desc_t)  :: pio_var
+  type(file_desc_t) :: pio_file
+  character(len=PIO_TF_MAX_STR_LEN) :: filename
+  type(io_desc_t) :: iodesc
+  integer, dimension(VEC_LOCAL_SZ) :: compdof
+  PIO_TF_FC_DATA_TYPE, dimension(VEC_LOCAL_SZ) :: wbuf, rbuf
+  integer, dimension(1) :: dims
+  integer :: pio_dim
+  integer :: i, ierr
+  ! iotypes = valid io types
+  integer, dimension(:), allocatable :: iotypes
+  character(len=PIO_TF_MAX_STR_LEN), dimension(:), allocatable :: iotype_descs
+  integer :: num_iotypes
+
+  ! Data evenly distributed across all procs
+  ! Each proc has VEC_LOCAL_SZ elements
+  dims(1) = VEC_LOCAL_SZ * pio_tf_world_sz_
+
+  do i=1,VEC_LOCAL_SZ
+    compdof(i) = VEC_LOCAL_SZ * pio_tf_world_rank_ + i
+  end do
+
+  wbuf = pio_tf_world_rank_;
+
+  call PIO_initdecomp(pio_tf_iosystem_, PIO_TF_DATA_TYPE, dims, compdof, iodesc)
+
+  num_iotypes = 0
+  call PIO_TF_Get_nc_iotypes(iotypes, iotype_descs, num_iotypes)
+  filename = "test_pio_decomp_simple_tests.testfile"
+  do i=1,num_iotypes
+    PIO_TF_LOG(0,*) "Testing : PIO_TF_DATA_TYPE : ", iotype_descs(i)
+    ierr = PIO_createfile(pio_tf_iosystem_, pio_file, iotypes(i), filename, PIO_CLOBBER)
+    PIO_TF_CHECK_ERR(ierr, "Could not create file " // trim(filename))
+
+    ierr = PIO_def_dim(pio_file, 'PIO_TF_test_dim', dims(1), pio_dim)
+    PIO_TF_CHECK_ERR(ierr, "Failed to define a dim : " // trim(filename))
+
+    ierr = PIO_def_var(pio_file, 'PIO_TF_test_var', PIO_TF_DATA_TYPE, (/pio_dim/), pio_var)
+    PIO_TF_CHECK_ERR(ierr, "Failed to define a var : " // trim(filename))
+
+    ierr = PIO_enddef(pio_file)
+    PIO_TF_CHECK_ERR(ierr, "Failed to end redef mode : " // trim(filename))
+
+    ! Write the variable out
+    call PIO_write_darray(pio_file, pio_var, iodesc, wbuf, ierr)
+    PIO_TF_CHECK_ERR(ierr, "Failed to write darray : " // trim(filename))
+
+#ifdef PIO_TEST_CLOSE_OPEN_FOR_SYNC
+  call PIO_closefile(pio_file)
+
+  ierr = PIO_openfile(pio_tf_iosystem_, pio_file, iotypes(i), filename, PIO_nowrite)
+  PIO_TF_CHECK_ERR(ierr, "Could not reopen file " // trim(filename))
+
+  ierr = PIO_inq_varid(pio_file, 'PIO_TF_test_var', pio_var)
+  PIO_TF_CHECK_ERR(ierr, "Cannot inq var " // trim(filename))
+#else
+  call PIO_syncfile(pio_file)
+#endif
+
+    rbuf = 0
+    call PIO_read_darray(pio_file, pio_var, iodesc, rbuf, ierr)
+    PIO_TF_CHECK_ERR(ierr, "Failed to read darray : " // trim(filename))
+
+    PIO_TF_CHECK_VAL((rbuf, wbuf), "Got wrong val")
+
+    call PIO_closefile(pio_file)
+    call PIO_deletefile(pio_tf_iosystem_, filename);
+  end do
+  if(allocated(iotypes)) then
+    deallocate(iotypes)
+    deallocate(iotype_descs)
+  end if
+
+  call PIO_freedecomp(pio_tf_iosystem_, iodesc)
+PIO_TF_AUTO_TEST_SUB_END decomp_no_extra_dims
+
+! Write a 1d non-record variable, use a 2d decomposition
+! that has one extra outermost dimension (length set to 1)
+PIO_TF_TEMPLATE<PIO_TF_PREDEF_TYPENAME PIO_TF_DATA_TYPE, PIO_TF_PREDEF_TYPENAME PIO_TF_FC_DATA_TYPE>
+PIO_TF_AUTO_TEST_SUB_BEGIN decomp_1_extra_dim
+  implicit none
+  integer, parameter :: VEC_LOCAL_SZ = 7
+  type(var_desc_t)  :: pio_var
+  type(file_desc_t) :: pio_file
+  character(len=PIO_TF_MAX_STR_LEN) :: filename
+  type(io_desc_t) :: iodesc
+  integer, dimension(VEC_LOCAL_SZ) :: compdof
+  PIO_TF_FC_DATA_TYPE, dimension(VEC_LOCAL_SZ) :: wbuf, rbuf
+  integer, dimension(2) :: dims
+  integer :: pio_dim
+  integer :: i, ierr
+  ! iotypes = valid io types
+  integer, dimension(:), allocatable :: iotypes
+  character(len=PIO_TF_MAX_STR_LEN), dimension(:), allocatable :: iotype_descs
+  integer :: num_iotypes
+
+  ! Data evenly distributed across all procs
+  ! Each proc has VEC_LOCAL_SZ elements
+  dims(1) = VEC_LOCAL_SZ * pio_tf_world_sz_
+  dims(2) = 1
+
+  do i=1,VEC_LOCAL_SZ
+    compdof(i) = VEC_LOCAL_SZ * pio_tf_world_rank_ + i
+  end do
+
+  wbuf = pio_tf_world_rank_;
+
+  call PIO_initdecomp(pio_tf_iosystem_, PIO_TF_DATA_TYPE, dims, compdof, iodesc)
+
+  num_iotypes = 0
+  call PIO_TF_Get_nc_iotypes(iotypes, iotype_descs, num_iotypes)
+  filename = "test_pio_decomp_simple_tests.testfile"
+  do i=1,num_iotypes
+    PIO_TF_LOG(0,*) "Testing : PIO_TF_DATA_TYPE : ", iotype_descs(i)
+    ierr = PIO_createfile(pio_tf_iosystem_, pio_file, iotypes(i), filename, PIO_CLOBBER)
+    PIO_TF_CHECK_ERR(ierr, "Could not create file " // trim(filename))
+
+    ierr = PIO_def_dim(pio_file, 'PIO_TF_test_dim', dims(1), pio_dim)
+    PIO_TF_CHECK_ERR(ierr, "Failed to define a dim : " // trim(filename))
+
+    ierr = PIO_def_var(pio_file, 'PIO_TF_test_var', PIO_TF_DATA_TYPE, (/pio_dim/), pio_var)
+    PIO_TF_CHECK_ERR(ierr, "Failed to define a var : " // trim(filename))
+
+    ierr = PIO_enddef(pio_file)
+    PIO_TF_CHECK_ERR(ierr, "Failed to end redef mode : " // trim(filename))
+
+    ! Write the variable out
+    call PIO_write_darray(pio_file, pio_var, iodesc, wbuf, ierr)
+    PIO_TF_CHECK_ERR(ierr, "Failed to write darray : " // trim(filename))
+
+#ifdef PIO_TEST_CLOSE_OPEN_FOR_SYNC
+  call PIO_closefile(pio_file)
+
+  ierr = PIO_openfile(pio_tf_iosystem_, pio_file, iotypes(i), filename, PIO_nowrite)
+  PIO_TF_CHECK_ERR(ierr, "Could not reopen file " // trim(filename))
+
+  ierr = PIO_inq_varid(pio_file, 'PIO_TF_test_var', pio_var)
+  PIO_TF_CHECK_ERR(ierr, "Cannot inq var " // trim(filename))
+#else
+  call PIO_syncfile(pio_file)
+#endif
+
+    rbuf = 0
+    call PIO_read_darray(pio_file, pio_var, iodesc, rbuf, ierr)
+    PIO_TF_CHECK_ERR(ierr, "Failed to read darray : " // trim(filename))
+
+    PIO_TF_CHECK_VAL((rbuf, wbuf), "Got wrong val")
+
+    call PIO_closefile(pio_file)
+    call PIO_deletefile(pio_tf_iosystem_, filename);
+  end do
+  if(allocated(iotypes)) then
+    deallocate(iotypes)
+    deallocate(iotype_descs)
+  end if
+
+  call PIO_freedecomp(pio_tf_iosystem_, iodesc)
+PIO_TF_AUTO_TEST_SUB_END decomp_1_extra_dim
+
+! Write a 1d non-record variable, use a 3d decomposition
+! that has two extra outermost dimensions (lengths set to 1)
+PIO_TF_TEMPLATE<PIO_TF_PREDEF_TYPENAME PIO_TF_DATA_TYPE, PIO_TF_PREDEF_TYPENAME PIO_TF_FC_DATA_TYPE>
+PIO_TF_AUTO_TEST_SUB_BEGIN decomp_2_extra_dims
+  implicit none
+  integer, parameter :: VEC_LOCAL_SZ = 7
+  type(var_desc_t)  :: pio_var
+  type(file_desc_t) :: pio_file
+  character(len=PIO_TF_MAX_STR_LEN) :: filename
+  type(io_desc_t) :: iodesc
+  integer, dimension(VEC_LOCAL_SZ) :: compdof
+  PIO_TF_FC_DATA_TYPE, dimension(VEC_LOCAL_SZ) :: wbuf, rbuf
+  integer, dimension(3) :: dims
+  integer :: pio_dim
+  integer :: i, ierr
+  ! iotypes = valid io types
+  integer, dimension(:), allocatable :: iotypes
+  character(len=PIO_TF_MAX_STR_LEN), dimension(:), allocatable :: iotype_descs
+  integer :: num_iotypes
+
+  ! Data evenly distributed across all procs
+  ! Each proc has VEC_LOCAL_SZ elements
+  dims(1) = VEC_LOCAL_SZ * pio_tf_world_sz_
+  dims(2) = 1
+  dims(3) = 1
+
+  do i=1,VEC_LOCAL_SZ
+    compdof(i) = VEC_LOCAL_SZ * pio_tf_world_rank_ + i
+  end do
+
+  wbuf = pio_tf_world_rank_;
+
+  call PIO_initdecomp(pio_tf_iosystem_, PIO_TF_DATA_TYPE, dims, compdof, iodesc)
+
+  num_iotypes = 0
+  call PIO_TF_Get_nc_iotypes(iotypes, iotype_descs, num_iotypes)
+  filename = "test_pio_decomp_simple_tests.testfile"
+  do i=1,num_iotypes
+    PIO_TF_LOG(0,*) "Testing : PIO_TF_DATA_TYPE : ", iotype_descs(i)
+    ierr = PIO_createfile(pio_tf_iosystem_, pio_file, iotypes(i), filename, PIO_CLOBBER)
+    PIO_TF_CHECK_ERR(ierr, "Could not create file " // trim(filename))
+
+    ierr = PIO_def_dim(pio_file, 'PIO_TF_test_dim', dims(1), pio_dim)
+    PIO_TF_CHECK_ERR(ierr, "Failed to define a dim : " // trim(filename))
+
+    ierr = PIO_def_var(pio_file, 'PIO_TF_test_var', PIO_TF_DATA_TYPE, (/pio_dim/), pio_var)
+    PIO_TF_CHECK_ERR(ierr, "Failed to define a var : " // trim(filename))
+
+    ierr = PIO_enddef(pio_file)
+    PIO_TF_CHECK_ERR(ierr, "Failed to end redef mode : " // trim(filename))
+
+    ! Write the variable out
+    call PIO_write_darray(pio_file, pio_var, iodesc, wbuf, ierr)
+    PIO_TF_CHECK_ERR(ierr, "Failed to write darray : " // trim(filename))
+
+#ifdef PIO_TEST_CLOSE_OPEN_FOR_SYNC
+  call PIO_closefile(pio_file)
+
+  ierr = PIO_openfile(pio_tf_iosystem_, pio_file, iotypes(i), filename, PIO_nowrite)
+  PIO_TF_CHECK_ERR(ierr, "Could not reopen file " // trim(filename))
+
+  ierr = PIO_inq_varid(pio_file, 'PIO_TF_test_var', pio_var)
+  PIO_TF_CHECK_ERR(ierr, "Cannot inq var " // trim(filename))
+#else
+  call PIO_syncfile(pio_file)
+#endif
+
+    rbuf = 0
+    call PIO_read_darray(pio_file, pio_var, iodesc, rbuf, ierr)
+    PIO_TF_CHECK_ERR(ierr, "Failed to read darray : " // trim(filename))
+
+    PIO_TF_CHECK_VAL((rbuf, wbuf), "Got wrong val")
+
+    call PIO_closefile(pio_file)
+    call PIO_deletefile(pio_tf_iosystem_, filename);
+  end do
+  if(allocated(iotypes)) then
+    deallocate(iotypes)
+    deallocate(iotype_descs)
+  end if
+
+  call PIO_freedecomp(pio_tf_iosystem_, iodesc)
+PIO_TF_AUTO_TEST_SUB_END decomp_2_extra_dims
+
+! Write multiple frames of a 2d record variable (with an
+! unlimited time dimension), use a 1d decomposition that
+! has no extra outermost dimensions
+PIO_TF_TEMPLATE<PIO_TF_PREDEF_TYPENAME PIO_TF_DATA_TYPE, PIO_TF_PREDEF_TYPENAME PIO_TF_FC_DATA_TYPE>
+PIO_TF_AUTO_TEST_SUB_BEGIN decomp_no_extra_dims_rec
+  implicit none
+  integer, parameter :: NFRAMES = 3
+  integer, parameter :: VEC_LOCAL_SZ = 7
+  type(var_desc_t)  :: pio_var
+  type(file_desc_t) :: pio_file
+  character(len=PIO_TF_MAX_STR_LEN) :: filename
+  character(len=*), parameter :: PIO_VAR_NAME = 'PIO_TF_test_var'
+  type(io_desc_t) :: iodesc
+  integer, dimension(VEC_LOCAL_SZ) :: compdof
+  PIO_TF_FC_DATA_TYPE, dimension(:,:), allocatable :: wbuf, rbuf
+  integer, dimension(1) :: dims
+  integer, dimension(2) :: pio_dims
+  integer :: i, ierr, lsz
+  integer(kind=pio_offset_kind) :: f
+  ! iotypes = valid io types
+  integer, dimension(:), allocatable :: iotypes
+  character(len=PIO_TF_MAX_STR_LEN), dimension(:), allocatable :: iotype_descs
+  integer :: num_iotypes
+
+  ! Data evenly distributed across all procs
+  ! Each proc has VEC_LOCAL_SZ elements on each frame
+  dims(1) = VEC_LOCAL_SZ * pio_tf_world_sz_
+
+  allocate(wbuf(VEC_LOCAL_SZ, NFRAMES))
+  allocate(rbuf(VEC_LOCAL_SZ, NFRAMES))
+
+  do i=1,VEC_LOCAL_SZ
+    compdof(i) = VEC_LOCAL_SZ * pio_tf_world_rank_ + i
+  end do
+
+  do f=1,NFRAMES
+    do i=1,VEC_LOCAL_SZ
+      wbuf(i,f) = compdof(i) + (f-1) * dims(1)
+    end do
+  end do
+
+  call PIO_initdecomp(pio_tf_iosystem_, PIO_TF_DATA_TYPE, dims, compdof, iodesc)
+
+  num_iotypes = 0
+  call PIO_TF_Get_nc_iotypes(iotypes, iotype_descs, num_iotypes)
+  filename = "test_pio_decomp_simple_tests.testfile"
+  do i=1,num_iotypes
+    PIO_TF_LOG(0,*) "Testing : PIO_TF_DATA_TYPE : ", iotype_descs(i)
+    ierr = PIO_createfile(pio_tf_iosystem_, pio_file, iotypes(i), filename, PIO_CLOBBER)
+    PIO_TF_CHECK_ERR(ierr, "Could not create file " // trim(filename))
+
+    ierr = PIO_def_dim(pio_file, 'PIO_TF_test_dim_row', dims(1), pio_dims(1))
+    PIO_TF_CHECK_ERR(ierr, "Failed to define a dim : " // trim(filename))
+
+    ierr = PIO_def_dim(pio_file, 'PIO_TF_test_dim_time', pio_unlimited, pio_dims(2))
+    PIO_TF_CHECK_ERR(ierr, "Failed to define a dim : " // trim(filename))
+
+    ierr = PIO_def_var(pio_file, 'PIO_TF_test_var', PIO_TF_DATA_TYPE, pio_dims, pio_var)
+    PIO_TF_CHECK_ERR(ierr, "Failed to define a var : " // trim(filename))
+
+    ierr = PIO_enddef(pio_file)
+    PIO_TF_CHECK_ERR(ierr, "Failed to end redef mode : " // trim(filename))
+
+    do f=1,NFRAMES
+      call PIO_setframe(pio_file, pio_var, f)
+      ! Write the current frame
+      call PIO_write_darray(pio_file, pio_var, iodesc, wbuf(:,f), ierr)
+      PIO_TF_CHECK_ERR(ierr, "Failed to write darray : " // trim(filename))
+    end do
+
+#ifdef PIO_TEST_CLOSE_OPEN_FOR_SYNC
+    call PIO_closefile(pio_file)
+
+    ierr = PIO_openfile(pio_tf_iosystem_, pio_file, iotypes(i), filename, PIO_nowrite)
+    PIO_TF_CHECK_ERR(ierr, "Could not reopen file " // trim(filename))
+
+    ierr = PIO_inq_varid(pio_file, 'PIO_TF_test_var', pio_var)
+    PIO_TF_CHECK_ERR(ierr, "Could not inq var : " // trim(filename))
+#else
+    call PIO_syncfile(pio_file)
+#endif
+
+    rbuf = 0
+    do f=1,NFRAMES
+      call PIO_setframe(pio_file, pio_var, f)
+      call PIO_read_darray(pio_file, pio_var, iodesc, rbuf(:,f), ierr)
+      PIO_TF_CHECK_ERR(ierr, "Failed to read darray : " // trim(filename))
+    end do
+
+    do f=1,NFRAMES
+      PIO_TF_CHECK_VAL((rbuf(:,f), wbuf(:,f)), "Got wrong val, frame=", f)
+    end do
+
+    call PIO_closefile(pio_file)
+    call PIO_deletefile(pio_tf_iosystem_, filename);
+  end do
+
+  if(allocated(iotypes)) then
+    deallocate(iotypes)
+    deallocate(iotype_descs)
+  end if
+
+  call PIO_freedecomp(pio_tf_iosystem_, iodesc)
+  deallocate(rbuf)
+  deallocate(wbuf)
+PIO_TF_AUTO_TEST_SUB_END decomp_no_extra_dims_rec
+
+! Write multiple frames of a 2d record variable (with an
+! unlimited time dimension), use a 2d decomposition that
+! has one extra outermost dimension (length set to 1)
+PIO_TF_TEMPLATE<PIO_TF_PREDEF_TYPENAME PIO_TF_DATA_TYPE, PIO_TF_PREDEF_TYPENAME PIO_TF_FC_DATA_TYPE>
+PIO_TF_AUTO_TEST_SUB_BEGIN decomp_1_extra_dim_rec
+  implicit none
+  integer, parameter :: NFRAMES = 3
+  integer, parameter :: VEC_LOCAL_SZ = 7
+  type(var_desc_t)  :: pio_var
+  type(file_desc_t) :: pio_file
+  character(len=PIO_TF_MAX_STR_LEN) :: filename
+  character(len=*), parameter :: PIO_VAR_NAME = 'PIO_TF_test_var'
+  type(io_desc_t) :: iodesc
+  integer, dimension(VEC_LOCAL_SZ) :: compdof
+  PIO_TF_FC_DATA_TYPE, dimension(:,:), allocatable :: wbuf, rbuf
+  integer, dimension(2) :: dims
+  integer, dimension(2) :: pio_dims
+  integer :: i, ierr, lsz
+  integer(kind=pio_offset_kind) :: f
+  ! iotypes = valid io types
+  integer, dimension(:), allocatable :: iotypes
+  character(len=PIO_TF_MAX_STR_LEN), dimension(:), allocatable :: iotype_descs
+  integer :: num_iotypes
+
+  ! Data evenly distributed across all procs
+  ! Each proc has VEC_LOCAL_SZ elements on each frame
+  dims(1) = VEC_LOCAL_SZ * pio_tf_world_sz_
+  dims(2) = 1
+
+  allocate(wbuf(VEC_LOCAL_SZ, NFRAMES))
+  allocate(rbuf(VEC_LOCAL_SZ, NFRAMES))
+
+  do i=1,VEC_LOCAL_SZ
+    compdof(i) = VEC_LOCAL_SZ * pio_tf_world_rank_ + i
+  end do
+
+  do f=1,NFRAMES
+    do i=1,VEC_LOCAL_SZ
+      wbuf(i,f) = compdof(i) + (f-1) * dims(1)
+    end do
+  end do
+
+  call PIO_initdecomp(pio_tf_iosystem_, PIO_TF_DATA_TYPE, dims, compdof, iodesc)
+
+  num_iotypes = 0
+  call PIO_TF_Get_nc_iotypes(iotypes, iotype_descs, num_iotypes)
+  filename = "test_pio_decomp_simple_tests.testfile"
+  do i=1,num_iotypes
+    PIO_TF_LOG(0,*) "Testing : PIO_TF_DATA_TYPE : ", iotype_descs(i)
+    ierr = PIO_createfile(pio_tf_iosystem_, pio_file, iotypes(i), filename, PIO_CLOBBER)
+    PIO_TF_CHECK_ERR(ierr, "Could not create file " // trim(filename))
+
+    ierr = PIO_def_dim(pio_file, 'PIO_TF_test_dim_row', dims(1), pio_dims(1))
+    PIO_TF_CHECK_ERR(ierr, "Failed to define a dim : " // trim(filename))
+
+    ierr = PIO_def_dim(pio_file, 'PIO_TF_test_dim_time', pio_unlimited, pio_dims(2))
+    PIO_TF_CHECK_ERR(ierr, "Failed to define a dim : " // trim(filename))
+
+    ierr = PIO_def_var(pio_file, 'PIO_TF_test_var', PIO_TF_DATA_TYPE, pio_dims, pio_var)
+    PIO_TF_CHECK_ERR(ierr, "Failed to define a var : " // trim(filename))
+
+    ierr = PIO_enddef(pio_file)
+    PIO_TF_CHECK_ERR(ierr, "Failed to end redef mode : " // trim(filename))
+
+    do f=1,NFRAMES
+      call PIO_setframe(pio_file, pio_var, f)
+      ! Write the current frame
+      call PIO_write_darray(pio_file, pio_var, iodesc, wbuf(:,f), ierr)
+      PIO_TF_CHECK_ERR(ierr, "Failed to write darray : " // trim(filename))
+    end do
+
+#ifdef PIO_TEST_CLOSE_OPEN_FOR_SYNC
+    call PIO_closefile(pio_file)
+
+    ierr = PIO_openfile(pio_tf_iosystem_, pio_file, iotypes(i), filename, PIO_nowrite)
+    PIO_TF_CHECK_ERR(ierr, "Could not reopen file " // trim(filename))
+
+    ierr = PIO_inq_varid(pio_file, 'PIO_TF_test_var', pio_var)
+    PIO_TF_CHECK_ERR(ierr, "Could not inq var : " // trim(filename))
+#else
+    call PIO_syncfile(pio_file)
+#endif
+
+    rbuf = 0
+    do f=1,NFRAMES
+      call PIO_setframe(pio_file, pio_var, f)
+      call PIO_read_darray(pio_file, pio_var, iodesc, rbuf(:,f), ierr)
+      PIO_TF_CHECK_ERR(ierr, "Failed to read darray : " // trim(filename))
+    end do
+
+    do f=1,NFRAMES
+      PIO_TF_CHECK_VAL((rbuf(:,f), wbuf(:,f)), "Got wrong val, frame=", f)
+    end do
+
+    call PIO_closefile(pio_file)
+    call PIO_deletefile(pio_tf_iosystem_, filename);
+  end do
+
+  if(allocated(iotypes)) then
+    deallocate(iotypes)
+    deallocate(iotype_descs)
+  end if
+
+  call PIO_freedecomp(pio_tf_iosystem_, iodesc)
+  deallocate(rbuf)
+  deallocate(wbuf)
+PIO_TF_AUTO_TEST_SUB_END decomp_1_extra_dim_rec
+
+! Write multiple frames of a 2d record variable (with an
+! unlimited time dimension), use a 3d decomposition that
+! has two extra outermost dimensions (lengths set to 1)
+PIO_TF_TEMPLATE<PIO_TF_PREDEF_TYPENAME PIO_TF_DATA_TYPE, PIO_TF_PREDEF_TYPENAME PIO_TF_FC_DATA_TYPE>
+PIO_TF_AUTO_TEST_SUB_BEGIN decomp_2_extra_dims_rec
+  implicit none
+  integer, parameter :: NFRAMES = 3
+  integer, parameter :: VEC_LOCAL_SZ = 7
+  type(var_desc_t)  :: pio_var
+  type(file_desc_t) :: pio_file
+  character(len=PIO_TF_MAX_STR_LEN) :: filename
+  character(len=*), parameter :: PIO_VAR_NAME = 'PIO_TF_test_var'
+  type(io_desc_t) :: iodesc
+  integer, dimension(VEC_LOCAL_SZ) :: compdof
+  PIO_TF_FC_DATA_TYPE, dimension(:,:), allocatable :: wbuf, rbuf
+  integer, dimension(3) :: dims
+  integer, dimension(2) :: pio_dims
+  integer :: i, ierr, lsz
+  integer(kind=pio_offset_kind) :: f
+  ! iotypes = valid io types
+  integer, dimension(:), allocatable :: iotypes
+  character(len=PIO_TF_MAX_STR_LEN), dimension(:), allocatable :: iotype_descs
+  integer :: num_iotypes
+
+  ! Data evenly distributed across all procs
+  ! Each proc has VEC_LOCAL_SZ elements on each frame
+  dims(1) = VEC_LOCAL_SZ * pio_tf_world_sz_
+  dims(2) = 1
+  dims(3) = 1
+
+  allocate(wbuf(VEC_LOCAL_SZ, NFRAMES))
+  allocate(rbuf(VEC_LOCAL_SZ, NFRAMES))
+
+  do i=1,VEC_LOCAL_SZ
+    compdof(i) = VEC_LOCAL_SZ * pio_tf_world_rank_ + i
+  end do
+
+  do f=1,NFRAMES
+    do i=1,VEC_LOCAL_SZ
+      wbuf(i,f) = compdof(i) + (f-1) * dims(1)
+    end do
+  end do
+
+  call PIO_initdecomp(pio_tf_iosystem_, PIO_TF_DATA_TYPE, dims, compdof, iodesc)
+
+  num_iotypes = 0
+  call PIO_TF_Get_nc_iotypes(iotypes, iotype_descs, num_iotypes)
+  filename = "test_pio_decomp_simple_tests.testfile"
+  do i=1,num_iotypes
+    PIO_TF_LOG(0,*) "Testing : PIO_TF_DATA_TYPE : ", iotype_descs(i)
+    ierr = PIO_createfile(pio_tf_iosystem_, pio_file, iotypes(i), filename, PIO_CLOBBER)
+    PIO_TF_CHECK_ERR(ierr, "Could not create file " // trim(filename))
+
+    ierr = PIO_def_dim(pio_file, 'PIO_TF_test_dim_row', dims(1), pio_dims(1))
+    PIO_TF_CHECK_ERR(ierr, "Failed to define a dim : " // trim(filename))
+
+    ierr = PIO_def_dim(pio_file, 'PIO_TF_test_dim_time', pio_unlimited, pio_dims(2))
+    PIO_TF_CHECK_ERR(ierr, "Failed to define a dim : " // trim(filename))
+
+    ierr = PIO_def_var(pio_file, 'PIO_TF_test_var', PIO_TF_DATA_TYPE, pio_dims, pio_var)
+    PIO_TF_CHECK_ERR(ierr, "Failed to define a var : " // trim(filename))
+
+    ierr = PIO_enddef(pio_file)
+    PIO_TF_CHECK_ERR(ierr, "Failed to end redef mode : " // trim(filename))
+
+    do f=1,NFRAMES
+      call PIO_setframe(pio_file, pio_var, f)
+      ! Write the current frame
+      call PIO_write_darray(pio_file, pio_var, iodesc, wbuf(:,f), ierr)
+      PIO_TF_CHECK_ERR(ierr, "Failed to write darray : " // trim(filename))
+    end do
+
+#ifdef PIO_TEST_CLOSE_OPEN_FOR_SYNC
+    call PIO_closefile(pio_file)
+
+    ierr = PIO_openfile(pio_tf_iosystem_, pio_file, iotypes(i), filename, PIO_nowrite)
+    PIO_TF_CHECK_ERR(ierr, "Could not reopen file " // trim(filename))
+
+    ierr = PIO_inq_varid(pio_file, 'PIO_TF_test_var', pio_var)
+    PIO_TF_CHECK_ERR(ierr, "Could not inq var : " // trim(filename))
+#else
+    call PIO_syncfile(pio_file)
+#endif
+
+    rbuf = 0
+    do f=1,NFRAMES
+      call PIO_setframe(pio_file, pio_var, f)
+      call PIO_read_darray(pio_file, pio_var, iodesc, rbuf(:,f), ierr)
+      PIO_TF_CHECK_ERR(ierr, "Failed to read darray : " // trim(filename))
+    end do
+
+    do f=1,NFRAMES
+      PIO_TF_CHECK_VAL((rbuf(:,f), wbuf(:,f)), "Got wrong val, frame=", f)
+    end do
+
+    call PIO_closefile(pio_file)
+    call PIO_deletefile(pio_tf_iosystem_, filename);
+  end do
+
+  if(allocated(iotypes)) then
+    deallocate(iotypes)
+    deallocate(iotype_descs)
+  end if
+
+  call PIO_freedecomp(pio_tf_iosystem_, iodesc)
+  deallocate(rbuf)
+  deallocate(wbuf)
+PIO_TF_AUTO_TEST_SUB_END decomp_2_extra_dims_rec
+
+! Write multiple frames of a 2d quasi-record variable (with
+! a limited time dimension), use a 1d decomposition that
+! has no extra outermost dimensions
+PIO_TF_TEMPLATE<PIO_TF_PREDEF_TYPENAME PIO_TF_DATA_TYPE, PIO_TF_PREDEF_TYPENAME PIO_TF_FC_DATA_TYPE>
+PIO_TF_AUTO_TEST_SUB_BEGIN decomp_no_extra_dims_lim_rec
+  implicit none
+  integer, parameter :: NFRAMES = 3
+  integer, parameter :: VEC_LOCAL_SZ = 7
+  type(var_desc_t)  :: pio_var
+  type(file_desc_t) :: pio_file
+  character(len=PIO_TF_MAX_STR_LEN) :: filename
+  character(len=*), parameter :: PIO_VAR_NAME = 'PIO_TF_test_var'
+  type(io_desc_t) :: iodesc
+  integer, dimension(VEC_LOCAL_SZ) :: compdof
+  PIO_TF_FC_DATA_TYPE, dimension(:,:), allocatable :: wbuf, rbuf
+  integer, dimension(1) :: dims
+  integer, dimension(2) :: pio_dims
+  integer :: i, ierr, lsz
+  integer(kind=pio_offset_kind) :: f
+  ! iotypes = valid io types
+  integer, dimension(:), allocatable :: iotypes
+  character(len=PIO_TF_MAX_STR_LEN), dimension(:), allocatable :: iotype_descs
+  integer :: num_iotypes
+
+  ! Data evenly distributed across all procs
+  ! Each proc has VEC_LOCAL_SZ elements on each frame
+  dims(1) = VEC_LOCAL_SZ * pio_tf_world_sz_
+
+  allocate(wbuf(VEC_LOCAL_SZ, NFRAMES))
+  allocate(rbuf(VEC_LOCAL_SZ, NFRAMES))
+
+  do i=1,VEC_LOCAL_SZ
+    compdof(i) = VEC_LOCAL_SZ * pio_tf_world_rank_ + i
+  end do
+
+  do f=1,NFRAMES
+    do i=1,VEC_LOCAL_SZ
+      wbuf(i,f) = compdof(i) + (f-1) * dims(1)
+    end do
+  end do
+
+  call PIO_initdecomp(pio_tf_iosystem_, PIO_TF_DATA_TYPE, dims, compdof, iodesc)
+
+  num_iotypes = 0
+  call PIO_TF_Get_nc_iotypes(iotypes, iotype_descs, num_iotypes)
+  filename = "test_pio_decomp_simple_tests.testfile"
+  do i=1,num_iotypes
+    PIO_TF_LOG(0,*) "Testing : PIO_TF_DATA_TYPE : ", iotype_descs(i)
+    ierr = PIO_createfile(pio_tf_iosystem_, pio_file, iotypes(i), filename, PIO_CLOBBER)
+    PIO_TF_CHECK_ERR(ierr, "Could not create file " // trim(filename))
+
+    ierr = PIO_def_dim(pio_file, 'PIO_TF_test_dim_row', dims(1), pio_dims(1))
+    PIO_TF_CHECK_ERR(ierr, "Failed to define a dim : " // trim(filename))
+
+    ierr = PIO_def_dim(pio_file, 'PIO_TF_test_dim_time', NFRAMES, pio_dims(2))
+    PIO_TF_CHECK_ERR(ierr, "Failed to define a dim : " // trim(filename))
+
+    ierr = PIO_def_var(pio_file, 'PIO_TF_test_var', PIO_TF_DATA_TYPE, pio_dims, pio_var)
+    PIO_TF_CHECK_ERR(ierr, "Failed to define a var : " // trim(filename))
+
+    ierr = PIO_enddef(pio_file)
+    PIO_TF_CHECK_ERR(ierr, "Failed to end redef mode : " // trim(filename))
+
+    do f=1,NFRAMES
+      call PIO_setframe(pio_file, pio_var, f)
+      ! Write the current frame
+      call PIO_write_darray(pio_file, pio_var, iodesc, wbuf(:,f), ierr)
+      PIO_TF_CHECK_ERR(ierr, "Failed to write darray : " // trim(filename))
+    end do
+
+#ifdef PIO_TEST_CLOSE_OPEN_FOR_SYNC
+    call PIO_closefile(pio_file)
+
+    ierr = PIO_openfile(pio_tf_iosystem_, pio_file, iotypes(i), filename, PIO_nowrite)
+    PIO_TF_CHECK_ERR(ierr, "Could not reopen file " // trim(filename))
+
+    ierr = PIO_inq_varid(pio_file, 'PIO_TF_test_var', pio_var)
+    PIO_TF_CHECK_ERR(ierr, "Could not inq var : " // trim(filename))
+#else
+    call PIO_syncfile(pio_file)
+#endif
+
+    rbuf = 0
+    do f=1,NFRAMES
+      call PIO_setframe(pio_file, pio_var, f)
+      call PIO_read_darray(pio_file, pio_var, iodesc, rbuf(:,f), ierr)
+      PIO_TF_CHECK_ERR(ierr, "Failed to read darray : " // trim(filename))
+    end do
+
+    do f=1,NFRAMES
+      PIO_TF_CHECK_VAL((rbuf(:,f), wbuf(:,f)), "Got wrong val, frame=", f)
+    end do
+
+    call PIO_closefile(pio_file)
+    call PIO_deletefile(pio_tf_iosystem_, filename);
+  end do
+
+  if(allocated(iotypes)) then
+    deallocate(iotypes)
+    deallocate(iotype_descs)
+  end if
+
+  call PIO_freedecomp(pio_tf_iosystem_, iodesc)
+  deallocate(rbuf)
+  deallocate(wbuf)
+PIO_TF_AUTO_TEST_SUB_END decomp_no_extra_dims_lim_rec
+
+! Write multiple frames of a 2d quasi-record variable (with
+! a limited time dimension), use a 2d decomposition that
+! has one extra outermost dimension (length set to 1)
+PIO_TF_TEMPLATE<PIO_TF_PREDEF_TYPENAME PIO_TF_DATA_TYPE, PIO_TF_PREDEF_TYPENAME PIO_TF_FC_DATA_TYPE>
+PIO_TF_AUTO_TEST_SUB_BEGIN decomp_1_extra_dim_lim_rec
+  implicit none
+  integer, parameter :: NFRAMES = 3
+  integer, parameter :: VEC_LOCAL_SZ = 7
+  type(var_desc_t)  :: pio_var
+  type(file_desc_t) :: pio_file
+  character(len=PIO_TF_MAX_STR_LEN) :: filename
+  character(len=*), parameter :: PIO_VAR_NAME = 'PIO_TF_test_var'
+  type(io_desc_t) :: iodesc
+  integer, dimension(VEC_LOCAL_SZ) :: compdof
+  PIO_TF_FC_DATA_TYPE, dimension(:,:), allocatable :: wbuf, rbuf
+  integer, dimension(2) :: dims
+  integer, dimension(2) :: pio_dims
+  integer :: i, ierr, lsz
+  integer(kind=pio_offset_kind) :: f
+  ! iotypes = valid io types
+  integer, dimension(:), allocatable :: iotypes
+  character(len=PIO_TF_MAX_STR_LEN), dimension(:), allocatable :: iotype_descs
+  integer :: num_iotypes
+
+  ! Data evenly distributed across all procs
+  ! Each proc has VEC_LOCAL_SZ elements on each frame
+  dims(1) = VEC_LOCAL_SZ * pio_tf_world_sz_
+  dims(2) = 1
+
+  allocate(wbuf(VEC_LOCAL_SZ, NFRAMES))
+  allocate(rbuf(VEC_LOCAL_SZ, NFRAMES))
+
+  do i=1,VEC_LOCAL_SZ
+    compdof(i) = VEC_LOCAL_SZ * pio_tf_world_rank_ + i
+  end do
+
+  do f=1,NFRAMES
+    do i=1,VEC_LOCAL_SZ
+      wbuf(i,f) = compdof(i) + (f-1) * dims(1)
+    end do
+  end do
+
+  call PIO_initdecomp(pio_tf_iosystem_, PIO_TF_DATA_TYPE, dims, compdof, iodesc)
+
+  num_iotypes = 0
+  call PIO_TF_Get_nc_iotypes(iotypes, iotype_descs, num_iotypes)
+  filename = "test_pio_decomp_simple_tests.testfile"
+  do i=1,num_iotypes
+    PIO_TF_LOG(0,*) "Testing : PIO_TF_DATA_TYPE : ", iotype_descs(i)
+    ierr = PIO_createfile(pio_tf_iosystem_, pio_file, iotypes(i), filename, PIO_CLOBBER)
+    PIO_TF_CHECK_ERR(ierr, "Could not create file " // trim(filename))
+
+    ierr = PIO_def_dim(pio_file, 'PIO_TF_test_dim_row', dims(1), pio_dims(1))
+    PIO_TF_CHECK_ERR(ierr, "Failed to define a dim : " // trim(filename))
+
+    ierr = PIO_def_dim(pio_file, 'PIO_TF_test_dim_time', NFRAMES, pio_dims(2))
+    PIO_TF_CHECK_ERR(ierr, "Failed to define a dim : " // trim(filename))
+
+    ierr = PIO_def_var(pio_file, 'PIO_TF_test_var', PIO_TF_DATA_TYPE, pio_dims, pio_var)
+    PIO_TF_CHECK_ERR(ierr, "Failed to define a var : " // trim(filename))
+
+    ierr = PIO_enddef(pio_file)
+    PIO_TF_CHECK_ERR(ierr, "Failed to end redef mode : " // trim(filename))
+
+    do f=1,NFRAMES
+      call PIO_setframe(pio_file, pio_var, f)
+      ! Write the current frame
+      call PIO_write_darray(pio_file, pio_var, iodesc, wbuf(:,f), ierr)
+      PIO_TF_CHECK_ERR(ierr, "Failed to write darray : " // trim(filename))
+    end do
+
+#ifdef PIO_TEST_CLOSE_OPEN_FOR_SYNC
+    call PIO_closefile(pio_file)
+
+    ierr = PIO_openfile(pio_tf_iosystem_, pio_file, iotypes(i), filename, PIO_nowrite)
+    PIO_TF_CHECK_ERR(ierr, "Could not reopen file " // trim(filename))
+
+    ierr = PIO_inq_varid(pio_file, 'PIO_TF_test_var', pio_var)
+    PIO_TF_CHECK_ERR(ierr, "Could not inq var : " // trim(filename))
+#else
+    call PIO_syncfile(pio_file)
+#endif
+
+    rbuf = 0
+    do f=1,NFRAMES
+      call PIO_setframe(pio_file, pio_var, f)
+      call PIO_read_darray(pio_file, pio_var, iodesc, rbuf(:,f), ierr)
+      PIO_TF_CHECK_ERR(ierr, "Failed to read darray : " // trim(filename))
+    end do
+
+    do f=1,NFRAMES
+      PIO_TF_CHECK_VAL((rbuf(:,f), wbuf(:,f)), "Got wrong val, frame=", f)
+    end do
+
+    call PIO_closefile(pio_file)
+    call PIO_deletefile(pio_tf_iosystem_, filename);
+  end do
+
+  if(allocated(iotypes)) then
+    deallocate(iotypes)
+    deallocate(iotype_descs)
+  end if
+
+  call PIO_freedecomp(pio_tf_iosystem_, iodesc)
+  deallocate(rbuf)
+  deallocate(wbuf)
+PIO_TF_AUTO_TEST_SUB_END decomp_1_extra_dim_lim_rec
+
+! Write multiple frames of a 2d record quasi-variable (with
+! a limited time dimension), use a 3d decomposition that
+! has two extra outermost dimensions (lengths set to 1)
+PIO_TF_TEMPLATE<PIO_TF_PREDEF_TYPENAME PIO_TF_DATA_TYPE, PIO_TF_PREDEF_TYPENAME PIO_TF_FC_DATA_TYPE>
+PIO_TF_AUTO_TEST_SUB_BEGIN decomp_2_extra_dims_lim_rec
+  implicit none
+  integer, parameter :: NFRAMES = 3
+  integer, parameter :: VEC_LOCAL_SZ = 7
+  type(var_desc_t)  :: pio_var
+  type(file_desc_t) :: pio_file
+  character(len=PIO_TF_MAX_STR_LEN) :: filename
+  character(len=*), parameter :: PIO_VAR_NAME = 'PIO_TF_test_var'
+  type(io_desc_t) :: iodesc
+  integer, dimension(VEC_LOCAL_SZ) :: compdof
+  PIO_TF_FC_DATA_TYPE, dimension(:,:), allocatable :: wbuf, rbuf
+  integer, dimension(3) :: dims
+  integer, dimension(2) :: pio_dims
+  integer :: i, ierr, lsz
+  integer(kind=pio_offset_kind) :: f
+  ! iotypes = valid io types
+  integer, dimension(:), allocatable :: iotypes
+  character(len=PIO_TF_MAX_STR_LEN), dimension(:), allocatable :: iotype_descs
+  integer :: num_iotypes
+
+  ! Data evenly distributed across all procs
+  ! Each proc has VEC_LOCAL_SZ elements on each frame
+  dims(1) = VEC_LOCAL_SZ * pio_tf_world_sz_
+  dims(2) = 1
+  dims(3) = 1
+
+  allocate(wbuf(VEC_LOCAL_SZ, NFRAMES))
+  allocate(rbuf(VEC_LOCAL_SZ, NFRAMES))
+
+  do i=1,VEC_LOCAL_SZ
+    compdof(i) = VEC_LOCAL_SZ * pio_tf_world_rank_ + i
+  end do
+
+  do f=1,NFRAMES
+    do i=1,VEC_LOCAL_SZ
+      wbuf(i,f) = compdof(i) + (f-1) * dims(1)
+    end do
+  end do
+
+  call PIO_initdecomp(pio_tf_iosystem_, PIO_TF_DATA_TYPE, dims, compdof, iodesc)
+
+  num_iotypes = 0
+  call PIO_TF_Get_nc_iotypes(iotypes, iotype_descs, num_iotypes)
+  filename = "test_pio_decomp_simple_tests.testfile"
+  do i=1,num_iotypes
+    PIO_TF_LOG(0,*) "Testing : PIO_TF_DATA_TYPE : ", iotype_descs(i)
+    ierr = PIO_createfile(pio_tf_iosystem_, pio_file, iotypes(i), filename, PIO_CLOBBER)
+    PIO_TF_CHECK_ERR(ierr, "Could not create file " // trim(filename))
+
+    ierr = PIO_def_dim(pio_file, 'PIO_TF_test_dim_row', dims(1), pio_dims(1))
+    PIO_TF_CHECK_ERR(ierr, "Failed to define a dim : " // trim(filename))
+
+    ierr = PIO_def_dim(pio_file, 'PIO_TF_test_dim_time', NFRAMES, pio_dims(2))
+    PIO_TF_CHECK_ERR(ierr, "Failed to define a dim : " // trim(filename))
+
+    ierr = PIO_def_var(pio_file, 'PIO_TF_test_var', PIO_TF_DATA_TYPE, pio_dims, pio_var)
+    PIO_TF_CHECK_ERR(ierr, "Failed to define a var : " // trim(filename))
+
+    ierr = PIO_enddef(pio_file)
+    PIO_TF_CHECK_ERR(ierr, "Failed to end redef mode : " // trim(filename))
+
+    do f=1,NFRAMES
+      call PIO_setframe(pio_file, pio_var, f)
+      ! Write the current frame
+      call PIO_write_darray(pio_file, pio_var, iodesc, wbuf(:,f), ierr)
+      PIO_TF_CHECK_ERR(ierr, "Failed to write darray : " // trim(filename))
+    end do
+
+#ifdef PIO_TEST_CLOSE_OPEN_FOR_SYNC
+    call PIO_closefile(pio_file)
+
+    ierr = PIO_openfile(pio_tf_iosystem_, pio_file, iotypes(i), filename, PIO_nowrite)
+    PIO_TF_CHECK_ERR(ierr, "Could not reopen file " // trim(filename))
+
+    ierr = PIO_inq_varid(pio_file, 'PIO_TF_test_var', pio_var)
+    PIO_TF_CHECK_ERR(ierr, "Could not inq var : " // trim(filename))
+#else
+    call PIO_syncfile(pio_file)
+#endif
+
+    rbuf = 0
+    do f=1,NFRAMES
+      call PIO_setframe(pio_file, pio_var, f)
+      call PIO_read_darray(pio_file, pio_var, iodesc, rbuf(:,f), ierr)
+      PIO_TF_CHECK_ERR(ierr, "Failed to read darray : " // trim(filename))
+    end do
+
+    do f=1,NFRAMES
+      PIO_TF_CHECK_VAL((rbuf(:,f), wbuf(:,f)), "Got wrong val, frame=", f)
+    end do
+
+    call PIO_closefile(pio_file)
+    call PIO_deletefile(pio_tf_iosystem_, filename);
+  end do
+
+  if(allocated(iotypes)) then
+    deallocate(iotypes)
+    deallocate(iotype_descs)
+  end if
+
+  call PIO_freedecomp(pio_tf_iosystem_, iodesc)
+  deallocate(rbuf)
+  deallocate(wbuf)
+PIO_TF_AUTO_TEST_SUB_END decomp_2_extra_dims_lim_rec
