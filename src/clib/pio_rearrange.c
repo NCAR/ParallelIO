@@ -1229,6 +1229,276 @@ int box_rearrange_create(iosystem_desc_t *ios, int maplen, const PIO_Offset *com
     MPI_Datatype dtypes[ios->num_uniontasks]; /* Array of MPI_OFFSET types for swapm. */
     PIO_Offset iomaplen[ios->num_iotasks];   /* Gets the llen of all IO tasks. */
 
+    /* sc_info msg = [iomaplen, starts_for_all_dims, count_for_all_dims] */
+    int sc_info_msg_maplen_sz = 1; /* The iomaplen, == 0 implies start/count are invalid */
+    int sc_info_msg_sc_sz = 2 * ndims; /* The (start + count) for all dims */
+    int sc_info_msg_sz = sc_info_msg_maplen_sz + sc_info_msg_sc_sz;
+    PIO_Offset sc_info_msg_send[sc_info_msg_sz];
+    PIO_Offset sc_info_msg_recv[ios->num_iotasks * sc_info_msg_sz];
+
+    /* This is the box rearranger. */
+    iodesc->rearranger = PIO_REARR_BOX;
+
+    /* Number of elements of data on compute node. */
+    iodesc->ndof = maplen;
+
+    if (maplen > 0)
+    {
+        if (!(dest_ioproc = malloc(maplen * sizeof(int))))
+            return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__);
+
+        if (!(dest_ioindex = malloc(maplen * sizeof(PIO_Offset))))
+            return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__);
+    }
+
+    /* Initialize the sc_info send and recv messages */
+    for(int i=0; i<sc_info_msg_sz; i++)
+    {
+        sc_info_msg_send[i] = 0;
+    }
+
+    /* The sc_info_msg_recv[i * sc_msg_info_sz] contains the sc_info from
+     * iorank i (the union rank for iorank i is ios->ioranks[i]). Each
+     * sc_info message contains [iomaplen, start_for_all_dims, count_for_all_dims]
+     */
+    for(int i=0; i<ios->num_iotasks * sc_info_msg_sz; i++)
+    {
+        sc_info_msg_recv[i] = 0;
+    }
+
+    /* Initialize array values. */
+    for (int i = 0; i < maplen; i++)
+    {
+        dest_ioproc[i] = -1;
+        dest_ioindex[i] = -1;
+    }
+
+    /* Initialize arrays used in swapm. */
+    for (int i = 0; i < ios->num_uniontasks; i++)
+    {
+        sendcounts[i] = 0;
+        sdispls[i] = 0;
+        recvcounts[i] = 0;
+        rdispls[i] = 0;
+        dtypes[i] = MPI_OFFSET;
+    }
+
+    /* For IO tasks, determine llen, the length of the data array on
+     * the IO task. For computation tasks, llen will remain at 0. Also
+     * set up arrays for the allgather which will give every IO task a
+     * complete list of llens for each IO task. */
+    LOG((3, "ios->ioproc = %d ios->num_uniontasks = %d", ios->ioproc,
+         ios->num_uniontasks));
+    pioassert(iodesc->llen == 0, "error", __FILE__, __LINE__);
+    if (ios->ioproc)
+    {
+        /* Determine llen, the lenght of the data array on this IO
+         * node, by multipliying the counts in the
+         * iodesc->firstregion. */
+        iodesc->llen = 1;
+        for (int i = 0; i < ndims; i++)
+        {
+            iodesc->llen *= iodesc->firstregion->count[i];
+            LOG((3, "iodesc->firstregion->start[%d] = %d iodesc->firstregion->count[%d] = %d",
+                 i, iodesc->firstregion->start[i], i, iodesc->firstregion->count[i]));
+        }
+        LOG((2, "iodesc->llen = %d", iodesc->llen));
+    }
+
+    /* Determine whether fill values will be needed. */
+    if ((ret = determine_fill(ios, iodesc, gdimlen, compmap)))
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+    LOG((2, "iodesc->needsfill = %d ios->num_iotasks = %d", iodesc->needsfill,
+         ios->num_iotasks));
+
+    /* Set the iomaplen in the sc_info msg */
+    sc_info_msg_send[0] = iodesc->llen;
+
+    /* start/count array to be sent: 1st half for start, 2nd half for count */
+    for (int j = 0; j < ndims; j++)
+    {
+        /* The first data in sc_info_msg_send[] is the iomaplen */
+        sc_info_msg_send[j + 1] = iodesc->firstregion->start[j];
+        sc_info_msg_send[ndims + j + 1] = iodesc->firstregion->count[j];
+    }
+
+    /* Set the recvcounts/recv displs for the sc_info msg from each io task */
+    for (int i = 0; i < ios->num_iotasks; i++)
+    {
+        /* From each iotask all procs (compute and I/O procs) receive an
+         * sc_info message containing [iomaplen, start_for_all_dims,
+         * count_for_all_dims] and the size of this message is
+         * [sizeof(MPI_OFFSET) + ndims * sizeof(MPI_OFFSET) + ndims *
+         * sizeof(MPI_OFFSET)]
+         * Note: The displacements are in bytes
+         */
+        recvcounts[ios->ioranks[i]] = sc_info_msg_sz;
+        rdispls[ios->ioranks[i]] = i * sc_info_msg_sz * SIZEOF_MPI_OFFSET;
+    }
+
+    /* Set the sendcounts/send displs for the sc_info msg sent from each
+     * I/O task
+     */
+    for(int i=0; i<ios->num_uniontasks; i++){
+      sendcounts[i] = 0;
+      sdispls[i] = 0;
+    }
+    if(ios->ioproc){
+        /* Only I/O procs send sc_info messages */
+        int nmsgs = ios->num_iotasks;
+        for (int i = 0; i < ios->num_comptasks; i++)
+        {
+            sendcounts[ios->compranks[i]] = sc_info_msg_sz;
+            sdispls[ios->compranks[i]] = 0;
+        }
+        for (int i = 0; i < ios->num_iotasks; i++)
+        {
+            sendcounts[ios->ioranks[i]] = sc_info_msg_sz;
+            sdispls[ios->ioranks[i]] = 0;
+        }
+    }
+
+    /* Send sc_info msg from iotasks (all iotasks) to all procs(compute and I/O procs)*/
+    LOG((3, "about to call pio_swapm with start/count from iotask ndims = %d",
+         ndims));
+    if ((ret = pio_swapm(sc_info_msg_send, sendcounts, sdispls, dtypes, sc_info_msg_recv,
+                         recvcounts, rdispls, dtypes, ios->union_comm,
+                         &iodesc->rearr_opts.io2comp)))
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+
+#if PIO_ENABLE_LOGGING
+    /* First entry in the sc_info msg for each iorank is the iomaplen */
+    for (int i = 0; i < ios->num_iotasks; i++)
+        LOG((3, "iomaplen[%d] = %d", i, sc_info_msg_recv[i * sc_info_msg_sz]));
+#endif /* PIO_ENABLE_LOGGING */
+
+    for (int i = 0; i < ios->num_iotasks; i++)
+    {
+        /* First entry in the sc_info msg is the iomaplen */
+        iomaplen[i] = sc_info_msg_recv[i * sc_info_msg_sz];
+        if(iomaplen[i] > 0)
+        {
+            /* The rest of the entries in the sc_info msg are the start and
+             * count arrays
+             */
+            PIO_Offset *start = &(sc_info_msg_recv[i * sc_info_msg_sz + 1]);
+            PIO_Offset *count = &(sc_info_msg_recv[i * sc_info_msg_sz + 1 + ndims]);
+
+  #if PIO_ENABLE_LOGGING
+            for (int d = 0; d < ndims; d++)
+                LOG((3, "start[%d] = %lld count[%d] = %lld", d, start[d], d, count[d]));
+  #endif /* PIO_ENABLE_LOGGING */
+
+            /* For each element of the data array on the compute task,
+             * find the IO task to send the data element to, and its
+             * offset into the global data array. */
+            for (int k = 0; k < maplen; k++)
+            {
+                PIO_Offset gcoord[ndims], lcoord[ndims];
+                bool found = true;
+
+                /* The compmap array is 1 based but calculations are 0 based */
+                LOG((3, "about to call idx_to_dim_list ndims = %d ", ndims));
+                idx_to_dim_list(ndims, gdimlen, compmap[k] - 1, gcoord);
+  #if PIO_ENABLE_LOGGING
+                for (int d = 0; d < ndims; d++)
+                    LOG((3, "gcoord[%d] = %lld", d, gcoord[d]));
+  #endif /* PIO_ENABLE_LOGGING */
+
+                /* Find a destination for each entry in the compmap. */
+                for (int j = 0; j < ndims; j++)
+                {
+                    if (gcoord[j] >= start[j] && gcoord[j] < start[j] + count[j])
+                    {
+                        lcoord[j] = gcoord[j] - start[j];
+                    }
+                    else
+                    {
+                        found = false;
+                        break;
+                    }
+                }
+
+                /* Did we find a destination IO task for this element
+                 * of the computation task data array? If so, remember
+                 * the destination IO task, and determine the index
+                 * for that element in the IO task data. */
+                if (found)
+                {
+                    dest_ioindex[k] = coord_to_lindex(ndims, lcoord, count);
+                    dest_ioproc[k] = i;
+                    LOG((3, "found dest_ioindex[%d] = %d dest_ioproc[%d] = %d", k, dest_ioindex[k],
+                         k, dest_ioproc[k]));
+                }
+            }
+        }
+    }
+
+    /* Check that a destination is found for each compmap entry. */
+    for (int k = 0; k < maplen; k++)
+        if (dest_ioproc[k] < 0 && compmap[k] > 0)
+        {
+            LOG((1, "Error: Found dest_ioproc[%d] = %d and compmap[%d] = %lld", k, dest_ioproc[k], k, compmap[k]));
+            return pio_err(ios, NULL, PIO_EINVAL, __FILE__, __LINE__);
+        }
+
+    /* Completes the mapping for the box rearranger. */
+    LOG((2, "calling compute_counts maplen = %d", maplen));
+    if ((ret = compute_counts(ios, iodesc, dest_ioproc, dest_ioindex)))
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+
+    free(dest_ioproc);
+    free(dest_ioindex);
+    dest_ioproc = NULL;
+    dest_ioindex = NULL;
+
+    /* Compute the max io buffer size needed for an iodesc. */
+    if (ios->ioproc)
+    {
+        if ((ret = compute_maxIObuffersize(ios->io_comm, iodesc)))
+            return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+        LOG((3, "iodesc->maxiobuflen = %d", iodesc->maxiobuflen));
+    }
+
+    /* Using maxiobuflen compute the maximum number of bytes that the
+     * io task buffer can handle. */
+    if ((ret = compute_maxaggregate_bytes(ios, iodesc)))
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+    LOG((3, "iodesc->maxbytes = %d", iodesc->maxbytes));
+
+#ifdef TIMING
+    GPTLstop("PIO:box_rearrange_create");
+#endif
+    return PIO_NOERR;
+}
+
+/* The box_rearrange_create algorithm optimized for the case where many
+ * iotasks have iomaplen == 0 (holes)
+ */
+int box_rearrange_create_with_holes(iosystem_desc_t *ios, int maplen, const PIO_Offset *compmap,
+                         const int *gdimlen, int ndims, io_desc_t *iodesc)
+{
+    int ret;
+
+#ifdef TIMING
+    GPTLstart("PIO:box_rearrange_create_with_holes");
+#endif
+    /* Check inputs. */
+    pioassert(ios && maplen >= 0 && compmap && gdimlen && ndims > 0 && iodesc,
+              "invalid input", __FILE__, __LINE__);
+    LOG((1, "box_rearrange_create maplen = %d ndims = %d ios->num_comptasks = %d "
+         "ios->num_iotasks = %d", maplen, ndims, ios->num_comptasks, ios->num_iotasks));
+
+    /* Allocate arrays needed for this function. */
+    int *dest_ioproc = NULL; /* Destination IO task for each data element on compute task. */
+    PIO_Offset *dest_ioindex = NULL;    /* Offset into IO task array for each data element. */
+    int sendcounts[ios->num_uniontasks]; /* Send counts for swapm call. */
+    int sdispls[ios->num_uniontasks];    /* Send displacements for swapm. */
+    int recvcounts[ios->num_uniontasks]; /* Receive counts for swapm. */
+    int rdispls[ios->num_uniontasks];    /* Receive displacements for swapm. */
+    MPI_Datatype dtypes[ios->num_uniontasks]; /* Array of MPI_OFFSET types for swapm. */
+    PIO_Offset iomaplen[ios->num_iotasks];   /* Gets the llen of all IO tasks. */
+
     /* This is the box rearranger. */
     iodesc->rearranger = PIO_REARR_BOX;
 
@@ -1445,10 +1715,11 @@ int box_rearrange_create(iosystem_desc_t *ios, int maplen, const PIO_Offset *com
     LOG((3, "iodesc->maxbytes = %d", iodesc->maxbytes));
 
 #ifdef TIMING
-    GPTLstop("PIO:box_rearrange_create");
+    GPTLstop("PIO:box_rearrange_create_with_holes");
 #endif
     return PIO_NOERR;
 }
+
 
 /**
  * Compare offsets is used by the sort in the subset rearranger. This
