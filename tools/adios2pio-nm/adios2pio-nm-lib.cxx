@@ -190,9 +190,13 @@ void ProcessVarAttributes(ADIOS_FILE **infile, int adios_varid, std::string varn
     adios_free_varinfo(vi);
 }
 
-void ProcessGlobalAttributes(ADIOS_FILE **infile, int ncid)
+
+void ProcessGlobalAttributes(ADIOS_FILE **infile, int ncid, DimensionMap& dimension_map, VariableMap& vars_map)
 {
 	if (debug_out) cout << "Process Global Attributes: \n";
+
+	std::string delimiter = "/";
+	std::map<std::string,char> var_defs;
     for (int i=0; i < infile[0]->nattrs; i++)
     {
         string a = infile[0]->attr_namelist[i];
@@ -212,7 +216,39 @@ void ProcessGlobalAttributes(ADIOS_FILE **infile, int ncid)
                 len = strlen(adata);
             PIOc_put_att(ncid, PIO_GLOBAL, attname, piotype, len, adata);
             free(adata);
-        }
+        } else {
+			std::string token = a.substr(0, a.find(delimiter));
+			if (token!="" && vars_map.find(token)==vars_map.end() && var_defs.find(token)==var_defs.end()) 
+			{ // first encounter 
+            	string attname = token + "/__pio__/nctype";
+            	int asize;
+            	int *nctype;
+            	ADIOS_DATATYPES atype;
+            	adios_get_attr(infile[0], attname.c_str(), &atype, &asize, (void**)&nctype);
+
+            	attname = token + "/__pio__/ndims";
+            	int *ndims;
+            	adios_get_attr(infile[0], attname.c_str(), &atype, &asize, (void**)&ndims);
+
+            	char **dimnames = NULL;
+            	int dimids[MAX_NC_DIMS];
+            	if (*ndims)
+            	{
+                	attname = token + "/__pio__/dims";
+                	adios_get_attr(infile[0], attname.c_str(), &atype, &asize, (void**)&dimnames);
+
+                	for (int d=0; d < *ndims; d++)
+                    	dimids[d] = dimension_map[dimnames[d]].dimid;
+                }
+            	int varid;
+            	PIOc_def_var(ncid, token.c_str(), *nctype, *ndims, dimids, &varid);
+				var_defs[token] = 1; // mark the encounter, do not execute this again
+
+            	free(nctype);
+            	free(ndims);
+            	free(dimnames);
+			}
+		}
     }
 }
 
@@ -220,6 +256,7 @@ Decomposition ProcessOneDecomposition(ADIOS_FILE **infile, int ncid, const char 
 		int nproc,
         int forced_type=NC_NAT)
 {
+
     /* 
  	 * Read all decomposition blocks assigned to this process,
      * create one big array from them and create a single big 
@@ -374,6 +411,7 @@ VariableMap ProcessVariableDefinitions(ADIOS_FILE **infile, int ncid, DimensionM
     for (int i = 0; i < infile[0]->nvars; i++)
     {
         string v = infile[0]->var_namelist[i];
+        if (!mpirank && debug_out) cout << "BEFORE Process variable " << v << endl;
         if (v.find("/__") == string::npos)
         {
             /* For each variable written define it with PIO */
@@ -1055,7 +1093,11 @@ void ConvertBPFile(string infilepath, string outfilename, int pio_iotype, int io
 
 		/* Create output file */
 		TimerStart(write);
-		ret = PIOc_createfile(iosysid, &ncid, &pio_iotype, outfilename.c_str(), PIO_64BIT_OFFSET);
+		/* 
+			Use NC_64BIT_DATA instead of PIO_64BIT_OFFSET. Some output files will have variables 
+			that require more than 4GB storage. 
+		*/
+		ret = PIOc_createfile(iosysid, &ncid, &pio_iotype, outfilename.c_str(), NC_64BIT_DATA); 
 		TimerStop(write);
 		if (ret)
 			throw std::runtime_error("Could not create output file " + outfilename + "\n");
@@ -1070,7 +1112,7 @@ void ConvertBPFile(string infilepath, string outfilename, int pio_iotype, int io
 		VariableMap vars_map = ProcessVariableDefinitions(infile, ncid, dimension_map, comm, mpirank, nproc);
 
 		/* Process the global attributes */
-		ProcessGlobalAttributes(infile, ncid);
+		ProcessGlobalAttributes(infile, ncid, dimension_map, vars_map);
 
 		PIOc_enddef(ncid);
 

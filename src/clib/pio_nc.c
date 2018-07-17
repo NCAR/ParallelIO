@@ -2565,6 +2565,21 @@ int PIOc_def_var(int ncid, const char *name, nc_type xtype, int ndims,
             *varidp = file->num_vars;
             file->num_vars++;
             ierr = 0;
+
+            /* TAHSIN -- some codes moved from pio_darray.c */
+            {
+                adios_var_desc_t * av = &(file->adios_vars[*varidp]);
+                if (file->adios_iomaster == MPI_ROOT)
+                {
+                    adios_define_attribute_byvalue(file->adios_group,"__pio__/ndims",av->name,adios_integer,1,&av->ndims);
+                    adios_define_attribute_byvalue(file->adios_group,"__pio__/nctype",av->name,adios_integer,1,&av->nc_type);
+                    char* dimnames[6];
+                    for (int i = 0; i < av->ndims; i++)
+                        dimnames[i] = file->dim_names[av->gdimids[i]];
+                    adios_define_attribute_byvalue(file->adios_group,"__pio__/dims",av->name,adios_string_array,av->ndims,dimnames);
+                }
+            }
+            /* TAHSIN */
     }
 #endif /* _ADIOS_ALL_PROCS */
 #endif
