@@ -453,31 +453,6 @@ int PIOc_InitDecomp(int iosysid, int pio_type, int ndims, const int *gdimlen, in
         }
     }
 
-#if PIO_SAVE_DECOMPS
-    char filename[PIO_MAX_NAME];
-    if (ios->num_comptasks < 100)
-        sprintf(filename, "piodecomp%2.2dtasks%2.2dio%2.2ddims%2.2d.dat", ios->num_comptasks, ios->num_iotasks, ndims, counter);
-    else if (ios->num_comptasks < 10000)
-        sprintf(filename, "piodecomp%4.4dtasks%4.4dio%2.2ddims%2.2d.dat", ios->num_comptasks, ios->num_iotasks, ndims, counter);
-    else
-        sprintf(filename, "piodecomp%6.6dtasks%6.6dio%2.2ddims%2.2d.dat", ios->num_comptasks, ios->num_iotasks, ndims, counter);
-
-    LOG((2, "Saving decomp map to %s", filename));
-
-    if (fortran_order)
-    {
-        int gdimlen_reversed[ndims];
-        for (int i = 0; i < ndims; i++)
-            gdimlen_reversed[i] = gdimlen[ndims - 1 - i];
-
-        PIOc_writemap(filename, ndims, gdimlen_reversed, maplen, (PIO_Offset *)compmap, ios->my_comm);
-    }
-    else
-        PIOc_writemap(filename, ndims, gdimlen, maplen, (PIO_Offset *)compmap, ios->my_comm);
-
-    counter++;
-#endif
-
     /* Allocate space for the iodesc info. This also allocates the
      * first region and copies the rearranger opts into this
      * iodesc. */
@@ -572,6 +547,31 @@ int PIOc_InitDecomp(int iosysid, int pio_type, int ndims, const int *gdimlen, in
         comm = ios->union_comm;
     }
     *ioidp = pio_add_to_iodesc_list(iodesc, comm);
+
+#if PIO_SAVE_DECOMPS
+    char filename[PIO_MAX_NAME];
+    if (ios->num_comptasks < 100)
+        sprintf(filename, "piodecomp%2.2dtasks%2.2dio%2.2ddims%2.2d.dat", ios->num_comptasks, ios->num_iotasks, ndims, counter);
+    else if (ios->num_comptasks < 10000)
+        sprintf(filename, "piodecomp%4.4dtasks%4.4dio%2.2ddims%2.2d.dat", ios->num_comptasks, ios->num_iotasks, ndims, counter);
+    else
+        sprintf(filename, "piodecomp%6.6dtasks%6.6dio%2.2ddims%2.2d.dat", ios->num_comptasks, ios->num_iotasks, ndims, counter);
+
+    LOG((2, "Saving decomp map to %s", filename));
+
+    if (fortran_order)
+    {
+        int gdimlen_reversed[ndims];
+        for (int i = 0; i < ndims; i++)
+            gdimlen_reversed[i] = gdimlen[ndims - 1 - i];
+
+        PIOc_writemap(filename, *ioidp, ndims, gdimlen_reversed, maplen, (PIO_Offset *)compmap, ios->my_comm);
+    }
+    else
+        PIOc_writemap(filename, *ioidp, ndims, gdimlen, maplen, (PIO_Offset *)compmap, ios->my_comm);
+
+    counter++;
+#endif
 
 #if PIO_ENABLE_LOGGING
     /* Log results. */

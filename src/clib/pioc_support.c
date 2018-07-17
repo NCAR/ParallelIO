@@ -1586,7 +1586,7 @@ int PIOc_write_decomp(const char *file, int iosysid, int ioid, MPI_Comm comm)
     if (!(iodesc = pio_get_iodesc_from_id(ioid)))
         return pio_err(ios, NULL, PIO_EBADID, __FILE__, __LINE__);
 
-    return PIOc_writemap(file, iodesc->ndims, iodesc->dimlen, iodesc->maplen, iodesc->map,
+    return PIOc_writemap(file, iodesc->ioid, iodesc->ndims, iodesc->dimlen, iodesc->maplen, iodesc->map,
                          comm);
 }
 
@@ -1594,6 +1594,7 @@ int PIOc_write_decomp(const char *file, int iosysid, int ioid, MPI_Comm comm)
  * Write the decomposition map to a file.
  *
  * @param file the filename
+ * @param ioid id of the decomposition
  * @param ndims the number of dimensions
  * @param gdims an array of dimension ids
  * @param maplen the length of the map
@@ -1601,7 +1602,7 @@ int PIOc_write_decomp(const char *file, int iosysid, int ioid, MPI_Comm comm)
  * @param comm an MPI communicator.
  * @returns 0 for success, error code otherwise.
  */
-int PIOc_writemap(const char *file, int ndims, const int *gdims, PIO_Offset maplen,
+int PIOc_writemap(const char *file, int ioid, int ndims, const int *gdims, PIO_Offset maplen,
                   PIO_Offset *map, MPI_Comm comm)
 {
     int npes, myrank;
@@ -1611,7 +1612,7 @@ int PIOc_writemap(const char *file, int ndims, const int *gdims, PIO_Offset mapl
     PIO_Offset *nmap;
     int mpierr; /* Return code for MPI calls. */
 
-    LOG((1, "PIOc_writemap file = %s ndims = %d maplen = %d", file, ndims, maplen));
+    LOG((1, "PIOc_writemap file = %s ioid = %d ndims = %d maplen = %d", file, ioid, ndims, maplen));
 
     if ((mpierr = MPI_Comm_size(comm, &npes)))
         return check_mpi(NULL, mpierr, __FILE__, __LINE__);
@@ -1671,6 +1672,8 @@ int PIOc_writemap(const char *file, int ndims, const int *gdims, PIO_Offset mapl
         fprintf(fp, "\n");
         print_trace(fp);
 
+        /* Print the decomposition id */
+        fprintf(fp, "ioid\t%d\n", ioid);
         /* Close the file. */
         fclose(fp);
         LOG((2,"decomp file closed."));
@@ -1700,10 +1703,10 @@ int PIOc_writemap(const char *file, int ndims, const int *gdims, PIO_Offset mapl
  * @param comm an MPI communicator.
  * @returns 0 for success, error code otherwise.
  */
-int PIOc_writemap_from_f90(const char *file, int ndims, const int *gdims,
+int PIOc_writemap_from_f90(const char *file, int ioid, int ndims, const int *gdims,
                            PIO_Offset maplen, const PIO_Offset *map, int f90_comm)
 {
-    return PIOc_writemap(file, ndims, gdims, maplen, (PIO_Offset *)map,
+    return PIOc_writemap(file, ioid, ndims, gdims, maplen, (PIO_Offset *)map,
                          MPI_Comm_f2c(f90_comm));
 }
 

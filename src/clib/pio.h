@@ -859,9 +859,9 @@ extern "C" {
                      PIO_Offset **map, MPI_Comm comm);
     int PIOc_readmap_from_f90(const char *file,int *ndims, int **gdims, PIO_Offset *maplen,
                               PIO_Offset **map, int f90_comm);
-    int PIOc_writemap(const char *file, int ndims, const int *gdims, PIO_Offset maplen,
+    int PIOc_writemap(const char *file, int ioid, int ndims, const int *gdims, PIO_Offset maplen,
                       PIO_Offset *map, MPI_Comm comm);
-    int PIOc_writemap_from_f90(const char *file, int ndims, const int *gdims,
+    int PIOc_writemap_from_f90(const char *file, int ioid, int ndims, const int *gdims,
                                PIO_Offset maplen, const PIO_Offset *map, int f90_comm);
 
     /* Write a decomposition file. */

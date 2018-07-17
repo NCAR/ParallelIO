@@ -188,13 +188,16 @@ contains
     integer,optional,intent(in) :: punit
     integer :: err
     integer :: ndims
+
+    integer :: ioid = -1
     
 
     interface
-       integer(c_int) function PIOc_writemap_from_f90(file, ndims, gdims, maplen, map, f90_comm) &
+       integer(c_int) function PIOc_writemap_from_f90(file, ioid, ndims, gdims, maplen, map, f90_comm) &
             bind(C,name="PIOc_writemap_from_f90")
          use iso_c_binding
          character(C_CHAR), intent(in) :: file
+         integer(C_INT), value, intent(in) :: ioid
          integer(C_INT), value, intent(in) :: ndims
          integer(C_INT), intent(in) :: gdims(*)
          integer(C_SIZE_T), value, intent(in) :: maplen 
@@ -203,7 +206,7 @@ contains
        end function PIOc_writemap_from_f90
     end interface
     ndims = size(gdims)
-    err = PIOc_writemap_from_f90(trim(file)//C_NULL_CHAR, ndims, gdims, int(size(dof),C_SIZE_T), dof, comm)
+    err = PIOc_writemap_from_f90(trim(file)//C_NULL_CHAR, ioid, ndims, gdims, int(size(dof),C_SIZE_T), dof, comm)
 
   end subroutine pio_writedof
 
