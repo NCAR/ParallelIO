@@ -52,9 +52,17 @@ endif()
 
 if(PIO_SAVE_DECOMPS)
   set(SAVE_DECOMPS 1)
+  if(DEFINED PIO_SAVE_DECOMPS_REGEX)
+    message (STATUS "Saving decomps using regex : " ${PIO_SAVE_DECOMPS_REGEX})
+  else()
+    set(PIO_SAVE_DECOMPS_REGEX "*")
+    message (STATUS "Saving ALL decomps")
+  endif()
 else()
   set(SAVE_DECOMPS 0)
+  set(PIO_SAVE_DECOMPS_REGEX "")
 endif()
+
 
 if(PIO_MAX_CACHED_IO_REGIONS)
   message (STATUS "Using PIO_MAX_CACHED_IO_REGIONS = " ${PIO_MAX_CACHED_IO_REGIONS})

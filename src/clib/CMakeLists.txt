@@ -1,6 +1,6 @@
 cmake_minimum_required (VERSION 2.8.12)
 include (CheckFunctionExists)
-project (PIOC C)
+project (PIOC C CXX)
 
 #==============================================================================
 #  DEFINE THE TARGET
@@ -10,7 +10,7 @@ add_library (pioc topology.c pio_mpi_timer.c pio_timer.c pio_file.c
   pioc_support.c pio_lists.c
   pioc.c pioc_sc.c pio_spmd.c pio_rearrange.c pio_nc4.c bget.c
   pio_nc.c pio_put_nc.c pio_get_nc.c pio_getput_int.c pio_msg.c pio_varm.c
-  pio_darray.c pio_darray_int.c)
+  pio_darray.c pio_darray_int.c pio_sdecomps_regex.cpp)
 
 # set up include-directories
 include_directories(
@@ -26,6 +26,8 @@ target_compile_definitions (pioc
   PUBLIC ${CMAKE_SYSTEM_DIRECTIVE})
 target_compile_definitions (pioc
   PUBLIC ${CMAKE_C_COMPILER_DIRECTIVE})
+target_compile_definitions (pioc
+  PUBLIC MPICH_SKIP_MPICXX)
 
 # Compiler-specific compiler options
 if ("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
