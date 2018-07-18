@@ -35,6 +35,8 @@ extern int pio_next_ncid;
 /** The default error handler used when iosystem cannot be located. */
 extern int default_error_handler;
 
+extern bool fortran_order;
+
 /**
  * Return a string description of an error code. If zero is passed,
  * the errmsg will be "No error".
@@ -1610,6 +1612,7 @@ int PIOc_writemap(const char *file, int ioid, int ndims, const int *gdims, PIO_O
     MPI_Status status;
     int i;
     PIO_Offset *nmap;
+    int gdims_reversed[ndims];
     int mpierr; /* Return code for MPI calls. */
 
     LOG((1, "PIOc_writemap file = %s ioid = %d ndims = %d maplen = %d", file, ioid, ndims, maplen));
@@ -1639,6 +1642,14 @@ int PIOc_writemap(const char *file, int ioid, int ndims, const int *gdims, PIO_O
 
         /* Write the version and dimension info. */
         fprintf(fp,"version %d npes %d ndims %d \n", VERSNO, npes, ndims);
+        if(fortran_order)
+        {
+            for(int i=0; i<ndims; i++)
+            {
+                gdims_reversed[i] = gdims[ndims - 1 - i];
+            }
+            gdims = gdims_reversed;
+        }
         for (i = 0; i < ndims; i++)
             fprintf(fp, "%d ", gdims[i]);
         fprintf(fp, "\n");
