@@ -682,6 +682,22 @@ int PIOc_write_darray(int ncid, int varid, int ioid, PIO_Offset arraylen, void *
     mtimer_start(file->varlist[varid].wr_mtimer);
 #endif
 
+#if PIO_SAVE_DECOMPS
+    const int INVALID_IOID = -1;
+    if(pio_save_decomps_regex_match(INVALID_IOID, file->fname, file->varlist[varid].vname))
+    {
+        char filename[PIO_MAX_NAME];
+        ierr = pio_create_uniq_str(ios, iodesc, filename, PIO_MAX_NAME, "piodecomp", ".dat");
+        if(ierr != PIO_NOERR)
+        {
+            LOG((1, "Creating a unique file name for saving the decomposition failed, ierr = %d", ierr));
+            return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
+        }
+        LOG((2, "Saving decomp map to %s", filename));
+        PIOc_writemap(filename, ioid, iodesc->ndims, iodesc->dimlen, iodesc->maplen, iodesc->map, ios->my_comm);
+
+    }
+#endif
     /* Get var description. */
     vdesc = &(file->varlist[varid]);
     LOG((2, "vdesc record %d nreqs %d", vdesc->record, vdesc->nreqs));

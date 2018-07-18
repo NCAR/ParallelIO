@@ -380,6 +380,9 @@ extern "C" {
                                 int *num_tasks, int **task_maplen, int *max_maplen, int **map, char *title,
                                 char *history, char *source, char *version, int *fortran_order);
 
+    /* Create a unique PIO string */
+    int pio_create_uniq_str(iosystem_desc_t *ios, io_desc_t *iodesc, char *str, int len, const char *prefix, const char *suffix);
+
 #if defined(__cplusplus)
 }
 #endif
