@@ -1,5 +1,5 @@
 cmake_minimum_required (VERSION 2.8.12)
-project (PIO C Fortran)
+project (PIO C CXX Fortran)
 #cmake_policy(VERSION 3.5.2)
 
 # The project version number.
