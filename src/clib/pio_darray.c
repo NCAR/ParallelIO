@@ -14,6 +14,7 @@
 #ifdef PIO_MICRO_TIMING
 #include "pio_timer.h"
 #endif
+#include "pio_sdecomps_regex.h"
 
 /* 10MB default limit. */
 PIO_Offset pio_buffer_size_limit = 10485760;

@@ -13,6 +13,7 @@
 #ifdef PIO_MICRO_TIMING
 #include "pio_timer.h"
 #endif
+#include "pio_sdecomps_regex.h"
 
 bool fortran_order = false;
 
