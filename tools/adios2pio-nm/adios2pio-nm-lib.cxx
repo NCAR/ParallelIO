@@ -417,48 +417,51 @@ VariableMap ProcessVariableDefinitions(ADIOS_FILE **infile, int ncid, DimensionM
             /* For each variable written define it with PIO */
             if (!mpirank && debug_out) cout << "Process variable " << v << endl;
 
-            TimerStart(read);
-            string attname = string(infile[0]->var_namelist[i]) + "/__pio__/nctype";
-            int asize;
-            int *nctype;
-            ADIOS_DATATYPES atype;
-            adios_get_attr(infile[0], attname.c_str(), &atype, &asize, (void**)&nctype);
+			if (v.find("decomp_id/")==string::npos && v.find("frame_id/")==string::npos) {
 
-            attname = string(infile[0]->var_namelist[i]) + "/__pio__/ndims";
-            int *ndims;
-            adios_get_attr(infile[0], attname.c_str(), &atype, &asize, (void**)&ndims);
+            	TimerStart(read);
+            	string attname = string(infile[0]->var_namelist[i]) + "/__pio__/nctype";
+            	int asize;
+            	int *nctype;
+            	ADIOS_DATATYPES atype;
+            	adios_get_attr(infile[0], attname.c_str(), &atype, &asize, (void**)&nctype);
 
-            char **dimnames = NULL;
-            int dimids[MAX_NC_DIMS];
-            bool timed = false;
-            if (*ndims)
-            {
-                attname = string(infile[0]->var_namelist[i]) + "/__pio__/dims";
-                adios_get_attr(infile[0], attname.c_str(), &atype, &asize, (void**)&dimnames);
+	            attname = string(infile[0]->var_namelist[i]) + "/__pio__/ndims";
+	            int *ndims;
+	            adios_get_attr(infile[0], attname.c_str(), &atype, &asize, (void**)&ndims);
 
-                for (int d=0; d < *ndims; d++)
-                {
-                    //cout << "Dim " << d << " = " <<  dimnames[d] << endl;
-                    dimids[d] = dimension_map[dimnames[d]].dimid;
-                    if (dimension_map[dimnames[d]].dimvalue == PIO_UNLIMITED)
-                    {
+	            char **dimnames = NULL;
+	            int dimids[MAX_NC_DIMS];
+	            bool timed = false;
+	            if (*ndims)
+	            {
+	                attname = string(infile[0]->var_namelist[i]) + "/__pio__/dims";
+   					adios_get_attr(infile[0], attname.c_str(), &atype, &asize, (void**)&dimnames);
+
+	                for (int d=0; d < *ndims; d++)
+	                {
+	                    //cout << "Dim " << d << " = " <<  dimnames[d] << endl;
+	                    dimids[d] = dimension_map[dimnames[d]].dimid;
+	                    if (dimension_map[dimnames[d]].dimvalue == PIO_UNLIMITED)
+	                    {
                         timed = true;
-                    }
-                }
-            }
-            TimerStop(read);
+	                    }
+	                }
+	            }
+	            TimerStop(read);
 
-            TimerStart(write);
-            int varid;
-            PIOc_def_var(ncid, v.c_str(), *nctype, *ndims, dimids, &varid);
-            TimerStop(write);
-            vars_map[v] = Variable{varid,timed,*nctype};
+	            TimerStart(write);
+	            int varid;
+	            PIOc_def_var(ncid, v.c_str(), *nctype, *ndims, dimids, &varid);
+	            TimerStop(write);
+	            vars_map[v] = Variable{varid,timed,*nctype};
 
-            ProcessVarAttributes(infile, i, v, ncid, varid);
+	            ProcessVarAttributes(infile, i, v, ncid, varid);
 
-            free(nctype);
-            free(ndims);
-            free(dimnames);
+	            free(nctype);
+	            free(ndims);
+	            free(dimnames);
+			}
         }
         FlushStdout_nm(comm);
     }
@@ -819,23 +822,6 @@ int ConvertVariableDarray(ADIOS_FILE **infile, int adios_varid, int ncid, Variab
     int ret = 0;
 
 	char *varname = infile[0]->var_namelist[adios_varid];
-    string attname = string(varname) + "/__pio__/decomp";
-    int asize;
-    ADIOS_DATATYPES atype;
-    char *decompname;
-    adios_get_attr(infile[0], attname.c_str(), &atype, &asize, (void**)&decompname);
-
-    Decomposition decomp = decomp_map[decompname];
-    if (decomp.piotype != var.nctype)
-    {
-        /* 
- 		 * Type conversion may happened at writing. Now we make a new decomposition
-         * for this nctype
-         */
-        decomp = GetNewDecomposition(decomp_map, decompname, infile, ncid, wfiles, var.nctype, iosysid, mpirank, nproc);
-    }
-    free(decompname);
-
     ADIOS_VARINFO *vi = adios_inq_var(infile[0], varname);
     adios_inq_var_blockinfo(infile[0], vi);
 
@@ -900,6 +886,14 @@ int ConvertVariableDarray(ADIOS_FILE **infile, int adios_varid, int ncid, Variab
         ts = nsteps-1;
     }
 
+	/* different decompositions at different frames */
+	char decomp_varname[128];
+	char frame_varname[128];
+	char decompname[64];
+	sprintf(decomp_varname,"decomp_id/%s",varname);
+	sprintf(frame_varname,"frame_id/%s",varname);
+	int  decomp_id, frame_id; 
+
 	// TAHSIN -- THIS IS GETTING CONFUSING. NEED TO THINK ABOUT time steps. 
     for (; ts < nsteps; ++ts)
     {
@@ -937,6 +931,15 @@ int ConvertVariableDarray(ADIOS_FILE **infile, int adios_varid, int ncid, Variab
                 		int ret = adios_schedule_read(infile[i], wbsel, 
 										varname, 0, 1,
                         				d.data()+offset);
+
+						/* different decompositions at different frames */
+                		ret = adios_schedule_read(infile[i], wbsel, 
+										decomp_varname, 0, 1,
+                        				&decomp_id);
+                		ret = adios_schedule_read(infile[i], wbsel, 
+										frame_varname, 0, 1,
+                        				&frame_id);
+
                 		adios_perform_reads(infile[i], 1);
                 		offset += vb->blockinfo[blockid].count[0] * elemsize;
         				adios_selection_delete(wbsel);
@@ -948,10 +951,18 @@ int ConvertVariableDarray(ADIOS_FILE **infile, int adios_varid, int ncid, Variab
         TimerStop(read);
 
         TimerStart(write);
+		sprintf(decompname,"%d",decomp_id);
+    	Decomposition decomp = decomp_map[decompname];
+    	if (decomp.piotype != var.nctype) {
+       		/* Type conversion may happened at writing. Now we make a new decomposition for this nctype */
+        	decomp = GetNewDecomposition(decomp_map, decompname, infile, ncid, wfiles, var.nctype, iosysid, mpirank, nproc);
+		}
+		if (frame_id<0) frame_id = 0;
         if (wfiles[0] < nblocks_per_step)
         {
+			/* different decompositions at different frames */	
             if (var.is_timed)
-                PIOc_setframe(ncid, var.nc_varid, ts);
+                PIOc_setframe(ncid, var.nc_varid, frame_id);
             ret = PIOc_write_darray(ncid, var.nc_varid, decomp.ioid, (PIO_Offset)nelems,
                     d.data(), NULL);
         }
@@ -1126,51 +1137,54 @@ void ConvertBPFile(string infilepath, string outfilename, int pio_iotype, int io
 			{
 				/* For each variable, read with ADIOS then write with PIO */
 				if (!mpirank && debug_out) cout << "Convert variable: " << v << endl;
-				Variable& var = vars_map[v];
 
-				TimerStart(read);
-				string attname = string(infile[0]->var_namelist[i]) + "/__pio__/ncop";
-				int asize;
-				char *ncop;
-				ADIOS_DATATYPES atype;
-				adios_get_attr(infile[0], attname.c_str(), &atype, &asize, (void**)&ncop);
-				TimerStop(read);
+				if (v.find("decomp_id/")==string::npos && v.find("frame_id/")==string::npos) {
+					Variable& var = vars_map[v];
 
-				std::string op(ncop);
-				if (op == "put_var") {
-					if (var.is_timed) {
-						if (debug_out) printf("ConvertVariableTimedPutVar: %d\n",mpirank); fflush(stdout);
-						ConvertVariableTimedPutVar(infile, wfiles, i, ncid, var, n_bp_writers, comm, mpirank, nproc);
+					TimerStart(read);
+					string attname = string(infile[0]->var_namelist[i]) + "/__pio__/ncop";
+					int asize;
+					char *ncop;
+					ADIOS_DATATYPES atype;
+					adios_get_attr(infile[0], attname.c_str(), &atype, &asize, (void**)&ncop);
+					TimerStop(read);
+	
+					std::string op(ncop);
+					if (op == "put_var") {
+						if (var.is_timed) {
+							if (debug_out) printf("ConvertVariableTimedPutVar: %d\n",mpirank); fflush(stdout);
+							ConvertVariableTimedPutVar(infile, wfiles, i, ncid, var, n_bp_writers, comm, mpirank, nproc);
+						} else {
+							if (debug_out) printf("ConvertVariablePutVar: %d\n",mpirank); fflush(stdout);
+							ConvertVariablePutVar(infile, wfiles, i, ncid, var, mpirank, nproc);
+						}
+					} else if (op == "darray") {
+						/* Variable was written with pio_write_darray() with a decomposition */
+						if (debug_out) printf("ConvertVariableDarray: %d\n",mpirank); fflush(stdout);
+						ConvertVariableDarray(infile, i, ncid, var, wfiles, decomp_map, n_bp_writers,iosysid, comm, mpirank, nproc);
 					} else {
-						if (debug_out) printf("ConvertVariablePutVar: %d\n",mpirank); fflush(stdout);
-						ConvertVariablePutVar(infile, wfiles, i, ncid, var, mpirank, nproc);
+						if (!mpirank && debug_out)
+							cout << "  WARNING: unknown operation " << op << ". Will not process this variable\n";
 					}
-				} else if (op == "darray") {
-					/* Variable was written with pio_write_darray() with a decomposition */
-					if (debug_out) printf("ConvertVariableDarray: %d\n",mpirank); fflush(stdout);
-					ConvertVariableDarray(infile, i, ncid, var, wfiles, decomp_map, n_bp_writers,iosysid, comm, mpirank, nproc);
-				} else {
-					if (!mpirank && debug_out)
-						cout << "  WARNING: unknown operation " << op << ". Will not process this variable\n";
+					free(ncop);
 				}
-				free(ncop);
 			}
 			FlushStdout_nm(comm);
 			PIOc_sync(ncid); /* FIXME: flush after each variable until development is done. Remove for efficiency */
 		}
 		TimerStart(write);
-
+	
  		for (std::map<std::string,Decomposition>::iterator it=decomp_map.begin(); it!=decomp_map.end(); ++it) {
-	         Decomposition d = it->second;
-	         int err_code = PIOc_freedecomp(iosysid, d.ioid);
-	         if (err_code!=0) {
-	               printf("ERROR: PIOc_freedecomp: %d\n",err_code);
-	               fflush(stdout);
-	         }
-	    }
-
+		     Decomposition d = it->second;
+		     int err_code = PIOc_freedecomp(iosysid, d.ioid);
+		     if (err_code!=0) {
+		           printf("ERROR: PIOc_freedecomp: %d\n",err_code);
+		             fflush(stdout);
+		     }
+		}
+	
 		pio_set_imax(save_imax);
-
+	
 		ret = PIOc_sync(ncid);
 		ret = PIOc_closefile(ncid);
 		TimerStop(write);
@@ -1300,3 +1314,4 @@ int C_API_ConvertBPToNC(const char *infilepath, const char *outfilename, const c
 #ifdef __cplusplus
 }
 #endif
+

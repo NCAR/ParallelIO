@@ -772,6 +772,10 @@ typedef struct adios_var_desc_t
      * We avoid defining again when writing multiple records over time
      */
     int64_t adios_varid; // 0: undefined yet
+
+    /* to handle PIOc_setframe with different decompositions */
+    int64_t decomp_varid;
+    int64_t frame_varid;
 } adios_var_desc_t;
 
 /* Track attributes */
