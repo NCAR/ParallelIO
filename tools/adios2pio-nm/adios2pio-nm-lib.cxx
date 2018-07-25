@@ -196,7 +196,10 @@ void ProcessGlobalAttributes(ADIOS_FILE **infile, int ncid, DimensionMap& dimens
 	if (debug_out) cout << "Process Global Attributes: \n";
 
 	std::string delimiter = "/";
-	std::map<std::string,char> var_defs;
+
+	std::map<std::string,char> processed_attrs;
+	VariableMap var_att_map;
+
     for (int i=0; i < infile[0]->nattrs; i++)
     {
         string a = infile[0]->attr_namelist[i];
@@ -218,35 +221,59 @@ void ProcessGlobalAttributes(ADIOS_FILE **infile, int ncid, DimensionMap& dimens
             free(adata);
         } else {
 			std::string token = a.substr(0, a.find(delimiter));
-			if (token!="" && vars_map.find(token)==vars_map.end() && var_defs.find(token)==var_defs.end()) 
-			{ // first encounter 
-            	string attname = token + "/__pio__/nctype";
-            	int asize;
-            	int *nctype;
-            	ADIOS_DATATYPES atype;
-            	adios_get_attr(infile[0], attname.c_str(), &atype, &asize, (void**)&nctype);
+			if (token!="" && vars_map.find(token)==vars_map.end()) 
+			{ 
+				if (var_att_map.find(token)==var_att_map.end()) 
+				{
+					// first encounter 
+           			string attname = token + "/__pio__/nctype";
+					processed_attrs[attname] = 1;
+           			int asize;
+           			int *nctype;
+           			ADIOS_DATATYPES atype;
+           			adios_get_attr(infile[0], attname.c_str(), &atype, &asize, (void**)&nctype);
 
-            	attname = token + "/__pio__/ndims";
-            	int *ndims;
-            	adios_get_attr(infile[0], attname.c_str(), &atype, &asize, (void**)&ndims);
+            		attname = token + "/__pio__/ndims";
+					processed_attrs[attname] = 1;
+            		int *ndims;
+            		adios_get_attr(infile[0], attname.c_str(), &atype, &asize, (void**)&ndims);
 
-            	char **dimnames = NULL;
-            	int dimids[MAX_NC_DIMS];
-            	if (*ndims)
-            	{
-                	attname = token + "/__pio__/dims";
-                	adios_get_attr(infile[0], attname.c_str(), &atype, &asize, (void**)&dimnames);
+            		char **dimnames = NULL;
+            		int dimids[MAX_NC_DIMS];
+            		if (*ndims)
+            		{
+              	 		attname = token + "/__pio__/dims";
+						processed_attrs[attname] = 1;
+						adios_get_attr(infile[0], attname.c_str(), &atype, &asize, (void**)&dimnames);
 
-                	for (int d=0; d < *ndims; d++)
-                    	dimids[d] = dimension_map[dimnames[d]].dimid;
-                }
-            	int varid;
-            	PIOc_def_var(ncid, token.c_str(), *nctype, *ndims, dimids, &varid);
-				var_defs[token] = 1; // mark the encounter, do not execute this again
+               			for (int d=0; d < *ndims; d++)
+                   			dimids[d] = dimension_map[dimnames[d]].dimid;
+               		}
+            		int varid;
+            		PIOc_def_var(ncid, token.c_str(), *nctype, *ndims, dimids, &varid);
+	           		bool timed = false;
+	           		var_att_map[token] = Variable{varid,timed,*nctype};
 
-            	free(nctype);
-            	free(ndims);
-            	free(dimnames);
+            		free(nctype);
+            		free(ndims);
+            		free(dimnames);
+				} else {
+					if (processed_attrs.find(a)==processed_attrs.end()) {
+						processed_attrs[a] = 1;
+						int asize;
+           				char *adata;
+           				ADIOS_DATATYPES atype;
+           				adios_get_attr(infile[0], a.c_str(), &atype, &asize, (void**)&adata);
+						nc_type piotype = PIOc_get_nctype_from_adios_type(atype);
+        				char *attname = ((char*)a.c_str())+token.length()+1;;
+        				int len = 1;
+        				if (atype == adios_string)
+            				len = strlen(adata);
+						int nc_varid = var_att_map[token].nc_varid;
+        				PIOc_put_att(ncid, nc_varid, attname, piotype, len, adata);
+        				free(adata);
+					}
+				}
 			}
 		}
     }
