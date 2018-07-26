@@ -16,9 +16,17 @@ extern "C"{
 
 namespace PIO_Util{
   namespace PIO_SDecomp_Util{
+      class SDecomp_regex_op;
       class SDecomp_regex_token{
         public:
           virtual std::string to_string(void ) const = 0;
+          virtual void convert_to_postfix(
+            std::stack<const SDecomp_regex_op *> &tok_stack,
+            std::vector<const SDecomp_regex_token *> &postfix_exp) const = 0;
+          virtual void eval_postfix(
+            std::stack<bool> &eval_stack,
+            int ioid, const std::string &fname,
+            const std::string &vname) const = 0;
           virtual ~SDecomp_regex_token() = 0;
       };
 
@@ -35,6 +43,13 @@ namespace PIO_Util{
         public:
           SDecomp_regex_op(const std::string &str);
           std::string to_string(void ) const;
+          void convert_to_postfix(
+            std::stack<const SDecomp_regex_op *> &tok_stack,
+            std::vector<const SDecomp_regex_token *> &postfix_exp) const;
+          void eval_postfix(
+            std::stack<bool> &eval_stack,
+            int ioid, const std::string &fname,
+            const std::string &vname) const;
           static bool parse_and_create_token(
                   std::string::const_iterator &begin,
                   std::string::const_iterator &end,
@@ -53,12 +68,20 @@ namespace PIO_Util{
           static SDecomp_regex_op_type to_type(const std::string &str);
           static std::string to_string(const SDecomp_regex_op_type &type);
           bool operator<(const SDecomp_regex_op &other) const;
+          bool operator==(const SDecomp_regex_op_type &type) const;
           SDecomp_regex_op_type type_;
       };
       class SDecomp_regex_item : public SDecomp_regex_token{
         public:
           SDecomp_regex_item(const std::string &str);
           std::string to_string(void ) const;
+          void convert_to_postfix(
+            std::stack<const SDecomp_regex_op *> &tok_stack,
+            std::vector<const SDecomp_regex_token *> &postfix_exp) const;
+          void eval_postfix(
+            std::stack<bool> &eval_stack,
+            int ioid, const std::string &fname,
+            const std::string &vname) const;
           static bool parse_and_create_token(
                   std::string::const_iterator &begin,
                   std::string::const_iterator &end,
@@ -128,6 +151,75 @@ namespace PIO_Util{
         type_ = to_type(op_str);
       }
 
+      void SDecomp_regex_op::convert_to_postfix(
+              std::stack<const SDecomp_regex_op *> &tok_stack,
+              std::vector<const SDecomp_regex_token *> &postfix_exp) const
+      {
+        const SDecomp_regex_op *tok = this;
+        if(*tok == LEFT_BRACKET){
+          tok_stack.push(tok);
+        }
+        else if(*tok == RIGHT_BRACKET){
+          assert(!tok_stack.empty());
+          while(!tok_stack.empty()){
+            const SDecomp_regex_op *top_elem = tok_stack.top();
+            if(*top_elem == LEFT_BRACKET){
+              tok_stack.pop();
+              break;
+            }
+            else{
+              postfix_exp.push_back(top_elem);
+              tok_stack.pop();
+            }
+          }
+        }
+        else{
+          while(!tok_stack.empty()){
+            const SDecomp_regex_op *top_elem = tok_stack.top();
+            if(*tok < *top_elem){
+              postfix_exp.push_back(top_elem);
+              tok_stack.pop();
+            }
+            else{
+              break;
+            }
+          }
+          tok_stack.push(tok);
+        }
+      }
+
+      void SDecomp_regex_op::eval_postfix(
+            std::stack<bool> &eval_stack,
+            int ioid, const std::string &fname,
+            const std::string &vname) const
+      {
+        const SDecomp_regex_op *tok = this;
+        if(*tok == LOGICAL_NOT){
+          assert(!eval_stack.empty());
+          bool val = eval_stack.top();
+          eval_stack.pop();
+          eval_stack.push(!val);
+        }
+        else if(*tok == LOGICAL_OR){
+          assert(!eval_stack.empty());
+          bool val1 = eval_stack.top();
+          eval_stack.pop();
+          assert(!eval_stack.empty());
+          bool val2 = eval_stack.top();
+          eval_stack.pop();
+          eval_stack.push(val1 || val2);
+        }
+        else if(*tok == LOGICAL_AND){
+          assert(!eval_stack.empty());
+          bool val1 = eval_stack.top();
+          eval_stack.pop();
+          assert(!eval_stack.empty());
+          bool val2 = eval_stack.top();
+          eval_stack.pop();
+          eval_stack.push(val1 && val2);
+        }
+      }
+
       bool SDecomp_regex_op::parse_and_create_token(
                     std::string::const_iterator &begin,
                     std::string::const_iterator &end,
@@ -166,10 +258,12 @@ namespace PIO_Util{
                 found_token = true;
                 tok = dc_op;
                 ++iter;
+                ++iter;
               }
               else if(dc_op == to_string(LOGICAL_AND)){
                 found_token = true;
                 tok = dc_op;
+                ++iter;
                 ++iter;
               }
             }
@@ -250,6 +344,12 @@ namespace PIO_Util{
         return (OP_PRIORITY[type_] < OP_PRIORITY[other.type_]);
       }
 
+      bool SDecomp_regex_op::operator==(
+        const SDecomp_regex_op::SDecomp_regex_op_type &type) const
+      {
+        return (type_ == type);
+      }
+
       SDecomp_regex_item::SDecomp_regex_item(const std::string &str):type_(INVALID_REGEX), ioid_(INVALID_IOID)
       {
         /* The strings for creating items are in the following form
@@ -268,6 +368,29 @@ namespace PIO_Util{
           /* FIXME: Use PIO exceptions */
           std::string error_str = std::string("Error parsing item string : ") + str;
           throw std::runtime_error(error_str);
+        }
+      }
+
+      void SDecomp_regex_item::convert_to_postfix(
+              std::stack<const SDecomp_regex_op *> &tok_stack,
+              std::vector<const SDecomp_regex_token *> &postfix_exp) const
+      {
+        postfix_exp.push_back(this);
+      }
+
+      void SDecomp_regex_item::eval_postfix(
+            std::stack<bool> &eval_stack,
+            int ioid, const std::string &fname,
+            const std::string &vname) const
+      {
+        if(type_ == ID_REGEX){
+          eval_stack.push(std::regex_match(std::to_string(ioid), rgx_));
+        }
+        else if(type_ == FILE_REGEX){
+          eval_stack.push(std::regex_match(fname, rgx_));
+        }
+        else if(type_ == VAR_REGEX){
+          eval_stack.push(std::regex_match(vname, rgx_));
         }
       }
 
@@ -457,7 +580,9 @@ namespace PIO_Util{
       ~PIO_save_decomp_regex();
     private:
       void tokenize_sdecomp_regex(const std::string &rgx); 
+      void convert_to_postfix(void );
       std::vector<PIO_SDecomp_Util::SDecomp_regex_token *> pregex_tokens_;
+      std::vector<const PIO_SDecomp_Util::SDecomp_regex_token *> postfix_exp_;
   };
 
   PIO_save_decomp_regex::PIO_save_decomp_regex(const std::string &str)
@@ -470,6 +595,11 @@ namespace PIO_Util{
        * names)
        */
       tokenize_sdecomp_regex(str);
+      /* Convert the tokenized string to a postfix expression
+       * The postfix expression is saved for evaluating the 
+       * regex
+       */
+      convert_to_postfix();
     }
     else{
       /* Do nothing
@@ -481,7 +611,18 @@ namespace PIO_Util{
   bool PIO_save_decomp_regex::matches(int ioid, const std::string &fname,
         const std::string &vname) const
   {
-    return false;
+    std::stack<bool> eval_stack;
+    for(std::vector<const PIO_SDecomp_Util::SDecomp_regex_token *>::const_iterator citer=
+          postfix_exp_.cbegin(); citer != postfix_exp_.cend(); ++citer){
+      (*citer)->eval_postfix(eval_stack, ioid, fname, vname);
+    }
+    if(eval_stack.empty()){
+      return true;
+    }
+    else{
+      assert(eval_stack.size() == 1);
+      return eval_stack.top();
+    }
   }
 
   PIO_save_decomp_regex::~PIO_save_decomp_regex()
@@ -522,6 +663,23 @@ namespace PIO_Util{
     std::cout << "\n";
   }
 
+  void PIO_save_decomp_regex::convert_to_postfix(void )
+  {
+    std::stack<const PIO_SDecomp_Util::SDecomp_regex_op *> tok_stack;
+    for(std::vector<PIO_SDecomp_Util::SDecomp_regex_token *>::const_iterator citer=
+          pregex_tokens_.cbegin(); citer != pregex_tokens_.cend(); ++citer){
+      (*citer)->convert_to_postfix(tok_stack, postfix_exp_);
+    }
+    while(!tok_stack.empty()){
+      postfix_exp_.push_back(tok_stack.top());
+      tok_stack.pop();
+    }
+    for(std::vector<const PIO_SDecomp_Util::SDecomp_regex_token *>::const_iterator citer =
+          postfix_exp_.cbegin(); citer != postfix_exp_.cend(); ++citer){
+      std::cout << (*citer)->to_string().c_str() << " ";
+    }
+    std::cout << "\n";
+  }
 } // namespace PIO_Util
 
 static PIO_Util::PIO_save_decomp_regex pio_sdecomp_regex(PIO_SAVE_DECOMPS_REGEX);
