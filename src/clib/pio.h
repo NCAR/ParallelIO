@@ -560,6 +560,13 @@ typedef struct io_desc_t
      * group. */
     MPI_Comm subset_comm;
 
+#if PIO_SAVE_DECOMPS
+    /* Indicates whether this iodesc has been saved to disk (the
+     * decomposition is dumped to disk)
+     */
+    bool is_saved;
+#endif
+
     /** Pointer to the next io_desc_t in the list. */
     struct io_desc_t *next;
 } io_desc_t;

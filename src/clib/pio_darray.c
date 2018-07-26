@@ -684,8 +684,8 @@ int PIOc_write_darray(int ncid, int varid, int ioid, PIO_Offset arraylen, void *
 #endif
 
 #if PIO_SAVE_DECOMPS
-    const int INVALID_IOID = -1;
-    if(pio_save_decomps_regex_match(INVALID_IOID, file->fname, file->varlist[varid].vname))
+    if(!(iodesc->is_saved) &&
+        pio_save_decomps_regex_match(ioid, file->fname, file->varlist[varid].vname))
     {
         char filename[PIO_MAX_NAME];
         ierr = pio_create_uniq_str(ios, iodesc, filename, PIO_MAX_NAME, "piodecomp", ".dat");
@@ -696,7 +696,7 @@ int PIOc_write_darray(int ncid, int varid, int ioid, PIO_Offset arraylen, void *
         }
         LOG((2, "Saving decomp map to %s", filename));
         PIOc_writemap(filename, ioid, iodesc->ndims, iodesc->dimlen, iodesc->maplen, iodesc->map, ios->my_comm);
-
+        iodesc->is_saved = true;
     }
 #endif
     /* Get var description. */

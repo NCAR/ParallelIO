@@ -730,6 +730,11 @@ int malloc_iodesc(iosystem_desc_t *ios, int piotype, int ndims,
     /* Set the swap memory settings to defaults for this IO system. */
     (*iodesc)->rearr_opts = ios->rearr_opts;
 
+#if PIO_SAVE_DECOMPS
+    /* The descriptor is not yet saved to disk */
+    (*iodesc)->is_saved = false;
+#endif
+
     return PIO_NOERR;
 }
 

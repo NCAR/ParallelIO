@@ -646,6 +646,7 @@ int PIOc_InitDecomp(int iosysid, int pio_type, int ndims, const int *gdimlen, in
         }
         LOG((2, "Saving decomp map to %s", filename));
         PIOc_writemap(filename, *ioidp, ndims, gdimlen, maplen, (PIO_Offset *)compmap, ios->my_comm);
+        iodesc->is_saved = true;
     }
 #endif
 
