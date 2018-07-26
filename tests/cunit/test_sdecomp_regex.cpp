@@ -194,6 +194,83 @@ int test_fmatch_regex(int wrank)
     return ret;
 }
 
+/* Test a regular expression to match a specfic ioid, variable and file name */
+int test_match_regex(int wrank)
+{
+    int ret = PIO_NOERR;
+    const std::string QUOTE("\"");
+    const std::string LEFT_BRACKET("(");
+    const std::string RIGHT_BRACKET(")");
+    const std::string LOGICAL_AND("&&");
+
+    const std::string ID_REG_PREFIX("ID=");
+    const std::string VAR_REG_PREFIX("VAR=");
+    const std::string FILE_REG_PREFIX("FILE=");
+
+    const int ID_TO_MATCH = 99;
+    const std::string VNAME_TO_MATCH("test_var2");
+    const std::string VNAME_REGEX(".*_var2");
+    const std::string FNAME_TO_MATCH("test_file3");
+    const std::string FNAME_REGEX(".*_file3");
+
+    std::vector<int> ioids = {-2, -1, 0, 1, 2, 3, 4, ID_TO_MATCH, 100, 1024, 4096};
+    std::vector<std::string> vnames = {
+                                          std::string("test_var1"),
+                                          VNAME_TO_MATCH,
+                                          std::string("test_var3")
+                                      };
+    PIO_Util::PIO_save_decomp_regex
+      test_regex(
+        LEFT_BRACKET +
+          ID_REG_PREFIX + QUOTE + std::to_string(ID_TO_MATCH) + QUOTE +
+        RIGHT_BRACKET +
+        LOGICAL_AND +
+        LEFT_BRACKET +
+          FILE_REG_PREFIX + QUOTE + FNAME_REGEX + QUOTE +
+        RIGHT_BRACKET +
+        LOGICAL_AND +
+        LEFT_BRACKET +
+          VAR_REG_PREFIX + QUOTE + VNAME_REGEX + QUOTE +
+        RIGHT_BRACKET
+        );
+    std::vector<std::string> fnames = {
+                                          std::string("test_file1"),
+                                          std::string("test_file2"),
+                                          FNAME_TO_MATCH,
+                                          std::string("test_file4")
+                                      };
+
+    for(std::vector<int>::const_iterator id_iter = ioids.cbegin();
+        id_iter != ioids.cend(); ++id_iter){
+      for(std::vector<std::string>::const_iterator var_iter = vnames.cbegin();
+          var_iter != vnames.cend(); ++var_iter){
+        for(std::vector<std::string>::const_iterator file_iter = fnames.cbegin();
+          file_iter != fnames.cend(); ++file_iter){
+          bool is_match = test_regex.matches(*id_iter, *file_iter, *var_iter);
+          if( (
+                (!is_match) &&
+                (*id_iter == ID_TO_MATCH) &&
+                (*var_iter == VNAME_TO_MATCH) &&
+                (*file_iter == FNAME_TO_MATCH)
+              ) ||
+              (
+                (is_match) &&
+                ( (*id_iter != ID_TO_MATCH) ||
+                  (*var_iter != VNAME_TO_MATCH) ||
+                  (*file_iter != FNAME_TO_MATCH)
+                )
+              ) ){
+            LOG_RANK0(wrank, "test_fmatch_regex failed for : ioid=%d, fname=%s, vname=%s\n", *id_iter, (*file_iter).c_str(), (*var_iter).c_str());
+            ret = PIO_EINTERNAL;
+            break;
+          }
+        }
+      }
+    }
+
+    return ret;
+}
+
 int test_driver(MPI_Comm comm, int wrank, int wsz, int *num_errors)
 {
     int nerrs = 0, ret = PIO_NOERR;
@@ -277,6 +354,22 @@ int test_driver(MPI_Comm comm, int wrank, int wsz, int *num_errors)
     }
     else{
         LOG_RANK0(wrank, "test_fmatch_regex() PASSED\n");
+    }
+
+    /* Test creating a regular expression to match an ioid, variable and file name */
+    try{
+      ret = test_match_regex(wrank);
+    }
+    catch(...){
+      ret = PIO_EINTERNAL;
+    }
+    if(ret != PIO_NOERR)
+    {
+        LOG_RANK0(wrank, "test_match_regex() FAILED, ret = %d\n", ret);
+        nerrs++;
+    }
+    else{
+        LOG_RANK0(wrank, "test_match_regex() PASSED\n");
     }
 
     *num_errors += nerrs;
