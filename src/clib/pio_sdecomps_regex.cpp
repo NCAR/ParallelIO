@@ -555,11 +555,13 @@ namespace PIO_Util{
       /* Make sure that we parsed at least one token - we are making progress */
       assert(parsed_next_token);
     }
+    /*
     for(std::vector<PIO_SDecomp_Util::SDecomp_regex_token *>::const_iterator citer =
           pregex_tokens_.cbegin(); citer != pregex_tokens_.cend(); ++citer){
       std::cout << (*citer)->to_string().c_str() << " ";
     }
     std::cout << "\n";
+    */
   }
 
   void PIO_save_decomp_regex::convert_to_postfix(void )
@@ -573,11 +575,13 @@ namespace PIO_Util{
       postfix_exp_.push_back(tok_stack.top());
       tok_stack.pop();
     }
+    /*
     for(std::vector<const PIO_SDecomp_Util::SDecomp_regex_token *>::const_iterator citer =
           postfix_exp_.cbegin(); citer != postfix_exp_.cend(); ++citer){
       std::cout << (*citer)->to_string().c_str() << " ";
     }
     std::cout << "\n";
+    */
   }
 } // namespace PIO_Util
 
