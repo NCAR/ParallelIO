@@ -61,6 +61,9 @@ namespace PIO_Util{
         type_ = to_type(op_str);
       }
 
+      /* Add current operator to postfix_exp based on information in the
+       * tok_stack, the stack of postfix operators
+       */
       void SDecomp_regex_op::convert_to_postfix(
               std::stack<const SDecomp_regex_op *> &tok_stack,
               std::vector<const SDecomp_regex_token *> &postfix_exp) const
@@ -98,6 +101,9 @@ namespace PIO_Util{
         }
       }
 
+      /* Evaluate the current operator using values in the eval
+       * stack and user-specified ioid, file/variable names
+       */
       void SDecomp_regex_op::eval_postfix(
             std::stack<bool> &eval_stack,
             int ioid, const std::string &fname,
@@ -264,7 +270,7 @@ namespace PIO_Util{
       {
         /* The strings for creating items are in the following form
          * REGEX_TYPE=REGEX_STRING
-         * e.g. ID=101, VAR="T*"
+         * e.g. ID="101", ID="1.*", VAR="T.*", FILE=".*cam.*"
          */
         std::regex item_rgx("[[:space:]]*(.+)[[:space:]]*=[[:space:]]*[\"](.+)[\"][[:space:]]*");
         std::smatch match;
@@ -379,9 +385,9 @@ namespace PIO_Util{
         str_ltrim(tok_end, end);
 
         /* Strings are of form <ID String> = "<ID Reg expression>"
-         * ID="101", ID="10*"
-         * VAR="T" , VAR="T*"
-         * FILE="*cam*"
+         * ID="101", ID="10.*"
+         * VAR="T" , VAR="T.*"
+         * FILE=".*cam.*"
          */
 
         /* ID string */
@@ -405,6 +411,9 @@ namespace PIO_Util{
         bool escape_next_ch = false;
         bool in_regex_char_group = false;
 
+        /* Note: we need to ignore all chars within a char group
+         * expression or that are explicitly escaped
+         */
         while(tok_end != end){
           std::string next_ch(tok_end, tok_end+1);
           if(escape_next_ch){
