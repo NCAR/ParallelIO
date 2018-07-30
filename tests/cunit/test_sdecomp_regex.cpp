@@ -271,6 +271,95 @@ int test_match_regex(int wrank)
     return ret;
 }
 
+/* Test a regular expression to match a specfic variable and file name */
+int test_match_regex2(int wrank)
+{
+    int ret = PIO_NOERR;
+    const std::string QUOTE("\"");
+    const std::string LEFT_BRACKET("(");
+    const std::string RIGHT_BRACKET(")");
+    const std::string LOGICAL_AND("&&");
+    const std::string LOGICAL_OR("||");
+
+    const std::string ID_REG_PREFIX("ID=");
+    const std::string VAR_REG_PREFIX("VAR=");
+    const std::string FILE_REG_PREFIX("FILE=");
+
+    const std::string V2_TO_MATCH("test_var2");
+    const std::string V2_REGEX(".*_var2");
+    const std::string F1_TO_MATCH("test_file1");
+    const std::string F1_REGEX(".*_file1.*");
+
+    const std::string V3_TO_MATCH("test_var3");
+    const std::string V3_REGEX(".*_var3");
+    const std::string F4_TO_MATCH("test_file4");
+    const std::string F4_REGEX(".*_file4.*");
+
+    std::vector<int> ioids = {-2, -1, 0, 1, 2, 3, 4, 99, 100, 1024, 4096};
+    std::vector<std::string> vnames = {
+                                          std::string("test_var1"),
+                                          V2_TO_MATCH,
+                                          V3_TO_MATCH,
+                                          std::string("test_var4")
+                                      };
+    std::vector<std::string> fnames = {
+                                          F1_TO_MATCH,
+                                          std::string("test_file2"),
+                                          std::string("test_file3"),
+                                          F4_TO_MATCH
+                                      };
+
+    /* Match V2 in F1 and V3 in F4 */
+    PIO_Util::PIO_save_decomp_regex
+      test_regex(
+        LEFT_BRACKET +
+          LEFT_BRACKET +
+            FILE_REG_PREFIX + QUOTE + F1_REGEX + QUOTE +
+          RIGHT_BRACKET +
+          LOGICAL_AND +
+          LEFT_BRACKET +
+            VAR_REG_PREFIX + QUOTE + V2_REGEX + QUOTE +
+          RIGHT_BRACKET +
+        RIGHT_BRACKET +
+          LOGICAL_OR +
+        LEFT_BRACKET +
+          LEFT_BRACKET +
+            FILE_REG_PREFIX + QUOTE + F4_REGEX + QUOTE +
+          RIGHT_BRACKET +
+          LOGICAL_AND +
+          LEFT_BRACKET +
+            VAR_REG_PREFIX + QUOTE + V3_REGEX + QUOTE +
+          RIGHT_BRACKET +
+        RIGHT_BRACKET
+        );
+    for(std::vector<int>::const_iterator id_iter = ioids.cbegin();
+        id_iter != ioids.cend(); ++id_iter){
+      for(std::vector<std::string>::const_iterator var_iter = vnames.cbegin();
+          var_iter != vnames.cend(); ++var_iter){
+        for(std::vector<std::string>::const_iterator file_iter = fnames.cbegin();
+          file_iter != fnames.cend(); ++file_iter){
+          bool is_match = test_regex.matches(*id_iter, *file_iter, *var_iter);
+          bool exp_match = 
+                          (
+                            (*var_iter == V2_TO_MATCH) &&
+                            (*file_iter == F1_TO_MATCH)
+                          ) ||
+                          (
+                            (*var_iter == V3_TO_MATCH) &&
+                            (*file_iter == F4_TO_MATCH)
+                          );
+          if((!is_match && exp_match) || (is_match && !exp_match)){
+            LOG_RANK0(wrank, "test_fmatch_regex failed for : ioid=%d, fname=%s, vname=%s\n", *id_iter, (*file_iter).c_str(), (*var_iter).c_str());
+            ret = PIO_EINTERNAL;
+            break;
+          }
+        }
+      }
+    }
+
+    return ret;
+}
+
 int test_driver(MPI_Comm comm, int wrank, int wsz, int *num_errors)
 {
     int nerrs = 0, ret = PIO_NOERR;
@@ -370,6 +459,22 @@ int test_driver(MPI_Comm comm, int wrank, int wsz, int *num_errors)
     }
     else{
         LOG_RANK0(wrank, "test_match_regex() PASSED\n");
+    }
+
+    /* Test creating a regular expression to match a variable and file name */
+    try{
+      ret = test_match_regex2(wrank);
+    }
+    catch(...){
+      ret = PIO_EINTERNAL;
+    }
+    if(ret != PIO_NOERR)
+    {
+        LOG_RANK0(wrank, "test_match_regex2() FAILED, ret = %d\n", ret);
+        nerrs++;
+    }
+    else{
+        LOG_RANK0(wrank, "test_match_regex2() PASSED\n");
     }
 
     *num_errors += nerrs;
