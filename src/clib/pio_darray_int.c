@@ -75,13 +75,13 @@ int compute_buffer_init(iosystem_desc_t *ios)
 
 /** 
  * Fill start/count arrays for write_darray_multi_par(). This is an
- * internal funciton.
+ * internal function.
  * 
  * @param ndims the number of dims in the decomposition.
+ * @param dimlen the lengths of dims in the decomposition.
  * @param fndims the number of dims in the file.
  * @param vdesc pointer to the var_desc_t info.
  * @param region pointer to a region.
- * @param frame array of record values.
  * @param start an already-allocated array which gets the start
  * values.
  * @param count an already-allocated array which gets the count
@@ -90,9 +90,8 @@ int compute_buffer_init(iosystem_desc_t *ios)
  * @ingroup PIO_write_darray
  * @author Ed Hartnett
  */
-int find_start_count(int ndims, int fndims, var_desc_t *vdesc,
-                     io_region *region, const int *frame, size_t *start,
-                     size_t *count)
+int find_start_count(int ndims, const int *dimlen, int fndims, var_desc_t *vdesc,
+                     io_region *region, size_t *start, size_t *count)
 {
     /* Init start/count arrays to zero. */
     for (int i = 0; i < fndims; i++)
@@ -103,42 +102,44 @@ int find_start_count(int ndims, int fndims, var_desc_t *vdesc,
 
     if (region)
     {
-        if (vdesc->record >= 0)
+        /* Allow extra outermost dimensions in the decomposition */
+        int num_extra_dims = (vdesc->record >= 0 && fndims > 1)? (ndims - (fndims - 1)) : (ndims - fndims);
+        pioassert(num_extra_dims >= 0, "Unexpected num_extra_dims", __FILE__, __LINE__);
+        if (num_extra_dims > 0)
+        {
+            for (int d = 0; d < num_extra_dims; d++)
+                pioassert(dimlen[d] == 1, "Extra outermost dimensions must have lengths of 1",
+                          __FILE__, __LINE__);
+        }
+
+        if (vdesc->record >= 0 && fndims > 1)
         {
             /* This is a record based multidimensional
              * array. Figure out start/count for all but the
              * record dimension (dimid 0). */
-            for (int i = fndims - ndims; i < fndims; i++)
+            for (int i = 1; i < fndims; i++)
             {
-                start[i] = region->start[i - (fndims - ndims)];
-                count[i] = region->count[i - (fndims - ndims)];
+                start[i] = region->start[num_extra_dims + (i - 1)];
+                count[i] = region->count[num_extra_dims + (i - 1)];
             }
 
-            /* Now figure out start/count for record dimension. */
-            if (fndims > 1 && ndims < fndims && count[1] > 0)
-            {
+            /* Set count for record dimension (start cannot be determined so far). */
+            if (count[1] > 0)
                 count[0] = 1;
-                start[0] = frame[0];
-            }
-            else if (fndims == ndims)
-            {
-                /* ??? */
-                start[0] += vdesc->record;
-            }
         }
         else
         {
             /* This is a non record variable. */
-            for (int i = 0; i < ndims; i++)
+            for (int i = 0; i < fndims; i++)
             {
-                start[i] = region->start[i];
-                count[i] = region->count[i];
+                start[i] = region->start[num_extra_dims + i];
+                count[i] = region->count[num_extra_dims + i];
             }
         }
 
 #if PIO_ENABLE_LOGGING
         /* Log arrays for debug purposes. */
-        for (int i = 0; i < ndims; i++)
+        for (int i = 0; i < fndims; i++)
             LOG((3, "start[%d] = %d count[%d] = %d", i, start[i], i, count[i]));
 #endif /* PIO_ENABLE_LOGGING */
     }
@@ -214,7 +215,7 @@ int write_darray_multi_par(file_desc_t *file, int nvars, int fndims, const int *
         for (int regioncnt = 0; regioncnt < num_regions; regioncnt++)
         {
             /* Fill the start/count arrays. */
-            if ((ierr = find_start_count(iodesc->ndims, fndims, vdesc, region, frame, start, count)))
+            if ((ierr = find_start_count(iodesc->ndims, iodesc->dimlen, fndims, vdesc, region, start, count)))
                 return pio_err(ios, file, ierr, __FILE__, __LINE__);            
 
             /* IO tasks will run the netCDF/pnetcdf functions to write the data. */
@@ -225,9 +226,8 @@ int write_darray_multi_par(file_desc_t *file, int nvars, int fndims, const int *
                 /* For each variable to be written. */
                 for (int nv = 0; nv < nvars; nv++)
                 {
-                    /* Set the start of the record dimension. (Hasn't
-                     * this already been set above ???) */
-                    if (vdesc->record >= 0 && ndims < fndims)
+                    /* Set the start of the record dimension. */
+                    if (vdesc->record >= 0 && fndims > 1)
                         start[0] = frame[nv];
 
                     /* If there is data for this region, get a pointer to it. */
@@ -329,9 +329,9 @@ int write_darray_multi_par(file_desc_t *file, int nvars, int fndims, const int *
                         /* Get the var info. */
                         vdesc = file->varlist + varids[nv];
 
-                        /* If this is a record var, set the start for
+                        /* If this is a record (or quasi-record) var, set the start for
                          * the record dimension. */
-                        if (vdesc->record >= 0 && ndims < fndims)
+                        if (vdesc->record >= 0 && fndims > 1)
                             for (int rc = 0; rc < rrcnt; rc++)
                                 startlist[rc][0] = frame[nv];
 
@@ -402,6 +402,7 @@ int write_darray_multi_par(file_desc_t *file, int nvars, int fndims, const int *
  * @param maxregions the number of regions in the list.
  * @param fndims the number of dimensions in the file.
  * @param iodesc_ndims the number of dimensions in the decomposition.
+ * @param dimlen the lengths of dimensions in the decomposition.
  * @param vdesc pointer to an array of var_desc_t for the vars being
  * written.
  * @param tmp_start pointer to an already allocaed array of length
@@ -415,8 +416,8 @@ int write_darray_multi_par(file_desc_t *file, int nvars, int fndims, const int *
  * @author Jim Edwards, Ed Hartnett
  **/
 int find_all_start_count(io_region *region, int maxregions, int fndims,
-                         int iodesc_ndims, var_desc_t *vdesc, size_t *tmp_start,
-                         size_t *tmp_count)
+                         int iodesc_ndims, const int *dimlen, var_desc_t *vdesc,
+                         size_t *tmp_start, size_t *tmp_count)
 {
     /* Check inputs. */
     pioassert(maxregions >= 0 && fndims > 0 && iodesc_ndims >= 0 && vdesc &&
@@ -434,15 +435,25 @@ int find_all_start_count(io_region *region, int maxregions, int fndims,
 
         if (region)
         {
-            if (vdesc->record >= 0)
+            /* Allow extra outermost dimensions in the decomposition */
+            int num_extra_dims = (vdesc->record >= 0 && fndims > 1)? (iodesc_ndims - (fndims - 1)) : (iodesc_ndims - fndims);
+            pioassert(num_extra_dims >= 0, "Unexpected num_extra_dims", __FILE__, __LINE__);
+            if (num_extra_dims > 0)
+            {
+                for (int d = 0; d < num_extra_dims; d++)
+                    pioassert(dimlen[d] == 1, "Extra outermost dimensions must have lengths of 1",
+                              __FILE__, __LINE__);
+            }
+
+            if (vdesc->record >= 0 && fndims > 1)
             {
                 /* This is a record based multidimensional
                  * array. Copy start/count for non-record
                  * dimensions. */
-                for (int i = fndims - iodesc_ndims; i < fndims; i++)
+                for (int i = 1; i < fndims; i++)
                 {
-                    tmp_start[i + r * fndims] = region->start[i - (fndims - iodesc_ndims)];
-                    tmp_count[i + r * fndims] = region->count[i - (fndims - iodesc_ndims)];
+                    tmp_start[i + r * fndims] = region->start[num_extra_dims + (i - 1)];
+                    tmp_count[i + r * fndims] = region->count[num_extra_dims + (i - 1)];
                     LOG((3, "tmp_start[%d] = %d tmp_count[%d] = %d", i + r * fndims,
                          tmp_start[i + r * fndims], i + r * fndims,
                          tmp_count[i + r * fndims]));
@@ -451,10 +462,10 @@ int find_all_start_count(io_region *region, int maxregions, int fndims,
             else
             {
                 /* This is not a record based multidimensional array. */
-                for (int i = 0; i < iodesc_ndims; i++)
+                for (int i = 0; i < fndims; i++)
                 {
-                    tmp_start[i + r * fndims] = region->start[i];
-                    tmp_count[i + r * fndims] = region->count[i];
+                    tmp_start[i + r * fndims] = region->start[num_extra_dims + i];
+                    tmp_count[i + r * fndims] = region->count[num_extra_dims + i];
                     LOG((3, "tmp_start[%d] = %d tmp_count[%d] = %d", i + r * fndims,
                          tmp_start[i + r * fndims], i + r * fndims,
                          tmp_count[i + r * fndims]));
@@ -650,24 +661,20 @@ int recv_and_write_data(file_desc_t *file, const int *varids, const int *frame,
                 for (int nv = 0; nv < nvars; nv++)
                 {
                     LOG((3, "writing buffer var %d", nv));
-                    vdesc = file->varlist + varids[0];
+                    vdesc = file->varlist + varids[nv];
 
                     /* Get a pointer to the correct part of the buffer. */
                     bufptr = (void *)((char *)iobuf + iodesc->mpitype_size * (nv * rlen + loffset));
 
-                    /* If this var has an unlimited dim, set
+                    /* If this var has a record dim, set
                      * the start on that dim to the frame
                      * value for this variable. */
-                    if (vdesc->record >= 0)
+                    if (vdesc->record >= 0 && fndims > 1)
                     {
-                        if (fndims > 1 && iodesc->ndims < fndims && count[1] > 0)
+                        if (count[1] > 0)
                         {
                             count[0] = 1;
                             start[0] = frame[nv];
-                        }
-                        else if (fndims == iodesc->ndims)
-                        {
-                            start[0] += vdesc->record;
                         }
                     }
 
@@ -804,7 +811,7 @@ int write_darray_multi_serial(file_desc_t *file, int nvars, int fndims, const in
 
         /* Fill the tmp_start and tmp_count arrays, which contain the
          * start and count arrays for all regions. */
-        if ((ierr = find_all_start_count(region, num_regions, fndims, iodesc->ndims, vdesc,
+        if ((ierr = find_all_start_count(region, num_regions, fndims, iodesc->ndims, iodesc->dimlen, vdesc,
                                          tmp_start, tmp_count)))
             return pio_err(ios, file, ierr, __FILE__, __LINE__);
 
@@ -879,10 +886,6 @@ int pio_read_darray_nc(file_desc_t *file, int fndims, io_desc_t *iodesc, int vid
     /* Get the number of dimensions in the decomposition. */
     ndims = iodesc->ndims;
 
-    /* Is this a non-record var? */
-    if (fndims == ndims)
-        vdesc->record = -1;
-
     /* IO procs will actially read the data. */
     if (ios->ioproc)
     {
@@ -900,10 +903,10 @@ int pio_read_darray_nc(file_desc_t *file, int fndims, io_desc_t *iodesc, int vid
            the mpitype. */
         region = iodesc->firstregion;
 
-        /* ??? */
+        /* This is a record (or quasi-record) var. If the record
+           number has not been set yet, set it to 0 by default */
         if (fndims > ndims)
         {
-            ndims++;
             if (vdesc->record < 0)
                 vdesc->record = 0;
         }
@@ -932,16 +935,26 @@ int pio_read_darray_nc(file_desc_t *file, int fndims, io_desc_t *iodesc, int vid
 
                 LOG((2, "%d %d %d", iodesc->llen - region->loffset, iodesc->llen, region->loffset));
 
+                /* Allow extra outermost dimensions in the decomposition */
+                int num_extra_dims = (vdesc->record >= 0 && fndims > 1)? (ndims - (fndims - 1)) : (ndims - fndims);
+                pioassert(num_extra_dims >= 0, "Unexpected num_extra_dims", __FILE__, __LINE__);
+                if (num_extra_dims > 0)
+                {
+                    for (int d = 0; d < num_extra_dims; d++)
+                        pioassert(iodesc->dimlen[d] == 1, "Extra outermost dimensions must have lengths of 1",
+                                  __FILE__, __LINE__);
+                }
+
                 /* Get the start/count arrays. */
                 if (vdesc->record >= 0 && fndims > 1)
                 {
-                    /* This is a record var. The unlimited dimension
+                    /* This is a record (or quasi-record) var. The record dimension
                      * (0) is handled specially. */
                     start[0] = vdesc->record;
-                    for (int i = 1; i < ndims; i++)
+                    for (int i = 1; i < fndims; i++)
                     {
-                        start[i] = region->start[i-1];
-                        count[i] = region->count[i-1];
+                        start[i] = region->start[num_extra_dims + (i - 1)];
+                        count[i] = region->count[num_extra_dims + (i - 1)];
                     }
 
                     /* Read one record. */
@@ -951,10 +964,10 @@ int pio_read_darray_nc(file_desc_t *file, int fndims, io_desc_t *iodesc, int vid
                 else
                 {
                     /* Non-time dependent array */
-                    for (int i = 0; i < ndims; i++)
+                    for (int i = 0; i < fndims; i++)
                     {
-                        start[i] = region->start[i];
-                        count[i] = region->count[i];
+                        start[i] = region->start[num_extra_dims + i];
+                        count[i] = region->count[num_extra_dims + i];
                     }
                 }
             }
@@ -1114,10 +1127,6 @@ int pio_read_darray_nc_serial(file_desc_t *file, int fndims, io_desc_t *iodesc, 
     /* Get the number of dims in our decomposition. */
     ndims = iodesc->ndims;
 
-    /* Is this a non-record var? */
-    if (fndims == ndims)
-        vdesc->record = -1;
-
     if (ios->ioproc)
     {
         io_region *region;
@@ -1133,6 +1142,8 @@ int pio_read_darray_nc_serial(file_desc_t *file, int fndims, io_desc_t *iodesc, 
            the mpitype. */
         region = iodesc->firstregion;
 
+        /* This is a record (or quasi-record) var. If the record
+           number has not been set yet, set it to 0 by default */
         if (fndims > ndims)
         {
             if (vdesc->record < 0)
@@ -1154,16 +1165,26 @@ int pio_read_darray_nc_serial(file_desc_t *file, int fndims, io_desc_t *iodesc, 
             }
             else
             {
+                /* Allow extra outermost dimensions in the decomposition */
+                int num_extra_dims = (vdesc->record >= 0 && fndims > 1)? (ndims - (fndims - 1)) : (ndims - fndims);
+                pioassert(num_extra_dims >= 0, "Unexpected num_extra_dims", __FILE__, __LINE__);
+                if (num_extra_dims > 0)
+                {
+                    for (int d = 0; d < num_extra_dims; d++)
+                        pioassert(iodesc->dimlen[d] == 1, "Extra outermost dimensions must have lengths of 1",
+                                  __FILE__, __LINE__);
+                }
+
                 if (vdesc->record >= 0 && fndims > 1)
                 {
-                    /* This is a record var. Find start for record dims. */
+                    /* This is a record (or quasi-record) var. Find start for record dims. */
                     tmp_start[regioncnt * fndims] = vdesc->record;
 
                     /* Find start/count for all non-record dims. */
                     for (int i = 1; i < fndims; i++)
                     {
-                        tmp_start[i + regioncnt * fndims] = region->start[i - 1];
-                        tmp_count[i + regioncnt * fndims] = region->count[i - 1];
+                        tmp_start[i + regioncnt * fndims] = region->start[num_extra_dims + (i - 1)];
+                        tmp_count[i + regioncnt * fndims] = region->count[num_extra_dims + (i - 1)];
                     }
 
                     /* Set count for record dimension. */
@@ -1175,8 +1196,8 @@ int pio_read_darray_nc_serial(file_desc_t *file, int fndims, io_desc_t *iodesc, 
                     /* Non-time dependent array */
                     for (int i = 0; i < fndims; i++)
                     {
-                        tmp_start[i + regioncnt * fndims] = region->start[i];
-                        tmp_count[i + regioncnt * fndims] = region->count[i];
+                        tmp_start[i + regioncnt * fndims] = region->start[num_extra_dims + i];
+                        tmp_count[i + regioncnt * fndims] = region->count[num_extra_dims + i];
                     }
                 }
             }

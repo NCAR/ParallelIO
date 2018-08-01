@@ -30,6 +30,7 @@ SET(GENERATED_SRCS pio_file_simple_tests.F90
   pio_decomp_frame_tests.F90
   pio_decomp_fillval.F90
   pio_decomp_fillval2.F90
+  pio_decomp_extra_dims.F90
   pio_iosystem_tests.F90
   pio_iosystem_tests2.F90
   pio_iosystem_tests3.F90)
@@ -828,6 +829,25 @@ if (PIO_USE_MPISERIAL)
 else ()
   add_mpi_test(pio_decomp_fillval2
     EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_fillval2
+    NUMPROCS 4
+    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
+endif ()
+
+#===== pio_decomp_extra_dims =====
+add_executable (pio_decomp_extra_dims EXCLUDE_FROM_ALL
+  pio_decomp_extra_dims.F90
+  ${CMAKE_CURRENT_SOURCE_DIR}/util/pio_tutil.F90)
+target_link_libraries (pio_decomp_extra_dims piof)
+add_dependencies (tests pio_decomp_extra_dims)
+
+if (PIO_USE_MPISERIAL)
+  add_test(NAME pio_decomp_extra_dims
+    COMMAND pio_decomp_extra_dims)
+  set_tests_properties(pio_decomp_extra_dims
+    PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
+else ()
+  add_mpi_test(pio_decomp_extra_dims
+    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_extra_dims
     NUMPROCS 4
     TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 endif ()
