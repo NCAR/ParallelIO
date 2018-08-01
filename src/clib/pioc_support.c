@@ -2403,7 +2403,7 @@ int pioc_change_def(int ncid, int is_enddef)
  * Check whether an IO type is valid for the build.
  *
  * @param iotype the IO type to check
- * @returns 0 if valid, non-zero otherwise.
+ * @returns 0 if not valid, non-zero otherwise.
  */
 int iotype_is_valid(int iotype)
 {
@@ -2421,9 +2421,9 @@ int iotype_is_valid(int iotype)
 #endif /* _NETCDF4 */
 
     /* Some builds include pnetcdf. */
+#ifdef _PNETCDF
     if (iotype == PIO_IOTYPE_PNETCDF)
         ret++;
-#ifdef _PNETCDF
 #endif /* _PNETCDF */
 
     return ret;
