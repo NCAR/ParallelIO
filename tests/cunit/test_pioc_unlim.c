@@ -132,6 +132,7 @@ int create_test_file(int iosysid, int ioid, int iotype, int my_rank, int *ncid, 
 int run_multiple_unlim_test(int iosysid, int ioid, int iotype, int my_rank,
                             MPI_Comm test_comm)
 {
+#ifdef _NETCDF4
 #define UDIM1_NAME "unlimited1"
 #define UDIM2_NAME "unlimited2"
 #define NUM_UNLIM_DIMS 2
@@ -231,6 +232,7 @@ int run_multiple_unlim_test(int iosysid, int ioid, int iotype, int my_rank,
     if (PIOc_openfile2(iosysid, &ncid, &iotype, NETCDF4_UNLIM_FILE_NAME,
                        0) != PIO_EINVAL)
         ERR(ERR_WRONG);
+#endif /* _NETCDF4 */
 
     return PIO_NOERR;
 }

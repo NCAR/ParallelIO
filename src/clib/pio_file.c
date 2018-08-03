@@ -246,10 +246,12 @@ int PIOc_closefile(int ncid)
             break;
         case PIO_IOTYPE_NETCDF4C:
 #endif
+#ifdef _NETCDF
         case PIO_IOTYPE_NETCDF:
             if (ios->io_rank == 0)
                 ierr = nc_close(file->fh);
             break;
+#endif
 #ifdef _PNETCDF
         case PIO_IOTYPE_PNETCDF:
             if ((file->mode & PIO_WRITE)){
@@ -325,7 +327,11 @@ int PIOc_deletefile(int iosysid, const char *filename)
         mpierr = MPI_Barrier(ios->io_comm);
 
         if (!mpierr && ios->io_rank == 0)
+#ifdef _NETCDF
              ierr = nc_delete(filename);
+#else /* Assume that _PNETCDF is defined. */
+             ierr = ncmpi_delete(filename, MPI_INFO_NULL);
+#endif
 
         if (!mpierr)
             mpierr = MPI_Barrier(ios->io_comm);
@@ -430,10 +436,12 @@ int PIOc_sync(int ncid)
                 break;
             case PIO_IOTYPE_NETCDF4C:
 #endif
+#ifdef _NETCDF
             case PIO_IOTYPE_NETCDF:
                 if (ios->io_rank == 0)
                     ierr = nc_sync(file->fh);
                 break;
+#endif
 #ifdef _PNETCDF
             case PIO_IOTYPE_PNETCDF:
                 flush_output_buffer(file, true, 0);
