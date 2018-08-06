@@ -1205,12 +1205,13 @@ int PIOc_iotype_available(int iotype)
     case PIO_IOTYPE_NETCDF4C:
         return 1;
 #endif
+#ifdef _NETCDF
     case PIO_IOTYPE_NETCDF:
         return 1;
+#endif
 #ifdef _PNETCDF
     case PIO_IOTYPE_PNETCDF:
         return 1;
-        break;
 #endif
     default:
         return 0;

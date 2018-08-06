@@ -74,20 +74,29 @@ int PIOc_open(int iosysid, const char *path, int mode, int *ncidp)
 
     LOG((1, "PIOc_open iosysid = %d path = %s mode = %x", iosysid, path, mode));
 
+    /* Set the default iotype. */
+#ifdef _NETCDF
+    iotype = PIO_IOTYPE_NETCDF;
+#else /* Assume that _PNETCDF is defined. */
+    iotype = PIO_IOTYPE_PNETCDF;
+#endif
+
     /* Figure out the iotype. */
     if (mode & NC_NETCDF4)
     {
+#ifdef _NETCDF4
         if (mode & NC_MPIIO || mode & NC_MPIPOSIX)
             iotype = PIO_IOTYPE_NETCDF4P;
         else
             iotype = PIO_IOTYPE_NETCDF4C;
+#endif
     }
     else
     {
+#ifdef _PNETCDF
         if (mode & NC_PNETCDF || mode & NC_MPIIO)
             iotype = PIO_IOTYPE_PNETCDF;
-        else
-            iotype = PIO_IOTYPE_NETCDF;
+#endif
     }
 
     /* Open the file. If the open fails, do not retry as serial
@@ -170,20 +179,29 @@ int PIOc_create(int iosysid, const char *filename, int cmode, int *ncidp)
 {
     int iotype;            /* The PIO IO type. */
 
+    /* Set the default iotype. */
+#ifdef _NETCDF
+    iotype = PIO_IOTYPE_NETCDF;
+#else /* Assume that _PNETCDF is defined. */
+    iotype = PIO_IOTYPE_PNETCDF;
+#endif
+
     /* Figure out the iotype. */
     if (cmode & NC_NETCDF4)
     {
+#ifdef _NETCDF4
         if (cmode & NC_MPIIO || cmode & NC_MPIPOSIX)
             iotype = PIO_IOTYPE_NETCDF4P;
         else
             iotype = PIO_IOTYPE_NETCDF4C;
+#endif
     }
     else
     {
+#ifdef _PNETCDF
         if (cmode & NC_PNETCDF || cmode & NC_MPIIO)
             iotype = PIO_IOTYPE_PNETCDF;
-        else
-            iotype = PIO_IOTYPE_NETCDF;
+#endif
     }
 
     return PIOc_createfile_int(iosysid, ncidp, &iotype, filename, cmode);

@@ -2418,9 +2418,11 @@ int iotype_is_valid(int iotype)
     /* Assume it's not valid. */
     int ret = 0;
 
-    /* All builds include netCDF. */
+    /* Some builds include netCDF. */
+#ifdef _NETCDF
     if (iotype == PIO_IOTYPE_NETCDF)
         ret++;
+#endif /* _NETCDF */
 
     /* Some builds include netCDF-4. */
 #ifdef _NETCDF4

@@ -498,9 +498,14 @@ int test_iotypes(int my_rank)
     if (PIOc_iotype_available(1000))
         return ERR_WRONG;
 
-    /* NetCDF is always present. */
+    /* NetCDF may or may not be present. */
+#ifdef _NETCDF
     if (!PIOc_iotype_available(PIO_IOTYPE_NETCDF))
         return ERR_WRONG;
+#else
+    if (PIOc_iotype_available(PIO_IOTYPE_NETCDF))
+        return ERR_WRONG;
+#endif /* _NETCDF */
 
     /* Pnetcdf may or may not be present. */
 #ifdef _PNETCDF
@@ -1644,7 +1649,11 @@ int test_decomp_internal(int my_test_size, int my_rank, int iosysid, int dim_len
 
     /* This will be our file name for writing out decompositions. */
     sprintf(filename, "decomp_%s_rank_%d_async_%d.txt", TEST_NAME, my_rank, async);
+#ifdef _NETCDF
     sprintf(nc_filename, "nc_decomp_internal_%s_rank_%d_async_%d.nc", TEST_NAME, my_rank, async);
+#else /* Assume that _PNETCDF is defined. */
+    sprintf(nc_filename, "ncmpi_decomp_internal_%s_async_%d.nc", TEST_NAME, async);
+#endif
 
     /* Decompose the data over the tasks. */
     if ((ret = create_decomposition(my_test_size, my_rank, iosysid, dim_len, &ioid)))
@@ -1831,7 +1840,11 @@ int test_decomp_public(int my_test_size, int my_rank, int iosysid, int dim_len,
     int ret;
 
     /* This will be our file name for writing out decompositions. */
+#ifdef _NETCDF
     sprintf(nc_filename, "nc_decomp_%s_rank_%d_async_%d.nc", TEST_NAME, my_rank, async);
+#else /* Assume that _PNETCDF is defined. */
+    sprintf(nc_filename, "ncmpi_decomp_%s_async_%d.nc", TEST_NAME, async);
+#endif
 
     /* Decompose the data over the tasks. */
     if ((ret = create_decomposition(my_test_size, my_rank, iosysid, dim_len, &ioid)))
@@ -1977,7 +1990,11 @@ int test_decomp_public_2(int my_test_size, int my_rank, int iosysid, int dim_len
     int ret;
 
     /* This will be our file name for writing out decompositions. */
+#ifdef _NETCDF
     sprintf(nc_filename, "nc_decomp_%s_rank_%d_async_%d.nc", TEST_NAME, my_rank, async);
+#else /* Assume that _PNETCDF is defined. */
+    sprintf(nc_filename, "ncmpi_decomp_%s_async_%d.nc", TEST_NAME, async);
+#endif
 
     /* Decompose the data over the tasks. */
     if ((ret = create_decomposition(my_test_size, my_rank, iosysid, dim_len, &ioid)))

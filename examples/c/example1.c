@@ -333,7 +333,9 @@ int check_file(int ntasks, char *filename) {
 #ifdef _PNETCDF
         format[num_flavors++] = PIO_IOTYPE_PNETCDF;
 #endif
+#ifdef _NETCDF
         format[num_flavors++] = PIO_IOTYPE_NETCDF;
+#endif
 #ifdef _NETCDF4
         format[num_flavors++] = PIO_IOTYPE_NETCDF4C;
         format[num_flavors++] = PIO_IOTYPE_NETCDF4P;

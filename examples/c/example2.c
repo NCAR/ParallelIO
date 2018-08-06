@@ -526,6 +526,9 @@ int main(int argc, char* argv[])
      * available ways. */
     for (int fmt = 0; fmt < NUM_NETCDF_FLAVORS; fmt++) 
     {
+        if (PIOc_iotype_available(format[fmt]) == 0)
+            continue;
+
 #ifdef HAVE_MPE
 	/* Log with MPE that we are starting CREATE. */
 	if ((ret = MPE_Log_event(event_num[START][CREATE_PNETCDF+fmt], 0, "start create")))
