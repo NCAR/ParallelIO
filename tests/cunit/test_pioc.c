@@ -906,13 +906,13 @@ int test_names(int iosysid, int num_flavors, int *flavor, int my_rank,
             return ERR_WRONG;
         if (PIOc_setframe(ncid, -1, 0) != PIO_EINVAL)
             return ERR_WRONG;
-        if (PIOc_setframe(ncid, NC_MAX_VARS + 1, 0) != PIO_EINVAL)
+        if (PIOc_setframe(ncid, PIO_MAX_VARS + 1, 0) != PIO_EINVAL)
             return ERR_WRONG;
         if (PIOc_advanceframe(ncid + TEST_VAL_42, 0) != PIO_EBADID)
             return ERR_WRONG;
         if (PIOc_advanceframe(ncid, -1) != PIO_EINVAL)
             return ERR_WRONG;
-        if (PIOc_advanceframe(ncid, NC_MAX_VARS + 1) != PIO_EINVAL)
+        if (PIOc_advanceframe(ncid, PIO_MAX_VARS + 1) != PIO_EINVAL)
             return ERR_WRONG;
 
         /* Check the dimension names. */
@@ -1642,8 +1642,8 @@ int test_decomp_internal(int my_test_size, int my_rank, int iosysid, int dim_len
                          MPI_Comm test_comm, int async)
 {
     int ioid;
-    char filename[NC_MAX_NAME + 1];    /* Test decomp filename. */
-    char nc_filename[NC_MAX_NAME + 1]; /* Test decomp filename (netcdf version). */
+    char filename[PIO_MAX_NAME + 1];    /* Test decomp filename. */
+    char nc_filename[PIO_MAX_NAME + 1]; /* Test decomp filename (netcdf version). */
     iosystem_desc_t *ios; /* IO system info. */
     int ret;
 
@@ -1836,7 +1836,7 @@ int test_decomp_public(int my_test_size, int my_rank, int iosysid, int dim_len,
                        MPI_Comm test_comm, int async)
 {
     int ioid;
-    char nc_filename[NC_MAX_NAME + 1]; /* Test decomp filename (netcdf version). */
+    char nc_filename[PIO_MAX_NAME + 1]; /* Test decomp filename (netcdf version). */
     int ret;
 
     /* This will be our file name for writing out decompositions. */
@@ -1986,7 +1986,7 @@ int test_decomp_public_2(int my_test_size, int my_rank, int iosysid, int dim_len
                          MPI_Comm test_comm, int async)
 {
     int ioid;
-    char nc_filename[NC_MAX_NAME + 1]; /* Test decomp filename (netcdf version). */
+    char nc_filename[PIO_MAX_NAME + 1]; /* Test decomp filename (netcdf version). */
     int ret;
 
     /* This will be our file name for writing out decompositions. */
@@ -2016,7 +2016,7 @@ int test_decomp_2(int my_test_size, int my_rank, int iosysid, int dim_len,
                   MPI_Comm test_comm, int async)
 {
     int ioid;
-    char nc_filename[NC_MAX_NAME + 1]; /* Test decomp filename (netcdf version). */
+    char nc_filename[PIO_MAX_NAME + 1]; /* Test decomp filename (netcdf version). */
     int ret;
 
     /* This will be our file name for writing out decompositions. */
@@ -2070,8 +2070,8 @@ int test_all(int iosysid, int num_flavors, int *flavor, int my_rank, MPI_Comm te
 {
     int ioid;
     int my_test_size;
-    char filename[NC_MAX_NAME + 1];
-    char nc_filename[NC_MAX_NAME + 1];
+    char filename[PIO_MAX_NAME + 1];
+    char nc_filename[PIO_MAX_NAME + 1];
     int ret; /* Return code. */
 
     if ((ret = MPI_Comm_size(test_comm, &my_test_size)))

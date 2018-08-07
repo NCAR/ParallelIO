@@ -92,8 +92,8 @@ int check_file(int ntasks, char *filename) {
     nc_type xtype;    /**< NetCDF data type of this variable. */
     int ret;          /**< Return code for function calls. */
     int dimids[NDIM]; /**< Dimension ids for this variable. */
-    char dim_name[NC_MAX_NAME];   /**< Name of the dimension. */
-    char var_name[NC_MAX_NAME];   /**< Name of the variable. */
+    char dim_name[PIO_MAX_NAME];   /**< Name of the dimension. */
+    char var_name[PIO_MAX_NAME];   /**< Name of the variable. */
     size_t start[NDIM];           /**< Zero-based index to start read. */
     size_t count[NDIM];           /**< Number of elements to read. */
     int buffer[DIM_LEN];          /**< Buffer to read in data. */
@@ -255,7 +255,7 @@ int check_file(int ntasks, char *filename) {
 	PIO_Offset *compdof;
 
         /** Test filename. */
-        char filename[NC_MAX_NAME + 1];
+        char filename[PIO_MAX_NAME + 1];
 
         /** The number of netCDF flavors available in this build. */
         int num_flavors = 0;

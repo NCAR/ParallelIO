@@ -136,7 +136,7 @@ int test_decomp_read_write(int iosysid, int ioid, int num_flavors, int *flavor, 
                 dim_len[0], dim_len[1], dim_len[2]);
 
         /* Create history string. */
-        strncat(history, filename, NC_MAX_NAME - strlen(TEST_DECOMP_HISTORY));
+        strncat(history, filename, PIO_MAX_NAME - strlen(TEST_DECOMP_HISTORY));
 
         printf("writing decomp file %s\n", filename);
         if ((ret = PIOc_write_nc_decomp(iosysid, filename, 0, ioid, title, history, 0)))

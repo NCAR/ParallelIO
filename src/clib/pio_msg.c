@@ -1072,7 +1072,7 @@ int inq_type_handler(iosystem_desc_t *ios)
     int ncid;
     int xtype;
     char name_present, size_present;
-    char *namep = NULL, name[NC_MAX_NAME + 1];
+    char *namep = NULL, name[PIO_MAX_NAME + 1];
     PIO_Offset *sizep = NULL, size;
     int mpierr;
     int ret;
@@ -1387,7 +1387,7 @@ int inq_dim_handler(iosystem_desc_t *ios, int msg)
     char name_present, len_present;
     char *dimnamep = NULL;
     PIO_Offset *dimlenp = NULL;
-    char dimname[NC_MAX_NAME + 1];
+    char dimname[PIO_MAX_NAME + 1];
     PIO_Offset dimlen;
 
     int mpierr;
@@ -1527,7 +1527,7 @@ int inq_attname_handler(iosystem_desc_t *ios)
     int ncid;
     int varid;
     int attnum;
-    char name[NC_MAX_NAME + 1], *namep = NULL;
+    char name[PIO_MAX_NAME + 1], *namep = NULL;
     char name_present;
     int mpierr;
     int ret;
@@ -1749,7 +1749,7 @@ int put_vars_handler(iosystem_desc_t *ios)
     LOG((1, "put_vars_handler"));
     assert(ios);
 
-    PIO_Offset start[NC_MAX_DIMS], count[NC_MAX_DIMS], stride[NC_MAX_DIMS];
+    PIO_Offset start[PIO_MAX_DIMS], count[PIO_MAX_DIMS], stride[PIO_MAX_DIMS];
     int nstart=0, ncount=0, nstride=0;
 
     /* Get the parameters for this function that the the comp master
@@ -1853,9 +1853,9 @@ int get_vars_handler(iosystem_desc_t *ios)
     PIO_Offset typelen; /** Length (in bytes) of this type. */
     nc_type xtype; /** 
                     * Type of the data being written. */
-    PIO_Offset start[NC_MAX_DIMS];
-    PIO_Offset count[NC_MAX_DIMS];
-    PIO_Offset stride[NC_MAX_DIMS];
+    PIO_Offset start[PIO_MAX_DIMS];
+    PIO_Offset count[PIO_MAX_DIMS];
+    PIO_Offset stride[PIO_MAX_DIMS];
     char start_present;
     char count_present;
     char stride_present;
@@ -1969,10 +1969,10 @@ int inq_var_handler(iosystem_desc_t *ios)
     int varid;
     int mpierr;
     char name_present, xtype_present, ndims_present, dimids_present, natts_present;
-    char name[NC_MAX_NAME + 1], *namep = NULL;
+    char name[PIO_MAX_NAME + 1], *namep = NULL;
     nc_type xtype, *xtypep = NULL;
     int *ndimsp = NULL, *dimidsp = NULL, *nattsp = NULL;
-    int ndims, dimids[NC_MAX_DIMS], natts;
+    int ndims, dimids[PIO_MAX_DIMS], natts;
     int ret;
 
     LOG((1, "inq_var_handler"));
@@ -2006,7 +2006,7 @@ int inq_var_handler(iosystem_desc_t *ios)
         nattsp = &natts;
 
     /* Call the inq function to get the values. */
-    if ((ret = PIOc_inq_var(ncid, varid, namep, NC_MAX_NAME + 1, xtypep, ndimsp, dimidsp, nattsp)))
+    if ((ret = PIOc_inq_var(ncid, varid, namep, PIO_MAX_NAME + 1, xtypep, ndimsp, dimidsp, nattsp)))
         return pio_err(ios, NULL, ret, __FILE__, __LINE__);
 
     if (ndims_present)
@@ -2028,7 +2028,7 @@ int inq_var_chunking_handler(iosystem_desc_t *ios)
     int varid;
     char storage_present, chunksizes_present;
     int storage, *storagep = NULL;
-    PIO_Offset chunksizes[NC_MAX_DIMS], *chunksizesp = NULL;
+    PIO_Offset chunksizes[PIO_MAX_DIMS], *chunksizesp = NULL;
     int mpierr;
     int ret;
 
@@ -2416,7 +2416,7 @@ int def_var_handler(iosystem_desc_t *ios)
     nc_type xtype;
     int ndims;
     int dimids_sz;
-    int dimids[NC_MAX_DIMS];
+    int dimids[PIO_MAX_DIMS];
 
     LOG((1, "def_var_handler comproot = %d", ios->comproot));
     assert(ios);
@@ -2459,7 +2459,7 @@ int def_var_chunking_handler(iosystem_desc_t *ios)
     int storage;
     char chunksizes_present;
     int chunksizes_sz = 0;
-    PIO_Offset chunksizes[NC_MAX_DIMS], *chunksizesp = NULL;
+    PIO_Offset chunksizes[PIO_MAX_DIMS], *chunksizesp = NULL;
     int mpierr;
     int ret;
 
@@ -2964,10 +2964,10 @@ int initdecomp_dof_handler(iosystem_desc_t *ios)
 
     /* Get the parameters for this function that the the comp master
      * task is broadcasting. */
-    int dims[NC_MAX_DIMS];
+    int dims[PIO_MAX_DIMS];
     int niostart = 0, niocount = 0;
-    PIO_Offset iostart[NC_MAX_DIMS];
-    PIO_Offset iocount[NC_MAX_DIMS];
+    PIO_Offset iostart[PIO_MAX_DIMS];
+    PIO_Offset iocount[PIO_MAX_DIMS];
 
     PIO_RECV_ASYNC_MSG(ios, PIO_MSG_INITDECOMP_DOF, &ret,
         &iosysid, &pio_type, &ndims, dims, &maplen, &compmap,
