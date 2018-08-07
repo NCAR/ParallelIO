@@ -79,6 +79,10 @@ If PnetCDF is not installed on the system, the user can disable its use by
 setting `-DWITH_PNETCDF=OFF`.  This will disable the search for PnetCDF on the
 system and disable the use of PnetCDF from within PIO.
 
+NetCDF is optional if PnetCDF is used, and the user can disable its use by
+setting `-DWITH_NETCDF=OFF`.  This will disable the search for NetCDF on the
+system and disable the use of NetCDF from within PIO.
+
 If the user wishes to disable the PIO tests, then the user can set the
 variable `-DPIO_ENABLE_TESTS=OFF`.  This will entirely disable the CTest 
 testing suite, as well as remove all of the test build targets.
