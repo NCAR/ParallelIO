@@ -540,10 +540,10 @@ int test_iotypes(int my_rank)
 int check_strerror_netcdf(int my_rank)
 {
 #ifdef _NETCDF
-#define NUM_NETCDF_TRIES 5
-    int errcode[NUM_NETCDF_TRIES] = {PIO_EBADID, NC4_LAST_ERROR - 1, 0, 1, -600};
+#define NUM_NETCDF_TRIES 4
+    int errcode[NUM_NETCDF_TRIES] = {PIO_EBADID, 0, 1, -600};
     const char *expected[NUM_NETCDF_TRIES] = {"NetCDF: Not a valid ID",
-                                              "Unknown Error: Unrecognized error code", "No error",
+                                              "No error",
                                               nc_strerror(1), "Unknown Error: Unrecognized error code"};
     int ret;
 
@@ -634,13 +634,13 @@ int check_strerror_pnetcdf(int my_rank)
  */
 int check_strerror_pio(int my_rank)
 {
-#define NUM_PIO_TRIES 6
+#define NUM_PIO_TRIES 5
     int errcode[NUM_PIO_TRIES] = {PIO_EBADID,
-                                  NC_ENOTNC3, NC4_LAST_ERROR - 1, 0, 1,
+                                  NC_ENOTNC3, 0, 1,
                                   PIO_EBADIOTYPE};
     const char *expected[NUM_PIO_TRIES] = {"NetCDF: Not a valid ID",
                                            "NetCDF: Attempting netcdf-3 operation on netcdf-4 file",
-                                           "Unknown Error: Unrecognized error code", "No error",
+                                           "No error",
 #ifdef _NETCDF
                                            nc_strerror(1), "Bad IO type"};
 #else /* Assume that _PNETCDF is defined. */
