@@ -105,8 +105,7 @@ int InitPIO(MPI_Comm comm, int mpirank, int nproc)
 {
 	int iosysid; 
 
-    if (PIOc_Init_Intracomm(comm, nproc, 1,
-            0, PIO_REARR_SUBSET, &iosysid))
+    if (PIOc_Init_Intracomm(comm, nproc, 1, 0, PIO_REARR_SUBSET, &iosysid))
         throw std::runtime_error("PIO initialization failed\n");
 
 	return iosysid;
@@ -154,13 +153,10 @@ std::vector<int> AssignWriteRanks(int n_bp_writers, MPI_Comm comm, int mpirank, 
 
 void ProcessGlobalFillmode(ADIOS_FILE **infile, int ncid)
 {
-    // cout << "Process Global Fillmode: \n";
- 
-    int asize;
+    int  asize;
     void *fillmode;
     ADIOS_DATATYPES atype;
     adios_get_attr(infile[0], "/__pio__/fillmode", &atype, &asize, &fillmode);
-    // cout << "    set fillmode: " << *(int*)fillmode << std::endl;
     PIOc_set_fill(ncid, *(int*)fillmode, NULL);
     free(fillmode);
 }
@@ -180,7 +176,7 @@ void ProcessVarAttributes(ADIOS_FILE **infile, int adios_varid, std::string varn
         char *attname = infile[0]->attr_namelist[vi->attr_ids[i]]+varname.length()+1;
 		if (debug_out)
         	cout << "        define PIO attribute: " << attname << ""
-             	<< "  type=" << piotype << std::endl;
+             	 << "  type=" << piotype << std::endl;
         int len = 1;
         if (atype == adios_string)
             len = strlen(adata);
@@ -196,7 +192,6 @@ void ProcessGlobalAttributes(ADIOS_FILE **infile, int ncid, DimensionMap& dimens
 	if (debug_out) cout << "Process Global Attributes: \n";
 
 	std::string delimiter = "/";
-
 	std::map<std::string,char> processed_attrs;
 	std::map<std::string,int>  var_att_map;
 
@@ -207,18 +202,18 @@ void ProcessGlobalAttributes(ADIOS_FILE **infile, int ncid, DimensionMap& dimens
         {
             if (debug_out) cout << "    Attribute: " << infile[0]->attr_namelist[i] << std::endl;
             int asize;
-            char *adata;
+            char *adata = NULL;
             ADIOS_DATATYPES atype;
             adios_get_attr(infile[0], infile[0]->attr_namelist[i], &atype, &asize, (void**)&adata);
             nc_type piotype = PIOc_get_nctype_from_adios_type(atype);
             char *attname = infile[0]->attr_namelist[i]+strlen("pio_global/");
             if (debug_out) cout << "        define PIO attribute: " << attname << ""
-                    << "  type=" << piotype << std::endl;
+                    			<< "  type=" << piotype << std::endl;
             int len = 1;
             if (atype == adios_string)
                 len = strlen(adata);
             PIOc_put_att(ncid, PIO_GLOBAL, attname, piotype, len, adata);
-            free(adata);
+            if (adata) free(adata);
         } else {
 			std::string token = a.substr(0, a.find(delimiter));
 			if (token!="" && vars_map.find(token)==vars_map.end()) 
@@ -229,13 +224,13 @@ void ProcessGlobalAttributes(ADIOS_FILE **infile, int ncid, DimensionMap& dimens
            			string attname = token + "/__pio__/nctype";
 					processed_attrs[attname] = 1;
            			int asize;
-           			int *nctype;
+           			int *nctype = NULL;
            			ADIOS_DATATYPES atype;
            			adios_get_attr(infile[0], attname.c_str(), &atype, &asize, (void**)&nctype);
 
             		attname = token + "/__pio__/ndims";
 					processed_attrs[attname] = 1;
-            		int *ndims;
+            		int *ndims = NULL;
             		adios_get_attr(infile[0], attname.c_str(), &atype, &asize, (void**)&ndims);
 
             		char **dimnames = NULL;
@@ -253,14 +248,14 @@ void ProcessGlobalAttributes(ADIOS_FILE **infile, int ncid, DimensionMap& dimens
             		PIOc_def_var(ncid, token.c_str(), *nctype, *ndims, dimids, &varid);
 	           		var_att_map[token] = varid; 
 
-            		free(nctype);
-            		free(ndims);
-            		free(dimnames);
+            		if (nctype) free(nctype);
+            		if (ndims) free(ndims);
+            		if (dimnames) free(dimnames);
 				} else {
 					if (processed_attrs.find(a)==processed_attrs.end()) {
 						processed_attrs[a] = 1;
 						int asize;
-           				char *adata;
+           				char *adata = NULL;
            				ADIOS_DATATYPES atype;
            				adios_get_attr(infile[0], a.c_str(), &atype, &asize, (void**)&adata);
 						nc_type piotype = PIOc_get_nctype_from_adios_type(atype);
@@ -268,7 +263,7 @@ void ProcessGlobalAttributes(ADIOS_FILE **infile, int ncid, DimensionMap& dimens
         				int len = 1;
         				if (atype == adios_string) len = strlen(adata);
         				PIOc_put_att(ncid, var_att_map[token], attname, piotype, len, adata);
-        				free(adata);
+        				if (adata) free(adata);
 					}
 				}
 			}
@@ -302,58 +297,60 @@ Decomposition ProcessOneDecomposition(ADIOS_FILE **infile, int ncid, const char 
 		}
 	}
 
-    std::vector<PIO_Offset> d(nelems);
-    uint64_t offset = 0;
-    for (int i=1;i<=wfiles.size();i++) {
+	/* allocate +1 to prevent d.data() from returning NULL. Otherwise, read/write operations fail */
+	/* nelems may be 0, when some processes do not have any data */
+   	std::vector<PIO_Offset> d(nelems+1);  
+   	uint64_t offset = 0;
+   	for (int i=1;i<=wfiles.size();i++) {
 		ADIOS_VARINFO *vb = adios_inq_var(infile[i], varname);
 		if (vb) {
-       		adios_inq_var_blockinfo(infile[i], vb);
-	   		// Assuming all time steps have the same number of writer blocks	
-	   		for (int j=0;j<vb->nblocks[0];j++) {
-       		 	if (debug_out) cout << " rank " << mpirank << ": read decomp wb = " << j <<
-       		         	" start = " << offset <<
-       		         	" elems = " << vb->blockinfo[j].count[0] << endl;
+   			adios_inq_var_blockinfo(infile[i], vb);
+   			// Assuming all time steps have the same number of writer blocks	
+   			for (int j=0;j<vb->nblocks[0];j++) {
+   		 		if (debug_out) cout << " rank " << mpirank << ": read decomp wb = " << j <<
+   		       		  				" start = " << offset <<
+   		       		  				" elems = " << vb->blockinfo[j].count[0] << endl;
 				ADIOS_SELECTION *wbsel = adios_selection_writeblock(j);
-       		 	int ret = adios_schedule_read(infile[i], wbsel, varname, 0, 1, d.data()+offset);
-       		 	adios_perform_reads(infile[i], 1);
+   		 		int ret = adios_schedule_read(infile[i], wbsel, varname, 0, 1, d.data()+offset);
+   		 		adios_perform_reads(infile[i], 1);
 				offset += vb->blockinfo[j].count[0];
 				adios_selection_delete(wbsel);
-	   		}
-	   		adios_free_varinfo(vb);
+   			}
+   			adios_free_varinfo(vb);
 		}
 	}
 
-    string attname;
-    int asize;
-    int *piotype;
-    ADIOS_DATATYPES atype;
-    if (forced_type == NC_NAT) {
-        attname = string(varname) + "/piotype";
-        adios_get_attr(infile[0], attname.c_str(), &atype, &asize, (void**)&piotype);
-    } else {
-        piotype = (int*) malloc(sizeof(int));
-        *piotype = forced_type;
-    }
-    attname = string(varname) + "/ndims";
-    int *decomp_ndims;
-    adios_get_attr(infile[0], attname.c_str(), &atype, &asize, (void**)&decomp_ndims);
+   	string attname;
+   	int asize;
+   	int *piotype;
+   	ADIOS_DATATYPES atype;
+   	if (forced_type == NC_NAT) {
+   		 attname = string(varname) + "/piotype";
+   		 adios_get_attr(infile[0], attname.c_str(), &atype, &asize, (void**)&piotype);
+   	} else {
+   		 piotype = (int*) malloc(sizeof(int));
+   		 *piotype = forced_type;
+   	}
+   	attname = string(varname) + "/ndims";
+   	int *decomp_ndims;
+   	adios_get_attr(infile[0], attname.c_str(), &atype, &asize, (void**)&decomp_ndims);
 
-    int *decomp_dims;
-    attname = string(varname) + "/dimlen";
-    adios_get_attr(infile[0], attname.c_str(), &atype, &asize, (void**)&decomp_dims);
-    TimerStop(read);
+   	int *decomp_dims;
+   	attname = string(varname) + "/dimlen";
+   	adios_get_attr(infile[0], attname.c_str(), &atype, &asize, (void**)&decomp_dims);
+   	TimerStop(read);
 
-    TimerStart(write);
-    int ioid;
-    PIOc_InitDecomp(iosysid, *piotype, *decomp_ndims, decomp_dims, (PIO_Offset)nelems,
-            		d.data(), &ioid, NULL, NULL, NULL);
-    TimerStop(write);
+   	TimerStart(write);
+   	int ioid;
+   	PIOc_InitDecomp(iosysid, *piotype, *decomp_ndims, decomp_dims, (PIO_Offset)nelems,
+   		     		d.data(), &ioid, NULL, NULL, NULL);
+   	TimerStop(write);
 
 	int decomp_piotype = *piotype;
 
-    free(piotype);
-    free(decomp_ndims);
-    free(decomp_dims);
+   	free(piotype);
+   	free(decomp_ndims);
+   	free(decomp_dims);
 
     return Decomposition{ioid, decomp_piotype};
 }
@@ -379,9 +376,6 @@ DecompositionMap ProcessDecompositions(ADIOS_FILE **infile, int ncid, std::vecto
 Decomposition GetNewDecomposition(DecompositionMap& decompmap, string decompname,
         ADIOS_FILE **infile, int ncid, std::vector<int>& wfiles, int nctype, int iosysid, int mpirank, int nproc)
 {
-    // stringstream ss;
-    // ss << decompname << "_" << nctype;
-    // string key = ss.str();
 	char ss[256];
 	sprintf(ss,"%s_%d",decompname.c_str(),nctype);
 	string key(ss);
@@ -446,12 +440,12 @@ VariableMap ProcessVariableDefinitions(ADIOS_FILE **infile, int ncid, DimensionM
             	TimerStart(read);
             	string attname = string(infile[0]->var_namelist[i]) + "/__pio__/nctype";
             	int asize;
-            	int *nctype;
+            	int *nctype = NULL;
             	ADIOS_DATATYPES atype;
             	adios_get_attr(infile[0], attname.c_str(), &atype, &asize, (void**)&nctype);
 
 	            attname = string(infile[0]->var_namelist[i]) + "/__pio__/ndims";
-	            int *ndims;
+	            int *ndims = NULL;
 	            adios_get_attr(infile[0], attname.c_str(), &atype, &asize, (void**)&ndims);
 
 	            char **dimnames = NULL;
@@ -464,11 +458,10 @@ VariableMap ProcessVariableDefinitions(ADIOS_FILE **infile, int ncid, DimensionM
 
 	                for (int d=0; d < *ndims; d++)
 	                {
-	                    //cout << "Dim " << d << " = " <<  dimnames[d] << endl;
 	                    dimids[d] = dimension_map[dimnames[d]].dimid;
 	                    if (dimension_map[dimnames[d]].dimvalue == PIO_UNLIMITED)
 	                    {
-                        timed = true;
+                        	timed = true;
 	                    }
 	                }
 	            }
@@ -482,9 +475,9 @@ VariableMap ProcessVariableDefinitions(ADIOS_FILE **infile, int ncid, DimensionM
 
 	            ProcessVarAttributes(infile, i, v, ncid, varid);
 
-	            free(nctype);
-	            free(ndims);
-	            free(dimnames);
+	            if (nctype) free(nctype);
+	            if (ndims) free(ndims);
+	            if (dimnames) free(dimnames);
 			}
         }
         FlushStdout_nm(comm);
@@ -638,7 +631,7 @@ int ConvertVariablePutVar(ADIOS_FILE **infile, std::vector<int> wfiles, int adio
 				return 1;
 			}
 			adios_selection_delete(wbsel);
-			free(buf);
+			if (buf) free(buf);
 		} else {
 			char temp_buf;
 			for (int d=0;d<vi->ndim;d++) {
@@ -681,12 +674,10 @@ int ConvertVariableTimedPutVar(ADIOS_FILE **infile, std::vector<int> wfiles, int
             TimerStart(write);
             start[0] = ts;
             count[0] = 1;
-            //cout << "DBG: " << infile->var_namelist[adios_varid] << " step " << ts
-            //     << " value = " << *(int*) vi->statistics->blocks->mins[ts] << endl;
             int ret = PIOc_put_vara(ncid, var.nc_varid, start, count, vi->statistics->blocks->mins[ts]);
             if (ret != PIO_NOERR)
-                cout << "ERROR in PIOc_put_var(), code = " << ret
-                << " at " << __func__ << ":" << __LINE__ << endl;
+				cout << "ERROR in PIOc_put_var(), code = " << ret
+					<< " at " << __func__ << ":" << __LINE__ << endl;
             TimerStop(write);
         }
     }
@@ -941,7 +932,9 @@ int ConvertVariableDarray(ADIOS_FILE **infile, int adios_varid, int ncid, Variab
 
 		/* Read local data for each file */
         int elemsize = adios_type_size(vi->type,NULL);
-        std::vector<char> d(nelems * elemsize);
+		/* allocate +1 to prevent d.data() from returning NULL. Otherwise, read/write operations fail */
+		/* nelems may be 0, when some processes do not have any data */
+        std::vector<char> d((nelems+1) * elemsize);
         uint64_t offset = 0;
 		for (int i=1;i<=wfiles.size();i++) {
             ADIOS_VARINFO *vb = adios_inq_var(infile[i], varname);
