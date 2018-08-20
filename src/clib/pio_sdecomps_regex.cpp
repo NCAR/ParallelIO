@@ -256,7 +256,18 @@ namespace PIO_Util{
 
       bool SDecomp_regex_op::operator<(const SDecomp_regex_op &other) const
       {
-        static const int OP_PRIORITY[NUM_OPS] = { 0, 1, 1, 2, 3, 3};
+        static const int INVALID_OP_PRIORITY = 0;
+        static const int LOGICAL_AND_PRIORITY = 1;
+        static const int LOGICAL_OR_PRIORITY = 1;
+        static const int LOGICAL_NOT_PRIORITY = 2;
+        static const int LEFT_BRACKET_PRIORITY = 3;
+        static const int RIGHT_BRACKET_PRIORITY = 3;
+        static const int OP_PRIORITY[NUM_OPS] = { INVALID_OP_PRIORITY,
+                                                  LOGICAL_AND_PRIORITY,
+                                                  LOGICAL_OR_PRIORITY,
+                                                  LOGICAL_NOT_PRIORITY,
+                                                  LEFT_BRACKET_PRIORITY,
+                                                  RIGHT_BRACKET_PRIORITY};
         return (OP_PRIORITY[type_] < OP_PRIORITY[other.type_]);
       }
 
