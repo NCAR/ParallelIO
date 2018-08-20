@@ -596,12 +596,37 @@ static void PIOc_write_decomp_adios(file_desc_t *file, int ioid)
     io_desc_t *iodesc = pio_get_iodesc_from_id(ioid);
     char name[32], ldim[32];
     sprintf(name, "/__pio__/decomp/%d", ioid);
-    sprintf(ldim, "%d", iodesc->maplen);
+
     enum ADIOS_DATATYPES type = adios_integer; //PIOc_get_adios_type(iodesc->piotype);
     if (sizeof(PIO_Offset) == 8)
-       type = adios_long;
-    int64_t vid = adios_define_var(file->adios_group, name, "", type, ldim,"","");
-    adios_write_byid(file->adios_fh, vid, iodesc->map);
+        type = adios_long;
+
+    if (iodesc->maplen!=1) {
+        sprintf(ldim, "%d", iodesc->maplen);
+        int64_t vid = adios_define_var(file->adios_group, name, "", type, ldim,"","");
+        adios_write_byid(file->adios_fh, vid, iodesc->map);
+    } else { // Handle the case where maplen is 1
+        int maplen = iodesc->maplen+1;
+        char *mapbuf = NULL;
+        sprintf(ldim, "%d", maplen);
+        if (type==adios_integer) {
+            int *temp_mapbuf;
+            temp_mapbuf    = (int*)malloc(sizeof(int)*maplen);
+            temp_mapbuf[0] = iodesc->map[0];
+            temp_mapbuf[1] = 0;
+            mapbuf = (char*)temp_mapbuf;
+        } else {
+            long *temp_mapbuf;
+            temp_mapbuf    = (long*)malloc(sizeof(long)*maplen);
+            temp_mapbuf[0] = iodesc->map[0];
+            temp_mapbuf[1] = 0;
+            mapbuf = (char*)temp_mapbuf;
+        }
+        int64_t vid = adios_define_var(file->adios_group, name, "", type, ldim,"","");
+        adios_write_byid(file->adios_fh, vid, mapbuf);
+        free(mapbuf);
+    }
+
 #ifdef _ADIOS_ALL_PROCS /* ADIOS: assume all procs are also IO tasks */
     if (file->adios_iomaster == MPI_ROOT)
 #else
@@ -679,6 +704,31 @@ static void *PIOc_convert_buffer_adios(file_desc_t *file, io_desc_t *iodesc,
 	return buf;
 }
 
+#define ADIOS_COPY_ONE(temp_buf,array,var_type) \
+{ \
+    temp_buf = (var_type*)malloc(2*sizeof(var_type)); \
+    memcpy(temp_buf,array,sizeof(var_type)); \
+}
+
+void *PIOc_copy_one_element_adios(void *array, adios_var_desc_t *av)
+{
+    void *temp_buf = NULL;
+    if (av->nc_type==PIO_DOUBLE) {
+        ADIOS_COPY_ONE(temp_buf,array,double);
+    } else if (av->nc_type==PIO_FLOAT || av->nc_type==PIO_REAL) {
+        ADIOS_COPY_ONE(temp_buf,array,float);
+    } else if (av->nc_type==PIO_INT || av->nc_type==PIO_UINT) {
+        ADIOS_COPY_ONE(temp_buf,array,int);
+    } else if (av->nc_type==PIO_SHORT || av->nc_type==PIO_USHORT) {
+        ADIOS_COPY_ONE(temp_buf,array,short int);
+    } else if (av->nc_type==PIO_INT64 || av->nc_type==PIO_UINT64) {
+        ADIOS_COPY_ONE(temp_buf,array,int64_t);
+    } else if (av->nc_type==PIO_CHAR || av->nc_type==PIO_BYTE || av->nc_type==PIO_UBYTE) {
+        ADIOS_COPY_ONE(temp_buf,array,char);
+    }
+    return temp_buf;
+}
+
 static int PIOc_write_darray_adios(
         file_desc_t *file, int varid, int ioid, io_desc_t *iodesc,
         PIO_Offset arraylen, void *array, void *fillvalue)
@@ -688,6 +738,14 @@ static int PIOc_write_darray_adios(
         return pio_err(file->iosystem, file, PIO_EBADID, __FILE__, __LINE__);
 
     adios_var_desc_t * av = &(file->adios_vars[varid]);
+
+    void *temp_buf = NULL;
+    if (arraylen==1) { // Handle the case where there is one array element
+        arraylen++;
+        temp_buf = PIOc_copy_one_element_adios(array,av);
+        array = temp_buf;
+    }
+
     if (av->adios_varid == 0)
     {
         /* First we need to define the variable now that we know it's decomposition */
@@ -753,6 +811,8 @@ static int PIOc_write_darray_adios(
 
     if (buf_needs_free)
         free(buf);
+
+    if (temp_buf!=NULL) free(temp_buf);
 
     return PIO_NOERR;
 }
