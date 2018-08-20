@@ -605,6 +605,58 @@ int ConvertVariablePutVar(ADIOS_FILE **infile, std::vector<int> wfiles, int adio
 		
 		/* ACME writes this array from I/O processor 0 */
         PIO_Offset start[MAX_NC_DIMS], count[MAX_NC_DIMS];
+		// PIOc_put_var may have been called multiple times with different start,count values 
+		// for a variable. We need to convert the output from each of those calls.
+   		ADIOS_VARINFO *vb = adios_inq_var(infile[0], varname);
+		if (vb) {
+			adios_inq_var_blockinfo(infile[0], vb);
+			if (mpirank==0) {
+				size_t mysize = 1;
+				char   *buf   = NULL;
+				for (int ii=0;ii<vb->sum_nblocks;ii++) {
+					mysize = 1;
+					for (int d=0;d<vb->ndim;d++) 
+						mysize *= (size_t)vb->blockinfo[ii].count[d];
+					mysize = mysize*adios_type_size(vb->type,NULL);
+   	   				if ((buf = (char *)malloc(mysize))==NULL) {
+						printf("ERROR: cannot allocate memory: %ld\n",mysize);
+						return 1;
+					}
+					ADIOS_SELECTION *wbsel = adios_selection_writeblock(ii);
+   	   				int ret = adios_schedule_read(infile[0], wbsel, varname, 0, 1, buf);
+   	   				adios_perform_reads(infile[0], 1);
+					for (int d=0;d<vb->ndim;d++) {
+						start[d] = (PIO_Offset) vb->blockinfo[ii].start[d];
+       					count[d] = (PIO_Offset) vb->blockinfo[ii].count[d];
+					}
+ 					ret = put_vara_nm(ncid, var.nc_varid, var.nctype, vb->type, start, count, buf);
+       				if (ret != PIO_NOERR) {
+       					cout << "rank " << mpirank << ":ERROR in PIOc_put_vara(), code = " << ret
+       						 << " at " << __func__ << ":" << __LINE__ << endl;
+						return 1;
+					}
+					adios_selection_delete(wbsel);
+					if (buf) free(buf);
+				}
+			} else {
+				char   temp_buf;
+				for (int ii=0;ii<vb->sum_nblocks;ii++) {
+					for (int d=0;d<vb->ndim;d++) {
+						start[d] = (PIO_Offset) 0;
+       					count[d] = (PIO_Offset) 0;
+					}
+ 					ret = put_vara_nm(ncid, var.nc_varid, var.nctype, vb->type, start, count, &temp_buf);
+       				if (ret != PIO_NOERR) {
+       					cout << "rank " << mpirank << ":ERROR in PIOc_put_vara(), code = " << ret
+       						 << " at " << __func__ << ":" << __LINE__ << endl;
+						return 1;
+					}
+				}
+			}
+   			adios_free_varinfo(vb);
+		}
+
+#if 0
 		if (mpirank==0) {
 			size_t mysize = 1;
 			char   *buf   = NULL;
@@ -645,6 +697,7 @@ int ConvertVariablePutVar(ADIOS_FILE **infile, std::vector<int> wfiles, int adio
 				return 1;
 			}
 		}
+#endif 
         TimerStop(write);
     }
 

@@ -1252,12 +1252,17 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                     if (d < av->ndims-1)
                         strcat(offs,",");
                 }
-                if (av->adios_varid == 0)
-                {
+
+                // TAHSIN
+                // PIOc_put_var may be called multiple times with different start,count values for a variable
+                // ADIOS should output data for each of those calls not just when the variable is not defined
+                // if (av->adios_varid == 0)
+                // {
                     /*printf("ADIOS variable %s on io rank %d define gdims=\"%s\", ldims=\"%s\", offsets=\"%s\"\n",
                             av->name, ios->io_rank, gdims, ldims, offs);*/
                     av->adios_varid = adios_define_var(file->adios_group, av->name, "", av->adios_type, ldims,gdims,offs);
-                }
+                // } // TAHSIN
+
                 adios_write_byid(file->adios_fh, av->adios_varid, buf);
                 char* dimnames[6];
                 /* record the NC dimensions in an attribute, including the unlimited dimension */
