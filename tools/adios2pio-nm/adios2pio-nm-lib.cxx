@@ -198,7 +198,7 @@ void ProcessGlobalAttributes(ADIOS_FILE **infile, int ncid, DimensionMap& dimens
 	std::string delimiter = "/";
 
 	std::map<std::string,char> processed_attrs;
-	VariableMap var_att_map;
+	std::map<std::string,int>  var_att_map;
 
     for (int i=0; i < infile[0]->nattrs; i++)
     {
@@ -251,8 +251,7 @@ void ProcessGlobalAttributes(ADIOS_FILE **infile, int ncid, DimensionMap& dimens
                		}
             		int varid;
             		PIOc_def_var(ncid, token.c_str(), *nctype, *ndims, dimids, &varid);
-	           		bool timed = false;
-	           		var_att_map[token] = Variable{varid,timed,*nctype};
+	           		var_att_map[token] = varid; 
 
             		free(nctype);
             		free(ndims);
@@ -267,10 +266,8 @@ void ProcessGlobalAttributes(ADIOS_FILE **infile, int ncid, DimensionMap& dimens
 						nc_type piotype = PIOc_get_nctype_from_adios_type(atype);
         				char *attname = ((char*)a.c_str())+token.length()+1;;
         				int len = 1;
-        				if (atype == adios_string)
-            				len = strlen(adata);
-						int nc_varid = var_att_map[token].nc_varid;
-        				PIOc_put_att(ncid, nc_varid, attname, piotype, len, adata);
+        				if (atype == adios_string) len = strlen(adata);
+        				PIOc_put_att(ncid, var_att_map[token], attname, piotype, len, adata);
         				free(adata);
 					}
 				}
@@ -1341,4 +1338,3 @@ int C_API_ConvertBPToNC(const char *infilepath, const char *outfilename, const c
 #ifdef __cplusplus
 }
 #endif
-

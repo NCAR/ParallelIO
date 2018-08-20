@@ -25,6 +25,9 @@
 #include <pnetcdf.h>
 #endif
 #ifdef _ADIOS
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 #include <adios.h>
 #include <adios_read.h> // we only need adios_type_size() at the moment
 #define _ADIOS_ALL_PROCS 1  /* ADIOS: assume all procs are also IO tasks */
