@@ -38,10 +38,28 @@
 #define PIO_Offset MPI_Offset
 
 /** The maximum number of variables allowed in a netCDF file. */
+#define PIO_MAX_VARS_UB 8192
+#if NC_MAX_VARS > PIO_MAX_VARS_UB
+#define PIO_MAX_VARS PIO_MAX_VARS_UB
+#else
 #define PIO_MAX_VARS NC_MAX_VARS
+#endif
 
 /** The maximum number of dimensions allowed in a netCDF file. */
+#define PIO_MAX_DIMS_UB 1024
+#if NC_MAX_DIMS > PIO_MAX_DIMS_UB
+#define PIO_MAX_DIMS PIO_MAX_DIMS_UB
+#else
 #define PIO_MAX_DIMS NC_MAX_DIMS
+#endif
+
+/** The maximum number of attributes allowed in a netCDF file. */
+#define PIO_MAX_ATTRS_UB 8192
+#if NC_MAX_ATTRS > PIO_MAX_ATTRS_UB
+#define PIO_MAX_ATTRS PIO_MAX_ATTRS_UB
+#else
+#define PIO_MAX_ATTRS NC_MAX_ATTRS
+#endif
 
 /** Pass this to PIOc_set_iosystem_error_handling() as the iosysid in
  * order to set default error handling. */
@@ -126,8 +144,18 @@
 #define PIO_NOCLOBBER NC_NOCLOBBER
 #define PIO_FILL NC_FILL
 #define PIO_NOFILL NC_NOFILL
+#define PIO_MAX_NAME_UB 1024
+#if NC_MAX_NAME > PIO_MAX_NAME_UB
+#define PIO_MAX_NAME PIO_MAX_NAME_UB
+#else
 #define PIO_MAX_NAME NC_MAX_NAME
+#endif
+#define PIO_MAX_VAR_DIMS_UB 1024
+#if NC_MAX_VAR_DIMS > PIO_MAX_VAR_DIMS_UB
+#define PIO_MAX_VAR_DIMS PIO_MAX_VAR_DIMS_UB
+#else
 #define PIO_MAX_VAR_DIMS NC_MAX_VAR_DIMS
+#endif
 #define PIO_64BIT_OFFSET NC_64BIT_OFFSET
 
 /** NC_64BIT_DATA This is a problem - need to define directly instead

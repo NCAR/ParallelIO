@@ -84,13 +84,13 @@ get_iotypes(int *num_flavors, int *flavors)
  *
  * @param iotype the IO type
  * @param name pointer that will get name of IO type. Must have enough
- * memory allocated (NC_MAX_NAME + 1 works.)
+ * memory allocated (PIO_MAX_NAME + 1 works.)
  * @returns 0 for success, error code otherwise.
  * @internal
  */
 int get_iotype_name(int iotype, char *name)
 {
-    char flavor_name[NUM_FLAVORS][NC_MAX_NAME + 1] = {"pnetcdf", "classic",
+    char flavor_name[NUM_FLAVORS][PIO_MAX_NAME + 1] = {"pnetcdf", "classic",
                                                       "serial4", "parallel4"};
 
     /* Check inputs. */
@@ -263,7 +263,7 @@ int
 test_inq_type(int ncid, int format)
 {
 #define NUM_TYPES 11
-    char type_name[NC_MAX_NAME + 1];
+    char type_name[PIO_MAX_NAME + 1];
     PIO_Offset type_size;
     nc_type xtype[NUM_TYPES] = {NC_CHAR, NC_BYTE, NC_SHORT, NC_INT, NC_FLOAT, NC_DOUBLE,
                                 NC_UBYTE, NC_USHORT, NC_UINT, NC_INT64, NC_UINT64};
@@ -504,9 +504,9 @@ check_nc_sample_1(int iosysid, int format, char *filename, int my_rank, int *nci
     int ret;
     int ndims, nvars, ngatts, unlimdimid;
     int ndims2, nvars2, ngatts2, unlimdimid2;
-    char dimname[NC_MAX_NAME + 1];
+    char dimname[PIO_MAX_NAME + 1];
     PIO_Offset dimlen;
-    char varname[NC_MAX_NAME + 1];
+    char varname[PIO_MAX_NAME + 1];
     nc_type vartype;
     int varndims, vardimids, varnatts;
 
@@ -563,7 +563,7 @@ check_nc_sample_1(int iosysid, int format, char *filename, int my_rank, int *nci
         return ERR_WRONG;
 
     /* Check out the variable. */
-    if ((ret = PIOc_inq_var(ncid, 0, varname, NC_MAX_NAME + 1, &vartype, &varndims, &vardimids, &varnatts)))
+    if ((ret = PIOc_inq_var(ncid, 0, varname, PIO_MAX_NAME + 1, &vartype, &varndims, &vardimids, &varnatts)))
         return ret;
     if (strcmp(varname, VAR_NAME_S1) || vartype != NC_INT || varndims != NDIM_S1 ||
         vardimids != 0 || varnatts != 0)
@@ -605,7 +605,7 @@ create_nc_sample_2(int iosysid, int format, char *filename, int my_rank, int *nc
         return ret;
 
     /* Define a dimension. */
-    char dimname2[NC_MAX_NAME + 1];
+    char dimname2[PIO_MAX_NAME + 1];
     printf("%d defining dimension %s\n", my_rank, DIM_NAME_S2);
     if ((ret = PIOc_def_dim(ncid, FIRST_DIM_NAME_S2, DIM_LEN_S2, &dimid)))
         return ret;
@@ -617,11 +617,11 @@ create_nc_sample_2(int iosysid, int format, char *filename, int my_rank, int *nc
         return ret;
 
     /* Define a 1-D variable. */
-    char varname2[NC_MAX_NAME + 1];
+    char varname2[PIO_MAX_NAME + 1];
     printf("%d defining variable %s\n", my_rank, VAR_NAME_S2);
     if ((ret = PIOc_def_var(ncid, FIRST_VAR_NAME_S2, NC_INT, NDIM_S2, &dimid, &varid)))
         return ret;
-    if ((ret = PIOc_inq_varname(ncid, 0, varname2, NC_MAX_NAME + 1)))
+    if ((ret = PIOc_inq_varname(ncid, 0, varname2, PIO_MAX_NAME + 1)))
         return ret;
     if (strcmp(varname2, FIRST_VAR_NAME_S2))
         return ERR_WRONG;
@@ -634,7 +634,7 @@ create_nc_sample_2(int iosysid, int format, char *filename, int my_rank, int *nc
     short short_att_data = ATT_VALUE_S2;
     float float_att_data = ATT_VALUE_S2;
     double double_att_data = ATT_VALUE_S2;
-    char attname2[NC_MAX_NAME + 1];
+    char attname2[PIO_MAX_NAME + 1];
     /* Write an att and rename it. */
     if ((ret = PIOc_put_att_int(ncid, NC_GLOBAL, FIRST_ATT_NAME_S2, NC_INT, 1, &att_data)))
         return ret;
@@ -710,14 +710,14 @@ check_nc_sample_2(int iosysid, int format, char *filename, int my_rank, int *nci
     int ndims, nvars, ngatts, unlimdimid;
     int ndims2, nvars2, ngatts2, unlimdimid2;
     int dimid2;
-    char dimname[NC_MAX_NAME + 1];
+    char dimname[PIO_MAX_NAME + 1];
     PIO_Offset dimlen;
-    char dimname2[NC_MAX_NAME + 1];
+    char dimname2[PIO_MAX_NAME + 1];
     PIO_Offset dimlen2;
-    char varname[NC_MAX_NAME + 1];
+    char varname[PIO_MAX_NAME + 1];
     nc_type vartype;
     int varndims, vardimids, varnatts;
-    char varname2[NC_MAX_NAME + 1];
+    char varname2[PIO_MAX_NAME + 1];
     nc_type vartype2;
     int varndims2, vardimids2, varnatts2;
     int varid2;
@@ -727,7 +727,7 @@ check_nc_sample_2(int iosysid, int format, char *filename, int my_rank, int *nci
     double double_att_data;
     nc_type atttype;
     PIO_Offset attlen;
-    char myattname[NC_MAX_NAME + 1];
+    char myattname[PIO_MAX_NAME + 1];
     int myid;
     PIO_Offset start[NDIM_S2] = {0}, count[NDIM_S2] = {DIM_LEN_S2};
     int data_in[DIM_LEN_S2];
@@ -799,14 +799,14 @@ check_nc_sample_2(int iosysid, int format, char *filename, int my_rank, int *nci
         return ERR_WRONG;
 
     /* Check out the variable. */
-    if ((ret = PIOc_inq_var(ncid, 0, varname, NC_MAX_NAME + 1, &vartype, &varndims, &vardimids, &varnatts)))
+    if ((ret = PIOc_inq_var(ncid, 0, varname, PIO_MAX_NAME + 1, &vartype, &varndims, &vardimids, &varnatts)))
         return ERR_CHECK;
     if (strcmp(varname, VAR_NAME_S2) || vartype != NC_INT || varndims != NDIM_S2 ||
         vardimids != 0 || varnatts != 0)
         return ERR_WRONG;
 
     /* Check the other functions that get these values. */
-    if ((ret = PIOc_inq_varname(ncid, 0, varname2, NC_MAX_NAME + 1)))
+    if ((ret = PIOc_inq_varname(ncid, 0, varname2, PIO_MAX_NAME + 1)))
         return ERR_CHECK;
     if (strcmp(varname2, VAR_NAME_S2))
         return ERR_WRONG;

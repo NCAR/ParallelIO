@@ -454,7 +454,7 @@ int PIOc_InitDecomp(int iosysid, int pio_type, int ndims, const int *gdimlen, in
     }
 
 #if PIO_SAVE_DECOMPS
-    char filename[NC_MAX_NAME];
+    char filename[PIO_MAX_NAME];
     if (ios->num_comptasks < 100)
         sprintf(filename, "piodecomp%2.2dtasks%2.2dio%2.2ddims%2.2d.dat", ios->num_comptasks, ios->num_iotasks, ndims, counter);
     else if (ios->num_comptasks < 10000)

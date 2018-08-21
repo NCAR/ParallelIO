@@ -104,7 +104,7 @@ int check_file(int iosysid, int ntasks, char *filename, int iotype,
     nc_type xtype;    /* NetCDF data type of this variable. */
     int ret;          /* Return code for function calls. */
     int dimids[NDIM3]; /* Dimension ids for this variable. */
-    char var_name[NC_MAX_NAME];   /* Name of the variable. */
+    char var_name[PIO_MAX_NAME];   /* Name of the variable. */
     /* size_t start[NDIM3];           /\* Zero-based index to start read. *\/ */
     /* size_t count[NDIM3];           /\* Number of elements to read. *\/ */
     /* int buffer[DIM_LEN_X];          /\* Buffer to read in data. *\/ */
@@ -124,7 +124,7 @@ int check_file(int iosysid, int ntasks, char *filename, int iotype,
         return ERR_BAD;
     for (int d = 0; d < NDIM3; d++)
     {
-        char my_dim_name[NC_MAX_NAME];
+        char my_dim_name[PIO_MAX_NAME];
         PIO_Offset dimlen; 
         
         if ((ret = PIOc_inq_dim(ncid, d, my_dim_name, &dimlen)))
@@ -134,7 +134,7 @@ int check_file(int iosysid, int ntasks, char *filename, int iotype,
     }
 
     /* Check the variable. */
-    if ((ret = PIOc_inq_var(ncid, 0, var_name, NC_MAX_NAME, &xtype, &ndims, dimids, &natts)))
+    if ((ret = PIOc_inq_var(ncid, 0, var_name, PIO_MAX_NAME, &xtype, &ndims, dimids, &natts)))
         return ret;
     if (xtype != NC_INT || ndims != NDIM3 || dimids[0] != 0 || dimids[1] != 1 ||
             dimids[2] != 2 || natts != 0)
@@ -213,7 +213,7 @@ data:
 	int dimid[NDIM3];    /* The dimension ID. */
 	int varid;    /* The ID of the netCDF varable. */
 	int ioid;     /* The I/O description ID. */
-        char filename[NC_MAX_NAME + 1]; /* Test filename. */
+        char filename[PIO_MAX_NAME + 1]; /* Test filename. */
         int num_flavors = 0;            /* Number of iotypes available in this build. */
 	int format[NUM_NETCDF_FLAVORS]; /* Different output flavors. */
 	int ret;                        /* Return value. */

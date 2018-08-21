@@ -48,7 +48,7 @@ int PIOc_put_att_tc(int ncid, int varid, const char *name, nc_type atttype,
     ios = file->iosystem;
 
     /* User must provide some valid parameters. */
-    if (!name || !op || strlen(name) > NC_MAX_NAME || len < 0)
+    if (!name || !op || strlen(name) > PIO_MAX_NAME || len < 0)
         return pio_err(ios, file, PIO_EINVAL, __FILE__, __LINE__);
 
     LOG((1, "PIOc_put_att_tc ncid = %d varid = %d name = %s atttype = %d len = %d memtype = %d",
@@ -236,7 +236,7 @@ int PIOc_get_att_tc(int ncid, int varid, const char *name, nc_type memtype, void
     ios = file->iosystem;
 
     /* User must provide a name and destination pointer. */
-    if (!name || !ip || strlen(name) > NC_MAX_NAME)
+    if (!name || !ip || strlen(name) > PIO_MAX_NAME)
         return pio_err(ios, file, PIO_EINVAL, __FILE__, __LINE__);
 
     LOG((1, "PIOc_get_att_tc ncid %d varid %d name %s memtype %d",

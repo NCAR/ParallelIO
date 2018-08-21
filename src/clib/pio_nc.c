@@ -628,8 +628,8 @@ int PIOc_inq_dimid(int ncid, const char *name, int *idp)
     ios = file->iosystem;
     LOG((2, "iosysid = %d", ios->iosysid));
 
-    /* User must provide name shorter than NC_MAX_NAME +1. */
-    if (!name || strlen(name) > NC_MAX_NAME)
+    /* User must provide name shorter than PIO_MAX_NAME +1. */
+    if (!name || strlen(name) > PIO_MAX_NAME)
         return pio_err(ios, file, PIO_EINVAL, __FILE__, __LINE__);
 
     LOG((1, "PIOc_inq_dimid ncid = %d name = %s", ncid, name));
@@ -1033,7 +1033,7 @@ int PIOc_inq_varid(int ncid, const char *name, int *varidp)
     ios = file->iosystem;
 
     /* Caller must provide name. */
-    if (!name || strlen(name) > NC_MAX_NAME)
+    if (!name || strlen(name) > PIO_MAX_NAME)
         return pio_err(ios, file, PIO_EINVAL, __FILE__, __LINE__);
 
     LOG((1, "PIOc_inq_varid ncid = %d name = %s", ncid, name));
@@ -1150,8 +1150,8 @@ int PIOc_inq_att(int ncid, int varid, const char *name, nc_type *xtypep,
         return pio_err(NULL, NULL, ierr, __FILE__, __LINE__);
     ios = file->iosystem;
 
-    /* User must provide name shorter than NC_MAX_NAME +1. */
-    if (!name || strlen(name) > NC_MAX_NAME)
+    /* User must provide name shorter than PIO_MAX_NAME +1. */
+    if (!name || strlen(name) > PIO_MAX_NAME)
         return pio_err(ios, file, PIO_EINVAL, __FILE__, __LINE__);
 
     LOG((1, "PIOc_inq_att ncid = %d varid = %d", ncid, varid));
@@ -1344,8 +1344,8 @@ int PIOc_inq_attid(int ncid, int varid, const char *name, int *idp)
         return pio_err(NULL, NULL, ierr, __FILE__, __LINE__);
     ios = file->iosystem;
 
-    /* User must provide name shorter than NC_MAX_NAME +1. */
-    if (!name || strlen(name) > NC_MAX_NAME)
+    /* User must provide name shorter than PIO_MAX_NAME +1. */
+    if (!name || strlen(name) > PIO_MAX_NAME)
         return pio_err(ios, file, PIO_EINVAL, __FILE__, __LINE__);
 
     LOG((1, "PIOc_inq_attid ncid = %d varid = %d name = %s", ncid, varid, name));
@@ -1420,8 +1420,8 @@ int PIOc_rename_dim(int ncid, int dimid, const char *name)
         return pio_err(NULL, NULL, ierr, __FILE__, __LINE__);
     ios = file->iosystem;
 
-    /* User must provide name shorter than NC_MAX_NAME +1. */
-    if (!name || strlen(name) > NC_MAX_NAME)
+    /* User must provide name shorter than PIO_MAX_NAME +1. */
+    if (!name || strlen(name) > PIO_MAX_NAME)
         return pio_err(ios, file, PIO_EINVAL, __FILE__, __LINE__);
 
     LOG((1, "PIOc_rename_dim ncid = %d dimid = %d name = %s", ncid, dimid, name));
@@ -1492,8 +1492,8 @@ int PIOc_rename_var(int ncid, int varid, const char *name)
         return pio_err(NULL, NULL, ierr, __FILE__, __LINE__);
     ios = file->iosystem;
 
-    /* User must provide name shorter than NC_MAX_NAME +1. */
-    if (!name || strlen(name) > NC_MAX_NAME)
+    /* User must provide name shorter than PIO_MAX_NAME +1. */
+    if (!name || strlen(name) > PIO_MAX_NAME)
         return pio_err(ios, file, PIO_EINVAL, __FILE__, __LINE__);
 
     LOG((1, "PIOc_rename_var ncid = %d varid = %d name = %s", ncid, varid, name));
@@ -1567,8 +1567,8 @@ int PIOc_rename_att(int ncid, int varid, const char *name,
     ios = file->iosystem;
 
     /* User must provide names of correct length. */
-    if (!name || strlen(name) > NC_MAX_NAME ||
-        !newname || strlen(newname) > NC_MAX_NAME)
+    if (!name || strlen(name) > PIO_MAX_NAME ||
+        !newname || strlen(newname) > PIO_MAX_NAME)
         return pio_err(ios, file, PIO_EINVAL, __FILE__, __LINE__);
 
     LOG((1, "PIOc_rename_att ncid = %d varid = %d name = %s newname = %s",
@@ -1642,8 +1642,8 @@ int PIOc_del_att(int ncid, int varid, const char *name)
         return pio_err(NULL, NULL, ierr, __FILE__, __LINE__);
     ios = file->iosystem;
 
-    /* User must provide name shorter than NC_MAX_NAME +1. */
-    if (!name || strlen(name) > NC_MAX_NAME)
+    /* User must provide name shorter than PIO_MAX_NAME +1. */
+    if (!name || strlen(name) > PIO_MAX_NAME)
         return pio_err(ios, file, PIO_EINVAL, __FILE__, __LINE__);
 
     LOG((1, "PIOc_del_att ncid = %d varid = %d name = %s", ncid, varid, name));
@@ -1830,8 +1830,8 @@ int PIOc_def_dim(int ncid, const char *name, PIO_Offset len, int *idp)
         return pio_err(NULL, NULL, ierr, __FILE__, __LINE__);
     ios = file->iosystem;
 
-    /* User must provide name shorter than NC_MAX_NAME +1. */
-    if (!name || strlen(name) > NC_MAX_NAME)
+    /* User must provide name shorter than PIO_MAX_NAME +1. */
+    if (!name || strlen(name) > PIO_MAX_NAME)
         return pio_err(ios, file, PIO_EINVAL, __FILE__, __LINE__);
 
     if(!idp)
@@ -1931,7 +1931,7 @@ int PIOc_def_var(int ncid, const char *name, nc_type xtype, int ndims,
     ios = file->iosystem;
 
     /* User must provide name and storage for varid. */
-    if (!name || !varidp || strlen(name) > NC_MAX_NAME)
+    if (!name || !varidp || strlen(name) > PIO_MAX_NAME)
         return pio_err(ios, file, PIO_EINVAL, __FILE__, __LINE__);
 
     LOG((1, "PIOc_def_var ncid = %d name = %s xtype = %d ndims = %d", ncid, name,
@@ -2390,7 +2390,7 @@ int PIOc_get_att(int ncid, int varid, const char *name, void *ip)
     ios = file->iosystem;
 
     /* User must provide a name and destination pointer. */
-    if (!name || !ip || strlen(name) > NC_MAX_NAME)
+    if (!name || !ip || strlen(name) > PIO_MAX_NAME)
         return pio_err(ios, file, PIO_EINVAL, __FILE__, __LINE__);
 
     LOG((1, "PIOc_get_att ncid %d varid %d name %s", ncid, varid, name));

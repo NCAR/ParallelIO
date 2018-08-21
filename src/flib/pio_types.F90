@@ -171,6 +171,11 @@ module pio_types
 !!  - PIO_int :  4-byte integers
 !!  - PIO_char : character
 !<
+   integer, public, parameter :: PIO_MAX_DIMS_UB = 1024
+   integer, public, parameter :: PIO_MAX_ATTRS_UB = 8192
+   integer, public, parameter :: PIO_MAX_VARS_UB = 8192
+   integer, public, parameter :: PIO_MAX_NAME_UB = 1024
+   integer, public, parameter :: PIO_MAX_VAR_DIMS_UB = 1024
 #ifdef _PNETCDF
 #include <pnetcdf.inc>   /* _EXTERNAL */
    integer, public, parameter :: PIO_global = nf_global
@@ -185,8 +190,11 @@ module pio_types
    integer, public, parameter :: PIO_CLOBBER = nf_clobber
    integer, public, parameter :: PIO_NOCLOBBER = nf_NOclobber
    integer, public, parameter :: PIO_NOFILL = nf_nofill
-   integer, public, parameter :: PIO_MAX_NAME = nf_max_name
-   integer, public, parameter :: PIO_MAX_VAR_DIMS = nf_max_var_dims
+   integer, public, parameter :: PIO_MAX_DIMS = min(nf_max_dims, PIO_MAX_DIMS_UB)
+   integer, public, parameter :: PIO_MAX_ATTRS = min(nf_max_attrs, PIO_MAX_ATTRS_UB)
+   integer, public, parameter :: PIO_MAX_VARS = min(nf_max_vars, PIO_MAX_VARS_UB)
+   integer, public, parameter :: PIO_MAX_NAME = min(nf_max_name, PIO_MAX_NAME_UB)
+   integer, public, parameter :: PIO_MAX_VAR_DIMS = min(nf_max_var_dims, PIO_MAX_VAR_DIMS_UB)
    integer, public, parameter :: PIO_64BIT_OFFSET = nf_64bit_offset
    integer, public, parameter :: PIO_64BIT_DATA = nf_64bit_data
    integer, public, parameter :: PIO_FILL_INT = nf_fill_int;
@@ -208,8 +216,11 @@ module pio_types
    integer, public, parameter :: PIO_CLOBBER = nf_clobber
    integer, public, parameter :: PIO_NOCLOBBER = nf_NOclobber
    integer, public, parameter :: PIO_NOFILL = nf_nofill
-   integer, public, parameter :: PIO_MAX_NAME = nf_max_name
-   integer, public, parameter :: PIO_MAX_VAR_DIMS = nf_max_var_dims
+   integer, public, parameter :: PIO_MAX_DIMS = min(nf_max_dims, PIO_MAX_DIMS_UB)
+   integer, public, parameter :: PIO_MAX_ATTRS = min(nf_max_attrs, PIO_MAX_ATTRS_UB)
+   integer, public, parameter :: PIO_MAX_VARS = min(nf_max_vars, PIO_MAX_VARS_UB)
+   integer, public, parameter :: PIO_MAX_NAME = min(nf_max_name, PIO_MAX_NAME_UB)
+   integer, public, parameter :: PIO_MAX_VAR_DIMS = min(nf_max_var_dims, PIO_MAX_VAR_DIMS_UB)
    integer, public, parameter :: PIO_64BIT_OFFSET = nf_64bit_offset
    integer, public, parameter :: PIO_64BIT_DATA = 0
    integer, public, parameter :: PIO_FILL_INT = nf_fill_int;
@@ -222,6 +233,9 @@ module pio_types
    integer, public, parameter :: PIO_int    = 4
    integer, public, parameter :: PIO_char   = 2
    integer, public, parameter :: PIO_noerr  = 0
+   integer, public, parameter :: PIO_MAX_DIMS = PIO_MAX_DIMS_UB
+   integer, public, parameter :: PIO_MAX_ATTRS = PIO_MAX_ATTRS_UB
+   integer, public, parameter :: PIO_MAX_VARS = PIO_MAX_VARS_UB
    integer, public, parameter :: PIO_MAX_NAME = 25
    integer, public, parameter :: PIO_MAX_VAR_DIMS = 6
    integer, public, parameter :: PIO_CLOBBER = 10

@@ -58,14 +58,14 @@ int check_file(int iosysid, int format, char *filename, int my_rank)
     int ndims, nvars, ngatts, unlimdimid;
     int ndims2, nvars2, ngatts2, unlimdimid2;
     int dimid2;
-    char dimname[NC_MAX_NAME + 1];
+    char dimname[PIO_MAX_NAME + 1];
     PIO_Offset dimlen;
-    char dimname2[NC_MAX_NAME + 1];
+    char dimname2[PIO_MAX_NAME + 1];
     PIO_Offset dimlen2;
-    char varname[NC_MAX_NAME + 1];
+    char varname[PIO_MAX_NAME + 1];
     nc_type vartype;
     int varndims, vardimids, varnatts;
-    char varname2[NC_MAX_NAME + 1];
+    char varname2[PIO_MAX_NAME + 1];
     nc_type vartype2;
     int varndims2, vardimids2, varnatts2;
     int varid2;
@@ -161,14 +161,14 @@ int check_file(int iosysid, int format, char *filename, int my_rank)
         ERR(ERR_WRONG);
 
     /* Check out the variable. */
-    if ((ret = PIOc_inq_var(ncid, 0, varname, NC_MAX_NAME + 1, &vartype, &varndims, &vardimids, &varnatts)))
+    if ((ret = PIOc_inq_var(ncid, 0, varname, PIO_MAX_NAME + 1, &vartype, &varndims, &vardimids, &varnatts)))
         ERR(ret);
     if (strcmp(varname, VAR_NAME) || vartype != NC_INT || varndims != NDIM ||
         vardimids != 0 || varnatts != 0)
         ERR(ERR_WRONG);
 
     /* Check the other functions that get these values. */
-    if ((ret = PIOc_inq_varname(ncid, 0, varname2, NC_MAX_NAME + 1)))
+    if ((ret = PIOc_inq_varname(ncid, 0, varname2, PIO_MAX_NAME + 1)))
         ERR(ret);
     if (strcmp(varname2, VAR_NAME))
         ERR(ERR_WRONG);
@@ -204,7 +204,7 @@ int check_file(int iosysid, int format, char *filename, int my_rank)
     /* Check out the global attributes. */
     nc_type atttype;
     PIO_Offset attlen;
-    char myattname[NC_MAX_NAME + 1];
+    char myattname[PIO_MAX_NAME + 1];
     int myid;
     if ((ret = PIOc_inq_att(ncid, NC_GLOBAL, ATT_NAME, &atttype, &attlen)))
         ERR(ret);
@@ -281,7 +281,7 @@ int main(int argc, char **argv)
     int flavor[NUM_FLAVORS]; /* iotypes for the supported netCDF IO flavors. */
 
     /* Names for the output files. */
-    char filename[NUM_FLAVORS][NC_MAX_NAME + 1];
+    char filename[NUM_FLAVORS][PIO_MAX_NAME + 1];
 
     /* The ID for the parallel I/O system. */
     int iosysid[COMPONENT_COUNT];
@@ -376,7 +376,7 @@ int main(int argc, char **argv)
                     ERR(ERR_AWFUL);
 
                 /* Test the inq_type function for atomic types. */
-                char type_name[NC_MAX_NAME + 1];
+                char type_name[PIO_MAX_NAME + 1];
                 PIO_Offset type_size;
                 nc_type xtype[NUM_TYPES] = {NC_CHAR, NC_BYTE, NC_SHORT, NC_INT, NC_FLOAT, NC_DOUBLE,
                                             NC_UBYTE, NC_USHORT, NC_UINT, NC_INT64, NC_UINT64};
@@ -397,7 +397,7 @@ int main(int argc, char **argv)
                 }
 
                 /* Define a dimension. */
-                char dimname2[NC_MAX_NAME + 1];
+                char dimname2[PIO_MAX_NAME + 1];
 		printf("%d test_intercomm2 defining dimension %s\n", my_rank, DIM_NAME);
                 if ((ret = PIOc_def_dim(ncid, FIRST_DIM_NAME, DIM_LEN, &dimid)))
                     ERR(ret);
@@ -417,11 +417,11 @@ int main(int argc, char **argv)
                     ERR(ERR_WRONG);
 
                 /* Define a 1-D variable. */
-                char varname2[NC_MAX_NAME + 1];
+                char varname2[PIO_MAX_NAME + 1];
 		printf("%d test_intercomm2 defining variable %s\n", my_rank, VAR_NAME);
                 if ((ret = PIOc_def_var(ncid, FIRST_VAR_NAME, NC_INT, NDIM, &dimid, &varid)))
                     ERR(ret);
-                if ((ret = PIOc_inq_varname(ncid, 0, varname2, NC_MAX_NAME + 1)))
+                if ((ret = PIOc_inq_varname(ncid, 0, varname2, PIO_MAX_NAME + 1)))
                     ERR(ret);
                 if (strcmp(varname2, FIRST_VAR_NAME))
                     ERR(ERR_WRONG);
@@ -442,7 +442,7 @@ int main(int argc, char **argv)
                 short short_att_data = ATT_VALUE;
                 float float_att_data = ATT_VALUE;
                 double double_att_data = ATT_VALUE;
-                char attname2[NC_MAX_NAME + 1];
+                char attname2[PIO_MAX_NAME + 1];
 
                 /* Write an att and rename it. */
                 if ((ret = PIOc_put_att_int(ncid, NC_GLOBAL, FIRST_ATT_NAME, NC_INT, 1, &att_data)))
