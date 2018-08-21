@@ -685,6 +685,7 @@ int recv_and_write_data(file_desc_t *file, const int *varids, const int *frame,
                     */
                     switch (iodesc->piotype)
                     {
+#ifdef _NETCDF
                     case PIO_BYTE:
                         ierr = nc_put_vara_schar(file->fh, varids[nv], start, count, (signed char*)bufptr);
                         break;
@@ -703,6 +704,7 @@ int recv_and_write_data(file_desc_t *file, const int *varids, const int *frame,
                     case PIO_DOUBLE:
                         ierr = nc_put_vara_double(file->fh, varids[nv], start, count, (double*)bufptr);
                         break;
+#endif /* _NETCDF */
 #ifdef _NETCDF4
                     case PIO_UBYTE:
                         ierr = nc_put_vara_uchar(file->fh, varids[nv], start, count, (unsigned char*)bufptr);
@@ -1313,6 +1315,7 @@ int pio_read_darray_nc_serial(file_desc_t *file, int fndims, io_desc_t *iodesc, 
                     /* ierr = nc_get_vara(file->fh, vid, start, count, bufptr); */
                     switch (iodesc->piotype)
                     {
+#ifdef _NETCDF
                     case PIO_BYTE:
                         ierr = nc_get_vara_schar(file->fh, vid, start, count, (signed char*)bufptr);
                         break;
@@ -1331,6 +1334,7 @@ int pio_read_darray_nc_serial(file_desc_t *file, int fndims, io_desc_t *iodesc, 
                     case PIO_DOUBLE:
                         ierr = nc_get_vara_double(file->fh, vid, start, count, (double*)bufptr);
                         break;
+#endif /* _NETCDF */
 #ifdef _NETCDF4
                     case PIO_UBYTE:
                         ierr = nc_get_vara_uchar(file->fh, vid, start, count, (unsigned char*)bufptr);

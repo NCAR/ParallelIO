@@ -81,7 +81,7 @@ int resultlen;
  *
  * @return 0 if example file is correct, non-zero otherwise. */
 int check_file(int ntasks, char *filename) {
-    
+#ifdef _NETCDF
     int ncid;         /**< File ID from netCDF. */
     int ndims;        /**< Number of dimensions. */
     int nvars;        /**< Number of variables. */
@@ -135,6 +135,7 @@ int check_file(int ntasks, char *filename) {
     /* Close the file. */
     if ((ret = nc_close(ncid)))
 	return ret;
+#endif
 
     /* Everything looks good! */
     return 0;
@@ -332,7 +333,9 @@ int check_file(int ntasks, char *filename) {
 #ifdef _PNETCDF
         format[num_flavors++] = PIO_IOTYPE_PNETCDF;
 #endif
+#ifdef _NETCDF
         format[num_flavors++] = PIO_IOTYPE_NETCDF;
+#endif
 #ifdef _NETCDF4
         format[num_flavors++] = PIO_IOTYPE_NETCDF4C;
         format[num_flavors++] = PIO_IOTYPE_NETCDF4P;

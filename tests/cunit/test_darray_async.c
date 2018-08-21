@@ -390,7 +390,11 @@ int run_darray_async_test(int iosysid, int my_rank, MPI_Comm test_comm,
             ERR(ret);
 
         /* Check the file for correctness. */
+#ifdef _NETCDF
         if ((ret = check_darray_file(iosysid, data_filename, PIO_IOTYPE_NETCDF, my_rank, piotype)))
+#else /* Assume that _PNETCDF is defined. */
+        if ((ret = check_darray_file(iosysid, data_filename, PIO_IOTYPE_PNETCDF, my_rank, piotype)))
+#endif
             ERR(ret);
 
     } /* next iotype */

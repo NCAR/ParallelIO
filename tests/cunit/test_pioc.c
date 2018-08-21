@@ -498,9 +498,14 @@ int test_iotypes(int my_rank)
     if (PIOc_iotype_available(1000))
         return ERR_WRONG;
 
-    /* NetCDF is always present. */
+    /* NetCDF may or may not be present. */
+#ifdef _NETCDF
     if (!PIOc_iotype_available(PIO_IOTYPE_NETCDF))
         return ERR_WRONG;
+#else
+    if (PIOc_iotype_available(PIO_IOTYPE_NETCDF))
+        return ERR_WRONG;
+#endif /* _NETCDF */
 
     /* Pnetcdf may or may not be present. */
 #ifdef _PNETCDF
@@ -534,6 +539,7 @@ int test_iotypes(int my_rank)
  */
 int check_strerror_netcdf(int my_rank)
 {
+#ifdef _NETCDF
 #define NUM_NETCDF_TRIES 5
     int errcode[NUM_NETCDF_TRIES] = {PIO_EBADID, NC4_LAST_ERROR - 1, 0, 1, -600};
     const char *expected[NUM_NETCDF_TRIES] = {"NetCDF: Not a valid ID",
@@ -566,6 +572,7 @@ int check_strerror_netcdf(int my_rank)
 
     if (!my_rank)
         printf("check_strerror_netcdf SUCCEEDED!\n");
+#endif /* _NETCDF */
 
     return PIO_NOERR;
 }
@@ -634,7 +641,11 @@ int check_strerror_pio(int my_rank)
     const char *expected[NUM_PIO_TRIES] = {"NetCDF: Not a valid ID",
                                            "NetCDF: Attempting netcdf-3 operation on netcdf-4 file",
                                            "Unknown Error: Unrecognized error code", "No error",
+#ifdef _NETCDF
                                            nc_strerror(1), "Bad IO type"};
+#else /* Assume that _PNETCDF is defined. */
+                                           ncmpi_strerror(1), "Bad IO type"};
+#endif
     int ret;
 
     if ((ret = check_error_strings(my_rank, NUM_PIO_TRIES, errcode, expected)))
@@ -1453,6 +1464,7 @@ int test_scalar(int iosysid, int num_flavors, int *flavor, int my_rank, int asyn
 
     /* Use netCDF classic to create a file with a scalar var, then set
      * and read the value. */
+#ifdef _NETCDF
     if (my_rank == 0)
     {
         char test_file[] = "netcdf_test.nc";
@@ -1482,6 +1494,7 @@ int test_scalar(int iosysid, int num_flavors, int *flavor, int my_rank, int asyn
         if ((ret = nc_close(ncid)))
             return ret;
     }
+#endif /* _NETCDF */
 
     /* Use pnetCDF to create a file with a scalar var, then set and
      * read the value. */
@@ -1636,7 +1649,11 @@ int test_decomp_internal(int my_test_size, int my_rank, int iosysid, int dim_len
 
     /* This will be our file name for writing out decompositions. */
     sprintf(filename, "decomp_%s_rank_%d_async_%d.txt", TEST_NAME, my_rank, async);
+#ifdef _NETCDF
     sprintf(nc_filename, "nc_decomp_internal_%s_rank_%d_async_%d.nc", TEST_NAME, my_rank, async);
+#else /* Assume that _PNETCDF is defined. */
+    sprintf(nc_filename, "ncmpi_decomp_internal_%s_async_%d.nc", TEST_NAME, async);
+#endif
 
     /* Decompose the data over the tasks. */
     if ((ret = create_decomposition(my_test_size, my_rank, iosysid, dim_len, &ioid)))
@@ -1823,7 +1840,11 @@ int test_decomp_public(int my_test_size, int my_rank, int iosysid, int dim_len,
     int ret;
 
     /* This will be our file name for writing out decompositions. */
+#ifdef _NETCDF
     sprintf(nc_filename, "nc_decomp_%s_rank_%d_async_%d.nc", TEST_NAME, my_rank, async);
+#else /* Assume that _PNETCDF is defined. */
+    sprintf(nc_filename, "ncmpi_decomp_%s_async_%d.nc", TEST_NAME, async);
+#endif
 
     /* Decompose the data over the tasks. */
     if ((ret = create_decomposition(my_test_size, my_rank, iosysid, dim_len, &ioid)))
@@ -1969,7 +1990,11 @@ int test_decomp_public_2(int my_test_size, int my_rank, int iosysid, int dim_len
     int ret;
 
     /* This will be our file name for writing out decompositions. */
+#ifdef _NETCDF
     sprintf(nc_filename, "nc_decomp_%s_rank_%d_async_%d.nc", TEST_NAME, my_rank, async);
+#else /* Assume that _PNETCDF is defined. */
+    sprintf(nc_filename, "ncmpi_decomp_%s_async_%d.nc", TEST_NAME, async);
+#endif
 
     /* Decompose the data over the tasks. */
     if ((ret = create_decomposition(my_test_size, my_rank, iosysid, dim_len, &ioid)))

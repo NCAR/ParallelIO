@@ -136,6 +136,7 @@ int PIOc_put_att_tc(int ncid, int varid, const char *name, nc_type atttype,
         {
             switch(memtype)
             {
+#ifdef _NETCDF
             case NC_CHAR:
                 ierr = nc_put_att_text(file->fh, varid, name, len, op);
                 break;
@@ -157,6 +158,7 @@ int PIOc_put_att_tc(int ncid, int varid, const char *name, nc_type atttype,
             case NC_DOUBLE:
                 ierr = nc_put_att_double(file->fh, varid, name, atttype, len, op);
                 break;
+#endif /* _NETCDF */
 #ifdef _NETCDF4
             case NC_UBYTE:
                 ierr = nc_put_att_uchar(file->fh, varid, name, atttype, len, op);
@@ -331,6 +333,7 @@ int PIOc_get_att_tc(int ncid, int varid, const char *name, nc_type memtype, void
         {
             switch(memtype)
             {
+#ifdef _NETCDF
             case NC_CHAR:
                 ierr = nc_get_att_text(file->fh, varid, name, ip);
                 break;
@@ -352,6 +355,7 @@ int PIOc_get_att_tc(int ncid, int varid, const char *name, nc_type memtype, void
             case NC_DOUBLE:
                 ierr = nc_get_att_double(file->fh, varid, name, ip);
                 break;
+#endif /* _NETCDF */
 #ifdef _NETCDF4
             case NC_UBYTE:
                 ierr = nc_get_att_uchar(file->fh, varid, name, ip);
@@ -612,6 +616,7 @@ int PIOc_get_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
         if (file->iotype != PIO_IOTYPE_PNETCDF && file->do_io)
             switch(xtype)
             {
+#ifdef _NETCDF
             case NC_BYTE:
                 ierr = nc_get_vars_schar(file->fh, varid, (size_t *)start, (size_t *)count,
                                          (ptrdiff_t *)stride, buf);
@@ -640,6 +645,7 @@ int PIOc_get_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                 ierr = nc_get_vars_double(file->fh, varid, (size_t *)start, (size_t *)count,
                                           (ptrdiff_t *)stride, buf);
                 break;
+#endif
 #ifdef _NETCDF4
             case NC_UBYTE:
                 ierr = nc_get_vars_uchar(file->fh, varid, (size_t *)start, (size_t *)count,
@@ -1094,6 +1100,7 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                  file->iotype));
             switch(xtype)
             {
+#ifdef _NETCDF
             case NC_BYTE:
                 ierr = nc_put_vars_schar(file->fh, varid, (size_t *)start, (size_t *)count,
                                          (ptrdiff_t *)stride, buf);
@@ -1122,6 +1129,7 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                 ierr = nc_put_vars_double(file->fh, varid, (size_t *)start, (size_t *)count,
                                           (ptrdiff_t *)stride, buf);
                 break;
+#endif
 #ifdef _NETCDF4
             case NC_UBYTE:
                 ierr = nc_put_vars_uchar(file->fh, varid, (size_t *)start, (size_t *)count,

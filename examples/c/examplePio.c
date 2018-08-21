@@ -186,7 +186,11 @@ struct examplePioClass* epc_init( struct examplePioClass* this )
     this->stride        = 1;
     this->numAggregator = 0;
     this->optBase       = 0;
+#ifdef _NETCDF
     this->iotype        = PIO_IOTYPE_NETCDF;
+#else /* Assume that _PNETCDF is defined. */
+    this->iotype        = PIO_IOTYPE_PNETCDF;
+#endif
     this->fileName      = "examplePio_c.nc";
     this->dimLen[0]     = LEN;
     

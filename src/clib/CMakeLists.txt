@@ -96,7 +96,9 @@ if (PIO_MICRO_TIMING)
 endif ()
 
 #===== NetCDF-C =====
-find_package (NetCDF "4.3.3" COMPONENTS C)
+if (WITH_NETCDF)
+  find_package (NetCDF "4.3.3" COMPONENTS C)
+endif ()
 if (NetCDF_C_FOUND)
   target_include_directories (pioc
     PUBLIC ${NetCDF_C_INCLUDE_DIRS})

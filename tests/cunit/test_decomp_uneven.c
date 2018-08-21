@@ -145,7 +145,11 @@ int test_decomp_read_write(int iosysid, int ioid, int num_flavors, int *flavor, 
 
         /* Open the decomposition file with netCDF. */
         int ncid_in;
+#ifdef _NETCDF
         int iotype = PIO_IOTYPE_NETCDF;
+#else /* Assume that _PNETCDF is defined. */
+        int iotype = PIO_IOTYPE_PNETCDF;
+#endif
         if ((ret = PIOc_openfile(iosysid, &ncid_in, &iotype, filename, NC_NOWRITE)))
             return ret;
 
