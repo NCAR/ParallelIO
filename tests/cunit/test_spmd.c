@@ -572,15 +572,17 @@ int test_CalcStartandCount()
     return 0;
 }
 
-/* Test the GDCblocksize() function. */
-int run_GDCblocksize_tests(MPI_Comm test_comm)
+/* Test the GCDblocksize() function (ignoring gaps). */
+int run_GCDblocksize_tests(MPI_Comm test_comm)
 {
     {
         int arrlen = 1;
         PIO_Offset arr_in[1] = {0};
         PIO_Offset blocksize;
-        
+
         blocksize = GCDblocksize(arrlen, arr_in);
+        /* 1 block: [0]
+         * expected result: 1 */
         if (blocksize != 1)
             return ERR_WRONG;
     }
@@ -589,42 +591,232 @@ int run_GDCblocksize_tests(MPI_Comm test_comm)
         int arrlen = 4;
         PIO_Offset arr_in[4] = {0, 1, 2, 3};
         PIO_Offset blocksize;
-        
+
         blocksize = GCDblocksize(arrlen, arr_in);
+        /* 1 block: [0 ~ 3]
+         * expected result: 4 */
         if (blocksize != 4)
             return ERR_WRONG;
     }
-    
+
     {
         int arrlen = 4;
         PIO_Offset arr_in[4] = {0, 2, 3, 4};
         PIO_Offset blocksize;
 
         blocksize = GCDblocksize(arrlen, arr_in);
+        /* 2 blocks: [0], [2 ~ 4]
+         * expected result: gcd(1, 3) = 1 */
         if (blocksize != 1)
             return ERR_WRONG;
     }
-    
+
     {
         int arrlen = 4;
         PIO_Offset arr_in[4] = {0, 1, 3, 4};
         PIO_Offset blocksize;
 
         blocksize = GCDblocksize(arrlen, arr_in);
-        if (blocksize != 1)
+        /* 2 blocks: [0 ~ 1], [3 ~ 4]
+         * expected result: gcd(2, 2) = 2 */
+        if (blocksize != 2)
             return ERR_WRONG;
     }
-    
+
     {
         int arrlen = 4;
         PIO_Offset arr_in[4] = {0, 1, 2, 4};
         PIO_Offset blocksize;
 
         blocksize = GCDblocksize(arrlen, arr_in);
+        /* 2 blocks: [0 ~ 2], [4]
+         * expected result: gcd(3, 1) = 1 */
         if (blocksize != 1)
             return ERR_WRONG;
     }
-    
+
+    {
+        int arrlen = 4;
+        PIO_Offset arr_in[4] = {0, 1, 4, 5};
+        PIO_Offset blocksize;
+
+        blocksize = GCDblocksize(arrlen, arr_in);
+        /* 2 blocks: [0 ~ 1], [4 ~ 5]
+         * expected result: gcd(2, 2) = 2 */
+        if (blocksize != 2)
+            return ERR_WRONG;
+    }
+
+    {
+        int arrlen = 4;
+        PIO_Offset arr_in[4] = {1, 2, 3, 4};
+        PIO_Offset blocksize;
+
+        blocksize = GCDblocksize(arrlen, arr_in);
+        /* 1 block: [1 ~ 4]
+         * expected result: 4 */
+        if (blocksize != 4)
+            return ERR_WRONG;
+    }
+
+    {
+        int arrlen = 4;
+        PIO_Offset arr_in[4] = {2, 3, 4, 5};
+        PIO_Offset blocksize;
+
+        blocksize = GCDblocksize(arrlen, arr_in);
+        /* 1 block: [2 ~ 5]
+         * expected result: 4 */
+        if (blocksize != 4)
+            return ERR_WRONG;
+    }
+
+    {
+        int arrlen = 4;
+        PIO_Offset arr_in[4] = {3, 2, 1, 0};
+        PIO_Offset blocksize;
+
+        blocksize = GCDblocksize(arrlen, arr_in);
+        /* 4 blocks: [3], [2], [1], [0]
+         * expected result: gcd(1, 1, 1, 1) = 1 */
+        if (blocksize != 1)
+            return ERR_WRONG;
+    }
+
+    {
+        int arrlen = 4;
+        PIO_Offset arr_in[4] = {2, 2, 2, 2};
+        PIO_Offset blocksize;
+
+        blocksize = GCDblocksize(arrlen, arr_in);
+        /* 4 blocks: [2], [2], [2], [2]
+         * expected result: gcd(1, 1, 1, 1) = 1 */
+        if (blocksize != 1)
+            return ERR_WRONG;
+    }
+
+    {
+        int arrlen = 6;
+        PIO_Offset arr_in[6] = {0, 1, 3, 2, 4, 5};
+        PIO_Offset blocksize;
+
+        blocksize = GCDblocksize(arrlen, arr_in);
+        /* 4 blocks: [0 ~ 1], [3], [2], [4 ~ 5]
+         * expected result: gcd(2, 1, 1, 2) = 1 */
+        if (blocksize != 1)
+            return ERR_WRONG;
+    }
+
+    {
+        int arrlen = 6;
+        PIO_Offset arr_in[6] = {0, 1, 4, 5, 2, 3};
+        PIO_Offset blocksize;
+
+        blocksize = GCDblocksize(arrlen, arr_in);
+        /* 3 blocks: [0 ~ 1], [4 ~ 5], [2 ~ 3]
+         * expected result: gcd(2, 2, 2) = 2 */
+        if (blocksize != 2)
+            return ERR_WRONG;
+    }
+
+    {
+        int arrlen = 6;
+        PIO_Offset arr_in[6] = {2, 3, 4, 5, 0, 1};
+        PIO_Offset blocksize;
+
+        blocksize = GCDblocksize(arrlen, arr_in);
+        /* 2 blocks: [2 ~ 5], [0 ~ 1]
+         * expected result: gcd(4, 2) = 2 */
+        if (blocksize != 2)
+            return ERR_WRONG;
+    }
+
+    {
+        int arrlen = 6;
+        PIO_Offset arr_in[6] = {3, 4, 5, 0, 1, 2};
+        PIO_Offset blocksize;
+
+        blocksize = GCDblocksize(arrlen, arr_in);
+        /* 2 blocks: [3 ~ 5], [0 ~ 2]
+         * expected result: gcd(3, 3) = 3 */
+        if (blocksize != 3)
+            return ERR_WRONG;
+    }
+
+    {
+        int arrlen = 6;
+        PIO_Offset arr_in[6] = {0, 1, 2, 3, 3, 4};
+        PIO_Offset blocksize;
+
+        blocksize = GCDblocksize(arrlen, arr_in);
+        /* 2 blocks: [0 ~ 3], [3 ~ 4]
+         * expected result: gcd(4, 2) = 2 */
+        if (blocksize != 2)
+            return ERR_WRONG;
+    }
+
+    {
+        int arrlen = 6;
+        PIO_Offset arr_in[6] = {0, 1, 1, 2, 2, 3};
+        PIO_Offset blocksize;
+
+        blocksize = GCDblocksize(arrlen, arr_in);
+        /* 3 blocks: [0 ~ 1], [1 ~ 2], [2 ~ 3]
+         * expected result: gcd(2, 2, 2) = 2 */
+        if (blocksize != 2)
+            return ERR_WRONG;
+    }
+
+    {
+        int arrlen = 12;
+        PIO_Offset arr_in[12] = {8, 9, 10, 11, 12, 13, 14, 15, 2, 3, 4, 5};
+        PIO_Offset blocksize;
+
+        blocksize = GCDblocksize(arrlen, arr_in);
+        /* 2 blocks: [8 ~ 15], [2 ~ 5]
+         * expected result: gcd(8, 4) = 4 */
+        if (blocksize != 4)
+            return ERR_WRONG;
+    }
+
+    {
+        int arrlen = 2422;
+        PIO_Offset arr_in[2422];
+        for (int i = 0; i < 2422; i++)
+        {
+            if (i <= 2204)
+                arr_in[i] = i;
+            else
+                arr_in[i] = i + 2;
+        }
+        PIO_Offset blocksize;
+
+        blocksize = GCDblocksize(arrlen, arr_in);
+        /* 2 blocks: [0 ~ 2204] [2207 ~ 2423]
+         * expected result: gcd(2205, 217) = 7 */
+        if (blocksize != 7)
+            return ERR_WRONG;
+    }
+
+    {
+        int arrlen = 2422;
+        PIO_Offset arr_in[2422];
+        for (int i = 0; i < 2422; i++)
+        {
+            if (i <= 2203)
+                arr_in[i] = i;
+            else
+                arr_in[i] = i + 2;
+        }
+        PIO_Offset blocksize;
+
+        blocksize = GCDblocksize(arrlen, arr_in);
+        /* 2 blocks: [0 ~ 2203] [2206 ~ 2423]
+         * expected result: gcd(2204, 218) = 2 */
+        if (blocksize != 2)
+            return ERR_WRONG;
+    }
+
     return 0;
 }
 
@@ -656,7 +848,7 @@ int main(int argc, char **argv)
              return ret;
 
         printf("%d running tests for GCDblocksize()\n", my_rank);
-        if ((ret = run_GDCblocksize_tests(test_comm)))
+        if ((ret = run_GCDblocksize_tests(test_comm)))
             return ret;
 
         printf("%d running spmd test code\n", my_rank);
