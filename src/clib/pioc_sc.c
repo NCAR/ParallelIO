@@ -236,7 +236,14 @@ PIO_Offset GCDblocksize(int arrlen, const PIO_Offset *arr_in)
             if(del_arr[i] != 1)
                 loc_arr[j++] = i;
 
-        blk_len[0] = loc_arr[0];
+        /* This is handled differently from the Fortran version in PIO1,
+         * since array index is 1-based in Fortran and 0-based in C.
+         * Original Fortran code: blk_len(1) = loc_arr(1)
+         * Converted C code (incorrect): blk_len[0] = loc_arr[0];
+         * Converted C code (correct): blk_len[0] = loc_arr[0] + 1;
+         * For example, if loc_arr[0] is 2, the first block actually
+         * has 3 elements with indices 0, 1 and 2. */
+        blk_len[0] = loc_arr[0] + 1;
         blklensum = blk_len[0];
         /* If numblks > 1 then numblks must be <= arrlen */
         for(int i = 1; i < numblks - 1; i++)
