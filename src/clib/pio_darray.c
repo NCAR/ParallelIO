@@ -694,7 +694,7 @@ int PIOc_write_darray(int ncid, int varid, int ioid, PIO_Offset arraylen, void *
             LOG((1, "Creating a unique file name for saving the decomposition failed, ierr = %d", ierr));
             return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
         }
-        LOG((2, "Saving decomp map to %s", filename));
+        LOG((2, "Saving decomp map (write) to %s", filename));
         PIOc_writemap(filename, ioid, iodesc->ndims, iodesc->dimlen, iodesc->maplen, iodesc->map, ios->my_comm);
         iodesc->is_saved = true;
     }
@@ -1055,6 +1055,22 @@ int PIOc_read_darray(int ncid, int varid, int ioid, PIO_Offset arraylen,
         LOG((3, "shared fndims = %d", fndims));
     }
 
+#if PIO_SAVE_DECOMPS
+    if(!(iodesc->is_saved) &&
+        pio_save_decomps_regex_match(ioid, file->fname, file->varlist[varid].vname))
+    {
+        char filename[PIO_MAX_NAME];
+        ierr = pio_create_uniq_str(ios, iodesc, filename, PIO_MAX_NAME, "piodecomp", ".dat");
+        if(ierr != PIO_NOERR)
+        {
+            LOG((1, "Creating a unique file name for saving the decomposition failed, ierr = %d", ierr));
+            return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
+        }
+        LOG((2, "Saving decomp map (read) to %s", filename));
+        PIOc_writemap(filename, ioid, iodesc->ndims, iodesc->dimlen, iodesc->maplen, iodesc->map, ios->my_comm);
+        iodesc->is_saved = true;
+    }
+#endif
     /* Call the correct darray read function based on iotype. */
     if(!ios->async || ios->ioproc)
     {

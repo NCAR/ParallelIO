@@ -2,8 +2,8 @@ Introduction
 --------------
 PIO supports saving I/O decompositions specified by the user using simple regular expressions. The user can filter the I/O decompositions to be saved by,
 1. I/O decomposition id : The unique id assigned to the decomposition by PIO
-2. Variable name : The decomposition used to write the variable is written out
-3. File name : Decompositions used to write variables in the file is written out.
+2. Variable name : The decomposition used to read/write the variable is written out
+3. File name : Decompositions used to read/write variables in the file is written out.
 
 The regular expression specified by the user could combine the above filters into a single regular expression using logical not, and, or operators.
 
@@ -32,13 +32,13 @@ As mentioned above PIO supports filtering I/O decompositions to be saved using t
 
     '(FILE=\".*testfile1\")'
 
-    can be used to filter out decompositions used to write variables to a file with name specified by a regular expression. In the example above all decompositions used to write variables to file with name ending in testfile1 is written out to disk
+    can be used to filter out decompositions used to write variables to a file with name specified by a regular expression. In the example above all decompositions used to read/write variables to file with name ending in testfile1 is written out to disk
 
 4. Combining multiple filters : Multiple regular expressions can be combined using logical not/and/or to create a more complex regular expression to filter out the I/O decompositions to be saved. For example,
 
     '(ID=\"526\")|| ((VAR=\".*test_var1.*\")&&(FILE=\".*testfile1\"))'
 
-    can be used to save I/O decompositions that either have 526 as the id or are used to write variables with names that include "test_var1" into files with names that end in "testfile1"
+    can be used to save I/O decompositions that either have 526 as the id or are used to read/write variables with names that include "test_var1" into files with names that end in "testfile1"
 
 
 A simple example
