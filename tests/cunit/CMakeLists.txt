@@ -129,6 +129,8 @@ set (AT_LEAST_TWO_TASKS 3)
 set (AT_LEAST_THREE_TASKS 4)
 set (AT_LEAST_FOUR_TASKS 5)
 
+add_test(NAME test_sdecomp_regex COMMAND test_sdecomp_regex)
+
 if (PIO_USE_MPISERIAL)
   add_test(NAME test_pioc
     COMMAND test_pioc)
