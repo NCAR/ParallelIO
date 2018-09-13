@@ -149,13 +149,13 @@ void compute_one_dim(int gdim, int ioprocs, int rank, PIO_Offset *start,
 
 /**
  * Look for the largest block of data for io which can be expressed in
- * terms of start and count.
+ * terms of start and count (account for gaps).
  *
  * @param arrlen
  * @param arr_in
  * @returns the size of the block
  */
-PIO_Offset GCDblocksize(int arrlen, const PIO_Offset *arr_in)
+PIO_Offset GCDblocksize_gaps(int arrlen, const PIO_Offset *arr_in)
 {
     int numblks = 0;  /* Number of blocks. */
     int numtimes = 0; /* Number of times adjacent arr_in elements differ by != 1. */
@@ -236,7 +236,14 @@ PIO_Offset GCDblocksize(int arrlen, const PIO_Offset *arr_in)
             if(del_arr[i] != 1)
                 loc_arr[j++] = i;
 
-        blk_len[0] = loc_arr[0];
+        /* This is handled differently from the Fortran version in PIO1,
+         * since array index is 1-based in Fortran and 0-based in C.
+         * Original Fortran code: blk_len(1) = loc_arr(1)
+         * Converted C code (incorrect): blk_len[0] = loc_arr[0];
+         * Converted C code (correct): blk_len[0] = loc_arr[0] + 1;
+         * For example, if loc_arr[0] is 2, the first block actually
+         * has 3 elements with indices 0, 1 and 2. */
+        blk_len[0] = loc_arr[0] + 1;
         blklensum = blk_len[0];
         /* If numblks > 1 then numblks must be <= arrlen */
         for(int i = 1; i < numblks - 1; i++)
@@ -268,6 +275,64 @@ PIO_Offset GCDblocksize(int arrlen, const PIO_Offset *arr_in)
 
     free(del_arr);
     del_arr = NULL;
+
+    return bsize;
+}
+
+/**
+ * Look for the largest block of data for io which can be expressed in
+ * terms of start and count (ignore gaps).
+ *
+ * @param arrlen
+ * @param arr_in
+ * @returns the size of the block
+ */
+PIO_Offset GCDblocksize(int arrlen, const PIO_Offset *arr_in)
+{
+    /* Check inputs. */
+    pioassert(arrlen > 0 && arr_in && arr_in[0] >= 0, "invalid input", __FILE__, __LINE__);
+
+    /* If theres is only one contiguous block with length 1,
+     * the result must be 1 and we can return. */
+    if (arrlen == 1)
+        return 1;
+
+    /* We can use the array length as the initial value. 
+     * Suppose we have n contiguous blocks with lengths
+     * b1, b2, ..., bn, then gcd(b1, b2, ..., bn) =
+     * gcd(b1 + b2 + ... + bn, b1, b2, ..., bn) =
+     * gcd(arrlen, b1, b2, ..., bn) */
+    PIO_Offset bsize = arrlen;
+
+    /* The minimum length of a block is 1. */
+    PIO_Offset blk_len = 1;
+
+    for (int i = 0; i < arrlen - 1; i++)
+    {
+        pioassert(arr_in[i + 1] >= 0, "invalid input", __FILE__, __LINE__);
+
+        if ((arr_in[i + 1] - arr_in[i]) == 1)
+        {
+            /* Still in a contiguous block. */
+            blk_len++;
+        }
+        else
+        {
+            /* The end of a block has been reached. */
+            if (blk_len == 1)
+                return 1;
+
+            bsize = lgcd(bsize, blk_len);
+            if (bsize == 1)
+              return 1;
+
+            /* Continue to find next block. */
+            blk_len = 1;
+        }
+    }
+
+    /* Handle the last block. */
+    bsize = lgcd(bsize, blk_len);
 
     return bsize;
 }
