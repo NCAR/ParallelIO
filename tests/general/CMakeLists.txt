@@ -104,6 +104,12 @@ else ()
     ARGUMENTS --pio-tf-stride=2 --pio-tf-num-aggregators=2
     NUMPROCS 2
     TIMEOUT ${DEFAULT_TEST_TIMEOUT})
+
+  add_mpi_test(init_finalize_4_proc_2iop_3str
+    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_init_finalize
+    ARGUMENTS --pio-tf-num-io-tasks=2 --pio-tf-stride=3
+    NUMPROCS 4
+    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 endif ()
 
 #===== pio_async_init_finalize =====
