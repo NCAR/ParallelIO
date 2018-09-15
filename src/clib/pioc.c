@@ -804,7 +804,11 @@ int PIOc_Init_Intracomm(MPI_Comm comp_comm, int num_iotasks, int stride, int bas
         return check_mpi2(NULL, NULL, mpierr, __FILE__, __LINE__);
 
     /* Check the inputs. */
-    if (!iosysidp || num_iotasks < 1 || num_iotasks * stride > num_comptasks)
+    if (!iosysidp ||
+        num_iotasks < 1 || num_iotasks > num_comptasks ||
+        stride < 1 ||
+        base < 0 || base >= num_comptasks ||
+        stride * (num_iotasks - 1) >= num_comptasks)
         return pio_err(NULL, NULL, PIO_EINVAL, __FILE__, __LINE__);
 
     LOG((1, "PIOc_Init_Intracomm comp_comm = %d num_iotasks = %d stride = %d base = %d "
