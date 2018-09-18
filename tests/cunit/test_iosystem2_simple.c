@@ -77,9 +77,6 @@ int main(int argc, char **argv)
         printf("%d newcomm = %d even = %d new_size = %d\n", my_rank, newcomm, even, new_size);
 
         /* Check that some bad inputs are rejected. */
-        if (PIOc_Init_Intracomm(newcomm, new_size, STRIDE + 30, BASE, REARRANGER,
-                                &iosysid) != PIO_EINVAL)
-            return ERR_WRONG;
         if (PIOc_Init_Intracomm(newcomm, new_size, STRIDE, BASE, REARRANGER, NULL) != PIO_EINVAL)
             return ERR_WRONG;
 
