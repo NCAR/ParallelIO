@@ -493,7 +493,10 @@ int put_var_nm(int ncid, int varid, int nctype, enum ADIOS_DATATYPES memtype, co
     switch(memtype)
     {
     case adios_byte:
-        ret = PIOc_put_var_schar(ncid, varid, (const signed char*)buf);
+		if (nctype==PIO_CHAR)
+			ret = PIOc_put_var_text(ncid, varid, (const char*)buf);
+		else  
+			ret = PIOc_put_var_schar(ncid, varid, (const signed char*)buf);
         break;
     case adios_short:
         ret = PIOc_put_var_short(ncid, varid, (const signed short*)buf);

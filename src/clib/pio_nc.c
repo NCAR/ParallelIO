@@ -2295,10 +2295,12 @@ int PIOc_def_var(int ncid, const char *name, nc_type xtype, int ndims,
                 {
                     adios_define_attribute_byvalue(file->adios_group,"__pio__/ndims",av->name,adios_integer,1,&av->ndims);
                     adios_define_attribute_byvalue(file->adios_group,"__pio__/nctype",av->name,adios_integer,1,&av->nc_type);
-                    char* dimnames[6];
-                    for (int i = 0; i < av->ndims; i++)
-                        dimnames[i] = file->dim_names[av->gdimids[i]];
-                    adios_define_attribute_byvalue(file->adios_group,"__pio__/dims",av->name,adios_string_array,av->ndims,dimnames);
+                    if (av->ndims != 0) { /* If zero dimensions, do not write out __pio__/dims */
+                        char* dimnames[6];
+                        for (int i = 0; i < av->ndims; i++)
+                            dimnames[i] = file->dim_names[av->gdimids[i]];
+                        adios_define_attribute_byvalue(file->adios_group,"__pio__/dims",av->name,adios_string_array,av->ndims,dimnames);
+                    }
                 }
             }
             /* TAHSIN */
