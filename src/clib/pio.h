@@ -779,6 +779,7 @@ typedef struct adios_var_desc_t
     /* to handle PIOc_setframe with different decompositions */
     int64_t decomp_varid;
     int64_t frame_varid;
+    int64_t fillval_varid;
 } adios_var_desc_t;
 
 /* Track attributes */

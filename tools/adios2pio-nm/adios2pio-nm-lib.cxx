@@ -435,7 +435,9 @@ VariableMap ProcessVariableDefinitions(ADIOS_FILE **infile, int ncid, DimensionM
             /* For each variable written define it with PIO */
             if (!mpirank && debug_out) cout << "Process variable " << v << endl;
 
-			if (v.find("decomp_id/")==string::npos && v.find("frame_id/")==string::npos) {
+			if (v.find("decomp_id/")==string::npos && 
+				v.find("frame_id/")==string::npos && 
+				v.find("fillval_id/")==string::npos) {
 
             	TimerStart(read);
             	string attname = string(infile[0]->var_namelist[i]) + "/__pio__/nctype";
@@ -957,10 +959,13 @@ int ConvertVariableDarray(ADIOS_FILE **infile, int adios_varid, int ncid, Variab
 	/* different decompositions at different frames */
 	char decomp_varname[128];
 	char frame_varname[128];
+	char fillval_varname[128];
 	char decompname[64];
 	sprintf(decomp_varname,"decomp_id/%s",varname);
 	sprintf(frame_varname,"frame_id/%s",varname);
-	int  decomp_id, frame_id; 
+	sprintf(fillval_varname,"fillval_id/%s",varname);
+	int  decomp_id, frame_id, fillval_exist; 
+	char fillval_id[16];
 
 	// TAHSIN -- THIS IS GETTING CONFUSING. NEED TO THINK ABOUT time steps. 
     for (; ts < nsteps; ++ts)
@@ -1004,13 +1009,20 @@ int ConvertVariableDarray(ADIOS_FILE **infile, int adios_varid, int ncid, Variab
 
 						/* different decompositions at different frames */
                 		ret = adios_schedule_read(infile[i], wbsel, 
-										decomp_varname, 0, 1,
-                        				&decomp_id);
+										decomp_varname, 0, 1, &decomp_id);
                 		ret = adios_schedule_read(infile[i], wbsel, 
-										frame_varname, 0, 1,
-                        				&frame_id);
-
+										frame_varname, 0, 1, &frame_id);
                 		adios_perform_reads(infile[i], 1);
+						
+						if (decomp_id>0) {
+                			ret = adios_schedule_read(infile[i], wbsel, 
+											fillval_varname, 0, 1, fillval_id);
+                			adios_perform_reads(infile[i], 1);
+							fillval_exist = 1;
+						} else {
+							decomp_id = -decomp_id;
+							fillval_exist = 0;
+						}
                 		offset += vb->blockinfo[blockid].count[0] * elemsize;
         				adios_selection_delete(wbsel);
 					}
@@ -1033,8 +1045,13 @@ int ConvertVariableDarray(ADIOS_FILE **infile, int adios_varid, int ncid, Variab
 			/* different decompositions at different frames */	
             if (var.is_timed)
                 PIOc_setframe(ncid, var.nc_varid, frame_id);
-            ret = PIOc_write_darray(ncid, var.nc_varid, decomp.ioid, (PIO_Offset)nelems,
-                    d.data(), NULL);
+			if (fillval_exist) {
+            	ret = PIOc_write_darray(ncid, var.nc_varid, decomp.ioid, (PIO_Offset)nelems,
+						d.data(), fillval_id); 
+			} else {
+            	ret = PIOc_write_darray(ncid, var.nc_varid, decomp.ioid, (PIO_Offset)nelems,
+						d.data(), NULL); 
+			}
         }
         TimerStop(write);
     }
@@ -1208,7 +1225,9 @@ void ConvertBPFile(string infilepath, string outfilename, int pio_iotype, int io
 				/* For each variable, read with ADIOS then write with PIO */
 				if (!mpirank && debug_out) cout << "Convert variable: " << v << endl;
 
-				if (v.find("decomp_id/")==string::npos && v.find("frame_id/")==string::npos) {
+				if (v.find("decomp_id/")==string::npos && 
+					v.find("frame_id/")==string::npos &&
+					v.find("fillval_id/")==string::npos) {
 					Variable& var = vars_map[v];
 
 					TimerStart(read);

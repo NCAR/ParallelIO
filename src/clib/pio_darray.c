@@ -761,6 +761,8 @@ static int PIOc_write_darray_adios(
         av->decomp_varid = adios_define_var(file->adios_group, name_varid, "", adios_integer, "1","","");
         sprintf(name_varid,"frame_id/%s",av->name);
         av->frame_varid = adios_define_var(file->adios_group, name_varid, "", adios_integer, "1","","");
+        sprintf(name_varid,"fillval_id/%s",av->name);
+        av->fillval_varid = adios_define_var(file->adios_group, name_varid, "", atype, "1","","");
 
 #ifdef _ADIOS_ALL_PROCS
         if (file->adios_iomaster == MPI_ROOT)
@@ -805,7 +807,12 @@ static int PIOc_write_darray_adios(
 
     adios_write_byid(file->adios_fh, av->adios_varid, buf);
 
-    /* different decompositions at different frames */
+    /* different decompositions at different frames and fillvalue */
+    if (fillvalue!=NULL) {
+        adios_write_byid(file->adios_fh, av->fillval_varid, fillvalue);
+    } else {
+        ioid = -ioid;
+    }
     adios_write_byid(file->adios_fh, av->decomp_varid, &ioid);
     adios_write_byid(file->adios_fh, av->frame_varid, &(file->varlist[varid].record));
 
