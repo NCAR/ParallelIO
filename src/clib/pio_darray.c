@@ -627,11 +627,8 @@ static void PIOc_write_decomp_adios(file_desc_t *file, int ioid)
         free(mapbuf);
     }
 
-#ifdef _ADIOS_ALL_PROCS /* ADIOS: assume all procs are also IO tasks */
+    /* ADIOS: assume all procs are also IO tasks */
     if (file->adios_iomaster == MPI_ROOT)
-#else
-    if (file->iosystem->iomaster == MPI_ROOT)
-#endif
     {
         adios_define_attribute_byvalue(file->adios_group,"piotype",name,adios_integer,1,&iodesc->piotype);
         adios_define_attribute_byvalue(file->adios_group,"ndims",name,adios_integer,1,&iodesc->ndims);
@@ -764,11 +761,7 @@ static int PIOc_write_darray_adios(
         sprintf(name_varid,"fillval_id/%s",av->name);
         av->fillval_varid = adios_define_var(file->adios_group, name_varid, "", atype, "1","","");
 
-#ifdef _ADIOS_ALL_PROCS
         if (file->adios_iomaster == MPI_ROOT)
-#else
-        if (file->iosystem->iomaster == MPI_ROOT)
-#endif  /* _ADIOS_ALL_PROCS */
         { /* TAHSIN: Some of the codes were moved to pio_nc.c */
             char decompname[32];
             sprintf(decompname, "%d", ioid);
@@ -791,11 +784,7 @@ static int PIOc_write_darray_adios(
     {
 		buf = PIOc_convert_buffer_adios(file,iodesc,av,array,arraylen,&ierr);
 		if (ierr!=0) {
-#ifdef _ADIOS_ALL_PROCS
        		if (file->adios_iomaster == MPI_ROOT)
-#else
-            if (file->iosystem->iomaster == MPI_ROOT)
-#endif /* _ADIOS_ALL_PROCS */
                     LOG((2,"Darray '%s' decomp type is double but the target type is float. "
                             "ADIOS cannot do type conversion because memory could not be allocated."
                             "Therefore the data will be corrupt for this variable in the .bp output\n",

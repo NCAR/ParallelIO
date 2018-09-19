@@ -260,7 +260,6 @@ int PIOc_closefile(int ncid)
 
 	/* ADIOS: assume all procs are also IO tasks */
 #ifdef _ADIOS
-#ifdef _ADIOS_ALL_PROCS
     if (file->iotype==PIO_IOTYPE_ADIOS) {
             if (file->adios_fh != -1)
             {
@@ -311,7 +310,6 @@ int PIOc_closefile(int ncid)
             free(file->filename);
             ierr = 0;
 	}
-#endif /* _ADIOS_ALL_PROCS */
 #endif
 
     /* If this is an IO task, then call the netCDF function. */
@@ -340,60 +338,9 @@ int PIOc_closefile(int ncid)
             break;
 #endif
 #ifdef _ADIOS
-#ifdef _ADIOS_ALL_PROCS /* ADIOS: assume all procs are also IO tasks */
   	case PIO_IOTYPE_ADIOS: /* needed to avoid default case and error. */
   		ierr = 0;
   		break;
-#else
-        case PIO_IOTYPE_ADIOS:
-            if (file->adios_fh != -1)
-            {
-                LOG((2,"ADIOS close file %s\n", file->filename));
-                adios_define_attribute_byvalue(file->adios_group,"/__pio__/fillmode","",adios_integer,1,&file->fillmode);
-                ierr = adios_close(file->adios_fh);
-                file->adios_fh = -1;
-            }
-            if (file->adios_group != -1)
-            {
-                adios_free_group(file->adios_group);
-                file->adios_group = -1;
-            }
-            for (int i=0; i<file->num_dim_vars; i++)
-            {
-                free (file->dim_names[i]);
-                file->dim_names[i] = NULL;
-            }
-            file->num_dim_vars = 0;
-            for (int i=0; i<file->num_vars; i++)
-            {
-                free(file->adios_vars[i].name);
-                file->adios_vars[i].name = NULL;
-                free(file->adios_vars[i].gdimids);
-                file->adios_vars[i].gdimids = NULL;
-            }
-            file->num_vars = 0;
-
-			/* Track attributes */
-			for (int i=0; i<file->num_attrs; i++) {
-				free(file->adios_attrs[i].att_name);
-				file->adios_attrs[i].att_name = NULL;
-			}
-			file->num_attrs = 0;
-
-#define CONVERT_TEST
-#ifdef CONVERT_TEST /* TAHSIN -- comment out for large scale run */
-            /* Convert XXXX.nc.bp to XXXX.nc */
-            len = strlen(file->filename);
-            assert(len > 6 && len <= PIO_MAX_NAME);
-            strncpy(outfilename, file->filename, len - 3);
-            outfilename[len - 3] = '\0';
-            C_API_ConvertBPToNC(file->filename, outfilename, "pnetcdf", ios->io_comm);
-#endif /* CONVERT_TEST */
-
-            free(file->filename);
-            ierr = 0;
-            break;
-#endif /* _ADIOS_ALL_PROCS */
 #endif
         default:
             return pio_err(ios, file, PIO_EBADIOTYPE, __FILE__, __LINE__);

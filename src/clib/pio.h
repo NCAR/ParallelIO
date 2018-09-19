@@ -837,10 +837,8 @@ typedef struct file_desc_t
     /** Number of global attributes defined. Needed to support PIOc_inq_nattrs() */
     int num_gattrs;
 
-#ifdef _ADIOS_ALL_PROCS 
 	/* ADIOS: assume all procs are also IO tasks */
 	int adios_iomaster;
-#endif
 
 	/* Track attributes */
 	/** attribute information. Allow PIO_MAX_VARS for now. */
