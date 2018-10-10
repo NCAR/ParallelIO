@@ -638,3 +638,289 @@ PIO_TF_AUTO_TEST_SUB_BEGIN test_put_get_md2mdplus1_var
 
 PIO_TF_AUTO_TEST_SUB_END test_put_get_md2mdplus1_var
 
+PIO_TF_AUTO_TEST_SUB_BEGIN test_put_get_1d_str_arr
+  Implicit none
+  type(file_desc_t) :: pio_file
+  character(len=PIO_TF_MAX_STR_LEN) :: filename
+  type(var_desc_t)  :: pio_str_arr_var1, pio_str_arr_var2
+  integer, dimension(2) :: pio_dims
+  integer, parameter :: STR_LEN = 64
+  integer, parameter :: NUM_STRS = 32
+  character(len=STR_LEN) :: exp_str
+  character(len=STR_LEN), dimension(NUM_STRS) :: pstr_arr, gstr_arr
+  integer, dimension(2) :: start
+  integer, dimension(2) :: count
+  integer, parameter :: StrKIND = 512
+  character(len=StrKIND), dimension(1) :: single_str_arr
+  integer, dimension(:), allocatable :: iotypes
+  character(len=PIO_TF_MAX_STR_LEN), dimension(:), allocatable :: iotype_descs
+  integer :: num_iotypes
+  integer :: i, index, ret
+
+  do index=1,NUM_STRS
+    write(exp_str, '(a, i2)') 'DUMMY_STRING, index = ', index
+    pstr_arr(index) = exp_str
+    gstr_arr(index) = ' '
+  end do
+
+  num_iotypes = 0
+  call PIO_TF_Get_nc_iotypes(iotypes, iotype_descs, num_iotypes)
+  filename = "test_pio_ncdf_get_put.testfile"
+  do i=1,num_iotypes
+    PIO_TF_LOG(0,*) "Testing type :", iotype_descs(i)
+    ret = PIO_createfile(pio_tf_iosystem_, pio_file, iotypes(i), filename, PIO_CLOBBER)
+    PIO_TF_CHECK_ERR(ret, "Failed to open:" // trim(filename))
+
+    ! Since file is just created no need to enter redef
+    ret = PIO_def_dim(pio_file, 'StrLen', STR_LEN, pio_dims(1))
+    PIO_TF_CHECK_ERR(ret, "Failed to define dim:" // trim(filename))
+
+    ret = PIO_def_dim(pio_file, 'nstrs', NUM_STRS, pio_dims(2))
+    PIO_TF_CHECK_ERR(ret, "Failed to define dim:" // trim(filename))
+
+    ret = PIO_def_var(pio_file, 'var1_1d_str_arr', PIO_char, (/pio_dims/), pio_str_arr_var1)
+    PIO_TF_CHECK_ERR(ret, "Failed to define string array var:" // trim(filename))
+
+    ret = PIO_def_var(pio_file, 'var2_1d_str_arr', PIO_char, (/pio_dims/), pio_str_arr_var2)
+    PIO_TF_CHECK_ERR(ret, "Failed to define string array var:" // trim(filename))
+
+    ret = PIO_enddef(pio_file)
+    PIO_TF_CHECK_ERR(ret, "Failed to enddef:" // trim(filename))
+
+    ! This calls put_var_1d_text()
+    ret = PIO_put_var(pio_file, pio_str_arr_var1, pstr_arr);
+    PIO_TF_CHECK_ERR(ret, "Failed to put string array var:" // trim(filename))
+
+    start(1) = 1
+    start(2) = 1
+    count(1) = STR_LEN
+    count(2) = NUM_STRS
+
+    ! This calls put_vara_1d_text()
+    ret = PIO_put_var(pio_file, pio_str_arr_var2, start, count, pstr_arr);
+    PIO_TF_CHECK_ERR(ret, "Failed to put string array var:" // trim(filename))
+
+#ifdef PIO_TEST_CLOSE_OPEN_FOR_SYNC
+    call PIO_closefile(pio_file)
+
+    ret = PIO_openfile(pio_tf_iosystem_, pio_file, iotypes(i), filename, PIO_nowrite)
+    PIO_TF_CHECK_ERR(ret, "Failed to reopen:" // trim(filename))
+
+    ret = PIO_inq_varid(pio_file, 'var1_1d_str_arr', pio_str_arr_var1)
+    PIO_TF_CHECK_ERR(ret, "Failed to inq string array var:" // trim(filename))
+
+    ret = PIO_inq_varid(pio_file, 'var2_1d_str_arr', pio_str_arr_var2)
+    PIO_TF_CHECK_ERR(ret, "Failed to inq string array var:" // trim(filename))
+#else
+    call PIO_syncfile(pio_file)
+#endif
+
+    ! This calls get_var_1d_text()
+    ret = PIO_get_var(pio_file, pio_str_arr_var1, gstr_arr);
+    PIO_TF_CHECK_ERR(ret, "Failed to get string array var:" // trim(filename))
+
+    do index=1,NUM_STRS
+      PIO_TF_CHECK_VAL((gstr_arr(index), pstr_arr(index)), "Got wrong value")
+    end do
+
+    do index=1,NUM_STRS
+      gstr_arr(index) = ' '
+    end do
+
+    ! This calls get_vara_1d_text()
+    ret = PIO_get_var(pio_file, pio_str_arr_var2, start, count, gstr_arr);
+    PIO_TF_CHECK_ERR(ret, "Failed to get string array var:" // trim(filename))
+
+    do index=1,NUM_STRS
+      PIO_TF_CHECK_VAL((gstr_arr(index), pstr_arr(index)), "Got wrong value")
+    end do
+
+    count(2) = 1
+
+    ! Read one string at a time, since the sizes differ (i.e. StrLen != StrKIND)
+    do index=1,NUM_STRS
+      write(exp_str, '(a, i2)') 'DUMMY_STRING, index = ', index
+
+      start(2) = index
+
+      single_str_arr(1) = ' '
+
+      ! This calls get_vara_1d_text()
+      ret = PIO_get_var(pio_file, pio_str_arr_var1, start, count, single_str_arr)
+      PIO_TF_CHECK_ERR(ret, "Failed to get string array var:" // trim(filename))
+
+      PIO_TF_CHECK_VAL((single_str_arr(1)(1:STR_LEN), exp_str), "Got wrong value")
+
+      single_str_arr(1) = ' '
+
+      ! This calls get_vara_1d_text()
+      ret = PIO_get_var(pio_file, pio_str_arr_var2, start, count, single_str_arr)
+      PIO_TF_CHECK_ERR(ret, "Failed to get string array var:" // trim(filename))
+
+      PIO_TF_CHECK_VAL((single_str_arr(1)(1:STR_LEN), exp_str), "Got wrong value")
+    end do
+
+    call PIO_closefile(pio_file)
+    call PIO_deletefile(pio_tf_iosystem_, filename);
+  end do
+  if(allocated(iotypes)) then
+    deallocate(iotypes)
+    deallocate(iotype_descs)
+  end if
+
+PIO_TF_AUTO_TEST_SUB_END test_put_get_1d_str_arr
+
+PIO_TF_AUTO_TEST_SUB_BEGIN test_put_get_2d_str_arr
+  Implicit none
+  type(file_desc_t) :: pio_file
+  character(len=PIO_TF_MAX_STR_LEN) :: filename
+  type(var_desc_t)  :: pio_str_arr_var1, pio_str_arr_var2
+  integer, dimension(3) :: pio_dims
+  integer, parameter :: STR_LEN = 64
+  integer, parameter :: NUM_ROWS = 4
+  integer, parameter :: NUM_COLS = 8
+  character(len=STR_LEN) :: exp_str
+  character(len=STR_LEN), dimension(NUM_ROWS, NUM_COLS) :: pstr_arr, gstr_arr
+  integer, dimension(3) :: start
+  integer, dimension(3) :: count
+  integer, parameter :: StrKIND = 512
+  character(len=StrKIND), dimension(1) :: single_str_arr
+  integer, dimension(:), allocatable :: iotypes
+  character(len=PIO_TF_MAX_STR_LEN), dimension(:), allocatable :: iotype_descs
+  integer :: num_iotypes
+  integer :: i, row, col, index, ret
+
+  do col=1,NUM_COLS
+    do row=1,NUM_ROWS
+      ! Array storage in Fortran is column-major
+      index = (col - 1) * NUM_ROWS + row
+      write(exp_str, '(a, i2)') 'DUMMY_STRING, index = ', index
+      pstr_arr(row, col) = exp_str
+      gstr_arr(row, col) = ' '
+    end do
+  end do
+
+  num_iotypes = 0
+  call PIO_TF_Get_nc_iotypes(iotypes, iotype_descs, num_iotypes)
+  filename = "test_pio_ncdf_get_put.testfile"
+  do i=1,num_iotypes
+    PIO_TF_LOG(0,*) "Testing type :", iotype_descs(i)
+    ret = PIO_createfile(pio_tf_iosystem_, pio_file, iotypes(i), filename, PIO_CLOBBER)
+    PIO_TF_CHECK_ERR(ret, "Failed to open:" // trim(filename))
+
+    ! Since file is just created no need to enter redef
+    ret = PIO_def_dim(pio_file, 'StrLen', STR_LEN, pio_dims(1))
+    PIO_TF_CHECK_ERR(ret, "Failed to define dim:" // trim(filename))
+
+    ret = PIO_def_dim(pio_file, 'col', NUM_COLS, pio_dims(2))
+    PIO_TF_CHECK_ERR(ret, "Failed to define dim:" // trim(filename))
+
+    ret = PIO_def_dim(pio_file, 'row', NUM_ROWS, pio_dims(3))
+    PIO_TF_CHECK_ERR(ret, "Failed to define dim:" // trim(filename))
+
+    ret = PIO_def_var(pio_file, 'var1_2d_str_arr', PIO_char, (/pio_dims/), pio_str_arr_var1)
+    PIO_TF_CHECK_ERR(ret, "Failed to define string array var:" // trim(filename))
+
+    ret = PIO_def_var(pio_file, 'var2_2d_str_arr', PIO_char, (/pio_dims/), pio_str_arr_var2)
+    PIO_TF_CHECK_ERR(ret, "Failed to define string array var:" // trim(filename))
+
+    ret = PIO_enddef(pio_file)
+    PIO_TF_CHECK_ERR(ret, "Failed to enddef:" // trim(filename))
+
+    ! This calls put_var_2d_text()
+    ret = PIO_put_var(pio_file, pio_str_arr_var1, pstr_arr);
+    PIO_TF_CHECK_ERR(ret, "Failed to put string array var:" // trim(filename))
+
+    start(1) = 1
+    start(2) = 1
+    start(3) = 1
+    count(1) = STR_LEN
+    count(2) = NUM_COLS
+    count(3) = NUM_ROWS
+
+    ! This calls put_vara_2d_text()
+    ret = PIO_put_var(pio_file, pio_str_arr_var2, start, count, pstr_arr);
+    PIO_TF_CHECK_ERR(ret, "Failed to put string array var:" // trim(filename))
+
+#ifdef PIO_TEST_CLOSE_OPEN_FOR_SYNC
+    call PIO_closefile(pio_file)
+
+    ret = PIO_openfile(pio_tf_iosystem_, pio_file, iotypes(i), filename, PIO_nowrite)
+    PIO_TF_CHECK_ERR(ret, "Failed to reopen:" // trim(filename))
+
+    ret = PIO_inq_varid(pio_file, 'var1_2d_str_arr', pio_str_arr_var1)
+    PIO_TF_CHECK_ERR(ret, "Failed to inq string array var:" // trim(filename))
+
+    ret = PIO_inq_varid(pio_file, 'var2_2d_str_arr', pio_str_arr_var2)
+    PIO_TF_CHECK_ERR(ret, "Failed to inq string array var:" // trim(filename))
+#else
+    call PIO_syncfile(pio_file)
+#endif
+
+    ! This calls get_var_2d_text()
+    ret = PIO_get_var(pio_file, pio_str_arr_var1, gstr_arr);
+    PIO_TF_CHECK_ERR(ret, "Failed to get string array var:" // trim(filename))
+
+    do col=1,NUM_COLS
+      do row=1,NUM_ROWS
+        PIO_TF_CHECK_VAL((gstr_arr(row, col), pstr_arr(row, col)), "Got wrong value")
+      end do
+    end do
+
+    do col=1,NUM_COLS
+      do row=1,NUM_ROWS
+        gstr_arr(row, col) = ' '
+      end do
+    end do
+
+    ! This calls get_vara_2d_text()
+    ret = PIO_get_var(pio_file, pio_str_arr_var2, start, count, gstr_arr);
+    PIO_TF_CHECK_ERR(ret, "Failed to get string array var:" // trim(filename))
+
+    do col=1,NUM_COLS
+      do row=1,NUM_ROWS
+        PIO_TF_CHECK_VAL((gstr_arr(row, col), pstr_arr(row, col)), "Got wrong value")
+      end do
+    end do
+
+    count(2) = 1
+    count(3) = 1
+
+    ! Read one string at a time, since the sizes differ (i.e. StrLen != StrKIND)
+    do row=1,NUM_ROWS
+      do col=1,NUM_COLS
+        ! NetCDF uses C row-major convention
+        index = (row - 1) * NUM_COLS + col
+        write(exp_str, '(a, i2)') 'DUMMY_STRING, index = ', index
+
+        start(2) = col
+        start(3) = row
+
+        single_str_arr(1) = ' '
+
+        ! This calls get_vara_1d_text()
+        ret = PIO_get_var(pio_file, pio_str_arr_var1, start, count, single_str_arr)
+        PIO_TF_CHECK_ERR(ret, "Failed to get string array var:" // trim(filename))
+
+        PIO_TF_CHECK_VAL((single_str_arr(1)(1:STR_LEN), exp_str), "Got wrong value")
+
+        single_str_arr(1) = ' '
+
+        ! This calls get_vara_1d_text()
+        ret = PIO_get_var(pio_file, pio_str_arr_var2, start, count, single_str_arr)
+        PIO_TF_CHECK_ERR(ret, "Failed to get string array var:" // trim(filename))
+
+        PIO_TF_CHECK_VAL((single_str_arr(1)(1:STR_LEN), exp_str), "Got wrong value")
+      end do
+    end do
+
+    call PIO_closefile(pio_file)
+    call PIO_deletefile(pio_tf_iosystem_, filename);
+  end do
+  if(allocated(iotypes)) then
+    deallocate(iotypes)
+    deallocate(iotype_descs)
+  end if
+
+PIO_TF_AUTO_TEST_SUB_END test_put_get_2d_str_arr
+
