@@ -1,9 +1,9 @@
-MODULE pio_rearr_opts_tgv
+MODULE pio_rearr_opts2_tgv
   use pio_tutil
   character(len=PIO_TF_MAX_STR_LEN), parameter ::tgv_fname ="pio_rearr_opts2_test.nc"
   character(len=PIO_TF_MAX_STR_LEN), parameter ::tgv_var_name ="dummy_var"
   character(len=PIO_TF_MAX_STR_LEN), parameter ::tgv_dim_name ="dummy_dim"
-END MODULE pio_rearr_opts_tgv
+END MODULE pio_rearr_opts2_tgv
 
 SUBROUTINE print_rearr_opts(pio_rearr_opts, ret)
   use pio_tutil
@@ -162,10 +162,10 @@ SUBROUTINE create_decomp_and_init_buf(iodesc, wbuf, dims, ret)
 END SUBROUTINE
 
 ! Create file and var used in the tests below
-! All details are picked from pio_rearr_opts_tgv module
+! All details are picked from pio_rearr_opts2_tgv module
 SUBROUTINE create_file_and_var(iotype, ret)
   use pio_tutil
-  use pio_rearr_opts_tgv
+  use pio_rearr_opts2_tgv
   implicit none
 
   integer, intent(in) :: iotype
@@ -196,11 +196,11 @@ SUBROUTINE create_file_and_var(iotype, ret)
 END SUBROUTINE
 
 ! Open file and inq var
-! All details are picked from pio_rearr_opts_tgv module
+! All details are picked from pio_rearr_opts2_tgv module
 ! Note: The file is kept open so the called needs to close it
 SUBROUTINE open_file_and_get_var(pio_file, iotype, pio_var, ret)
   use pio_tutil
-  use pio_rearr_opts_tgv
+  use pio_rearr_opts2_tgv
   implicit none
 
   type(file_desc_t), intent(out) :: pio_file
@@ -222,7 +222,7 @@ END SUBROUTINE
 ! using the pio interface to explicitly set the rearranger options
 ! after init.
 PIO_TF_AUTO_TEST_SUB_BEGIN set_rearr_opts_and_write
-  use pio_rearr_opts_tgv
+  use pio_rearr_opts2_tgv
   implicit none
   interface
     subroutine create_decomp_and_init_buf(iodesc, wbuf, dims, ret)
