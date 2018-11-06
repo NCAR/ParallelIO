@@ -1961,7 +1961,7 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
                 else
                 {
                     /* Delete directory filename.bp.dir if it exists */
-                    if (ios->io_rank == 0)
+                    if (ios->union_rank == 0)
                     {
                         char bpdirname[PIO_MAX_NAME + 1];
                         assert(len + 7 <= PIO_MAX_NAME);
@@ -1970,6 +1970,11 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
                         if (0 == stat(bpdirname, &sd))
                             remove_directory(bpdirname);
                     }
+
+                    /* Make sure that no task is trying to operate on the
+                     * directory while it is being deleted */
+                    if ((mpierr = MPI_Barrier(ios->union_comm)))
+                        return check_mpi(ios, file, mpierr, __FILE__, __LINE__);
                 }
 
 		if (PIO_NOERR==ierr) {
