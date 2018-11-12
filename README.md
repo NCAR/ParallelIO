@@ -25,11 +25,10 @@ To configure the build, PIO requires CMake version 2.8.12+.  The typical
 configuration with CMake can be done as follows:
 
 ```
-CC=mpicc FC=mpif90 cmake [-DOPTION1=value1 -DOPTION2=value2 ...] /path/to/pio/source
+CC=mpicc CXX=mpicxx FC=mpif90 cmake [-DOPTION1=value1 -DOPTION2=value2 ...] /path/to/pio/source
 ```
 
-where `mpicc` and `mpif90` are the appropriate MPI-enabled compiler wrappers
-for your system.
+where `mpicc`, `mpicxx` and `mpif90` are the appropriate MPI-enabled compiler wrappers for your system.
 
 The `OPTIONS` section typically should consist of pointers to the install
 locations for various dependencies, assuming these dependencies are not 
@@ -44,7 +43,7 @@ of both NetCDF-C and NetCDF-Fortran, as well as PnetCDF, with the following
 CMake configuration line:
 
 ```
-CC=mpicc FC=mpif90 cmake -DNetCDF_C_PATH=/path/to/netcdf-c \
+CC=mpicc CXX=mpicxx FC=mpif90 cmake -DNetCDF_C_PATH=/path/to/netcdf-c \
                          -DNetCDF_Fortran_PATH=/path/to/netcdf-fortran \
                          -DPnetCDF_PATH=/path/to/pnetcdf \
                          /path/to/pio/source
