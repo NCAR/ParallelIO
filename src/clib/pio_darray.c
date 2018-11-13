@@ -14,6 +14,7 @@
 #ifdef PIO_MICRO_TIMING
 #include "pio_timer.h"
 #endif
+#include "pio_sdecomps_regex.h"
 
 /* 10MB default limit. */
 PIO_Offset pio_buffer_size_limit = 10485760;
@@ -682,6 +683,22 @@ int PIOc_write_darray(int ncid, int varid, int ioid, PIO_Offset arraylen, void *
     mtimer_start(file->varlist[varid].wr_mtimer);
 #endif
 
+#if PIO_SAVE_DECOMPS
+    if(!(iodesc->is_saved) &&
+        pio_save_decomps_regex_match(ioid, file->fname, file->varlist[varid].vname))
+    {
+        char filename[PIO_MAX_NAME];
+        ierr = pio_create_uniq_str(ios, iodesc, filename, PIO_MAX_NAME, "piodecomp", ".dat");
+        if(ierr != PIO_NOERR)
+        {
+            LOG((1, "Creating a unique file name for saving the decomposition failed, ierr = %d", ierr));
+            return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
+        }
+        LOG((2, "Saving decomp map (write) to %s", filename));
+        PIOc_writemap(filename, ioid, iodesc->ndims, iodesc->dimlen, iodesc->maplen, iodesc->map, ios->my_comm);
+        iodesc->is_saved = true;
+    }
+#endif
     /* Get var description. */
     vdesc = &(file->varlist[varid]);
     LOG((2, "vdesc record %d nreqs %d", vdesc->record, vdesc->nreqs));
@@ -1038,6 +1055,22 @@ int PIOc_read_darray(int ncid, int varid, int ioid, PIO_Offset arraylen,
         LOG((3, "shared fndims = %d", fndims));
     }
 
+#if PIO_SAVE_DECOMPS
+    if(!(iodesc->is_saved) &&
+        pio_save_decomps_regex_match(ioid, file->fname, file->varlist[varid].vname))
+    {
+        char filename[PIO_MAX_NAME];
+        ierr = pio_create_uniq_str(ios, iodesc, filename, PIO_MAX_NAME, "piodecomp", ".dat");
+        if(ierr != PIO_NOERR)
+        {
+            LOG((1, "Creating a unique file name for saving the decomposition failed, ierr = %d", ierr));
+            return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
+        }
+        LOG((2, "Saving decomp map (read) to %s", filename));
+        PIOc_writemap(filename, ioid, iodesc->ndims, iodesc->dimlen, iodesc->maplen, iodesc->map, ios->my_comm);
+        iodesc->is_saved = true;
+    }
+#endif
     /* Call the correct darray read function based on iotype. */
     if(!ios->async || ios->ioproc)
     {

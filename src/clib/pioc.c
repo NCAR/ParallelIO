@@ -13,11 +13,9 @@
 #ifdef PIO_MICRO_TIMING
 #include "pio_timer.h"
 #endif
+#include "pio_sdecomps_regex.h"
 
-#if PIO_SAVE_DECOMPS
-static int counter = 0;
-static bool fortran_order = false;
-#endif
+bool fortran_order = false;
 
 /** The default error handler used when iosystem cannot be located. */
 int default_error_handler = PIO_INTERNAL_ERROR;
@@ -342,6 +340,94 @@ int PIOc_set_iosystem_error_handling(int iosysid, int method, int *old_method)
     return PIO_NOERR;
 }
 
+/* Create a unique string/name using information provided by the user */
+int pio_create_uniq_str(iosystem_desc_t *ios, io_desc_t *iodesc, char *str, int len, const char *prefix, const char *suffix)
+{
+    static int counter = 0;
+    const char *DEFAULT_PREFIX = "pio";
+    const char *DEFAULT_SUFFIX = ".dat";
+    const int HUNDRED = 100;
+    const char *INT_FMT_LT_HUNDRED = "%2.2d";
+    const int TEN_THOUSAND = 1000;
+    const char *INT_FMT_LT_TEN_THOUSAND = "%4.4d";
+    const int MILLION = 1000000;
+    const char *INT_FMT_LT_MILLION = "%6.6d";
+
+    assert(str && (len > 0));
+
+    if(!prefix)
+    {
+        prefix = DEFAULT_PREFIX;
+    }
+    if(!suffix)
+    {
+        suffix = DEFAULT_SUFFIX;
+    }
+
+    int rem_len = len;
+    char *sptr = str;
+
+    /* Add prefix */
+    int prefix_len = strlen(prefix);
+    assert(rem_len > prefix_len);
+    snprintf(sptr, rem_len, "%s", prefix);
+    rem_len -= prefix_len;
+    sptr += prefix_len;
+
+    if(ios)
+    {
+        /* Add ios specific info into the str */
+        assert(ios->num_comptasks < MILLION);
+        assert(rem_len > 0);
+        const char *num_comptasks_fmt = (ios->num_comptasks < HUNDRED) ? (INT_FMT_LT_HUNDRED) : ((ios->num_comptasks < TEN_THOUSAND) ? (INT_FMT_LT_TEN_THOUSAND): INT_FMT_LT_MILLION);
+        const char *num_iotasks_fmt = num_comptasks_fmt;
+        snprintf(sptr, rem_len, num_comptasks_fmt, ios->num_comptasks);
+        rem_len = len - strlen(str);
+        sptr = str + strlen(str);
+        snprintf(sptr, rem_len, "%s", "tasks");
+        rem_len = len - strlen(str);
+        sptr = str + strlen(str);
+        snprintf(sptr, rem_len, num_iotasks_fmt, ios->num_iotasks);
+        rem_len = len - strlen(str);
+        sptr = str + strlen(str);
+        snprintf(sptr, rem_len, "%s", "io");
+        rem_len = len - strlen(str);
+        sptr = str + strlen(str);
+    }
+
+    if(iodesc)
+    {
+        /* Add iodesc specific info into the str */
+        assert(iodesc->ndims < MILLION);
+        assert(rem_len > 0);
+        const char *ndims_fmt = (iodesc->ndims < HUNDRED) ? (INT_FMT_LT_HUNDRED) : ((iodesc->ndims < TEN_THOUSAND) ? (INT_FMT_LT_TEN_THOUSAND): INT_FMT_LT_MILLION);
+        snprintf(sptr, rem_len, ndims_fmt, iodesc->ndims);
+        rem_len = len - strlen(str);
+        sptr = str + strlen(str);
+        snprintf(sptr, rem_len, "%s", "dims");
+        rem_len = len - strlen(str);
+        sptr = str + strlen(str);
+    }
+
+    /* Add counter - to make the str unique */
+    assert(counter < MILLION);
+    const char *counter_fmt = (counter < HUNDRED) ? (INT_FMT_LT_HUNDRED) : ((counter < TEN_THOUSAND) ? (INT_FMT_LT_TEN_THOUSAND): INT_FMT_LT_MILLION);
+    snprintf(sptr, rem_len, counter_fmt, counter);
+    rem_len = len - strlen(str);
+    sptr = str + strlen(str);
+
+    counter++;
+
+    /* Add suffix */
+    int suffix_len = strlen(suffix);
+    assert(rem_len > suffix_len);
+    snprintf(sptr, rem_len, "%s", suffix);
+    rem_len -= suffix_len;
+    sptr += suffix_len;
+
+    return PIO_NOERR;
+}
+
 /**
  * Initialize the decomposition used with distributed arrays. The
  * decomposition describes how the data will be distributed between
@@ -453,31 +539,6 @@ int PIOc_InitDecomp(int iosysid, int pio_type, int ndims, const int *gdimlen, in
         }
     }
 
-#if PIO_SAVE_DECOMPS
-    char filename[PIO_MAX_NAME];
-    if (ios->num_comptasks < 100)
-        sprintf(filename, "piodecomp%2.2dtasks%2.2dio%2.2ddims%2.2d.dat", ios->num_comptasks, ios->num_iotasks, ndims, counter);
-    else if (ios->num_comptasks < 10000)
-        sprintf(filename, "piodecomp%4.4dtasks%4.4dio%2.2ddims%2.2d.dat", ios->num_comptasks, ios->num_iotasks, ndims, counter);
-    else
-        sprintf(filename, "piodecomp%6.6dtasks%6.6dio%2.2ddims%2.2d.dat", ios->num_comptasks, ios->num_iotasks, ndims, counter);
-
-    LOG((2, "Saving decomp map to %s", filename));
-
-    if (fortran_order)
-    {
-        int gdimlen_reversed[ndims];
-        for (int i = 0; i < ndims; i++)
-            gdimlen_reversed[i] = gdimlen[ndims - 1 - i];
-
-        PIOc_writemap(filename, ndims, gdimlen_reversed, maplen, (PIO_Offset *)compmap, ios->my_comm);
-    }
-    else
-        PIOc_writemap(filename, ndims, gdimlen, maplen, (PIO_Offset *)compmap, ios->my_comm);
-
-    counter++;
-#endif
-
     /* Allocate space for the iodesc info. This also allocates the
      * first region and copies the rearranger opts into this
      * iodesc. */
@@ -572,6 +633,22 @@ int PIOc_InitDecomp(int iosysid, int pio_type, int ndims, const int *gdimlen, in
         comm = ios->union_comm;
     }
     *ioidp = pio_add_to_iodesc_list(iodesc, comm);
+
+#if PIO_SAVE_DECOMPS
+    if(pio_save_decomps_regex_match(*ioidp, NULL, NULL))
+    {
+        char filename[PIO_MAX_NAME];
+        ierr = pio_create_uniq_str(ios, iodesc, filename, PIO_MAX_NAME, "piodecomp", ".dat");
+        if(ierr != PIO_NOERR)
+        {
+            LOG((1, "Creating a unique file name for saving the decomposition failed, ierr = %d", ierr));
+            return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
+        }
+        LOG((2, "Saving decomp map to %s", filename));
+        PIOc_writemap(filename, *ioidp, ndims, gdimlen, maplen, (PIO_Offset *)compmap, ios->my_comm);
+        iodesc->is_saved = true;
+    }
+#endif
 
 #if PIO_ENABLE_LOGGING
     /* Log results. */
@@ -948,10 +1025,8 @@ int PIOc_Init_Intracomm_from_F90(int f90_comp_comm,
                                  const int base, const int rearr,
                                  rearr_opt_t *rearr_opts, int *iosysidp)
 {
-#if PIO_SAVE_DECOMPS
-    fortran_order = true;
-#endif
     int ret = PIO_NOERR;
+    fortran_order = true;
     ret = PIOc_Init_Intracomm(MPI_Comm_f2c(f90_comp_comm), num_iotasks,
                               stride, base, rearr,
                               iosysidp);
@@ -2267,13 +2342,11 @@ int PIOc_Init_Intercomm_from_F90(int component_count, int f90_peer_comm,
                                   const int *f90_comp_comms, int f90_io_comm,
                                   int rearranger, int *iosysidps)
 {
-#if PIO_SAVE_DECOMPS
-    fortran_order = true;
-#endif
     MPI_Comm peer_comm = MPI_Comm_f2c(f90_peer_comm);
     MPI_Comm io_comm = MPI_Comm_f2c(f90_io_comm);
     int ret = PIO_NOERR;
 
+    fortran_order = true;
     if((component_count <= 0) || (!f90_comp_comms) || (!iosysidps))
     {
         return pio_err(NULL, NULL, PIO_EINVAL, __FILE__, __LINE__);

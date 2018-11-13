@@ -68,8 +68,9 @@ Modules required for installation depend on your prefered compiler. Issue the co
 
 <li>Environment Variables
 
-The appropriate compiler wrappers must be chosen for cmake, so the environment variables CC and FC must be set as:<br>
+The appropriate compiler wrappers must be chosen for cmake, so the environment variables CC, CXX and FC must be set as:<br>
     CC=mpicc<br>
+    CXX=mpicxx<br>
     FC=mpif90<br>
 
 <li>Build
@@ -138,6 +139,7 @@ Modules required for installation depend on your prefered compiler. Issue the co
 
 The appropriate compiler wrappers must be chosen for cmake, so the environment variables CC and FC must be set as:<br>
     CC=cc<br>
+    CXX=CC<br>
     FC=ftn<br>
 
 <li>Build
@@ -225,6 +227,7 @@ Modules required for installation depend on your prefered compiler. Issue the co
 
 The appropriate compiler wrappers must be chosen for cmake, so the environment variables CC and FC must be set as:<br>
     CC=cc<br>
+    CXX=CC<br>
     FC=ftn<br>
 
 <li>Build
@@ -278,8 +281,9 @@ Modules required for installation depend on your prefered compiler. Issue the co
 
 <li>Environment Variables
 
-The appropriate compiler wrappers must be chosen for cmake, so the environment variables CC and FC must be set as:<br>
+The appropriate compiler wrappers must be chosen for cmake, so the environment variables CC, CXX and FC must be set as:<br>
     CC=mpicc<br>
+    CXX=mpicxx<br>
     FC=mpif90<br>
 
 <li>Build
@@ -308,7 +312,7 @@ downloads page</a>. (These instructions were tested using version
 <pre>cd mpich-3.2 && ./configure --prefix=/usr/local && make all check
 && sudo make install </pre>
 
-<p>Now you should be able to access mpicc, mpifort, and mpirun from
+<p>Now you should be able to access mpicc, mpicxx, mpifort, and mpirun from
 the command line. (If not, make sure /usr/local/bin is in path.)
 
 <p>Note that if you wish to use valgrind on your programs, you should
@@ -420,7 +424,7 @@ test. This has been reported to the netCDF team.
 cd ParallelIO
 mkdir build
 cd build
-CC=mpicc FC=mpifort cmake -DNetCDF_C_PATH=/usr/local/netcdf-c-4.5.0-rc1_mpich-3.2 -DNetCDF_Fortran_PATH=/usr/local/netcdf-fortran-4.4.4_mpich-3.2 -DPnetCDF_PATH=/usr/local/pnetcdf-1.8.1_mpich-3.2 -DPIO_HDF5_LOGGING=On -DPIO_USE_MALLOC=On ..
+CC=mpicc CXX=mpicxx FC=mpifort cmake -DNetCDF_C_PATH=/usr/local/netcdf-c-4.5.0-rc1_mpich-3.2 -DNetCDF_Fortran_PATH=/usr/local/netcdf-fortran-4.4.4_mpich-3.2 -DPnetCDF_PATH=/usr/local/pnetcdf-1.8.1_mpich-3.2 -DPIO_HDF5_LOGGING=On -DPIO_USE_MALLOC=On ..
 make
 make check
 sudo make install
@@ -431,7 +435,7 @@ build from the command line, including tests:
 
 <pre>
 cd build
-rm -rf * && CFLAGS='-Wall -g' FFLAGS=-g CC=mpicc FC=mpifort cmake -DNetCDF_C_PATH=/usr/local/netcdf-c-4.5.0-rc1_mpich-3.2 -DNetCDF_Fortran_PATH=/usr/local/netcdf-fortran-4.4.4_mpich-3.2 -DPnetCDF_PATH=/usr/local/pnetcdf-1.8.1_mpich-3.2 -DPIO_HDF5_LOGGING=On -DPIO_USE_MALLOC=On .. && make VERBOSE=1 all tests check
+rm -rf * && CFLAGS='-Wall -g' CXXFLAGS='-Wall -g' FFLAGS=-g CC=mpicc CXX=mpicxx FC=mpifort cmake -DNetCDF_C_PATH=/usr/local/netcdf-c-4.5.0-rc1_mpich-3.2 -DNetCDF_Fortran_PATH=/usr/local/netcdf-fortran-4.4.4_mpich-3.2 -DPnetCDF_PATH=/usr/local/pnetcdf-1.8.1_mpich-3.2 -DPIO_HDF5_LOGGING=On -DPIO_USE_MALLOC=On .. && make VERBOSE=1 all tests check
 </pre>
 
 <p>Note the optional CFLAGS=-g which allows the use of a debugger
