@@ -88,7 +88,7 @@ using DimensionMap = std::map<std::string,Dimension>;
 
 struct Variable {
     int nc_varid;
-    bool is_timed;
+    PIO_Offset is_timed;
     nc_type nctype;
 };
 
@@ -452,7 +452,7 @@ VariableMap ProcessVariableDefinitions(ADIOS_FILE **infile, int ncid, DimensionM
 
 	            char **dimnames = NULL;
 	            int dimids[MAX_NC_DIMS];
-	            bool timed = false;
+	            PIO_Offset timed = 0;
 	            if (*ndims)
 	            {
 	                attname = string(infile[0]->var_namelist[i]) + "/__pio__/dims";
@@ -461,9 +461,9 @@ VariableMap ProcessVariableDefinitions(ADIOS_FILE **infile, int ncid, DimensionM
 	                for (int d=0; d < *ndims; d++)
 	                {
 	                    dimids[d] = dimension_map[dimnames[d]].dimid;
-	                    if (dimension_map[dimnames[d]].dimvalue == PIO_UNLIMITED)
+	                    if (dimension_map[dimnames[d]].dimvalue == PIO_UNLIMITED || dimension_map[dimnames[d]].dimvalue>0)
 	                    {
-                        	timed = true;
+							timed = dimension_map[dimnames[d]].dimvalue;
 	                    }
 	                }
 	            }
@@ -756,7 +756,7 @@ int ConvertVariableTimedPutVar(ADIOS_FILE **infile, std::vector<int> wfiles, int
 		}
 		MPI_Allreduce(&l_nblocks,&g_nblocks,1,MPI_INT,MPI_SUM,comm); 
 		
-        if (var.is_timed)
+        if (var.is_timed==PIO_UNLIMITED || var.is_timed>0)
         {
             nsteps = g_nblocks / nblocks_per_step;
         }
@@ -914,7 +914,7 @@ int ConvertVariableDarray(ADIOS_FILE **infile, int adios_varid, int ncid, Variab
 	}
 	MPI_Allreduce(&l_nblocks,&g_nblocks,1,MPI_INT,MPI_SUM,comm); 
 
-    if (var.is_timed)
+    if (var.is_timed==PIO_UNLIMITED || var.is_timed>0)
     {
         nsteps = g_nblocks / nblocks_per_step;
         if (g_nblocks != nsteps * nblocks_per_step)
@@ -1046,7 +1046,7 @@ int ConvertVariableDarray(ADIOS_FILE **infile, int adios_varid, int ncid, Variab
         if (wfiles[0] < nblocks_per_step)
         {
 			/* different decompositions at different frames */	
-            if (var.is_timed)
+            if (var.is_timed==PIO_UNLIMITED || var.is_timed>0)
                 PIOc_setframe(ncid, var.nc_varid, frame_id);
 			if (fillval_exist) {
             	ret = PIOc_write_darray(ncid, var.nc_varid, decomp.ioid, (PIO_Offset)nelems,
@@ -1243,7 +1243,7 @@ void ConvertBPFile(string infilepath, string outfilename, int pio_iotype, int io
 	
 					std::string op(ncop);
 					if (op == "put_var") {
-						if (var.is_timed) {
+						if (var.is_timed==PIO_UNLIMITED || var.is_timed>0) {
 							if (debug_out) printf("ConvertVariableTimedPutVar: %d\n",mpirank); fflush(stdout);
 							ConvertVariableTimedPutVar(infile, wfiles, i, ncid, var, n_bp_writers, comm, mpirank, nproc);
 						} else {

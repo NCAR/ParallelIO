@@ -37,6 +37,9 @@ ADD_EXECUTABLE(timesteps_double timesteps_double.c)
 TARGET_LINK_LIBRARIES(timesteps_double pioc)
 add_dependencies(tests timesteps_double)
 
+ADD_EXECUTABLE(example_num_frames example_num_frames.c)
+TARGET_LINK_LIBRARIES(example_num_frames pioc)
+add_dependencies(tests example_num_frames)
 
 ###-------------------------------------------------------------------------###
 ### CMakeList.txt for examples using pio
