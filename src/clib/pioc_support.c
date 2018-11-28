@@ -510,14 +510,9 @@ int check_netcdf2(iosystem_desc_t *ios, file_desc_t *file, int status,
  * settings and either call MPI_Abort() or return an error code.
  * (Not a collective call)
  *
- * The error hanlder has three settings:
- *
- * Errors cause abort: PIO_INTERNAL_ERROR.
- *
- * Error codes are broadcast to all tasks: PIO_BCAST_ERROR.
- *
- * Errors are returned to caller with no internal action:
- * PIO_RETURN_ERROR.
+ * If the error handler is set to PIO_INTERNAL_ERROR an error
+ * results in an internal abort. For all other error handlers
+ * the function returns a PIO error code back to the caller.
  *
  * @param ios pointer to the IO system info. Ignored if NULL.
  * @param file pointer to the file description data. Ignored if
@@ -564,13 +559,9 @@ int pio_err(iosystem_desc_t *ios, file_desc_t *file, int err_num, const char *fn
         MPI_Abort(MPI_COMM_WORLD, -1);
     }
 
-    /* What should we do here??? */
-    if (err_handler == PIO_BCAST_ERROR)
-    {
-        /* ??? */
-    }
-
-    /* If abort was not called, we'll get here. */
+    /* For PIO_BCAST_ERROR and PIO_RETURN_ERROR error handlers
+     * just return the error code back to the caller
+     */
     return err_num;
 }
 
