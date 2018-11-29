@@ -1996,11 +1996,11 @@ int PIOc_def_var(int ncid, const char *name, nc_type xtype, int ndims,
 #endif /* _NETCDF */
 #ifdef _NETCDF4
         /* For netCDF-4 serial files, turn on compression for this variable. */
-        if (!ierr && file->iotype == PIO_IOTYPE_NETCDF4C)
+        if (!ierr && file->iotype == PIO_IOTYPE_NETCDF4C && file->do_io)
             ierr = nc_def_var_deflate(file->fh, *varidp, 0, 1, 1);
 
         /* For netCDF-4 parallel files, set parallel access to collective. */
-        if (!ierr && file->iotype == PIO_IOTYPE_NETCDF4P)
+        if (!ierr && file->iotype == PIO_IOTYPE_NETCDF4P && file->do_io)
             ierr = nc_var_par_access(file->fh, *varidp, NC_COLLECTIVE);
 #endif /* _NETCDF4 */
     }
