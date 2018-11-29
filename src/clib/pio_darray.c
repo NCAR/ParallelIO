@@ -115,7 +115,7 @@ int PIOc_write_darray_multi(int ncid, const int *varids, int ioid, int nvars,
     var_desc_t *vdesc0;    /* Array of var_desc structure for each var. */
     int fndims;            /* Number of dims in the var in the file. */
     int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI function calls. */
-    int ierr;              /* Return code. */
+    int ierr = PIO_NOERR;              /* Return code. */
 
 #ifdef TIMING
     GPTLstart("PIO:PIOc_write_darray_multi");
@@ -155,8 +155,11 @@ int PIOc_write_darray_multi(int ncid, const int *varids, int ioid, int nvars,
     {
         /* Get the number of dims for this var. */
         LOG((3, "about to call PIOc_inq_varndims varids[0] = %d", varids[0]));
-        if ((ierr = PIOc_inq_varndims(file->pio_ncid, varids[0], &fndims)))
-            return check_netcdf(file, ierr, __FILE__, __LINE__);
+        ierr = PIOc_inq_varndims(file->pio_ncid, varids[0], &fndims);
+        if(ierr != PIO_NOERR){
+          LOG((1, "PIOc_inq_varndims failed, ierr = %d", ierr));
+          return ierr;
+        }
         LOG((3, "called PIOc_inq_varndims varids[0] = %d fndims = %d", varids[0], fndims));
     }
 
@@ -487,7 +490,7 @@ int find_var_fillvalue(file_desc_t *file, int varid, var_desc_t *vdesc)
 {
     iosystem_desc_t *ios;  /* Pointer to io system information. */    
     int no_fill;
-    int ierr;
+    int ierr = PIO_NOERR;
 
     /* Check inputs. */
     pioassert(file && file->iosystem && vdesc, "invalid input", __FILE__, __LINE__);
@@ -975,7 +978,7 @@ int PIOc_read_darray(int ncid, int varid, int ioid, PIO_Offset arraylen,
     io_desc_t *iodesc;     /* Pointer to IO description information. */
     void *iobuf = NULL;    /* holds the data as read on the io node. */
     size_t rlen = 0;       /* the length of data in iobuf. */
-    int ierr, mpierr;           /* Return code. */
+    int ierr = PIO_NOERR, mpierr = MPI_SUCCESS;           /* Return code. */
     int fndims = 0;
 
 #ifdef TIMING
@@ -1004,8 +1007,11 @@ int PIOc_read_darray(int ncid, int varid, int ioid, PIO_Offset arraylen,
     {
         /* Get the number of dims for this var. */
         LOG((3, "about to call PIOc_inq_varndims varid = %d", varid));
-        if ((ierr = PIOc_inq_varndims(file->pio_ncid, varid, &fndims)))
-            return check_netcdf(file, ierr, __FILE__, __LINE__);
+        ierr = PIOc_inq_varndims(file->pio_ncid, varid, &fndims);
+        if(ierr != PIO_NOERR){
+            LOG((1, "PIOc_inq_varndims failed, ierr = %d", ierr));
+            return ierr;
+        }
         LOG((3, "called PIOc_inq_varndims varid = %d fndims = %d", varid, fndims));
     }
     /* ??? */

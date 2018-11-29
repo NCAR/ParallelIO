@@ -455,7 +455,7 @@ int check_netcdf2(iosystem_desc_t *ios, file_desc_t *file, int status,
     char errmsg[PIO_MAX_NAME + 1];  /* Error message. */
     int ioroot;
     MPI_Comm comm;
-    int mpierr;
+    int mpierr = MPI_SUCCESS;
 
     /* User must provide this. */
     assert(ios || file);
@@ -700,7 +700,7 @@ int malloc_iodesc(iosystem_desc_t *ios, int piotype, int ndims,
 {
     MPI_Datatype mpi_type;
     PIO_Offset type_size;
-    int mpierr;
+    int mpierr = MPI_SUCCESS;
     int ret;
 
     /* Check input. */
@@ -893,7 +893,7 @@ int PIOc_readmap(const char *file, int *ndims, int **gdims, PIO_Offset *fmaplen,
     PIO_Offset *tmap;
     MPI_Status status;
     PIO_Offset maplen;
-    int mpierr; /* Return code for MPI calls. */
+    int mpierr = MPI_SUCCESS; /* Return code for MPI calls. */
 
     /* Check inputs. */
     if (!file || !ndims || !gdims || !fmaplen || !map)
@@ -1027,7 +1027,7 @@ int PIOc_write_nc_decomp(int iosysid, const char *filename, int cmode, int ioid,
     iosystem_desc_t *ios; /* IO system info. */
     io_desc_t *iodesc;    /* Decomposition info. */
     int max_maplen;       /* The maximum maplen used for any task. */
-    int mpierr;
+    int mpierr = MPI_SUCCESS;
     int ret;
 
     /* Get the IO system info. */
@@ -1134,7 +1134,7 @@ int PIOc_read_nc_decomp(int iosysid, const char *filename, int *ioidp, MPI_Comm 
     int my_rank;          /* Task rank in comm. */
     char source_in[PIO_MAX_NAME + 1];  /* Text metadata in decomp file. */
     char version_in[PIO_MAX_NAME + 1]; /* Text metadata in decomp file. */
-    int mpierr;
+    int mpierr = MPI_SUCCESS;
     int ret;
 
     /* Get the IO system info. */
@@ -1632,7 +1632,7 @@ int PIOc_writemap(const char *file, int ioid, int ndims, const int *gdims, PIO_O
     int i;
     PIO_Offset *nmap;
     int gdims_reversed[ndims];
-    int mpierr; /* Return code for MPI calls. */
+    int mpierr = MPI_SUCCESS; /* Return code for MPI calls. */
 
     LOG((1, "PIOc_writemap file = %s ioid = %d ndims = %d maplen = %d", file, ioid, ndims, maplen));
 
@@ -1763,7 +1763,7 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
     iosystem_desc_t *ios;  /* Pointer to io system information. */
     file_desc_t *file;     /* Pointer to file information. */
     int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI function codes. */
-    int ierr;              /* Return code from function calls. */
+    int ierr = PIO_NOERR;              /* Return code from function calls. */
 
 #ifdef TIMING
     GPTLstart("PIO:PIOc_createfile_int");
@@ -1892,18 +1892,15 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
         }
     }
 
-    /* Broadcast and check the return code. */
-    if ((mpierr = MPI_Bcast(&ierr, 1, MPI_INT, ios->ioroot, ios->my_comm)))
-        return check_mpi(file, mpierr, __FILE__, __LINE__);
-
+    ierr = check_netcdf2(ios, NULL, ierr, __FILE__, __LINE__);
     /* If there was an error, free the memory we allocated and handle error. */
-    if (ierr)
-    {
+    if(ierr != PIO_NOERR){
         free(file);
 #ifdef TIMING
         GPTLstop("PIO:PIOc_createfile_int");
 #endif
-        return check_netcdf2(ios, NULL, ierr, __FILE__, __LINE__);
+        LOG((1, "PIOc_create_file_int failed, ierr = %d\n", ierr));
+        return ierr;
     }
 
     /* Broadcast mode to all tasks. */
@@ -2176,18 +2173,12 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
         }
     }
 
-    /* Broadcast and check the return code. */
-    LOG((2, "Bcasting error code ierr = %d ios->ioroot = %d ios->my_comm = %d",
-         ierr, ios->ioroot, ios->my_comm));
-    if ((mpierr = MPI_Bcast(&ierr, 1, MPI_INT, ios->ioroot, ios->my_comm)))
-        return check_mpi(file, mpierr, __FILE__, __LINE__);
-    LOG((2, "Bcast openfile_retry error code ierr = %d", ierr));
-
+    ierr = check_netcdf2(ios, NULL, ierr, __FILE__, __LINE__);
     /* If there was an error, free allocated memory and deal with the error. */
-    if (ierr)
-    {
+    if(ierr != PIO_NOERR){
         free(file);
-        return check_netcdf2(ios, NULL, ierr, __FILE__, __LINE__);
+        LOG((1, "PIOc_openfile_retry failed, ierr = %d", ierr));
+        return ierr;
     }
 
     /* Broadcast open mode to all tasks. */
@@ -2429,12 +2420,11 @@ int pioc_change_def(int ncid, int is_enddef)
 #endif /* _NETCDF */
     }
 
-    /* Broadcast and check the return code. */
-    LOG((3, "pioc_change_def bcasting return code ierr = %d", ierr));
-    if ((mpierr = MPI_Bcast(&ierr, 1, MPI_INT, ios->ioroot, ios->my_comm)))
-        return check_mpi(file, mpierr, __FILE__, __LINE__);
-    if (ierr)
-        return check_netcdf(file, ierr, __FILE__, __LINE__);
+    ierr = check_netcdf(file, ierr, __FILE__, __LINE__);
+    if(ierr != PIO_NOERR){
+      LOG((1, "pioc_change_def failed, ierr = %d", ierr));
+      return ierr;
+    }
     LOG((3, "pioc_change_def succeeded"));
 
     return ierr;
@@ -2548,7 +2538,7 @@ int calc_var_rec_sz(int ncid, int varid)
     int ndims;
     nc_type vtype;
     PIO_Offset vtype_sz = 0;
-    int ierr, mpierr;
+    int ierr = PIO_NOERR, mpierr = MPI_SUCCESS;
 
     ierr = pio_get_file(ncid, &file);
     if(ierr != PIO_NOERR)
@@ -2651,7 +2641,7 @@ const char *get_var_desc_str(int ncid, int varid, const char *desc_prefix)
     iosystem_desc_t *ios;  /* Pointer to io system information. */
     file_desc_t *file;     /* Pointer to file information. */
     static const char EMPTY_STR[] = "";
-    int ierr;
+    int ierr = PIO_NOERR;
 
     ierr = pio_get_file(ncid, &file);
     if(ierr != PIO_NOERR)

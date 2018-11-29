@@ -497,8 +497,8 @@ int send_all_start_count(iosystem_desc_t *ios, io_desc_t *iodesc, PIO_Offset lle
                          size_t *tmp_count, void *iobuf)
 {
     MPI_Status status;     /* Recv status for MPI. */
-    int mpierr;  /* Return code from MPI function codes. */
-    int ierr;    /* Return code. */
+    int mpierr = MPI_SUCCESS;  /* Return code from MPI function codes. */
+    int ierr = PIO_NOERR;    /* Return code. */
 
     /* Check inputs. */
     pioassert(ios && ios->ioproc && ios->io_rank > 0 && maxregions >= 0,
@@ -583,8 +583,8 @@ int recv_and_write_data(file_desc_t *file, const int *varids, const int *frame,
     void *bufptr;
     var_desc_t *vdesc;     /* Contains info about the variable. */
     MPI_Status status;     /* Recv status for MPI. */
-    int mpierr;  /* Return code from MPI function codes. */
-    int ierr;    /* Return code. */
+    int mpierr = MPI_SUCCESS;  /* Return code from MPI function codes. */
+    int ierr = PIO_NOERR;    /* Return code. */
 
     /* Check inputs. */
     pioassert(file && varids && iodesc && tmp_start && tmp_count, "invalid input",
@@ -728,8 +728,11 @@ int recv_and_write_data(file_desc_t *file, const int *varids, const int *frame,
                     default:
                         return pio_err(ios, file, PIO_EBADTYPE, __FILE__, __LINE__);
                     }
-                    if (ierr)
-                        return check_netcdf2(ios, NULL, ierr, __FILE__, __LINE__);
+                    ierr = check_netcdf2(ios, NULL, ierr, __FILE__, __LINE__);
+                    if(ierr != PIO_NOERR){
+                        LOG((1, "nc_put_vara* failed, ierr = %d", ierr));
+                        return ierr;
+                    }
 
                 } /* next var */
 
@@ -774,7 +777,7 @@ int write_darray_multi_serial(file_desc_t *file, int nvars, int fndims, const in
 {
     iosystem_desc_t *ios;  /* Pointer to io system information. */
     var_desc_t *vdesc;     /* Contains info about the variable. */
-    int ierr;              /* Return code. */
+    int ierr = PIO_NOERR;              /* Return code. */
 
     /* Check inputs. */
     pioassert(file && file->iosystem && file->varlist && varids && varids[0] >= 0 &&
@@ -1065,13 +1068,19 @@ int pio_read_darray_nc(file_desc_t *file, int fndims, io_desc_t *iodesc, int vid
             }
 
             /* Check return code. */
-            if (ierr)
-                return check_netcdf(file, ierr, __FILE__,__LINE__);
+            if(ierr != PIO_NOERR){
+              break;
+            }
 
             /* Move to next region. */
             if (region)
                 region = region->next;
         } /* next regioncnt */
+    }
+    ierr = check_netcdf(file, ierr, __FILE__,__LINE__);
+    if(ierr != PIO_NOERR){
+        LOG((1, "nc*_get_var* failed, ierr = %d", ierr));
+        return ierr;
     }
 
 #ifdef TIMING
@@ -1360,8 +1369,12 @@ int pio_read_darray_nc_serial(file_desc_t *file, int fndims, io_desc_t *iodesc, 
                     }
 
                     /* Check error code of netCDF call. */
-                    if (ierr)
-                        return check_netcdf(file, ierr, __FILE__, __LINE__);
+                    if(ierr != PIO_NOERR){
+                        break;
+                    }
+                }
+                if(ierr != PIO_NOERR){
+                    break;
                 }
 
                 /* The decomposition may not use all of the active io
@@ -1374,6 +1387,11 @@ int pio_read_darray_nc_serial(file_desc_t *file, int fndims, io_desc_t *iodesc, 
                         return check_mpi(file, mpierr, __FILE__, __LINE__);
             }
         }
+    }
+    ierr = check_netcdf(file, ierr, __FILE__, __LINE__);
+    if(ierr != PIO_NOERR){
+        LOG((1, "nc*_get_var* failed, ierr = %d", ierr));
+        return ierr;
     }
 
 #ifdef TIMING
@@ -1398,7 +1416,7 @@ int pio_read_darray_nc_serial(file_desc_t *file, int fndims, io_desc_t *iodesc, 
  */
 int flush_output_buffer(file_desc_t *file, bool force, PIO_Offset addsize)
 {
-    int mpierr;  /* Return code from MPI functions. */
+    int mpierr = MPI_SUCCESS;  /* Return code from MPI functions. */
     int ierr = PIO_NOERR;
 
 #ifdef TIMING
@@ -1632,7 +1650,7 @@ int flush_output_buffer(file_desc_t *file, bool force, PIO_Offset addsize)
  */
 void cn_buffer_report(iosystem_desc_t *ios, bool collective)
 {
-    int mpierr;  /* Return code from MPI functions. */
+    int mpierr = MPI_SUCCESS;  /* Return code from MPI functions. */
 
     LOG((2, "cn_buffer_report ios->iossysid = %d collective = %d CN_bpool = %d",
          ios->iosysid, collective, CN_bpool));
