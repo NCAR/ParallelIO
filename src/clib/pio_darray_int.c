@@ -728,7 +728,6 @@ int recv_and_write_data(file_desc_t *file, const int *varids, const int *frame,
                     default:
                         return pio_err(ios, file, PIO_EBADTYPE, __FILE__, __LINE__);
                     }
-                    ierr = check_netcdf2(ios, NULL, ierr, __FILE__, __LINE__);
                     if(ierr != PIO_NOERR){
                         LOG((1, "nc_put_vara* failed, ierr = %d", ierr));
                         return ierr;
@@ -837,6 +836,11 @@ int write_darray_multi_serial(file_desc_t *file, int nvars, int fndims, const in
                                             tmp_start, tmp_count, iobuf)))
                 return pio_err(ios, file, ierr, __FILE__, __LINE__);
         }
+    }
+    ierr = check_netcdf2(ios, file, ierr, __FILE__, __LINE__);
+    if(ierr != PIO_NOERR){
+        LOG((1, "nc_put_vara* or sending data to root failed, ierr = %d", ierr));
+        return ierr;
     }
 
 #ifdef TIMING
