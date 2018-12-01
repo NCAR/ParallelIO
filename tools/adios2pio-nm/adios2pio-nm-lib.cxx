@@ -928,9 +928,7 @@ int ConvertVariableDarray(ADIOS_FILE **infile, int adios_varid, int ncid, Variab
     }
     else
     {
-        /* Apps may still write a non-timed variable every step, basically overwriting the variable.
-         * But we have too many blocks in the adios file in such case and we need to deal with them
-         */
+        /* Apps may still write a variable with limited time dimension every step */
         nsteps = g_nblocks / nblocks_per_step;
         int maxSteps = GlobalMaxSteps_nm();
         if (g_nblocks != nsteps * nblocks_per_step)
@@ -949,14 +947,6 @@ int ConvertVariableDarray(ADIOS_FILE **infile, int adios_varid, int ncid, Variab
                  << "of other variables that indeed have unlimited dimensions (" << maxSteps << ")."
                  << endl;
         }
-        else if (nsteps > 1)
-        {
-            if (debug_out) cout << "rank " << mpirank << ":WARNING in processing darray '" << varname 
-                 << "'. A variable without unlimited dimension was written " << nsteps << " times. "
-                 << "We will write only the last occurence."
-                 << endl;
-        }
-        ts = nsteps-1;
     }
 
 	/* different decompositions at different frames */
@@ -1017,6 +1007,14 @@ int ConvertVariableDarray(ADIOS_FILE **infile, int adios_varid, int ncid, Variab
 										frame_varname, 0, 1, &frame_id);
                 		adios_perform_reads(infile[i], 1);
 						
+                		/* For a variable with limited time dimension, its is_timed flag
+                		 * was set to false. We can set that flag to true if a valid frame
+                		 * has been set on it, such that it can be handled similarly as a
+                		 * variable with unlimited time dimension.
+                		 */
+                		if (!var.is_timed && frame_id >= 0)
+                			var.is_timed = true;
+
 						if (decomp_id>0) {
                 			ret = adios_schedule_read(infile[i], wbsel, 
 											fillval_varname, 0, 1, fillval_id);
@@ -1046,6 +1044,7 @@ int ConvertVariableDarray(ADIOS_FILE **infile, int adios_varid, int ncid, Variab
         if (wfiles[0] < nblocks_per_step)
         {
 			/* different decompositions at different frames */	
+        	/* Note: this variable can have an unlimited or limited time dimension */
             if (var.is_timed)
                 PIOc_setframe(ncid, var.nc_varid, frame_id);
 			if (fillval_exist) {
