@@ -234,7 +234,7 @@ void ProcessGlobalAttributes(ADIOS_FILE **infile, int ncid, DimensionMap& dimens
             		adios_get_attr(infile[0], attname.c_str(), &atype, &asize, (void**)&ndims);
 
             		char **dimnames = NULL;
-            		int dimids[MAX_NC_DIMS];
+            		int dimids[PIO_MAX_DIMS];
             		if (*ndims)
             		{
               	 		attname = token + "/__pio__/dims";
@@ -451,7 +451,7 @@ VariableMap ProcessVariableDefinitions(ADIOS_FILE **infile, int ncid, DimensionM
 	            adios_get_attr(infile[0], attname.c_str(), &atype, &asize, (void**)&ndims);
 
 	            char **dimnames = NULL;
-	            int dimids[MAX_NC_DIMS];
+	            int dimids[PIO_MAX_DIMS];
 	            bool timed = false;
 	            if (*ndims)
 	            {
@@ -609,7 +609,7 @@ int ConvertVariablePutVar(ADIOS_FILE **infile, std::vector<int> wfiles, int adio
         TimerStart(read);
 		
 		/* ACME writes this array from I/O processor 0 */
-        PIO_Offset start[MAX_NC_DIMS], count[MAX_NC_DIMS];
+        PIO_Offset start[PIO_MAX_DIMS], count[PIO_MAX_DIMS];
 		// PIOc_put_var may have been called multiple times with different start,count values 
 		// for a variable. We need to convert the output from each of those calls.
    		ADIOS_VARINFO *vb = adios_inq_var(infile[0], varname);

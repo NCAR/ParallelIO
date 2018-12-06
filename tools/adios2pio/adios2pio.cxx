@@ -355,7 +355,7 @@ VariableMap ProcessVariableDefinitions(ADIOS_FILE * infile, int ncid, DimensionM
             adios_get_attr(infile, attname.c_str(), &atype, &asize, (void**)&ndims);
 
             char **dimnames = NULL;
-            int dimids[MAX_NC_DIMS];
+            int dimids[PIO_MAX_DIMS];
             bool timed = false;
             if (*ndims)
             {
@@ -543,7 +543,7 @@ int ConvertVariablePutVar(ADIOS_FILE * infile, int adios_varid, int ncid, Variab
         TimerStop(read);
 
         TimerStart(write);
-        PIO_Offset start[MAX_NC_DIMS], count[MAX_NC_DIMS];
+        PIO_Offset start[PIO_MAX_DIMS], count[PIO_MAX_DIMS];
         for (int d=0; d < vi->ndim; ++d)
         {
             start[d] = (PIO_Offset) offsets[d];

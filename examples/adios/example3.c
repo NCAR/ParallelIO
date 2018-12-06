@@ -85,7 +85,7 @@ int resultlen;
  *
  * @return 0 if example file is correct, non-zero otherwise. */
 int check_file(int ntasks, char *filename) {
-    
+#ifdef _NETCDF
     int ncid;         /**< File ID from netCDF. */
     int ndims;        /**< Number of dimensions. */
     int nvars;        /**< Number of variables. */
@@ -102,7 +102,7 @@ int check_file(int ntasks, char *filename) {
     size_t count[NDIM];           /**< Number of elements to read. */
     int buffer[DIM_LEN_FOO];          /**< Buffer to read in data. */
     int expected[DIM_LEN_FOO];        /**< Data values we expect to find. */
-    
+
     /* Open the file. */
     if ((ret = nc_open(filename, 0, &ncid)))
 	return ret;
@@ -139,6 +139,7 @@ int check_file(int ntasks, char *filename) {
     /* Close the file. */
     if ((ret = nc_close(ncid)))
 	return ret;
+#endif 
 
     /* Everything looks good! */
     return 0;
