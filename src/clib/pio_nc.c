@@ -117,10 +117,15 @@ int PIOc_inq(int ncid, int *ndimsp, int *nvarsp, int *ngattsp, int *unlimdimidp)
         LOG((2, "PIOc_inq netcdf call returned %d", ierr));
     }
 
-    ierr = check_netcdf(file, ierr, __FILE__, __LINE__);
+    /* A failure to inquire is not fatal */
+    mpierr = MPI_Bcast(&ierr, 1, MPI_INT, ios->ioroot, ios->my_comm);
+    if(mpierr != MPI_SUCCESS){
+        return check_mpi(file, mpierr, __FILE__, __LINE__);
+    }
+
     if(ierr != PIO_NOERR){
         LOG((1, "nc*_inq failed, ierr = %d", ierr));
-        return ierr;
+        return pio_err(ios, file, ierr, __FILE__, __LINE__);
     }
 
     /* Broadcast results to all tasks. Ignore NULL parameters. */
@@ -308,10 +313,15 @@ int PIOc_inq_unlimdims(int ncid, int *nunlimdimsp, int *unlimdimidsp)
         LOG((2, "PIOc_inq_unlimdims netcdf call returned %d", ierr));
     }
 
-    ierr = check_netcdf(file, ierr, __FILE__, __LINE__);
+    /* A failure to inquire is not fatal */
+    mpierr = MPI_Bcast(&ierr, 1, MPI_INT, ios->ioroot, ios->my_comm);
+    if(mpierr != MPI_SUCCESS){
+        return check_mpi(file, mpierr, __FILE__, __LINE__);
+    }
+
     if(ierr != PIO_NOERR){
-        LOG((1, "nc*_inq_unlimdims failed, ierr = %d", ierr));
-        return ierr;
+        LOG((1, "nc*_inq failed, ierr = %d", ierr));
+        return pio_err(ios, file, ierr, __FILE__, __LINE__);
     }
 
     /* Broadcast results to all tasks. Ignore NULL parameters. */
@@ -384,6 +394,7 @@ int PIOc_inq_type(int ncid, nc_type xtype, char *name, PIO_Offset *sizep)
         LOG((2, "PIOc_inq_type netcdf call returned %d", ierr));
     }
 
+    /* Failure to inquire is fatal */
     ierr = check_netcdf(file, ierr, __FILE__, __LINE__);
     if(ierr != PIO_NOERR){
         LOG((1, "nc*_inq_type failed, ierr = %d", ierr));
@@ -461,6 +472,7 @@ int PIOc_inq_format(int ncid, int *formatp)
         LOG((2, "PIOc_inq netcdf call returned %d", ierr));
     }
 
+    /* Failure to inquire is fatal */
     ierr = check_netcdf(file, ierr, __FILE__, __LINE__);
     if(ierr != PIO_NOERR){
         LOG((1, "nc*_inq_format failed, ierr = %d", ierr));
@@ -540,10 +552,15 @@ int PIOc_inq_dim(int ncid, int dimid, char *name, PIO_Offset *lenp)
         LOG((2, "ierr = %d", ierr));
     }
 
-    ierr = check_netcdf(file, ierr, __FILE__, __LINE__);
+    /* A failure to inquire is not fatal */
+    mpierr = MPI_Bcast(&ierr, 1, MPI_INT, ios->ioroot, ios->my_comm);
+    if(mpierr != MPI_SUCCESS){
+        return check_mpi(file, mpierr, __FILE__, __LINE__);
+    }
+
     if(ierr != PIO_NOERR){
-        LOG((1, "nc*_inq_dim failed, ierr = %d", ierr));
-        return ierr;
+        LOG((1, "nc*_inq failed, ierr = %d", ierr));
+        return pio_err(ios, file, ierr, __FILE__, __LINE__);
     }
 
     /* Broadcast results to all tasks. Ignore NULL parameters. */
@@ -664,10 +681,15 @@ int PIOc_inq_dimid(int ncid, const char *name, int *idp)
     }
     LOG((3, "nc_inq_dimid call complete ierr = %d", ierr));
 
-    ierr = check_netcdf(file, ierr, __FILE__, __LINE__);
+    /* A failure to inquire is not fatal */
+    mpierr = MPI_Bcast(&ierr, 1, MPI_INT, ios->ioroot, ios->my_comm);
+    if(mpierr != MPI_SUCCESS){
+        return check_mpi(file, mpierr, __FILE__, __LINE__);
+    }
+
     if(ierr != PIO_NOERR){
-        LOG((1, "nc*_inq_dimid failed, ierr = %d", ierr));
-        return ierr;
+        LOG((1, "nc*_inq failed, ierr = %d", ierr));
+        return pio_err(ios, file, ierr, __FILE__, __LINE__);
     }
 
     /* Broadcast results. */
@@ -830,10 +852,15 @@ int PIOc_inq_var(int ncid, int varid, char *name, int namelen, nc_type *xtypep, 
             LOG((2, "PIOc_inq_var ndims = %d ierr = %d", *ndimsp, ierr));
     }
 
-    ierr = check_netcdf(file, ierr, __FILE__, __LINE__);
+    /* A failure to inquire is not fatal */
+    mpierr = MPI_Bcast(&ierr, 1, MPI_INT, ios->ioroot, ios->my_comm);
+    if(mpierr != MPI_SUCCESS){
+        return check_mpi(file, mpierr, __FILE__, __LINE__);
+    }
+
     if(ierr != PIO_NOERR){
-        LOG((1, "nc*_inq_varn_dims failed, ierr = %d", ierr));
-        return ierr;
+        LOG((1, "nc*_inq failed, ierr = %d", ierr));
+        return pio_err(ios, file, ierr, __FILE__, __LINE__);
     }
 
     /* Broadcast the results for non-null pointers. */
@@ -1064,10 +1091,15 @@ int PIOc_inq_varid(int ncid, const char *name, int *varidp)
 #endif /* _NETCDF */
     }
 
-    ierr = check_netcdf(file, ierr, __FILE__, __LINE__);
+    /* A failure to inquire is not fatal */
+    mpierr = MPI_Bcast(&ierr, 1, MPI_INT, ios->ioroot, ios->my_comm);
+    if(mpierr != MPI_SUCCESS){
+        return check_mpi(file, mpierr, __FILE__, __LINE__);
+    }
+
     if(ierr != PIO_NOERR){
-        LOG((1, "nc*_inq_varid failed, ierr = %d", ierr));
-        return ierr;
+        LOG((1, "nc*_inq failed, ierr = %d", ierr));
+        return pio_err(ios, file, ierr, __FILE__, __LINE__);
     }
 
     /* Broadcast results to all tasks. Ignore NULL parameters. */
@@ -1185,10 +1217,15 @@ int PIOc_inq_att(int ncid, int varid, const char *name, nc_type *xtypep,
         LOG((2, "PIOc_inq netcdf call returned %d", ierr));
     }
 
-    ierr = check_netcdf(file, ierr, __FILE__, __LINE__);
+    /* A failure to inquire is not fatal */
+    mpierr = MPI_Bcast(&ierr, 1, MPI_INT, ios->ioroot, ios->my_comm);
+    if(mpierr != MPI_SUCCESS){
+        return check_mpi(file, mpierr, __FILE__, __LINE__);
+    }
+
     if(ierr != PIO_NOERR){
-        LOG((1, "nc*_inq_att failed, ierr = %d", ierr));
-        return ierr;
+        LOG((1, "nc*_inq failed, ierr = %d", ierr));
+        return pio_err(ios, file, ierr, __FILE__, __LINE__);
     }
 
     /* Broadcast results. */
@@ -1296,10 +1333,15 @@ int PIOc_inq_attname(int ncid, int varid, int attnum, char *name)
         LOG((2, "PIOc_inq_attname netcdf call returned %d", ierr));
     }
 
-    ierr = check_netcdf(file, ierr, __FILE__, __LINE__);
+    /* A failure to inquire is not fatal */
+    mpierr = MPI_Bcast(&ierr, 1, MPI_INT, ios->ioroot, ios->my_comm);
+    if(mpierr != MPI_SUCCESS){
+        return check_mpi(file, mpierr, __FILE__, __LINE__);
+    }
+
     if(ierr != PIO_NOERR){
-        LOG((1, "nc*_inq_attname failed, ierr = %d", ierr));
-        return ierr;
+        LOG((1, "nc*_inq failed, ierr = %d", ierr));
+        return pio_err(ios, file, ierr, __FILE__, __LINE__);
     }
 
     /* Broadcast results to all tasks. Ignore NULL parameters. */
@@ -1380,10 +1422,15 @@ int PIOc_inq_attid(int ncid, int varid, const char *name, int *idp)
         LOG((2, "PIOc_inq_attname netcdf call returned %d", ierr));
     }
 
-    ierr = check_netcdf(file, ierr, __FILE__, __LINE__);
+    /* A failure to inquire is not fatal */
+    mpierr = MPI_Bcast(&ierr, 1, MPI_INT, ios->ioroot, ios->my_comm);
+    if(mpierr != MPI_SUCCESS){
+        return check_mpi(file, mpierr, __FILE__, __LINE__);
+    }
+
     if(ierr != PIO_NOERR){
-        LOG((1, "nc*_inq_attid failed, ierr = %d", ierr));
-        return ierr;
+        LOG((1, "nc*_inq failed, ierr = %d", ierr));
+        return pio_err(ios, file, ierr, __FILE__, __LINE__);
     }
 
     /* Broadcast results. */
