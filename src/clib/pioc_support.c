@@ -2144,6 +2144,11 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
         {
 #ifdef _NETCDF
             LOG((2, "retry error code ierr = %d io_rank %d", ierr, ios->io_rank));
+            /* Bcast error code from io rank 0 to all io procs */
+            mpierr = MPI_Bcast(&ierr, 1, MPI_INT, 0, ios->io_comm);
+            if(mpierr != MPI_SUCCESS){
+                return check_mpi(file, ierr, __FILE__, __LINE__);
+            }
             if ((ierr == NC_ENOTNC || ierr == NC_EINVAL) && (file->iotype != PIO_IOTYPE_NETCDF))
             {
                 if (ios->iomaster == MPI_ROOT)
