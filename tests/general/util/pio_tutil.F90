@@ -14,14 +14,16 @@ MODULE pio_tutil
     ENUMERATOR  ::  IARG_NUM_IO_TASKS_SIDX
     ENUMERATOR  ::  IARG_NUM_AGGREGATORS_SIDX
     ENUMERATOR  ::  IARG_LOG_LEVEL_SIDX
+    ENUMERATOR  ::  IARG_ERR_HANDLER_SIDX
     ! Unfortunately since fortran starts with index 1 we need the
     ! hack below. Don't forget to update when adding more argvs
-    ENUMERATOR  ::  NUM_IARGS = IARG_LOG_LEVEL_SIDX
+    ENUMERATOR  ::  NUM_IARGS = IARG_ERR_HANDLER_SIDX
     ENUMERATOR  ::  IARG_MAX_SIDX = NUM_IARGS
   END ENUM
 
   ! PIO specific info
   INTEGER :: pio_tf_stride_, pio_tf_num_io_tasks_, pio_tf_num_aggregators_
+  INTEGER :: pio_tf_err_handler_
   TYPE(iosystem_desc_t), save :: pio_tf_iosystem_
 
   ! MPI info
@@ -34,7 +36,7 @@ MODULE pio_tutil
   INTEGER, PARAMETER, PUBLIC :: fc_double = selected_real_kind(13)
 
   ! Misc constants
-  INTEGER, PARAMETER :: PIO_TF_MAX_STR_LEN=100
+  INTEGER, PARAMETER :: PIO_TF_MAX_STR_LEN=128
 
   ! Logging
   INTEGER :: pio_tf_log_level_
@@ -135,6 +137,7 @@ CONTAINS
     pio_tf_num_aggregators_ = 0
     pio_tf_num_io_tasks_ = 0
     pio_tf_stride_ = 1
+    pio_tf_err_handler_ = PIO_BCAST_ERROR
     ! Now read input args from rank 0 and bcast it
     ! Args supported are --num-io-tasks, --num-aggregators,
     !   --stride
@@ -149,6 +152,12 @@ CONTAINS
     IF (pio_tf_num_io_tasks_ == 0) THEN
       pio_tf_num_io_tasks_ = pio_tf_world_sz_ / pio_tf_stride_
       IF (pio_tf_num_io_tasks_ < 1) pio_tf_num_io_tasks_ = 1
+    END IF
+    IF ((pio_tf_err_handler_ /= PIO_INTERNAL_ERROR) .AND.&
+        (pio_tf_err_handler_ /= PIO_BCAST_ERROR) .AND.&
+        (pio_tf_err_handler_ /= PIO_RETURN_ERROR)) THEN
+      PRINT *, "PIO_TF : Invalid error handler specified, resetting to PIO_BCAST_ERROR..."
+      pio_tf_err_handler_ = PIO_BCAST_ERROR
     END IF
     !IF (pio_tf_world_rank_ == 0) THEN
     !  PRINT *, "PIO_TF: stride=", pio_tf_stride_, ", io_tasks=",&
@@ -168,7 +177,7 @@ CONTAINS
           base=0)
 
     ! Set PIO to bcast error
-    CALL PIO_seterrorhandling(pio_tf_iosystem_, PIO_BCAST_ERROR)
+    CALL PIO_seterrorhandling(pio_tf_iosystem_, pio_tf_err_handler_)
 
     ! Set PIO logging level
     ierr = PIO_set_log_level(pio_tf_log_level_)
@@ -980,11 +989,34 @@ CONTAINS
     END IF
   END FUNCTION
 
+  ! Convert error handler name/string to error handler type (integer)
+  INTEGER FUNCTION Error_handler_from_str(err_handler_str)
+    CHARACTER(LEN=*), INTENT(IN) :: err_handler_str
+    CHARACTER(LEN=PIO_TF_MAX_STR_LEN) :: str
+
+    str = trim(err_handler_str)
+
+    Error_handler_from_str = PIO_BCAST_ERROR
+    IF((str == "PIO_INTERNAL_ERROR") .OR.&
+        (str == "pio_internal_error")) THEN
+      Error_handler_from_str = PIO_INTERNAL_ERROR
+    ELSE IF((str == "PIO_BCAST_ERROR") .OR.&
+        (str == "pio_bcast_error")) THEN
+      Error_handler_from_str = PIO_BCAST_ERROR
+    ELSE IF((str == "PIO_RETURN_ERROR") .OR.&
+        (str == "pio_return_error")) THEN
+      Error_handler_from_str = PIO_RETURN_ERROR
+    ELSE
+      PRINT *, "PIO_TF: Invalid error handler specified, resetting to PIO_BCAST_ERROR..."
+    END IF
+  END FUNCTION
+
   ! Parse and process input arguments like "--pio-tf-stride=2" passed
   ! to the unit tests - PRIVATE function
   ! FIXME: Do we need to move input argument processing to a new module?
   SUBROUTINE Parse_and_process_input(argv)
     CHARACTER(LEN=*), INTENT(IN)  :: argv
+    CHARACTER(LEN=PIO_TF_MAX_STR_LEN) :: err_handler_str
     INTEGER :: pos
 
     ! All input arguments are of the form <INPUT_ARG_NAME>=<INPUT_ARG>
@@ -1003,6 +1035,9 @@ CONTAINS
         READ(argv(pos+1:), *) pio_tf_stride_
       ELSE IF (argv(:pos) == "--pio-tf-log-level=") THEN
         READ(argv(pos+1:), *) pio_tf_log_level_
+      ELSE IF (argv(:pos) == "--pio-tf-err-handler=") THEN
+        READ(argv(pos+1:), *) err_handler_str
+        pio_tf_err_handler_ = Error_handler_from_str(err_handler_str)
       ELSE IF (argv(:pos) == "--pio-tf-input-file=") THEN
         PRINT *, "This option is not implemented yet"
       END IF
@@ -1034,6 +1069,7 @@ CONTAINS
       send_buf(IARG_NUM_IO_TASKS_SIDX) = pio_tf_num_io_tasks_
       send_buf(IARG_NUM_AGGREGATORS_SIDX) = pio_tf_num_aggregators_
       send_buf(IARG_LOG_LEVEL_SIDX) = pio_tf_log_level_
+      send_buf(IARG_ERR_HANDLER_SIDX) = pio_tf_err_handler_
     END IF
     ! Make sure all processes get the input args
     CALL MPI_BCAST(send_buf, NUM_IARGS, MPI_INTEGER, 0, pio_tf_comm_, ierr)
@@ -1041,6 +1077,7 @@ CONTAINS
     pio_tf_num_io_tasks_ = send_buf(IARG_NUM_IO_TASKS_SIDX)
     pio_tf_num_aggregators_ = send_buf(IARG_NUM_AGGREGATORS_SIDX)
     pio_tf_log_level_ = send_buf(IARG_LOG_LEVEL_SIDX)
+    pio_tf_err_handler_ = send_buf(IARG_ERR_HANDLER_SIDX)
 
   END SUBROUTINE Read_input
 END MODULE pio_tutil
