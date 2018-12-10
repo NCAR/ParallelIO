@@ -1103,8 +1103,20 @@ int test_deletefile(int iosysid, int num_flavors, int *flavor, int my_rank)
         /* Set error handling. */
         if ((ret = PIOc_set_iosystem_error_handling(iosysid, PIO_RETURN_ERROR, &old_method)))
             return ret;
-        if (old_method != PIO_INTERNAL_ERROR && old_method != PIO_RETURN_ERROR)
+        if (old_method != PIO_INTERNAL_ERROR && old_method != PIO_RETURN_ERROR && old_method != PIO_BCAST_ERROR)
             return ERR_WRONG;
+
+        ret = PIOc_set_iosystem_error_handling(iosysid, PIO_BCAST_ERROR,
+                &old_method);
+        if(ret != PIO_NOERR){
+            ERR(ret);
+        }
+
+        ret = PIOc_set_iosystem_error_handling(PIO_DEFAULT, PIO_BCAST_ERROR,
+                &old_method);
+        if(ret != PIO_NOERR){
+            ERR(ret);
+        }
 
         /* Create a filename. */
         if ((ret = get_iotype_name(flavor[fmt], iotype_name)))
