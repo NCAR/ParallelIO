@@ -381,7 +381,7 @@ int write_darray_multi_par(file_desc_t *file, int nvars, int fndims, const int *
     } /* endif (ios->ioproc) */
 
     /* Check the return code from the netCDF/pnetcdf call. */
-    ierr = check_netcdf(file, ierr, __FILE__,__LINE__);
+    ierr = check_netcdf(NULL, file, ierr, __FILE__,__LINE__);
 
 #ifdef TIMING
     /* Stop timing this function. */
@@ -681,7 +681,7 @@ int recv_and_write_data(file_desc_t *file, const int *varids, const int *frame,
                     /* Call the netCDF functions to write the data. */
                     /*
                     if ((ierr = nc_put_vara(file->fh, varids[nv], start, count, bufptr)))
-                        return check_netcdf2(ios, NULL, ierr, __FILE__, __LINE__);
+                        return check_netcdf(ios, NULL, ierr, __FILE__, __LINE__);
                     */
                     switch (iodesc->piotype)
                     {
@@ -837,7 +837,7 @@ int write_darray_multi_serial(file_desc_t *file, int nvars, int fndims, const in
                 return pio_err(ios, file, ierr, __FILE__, __LINE__);
         }
     }
-    ierr = check_netcdf2(ios, file, ierr, __FILE__, __LINE__);
+    ierr = check_netcdf(ios, file, ierr, __FILE__, __LINE__);
     if(ierr != PIO_NOERR){
         LOG((1, "nc_put_vara* or sending data to root failed, ierr = %d", ierr));
         return ierr;
@@ -1081,7 +1081,7 @@ int pio_read_darray_nc(file_desc_t *file, int fndims, io_desc_t *iodesc, int vid
                 region = region->next;
         } /* next regioncnt */
     }
-    ierr = check_netcdf(file, ierr, __FILE__,__LINE__);
+    ierr = check_netcdf(NULL, file, ierr, __FILE__,__LINE__);
     if(ierr != PIO_NOERR){
         LOG((1, "nc*_get_var* failed, ierr = %d", ierr));
         return ierr;
@@ -1392,7 +1392,7 @@ int pio_read_darray_nc_serial(file_desc_t *file, int fndims, io_desc_t *iodesc, 
             }
         }
     }
-    ierr = check_netcdf(file, ierr, __FILE__, __LINE__);
+    ierr = check_netcdf(NULL, file, ierr, __FILE__, __LINE__);
     if(ierr != PIO_NOERR){
         LOG((1, "nc*_get_var* failed, ierr = %d", ierr));
         return ierr;

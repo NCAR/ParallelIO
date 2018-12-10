@@ -72,7 +72,7 @@ int PIOc_def_var_deflate(int ncid, int varid, int shuffle, int deflate,
 #endif
     }
 
-    ierr = check_netcdf(file, ierr, __FILE__, __LINE__);
+    ierr = check_netcdf(NULL, file, ierr, __FILE__, __LINE__);
     if(ierr != PIO_NOERR){
         LOG((1, "nc_def_var_deflate failed, ierr = %d", ierr));
         return ierr;
@@ -153,7 +153,7 @@ int PIOc_inq_var_deflate(int ncid, int varid, int *shufflep, int *deflatep,
 #endif
     }
 
-    ierr = check_netcdf(file, ierr, __FILE__, __LINE__);
+    ierr = check_netcdf(NULL, file, ierr, __FILE__, __LINE__);
     if(ierr != PIO_NOERR){
         LOG((1, "nc_inq_var_deflate failed, ierr = %d", ierr));
         return ierr;
@@ -283,7 +283,7 @@ int PIOc_def_var_chunking(int ncid, int varid, int storage, const PIO_Offset *ch
 #endif
     }
 
-    ierr = check_netcdf(file, ierr, __FILE__, __LINE__);
+    ierr = check_netcdf(NULL, file, ierr, __FILE__, __LINE__);
     if(ierr != PIO_NOERR){
         LOG((1, "nc_def_var_chunking failed, ierr = %d", ierr));
         return ierr;
@@ -386,7 +386,7 @@ int PIOc_inq_var_chunking(int ncid, int varid, int *storagep, PIO_Offset *chunks
         LOG((2, "ierr = %d", ierr));
     }
 
-    ierr = check_netcdf(file, ierr, __FILE__, __LINE__);
+    ierr = check_netcdf(NULL, file, ierr, __FILE__, __LINE__);
     if(ierr != PIO_NOERR){
         LOG((1, "nc_inq_var_chunking failed, ierr = %d", ierr));
         return ierr;
@@ -465,7 +465,7 @@ int PIOc_def_var_endian(int ncid, int varid, int endian)
 #endif
     }
 
-    ierr = check_netcdf(file, ierr, __FILE__, __LINE__);
+    ierr = check_netcdf(NULL, file, ierr, __FILE__, __LINE__);
     if(ierr != PIO_NOERR){
         LOG((1, "nc_def_var_endian failed, ierr = %d", ierr));
         return ierr;
@@ -534,7 +534,7 @@ int PIOc_inq_var_endian(int ncid, int varid, int *endianp)
 #endif
     }
 
-    ierr = check_netcdf(file, ierr, __FILE__, __LINE__);
+    ierr = check_netcdf(NULL, file, ierr, __FILE__, __LINE__);
     if(ierr != PIO_NOERR){
         LOG((1, "nc_inq_var_endian failed, ierr = %d", ierr));
         return ierr;
@@ -618,7 +618,7 @@ int PIOc_set_chunk_cache(int iosysid, int iotype, PIO_Offset size, PIO_Offset ne
 #endif
     }
 
-    ierr = check_netcdf2(ios, NULL, ierr, __FILE__, __LINE__);
+    ierr = check_netcdf(ios, NULL, ierr, __FILE__, __LINE__);
     if(ierr != PIO_NOERR){
         LOG((1, "nc_set_chunk_cache failed, ierr = %d", ierr));
         return ierr;
@@ -705,7 +705,7 @@ int PIOc_get_chunk_cache(int iosysid, int iotype, PIO_Offset *sizep, PIO_Offset 
         LOG((2, "nc_get_chunk_cache called ierr = %d", ierr));
     }
 
-    ierr = check_netcdf2(ios, NULL, ierr, __FILE__, __LINE__);
+    ierr = check_netcdf(ios, NULL, ierr, __FILE__, __LINE__);
     LOG((2, "bcast complete ierr = %d sizep = %d", ierr, sizep));
     if(ierr != PIO_NOERR){
         LOG((1, "nc_get_chunk_cache failed, ierr = %d", ierr));
@@ -797,7 +797,7 @@ int PIOc_set_var_chunk_cache(int ncid, int varid, PIO_Offset size, PIO_Offset ne
 #endif
     }
 
-    ierr = check_netcdf(file, ierr, __FILE__, __LINE__);
+    ierr = check_netcdf(NULL, file, ierr, __FILE__, __LINE__);
     if(ierr != PIO_NOERR){
         LOG((1, "nc_set_var_chunk_cache failed, ierr = %d", ierr));
         return ierr;
@@ -875,7 +875,7 @@ int PIOc_get_var_chunk_cache(int ncid, int varid, PIO_Offset *sizep, PIO_Offset 
 #endif
     }
 
-    ierr = check_netcdf(file, ierr, __FILE__, __LINE__);
+    ierr = check_netcdf(NULL, file, ierr, __FILE__, __LINE__);
     if(ierr != PIO_NOERR){
         LOG((1, "nc_get_var_chunk_cache failed, ierr = %d", ierr));
         return ierr;

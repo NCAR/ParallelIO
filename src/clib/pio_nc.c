@@ -395,7 +395,7 @@ int PIOc_inq_type(int ncid, nc_type xtype, char *name, PIO_Offset *sizep)
     }
 
     /* Failure to inquire is fatal */
-    ierr = check_netcdf(file, ierr, __FILE__, __LINE__);
+    ierr = check_netcdf(NULL, file, ierr, __FILE__, __LINE__);
     if(ierr != PIO_NOERR){
         LOG((1, "nc*_inq_type failed, ierr = %d", ierr));
         return ierr;
@@ -473,7 +473,7 @@ int PIOc_inq_format(int ncid, int *formatp)
     }
 
     /* Failure to inquire is fatal */
-    ierr = check_netcdf(file, ierr, __FILE__, __LINE__);
+    ierr = check_netcdf(NULL, file, ierr, __FILE__, __LINE__);
     if(ierr != PIO_NOERR){
         LOG((1, "nc*_inq_format failed, ierr = %d", ierr));
         return ierr;
@@ -1503,7 +1503,7 @@ int PIOc_rename_dim(int ncid, int dimid, const char *name)
         LOG((2, "PIOc_inq netcdf call returned %d", ierr));
     }
 
-    ierr = check_netcdf(file, ierr, __FILE__, __LINE__);
+    ierr = check_netcdf(NULL, file, ierr, __FILE__, __LINE__);
     if(ierr != PIO_NOERR){
         LOG((1, "nc*_rename_dim failed, ierr = %d", ierr));
         return ierr;
@@ -1575,7 +1575,7 @@ int PIOc_rename_var(int ncid, int varid, const char *name)
         LOG((2, "PIOc_inq netcdf call returned %d", ierr));
     }
 
-    ierr = check_netcdf(file, ierr, __FILE__, __LINE__);
+    ierr = check_netcdf(NULL, file, ierr, __FILE__, __LINE__);
     if(ierr != PIO_NOERR){
         LOG((1, "nc*_rename_var failed, ierr = %d", ierr));
         return ierr;
@@ -1651,7 +1651,7 @@ int PIOc_rename_att(int ncid, int varid, const char *name,
 #endif /* _NETCDF */
     }
 
-    ierr = check_netcdf(file, ierr, __FILE__, __LINE__);
+    ierr = check_netcdf(NULL, file, ierr, __FILE__, __LINE__);
     if(ierr != PIO_NOERR){
         LOG((1, "nc*_rename_att failed, ierr = %d", ierr));
         return ierr;
@@ -1723,7 +1723,7 @@ int PIOc_del_att(int ncid, int varid, const char *name)
 #endif /* _NETCDF */
     }
 
-    ierr = check_netcdf(file, ierr, __FILE__, __LINE__);
+    ierr = check_netcdf(NULL, file, ierr, __FILE__, __LINE__);
     if(ierr != PIO_NOERR){
         LOG((1, "nc*_del_att failed, ierr = %d", ierr));
         return ierr;
@@ -1793,7 +1793,7 @@ int PIOc_set_fill(int ncid, int fillmode, int *old_modep)
 #endif /* _NETCDF */
     }
 
-    ierr = check_netcdf(file, ierr, __FILE__, __LINE__);
+    ierr = check_netcdf(NULL, file, ierr, __FILE__, __LINE__);
     if(ierr != PIO_NOERR){
         LOG((1, "nc*_set_fill failed, ierr = %d", ierr));
         return ierr;
@@ -1916,7 +1916,7 @@ int PIOc_def_dim(int ncid, const char *name, PIO_Offset len, int *idp)
 #endif /* _NETCDF */
     }
 
-    ierr = check_netcdf(file, ierr, __FILE__, __LINE__);
+    ierr = check_netcdf(NULL, file, ierr, __FILE__, __LINE__);
     if(ierr != PIO_NOERR){
         LOG((1, "nc*_def_dim failed, ierr = %d", ierr));
         return ierr;
@@ -2052,7 +2052,7 @@ int PIOc_def_var(int ncid, const char *name, nc_type xtype, int ndims,
 #endif /* _NETCDF4 */
     }
 
-    ierr = check_netcdf(file, ierr, __FILE__, __LINE__);
+    ierr = check_netcdf(NULL, file, ierr, __FILE__, __LINE__);
     if(ierr != PIO_NOERR){
         LOG((1, "nc*_def_var_* failed, ierr = %d", ierr));
         return ierr;
@@ -2249,7 +2249,7 @@ int PIOc_def_var_fill(int ncid, int varid, int fill_mode, const void *fill_value
         LOG((2, "after def_var_fill ierr = %d", ierr));
     }
 
-    ierr = check_netcdf(file, ierr, __FILE__, __LINE__);
+    ierr = check_netcdf(NULL, file, ierr, __FILE__, __LINE__);
     if(ierr != PIO_NOERR){
         LOG((1, "nc*_def_var_fill failed, ierr = %d", ierr));
         return ierr;
@@ -2407,7 +2407,7 @@ int PIOc_inq_var_fill(int ncid, int varid, int *no_fill, void *fill_valuep)
         LOG((2, "after call to inq_var_fill, ierr = %d", ierr));
     }
 
-    ierr = check_netcdf(file, ierr, __FILE__, __LINE__);
+    ierr = check_netcdf(NULL, file, ierr, __FILE__, __LINE__);
     if(ierr != PIO_NOERR){
         LOG((1, "nc*_inq_var_fill failed, ierr = %d", ierr));
         return ierr;

@@ -413,25 +413,6 @@ int check_mpi2(iosystem_desc_t *ios, file_desc_t *file, int mpierr,
 
 /**
  * Check the result of a netCDF API call.
- * (Collective call for file with error handler != PIO_RETURN_ERROR)
- *
- * @param file pointer to the PIO structure describing this
- * file. Ignored if NULL.
- * @param status the return value from the netCDF call.
- * @param fname the name of the code file.
- * @param line the line number of the netCDF call in the code.
- * @return the error code
- */
-int check_netcdf(file_desc_t *file, int status, const char *fname, int line)
-{
-    return check_netcdf2(NULL, file, status, fname, line);
-}
-
-/**
- * Check the result of a netCDF API call. This is the same as
- * check_netcdf() except for the extra iosystem_desc_t pointer, which
- * is used to determine error handling when there is no file_desc_t
- * pointer.
  * (Collective call for file/ios with error handler != PIO_RETURN_ERROR)
  *
  * PIO_INTERNAL_ERROR : Abort (inside PIO) on error from any MPI process
@@ -448,7 +429,7 @@ int check_netcdf(file_desc_t *file, int status, const char *fname, int line)
  * @param line the line number of the netCDF call in the code.
  * @return the error code
  */
-int check_netcdf2(iosystem_desc_t *ios, file_desc_t *file, int status,
+int check_netcdf(iosystem_desc_t *ios, file_desc_t *file, int status,
                   const char *fname, int line)
 {
     int eh = default_error_handler; /* Error handler that will be used. */
@@ -461,7 +442,7 @@ int check_netcdf2(iosystem_desc_t *ios, file_desc_t *file, int status,
     assert(ios || file);
     assert(fname);
 
-    LOG((1, "check_netcdf2 status = %d fname = %s line = %d", status, fname, line));
+    LOG((1, "check_netcdf status = %d fname = %s line = %d", status, fname, line));
 
     /* Find the error handler. Error handlers associated with file has
      * priority over ios error handlers.
@@ -481,7 +462,7 @@ int check_netcdf2(iosystem_desc_t *ios, file_desc_t *file, int status,
     assert( (eh == PIO_INTERNAL_ERROR) ||
             (eh == PIO_BCAST_ERROR) ||
             (eh == PIO_RETURN_ERROR) );
-    LOG((2, "check_netcdf2 chose error handler = %d", eh));
+    LOG((2, "check_netcdf chose error handler = %d", eh));
 
     /* Get an error message. */
     if(status != PIO_NOERR){
@@ -489,7 +470,7 @@ int check_netcdf2(iosystem_desc_t *ios, file_desc_t *file, int status,
             int ret = PIOc_strerror(status, errmsg);
             assert(ret == PIO_NOERR);
             fprintf(stderr, "%s\n", errmsg);
-            LOG((1, "check_netcdf2 errmsg = %s", errmsg));
+            LOG((1, "check_netcdf errmsg = %s", errmsg));
             piodie(errmsg, fname, line);
         }
     }
@@ -1892,7 +1873,7 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
         }
     }
 
-    ierr = check_netcdf2(ios, NULL, ierr, __FILE__, __LINE__);
+    ierr = check_netcdf(ios, NULL, ierr, __FILE__, __LINE__);
     /* If there was an error, free the memory we allocated and handle error. */
     if(ierr != PIO_NOERR){
         free(file);
@@ -2178,7 +2159,7 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
         }
     }
 
-    ierr = check_netcdf2(ios, NULL, ierr, __FILE__, __LINE__);
+    ierr = check_netcdf(ios, NULL, ierr, __FILE__, __LINE__);
     /* If there was an error, free allocated memory and deal with the error. */
     if(ierr != PIO_NOERR){
         free(file);
@@ -2425,7 +2406,7 @@ int pioc_change_def(int ncid, int is_enddef)
 #endif /* _NETCDF */
     }
 
-    ierr = check_netcdf(file, ierr, __FILE__, __LINE__);
+    ierr = check_netcdf(NULL, file, ierr, __FILE__, __LINE__);
     if(ierr != PIO_NOERR){
       LOG((1, "pioc_change_def failed, ierr = %d", ierr));
       return ierr;

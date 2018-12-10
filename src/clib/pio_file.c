@@ -283,7 +283,7 @@ int PIOc_closefile(int ncid)
         }
     }
 
-    ierr = check_netcdf(file, ierr, __FILE__, __LINE__);
+    ierr = check_netcdf(NULL, file, ierr, __FILE__, __LINE__);
     if(ierr != PIO_NOERR){
         LOG((1, "nc*_close failed, ierr = %d", ierr));
         return ierr;
@@ -356,7 +356,7 @@ int PIOc_deletefile(int iosysid, const char *filename)
     }
     LOG((2, "PIOc_deletefile ierr = %d", ierr));
 
-    ierr = check_netcdf2(ios, NULL, ierr, __FILE__, __LINE__);
+    ierr = check_netcdf(ios, NULL, ierr, __FILE__, __LINE__);
     if(ierr != PIO_NOERR){
         LOG((1, "nc*_delete failed, ierr = %d", ierr));
         return ierr;
@@ -473,7 +473,7 @@ int PIOc_sync(int ncid)
         LOG((2, "PIOc_sync ierr = %d", ierr));
     }
 
-    ierr = check_netcdf2(ios, NULL, ierr, __FILE__, __LINE__);
+    ierr = check_netcdf(ios, NULL, ierr, __FILE__, __LINE__);
     if(ierr != PIO_NOERR){
 #ifdef TIMING
         GPTLstop("PIO:PIOc_sync");

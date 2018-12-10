@@ -192,7 +192,7 @@ int PIOc_put_att_tc(int ncid, int varid, const char *name, nc_type atttype,
         }
     }
 
-    ierr = check_netcdf(file, ierr, __FILE__, __LINE__);
+    ierr = check_netcdf(NULL, file, ierr, __FILE__, __LINE__);
     if(ierr != PIO_NOERR){
         LOG((1, "nc*_put_att_* failed, ierr = %d", ierr));
         return ierr;
@@ -398,7 +398,7 @@ int PIOc_get_att_tc(int ncid, int varid, const char *name, nc_type memtype, void
         }
     }
 
-    ierr = check_netcdf(file, ierr, __FILE__, __LINE__);
+    ierr = check_netcdf(NULL, file, ierr, __FILE__, __LINE__);
     if(ierr != PIO_NOERR){
         LOG((1, "nc*_get_att_* failed, ierr = %d", ierr));
         return ierr;
@@ -701,7 +701,7 @@ int PIOc_get_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
             }
     }
 
-    ierr = check_netcdf(file, ierr, __FILE__, __LINE__);
+    ierr = check_netcdf(NULL, file, ierr, __FILE__, __LINE__);
     if(ierr != PIO_NOERR){
         LOG((1, "nc*_get_vars_* failed, ierr = %d", ierr));
         return ierr;
@@ -1195,7 +1195,7 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
         }
     }
 
-    ierr = check_netcdf(file, ierr, __FILE__, __LINE__);
+    ierr = check_netcdf(NULL, file, ierr, __FILE__, __LINE__);
     if(ierr != PIO_NOERR){
         LOG((1, "nc*_put_vars_* failed, ierr = %d", ierr));
         return ierr;
