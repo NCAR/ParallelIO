@@ -558,10 +558,13 @@ int check_strerror_netcdf(int my_rank)
         return ERR_WRONG;
     if (pio_err(NULL, NULL, 0, __FILE__, __LINE__))
         return ERR_WRONG;
+    /* check_netcdf now uses asserts to ensure ios or file is valid */
+    /*
     if (check_netcdf(NULL, 0, __FILE__, __LINE__))
         return ERR_WRONG;
     if (check_netcdf2(NULL, NULL, 0, __FILE__, __LINE__))
         return ERR_WRONG;
+    */
 
     /* When called with other error messages, these functions should
      * return PIO_EIO. */
