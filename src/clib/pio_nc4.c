@@ -705,7 +705,7 @@ int PIOc_get_chunk_cache(int iosysid, int iotype, PIO_Offset *sizep, PIO_Offset 
         LOG((2, "nc_get_chunk_cache called ierr = %d", ierr));
     }
 
-    ierr = check_netcdf(NULL, ierr, __FILE__, __LINE__);
+    ierr = check_netcdf2(ios, NULL, ierr, __FILE__, __LINE__);
     LOG((2, "bcast complete ierr = %d sizep = %d", ierr, sizep));
     if(ierr != PIO_NOERR){
         LOG((1, "nc_get_chunk_cache failed, ierr = %d", ierr));
