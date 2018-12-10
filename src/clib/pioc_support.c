@@ -1943,10 +1943,14 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
     if (file->iotype == PIO_IOTYPE_ADIOS) 
 	{
 		LOG((2, "Calling adios_open mode = %d", file->mode));
-        /* Create a new ADIOS variable group, names the same as the filename for
-         * lack of better solution here */
+        /* 
+		 * Create a new ADIOS variable group, names the same as the 
+		 * filename for lack of better solution here 
+		 */
 		int len = strlen(filename);
 		file->filename = malloc(len+3+3);
+		if (file->filename==NULL) 
+			return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__);
 		sprintf(file->filename, "%s.bp", filename);
 
 		ierr = PIO_NOERR;
@@ -1983,22 +1987,18 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
            	if (do_aggregate)
            	{
                	sprintf(file->transport,"%s","MPI_AGGREGATE");
-               	/* sprintf(file->params,"num_aggregators=%d,striping=0,have_metadata_file=0", ios->num_iotasks); */
                	sprintf(file->params,"num_aggregators=%d,random_offset=1,striping_count=1,have_metadata_file=0",
 									ios->num_iotasks);
            	}
            	else
            	{
-              		sprintf(file->transport,"%s","MPI_AGGREGATE");
-               	/* sprintf(file->params,"num_aggregators=%d,striping=0,have_metadata_file=0", ios->num_comptasks/16); */
+				int num_adios_io_tasks = ios->num_comptasks/16;
+				if (num_adios_io_tasks==0) num_adios_io_tasks = ios->num_comptasks;
+              	sprintf(file->transport,"%s","MPI_AGGREGATE");
                	sprintf(file->params,"num_aggregators=%d,random_offset=1,striping_count=1,have_metadata_file=0",
-									ios->num_comptasks/16);
-               	/*sprintf(file->transport,"%s","POSIX");
-               	file->params[0] = '\0';*/
+									num_adios_io_tasks);
            	}
-           	/*adios_set_time_aggregation(file->adios_group,100000000,NULL);*/
            	adios_select_method(file->adios_group,file->transport,file->params,"");
-           	/*adios_set_max_buffer_size(32);*/
            	ierr = adios_open(&file->adios_fh,file->filename,file->filename,"w", ios->union_comm);
            	memset(file->dim_names, 0, sizeof(file->dim_names));
            	file->num_dim_vars = 0;
@@ -3127,7 +3127,7 @@ nc_type PIOc_get_nctype_from_adios_type(enum ADIOS_DATATYPES atype)
     return t;
 }
 
-#  ifndef strdup
+#ifndef strdup
 char *strdup(const char *str)
 {
     int n = strlen(str) + 1;
@@ -3138,8 +3138,6 @@ char *strdup(const char *str)
     }
     return dup;
 }
-#  endif
-
-
-
 #endif
+
+#endif /* _ADIOS */

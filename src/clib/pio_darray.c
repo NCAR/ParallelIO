@@ -575,7 +575,6 @@ static int PIO_wmb_needs_flush(wmulti_buffer *wmb, int arraylen, io_desc_t *iode
 }
 
 #ifdef _ADIOS
-
 static int needs_to_write_decomp(file_desc_t *file, int ioid)
 {
     int ret = 1; // yes
@@ -585,13 +584,16 @@ static int needs_to_write_decomp(file_desc_t *file, int ioid)
     return ret;
 }
 
-static void register_decomp(file_desc_t *file, int ioid)
+static int register_decomp(file_desc_t *file, int ioid)
 {
+	if (file->n_written_ioids>=ADIOS_PIO_MAX_DECOMPS) 
+        return pio_err(NULL, NULL, PIO_ENOMEM, __FILE__, __LINE__);
     file->written_ioids[file->n_written_ioids] = ioid;
     ++file->n_written_ioids;
+	return PIO_NOERR;
 }
 
-static void PIOc_write_decomp_adios(file_desc_t *file, int ioid)
+static int PIOc_write_decomp_adios(file_desc_t *file, int ioid)
 {
     io_desc_t *iodesc = pio_get_iodesc_from_id(ioid);
     char name[32], ldim[32];
@@ -612,19 +614,23 @@ static void PIOc_write_decomp_adios(file_desc_t *file, int ioid)
         if (type==adios_integer) {
             int *temp_mapbuf;
             temp_mapbuf    = (int*)malloc(sizeof(int)*maplen);
+			if (temp_mapbuf==NULL) 
+        		return pio_err(NULL, NULL, PIO_ENOMEM, __FILE__, __LINE__);
             temp_mapbuf[0] = iodesc->map[0];
             temp_mapbuf[1] = 0;
             mapbuf = (char*)temp_mapbuf;
         } else {
             long *temp_mapbuf;
             temp_mapbuf    = (long*)malloc(sizeof(long)*maplen);
+			if (temp_mapbuf==NULL) 
+        		return pio_err(NULL, NULL, PIO_ENOMEM, __FILE__, __LINE__);
             temp_mapbuf[0] = iodesc->map[0];
             temp_mapbuf[1] = 0;
             mapbuf = (char*)temp_mapbuf;
         }
         int64_t vid = adios_define_var(file->adios_group, name, "", type, ldim,"","");
         adios_write_byid(file->adios_fh, vid, mapbuf);
-        free(mapbuf);
+        if (mapbuf!=NULL) free(mapbuf);
     }
 
     /* ADIOS: assume all procs are also IO tasks */
@@ -634,6 +640,7 @@ static void PIOc_write_decomp_adios(file_desc_t *file, int ioid)
         adios_define_attribute_byvalue(file->adios_group,"ndims",name,adios_integer,1,&iodesc->ndims);
         adios_define_attribute_byvalue(file->adios_group,"dimlen",name,adios_integer,iodesc->ndims,iodesc->dimlen);
     }
+	return PIO_NOERR;
 }
 
 #define ADIOS_CONVERT_ARRAY(array,arraylen,from_type,to_type,ierr,buf) \
@@ -704,6 +711,7 @@ static void *PIOc_convert_buffer_adios(file_desc_t *file, io_desc_t *iodesc,
 #define ADIOS_COPY_ONE(temp_buf,array,var_type) \
 { \
     temp_buf = (var_type*)malloc(2*sizeof(var_type)); \
+	assert(temp_buf!=NULL); \
     memcpy(temp_buf,array,sizeof(var_type)); \
 }
 
@@ -762,7 +770,7 @@ static int PIOc_write_darray_adios(
         av->fillval_varid = adios_define_var(file->adios_group, name_varid, "", atype, "1","","");
 
         if (file->adios_iomaster == MPI_ROOT)
-        { /* TAHSIN: Some of the codes were moved to pio_nc.c */
+        { /* Some of the codes were moved to pio_nc.c */
             char decompname[32];
             sprintf(decompname, "%d", ioid);
             adios_define_attribute(file->adios_group, "__pio__/decomp", av->name, adios_string, decompname, NULL);
@@ -773,8 +781,12 @@ static int PIOc_write_darray_adios(
     /* PIOc_setframe with different decompositions */
     if (needs_to_write_decomp(file, ioid))
     {
-        PIOc_write_decomp_adios(file, ioid);
-        register_decomp(file, ioid);
+        ierr = PIOc_write_decomp_adios(file, ioid);
+		if (ierr!=PIO_NOERR) 
+			return pio_err(NULL, NULL, ierr, __FILE__, __LINE__);
+        ierr = register_decomp(file, ioid);
+		if (ierr!=PIO_NOERR) 
+			return pio_err(NULL, NULL, ierr, __FILE__, __LINE__);
     }
 
     /* ACME history data special handling: down-conversion from double to float */
@@ -805,9 +817,7 @@ static int PIOc_write_darray_adios(
     adios_write_byid(file->adios_fh, av->decomp_varid, &ioid);
     adios_write_byid(file->adios_fh, av->frame_varid, &(file->varlist[varid].record));
 
-    if (buf_needs_free)
-        free(buf);
-
+    if (buf_needs_free) free(buf);
     if (temp_buf!=NULL) free(temp_buf);
 
     return PIO_NOERR;

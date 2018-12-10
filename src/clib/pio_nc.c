@@ -2136,6 +2136,7 @@ int PIOc_def_dim(int ncid, const char *name, PIO_Offset len, int *idp)
             char dimname[128];
             snprintf(dimname, sizeof(dimname), "/__pio__/dim/%s", name);
             adios_define_var(file->adios_group, dimname, "", adios_unsigned_long, "","","");
+			assert(file->num_dim_vars<PIO_MAX_DIMS);
             file->dim_names[file->num_dim_vars] = strdup(name);
             file->dim_values[file->num_dim_vars] = len;
             *idp = file->num_dim_vars;
@@ -2276,6 +2277,7 @@ int PIOc_def_var(int ncid, const char *name, nc_type xtype, int ndims,
     if (file->iotype == PIO_IOTYPE_ADIOS)
     {
             LOG((2,"ADIOS pre-define variable %s (%d dimensions, type %d)\n", name, ndims, xtype));
+			assert(file->num_vars<PIO_MAX_VARS);
             file->adios_vars[file->num_vars].name = strdup(name);
             file->adios_vars[file->num_vars].nc_type = xtype;
             file->adios_vars[file->num_vars].adios_type = PIOc_get_adios_type(xtype);
@@ -2288,7 +2290,7 @@ int PIOc_def_var(int ncid, const char *name, nc_type xtype, int ndims,
             file->num_vars++;
             ierr = 0;
 
-            /* TAHSIN -- some codes moved from pio_darray.c */
+            /* some codes moved from pio_darray.c */
             {
                 adios_var_desc_t * av = &(file->adios_vars[*varidp]);
                 if (file->adios_iomaster == MPI_ROOT)
@@ -2297,13 +2299,13 @@ int PIOc_def_var(int ncid, const char *name, nc_type xtype, int ndims,
                     adios_define_attribute_byvalue(file->adios_group,"__pio__/nctype",av->name,adios_integer,1,&av->nc_type);
                     if (av->ndims != 0) { /* If zero dimensions, do not write out __pio__/dims */
                         char* dimnames[6];
+						assert(av->ndims<=6);
                         for (int i = 0; i < av->ndims; i++)
                             dimnames[i] = file->dim_names[av->gdimids[i]];
                         adios_define_attribute_byvalue(file->adios_group,"__pio__/dims",av->name,adios_string_array,av->ndims,dimnames);
                     }
                 }
             }
-            /* TAHSIN */
     }
 #endif
  

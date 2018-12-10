@@ -30,7 +30,8 @@
 #include <unistd.h>
 #include <adios.h>
 #include <adios_read.h> // we only need adios_type_size() at the moment
-#define _ADIOS_ALL_PROCS 1  /* ADIOS: assume all procs are also IO tasks */
+#define _ADIOS_ALL_PROCS 1 /* ADIOS: assume all procs are also IO tasks */
+#define ADIOS_PIO_MAX_DECOMPS 200  /* maximum number of decomps */
 #endif
 
 #ifndef MPI_OFFSET
@@ -798,8 +799,8 @@ typedef struct adios_att_desc_t
     /** Type converted from NC type to adios type */
     enum ADIOS_DATATYPES adios_type;
 } adios_att_desc_t;
-
 #endif
+
 /**
  * File descriptor structure.
  *
@@ -826,8 +827,8 @@ typedef struct file_desc_t
      * Created automatically from the application setup */
     char params[128];
     /** Need to store the dim names for finding them and using them when defining variables */
-    char *dim_names[100];
-    PIO_Offset dim_values[100];
+    char *dim_names[PIO_MAX_DIMS];
+    PIO_Offset dim_values[PIO_MAX_DIMS];
     /** Number of dim vars defined */
     int num_dim_vars;
     /** Variable information, max PIO_MAX_VARS variables allowed */
@@ -848,7 +849,7 @@ typedef struct file_desc_t
     int fillmode;
     /** array for decompositions that has been written already (must write only once) */
     int n_written_ioids;
-    int written_ioids[100]; // written_ioids[N] = ioid if that decomp has been already written,
+    int written_ioids[ADIOS_PIO_MAX_DECOMPS]; // written_ioids[N] = ioid if that decomp has been already written,
 #endif
 
     /* File name - cached */

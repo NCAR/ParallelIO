@@ -194,81 +194,84 @@ void ProcessGlobalAttributes(ADIOS_FILE **infile, int ncid, DimensionMap& dimens
 	std::string delimiter = "/";
 	std::map<std::string,char> processed_attrs;
 	std::map<std::string,int>  var_att_map;
-
-    for (int i=0; i < infile[0]->nattrs; i++)
-    {
+	
+	int total_cnt = (int) infile[0]->nattrs, i = 0;
+	while (total_cnt>0) {
         string a = infile[0]->attr_namelist[i];
-        if (a.find("pio_global/") != string::npos)
-        {
-            if (debug_out) cout << "    Attribute: " << infile[0]->attr_namelist[i] << std::endl;
-            int asize;
-            char *adata = NULL;
-            ADIOS_DATATYPES atype;
-            adios_get_attr(infile[0], infile[0]->attr_namelist[i], &atype, &asize, (void**)&adata);
-            nc_type piotype = PIOc_get_nctype_from_adios_type(atype);
-            char *attname = infile[0]->attr_namelist[i]+strlen("pio_global/");
-            if (debug_out) cout << "        define PIO attribute: " << attname << ""
-                    			<< "  type=" << piotype << std::endl;
-            int len = 1;
-            if (atype == adios_string)
-                len = strlen(adata);
-            PIOc_put_att(ncid, PIO_GLOBAL, attname, piotype, len, adata);
-            if (adata) free(adata);
-        } else {
-			std::string token = a.substr(0, a.find(delimiter));
-			if (token!="" && vars_map.find(token)==vars_map.end()) 
-			{ 
-				if (var_att_map.find(token)==var_att_map.end()) 
-				{
-					// first encounter 
-           			string attname = token + "/__pio__/nctype";
-					processed_attrs[attname] = 1;
-           			int asize;
-           			int *nctype = NULL;
-           			ADIOS_DATATYPES atype;
-           			adios_get_attr(infile[0], attname.c_str(), &atype, &asize, (void**)&nctype);
-
-            		attname = token + "/__pio__/ndims";
-					processed_attrs[attname] = 1;
-            		int *ndims = NULL;
-            		adios_get_attr(infile[0], attname.c_str(), &atype, &asize, (void**)&ndims);
-
-            		char **dimnames = NULL;
-            		int dimids[PIO_MAX_DIMS];
-            		if (*ndims)
-            		{
-              	 		attname = token + "/__pio__/dims";
-						processed_attrs[attname] = 1;
-						adios_get_attr(infile[0], attname.c_str(), &atype, &asize, (void**)&dimnames);
-
-               			for (int d=0; d < *ndims; d++)
-                   			dimids[d] = dimension_map[dimnames[d]].dimid;
-               		}
-            		int varid;
-            		PIOc_def_var(ncid, token.c_str(), *nctype, *ndims, dimids, &varid);
-	           		var_att_map[token] = varid; 
-
-            		if (nctype) free(nctype);
-            		if (ndims) free(ndims);
-            		if (dimnames) free(dimnames);
-				} else {
-					if (processed_attrs.find(a)==processed_attrs.end()) {
-						processed_attrs[a] = 1;
-						int asize;
-           				char *adata = NULL;
+		i = (i+1)%infile[0]->nattrs;
+		std::string token = a.substr(0, a.find(delimiter));
+		if (token=="") {  /* Not a variable with attributes */
+			processed_attrs[a] = 1; total_cnt--;
+		} else if (processed_attrs.find(a)==processed_attrs.end()) {
+        	if (a.find("pio_global/") != string::npos) {
+            	if (debug_out) cout << " GLOBAL Attribute: " << infile[0]->attr_namelist[i] << std::endl;
+            	int asize;
+            	char *adata = NULL;
+            	ADIOS_DATATYPES atype;
+            	adios_get_attr(infile[0], infile[0]->attr_namelist[i], &atype, &asize, (void**)&adata);
+            	nc_type piotype = PIOc_get_nctype_from_adios_type(atype);
+            	char *attname = infile[0]->attr_namelist[i]+strlen("pio_global/");
+            	if (debug_out) cout << "        define PIO attribute: " << attname << ""
+               		     			<< "  type=" << piotype << std::endl;
+            	int len = 1;
+            	if (atype == adios_string)
+                	len = strlen(adata);
+            	PIOc_put_att(ncid, PIO_GLOBAL, attname, piotype, len, adata);
+            	if (adata) free(adata);
+				processed_attrs[a] = 1; total_cnt--;
+			} else {
+				if (debug_out) cout << "    Attribute: " << infile[0]->attr_namelist[i] << std::endl;
+				if (vars_map.find(token)==vars_map.end()) { 
+					if (var_att_map.find(token)==var_att_map.end()) {
+						// first encounter 
+           				string attname = token + "/__pio__/nctype";
+						processed_attrs[attname] = 1; total_cnt--;
+           				int asize;
+           				int *nctype = NULL;
            				ADIOS_DATATYPES atype;
-           				adios_get_attr(infile[0], a.c_str(), &atype, &asize, (void**)&adata);
-						nc_type piotype = PIOc_get_nctype_from_adios_type(atype);
-        				char *attname = ((char*)a.c_str())+token.length()+1;;
-        				int len = 1;
-        				if (atype == adios_string) len = strlen(adata);
-        				PIOc_put_att(ncid, var_att_map[token], attname, piotype, len, adata);
-        				if (adata) free(adata);
+           				adios_get_attr(infile[0], attname.c_str(), &atype, &asize, (void**)&nctype);
+
+						attname = token + "/__pio__/ndims";
+						processed_attrs[attname] = 1; total_cnt--;
+      		      		int *ndims = NULL;
+      		      		adios_get_attr(infile[0], attname.c_str(), &atype, &asize, (void**)&ndims);
+	
+       		     		char **dimnames = NULL;
+       		     		int dimids[PIO_MAX_DIMS];
+       		     		if (*ndims) {
+							attname = token + "/__pio__/dims";
+							processed_attrs[attname] = 1; total_cnt--;
+							adios_get_attr(infile[0], attname.c_str(), &atype, &asize, (void**)&dimnames);
+
+							for (int d=0; d < *ndims; d++)
+								dimids[d] = dimension_map[dimnames[d]].dimid;
+						}
+       		     		int varid;
+       		     		PIOc_def_var(ncid, token.c_str(), *nctype, *ndims, dimids, &varid);
+	   	        		var_att_map[token] = varid; 
+
+       		     		if (nctype) free(nctype);
+       		     		if (ndims) free(ndims);
+       		     		if (dimnames) free(dimnames);
+					} else {
+						if (processed_attrs.find(a)==processed_attrs.end()) {
+							processed_attrs[a] = 1; total_cnt--;
+							int asize;
+       	    				char *adata = NULL;
+       	    				ADIOS_DATATYPES atype;
+       	    				adios_get_attr(infile[0], a.c_str(), &atype, &asize, (void**)&adata);
+							nc_type piotype = PIOc_get_nctype_from_adios_type(atype);
+       		 				char *attname = ((char*)a.c_str())+token.length()+1;;
+       		 				int len = 1;
+       		 				if (atype == adios_string) len = strlen(adata);
+       		 				PIOc_put_att(ncid, var_att_map[token], attname, piotype, len, adata);
+       		 				if (adata) free(adata);
+						}
 					}
 				}
 			}
 		}
-    }
+	}
 }
 
 Decomposition ProcessOneDecomposition(ADIOS_FILE **infile, int ncid, const char *varname, std::vector<int>& wfiles, int iosysid, int mpirank,

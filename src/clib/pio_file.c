@@ -275,7 +275,7 @@ int PIOc_closefile(int ncid)
             }
             for (int i=0; i<file->num_dim_vars; i++)
             {
-                free (file->dim_names[i]);
+                free(file->dim_names[i]);
                 file->dim_names[i] = NULL;
             }
             file->num_dim_vars = 0;
@@ -295,16 +295,16 @@ int PIOc_closefile(int ncid)
 			}
 			file->num_attrs = 0;
 
-#define CONVERT_TEST
-#ifdef CONVERT_TEST /* TAHSIN -- comment out for large scale run */
+/* #define ADIOS_BP2NC_TEST */
+#ifdef _ADIOS_BP2NC_TEST /* comment out for large scale run */
             /* Convert XXXX.nc.bp to XXXX.nc */
             len = strlen(file->filename);
             assert(len > 6 && len <= PIO_MAX_NAME);
             strncpy(outfilename, file->filename, len - 3);
             outfilename[len - 3] = '\0';
-		printf("CONVERTING: %s\n",file->filename); fflush(stdout);
+			printf("CONVERTING: %s\n",file->filename); fflush(stdout);
             C_API_ConvertBPToNC(file->filename, outfilename, "pnetcdf", ios->union_comm);
-		printf("DONE CONVERTING: %s\n",file->filename); fflush(stdout);
+			printf("DONE CONVERTING: %s\n",file->filename); fflush(stdout);
 #endif 
 
             free(file->filename);
