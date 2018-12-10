@@ -201,7 +201,7 @@ int PIOc_write_darray_multi(int ncid, const int *varids, int ioid, int nvars,
 
         /* Share results known only on computation tasks with IO tasks. */
         if ((mpierr = MPI_Bcast(&fndims, 1, MPI_INT, ios->comproot, ios->my_comm)))
-            check_mpi(file, mpierr, __FILE__, __LINE__);
+            check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
         LOG((3, "shared fndims = %d", fndims));
     }
 
@@ -770,7 +770,7 @@ int PIOc_write_darray(int ncid, int varid, int ioid, PIO_Offset arraylen, void *
      * to flush data. */
     if ((mpierr = MPI_Allreduce(MPI_IN_PLACE, &needsflush, 1,  MPI_INT,  MPI_MAX,
                                 ios->comp_comm)))
-        return check_mpi(file, mpierr, __FILE__, __LINE__);
+        return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
     LOG((2, "needsflush = %d", needsflush));
 
     if(!ios->async || !ios->ioproc)
@@ -1056,7 +1056,7 @@ int PIOc_read_darray(int ncid, int varid, int ioid, PIO_Offset arraylen,
         mpierr = MPI_Bcast(&fndims, 1, MPI_INT, ios->comproot, ios->my_comm);
         if(mpierr != MPI_SUCCESS)
         {
-            check_mpi(file, mpierr, __FILE__, __LINE__);
+            check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
         }
         LOG((3, "shared fndims = %d", fndims));
     }

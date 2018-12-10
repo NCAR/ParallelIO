@@ -120,7 +120,7 @@ int PIOc_inq(int ncid, int *ndimsp, int *nvarsp, int *ngattsp, int *unlimdimidp)
     /* A failure to inquire is not fatal */
     mpierr = MPI_Bcast(&ierr, 1, MPI_INT, ios->ioroot, ios->my_comm);
     if(mpierr != MPI_SUCCESS){
-        return check_mpi(file, mpierr, __FILE__, __LINE__);
+        return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
     }
 
     if(ierr != PIO_NOERR){
@@ -131,19 +131,19 @@ int PIOc_inq(int ncid, int *ndimsp, int *nvarsp, int *ngattsp, int *unlimdimidp)
     /* Broadcast results to all tasks. Ignore NULL parameters. */
     if (ndimsp)
         if ((mpierr = MPI_Bcast(ndimsp, 1, MPI_INT, ios->ioroot, ios->my_comm)))
-            return check_mpi(file, mpierr, __FILE__, __LINE__);
+            return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
 
     if (nvarsp)
         if ((mpierr = MPI_Bcast(nvarsp, 1, MPI_INT, ios->ioroot, ios->my_comm)))
-            return check_mpi(file, mpierr, __FILE__, __LINE__);
+            return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
 
     if (ngattsp)
         if ((mpierr = MPI_Bcast(ngattsp, 1, MPI_INT, ios->ioroot, ios->my_comm)))
-            return check_mpi(file, mpierr, __FILE__, __LINE__);
+            return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
 
     if (unlimdimidp)
         if ((mpierr = MPI_Bcast(unlimdimidp, 1, MPI_INT, ios->ioroot, ios->my_comm)))
-            return check_mpi(file, mpierr, __FILE__, __LINE__);
+            return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
 
     return PIO_NOERR;
 }
@@ -316,7 +316,7 @@ int PIOc_inq_unlimdims(int ncid, int *nunlimdimsp, int *unlimdimidsp)
     /* A failure to inquire is not fatal */
     mpierr = MPI_Bcast(&ierr, 1, MPI_INT, ios->ioroot, ios->my_comm);
     if(mpierr != MPI_SUCCESS){
-        return check_mpi(file, mpierr, __FILE__, __LINE__);
+        return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
     }
 
     if(ierr != PIO_NOERR){
@@ -326,15 +326,15 @@ int PIOc_inq_unlimdims(int ncid, int *nunlimdimsp, int *unlimdimidsp)
 
     /* Broadcast results to all tasks. Ignore NULL parameters. */
     if ((mpierr = MPI_Bcast(&tmp_nunlimdims, 1, MPI_INT, ios->ioroot, ios->my_comm)))
-        return check_mpi(file, mpierr, __FILE__, __LINE__);
+        return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
     
     if (nunlimdimsp)
         if ((mpierr = MPI_Bcast(nunlimdimsp, 1, MPI_INT, ios->ioroot, ios->my_comm)))
-            return check_mpi(file, mpierr, __FILE__, __LINE__);
+            return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
 
     if (unlimdimidsp)
         if ((mpierr = MPI_Bcast(unlimdimidsp, tmp_nunlimdims, MPI_INT, ios->ioroot, ios->my_comm)))
-            return check_mpi(file, mpierr, __FILE__, __LINE__);
+            return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
 
     return PIO_NOERR;
 }
@@ -408,14 +408,14 @@ int PIOc_inq_type(int ncid, nc_type xtype, char *name, PIO_Offset *sizep)
         if (ios->iomaster == MPI_ROOT)
             slen = strlen(name);
         if ((mpierr = MPI_Bcast(&slen, 1, MPI_INT, ios->ioroot, ios->my_comm)))
-            return check_mpi(file, mpierr, __FILE__, __LINE__);
+            return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
         if (!mpierr)
             if ((mpierr = MPI_Bcast((void *)name, slen + 1, MPI_CHAR, ios->ioroot, ios->my_comm)))
-                return check_mpi(file, mpierr, __FILE__, __LINE__);
+                return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
     }
     if (sizep)
         if ((mpierr = MPI_Bcast(sizep , 1, MPI_OFFSET, ios->ioroot, ios->my_comm)))
-            return check_mpi(file, mpierr, __FILE__, __LINE__);
+            return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
 
     return PIO_NOERR;
 }
@@ -482,7 +482,7 @@ int PIOc_inq_format(int ncid, int *formatp)
     /* Broadcast results to all tasks. Ignore NULL parameters. */
     if (formatp)
         if ((mpierr = MPI_Bcast(formatp , 1, MPI_INT, ios->ioroot, ios->my_comm)))
-            return check_mpi(file, mpierr, __FILE__, __LINE__);
+            return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
 
     return PIO_NOERR;
 }
@@ -555,7 +555,7 @@ int PIOc_inq_dim(int ncid, int dimid, char *name, PIO_Offset *lenp)
     /* A failure to inquire is not fatal */
     mpierr = MPI_Bcast(&ierr, 1, MPI_INT, ios->ioroot, ios->my_comm);
     if(mpierr != MPI_SUCCESS){
-        return check_mpi(file, mpierr, __FILE__, __LINE__);
+        return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
     }
 
     if(ierr != PIO_NOERR){
@@ -571,14 +571,14 @@ int PIOc_inq_dim(int ncid, int dimid, char *name, PIO_Offset *lenp)
         if (ios->iomaster == MPI_ROOT)
             slen = strlen(name);
         if ((mpierr = MPI_Bcast(&slen, 1, MPI_INT, ios->ioroot, ios->my_comm)))
-            return check_mpi(file, mpierr, __FILE__, __LINE__);
+            return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
         if ((mpierr = MPI_Bcast((void *)name, slen + 1, MPI_CHAR, ios->ioroot, ios->my_comm)))
-            return check_mpi(file, mpierr, __FILE__, __LINE__);
+            return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
     }
 
     if (lenp)
         if ((mpierr = MPI_Bcast(lenp , 1, MPI_OFFSET, ios->ioroot, ios->my_comm)))
-            return check_mpi(file, mpierr, __FILE__, __LINE__);
+            return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
 
     LOG((2, "done with PIOc_inq_dim"));
     return PIO_NOERR;
@@ -684,7 +684,7 @@ int PIOc_inq_dimid(int ncid, const char *name, int *idp)
     /* A failure to inquire is not fatal */
     mpierr = MPI_Bcast(&ierr, 1, MPI_INT, ios->ioroot, ios->my_comm);
     if(mpierr != MPI_SUCCESS){
-        return check_mpi(file, mpierr, __FILE__, __LINE__);
+        return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
     }
 
     if(ierr != PIO_NOERR){
@@ -695,7 +695,7 @@ int PIOc_inq_dimid(int ncid, const char *name, int *idp)
     /* Broadcast results. */
     if (idp)
         if ((mpierr = MPI_Bcast(idp, 1, MPI_INT, ios->ioroot, ios->my_comm)))
-            return check_mpi(file, mpierr, __FILE__, __LINE__);
+            return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
 
     return PIO_NOERR;
 }
@@ -855,7 +855,7 @@ int PIOc_inq_var(int ncid, int varid, char *name, int namelen, nc_type *xtypep, 
     /* A failure to inquire is not fatal */
     mpierr = MPI_Bcast(&ierr, 1, MPI_INT, ios->ioroot, ios->my_comm);
     if(mpierr != MPI_SUCCESS){
-        return check_mpi(file, mpierr, __FILE__, __LINE__);
+        return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
     }
 
     if(ierr != PIO_NOERR){
@@ -867,9 +867,9 @@ int PIOc_inq_var(int ncid, int varid, char *name, int namelen, nc_type *xtypep, 
     if (ios->iomaster == MPI_ROOT)
         slen = strlen(my_name);
     if ((mpierr = MPI_Bcast(&slen, 1, MPI_INT, ios->ioroot, ios->my_comm)))
-        return check_mpi(file, mpierr, __FILE__, __LINE__);
+        return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
     if ((mpierr = MPI_Bcast((void *)my_name, slen + 1, MPI_CHAR, ios->ioroot, ios->my_comm)))
-        return check_mpi(file, mpierr, __FILE__, __LINE__);
+        return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
     if (name && namelen > 0)
     {
         assert(namelen <= PIO_MAX_NAME + 1);
@@ -920,30 +920,30 @@ int PIOc_inq_var(int ncid, int varid, char *name, int namelen, nc_type *xtypep, 
 #endif
 
     if ((mpierr = MPI_Bcast(&(file->varlist[varid].rec_var), 1, MPI_INT, ios->ioroot, ios->my_comm)))
-        return check_mpi(file, mpierr, __FILE__, __LINE__);
+        return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
 
     if (xtypep)
         if ((mpierr = MPI_Bcast(xtypep, 1, MPI_INT, ios->ioroot, ios->my_comm)))
-            return check_mpi(file, mpierr, __FILE__, __LINE__);
+            return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
 
     if (ndimsp)
     {
         LOG((2, "PIOc_inq_var about to Bcast ndims = %d ios->ioroot = %d ios->my_comm = %d",
              *ndimsp, ios->ioroot, ios->my_comm));
         if ((mpierr = MPI_Bcast(ndimsp, 1, MPI_INT, ios->ioroot, ios->my_comm)))
-            return check_mpi(file, mpierr, __FILE__, __LINE__);
+            return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
         LOG((2, "PIOc_inq_var Bcast ndims = %d", *ndimsp));
     }
     if (dimidsp)
     {
         if ((mpierr = MPI_Bcast(&ndims, 1, MPI_INT, ios->ioroot, ios->my_comm)))
-            return check_mpi(file, mpierr, __FILE__, __LINE__);
+            return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
         if ((mpierr = MPI_Bcast(dimidsp, ndims, MPI_INT, ios->ioroot, ios->my_comm)))
-            return check_mpi(file, mpierr, __FILE__, __LINE__);
+            return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
     }
     if (nattsp)
         if ((mpierr = MPI_Bcast(nattsp, 1, MPI_INT, ios->ioroot, ios->my_comm)))
-            return check_mpi(file, mpierr, __FILE__, __LINE__);
+            return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
 
     return PIO_NOERR;
 }
@@ -1094,7 +1094,7 @@ int PIOc_inq_varid(int ncid, const char *name, int *varidp)
     /* A failure to inquire is not fatal */
     mpierr = MPI_Bcast(&ierr, 1, MPI_INT, ios->ioroot, ios->my_comm);
     if(mpierr != MPI_SUCCESS){
-        return check_mpi(file, mpierr, __FILE__, __LINE__);
+        return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
     }
 
     if(ierr != PIO_NOERR){
@@ -1105,7 +1105,7 @@ int PIOc_inq_varid(int ncid, const char *name, int *varidp)
     /* Broadcast results to all tasks. Ignore NULL parameters. */
     if (varidp)
         if ((mpierr = MPI_Bcast(varidp, 1, MPI_INT, ios->ioroot, ios->my_comm)))
-            check_mpi(file, mpierr, __FILE__, __LINE__);
+            check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
 
 #ifdef PIO_MICRO_TIMING
     /* Create timers for the variable
@@ -1220,7 +1220,7 @@ int PIOc_inq_att(int ncid, int varid, const char *name, nc_type *xtypep,
     /* A failure to inquire is not fatal */
     mpierr = MPI_Bcast(&ierr, 1, MPI_INT, ios->ioroot, ios->my_comm);
     if(mpierr != MPI_SUCCESS){
-        return check_mpi(file, mpierr, __FILE__, __LINE__);
+        return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
     }
 
     if(ierr != PIO_NOERR){
@@ -1231,10 +1231,10 @@ int PIOc_inq_att(int ncid, int varid, const char *name, nc_type *xtypep,
     /* Broadcast results. */
     if (xtypep)
         if ((mpierr = MPI_Bcast(xtypep, 1, MPI_INT, ios->ioroot, ios->my_comm)))
-            check_mpi(file, mpierr, __FILE__, __LINE__);
+            check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
     if (lenp)
         if ((mpierr = MPI_Bcast(lenp, 1, MPI_OFFSET, ios->ioroot, ios->my_comm)))
-            check_mpi(file, mpierr, __FILE__, __LINE__);
+            check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
 
     return PIO_NOERR;
 }
@@ -1336,7 +1336,7 @@ int PIOc_inq_attname(int ncid, int varid, int attnum, char *name)
     /* A failure to inquire is not fatal */
     mpierr = MPI_Bcast(&ierr, 1, MPI_INT, ios->ioroot, ios->my_comm);
     if(mpierr != MPI_SUCCESS){
-        return check_mpi(file, mpierr, __FILE__, __LINE__);
+        return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
     }
 
     if(ierr != PIO_NOERR){
@@ -1349,10 +1349,10 @@ int PIOc_inq_attname(int ncid, int varid, int attnum, char *name)
     {
         int namelen = strlen(name);
         if ((mpierr = MPI_Bcast(&namelen, 1, MPI_INT, ios->ioroot, ios->my_comm)))
-            check_mpi(file, mpierr, __FILE__, __LINE__);
+            check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
         /* Casting to void to avoid warnings on some compilers. */
         if ((mpierr = MPI_Bcast((void *)name, namelen + 1, MPI_CHAR, ios->ioroot, ios->my_comm)))
-            check_mpi(file, mpierr, __FILE__, __LINE__);
+            check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
     }
 
     return PIO_NOERR;
@@ -1425,7 +1425,7 @@ int PIOc_inq_attid(int ncid, int varid, const char *name, int *idp)
     /* A failure to inquire is not fatal */
     mpierr = MPI_Bcast(&ierr, 1, MPI_INT, ios->ioroot, ios->my_comm);
     if(mpierr != MPI_SUCCESS){
-        return check_mpi(file, mpierr, __FILE__, __LINE__);
+        return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
     }
 
     if(ierr != PIO_NOERR){
@@ -1436,7 +1436,7 @@ int PIOc_inq_attid(int ncid, int varid, const char *name, int *idp)
     /* Broadcast results. */
     if (idp)
         if ((mpierr = MPI_Bcast(idp, 1, MPI_INT, ios->ioroot, ios->my_comm)))
-            check_mpi(file, mpierr, __FILE__, __LINE__);
+            check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
 
     return PIO_NOERR;
 }
@@ -1804,7 +1804,7 @@ int PIOc_set_fill(int ncid, int fillmode, int *old_modep)
     {
         LOG((2, "old_mode = %d", *old_modep));
         if ((mpierr = MPI_Bcast(old_modep, 1, MPI_INT, ios->ioroot, ios->my_comm)))
-            check_mpi(file, mpierr, __FILE__, __LINE__);
+            check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
     }
 
     LOG((2, "PIOc_set_fill succeeded"));
@@ -1925,7 +1925,7 @@ int PIOc_def_dim(int ncid, const char *name, PIO_Offset len, int *idp)
     /* Broadcast results to all tasks. Ignore NULL parameters. */
     if (idp)
         if ((mpierr = MPI_Bcast(idp , 1, MPI_INT, ios->ioroot, ios->my_comm)))
-            check_mpi(file, mpierr, __FILE__, __LINE__);
+            check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
 
     if(len == PIO_UNLIMITED)
     {
@@ -2021,7 +2021,7 @@ int PIOc_def_var(int ncid, const char *name, nc_type xtype, int ndims,
 
         /* Broadcast values currently only known on computation tasks to IO tasks. */
         if ((mpierr = MPI_Bcast(&invalid_unlim_dim, 1, MPI_INT, ios->comproot, ios->my_comm)))
-            check_mpi(file, mpierr, __FILE__, __LINE__);
+            check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
     }
 
     /* Check that only one unlimited dim is specified, and that it is
@@ -2062,7 +2062,7 @@ int PIOc_def_var(int ncid, const char *name, nc_type xtype, int ndims,
     /* FIXME: varidp should be valid, no need to check it here */
     if (varidp)
         if ((mpierr = MPI_Bcast(varidp, 1, MPI_INT, ios->ioroot, ios->my_comm)))
-            check_mpi(file, mpierr, __FILE__, __LINE__);
+            check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
 
     strncpy(file->varlist[*varidp].vname, name, PIO_MAX_NAME);
     if(file->num_unlim_dimids > 0)
@@ -2218,9 +2218,9 @@ int PIOc_def_var_fill(int ncid, int varid, int fill_mode, const void *fill_value
 
         /* Broadcast values currently only known on computation tasks to IO tasks. */
         if ((mpierr = MPI_Bcast(&xtype, 1, MPI_INT, ios->comproot, ios->my_comm)))
-            check_mpi(file, mpierr, __FILE__, __LINE__);
+            check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
         if ((mpierr = MPI_Bcast(&type_size, 1, MPI_OFFSET, ios->comproot, ios->my_comm)))
-            check_mpi(file, mpierr, __FILE__, __LINE__);
+            check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
     }
 
     if (ios->ioproc)
@@ -2330,9 +2330,9 @@ int PIOc_inq_var_fill(int ncid, int varid, int *no_fill, void *fill_valuep)
 
         /* Broadcast values currently only known on computation tasks to IO tasks. */
         if ((mpierr = MPI_Bcast(&xtype, 1, MPI_INT, ios->comproot, ios->my_comm)))
-            check_mpi(file, mpierr, __FILE__, __LINE__);
+            check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
         if ((mpierr = MPI_Bcast(&type_size, 1, MPI_OFFSET, ios->comproot, ios->my_comm)))
-            check_mpi(file, mpierr, __FILE__, __LINE__);
+            check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
     }
 
     /* If this is an IO task, then call the netCDF function. */
@@ -2416,10 +2416,10 @@ int PIOc_inq_var_fill(int ncid, int varid, int *no_fill, void *fill_valuep)
     /* Broadcast results to all tasks. Ignore NULL parameters. */
     if (no_fill)
         if ((mpierr = MPI_Bcast(no_fill, 1, MPI_INT, ios->ioroot, ios->my_comm)))
-            check_mpi(file, mpierr, __FILE__, __LINE__);
+            check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
     if (fill_valuep)
         if ((mpierr = MPI_Bcast(fill_valuep, type_size, MPI_CHAR, ios->ioroot, ios->my_comm)))
-            check_mpi(file, mpierr, __FILE__, __LINE__);
+            check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
 
     return PIO_NOERR;
 }

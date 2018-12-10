@@ -552,9 +552,7 @@ int check_strerror_netcdf(int my_rank)
 
     /* When called with a code of 0, these functions should do nothing
      * and return 0. */
-    if (check_mpi(NULL, 0, __FILE__, __LINE__))
-        return ERR_WRONG;
-    if (check_mpi2(NULL, NULL, 0, __FILE__, __LINE__))
+    if (check_mpi(NULL, NULL, 0, __FILE__, __LINE__))
         return ERR_WRONG;
     if (pio_err(NULL, NULL, 0, __FILE__, __LINE__))
         return ERR_WRONG;
@@ -566,9 +564,9 @@ int check_strerror_netcdf(int my_rank)
 
     /* When called with other error messages, these functions should
      * return PIO_EIO. */
-    if (check_mpi(NULL, MPI_ERR_OTHER, __FILE__, __LINE__) != PIO_EIO)
+    if (check_mpi(NULL, NULL, MPI_ERR_OTHER, __FILE__, __LINE__) != PIO_EIO)
         return ERR_WRONG;
-    if (check_mpi(NULL, MPI_ERR_UNKNOWN, __FILE__, __LINE__) != PIO_EIO)
+    if (check_mpi(NULL, NULL, MPI_ERR_UNKNOWN, __FILE__, __LINE__) != PIO_EIO)
         return ERR_WRONG;
 
     if (!my_rank)

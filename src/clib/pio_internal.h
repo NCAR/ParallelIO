@@ -305,10 +305,7 @@ extern "C" {
                          PIO_Offset *count);
 
     /* Check the return code from an MPI function call. */
-    int check_mpi(file_desc_t *file, int mpierr, const char *filename, int line);
-
-    /* Check the return code from an MPI function call. */
-    int check_mpi2(iosystem_desc_t *ios, file_desc_t *file, int mpierr, const char *filename,
+    int check_mpi(iosystem_desc_t *ios, file_desc_t *file, int mpierr, const char *filename,
                    int line);
 
     /* Darray support functions. */
