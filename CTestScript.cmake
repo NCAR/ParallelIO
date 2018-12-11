@@ -72,6 +72,10 @@ elseif (HOSTNAME MATCHES "^hobart")
     set (HOSTNAME_ID "cgd")
 # Argonne Linux workstations
 elseif (HOSTNAME MATCHES "^compute001" OR
+        HOSTNAME MATCHES "^compute002" OR
+        HOSTNAME MATCHES "^compute003" OR
+        HOSTNAME MATCHES "^compute004" OR
+        HOSTNAME MATCHES "^compute005" OR
         HOSTNAME MATCHES "^thwomp" OR
         HOSTNAME MATCHES "^stomp" OR
         HOSTNAME MATCHES "^crush" OR
