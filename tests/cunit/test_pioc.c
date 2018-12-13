@@ -552,22 +552,21 @@ int check_strerror_netcdf(int my_rank)
 
     /* When called with a code of 0, these functions should do nothing
      * and return 0. */
-    if (check_mpi(NULL, 0, __FILE__, __LINE__))
-        return ERR_WRONG;
-    if (check_mpi2(NULL, NULL, 0, __FILE__, __LINE__))
+    if (check_mpi(NULL, NULL, 0, __FILE__, __LINE__))
         return ERR_WRONG;
     if (pio_err(NULL, NULL, 0, __FILE__, __LINE__))
         return ERR_WRONG;
-    if (check_netcdf(NULL, 0, __FILE__, __LINE__))
+    /* check_netcdf now uses asserts to ensure ios or file is valid */
+    /*
+    if (check_netcdf(NULL, NULL, 0, __FILE__, __LINE__))
         return ERR_WRONG;
-    if (check_netcdf2(NULL, NULL, 0, __FILE__, __LINE__))
-        return ERR_WRONG;
+    */
 
     /* When called with other error messages, these functions should
      * return PIO_EIO. */
-    if (check_mpi(NULL, MPI_ERR_OTHER, __FILE__, __LINE__) != PIO_EIO)
+    if (check_mpi(NULL, NULL, MPI_ERR_OTHER, __FILE__, __LINE__) != PIO_EIO)
         return ERR_WRONG;
-    if (check_mpi(NULL, MPI_ERR_UNKNOWN, __FILE__, __LINE__) != PIO_EIO)
+    if (check_mpi(NULL, NULL, MPI_ERR_UNKNOWN, __FILE__, __LINE__) != PIO_EIO)
         return ERR_WRONG;
 
     if (!my_rank)
@@ -1103,8 +1102,20 @@ int test_deletefile(int iosysid, int num_flavors, int *flavor, int my_rank)
         /* Set error handling. */
         if ((ret = PIOc_set_iosystem_error_handling(iosysid, PIO_RETURN_ERROR, &old_method)))
             return ret;
-        if (old_method != PIO_INTERNAL_ERROR && old_method != PIO_RETURN_ERROR)
+        if (old_method != PIO_INTERNAL_ERROR && old_method != PIO_RETURN_ERROR && old_method != PIO_BCAST_ERROR)
             return ERR_WRONG;
+
+        ret = PIOc_set_iosystem_error_handling(iosysid, PIO_BCAST_ERROR,
+                &old_method);
+        if(ret != PIO_NOERR){
+            ERR(ret);
+        }
+
+        ret = PIOc_set_iosystem_error_handling(PIO_DEFAULT, PIO_BCAST_ERROR,
+                &old_method);
+        if(ret != PIO_NOERR){
+            ERR(ret);
+        }
 
         /* Create a filename. */
         if ((ret = get_iotype_name(flavor[fmt], iotype_name)))

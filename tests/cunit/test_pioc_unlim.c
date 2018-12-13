@@ -229,9 +229,23 @@ int run_multiple_unlim_test(int iosysid, int ioid, int iotype, int my_rank,
     MPI_Barrier(test_comm);
 
     /* Try to read file. It will not work. */
+    int old_eh;
+    /* Since we are checking error codes globally set the error
+     * handler to PIO_BCAST_ERROR */
+    ret = PIOc_set_iosystem_error_handling(iosysid, PIO_BCAST_ERROR,
+            &old_eh);
+    if(ret != PIO_NOERR){
+        ERR(ret);
+    }
     if (PIOc_openfile2(iosysid, &ncid, &iotype, NETCDF4_UNLIM_FILE_NAME,
                        0) != PIO_EINVAL)
         ERR(ERR_WRONG);
+
+    /* Reset the error handler to original/previous error handler */
+    ret = PIOc_set_iosystem_error_handling(iosysid, old_eh, NULL);
+    if(ret != PIO_NOERR){
+        ERR(ret);
+    }
 #endif /* _NETCDF4 */
 
     return PIO_NOERR;

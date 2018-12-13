@@ -45,7 +45,7 @@ int create_async_service_msg_comm(const MPI_Comm io_comm, MPI_Comm *msg_comm)
         ret = MPI_Comm_dup(io_comm, &pio_async_service_msg_comm);
         if(ret != MPI_SUCCESS)
         {
-            return check_mpi(NULL, ret, __FILE__, __LINE__);
+            return check_mpi(NULL, NULL, ret, __FILE__, __LINE__);
         }
         *msg_comm = pio_async_service_msg_comm;
     }
@@ -703,7 +703,7 @@ static int send_async_msg_valist(iosystem_desc_t *ios, int msg, va_list args)
     if(mpierr != MPI_SUCCESS)
     {
         LOG((1, "Error bcasting (send) async msg valist "));
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
+        return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
     }
 
     return PIO_NOERR;
@@ -905,7 +905,7 @@ static int recv_async_msg_valist(iosystem_desc_t *ios, int msg, va_list args)
     if(mpierr != MPI_SUCCESS)
     {
         LOG((1, "Error bcasting (recv) async msg valist "));
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
+        return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
     }
     return PIO_NOERR;
 }
@@ -932,7 +932,7 @@ static int send_async_msg_hdr(iosystem_desc_t *ios, int msg, int seq_num, int pr
     if(mpierr != MPI_SUCCESS)
     {
         LOG((1, "Error bcasting MPI error code"));
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
+        return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
     }
     return PIO_NOERR;
 }
@@ -980,12 +980,12 @@ int send_async_msg(iosystem_desc_t *ios, int msg, ...)
     if(mpierr2 != MPI_SUCCESS)
     {
         LOG((1, "Error bcasting MPI error code"));
-        return check_mpi2(ios, NULL, mpierr2, __FILE__, __LINE__);
+        return check_mpi(ios, NULL, mpierr2, __FILE__, __LINE__);
     }
     if(mpierr != MPI_SUCCESS)
     {
         LOG((1, "Error sending async msg"));
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
+        return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
     }
 
     return PIO_NOERR;
@@ -1013,7 +1013,7 @@ static int recv_async_msg_hdr(iosystem_desc_t *ios, int msg, int eseq_num, int e
     if(mpierr != MPI_SUCCESS)
     {
         LOG((1, "Error bcasting MPI error code"));
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
+        return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
     }
     assert(prev_msg == eprev_msg);
     return PIO_NOERR;
@@ -3438,7 +3438,7 @@ int pio_msg_handler2(int io_rank, int component_count, iosystem_desc_t **iosys,
             LOG((1, "about to call MPI_Irecv union_comm = %d", my_iosys->union_comm));
             if ((mpierr = MPI_Irecv(&msgs[cmp], 1, MPI_INT, my_iosys->comproot,
                                     PIO_ASYNC_MSG_HDR_TAG, my_iosys->union_comm, &req[cmp])))
-                return check_mpi(NULL, mpierr, __FILE__, __LINE__);
+                return check_mpi(NULL, NULL, mpierr, __FILE__, __LINE__);
             LOG((1, "MPI_Irecv req[%d] = %d", cmp, req[cmp]));
         }
     }
@@ -3458,7 +3458,7 @@ int pio_msg_handler2(int io_rank, int component_count, iosystem_desc_t **iosys,
             for (int c = 0; c < component_count; c++)
                 LOG((2, "req[%d] = %d", c, req[c]));
             if ((mpierr = MPI_Waitany(component_count, req, &index, &status)))
-                return check_mpi(NULL, mpierr, __FILE__, __LINE__);
+                return check_mpi(NULL, NULL, mpierr, __FILE__, __LINE__);
             LOG((3, "Waitany returned index = %d req[%d] = %d", index, index, req[index]));
         }
 
@@ -3466,7 +3466,7 @@ int pio_msg_handler2(int io_rank, int component_count, iosystem_desc_t **iosys,
          * originated the request to the rest of the IO tasks. */
         LOG((3, "About to do Bcast of index = %d io_comm = %d", index, io_comm));
         if ((mpierr = MPI_Bcast(&index, 1, MPI_INT, 0, io_comm)))
-            return check_mpi(NULL, mpierr, __FILE__, __LINE__);
+            return check_mpi(NULL, NULL, mpierr, __FILE__, __LINE__);
         LOG((3, "index MPI_Bcast complete index = %d", index));
 
         /* Set the correct iosys depending on the index. */
@@ -3476,7 +3476,7 @@ int pio_msg_handler2(int io_rank, int component_count, iosystem_desc_t **iosys,
         /* Broadcast the msg value to the rest of the IO tasks. */
         LOG((3, "about to call msg MPI_Bcast my_iosys->io_comm = %d", my_iosys->io_comm));
         if ((mpierr = MPI_Bcast(&msg, 1, MPI_INT, 0, my_iosys->io_comm)))
-            return check_mpi(NULL, mpierr, __FILE__, __LINE__);
+            return check_mpi(NULL, NULL, mpierr, __FILE__, __LINE__);
         LOG((1, "pio_msg_handler2 msg MPI_Bcast complete msg = %d", msg));
 
         /* Handle the message. This code is run on all IO tasks. */
@@ -3647,7 +3647,7 @@ int pio_msg_handler2(int io_rank, int component_count, iosystem_desc_t **iosys,
                  index, my_iosys->comproot, my_iosys->union_comm));
             if ((mpierr = MPI_Irecv(&msgs[index], 1, MPI_INT, my_iosys->comproot, PIO_ASYNC_MSG_HDR_TAG, my_iosys->union_comm,
                                     &req[index])))
-                return check_mpi(NULL, mpierr, __FILE__, __LINE__);
+                return check_mpi(NULL, NULL, mpierr, __FILE__, __LINE__);
             LOG((3, "pio_msg_handler2 called MPI_Irecv req[%d] = %d", index, req[index]));
         }
 

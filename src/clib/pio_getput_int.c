@@ -37,7 +37,7 @@ int PIOc_put_att_tc(int ncid, int varid, const char *name, nc_type atttype,
     PIO_Offset atttype_len;    /* Length (in bytes) of the att type in file. */
     PIO_Offset memtype_len;    /* Length of the att data type in memory. */
     int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI function codes. */
-    int ierr;           /* Return code from function calls. */
+    int ierr = PIO_NOERR;           /* Return code from function calls. */
 
 #ifdef TIMING
     GPTLstart("PIO:PIOc_put_att_tc");
@@ -59,16 +59,22 @@ int PIOc_put_att_tc(int ncid, int varid, const char *name, nc_type atttype,
     if (!ios->async || !ios->ioproc)
     {
         /* Get the length (in bytes) of the type in file. */
-        if ((ierr = PIOc_inq_type(ncid, atttype, NULL, &atttype_len)))
-            return check_netcdf(file, ierr, __FILE__, __LINE__);
+        ierr = PIOc_inq_type(ncid, atttype, NULL, &atttype_len);
+        if(ierr != PIO_NOERR){
+            LOG((1, "PIOc_inq_type failed, ierr = %d", ierr));
+            return ierr;
+        }
 
         /* Get the length (in bytes) of the type in memory. */
         if (memtype == PIO_LONG_INTERNAL)
             memtype_len = sizeof(long int);
         else
         {
-            if ((ierr = PIOc_inq_type(ncid, memtype, NULL, &memtype_len)))
-                return check_netcdf(file, ierr, __FILE__, __LINE__);
+            ierr = PIOc_inq_type(ncid, memtype, NULL, &memtype_len);
+            if(ierr != PIO_NOERR){
+                LOG((1, "PIOc_inq_type failed, ierr = %d", ierr));
+                return ierr;
+            }
         }
         LOG((2, "PIOc_put_att atttype_len = %d memtype_len = %d", ncid, atttype_len, memtype_len));
     }
@@ -90,9 +96,9 @@ int PIOc_put_att_tc(int ncid, int varid, const char *name, nc_type atttype,
 
         /* Broadcast values currently only known on computation tasks to IO tasks. */
         if ((mpierr = MPI_Bcast(&atttype_len, 1, MPI_OFFSET, ios->comproot, ios->my_comm)))
-            check_mpi(file, mpierr, __FILE__, __LINE__);
+            check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
         if ((mpierr = MPI_Bcast(&memtype_len, 1, MPI_OFFSET, ios->comproot, ios->my_comm)))
-            check_mpi(file, mpierr, __FILE__, __LINE__);
+            check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
         LOG((2, "PIOc_put_att bcast from comproot = %d atttype_len = %d", ios->comproot,
              atttype_len, memtype_len));
     }
@@ -186,11 +192,11 @@ int PIOc_put_att_tc(int ncid, int varid, const char *name, nc_type atttype,
         }
     }
 
-    /* Broadcast and check the return code. */
-    if ((mpierr = MPI_Bcast(&ierr, 1, MPI_INT, ios->ioroot, ios->my_comm)))
-        return check_mpi(file, mpierr, __FILE__, __LINE__);
-    if (ierr)
-        return check_netcdf(file, ierr, __FILE__, __LINE__);
+    ierr = check_netcdf(NULL, file, ierr, __FILE__, __LINE__);
+    if(ierr != PIO_NOERR){
+        LOG((1, "nc*_put_att_* failed, ierr = %d", ierr));
+        return ierr;
+    }
 
 #ifdef TIMING
     GPTLstop("PIO:PIOc_put_att_tc");
@@ -225,7 +231,7 @@ int PIOc_get_att_tc(int ncid, int varid, const char *name, nc_type memtype, void
     PIO_Offset atttype_len; /* Length in bytes of one element of the attribute type. */
     PIO_Offset memtype_len; /* Length in bytes of one element of the memory type. */
     int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI function calls. */
-    int ierr;               /* Return code from function calls. */
+    int ierr = PIO_NOERR;               /* Return code from function calls. */
 
 #ifdef TIMING
     GPTLstart("PIO:PIOc_get_att_tc");
@@ -247,13 +253,19 @@ int PIOc_get_att_tc(int ncid, int varid, const char *name, nc_type memtype, void
     if (!ios->async || !ios->ioproc)
     {
         /* Get the type and length of the attribute. */
-        if ((ierr = PIOc_inq_att(ncid, varid, name, &atttype, &attlen)))
-            return check_netcdf(file, ierr, __FILE__, __LINE__);
+        ierr = PIOc_inq_att(ncid, varid, name, &atttype, &attlen);
+        if(ierr != PIO_NOERR){
+            LOG((1, "PIOc_inq_att failed, ierr = %d", ierr));
+            return ierr;
+        }
         LOG((2, "atttype = %d attlen = %d", atttype, attlen));
 
         /* Get the length (in bytes) of the type of the attribute. */
-        if ((ierr = PIOc_inq_type(ncid, atttype, NULL, &atttype_len)))
-            return check_netcdf(file, ierr, __FILE__, __LINE__);
+        ierr = PIOc_inq_type(ncid, atttype, NULL, &atttype_len);
+        if(ierr != PIO_NOERR){
+            LOG((1, "PIOc_inq_type failed, ierr=%d", ierr));
+            return ierr;
+        }
 
         /* Get the length (in bytes) of the type that the user wants
          * the data converted to. */
@@ -261,8 +273,11 @@ int PIOc_get_att_tc(int ncid, int varid, const char *name, nc_type memtype, void
             memtype_len = sizeof(long int);
         else
         {
-            if ((ierr = PIOc_inq_type(ncid, memtype, NULL, &memtype_len)))
-                return check_netcdf(file, ierr, __FILE__, __LINE__);
+            ierr = PIOc_inq_type(ncid, memtype, NULL, &memtype_len);
+            if(ierr != PIO_NOERR){
+                LOG((1, "PIOc_inq_type failed, ierr = %d", ierr));
+                return ierr;
+            }
         }
     }
     LOG((2, "atttype_len = %d memtype_len = %d", atttype_len, memtype_len));
@@ -284,11 +299,11 @@ int PIOc_get_att_tc(int ncid, int varid, const char *name, nc_type memtype, void
         /* Broadcast values currently only known on computation tasks to IO tasks. */
         LOG((2, "PIOc_get_att_tc bcast from comproot = %d attlen = %d atttype_len = %d", ios->comproot, attlen, atttype_len));
         if ((mpierr = MPI_Bcast(&attlen, 1, MPI_OFFSET, ios->comproot, ios->my_comm)))
-            return check_mpi(file, mpierr, __FILE__, __LINE__);
+            return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
         if ((mpierr = MPI_Bcast(&atttype_len, 1, MPI_OFFSET, ios->comproot, ios->my_comm)))
-            return check_mpi(file, mpierr, __FILE__, __LINE__);
+            return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
         if ((mpierr = MPI_Bcast(&memtype_len, 1, MPI_OFFSET, ios->comproot, ios->my_comm)))
-            return check_mpi(file, mpierr, __FILE__, __LINE__);
+            return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
         LOG((2, "PIOc_get_att_tc bcast complete attlen = %d atttype_len = %d memtype_len = %d", attlen, atttype_len,
              memtype_len));
     }
@@ -383,18 +398,17 @@ int PIOc_get_att_tc(int ncid, int varid, const char *name, nc_type memtype, void
         }
     }
 
-    /* Broadcast and check the return code. */
-    LOG((2, "ierr = %d", ierr));
-    if ((mpierr = MPI_Bcast(&ierr, 1, MPI_INT, ios->ioroot, ios->my_comm)))
-        return check_mpi(file, mpierr, __FILE__, __LINE__);
-    if (ierr)
-        return check_netcdf(file, ierr, __FILE__, __LINE__);
+    ierr = check_netcdf(NULL, file, ierr, __FILE__, __LINE__);
+    if(ierr != PIO_NOERR){
+        LOG((1, "nc*_get_att_* failed, ierr = %d", ierr));
+        return ierr;
+    }
 
     /* Broadcast results to all tasks. */
     LOG((2, "bcasting att values attlen = %d memtype_len = %d", attlen, memtype_len));
     if ((mpierr = MPI_Bcast(ip, (int)attlen * memtype_len, MPI_BYTE, ios->ioroot,
                             ios->my_comm)))
-        return check_mpi(file, mpierr, __FILE__, __LINE__);
+        return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
 
     LOG((2, "get_att_tc data bcast complete"));
 #ifdef TIMING
@@ -451,7 +465,7 @@ int PIOc_get_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
     char count_present = count ? true : false;
     char stride_present = stride ? true : false;
     int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI function codes. */
-    int ierr;                           /* Return code. */
+    int ierr = PIO_NOERR;                           /* Return code. */
 
 #ifdef TIMING
     GPTLstart("PIO:PIOc_get_vars_tc");
@@ -474,8 +488,11 @@ int PIOc_get_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
     if (!ios->async || !ios->ioproc)
     {
         /* Get the type of this var. */
-        if ((ierr = PIOc_inq_vartype(ncid, varid, &vartype)))
-            return check_netcdf(file, ierr, __FILE__, __LINE__);
+        ierr = PIOc_inq_vartype(ncid, varid, &vartype);
+        if(ierr != PIO_NOERR){
+            LOG((1, "PIOc_inq_vartype failed, ierr = %d", ierr));
+            return ierr;
+        }
 
         /* If no type was specified, use the var type. */
         if (xtype == NC_NAT)
@@ -486,13 +503,19 @@ int PIOc_get_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
             typelen = sizeof(long int);
         else
         {
-            if ((ierr = PIOc_inq_type(ncid, xtype, NULL, &typelen)))
-                return check_netcdf(file, ierr, __FILE__, __LINE__);
+            ierr = PIOc_inq_type(ncid, xtype, NULL, &typelen);
+            if(ierr != PIO_NOERR){
+                LOG((1, "PIOc_inq_type failed, ierr = %d", ierr));
+                return ierr;
+            }
         }
 
         /* Get the number of dims for this var. */
-        if ((ierr = PIOc_inq_varndims(ncid, varid, &ndims)))
-            return check_netcdf(file, ierr, __FILE__, __LINE__);
+        ierr = PIOc_inq_varndims(ncid, varid, &ndims);
+        if(ierr != PIO_NOERR){
+            LOG((1, "PIOc_inq_varndims failed, ierr = %d", ierr));
+            return ierr;
+        }
         LOG((3, "ndims = %d", ndims));
 
         /* Only scalar vars can pass NULL for start/count. */
@@ -556,11 +579,11 @@ int PIOc_get_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
 
         /* Broadcast values currently only known on computation tasks to IO tasks. */
         if ((mpierr = MPI_Bcast(&num_elem, 1, MPI_OFFSET, ios->comproot, ios->my_comm)))
-            check_mpi(file, mpierr, __FILE__, __LINE__);
+            check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
         if ((mpierr = MPI_Bcast(&typelen, 1, MPI_OFFSET, ios->comproot, ios->my_comm)))
-            check_mpi(file, mpierr, __FILE__, __LINE__);
+            check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
         if ((mpierr = MPI_Bcast(&xtype, 1, MPI_INT, ios->comproot, ios->my_comm)))
-            check_mpi(file, mpierr, __FILE__, __LINE__);
+            check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
     }
 
     /* If this is an IO task, then call the netCDF function. */
@@ -678,17 +701,17 @@ int PIOc_get_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
             }
     }
 
-    /* Broadcast and check the return code. */
-    if ((mpierr = MPI_Bcast(&ierr, 1, MPI_INT, ios->ioroot, ios->my_comm)))
-        return check_mpi(file, mpierr, __FILE__, __LINE__);
-    if (ierr)
-        return check_netcdf(file, ierr, __FILE__, __LINE__);
+    ierr = check_netcdf(NULL, file, ierr, __FILE__, __LINE__);
+    if(ierr != PIO_NOERR){
+        LOG((1, "nc*_get_vars_* failed, ierr = %d", ierr));
+        return ierr;
+    }
 
     /* Send the data. */
     LOG((2, "PIOc_get_vars_tc bcasting data num_elem = %d typelen = %d ios->ioroot = %d", num_elem,
          typelen, ios->ioroot));
     if ((mpierr = MPI_Bcast(buf, num_elem * typelen, MPI_BYTE, ios->ioroot, ios->my_comm)))
-        return check_mpi(file, mpierr, __FILE__, __LINE__);
+        return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
     LOG((2, "PIOc_get_vars_tc bcasting data complete"));
 
 #ifdef TIMING
@@ -720,7 +743,7 @@ int PIOc_get_var1_tc(int ncid, int varid, const PIO_Offset *index, nc_type xtype
     iosystem_desc_t *ios;  /* Pointer to io system information. */
     file_desc_t *file;     /* Pointer to file information. */
     int ndims;   /* The number of dimensions in the variable. */
-    int ierr;    /* Return code from function calls. */
+    int ierr = PIO_NOERR;    /* Return code from function calls. */
 
     /* Find the info about this file. We need this for error handling. */
     if ((ierr = pio_get_file(ncid, &file)))
@@ -764,7 +787,7 @@ int PIOc_get_var_tc(int ncid, int varid, nc_type xtype, void *buf)
     int ndims;   /* The number of dimensions in the variable. */
     PIO_Offset my_start[PIO_MAX_DIMS];
     PIO_Offset dimlen[PIO_MAX_DIMS];
-    int ierr;    /* Return code from function calls. */
+    int ierr = PIO_NOERR;    /* Return code from function calls. */
 
     LOG((1, "PIOc_get_var_tc ncid = %d varid = %d xtype = %d", ncid, varid,
          xtype));
@@ -859,7 +882,7 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
     int *request;
     nc_type vartype;   /* The type of the var we are reading from. */
     int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI function codes. */
-    int ierr;          /* Return code from function calls. */
+    int ierr = PIO_NOERR;          /* Return code from function calls. */
 
 #ifdef TIMING
     GPTLstart("PIO:PIOc_put_vars_tc");
@@ -882,24 +905,33 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
     if (!ios->async || !ios->ioproc)
     {
         /* Get the type of this var. */
-        if ((ierr = PIOc_inq_vartype(ncid, varid, &vartype)))
-            return check_netcdf(file, ierr, __FILE__, __LINE__);
+        ierr = PIOc_inq_vartype(ncid, varid, &vartype);
+        if(ierr != PIO_NOERR){
+            LOG((1, "PIOc_inq_vartype failed, ierr = %d", ierr));
+            return ierr;
+        }
 
         /* If no type was specified, use the var type. */
         if (xtype == NC_NAT)
             xtype = vartype;
 
         /* Get the number of dims for this var. */
-        if ((ierr = PIOc_inq_varndims(ncid, varid, &ndims)))
-            return check_netcdf(file, ierr, __FILE__, __LINE__);
+        ierr = PIOc_inq_varndims(ncid, varid, &ndims);
+        if(ierr != PIO_NOERR){
+            LOG((1, "PIOc_inq_varndims failed, ierr = %d", ierr));
+            return ierr;
+        }
 
         /* Get the length of the data type. */
         if (xtype == PIO_LONG_INTERNAL)
             typelen = sizeof(long int);
         else
         {
-            if ((ierr = PIOc_inq_type(ncid, xtype, NULL, &typelen)))
-                return check_netcdf(file, ierr, __FILE__, __LINE__);
+            ierr = PIOc_inq_type(ncid, xtype, NULL, &typelen);
+            if(ierr != PIO_NOERR){
+                LOG((1, "PIOc_inq_type failed, ierr = %d", ierr));
+                return ierr;
+            }
         }
 
         LOG((2, "ndims = %d typelen = %d", ndims, typelen));
@@ -964,9 +996,9 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
         /* Broadcast values currently only known on computation tasks to IO tasks. */
         LOG((2, "PIOc_put_vars_tc bcast from comproot"));
         if ((mpierr = MPI_Bcast(&ndims, 1, MPI_INT, ios->comproot, ios->my_comm)))
-            return check_mpi(file, mpierr, __FILE__, __LINE__);
+            return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
         if ((mpierr = MPI_Bcast(&xtype, 1, MPI_INT, ios->comproot, ios->my_comm)))
-            return check_mpi(file, mpierr, __FILE__, __LINE__);
+            return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
         LOG((2, "PIOc_put_vars_tc complete bcast from comproot ndims = %d", ndims));
     }
 
@@ -1163,11 +1195,12 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
         }
     }
 
-    /* Broadcast and check the return code. */
-    if ((mpierr = MPI_Bcast(&ierr, 1, MPI_INT, ios->ioroot, ios->my_comm)))
-        return check_mpi(file, mpierr, __FILE__, __LINE__);
-    if (ierr)
-        return check_netcdf(file, ierr, __FILE__, __LINE__);
+    ierr = check_netcdf(NULL, file, ierr, __FILE__, __LINE__);
+    if(ierr != PIO_NOERR){
+        LOG((1, "nc*_put_vars_* failed, ierr = %d", ierr));
+        return ierr;
+    }
+
     LOG((2, "PIOc_put_vars_tc bcast netcdf return code %d complete", ierr));
 
 #ifdef TIMING
@@ -1211,7 +1244,7 @@ int PIOc_put_var1_tc(int ncid, int varid, const PIO_Offset *index, nc_type xtype
     iosystem_desc_t *ios;  /* Pointer to io system information. */
     file_desc_t *file;     /* Pointer to file information. */
     int ndims;   /* The number of dimensions in the variable. */
-    int ierr;    /* Return code from function calls. */
+    int ierr = PIO_NOERR;    /* Return code from function calls. */
 
     /* Find the info about this file. We need this for error handling. */
     if ((ierr = pio_get_file(ncid, &file)))
@@ -1265,7 +1298,7 @@ int PIOc_put_var_tc(int ncid, int varid, nc_type xtype, const void *op)
     PIO_Offset start[PIO_MAX_DIMS];
     PIO_Offset count[PIO_MAX_DIMS];
     int ndims;   /* The number of dimensions in the variable. */
-    int ierr;    /* Return code from function calls. */
+    int ierr = PIO_NOERR;    /* Return code from function calls. */
 
     LOG((1, "PIOc_put_var_tc ncid = %d varid = %d xtype = %d", ncid,
          varid, xtype));
@@ -1290,8 +1323,11 @@ int PIOc_put_var_tc(int ncid, int varid, nc_type xtype, const void *op)
             start[d] = 0;
 
         /* Get the dimids for this var. */
-        if ((ierr = PIOc_inq_vardimid(ncid, varid, dimid)))
-            return check_netcdf(file, ierr, __FILE__, __LINE__);
+        ierr = PIOc_inq_vardimid(ncid, varid, dimid);
+        if(ierr != PIO_NOERR){
+            LOG((1, "PIOc_inq_vardimid failed, ierr = %d", ierr));
+            return ierr;
+        }
 
         /* Count array are the dimlens. */
         for (int d = 0; d < ndims; d++)

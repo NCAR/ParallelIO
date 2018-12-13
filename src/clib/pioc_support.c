@@ -363,25 +363,10 @@ void pioassert(_Bool expression, const char *msg, const char *fname, int line)
 
 /**
  * Handle MPI errors. An error message is sent to stderr, then the
- * check_netcdf() function is called with PIO_EIO.
- *
- * @param file pointer to the file_desc_t info. Ignored if NULL.
- * @param mpierr the MPI return code to handle
- * @param filename the name of the code file where error occured.
- * @param line the line of code where error occured.
- * @return PIO_NOERR for no error, otherwise PIO_EIO.
- */
-int check_mpi(file_desc_t *file, int mpierr, const char *filename,
-              int line)
-{
-    return check_mpi2(NULL, file, mpierr, filename, line);
-}
-
-/**
- * Handle MPI errors. An error message is sent to stderr, then the
  * check_netcdf() function is called with PIO_EIO. This version of the
  * function accepts an ios parameter, for the (rare) occasions where
  * we have an ios but not a file.
+ * (Not a collective call)
  *
  * @param ios pointer to the iosystem_info_t. May be NULL.
  * @param file pointer to the file_desc_t info. May be NULL.
@@ -390,7 +375,7 @@ int check_mpi(file_desc_t *file, int mpierr, const char *filename,
  * @param line the line of code where error occured.
  * @return PIO_NOERR for no error, otherwise PIO_EIO.
  */
-int check_mpi2(iosystem_desc_t *ios, file_desc_t *file, int mpierr,
+int check_mpi(iosystem_desc_t *ios, file_desc_t *file, int mpierr,
                const char *filename, int line)
 {
     if (mpierr)
@@ -411,24 +396,14 @@ int check_mpi2(iosystem_desc_t *ios, file_desc_t *file, int mpierr,
 
 /**
  * Check the result of a netCDF API call.
+ * (Collective call for file/ios with error handler != PIO_RETURN_ERROR)
  *
- * @param file pointer to the PIO structure describing this
- * file. Ignored if NULL.
- * @param status the return value from the netCDF call.
- * @param fname the name of the code file.
- * @param line the line number of the netCDF call in the code.
- * @return the error code
- */
-int check_netcdf(file_desc_t *file, int status, const char *fname, int line)
-{
-    return check_netcdf2(NULL, file, status, fname, line);
-}
-
-/**
- * Check the result of a netCDF API call. This is the same as
- * check_netcdf() except for the extra iosystem_desc_t pointer, which
- * is used to determine error handling when there is no file_desc_t
- * pointer.
+ * PIO_INTERNAL_ERROR : Abort (inside PIO) on error from any MPI process
+ * PIO_RETURN_ERROR : Return error back to the user (Allow the user to
+ * handle the error. Each MPI process just returns the error code back
+ * to the user)
+ * PIO_BCAST_ERROR : Broadcast error code from I/O process with rank 0
+ * (in the I/O communicator) to all I/O processes.
  *
  * @param ios pointer to the iosystem description struct. Ignored if NULL.
  * @param file pointer to the PIO structure describing this file. Ignored if NULL.
@@ -437,46 +412,57 @@ int check_netcdf(file_desc_t *file, int status, const char *fname, int line)
  * @param line the line number of the netCDF call in the code.
  * @return the error code
  */
-int check_netcdf2(iosystem_desc_t *ios, file_desc_t *file, int status,
+int check_netcdf(iosystem_desc_t *ios, file_desc_t *file, int status,
                   const char *fname, int line)
 {
     int eh = default_error_handler; /* Error handler that will be used. */
     char errmsg[PIO_MAX_NAME + 1];  /* Error message. */
+    int ioroot;
+    MPI_Comm comm;
+    int mpierr = MPI_SUCCESS;
 
     /* User must provide this. */
-    pioassert(fname, "code file name must be provided", __FILE__, __LINE__);
+    assert(ios || file);
+    assert(fname);
 
-    /* No harm, no foul. */
-    if (status == PIO_NOERR)
-        return PIO_NOERR;
+    LOG((1, "check_netcdf status = %d fname = %s line = %d", status, fname, line));
 
-    LOG((1, "check_netcdf2 status = %d fname = %s line = %d", status, fname, line));
-
-    /* Pick an error handler. */
-    if (ios)
-        eh = ios->error_handler;
-    if (file)
+    /* Find the error handler. Error handlers associated with file has
+     * priority over ios error handlers.
+     */
+    if(file){
         eh = file->iosystem->error_handler;
-    pioassert(eh == PIO_INTERNAL_ERROR || eh == PIO_BCAST_ERROR || eh == PIO_RETURN_ERROR,
-              "invalid error handler", __FILE__, __LINE__);
-    LOG((2, "check_netcdf2 chose error handler = %d", eh));
-
-    /* Get an error message. */
-    if (eh != PIO_BCAST_ERROR && !PIOc_strerror(status, errmsg))
-    {
-        fprintf(stderr, "%s\n", errmsg);
-        LOG((1, "check_netcdf2 errmsg = %s", errmsg));
+        ioroot = file->iosystem->ioroot;
+        comm = file->iosystem->my_comm;
+    }
+    else{
+        assert(ios);
+        eh = ios->error_handler;
+        ioroot = ios->ioroot;
+        comm = ios->my_comm;
     }
 
-    /* Decide what to do based on the error handler. */
-    if (eh == PIO_INTERNAL_ERROR)
-        piodie(errmsg, fname, line);        /* Die! */
-    else if (eh == PIO_BCAST_ERROR)
-    {
-	if (ios)
-	    MPI_Bcast(&status, 1, MPI_INT, ios->ioroot, ios->my_comm);
-	else if (file)
-	    MPI_Bcast(&status, 1, MPI_INT, file->iosystem->ioroot, file->iosystem->my_comm);
+    assert( (eh == PIO_INTERNAL_ERROR) ||
+            (eh == PIO_BCAST_ERROR) ||
+            (eh == PIO_RETURN_ERROR) );
+    LOG((2, "check_netcdf chose error handler = %d", eh));
+
+    /* Get an error message. */
+    if(status != PIO_NOERR){
+        if(eh == PIO_INTERNAL_ERROR){
+            int ret = PIOc_strerror(status, errmsg);
+            assert(ret == PIO_NOERR);
+            fprintf(stderr, "%s\n", errmsg);
+            LOG((1, "check_netcdf errmsg = %s", errmsg));
+            piodie(errmsg, fname, line);
+        }
+    }
+
+    if(eh == PIO_BCAST_ERROR){
+        mpierr = MPI_Bcast(&status, 1, MPI_INT, ioroot, comm);
+        if(mpierr != MPI_SUCCESS){
+            return check_mpi(ios, file, mpierr, __FILE__, __LINE__);
+        }
     }
 
     /* For PIO_RETURN_ERROR, just return the error. */
@@ -486,15 +472,11 @@ int check_netcdf2(iosystem_desc_t *ios, file_desc_t *file, int status,
 /**
  * Handle an error in PIO. This will consult the error handler
  * settings and either call MPI_Abort() or return an error code.
+ * (Not a collective call)
  *
- * The error hanlder has three settings:
- *
- * Errors cause abort: PIO_INTERNAL_ERROR.
- *
- * Error codes are broadcast to all tasks: PIO_BCAST_ERROR.
- *
- * Errors are returned to caller with no internal action:
- * PIO_RETURN_ERROR.
+ * If the error handler is set to PIO_INTERNAL_ERROR an error
+ * results in an internal abort. For all other error handlers
+ * the function returns a PIO error code back to the caller.
  *
  * @param ios pointer to the IO system info. Ignored if NULL.
  * @param file pointer to the file description data. Ignored if
@@ -541,13 +523,9 @@ int pio_err(iosystem_desc_t *ios, file_desc_t *file, int err_num, const char *fn
         MPI_Abort(MPI_COMM_WORLD, -1);
     }
 
-    /* What should we do here??? */
-    if (err_handler == PIO_BCAST_ERROR)
-    {
-        /* ??? */
-    }
-
-    /* If abort was not called, we'll get here. */
+    /* For PIO_BCAST_ERROR and PIO_RETURN_ERROR error handlers
+     * just return the error code back to the caller
+     */
     return err_num;
 }
 
@@ -686,7 +664,7 @@ int malloc_iodesc(iosystem_desc_t *ios, int piotype, int ndims,
 {
     MPI_Datatype mpi_type;
     PIO_Offset type_size;
-    int mpierr;
+    int mpierr = MPI_SUCCESS;
     int ret;
 
     /* Check input. */
@@ -716,7 +694,7 @@ int malloc_iodesc(iosystem_desc_t *ios, int piotype, int ndims,
 
     /* Get the size of the type. */
     if ((mpierr = MPI_Type_size((*iodesc)->mpitype, &(*iodesc)->mpitype_size)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
+        return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
 
     /* Initialize some values in the struct. */
     (*iodesc)->maxregions = 1;
@@ -810,7 +788,7 @@ int PIOc_freedecomp(int iosysid, int ioid)
         for (int i = 0; i < iodesc->nrecvs; i++)
             if (iodesc->rtype[i] != PIO_DATATYPE_NULL)
                 if ((mpierr = MPI_Type_free(&iodesc->rtype[i])))
-                    return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
+                    return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
 
         free(iodesc->rtype);
     }
@@ -820,7 +798,7 @@ int PIOc_freedecomp(int iosysid, int ioid)
         for (int i = 0; i < iodesc->num_stypes; i++)
             if (iodesc->stype[i] != PIO_DATATYPE_NULL)
                 if ((mpierr = MPI_Type_free(iodesc->stype + i)))
-                    return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
+                    return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
 
         iodesc->num_stypes = 0;
         free(iodesc->stype);
@@ -846,7 +824,7 @@ int PIOc_freedecomp(int iosysid, int ioid)
 
     if (iodesc->rearranger == PIO_REARR_SUBSET)
         if ((mpierr = MPI_Comm_free(&iodesc->subset_comm)))
-            return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
+            return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
 
     ret = pio_delete_iodesc_from_list(ioid);
 #ifdef TIMING
@@ -879,16 +857,16 @@ int PIOc_readmap(const char *file, int *ndims, int **gdims, PIO_Offset *fmaplen,
     PIO_Offset *tmap;
     MPI_Status status;
     PIO_Offset maplen;
-    int mpierr; /* Return code for MPI calls. */
+    int mpierr = MPI_SUCCESS; /* Return code for MPI calls. */
 
     /* Check inputs. */
     if (!file || !ndims || !gdims || !fmaplen || !map)
         return pio_err(NULL, NULL, PIO_EINVAL, __FILE__, __LINE__);
 
     if ((mpierr = MPI_Comm_size(comm, &npes)))
-        return check_mpi(NULL, mpierr, __FILE__, __LINE__);
+        return check_mpi(NULL, NULL, mpierr, __FILE__, __LINE__);
     if ((mpierr = MPI_Comm_rank(comm, &myrank)))
-        return check_mpi(NULL, mpierr, __FILE__, __LINE__);
+        return check_mpi(NULL, NULL, mpierr, __FILE__, __LINE__);
 
     if (myrank == 0)
     {
@@ -905,16 +883,16 @@ int PIOc_readmap(const char *file, int *ndims, int **gdims, PIO_Offset *fmaplen,
             return pio_err(NULL, NULL, PIO_EINVAL, __FILE__, __LINE__);
 
         if ((mpierr = MPI_Bcast(&rnpes, 1, MPI_INT, 0, comm)))
-            return check_mpi(NULL, mpierr, __FILE__, __LINE__);
+            return check_mpi(NULL, NULL, mpierr, __FILE__, __LINE__);
         if ((mpierr = MPI_Bcast(ndims, 1, MPI_INT, 0, comm)))
-            return check_mpi(NULL, mpierr, __FILE__, __LINE__);
+            return check_mpi(NULL, NULL, mpierr, __FILE__, __LINE__);
         if (!(tdims = calloc(*ndims, sizeof(int))))
             return pio_err(NULL, NULL, PIO_ENOMEM, __FILE__, __LINE__);
         for (int i = 0; i < *ndims; i++)
             fscanf(fp,"%d ", tdims + i);
 
         if ((mpierr = MPI_Bcast(tdims, *ndims, MPI_INT, 0, comm)))
-            return check_mpi(NULL, mpierr, __FILE__, __LINE__);
+            return check_mpi(NULL, NULL, mpierr, __FILE__, __LINE__);
 
         for (int i = 0; i < rnpes; i++)
         {
@@ -929,9 +907,9 @@ int PIOc_readmap(const char *file, int *ndims, int **gdims, PIO_Offset *fmaplen,
             if (i > 0)
             {
                 if ((mpierr = MPI_Send(&maplen, 1, PIO_OFFSET, i, i + npes, comm)))
-                    return check_mpi(NULL, mpierr, __FILE__, __LINE__);
+                    return check_mpi(NULL, NULL, mpierr, __FILE__, __LINE__);
                 if ((mpierr = MPI_Send(tmap, maplen, PIO_OFFSET, i, i, comm)))
-                    return check_mpi(NULL, mpierr, __FILE__, __LINE__);
+                    return check_mpi(NULL, NULL, mpierr, __FILE__, __LINE__);
                 free(tmap);
             }
             else
@@ -945,22 +923,22 @@ int PIOc_readmap(const char *file, int *ndims, int **gdims, PIO_Offset *fmaplen,
     else
     {
         if ((mpierr = MPI_Bcast(&rnpes, 1, MPI_INT, 0, comm)))
-            return check_mpi(NULL, mpierr, __FILE__, __LINE__);
+            return check_mpi(NULL, NULL, mpierr, __FILE__, __LINE__);
         if ((mpierr = MPI_Bcast(ndims, 1, MPI_INT, 0, comm)))
-            return check_mpi(NULL, mpierr, __FILE__, __LINE__);
+            return check_mpi(NULL, NULL, mpierr, __FILE__, __LINE__);
         if (!(tdims = calloc(*ndims, sizeof(int))))
             return pio_err(NULL, NULL, PIO_ENOMEM, __FILE__, __LINE__);
         if ((mpierr = MPI_Bcast(tdims, *ndims, MPI_INT, 0, comm)))
-            return check_mpi(NULL, mpierr, __FILE__, __LINE__);
+            return check_mpi(NULL, NULL, mpierr, __FILE__, __LINE__);
 
         if (myrank < rnpes)
         {
             if ((mpierr = MPI_Recv(&maplen, 1, PIO_OFFSET, 0, myrank + npes, comm, &status)))
-                return check_mpi(NULL, mpierr, __FILE__, __LINE__);
+                return check_mpi(NULL, NULL, mpierr, __FILE__, __LINE__);
             if (!(tmap = malloc(maplen * sizeof(PIO_Offset))))
                 return pio_err(NULL, NULL, PIO_ENOMEM, __FILE__, __LINE__);
             if ((mpierr = MPI_Recv(tmap, maplen, PIO_OFFSET, 0, myrank, comm, &status)))
-                return check_mpi(NULL, mpierr, __FILE__, __LINE__);
+                return check_mpi(NULL, NULL, mpierr, __FILE__, __LINE__);
             *map = tmap;
         }
         else
@@ -1013,7 +991,7 @@ int PIOc_write_nc_decomp(int iosysid, const char *filename, int cmode, int ioid,
     iosystem_desc_t *ios; /* IO system info. */
     io_desc_t *iodesc;    /* Decomposition info. */
     int max_maplen;       /* The maximum maplen used for any task. */
-    int mpierr;
+    int mpierr = MPI_SUCCESS;
     int ret;
 
     /* Get the IO system info. */
@@ -1046,12 +1024,12 @@ int PIOc_write_nc_decomp(int iosysid, const char *filename, int cmode, int ioid,
      * task_maplen array on all tasks. */
     if ((mpierr = MPI_Allgather(&iodesc->maplen, 1, MPI_INT, task_maplen, 1, MPI_INT,
                                 ios->comp_comm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
+        return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
 
     /* Find the max maxplen. */
     if ((mpierr = MPI_Allreduce(&iodesc->maplen, &max_maplen, 1, MPI_INT, MPI_MAX,
                                 ios->comp_comm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
+        return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
     LOG((3, "max_maplen = %d", max_maplen));
 
     /* 2D array that will hold all the map information for all
@@ -1071,7 +1049,7 @@ int PIOc_write_nc_decomp(int iosysid, const char *filename, int cmode, int ioid,
     /* Gather my_map from all computation tasks and fill the full_map array. */
     if ((mpierr = MPI_Allgather(&my_map, max_maplen, MPI_INT, full_map, max_maplen,
                                 MPI_INT, ios->comp_comm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
+        return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
     
     for (int p = 0; p < ios->num_comptasks; p++)
         for (int e = 0; e < max_maplen; e++)
@@ -1120,7 +1098,7 @@ int PIOc_read_nc_decomp(int iosysid, const char *filename, int *ioidp, MPI_Comm 
     int my_rank;          /* Task rank in comm. */
     char source_in[PIO_MAX_NAME + 1];  /* Text metadata in decomp file. */
     char version_in[PIO_MAX_NAME + 1]; /* Text metadata in decomp file. */
-    int mpierr;
+    int mpierr = MPI_SUCCESS;
     int ret;
 
     /* Get the IO system info. */
@@ -1136,9 +1114,9 @@ int PIOc_read_nc_decomp(int iosysid, const char *filename, int *ioidp, MPI_Comm 
 
     /* Get the communicator size and task rank. */
     if ((mpierr = MPI_Comm_size(comm, &size)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
+        return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
     if ((mpierr = MPI_Comm_rank(comm, &my_rank)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
+        return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
     LOG((2, "size = %d my_rank = %d", size, my_rank));
 
     /* Read the file. This allocates three arrays that we have to
@@ -1618,14 +1596,14 @@ int PIOc_writemap(const char *file, int ioid, int ndims, const int *gdims, PIO_O
     int i;
     PIO_Offset *nmap;
     int gdims_reversed[ndims];
-    int mpierr; /* Return code for MPI calls. */
+    int mpierr = MPI_SUCCESS; /* Return code for MPI calls. */
 
     LOG((1, "PIOc_writemap file = %s ioid = %d ndims = %d maplen = %d", file, ioid, ndims, maplen));
 
     if ((mpierr = MPI_Comm_size(comm, &npes)))
-        return check_mpi(NULL, mpierr, __FILE__, __LINE__);
+        return check_mpi(NULL, NULL, mpierr, __FILE__, __LINE__);
     if ((mpierr = MPI_Comm_rank(comm, &myrank)))
-        return check_mpi(NULL, mpierr, __FILE__, __LINE__);
+        return check_mpi(NULL, NULL, mpierr, __FILE__, __LINE__);
     LOG((2, "npes = %d myrank = %d", npes, myrank));
 
     /* Allocate memory for the nmaplen. */
@@ -1634,7 +1612,7 @@ int PIOc_writemap(const char *file, int ioid, int ndims, const int *gdims, PIO_O
             return pio_err(NULL, NULL, PIO_ENOMEM, __FILE__, __LINE__);
 
     if ((mpierr = MPI_Gather(&maplen, 1, PIO_OFFSET, nmaplen, 1, PIO_OFFSET, 0, comm)))
-        return check_mpi(NULL, mpierr, __FILE__, __LINE__);
+        return check_mpi(NULL, NULL, mpierr, __FILE__, __LINE__);
 
     /* Only rank 0 writes the file. */
     if (myrank == 0)
@@ -1671,9 +1649,9 @@ int PIOc_writemap(const char *file, int ioid, int ndims, const int *gdims, PIO_O
             nmap = (PIO_Offset *)malloc(nmaplen[i] * sizeof(PIO_Offset));
 
             if ((mpierr = MPI_Send(&i, 1, MPI_INT, i, npes + i, comm)))
-                return check_mpi(NULL, mpierr, __FILE__, __LINE__);
+                return check_mpi(NULL, NULL, mpierr, __FILE__, __LINE__);
             if ((mpierr = MPI_Recv(nmap, nmaplen[i], PIO_OFFSET, i, i, comm, &status)))
-                return check_mpi(NULL, mpierr, __FILE__, __LINE__);
+                return check_mpi(NULL, NULL, mpierr, __FILE__, __LINE__);
             LOG((2,"MPI_Recv map complete"));
 
             fprintf(fp, "%d %lld\n", i, nmaplen[i]);
@@ -1698,10 +1676,10 @@ int PIOc_writemap(const char *file, int ioid, int ndims, const int *gdims, PIO_O
     {
         LOG((2,"ready to MPI_Recv..."));
         if ((mpierr = MPI_Recv(&i, 1, MPI_INT, 0, npes+myrank, comm, &status)))
-            return check_mpi(NULL, mpierr, __FILE__, __LINE__);
+            return check_mpi(NULL, NULL, mpierr, __FILE__, __LINE__);
         LOG((2,"MPI_Recv got %d", i));
         if ((mpierr = MPI_Send(map, maplen, PIO_OFFSET, 0, myrank, comm)))
-            return check_mpi(NULL, mpierr, __FILE__, __LINE__);
+            return check_mpi(NULL, NULL, mpierr, __FILE__, __LINE__);
         LOG((2,"MPI_Send map complete"));
     }
 
@@ -1749,7 +1727,7 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
     iosystem_desc_t *ios;  /* Pointer to io system information. */
     file_desc_t *file;     /* Pointer to file information. */
     int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI function codes. */
-    int ierr;              /* Return code from function calls. */
+    int ierr = PIO_NOERR;              /* Return code from function calls. */
 
 #ifdef TIMING
     GPTLstart("PIO:PIOc_createfile_int");
@@ -1878,23 +1856,20 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
         }
     }
 
-    /* Broadcast and check the return code. */
-    if ((mpierr = MPI_Bcast(&ierr, 1, MPI_INT, ios->ioroot, ios->my_comm)))
-        return check_mpi(file, mpierr, __FILE__, __LINE__);
-
+    ierr = check_netcdf(ios, NULL, ierr, __FILE__, __LINE__);
     /* If there was an error, free the memory we allocated and handle error. */
-    if (ierr)
-    {
+    if(ierr != PIO_NOERR){
         free(file);
 #ifdef TIMING
         GPTLstop("PIO:PIOc_createfile_int");
 #endif
-        return check_netcdf2(ios, NULL, ierr, __FILE__, __LINE__);
+        LOG((1, "PIOc_create_file_int failed, ierr = %d\n", ierr));
+        return ierr;
     }
 
     /* Broadcast mode to all tasks. */
     if ((mpierr = MPI_Bcast(&file->mode, 1, MPI_INT, ios->ioroot, ios->union_comm)))
-        return check_mpi(file, mpierr, __FILE__, __LINE__);
+        return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
 
     /* This flag is implied by netcdf create functions but we need
        to know if its set. */
@@ -2133,6 +2108,11 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
         {
 #ifdef _NETCDF
             LOG((2, "retry error code ierr = %d io_rank %d", ierr, ios->io_rank));
+            /* Bcast error code from io rank 0 to all io procs */
+            mpierr = MPI_Bcast(&ierr, 1, MPI_INT, 0, ios->io_comm);
+            if(mpierr != MPI_SUCCESS){
+                return check_mpi(NULL, file, ierr, __FILE__, __LINE__);
+            }
             if ((ierr == NC_ENOTNC || ierr == NC_EINVAL) && (file->iotype != PIO_IOTYPE_NETCDF))
             {
                 if (ios->iomaster == MPI_ROOT)
@@ -2162,23 +2142,17 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
         }
     }
 
-    /* Broadcast and check the return code. */
-    LOG((2, "Bcasting error code ierr = %d ios->ioroot = %d ios->my_comm = %d",
-         ierr, ios->ioroot, ios->my_comm));
-    if ((mpierr = MPI_Bcast(&ierr, 1, MPI_INT, ios->ioroot, ios->my_comm)))
-        return check_mpi(file, mpierr, __FILE__, __LINE__);
-    LOG((2, "Bcast openfile_retry error code ierr = %d", ierr));
-
+    ierr = check_netcdf(ios, NULL, ierr, __FILE__, __LINE__);
     /* If there was an error, free allocated memory and deal with the error. */
-    if (ierr)
-    {
+    if(ierr != PIO_NOERR){
         free(file);
-        return check_netcdf2(ios, NULL, ierr, __FILE__, __LINE__);
+        LOG((1, "PIOc_openfile_retry failed, ierr = %d", ierr));
+        return ierr;
     }
 
     /* Broadcast open mode to all tasks. */
     if ((mpierr = MPI_Bcast(&file->mode, 1, MPI_INT, ios->ioroot, ios->my_comm)))
-        return check_mpi(file, mpierr, __FILE__, __LINE__);
+        return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
 
     /* Add this file to the list of currently open files. */
     MPI_Comm comm = MPI_COMM_NULL;
@@ -2415,12 +2389,11 @@ int pioc_change_def(int ncid, int is_enddef)
 #endif /* _NETCDF */
     }
 
-    /* Broadcast and check the return code. */
-    LOG((3, "pioc_change_def bcasting return code ierr = %d", ierr));
-    if ((mpierr = MPI_Bcast(&ierr, 1, MPI_INT, ios->ioroot, ios->my_comm)))
-        return check_mpi(file, mpierr, __FILE__, __LINE__);
-    if (ierr)
-        return check_netcdf(file, ierr, __FILE__, __LINE__);
+    ierr = check_netcdf(NULL, file, ierr, __FILE__, __LINE__);
+    if(ierr != PIO_NOERR){
+      LOG((1, "pioc_change_def failed, ierr = %d", ierr));
+      return ierr;
+    }
     LOG((3, "pioc_change_def succeeded"));
 
     return ierr;
@@ -2534,7 +2507,7 @@ int calc_var_rec_sz(int ncid, int varid)
     int ndims;
     nc_type vtype;
     PIO_Offset vtype_sz = 0;
-    int ierr, mpierr;
+    int ierr = PIO_NOERR, mpierr = MPI_SUCCESS;
 
     ierr = pio_get_file(ncid, &file);
     if(ierr != PIO_NOERR)
@@ -2617,7 +2590,7 @@ int calc_var_rec_sz(int ncid, int varid)
     if(mpierr != MPI_SUCCESS)
     {
         LOG((1, "Unable to bcast vrsize"));
-        return check_mpi(file, mpierr, __FILE__, __LINE__);
+        return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
     }
     return ierr;
 }
@@ -2637,7 +2610,7 @@ const char *get_var_desc_str(int ncid, int varid, const char *desc_prefix)
     iosystem_desc_t *ios;  /* Pointer to io system information. */
     file_desc_t *file;     /* Pointer to file information. */
     static const char EMPTY_STR[] = "";
-    int ierr;
+    int ierr = PIO_NOERR;
 
     ierr = pio_get_file(ncid, &file);
     if(ierr != PIO_NOERR)

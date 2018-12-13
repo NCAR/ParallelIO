@@ -283,11 +283,11 @@ int PIOc_closefile(int ncid)
         }
     }
 
-    /* Broadcast and check the return code. */
-    if ((mpierr = MPI_Bcast(&ierr, 1, MPI_INT, ios->ioroot, ios->my_comm)))
-        return check_mpi(file, mpierr, __FILE__, __LINE__);
-    if (ierr)
-        return check_netcdf(file, ierr, __FILE__, __LINE__);
+    ierr = check_netcdf(NULL, file, ierr, __FILE__, __LINE__);
+    if(ierr != PIO_NOERR){
+        LOG((1, "nc*_close failed, ierr = %d", ierr));
+        return ierr;
+    }
 
     /* Delete file from our list of open files. */
     pio_delete_file_from_list(ncid);
@@ -356,11 +356,11 @@ int PIOc_deletefile(int iosysid, const char *filename)
     }
     LOG((2, "PIOc_deletefile ierr = %d", ierr));
 
-    /* Broadcast and check the return code. */
-    if ((mpierr = MPI_Bcast(&ierr, 1, MPI_INT, ios->ioroot, ios->my_comm)))
-        return check_mpi2(ios, NULL, mpierr2, __FILE__, __LINE__);
-    if (ierr)
-        return check_netcdf2(ios, NULL, ierr, __FILE__, __LINE__);
+    ierr = check_netcdf(ios, NULL, ierr, __FILE__, __LINE__);
+    if(ierr != PIO_NOERR){
+        LOG((1, "nc*_delete failed, ierr = %d", ierr));
+        return ierr;
+    }
 
 #ifdef TIMING
     GPTLstop("PIO:PIOc_deletefile");
@@ -473,15 +473,13 @@ int PIOc_sync(int ncid)
         LOG((2, "PIOc_sync ierr = %d", ierr));
     }
 
-    /* Broadcast and check the return code. */
-    if ((mpierr = MPI_Bcast(&ierr, 1, MPI_INT, ios->ioroot, ios->my_comm)))
-        return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
-    if (ierr)
-    {
+    ierr = check_netcdf(ios, NULL, ierr, __FILE__, __LINE__);
+    if(ierr != PIO_NOERR){
 #ifdef TIMING
         GPTLstop("PIO:PIOc_sync");
 #endif
-        return check_netcdf2(ios, NULL, ierr, __FILE__, __LINE__);
+        LOG((1, "nc*_sync failed, ierr=%d", ierr));
+        return ierr;
     }
 
 #ifdef TIMING

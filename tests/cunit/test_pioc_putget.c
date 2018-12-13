@@ -2052,6 +2052,16 @@ int test_all(int iosysid, int num_flavors, int *flavor, int my_rank, MPI_Comm te
     if ((ret = MPI_Comm_size(test_comm, &my_test_size)))
         MPIERR(ret);
 
+    ret = PIOc_set_iosystem_error_handling(PIO_DEFAULT, PIO_BCAST_ERROR, NULL);
+    if(ret != PIO_NOERR){
+        return ret;
+    }
+
+    ret = PIOc_set_iosystem_error_handling(iosysid, PIO_BCAST_ERROR, NULL);
+    if(ret != PIO_NOERR){
+        return ret;
+    }
+
     /* Test attribute stuff. */
     printf("%d Testing attributes with NC_BYTE data, async = %d\n", my_rank, async);
     if ((ret = test_atts_byte(iosysid, num_flavors, flavor, my_rank, test_comm)))
@@ -2075,7 +2085,7 @@ int main(int argc, char **argv)
     /* Initialize data arrays with sample data. */
     init_arrays();
 
-    return run_test_main(argc, argv, MIN_NTASKS, TARGET_NTASKS, 0,
+    return run_test_main(argc, argv, MIN_NTASKS, TARGET_NTASKS, 6,
                          TEST_NAME, dim_len, COMPONENT_COUNT, NUM_IO_PROCS);
 
     return 0;

@@ -152,11 +152,8 @@ extern "C" {
     iosystem_desc_t *pio_get_iosystem_from_id(int iosysid);
     int pio_add_to_iosystem_list(iosystem_desc_t *ios, MPI_Comm comm);
 
-    /* Check the return code from a netCDF call. */
-    int check_netcdf(file_desc_t *file, int status, const char *fname, int line);
-
     /* Check the return code from a netCDF call, with ios pointer. */
-    int check_netcdf2(iosystem_desc_t *ios, file_desc_t *file, int status,
+    int check_netcdf(iosystem_desc_t *ios, file_desc_t *file, int status,
                       const char *fname, int line);
 
     /* Given PIO type, find MPI type and type size. */
@@ -308,10 +305,7 @@ extern "C" {
                          PIO_Offset *count);
 
     /* Check the return code from an MPI function call. */
-    int check_mpi(file_desc_t *file, int mpierr, const char *filename, int line);
-
-    /* Check the return code from an MPI function call. */
-    int check_mpi2(iosystem_desc_t *ios, file_desc_t *file, int mpierr, const char *filename,
+    int check_mpi(iosystem_desc_t *ios, file_desc_t *file, int mpierr, const char *filename,
                    int line);
 
     /* Darray support functions. */
