@@ -403,7 +403,10 @@ int check_mpi(iosystem_desc_t *ios, file_desc_t *file, int mpierr,
  * handle the error. Each MPI process just returns the error code back
  * to the user)
  * PIO_BCAST_ERROR : Broadcast error code from I/O process with rank 0
- * (in the I/O communicator) to all I/O processes.
+ * (in the I/O communicator) to all processes.
+ * PIO_REDUCE_ERROR : Reduce error codes across all processes (and log
+ * the error codes from each process). This error handler detects error
+ * in any process.
  *
  * @param ios pointer to the iosystem description struct. Ignored if NULL.
  * @param file pointer to the PIO structure describing this file. Ignored if NULL.
@@ -444,7 +447,8 @@ int check_netcdf(iosystem_desc_t *ios, file_desc_t *file, int status,
 
     assert( (eh == PIO_INTERNAL_ERROR) ||
             (eh == PIO_BCAST_ERROR) ||
-            (eh == PIO_RETURN_ERROR) );
+            (eh == PIO_RETURN_ERROR) ||
+            (eh == PIO_REDUCE_ERROR) );
     LOG((2, "check_netcdf chose error handler = %d", eh));
 
     /* Get an error message. */
@@ -462,6 +466,70 @@ int check_netcdf(iosystem_desc_t *ios, file_desc_t *file, int status,
         mpierr = MPI_Bcast(&status, 1, MPI_INT, ioroot, comm);
         if(mpierr != MPI_SUCCESS){
             return check_mpi(ios, file, mpierr, __FILE__, __LINE__);
+        }
+    }
+    else if(eh == PIO_REDUCE_ERROR){
+        /* We assume that error codes are all negative */
+        int lstatus = status;
+        mpierr = MPI_Allreduce(&lstatus, &status, 1, MPI_INT, MPI_MIN, comm);
+        if(mpierr != MPI_SUCCESS){
+            return check_mpi(ios, file, mpierr, __FILE__, __LINE__);
+        }
+
+        /* If we have a global error, get information on ranks with the
+         * error
+         */
+        if(status != PIO_NOERR){
+            int comm_sz, comm_rank;
+            mpierr = MPI_Comm_rank(comm, &comm_rank);
+            if(mpierr != MPI_SUCCESS){
+                return check_mpi(ios, file, mpierr, __FILE__, __LINE__);
+            }
+            mpierr = MPI_Comm_size(comm, &comm_sz);
+            if(mpierr != MPI_SUCCESS){
+                return check_mpi(ios, file, mpierr, __FILE__, __LINE__);
+            }
+            /* Gather the error code to rank 0 */
+            int *err_info = NULL;
+            int err_info_sz = comm_sz;
+            const int COMM_ROOT = 0;
+            if(comm_rank == COMM_ROOT){
+                err_info = (int *)malloc(err_info_sz * sizeof(int));
+                if(!err_info){
+                    return pio_err(ios, file, PIO_ENOMEM, __FILE__, __LINE__);  
+                }
+            }
+            mpierr = MPI_Gather(&lstatus, 1, MPI_INT, err_info,
+                                1, MPI_INT, COMM_ROOT, comm);
+            if(mpierr != MPI_SUCCESS){
+                return check_mpi(ios, file, mpierr, __FILE__, __LINE__);
+            }
+            /* Group in ranges of ranks with same error and log */
+            if(comm_rank == COMM_ROOT){
+                int prev_err = err_info[0];
+                int start_rank = 0;
+                int end_rank = 0;
+                for(int i=1; i<err_info_sz; i++){
+                    if(err_info[i] != prev_err){
+                        /* Log prev range error and start new range */
+                        int ret = PIOc_strerror(prev_err, errmsg);
+                        assert(ret == PIO_NOERR);
+                        LOG((1, "Error: ranks[%d-%d] = %d (%s)",
+                              start_rank, end_rank, prev_err, errmsg));
+                        prev_err = err_info[i];
+                        start_rank = i;
+                    }
+                    end_rank++;
+                }
+                /* The last range */
+                if(err_info[end_rank] == prev_err){
+                    int ret = PIOc_strerror(prev_err, errmsg);
+                    assert(ret == PIO_NOERR);
+                    LOG((1, "Error: ranks[%d-%d] = %d (%s)",
+                          start_rank, end_rank, prev_err, errmsg));
+                }
+                free(err_info);
+            }
         }
     }
 

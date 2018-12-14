@@ -309,7 +309,7 @@ int PIOc_set_iosystem_error_handling(int iosysid, int method, int *old_method)
 
     /* Check that valid error handler was provided. */
     if (method != PIO_INTERNAL_ERROR && method != PIO_BCAST_ERROR &&
-        method != PIO_RETURN_ERROR)
+        method != PIO_REDUCE_ERROR && method != PIO_RETURN_ERROR)
         return pio_err(ios, NULL, PIO_EINVAL, __FILE__, __LINE__);
 
     /* If using async, and not an IO task, then send parameters. */
