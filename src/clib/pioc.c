@@ -495,8 +495,14 @@ int PIOc_InitDecomp(int iosysid, int pio_type, int ndims, const int *gdimlen, in
     /* Remember the map. */
     if (!(iodesc->map = malloc(sizeof(PIO_Offset) * maplen)))
         return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__);
+    PIO_Offset maxval = 0;
     for (int m = 0; m < maplen; m++)
     {
+	if (compmap[m] > maxval)
+	    maxval = compmap[m];
+	else if(compmap[m] > 0 && compmap[m] <= maxval)
+	    return pio_err(ios, NULL, PIO_EBADDOF, __FILE__, __LINE__);
+
         iodesc->map[m] = compmap[m];
         LOG((4, "compmap[%d] = %d", m, compmap[m]));
     }

@@ -76,6 +76,9 @@ int PIOc_strerror(int pioerr, char *errmsg)
         case PIO_EBADIOTYPE:
             strcpy(errmsg, "Bad IO type");
             break;
+	case PIO_EBADDOF:
+	    strcpy(errmsg, "DOF must be monotonically increasing (except for 0's)");
+	    break;
         default:
             strcpy(errmsg, "Unknown Error: Unrecognized error code");
         }

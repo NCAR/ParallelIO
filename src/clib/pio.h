@@ -751,6 +751,7 @@ enum PIO_ERROR_HANDLERS
 /** Define error codes for PIO. */
 #define PIO_FIRST_ERROR_CODE (-500)
 #define PIO_EBADIOTYPE  (-500)
+#define PIO_EBADDOF     (-501)
 
 /** ??? */
 #define PIO_REQ_NULL (NC_REQ_NULL-1)
