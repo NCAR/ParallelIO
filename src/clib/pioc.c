@@ -625,6 +625,9 @@ int PIOc_InitDecomp(int iosysid, int pio_type, int ndims, const int *gdimlen, in
 
     /* Add this IO description to the list. */
     MPI_Comm comm = MPI_COMM_NULL;
+#ifdef _ADIOS
+    comm = ios->union_comm;
+#endif
     if(ios->async)
     {
         /* For asynchronous I/O service, the iodescs (iodesc ids) need to

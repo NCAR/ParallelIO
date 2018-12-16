@@ -166,13 +166,13 @@ else ()
 endif ()
 
 #===== pio_large_file_tests =====
+if (PIO_ENABLE_LARGE_TESTS)
 add_executable (pio_large_file_tests EXCLUDE_FROM_ALL
   pio_large_file_tests.F90
   ${CMAKE_CURRENT_SOURCE_DIR}/util/pio_tutil.F90)
 target_link_libraries (pio_large_file_tests pio_tutil piof)
 add_dependencies (tests pio_large_file_tests)
 
-if (PIO_ENABLE_LARGE_TESTS)
   if (PIO_USE_MPISERIAL)
     add_test(NAME pio_large_file_tests
       COMMAND pio_large_file_tests)
