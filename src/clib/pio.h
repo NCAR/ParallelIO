@@ -830,11 +830,15 @@ enum PIO_ERROR_HANDLERS
     /** Errors cause abort. */
     PIO_INTERNAL_ERROR = (-51),
 
-    /** Error codes are broadcast to all tasks. */
+    /** Error codes from io process with rank 0
+      * is broadcasted to all processes. */
     PIO_BCAST_ERROR = (-52),
 
+    /** Error codes are reduced across all processes. */
+    PIO_REDUCE_ERROR = (-53),
+
     /** Errors are returned to caller with no internal action. */
-    PIO_RETURN_ERROR = (-53)
+    PIO_RETURN_ERROR = (-54)
 };
 
 

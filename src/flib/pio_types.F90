@@ -134,11 +134,13 @@ module pio_types
 !! The three types of error handling methods are:
 !!  - PIO_INTERNAL_ERROR  : abort on error from any task
 !!  - PIO_BCAST_ERROR     : broadcast an error from io_rank 0 to all tasks in comm
+!!  - PIO_REDUCE_ERROR     : Reduce error across all tasks in comm
 !!  - PIO_RETURN_ERROR    : do nothing - allow the user to handle it
 !<
   integer(i4), public, parameter :: PIO_INTERNAL_ERROR = -51
   integer(i4), public, parameter :: PIO_BCAST_ERROR = -52
-  integer(i4), public, parameter :: PIO_RETURN_ERROR = -53
+  integer(i4), public, parameter :: PIO_REDUCE_ERROR = -53
+  integer(i4), public, parameter :: PIO_RETURN_ERROR = -54
 
 !>
 !! @public

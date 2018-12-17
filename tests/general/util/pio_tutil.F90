@@ -155,6 +155,7 @@ CONTAINS
     END IF
     IF ((pio_tf_err_handler_ /= PIO_INTERNAL_ERROR) .AND.&
         (pio_tf_err_handler_ /= PIO_BCAST_ERROR) .AND.&
+        (pio_tf_err_handler_ /= PIO_REDUCE_ERROR) .AND.&
         (pio_tf_err_handler_ /= PIO_RETURN_ERROR)) THEN
       PRINT *, "PIO_TF : Invalid error handler specified, resetting to PIO_BCAST_ERROR..."
       pio_tf_err_handler_ = PIO_BCAST_ERROR
@@ -1003,6 +1004,9 @@ CONTAINS
     ELSE IF((str == "PIO_BCAST_ERROR") .OR.&
         (str == "pio_bcast_error")) THEN
       Error_handler_from_str = PIO_BCAST_ERROR
+    ELSE IF((str == "PIO_REDUCE_ERROR") .OR.&
+        (str == "pio_reduce_error")) THEN
+      Error_handler_from_str = PIO_REDUCE_ERROR
     ELSE IF((str == "PIO_RETURN_ERROR") .OR.&
         (str == "pio_return_error")) THEN
       Error_handler_from_str = PIO_RETURN_ERROR

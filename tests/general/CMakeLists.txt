@@ -263,13 +263,22 @@ add_dependencies (ncdf_fail pio_tutil)
 add_dependencies (tests ncdf_fail)
 
 if (PIO_USE_MPISERIAL)
-  add_test(NAME ncdf_fail
+  add_test(NAME ncdf_fail_bcast
     COMMAND ncdf_fail)
-  set_tests_properties(ncdf_fail
+  set_tests_properties(ncdf_fail_bcast
+    PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
+  add_test(NAME ncdf_fail_reduce
+    COMMAND ncdf_fail --pio-tf-err-handler=PIO_REDUCE_ERROR)
+  set_tests_properties(ncdf_fail_reduce
     PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 else ()
-  add_mpi_test(ncdf_fail
+  add_mpi_test(ncdf_fail_bcast
     EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/ncdf_fail
+    NUMPROCS 2
+    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
+  add_mpi_test(ncdf_fail_reduce
+    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/ncdf_fail
+    ARGUMENTS --pio-tf-err-handler=PIO_REDUCE_ERROR
     NUMPROCS 2
     TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 endif ()
