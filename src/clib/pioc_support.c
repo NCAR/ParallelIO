@@ -1916,6 +1916,75 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
 #ifdef _PNETCDF
         case PIO_IOTYPE_PNETCDF:
             LOG((2, "Calling ncmpi_create mode = %d", file->mode));
+            if (ios->info == MPI_INFO_NULL)
+                MPI_Info_create(&ios->info);
+
+            /* Set some MPI-IO hints below */
+
+            /* ROMIO will not perform data sieving for writes. Data sieving is
+               designed for I/O patterns that read or write small, noncontiguous
+               file regions. It does not help if the aggregated writes are always
+               contiguous, covering the entire variables.
+             */
+            MPI_Info_set(ios->info, "romio_ds_write", "disable");
+
+            /* Enable ROMIO's collective buffering for writes. Collective
+               buffering, also called two-phase collective I/O, reorganizes
+               data across processes to match data layout in file.
+             */
+            MPI_Info_set(ios->info, "romio_cb_write", "enable"); 
+
+            /* Disable independent file operations. ROMIO will make an effort to
+               avoid performing any file operation on non-aggregator processes.
+             */
+            MPI_Info_set(ios->info, "romio_no_indep_rw", "true"); 
+
+            /* Set some PnetCDF I/O hints below */
+
+            /* Do not align the starting file offsets of individual fixed-size
+               variables. If applications use PnetCDF nonblocking APIs to
+               aggregate write requests to multiple variables, then the best
+               practice is to disable the variable alignment. This will prevent
+               creating gaps in file space between two consecutive fixed-size
+               variables and thus the writes to file system can be contiguous.
+             */
+            MPI_Info_set(ios->info, "nc_var_align_size", "1");
+
+            /* Enable in-place byte swap on Little Endian architectures. With
+               this option, PnetCDF performs byte swap on user I/O buffers
+               whenever possible. This results in the least amount of internal
+               memory usage. However, if an immutable user buffer is used,
+               segmentation fault may occur when byte swap is performed on
+               user buffer in place.
+             */
+            MPI_Info_set(ios->info, "nc_in_place_swap", "enable");
+
+            /* Set the size of a temporal buffer to be allocated by PnetCDF
+               internally to pack noncontiguous user write buffers supplied
+               to the nonblocking requests into a contiguous space. On some
+               systems, using noncontiguous user buffers in MPI collective
+               write functions performs significantly worse than using
+               contiguous buffers. This hint is supported by latest PnetCDF
+               (version 1.11.0 and later).
+               
+               [More information]
+               Noncontiguous write buffers are almost unavoidable:
+               1) Each IO decomposition has its own writer buffer for a file
+               2) PnetCDF might use noncontiguous helper buffers to perform
+                  data type conversion
+
+               Without this hint, we have seen hanging issues on Cori and
+               Titan for some E3SM cases run with SUBSET rearranger. This
+               hint is optional if BOX rearranger is used. 
+
+               The default buffer size is 16 MiB in PnetCDF and we tentatively
+               set it to 64 MiB. For E3SM production runs, if SUBSET rearranger
+               is used, we might need an even larger buffer size in PnetCDF. For
+               example, if 150 IO tasks are used to write a file of size 80 GiB,
+               we should try a buffer size larger than 546 MiB.
+             */
+            MPI_Info_set(ios->info, "nc_ibuf_size", "67108864");
+
             ierr = ncmpi_create(ios->io_comm, filename, file->mode, ios->info, &file->fh);
             if (!ierr)
                 ierr = ncmpi_buffer_attach(file->fh, pio_buffer_size_limit);
