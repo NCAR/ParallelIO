@@ -37,6 +37,10 @@
 #define PIO_OFFSET MPI_OFFSET
 #define PIO_Offset MPI_Offset
 
+/** The start ID and maximum number of IDs for IO decompositions. */
+#define PIO_IODESC_START_ID 512
+#define PIO_IODESC_MAX_IDS 4096
+
 /** The maximum number of variables allowed in a netCDF file. */
 #define PIO_MAX_VARS_UB 8192
 #if NC_MAX_VARS > PIO_MAX_VARS_UB
@@ -780,8 +784,8 @@ typedef struct file_desc_t
     /* Bytes pending to be written out for this file */
     PIO_Offset wb_pend;
 
-    /** Data buffer for this file. */
-    void *iobuf;
+    /** Data buffer per IO decomposition for this file. */
+    void *iobuf[PIO_IODESC_MAX_IDS];
 
     /** Pointer to the next file_desc_t in the list of open files. */
     struct file_desc_t *next;

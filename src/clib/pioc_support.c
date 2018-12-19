@@ -1851,6 +1851,9 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
 
     LOG((2, "file->do_io = %d ios->async = %d", file->do_io, ios->async));
 
+    for (int i = 0; i < PIO_IODESC_MAX_IDS; i++)
+        file->iobuf[i] = NULL;
+
     /* If async is in use, and this is not an IO task, bcast the
      * parameters. */
     if (ios->async)
@@ -2162,6 +2165,9 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
     if (file->iotype == PIO_IOTYPE_NETCDF4P || file->iotype == PIO_IOTYPE_PNETCDF ||
         ios->io_rank == 0)
         file->do_io = 1;
+
+    for (int i = 0; i < PIO_IODESC_MAX_IDS; i++)
+        file->iobuf[i] = NULL;
 
     /* If async is in use, bcast the parameters from compute to I/O procs. */
     if(ios->async)
