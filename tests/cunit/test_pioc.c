@@ -1576,6 +1576,12 @@ int test_scalar(int iosysid, int num_flavors, int *flavor, int my_rank, int asyn
         if ((ret = PIOc_put_var_int(ncid, varid, &test_val)))
             ERR(ret);
 
+        /* Flush PnetCDF non-blocking write on the scalar value. */
+        if (flavor[fmt] == PIO_IOTYPE_PNETCDF) {
+            if ((ret = PIOc_sync(ncid)))
+                ERR(ret);
+        }
+
         /* Check the scalar var. */
         if ((ret = check_scalar_var(ncid, varid, flavor[fmt])))
             ERR(ret);
