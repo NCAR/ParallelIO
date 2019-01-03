@@ -202,6 +202,8 @@ int main(int argc, char **argv)
                 ERR(ret);
             if ((ret = PIOc_closefile(ncid2)))
                 ERR(ret);
+
+            MPI_Barrier(test_comm);
         } /* next iotype */
         if ((ret = MPI_Comm_free(&newcomm)))
             MPIERR(ret);
