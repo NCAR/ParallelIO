@@ -195,22 +195,23 @@ void ProcessGlobalAttributes(ADIOS_FILE **infile, int ncid, DimensionMap& dimens
 	std::map<std::string,char> processed_attrs;
 	std::map<std::string,int>  var_att_map;
 	
-	int total_cnt = (int) infile[0]->nattrs, i = 0;
+	int total_cnt = (int) infile[0]->nattrs, i = -1;
 	while (total_cnt>0) {
-        string a = infile[0]->attr_namelist[i];
 		i = (i+1)%infile[0]->nattrs;
+        string a = infile[0]->attr_namelist[i];
+		char *attr_namelist = infile[0]->attr_namelist[i];
 		std::string token = a.substr(0, a.find(delimiter));
 		if (token=="") {  /* Not a variable with attributes */
 			processed_attrs[a] = 1; total_cnt--;
 		} else if (processed_attrs.find(a)==processed_attrs.end()) {
         	if (a.find("pio_global/") != string::npos) {
-            	if (debug_out) cout << " GLOBAL Attribute: " << infile[0]->attr_namelist[i] << std::endl;
+            	if (debug_out) cout << " GLOBAL Attribute: " << attr_namelist << std::endl;
             	int asize;
             	char *adata = NULL;
             	ADIOS_DATATYPES atype;
-            	adios_get_attr(infile[0], infile[0]->attr_namelist[i], &atype, &asize, (void**)&adata);
+            	adios_get_attr(infile[0], attr_namelist, &atype, &asize, (void**)&adata);
             	nc_type piotype = PIOc_get_nctype_from_adios_type(atype);
-            	char *attname = infile[0]->attr_namelist[i]+strlen("pio_global/");
+            	char *attname = attr_namelist+strlen("pio_global/");
             	if (debug_out) cout << "        define PIO attribute: " << attname << ""
                		     			<< "  type=" << piotype << std::endl;
             	int len = 1;
@@ -220,7 +221,7 @@ void ProcessGlobalAttributes(ADIOS_FILE **infile, int ncid, DimensionMap& dimens
             	if (adata) free(adata);
 				processed_attrs[a] = 1; total_cnt--;
 			} else {
-				if (debug_out) cout << "    Attribute: " << infile[0]->attr_namelist[i] << std::endl;
+				if (debug_out) cout << "    Attribute: " << attr_namelist << std::endl;
 				if (vars_map.find(token)==vars_map.end()) { 
 					if (var_att_map.find(token)==var_att_map.end()) {
 						// first encounter 
