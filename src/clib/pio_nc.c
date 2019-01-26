@@ -125,7 +125,7 @@ int PIOc_inq(int ncid, int *ndimsp, int *nvarsp, int *ngattsp, int *unlimdimidp)
 
     if(ierr != PIO_NOERR){
         LOG((1, "nc*_inq failed, ierr = %d", ierr));
-        return pio_err(ios, file, ierr, __FILE__, __LINE__);
+        return ierr;
     }
 
     /* Broadcast results to all tasks. Ignore NULL parameters. */
@@ -320,8 +320,8 @@ int PIOc_inq_unlimdims(int ncid, int *nunlimdimsp, int *unlimdimidsp)
     }
 
     if(ierr != PIO_NOERR){
-        LOG((1, "nc*_inq failed, ierr = %d", ierr));
-        return pio_err(ios, file, ierr, __FILE__, __LINE__);
+        LOG((1, "nc*_inq_unlimdims failed, ierr = %d", ierr));
+        return ierr;
     }
 
     /* Broadcast results to all tasks. Ignore NULL parameters. */
@@ -559,8 +559,8 @@ int PIOc_inq_dim(int ncid, int dimid, char *name, PIO_Offset *lenp)
     }
 
     if(ierr != PIO_NOERR){
-        LOG((1, "nc*_inq failed, ierr = %d", ierr));
-        return pio_err(ios, file, ierr, __FILE__, __LINE__);
+        LOG((1, "nc*_inq_dim failed, ierr = %d", ierr));
+        return ierr;
     }
 
     /* Broadcast results to all tasks. Ignore NULL parameters. */
@@ -688,8 +688,8 @@ int PIOc_inq_dimid(int ncid, const char *name, int *idp)
     }
 
     if(ierr != PIO_NOERR){
-        LOG((1, "nc*_inq failed, ierr = %d", ierr));
-        return pio_err(ios, file, ierr, __FILE__, __LINE__);
+        LOG((1, "nc*_inq_dimid failed, ierr = %d", ierr));
+        return ierr;
     }
 
     /* Broadcast results. */
@@ -859,8 +859,8 @@ int PIOc_inq_var(int ncid, int varid, char *name, int namelen, nc_type *xtypep, 
     }
 
     if(ierr != PIO_NOERR){
-        LOG((1, "nc*_inq failed, ierr = %d", ierr));
-        return pio_err(ios, file, ierr, __FILE__, __LINE__);
+        LOG((1, "nc*_inq_var failed, ierr = %d", ierr));
+        return ierr;
     }
 
     /* Broadcast the results for non-null pointers. */
@@ -1098,8 +1098,8 @@ int PIOc_inq_varid(int ncid, const char *name, int *varidp)
     }
 
     if(ierr != PIO_NOERR){
-        LOG((1, "nc*_inq failed, ierr = %d", ierr));
-        return pio_err(ios, file, ierr, __FILE__, __LINE__);
+        LOG((1, "nc*_inq_varid failed, ierr = %d", ierr));
+        return ierr;
     }
 
     /* Broadcast results to all tasks. Ignore NULL parameters. */
@@ -1224,8 +1224,8 @@ int PIOc_inq_att(int ncid, int varid, const char *name, nc_type *xtypep,
     }
 
     if(ierr != PIO_NOERR){
-        LOG((1, "nc*_inq failed, ierr = %d", ierr));
-        return pio_err(ios, file, ierr, __FILE__, __LINE__);
+        LOG((1, "nc*_inq_att failed, ierr = %d", ierr));
+        return ierr;
     }
 
     /* Broadcast results. */
@@ -1340,8 +1340,8 @@ int PIOc_inq_attname(int ncid, int varid, int attnum, char *name)
     }
 
     if(ierr != PIO_NOERR){
-        LOG((1, "nc*_inq failed, ierr = %d", ierr));
-        return pio_err(ios, file, ierr, __FILE__, __LINE__);
+        LOG((1, "nc*_inq_attname failed, ierr = %d", ierr));
+        return ierr;
     }
 
     /* Broadcast results to all tasks. Ignore NULL parameters. */
@@ -1429,8 +1429,8 @@ int PIOc_inq_attid(int ncid, int varid, const char *name, int *idp)
     }
 
     if(ierr != PIO_NOERR){
-        LOG((1, "nc*_inq failed, ierr = %d", ierr));
-        return pio_err(ios, file, ierr, __FILE__, __LINE__);
+        LOG((1, "nc*_inq_attid failed, ierr = %d", ierr));
+        return ierr;
     }
 
     /* Broadcast results. */
