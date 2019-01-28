@@ -896,7 +896,6 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
     char count_present = count ? true : false;    /* Is count non-NULL? */
     char stride_present = stride ? true : false;  /* Is stride non-NULL? */
     nc_type vartype;   /* The type of the var we are reading from. */
-    PIO_Offset *fake_stride;
     int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI function codes. */
     int ierr;          /* Return code from function calls. */
 
@@ -1012,6 +1011,22 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
     /* If this is an IO task, then call the netCDF function. */
     if (ios->ioproc)
     {
+       PIO_Offset *fake_stride;
+
+       if (ndims)
+       {
+          if (!stride_present)
+          {
+             LOG((2, "stride not present"));
+             if (!(fake_stride = malloc(ndims * sizeof(PIO_Offset))))
+                return pio_err(ios, file, PIO_ENOMEM, __FILE__, __LINE__);
+             for (int d = 0; d < ndims; d++)
+                fake_stride[d] = 1;
+          }
+          else
+             fake_stride = (PIO_Offset *)stride;
+       }
+
 #ifdef _PNETCDF
         if (file->iotype == PIO_IOTYPE_PNETCDF)
         {
@@ -1069,17 +1084,6 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                 var_desc_t *vdesc;
                 int *request;
 
-                if (!stride_present)
-                {
-                    LOG((2, "stride not present"));
-                    if (!(fake_stride = malloc(ndims * sizeof(PIO_Offset))))
-                        return pio_err(ios, file, PIO_ENOMEM, __FILE__, __LINE__);
-                    for (int d = 0; d < ndims; d++)
-                        fake_stride[d] = 1;
-                }
-                else
-                    fake_stride = (PIO_Offset *)stride;
-
                 LOG((2, "PIOc_put_vars_tc calling pnetcdf function"));
                 /*vdesc = &file->varlist[varid];*/
                 if ((ierr = get_var_desc(varid, &file->varlist, &vdesc)))
@@ -1129,9 +1133,6 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                 flush_output_buffer(file, false, 0);
                 LOG((2, "PIOc_put_vars_tc flushed output buffer"));
 
-                /* Free malloced resources. */
-                if (!stride_present)
-                    free(fake_stride);
             } /* endif ndims == 0 */
         }
 #endif /* _PNETCDF */
@@ -1144,56 +1145,56 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
             {
             case NC_BYTE:
                 ierr = nc_put_vars_schar(file->fh, varid, (size_t *)start, (size_t *)count,
-                                         (ptrdiff_t *)stride, buf);
+                                         (ptrdiff_t *)fake_stride, buf);
                 break;
             case NC_CHAR:
                 ierr = nc_put_vars_text(file->fh, varid, (size_t *)start, (size_t *)count,
-                                        (ptrdiff_t *)stride, buf);
+                                        (ptrdiff_t *)fake_stride, buf);
                 break;
             case NC_SHORT:
                 ierr = nc_put_vars_short(file->fh, varid, (size_t *)start, (size_t *)count,
-                                         (ptrdiff_t *)stride, buf);
+                                         (ptrdiff_t *)fake_stride, buf);
                 break;
             case NC_INT:
                 ierr = nc_put_vars_int(file->fh, varid, (size_t *)start, (size_t *)count,
-                                       (ptrdiff_t *)stride, buf);
+                                       (ptrdiff_t *)fake_stride, buf);
                 break;
             case PIO_LONG_INTERNAL:
                 ierr = nc_put_vars_long(file->fh, varid, (size_t *)start, (size_t *)count,
-                                        (ptrdiff_t *)stride, buf);
+                                        (ptrdiff_t *)fake_stride, buf);
                 break;
             case NC_FLOAT:
                 ierr = nc_put_vars_float(file->fh, varid, (size_t *)start, (size_t *)count,
-                                         (ptrdiff_t *)stride, buf);
+                                         (ptrdiff_t *)fake_stride, buf);
                 break;
             case NC_DOUBLE:
                 ierr = nc_put_vars_double(file->fh, varid, (size_t *)start, (size_t *)count,
-                                          (ptrdiff_t *)stride, buf);
+                                          (ptrdiff_t *)fake_stride, buf);
                 break;
 #ifdef _NETCDF4
             case NC_UBYTE:
                 ierr = nc_put_vars_uchar(file->fh, varid, (size_t *)start, (size_t *)count,
-                                         (ptrdiff_t *)stride, buf);
+                                         (ptrdiff_t *)fake_stride, buf);
                 break;
             case NC_USHORT:
                 ierr = nc_put_vars_ushort(file->fh, varid, (size_t *)start, (size_t *)count,
-                                          (ptrdiff_t *)stride, buf);
+                                          (ptrdiff_t *)fake_stride, buf);
                 break;
             case NC_UINT:
                 ierr = nc_put_vars_uint(file->fh, varid, (size_t *)start, (size_t *)count,
-                                        (ptrdiff_t *)stride, buf);
+                                        (ptrdiff_t *)fake_stride, buf);
                 break;
             case NC_INT64:
                 ierr = nc_put_vars_longlong(file->fh, varid, (size_t *)start, (size_t *)count,
-                                            (ptrdiff_t *)stride, buf);
+                                            (ptrdiff_t *)fake_stride, buf);
                 break;
             case NC_UINT64:
                 ierr = nc_put_vars_ulonglong(file->fh, varid, (size_t *)start, (size_t *)count,
-                                             (ptrdiff_t *)stride, buf);
+                                             (ptrdiff_t *)fake_stride, buf);
                 break;
                 /* case NC_STRING: */
                 /*      ierr = nc_put_vars_string(file->fh, varid, (size_t *)start, (size_t *)count, */
-                /*                                (ptrdiff_t *)stride, (void *)buf); */
+                /*                                (ptrdiff_t *)fake_stride, (void *)buf); */
                 /*      break; */
 #endif /* _NETCDF4 */
             default:
@@ -1201,6 +1202,10 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
             }
             LOG((2, "PIOc_put_vars_tc io_rank 0 done with netcdf call, ierr=%d", ierr));
         }
+
+        /* Free malloced resources. */
+        if (ndims && !stride_present)
+           free(fake_stride);
     }
 
     /* Broadcast and check the return code. */
