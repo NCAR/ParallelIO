@@ -112,7 +112,7 @@ endif()
 
 # we start by assuming we found ADIOS and falsify it if some
 # dependencies are missing (or if we did not find ADIOS at all)
-set(ADIOS_FOUND TRUE)
+set(ADIOS_FOUND TRUE CACHE BOOL "Set (true) if ADIOS is detected")
 
 
 # find `adios_config` program #################################################
