@@ -308,9 +308,9 @@ int PIOc_closefile(int ncid)
             assert(len > 6 && len <= PIO_MAX_NAME);
             strncpy(outfilename, file->filename, len - 3);
             outfilename[len - 3] = '\0';
-			printf("CONVERTING: %s\n",file->filename); fflush(stdout);
+            LOG((1, "CONVERTING: %s", file->filename));
             C_API_ConvertBPToNC(file->filename, outfilename, conv_iotype, ios->union_comm);
-			printf("DONE CONVERTING: %s\n",file->filename); fflush(stdout);
+            LOG((1, "DONE CONVERTING: %s", file->filename));
 #endif 
 
             free(file->filename);
