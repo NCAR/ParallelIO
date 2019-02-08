@@ -1333,12 +1333,8 @@ int PIOc_inq_attname(int ncid, int varid, int attnum, char *name)
         LOG((2, "PIOc_inq_attname netcdf call returned %d", ierr));
     }
 
-    /* A failure to inquire is not fatal */
-    mpierr = MPI_Bcast(&ierr, 1, MPI_INT, ios->ioroot, ios->my_comm);
-    if(mpierr != MPI_SUCCESS){
-        return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
-    }
-
+    /* Failure to inquire is fatal */
+    ierr = check_netcdf(NULL, file, ierr, __FILE__, __LINE__);
     if(ierr != PIO_NOERR){
         LOG((1, "nc*_inq_attname failed, ierr = %d", ierr));
         return ierr;
