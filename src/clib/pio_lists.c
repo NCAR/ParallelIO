@@ -307,7 +307,6 @@ int pio_num_iosystem(int *niosysid)
  * need to be unique
  * @returns the ioid of the newly added iodesc.
  */
-#define PIO_IODESC_START_ID 512
 int pio_add_to_iodesc_list(io_desc_t *iodesc, MPI_Comm comm)
 {
     /* Using an arbitrary start id for iodesc ids helps
