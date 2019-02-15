@@ -24,5 +24,3 @@ endif()
 SET(SRC adios2pio.cxx)
 ADD_EXECUTABLE(adios2pio ${SRC})
 TARGET_LINK_LIBRARIES(adios2pio pioc)
-
-

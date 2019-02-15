@@ -23,7 +23,7 @@
 
 /** The length of our sample data along each dimension. There will be
  * a total of X_DIM_LEN*Y_DIM_LEN floats in each timestep of our data, and
- * responsibilty for writing and reading them will be spread between
+ * responsibility for writing and reading them will be spread between
  * all the processors used to run this example. */
 /**@{*/
 #define X_DIM_LEN 10
@@ -41,20 +41,20 @@
 
 /** Handle MPI errors. This should only be used with MPI library
  * function calls. */
-#define MPIERR(e) do {                                                  \
-	MPI_Error_string(e, err_buffer, &resultlen);                    \
-	fprintf(stderr, "MPI error, line %d, file %s: %s\n", __LINE__, __FILE__, err_buffer); \
-	MPI_Finalize();                                                 \
-	return 2;                                                       \
-    } while (0)
+#define MPIERR(e) do { \
+    MPI_Error_string(e, err_buffer, &resultlen); \
+    fprintf(stderr, "MPI error, line %d, file %s: %s\n", __LINE__, __FILE__, err_buffer); \
+    MPI_Finalize(); \
+    return 2; \
+} while (0)
 
 /** Handle non-MPI errors by finalizing the MPI library and exiting
  * with an exit code. */
-#define ERR(e) do {                             \
-	fprintf(stderr, "Error %d in %s, line %d\n", e, __FILE__, __LINE__); \
-	MPI_Finalize();                         \
-	return e;                               \
-    } while (0)
+#define ERR(e) do { \
+    fprintf(stderr, "Error %d in %s, line %d\n", e, __FILE__, __LINE__); \
+    MPI_Finalize(); \
+    return e; \
+} while (0)
 
 /** Global err buffer for MPI. When there is an MPI error, this buffer
  * is used to store the error message that is associated with the MPI
@@ -71,25 +71,29 @@ char dim_name[NDIM][NC_MAX_NAME + 1] = {"timestep", "x", "y"};
 /** Length of the dimensions in the sample data. */
 int dim_len[NDIM] = {NC_UNLIMITED, X_DIM_LEN, Y_DIM_LEN};
 
-
 float *foo, *bar;
-float * create_data(int nelems) { return (float *) calloc(nelems, sizeof(float)); }
+
+float * create_data(int nelems)
+{
+    return (float *) calloc(nelems, sizeof(float));
+}
+
 void fill_data(float *data, int nelems, int rank, int time)
 {
-    for (int i=0; i<nelems; i++) data[i] = ((100.0*rank)+time+1)/100.0;
+    for (int i = 0; i < nelems; i++)
+        data[i] = ((100.0 * rank) + time + 1) / 100.0;
 }
-#define destroy_data(data) free(data); data=NULL;
+
+#define destroy_data(data) free(data); data = NULL;
 
 char info[] = "This string is identical on every process. Step 0000";
-
 
 /** Run Tests for NetCDF-4 Functions.
  *
  * @param argc argument count
  * @param argv array of arguments
  */
-int
-main(int argc, char **argv)
+int main(int argc, char **argv)
 {
     int verbose = 1;
 
@@ -106,10 +110,10 @@ main(int argc, char **argv)
      * last two produce netCDF4/HDF5 format files, written with
      * and without using netCDF-4 parallel I/O. */
     int format[NUM_NETCDF_FLAVORS] = {PIO_IOTYPE_PNETCDF,
-				      PIO_IOTYPE_NETCDF,
-				      PIO_IOTYPE_NETCDF4C,
-				      PIO_IOTYPE_NETCDF4P,
-				      PIO_IOTYPE_ADIOS};
+                                      PIO_IOTYPE_NETCDF,
+                                      PIO_IOTYPE_NETCDF4C,
+                                      PIO_IOTYPE_NETCDF4P,
+                                      PIO_IOTYPE_ADIOS};
 
     /** Names for the output files. Two of them (pnetcdf and
      * classic) will be in classic netCDF format, the others
@@ -117,10 +121,10 @@ main(int argc, char **argv)
      * format. All four can be read by the netCDF library, and all
      * will contain the same contents. */
     char filename[NUM_NETCDF_FLAVORS][NC_MAX_NAME + 1] = {"timesteps_pnetcdf.nc",
-							  "timesteps_classic.nc",
-							  "timesteps_serial4.nc",
-							  "timesteps_parallel4.nc",
-							  "timesteps_adios.nc"};
+                                                          "timesteps_classic.nc",
+                                                          "timesteps_serial4.nc",
+                                                          "timesteps_parallel4.nc",
+                                                          "timesteps_adios.nc"};
 
     /** Number of processors that will do IO. In this example we
      * will do IO from all processors. */
@@ -161,7 +165,7 @@ main(int argc, char **argv)
     /** The ncid of the netCDF file created in this example. */
     int ncid = 0;
 
-    /** The ID of the netCDF varables in the example file. */
+    /** The ID of the netCDF variables in the example file. */
     int varid_foo; // A 2D array over time written by write_darray
     int varid_bar; // A 1D array over time written by put_vara, a distributed array written in parallel
     int varid_info; // A string over time, a local array identical on every process
@@ -197,29 +201,32 @@ main(int argc, char **argv)
 
 #ifdef TIMING
     /* Initialize the GPTL timing library. */
-    if ((ret = GPTLinitialize ()))
-	return ret;
+    if ((ret = GPTLinitialize()))
+        return ret;
 #endif
 
     /* Initialize MPI. */
     if ((ret = MPI_Init(&argc, &argv)))
-	MPIERR(ret);
+        MPIERR(ret);
+
     if ((ret = MPI_Errhandler_set(MPI_COMM_WORLD, MPI_ERRORS_RETURN)))
-	MPIERR(ret);
+        MPIERR(ret);
 
     /* Learn my rank and the total number of processors. */
     if ((ret = MPI_Comm_rank(MPI_COMM_WORLD, &my_rank)))
-	MPIERR(ret);
+        MPIERR(ret);
+
     if ((ret = MPI_Comm_size(MPI_COMM_WORLD, &ntasks)))
-	MPIERR(ret);
+        MPIERR(ret);
 
     /* Check that a valid number of processors was specified. */
     if (!(ntasks == 1 || ntasks == 2 || ntasks == 4 ||
-	  ntasks == 8 || ntasks == 16))
-	fprintf(stderr, "Number of processors must be 1, 2, 4, 8, or 16!\n");
+          ntasks == 8 || ntasks == 16))
+        fprintf(stderr, "Number of processors must be 1, 2, 4, 8, or 16!\n");
+
     if (verbose)
-	printf("%d: ParallelIO Library example1 running on %d processors.\n",
-	       my_rank, ntasks);
+        printf("%d: ParallelIO Library example1 running on %d processors.\n",
+               my_rank, ntasks);
 
     /* keep things simple - 1 iotask per MPI process */
     niotasks = ntasks;
@@ -227,29 +234,32 @@ main(int argc, char **argv)
     /* Initialize the PIO IO system. This specifies how
      * many and which processors are involved in I/O. */
     if ((ret = PIOc_Init_Intracomm(MPI_COMM_WORLD, niotasks, ioproc_stride,
-				   ioproc_start, PIO_REARR_SUBSET, &iosysid)))
-	ERR(ret);
+                                   ioproc_start, PIO_REARR_SUBSET, &iosysid)))
+        ERR(ret);
 
     /* Describe the decomposition. This is a 1-based array, so add 1! */
     elements_per_pe = X_DIM_LEN * Y_DIM_LEN / ntasks;
     if (!(compdof = malloc(elements_per_pe * sizeof(PIO_Offset))))
-	return PIO_ENOMEM;
-    for (int i = 0; i < elements_per_pe; i++) {
-	compdof[i] = my_rank * elements_per_pe + i + 1;
+        return PIO_ENOMEM;
+
+    for (int i = 0; i < elements_per_pe; i++)
+    {
+        compdof[i] = my_rank * elements_per_pe + i + 1;
     }
 
     /* Create the PIO decomposition for this test. */
     if (verbose)
-	printf("rank: %d Creating decomposition...\n", my_rank);
+        printf("rank: %d Creating decomposition...\n", my_rank);
+
     if ((ret = PIOc_InitDecomp(iosysid, PIO_FLOAT, 2, &dim_len[1], (PIO_Offset)elements_per_pe,
-			       compdof, &ioid, NULL, NULL, NULL)))
-	ERR(ret);
+                               compdof, &ioid, NULL, NULL, NULL)))
+        ERR(ret);
     free(compdof);
 
 #ifdef HAVE_MPE
     /* Log with MPE that we are done with INIT. */
     if ((ret = MPE_Log_event(event_num[END][INIT], 0, "end init")))
-	MPIERR(ret);
+        MPIERR(ret);
 #endif /* HAVE_MPE */
 
     foo = create_data((int)elements_per_pe);
@@ -276,10 +286,12 @@ main(int argc, char **argv)
         /* Define netCDF dimensions and variable. */
         if (verbose)
             printf("rank: %d Defining netCDF metadata...\n", my_rank);
-        for (int d = 0; d < NDIM; d++) {
+        for (int d = 0; d < NDIM; d++)
+        {
             if (verbose)
                 printf("rank: %d Defining netCDF dimension %s, length %d\n", my_rank,
                         dim_name[d], dim_len[d]);
+
             if ((ret = PIOc_def_dim(ncid, dim_name[d], (PIO_Offset)dim_len[d], &dimids_foo[d])))
                 ERR(ret);
         }
@@ -287,14 +299,15 @@ main(int argc, char **argv)
         dimids_bar[0] = dimids_foo[0]; /* unlimited dim */
         if (verbose)
             printf("rank: %d Defining netCDF dimension %s, length %d\n", my_rank, "n", ntasks);
+
         if ((ret = PIOc_def_dim(ncid, "n", (PIO_Offset)ntasks, &dimids_bar[1])))
             ERR(ret);
         dimids_bar[2] = dimids_foo[1]; /* X_DIM_LEN */
 
-
         dimids_info[0] = dimids_foo[0]; /* unlimited dim */
         if (verbose)
             printf("rank: %d Defining netCDF dimension %s, length %d\n", my_rank, "info_len", info_len);
+
         if ((ret = PIOc_def_dim(ncid, "info_len", (PIO_Offset)info_len, &dimids_info[1])))
             ERR(ret);
 
@@ -319,7 +332,6 @@ main(int argc, char **argv)
         char bartext[] = "An identical string on each processor";
         PIOc_put_att(ncid, varid_bar, "desc", PIO_CHAR, strlen(bartext), bartext);
 
-
         if ((ret = PIOc_enddef(ncid)))
             ERR(ret);
 
@@ -334,20 +346,22 @@ main(int argc, char **argv)
 
         for (int ts = 0; ts < NUM_TIMESTEPS; ++ts)
         {
-            /* update data */
+            /* Update data */
             fill_data(foo, (int)elements_per_pe, my_rank, ts);
             fill_data(bar, X_DIM_LEN, my_rank, ts);
-            /* update info string with timestep */
-            sprintf(info+info_len-4, "%4.4d", ts);
+
+            /* Update info string with timestep */
+            sprintf(info + info_len - 4, "%4.4d", ts);
             if (verbose)
                  printf("rank: %d     Writing sample data step %d...\n", my_rank, ts);
 
             if ((ret = PIOc_setframe(ncid, varid_foo, ts)))
                 ERR(ret);
+
             if ((ret = PIOc_write_darray(ncid, varid_foo, ioid, (PIO_Offset)elements_per_pe,
-                    foo, NULL)))
+                                         foo, NULL)))
                 ERR(ret);
-#if 1
+
             /* put_vara() a distributed global array, every process writes one row into
              * the nproc x X_DIM_LEN array.
              */
@@ -367,45 +381,40 @@ main(int argc, char **argv)
             count[0] = 1;
             if ((ret = PIOc_put_vara_int(ncid, varid_scalar, start, count, &ts)))
                 ERR(ret);
-#else
-            /* This code does not work for netcdf */
-            if ((ret = PIOc_setframe(ncid, varid_scalar, ts)))
-                ERR(ret);
-            if ((ret = PIOc_put_var_int(ncid, varid_scalar, &ts)))
-                ERR(ret);
-#endif
-
         }
-
 
         /* Close the netCDF file. */
         if (verbose)
             printf("rank: %d Closing the sample data file...\n", my_rank);
+
         if ((ret = PIOc_closefile(ncid)))
             ERR(ret);
     }
 
     destroy_data(foo);
     destroy_data(bar);
+
     /* Free the PIO decomposition. */
     if (verbose)
-	printf("rank: %d Freeing PIO decomposition...\n", my_rank);
+        printf("rank: %d Freeing PIO decomposition...\n", my_rank);
+
     if ((ret = PIOc_freedecomp(iosysid, ioid)))
-	ERR(ret);
+        ERR(ret);
 
     /* Finalize the IO system. */
     if (verbose)
-	printf("rank: %d Freeing PIO resources...\n", my_rank);
+        printf("rank: %d Freeing PIO resources...\n", my_rank);
+
     if ((ret = PIOc_finalize(iosysid)))
-	ERR(ret);
+        ERR(ret);
 
     /* Finalize the MPI library. */
     MPI_Finalize();
 
 #ifdef TIMING
     /* Finalize the GPTL timing library. */
-    if ((ret = GPTLfinalize ()))
-	return ret;
+    if ((ret = GPTLfinalize()))
+        return ret;
 #endif
 
     return 0;

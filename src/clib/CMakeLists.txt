@@ -164,7 +164,7 @@ else ()
 endif ()
 
 if (ADIOS_BP2NC_TEST)
-	target_compile_definitions (pioc
+  target_compile_definitions (pioc
     PUBLIC _ADIOS_BP2NC_TEST)
 endif ()
 
