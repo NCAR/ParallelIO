@@ -2170,7 +2170,7 @@ int PIOc_def_dim(int ncid, const char *name, PIO_Offset len, int *idp)
         LOG((2, "ADIOS define dimension %s with size %llu, id = %d",
                 name, (unsigned long long)len, file->num_dim_vars));
 
-        char dimname[128];
+        char dimname[PIO_MAX_NAME];
         snprintf(dimname, sizeof(dimname), "/__pio__/dim/%s", name);
         adios_define_var(file->adios_group, dimname, "", adios_unsigned_long, "", "", "");
 
@@ -2343,8 +2343,8 @@ int PIOc_def_var(int ncid, const char *name, nc_type xtype, int ndims,
                                                adios_integer, 1, &av->nc_type);
                 if (av->ndims != 0) /* If zero dimensions, do not write out __pio__/dims */
                 {
-                    char* dimnames[6];
-                    assert(av->ndims <= 6);
+                    char* dimnames[PIO_MAX_DIMS];
+                    assert(av->ndims <= PIO_MAX_DIMS);
                     for (int i = 0; i < av->ndims; i++)
                         dimnames[i] = file->dim_names[av->gdimids[i]];
                     adios_define_attribute_byvalue(file->adios_group, "__pio__/dims", av->name,

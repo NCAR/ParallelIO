@@ -457,7 +457,7 @@ Decomposition GetNewDecomposition(DecompositionMap& decompmap, string decompname
                                   ADIOS_FILE **infile, int ncid, std::vector<int>& wfiles,
                                   int nctype, int iosysid, int mpirank, int nproc)
 {
-    char ss[256];
+    char ss[PIO_MAX_NAME];
     sprintf(ss, "%s_%d", decompname.c_str(), nctype);
     string key(ss);
 
@@ -1085,15 +1085,15 @@ int ConvertVariableDarray(ADIOS_FILE **infile, int adios_varid, int ncid, Variab
     }
 
     /* Different decompositions at different frames */
-    char decomp_varname[128];
-    char frame_varname[128];
-    char fillval_varname[128];
-    char decompname[64];
+    char decomp_varname[PIO_MAX_NAME];
+    char frame_varname[PIO_MAX_NAME];
+    char fillval_varname[PIO_MAX_NAME];
+    char decompname[PIO_MAX_NAME];
     sprintf(decomp_varname, "decomp_id/%s", varname);
     sprintf(frame_varname, "frame_id/%s", varname);
     sprintf(fillval_varname, "fillval_id/%s", varname);
     int decomp_id, frame_id, fillval_exist;
-    char fillval_id[16];
+    char fillval_id[PIO_MAX_NAME];
 
     // TAHSIN -- THIS IS GETTING CONFUSING. NEED TO THINK ABOUT time steps.
     for (; ts < nsteps; ++ts)
@@ -1368,7 +1368,7 @@ void ConvertBPFile(string infilepath, string outfilename, int pio_iotype, int io
          */
         for (int i = 1; i <= wfiles.size(); i++)
         {
-            char ss[64];
+            char ss[PIO_MAX_NAME];
             sprintf(ss, "%d", wfiles[i - 1]);
             string fileid_str(ss);
 

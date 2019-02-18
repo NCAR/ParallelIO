@@ -834,11 +834,11 @@ typedef struct file_desc_t
     int64_t adios_group;
 
     /** ADIOS output transport method name, POSIX or MPI_AGGREGATE */
-    char transport[16];
+    char transport[PIO_MAX_NAME];
 
     /** Parameters for the transport method, required for MPI_AGGREGATE.
      * Created automatically from the application setup */
-    char params[128];
+    char params[PIO_MAX_NAME];
 
     /** Need to store the dim names for finding them and using them when defining variables */
     char *dim_names[PIO_MAX_DIMS];

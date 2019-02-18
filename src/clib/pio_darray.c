@@ -604,7 +604,7 @@ static int register_decomp(file_desc_t *file, int ioid)
 static int PIOc_write_decomp_adios(file_desc_t *file, int ioid)
 {
     io_desc_t *iodesc = pio_get_iodesc_from_id(ioid);
-    char name[32], ldim[32];
+    char name[PIO_MAX_NAME], ldim[PIO_MAX_NAME];
     sprintf(name, "/__pio__/decomp/%d", ioid);
 
     enum ADIOS_DATATYPES type = adios_integer;
@@ -810,14 +810,14 @@ static int PIOc_write_darray_adios(file_desc_t *file, int varid, int ioid,
     if (av->adios_varid == 0)
     {
         /* First we need to define the variable now that we know it's decomposition */
-        char ldims[256];
+        char ldims[PIO_MAX_NAME];
         sprintf(ldims, "%lld", arraylen);
         enum ADIOS_DATATYPES atype = av->adios_type;
 
         av->adios_varid = adios_define_var(file->adios_group, av->name, "", atype, ldims, "", "");
 
         /* Different decompositions at different frames */
-        char name_varid[256];
+        char name_varid[PIO_MAX_NAME];
         sprintf(name_varid, "decomp_id/%s", av->name);
         av->decomp_varid = adios_define_var(file->adios_group, name_varid, "", adios_integer, "1", "", "");
         sprintf(name_varid, "frame_id/%s", av->name);
@@ -828,7 +828,7 @@ static int PIOc_write_darray_adios(file_desc_t *file, int varid, int ioid,
         if (file->adios_iomaster == MPI_ROOT)
         {
             /* Some of the codes were moved to pio_nc.c */
-            char decompname[32];
+            char decompname[PIO_MAX_NAME];
             sprintf(decompname, "%d", ioid);
             adios_define_attribute(file->adios_group, "__pio__/decomp", av->name, adios_string, decompname, NULL);
             adios_define_attribute(file->adios_group, "__pio__/ncop", av->name, adios_string, "darray", NULL);

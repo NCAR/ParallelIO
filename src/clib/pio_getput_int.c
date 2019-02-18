@@ -111,7 +111,7 @@ int PIOc_put_att_tc(int ncid, int varid, const char *name, nc_type atttype,
 
         enum ADIOS_DATATYPES adios_type = PIOc_get_adios_type(atttype);
 
-        char path[256];
+        char path[PIO_MAX_NAME];
         if (varid != PIO_GLOBAL)
         {
             adios_var_desc_t *av = &(file->adios_vars[varid]);
@@ -1106,8 +1106,8 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                 }
                 adios_write_byid(file->adios_fh, av->adios_varid, buf);
 
-                char* dimnames[6];
-                assert(av->ndims <= 6);
+                char* dimnames[PIO_MAX_DIMS];
+                assert(av->ndims <= PIO_MAX_DIMS);
                 for (int i = 0; i < av->ndims; i++)
                 {
                     dimnames[i] = file->dim_names[av->gdimids[i]];
@@ -1133,7 +1133,7 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                 d_start = 1; // omit the unlimited time dimension from the adios variable definition
             }
 
-            char ldims[32], gdims[256], offs[256], tmp[256];
+            char ldims[PIO_MAX_NAME], gdims[PIO_MAX_NAME], offs[PIO_MAX_NAME], tmp[PIO_MAX_NAME];
 
             ldims[0] = '\0';
             for (int d = d_start; d < av->ndims; d++)
@@ -1147,7 +1147,7 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
             gdims[0] = '\0';
             for (int d = d_start; d < av->ndims; d++)
             {
-                char dimname[128];
+                char dimname[PIO_MAX_NAME];
                 snprintf(dimname, sizeof(dimname), "/__pio__/dim/%s", file->dim_names[av->gdimids[d]]);
                 strcat(gdims, dimname);
                 if (d < av->ndims - 1)
@@ -1171,8 +1171,8 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
 
             adios_write_byid(file->adios_fh, av->adios_varid, buf);
 
-            char* dimnames[6];
-            assert(av->ndims <= 6);
+            char* dimnames[PIO_MAX_DIMS];
+            assert(av->ndims <= PIO_MAX_DIMS);
 
             /* Record the NC dimensions in an attribute, including the unlimited dimension */
             for (int i = 0; i < av->ndims; i++)
