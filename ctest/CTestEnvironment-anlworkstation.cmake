@@ -47,3 +47,8 @@ endif ()
 if (DEFINED ENV{DISABLE_NETCDF})
     set (CTEST_CONFIGURE_OPTIONS "${CTEST_CONFIGURE_OPTIONS} -DWITH_NETCDF=OFF")
 endif ()
+
+# If ENABLE_ADIOS environment variable is set, then enable the use of ADIOS type
+if (DEFINED ENV{ENABLE_ADIOS})
+    set (CTEST_CONFIGURE_OPTIONS "${CTEST_CONFIGURE_OPTIONS} -DWITH_ADIOS=ON")
+endif ()

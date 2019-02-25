@@ -24,6 +24,15 @@
 #ifdef _PNETCDF
 #include <pnetcdf.h>
 #endif
+#ifdef _ADIOS
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <adios.h>
+#include <adios_read.h> /* We only need adios_type_size() at the moment */
+#define _ADIOS_ALL_PROCS 1 /* ADIOS: assume all procs are also IO tasks */
+#define ADIOS_PIO_MAX_DECOMPS 200 /* Maximum number of decomps */
+#endif
 
 #ifndef MPI_OFFSET
 /** MPI_OFFSET is an integer type of size sufficient to represent the
@@ -267,6 +276,11 @@
 #define PIO_FIRST_ERROR_CODE (-500)
 #define PIO_EBADIOTYPE  (-500)
 #define PIO_EINTERNAL  (-501)
+
+#ifdef _ADIOS
+/** Define error codes for ADIOS. */
+#define PIO_EADIOSREAD (-300)
+#endif
 
 /** ??? */
 #define PIO_REQ_NULL (NC_REQ_NULL-1)
@@ -736,6 +750,65 @@ typedef struct wmulti_buffer
     struct wmulti_buffer *next;
 } wmulti_buffer;
 
+#ifdef _ADIOS
+/** Variable definition information saved at pioc_def_var,
+ * so that ADIOS can define the variable at write time when
+ * local dimensions and offsets are known.
+ */
+typedef struct adios_var_desc_t
+{
+    /** Variable name */
+    char * name;
+
+    /** NC type give at def_var time */
+    int nc_type;
+
+    /** Type converted from NC type to adios type */
+    enum ADIOS_DATATYPES adios_type;
+
+    /** Number of dimensions */
+    int ndims;
+
+    /** Global dims (dim var ids) */
+    int * gdimids;
+
+    /** Number of attributes defined for this variable */
+    int nattrs;
+
+    /** ADIOS varID, if it has already been defined.
+     * We avoid defining again when writing multiple records over time
+     */
+    int64_t adios_varid; // 0: undefined yet
+
+    /* to handle PIOc_setframe with different decompositions */
+    int64_t decomp_varid;
+    int64_t frame_varid;
+    int64_t fillval_varid;
+} adios_var_desc_t;
+
+/* Track attributes */
+typedef struct adios_att_desc_t
+{
+    /** Attribute name */
+    char *att_name;
+
+    /** NC type give at def_att time */
+    nc_type att_type;
+
+    /** length of attribute value */
+    PIO_Offset att_len;
+
+    /** ncid of the attribute */
+    int att_ncid;
+
+    /** attribute varid */
+    int att_varid;
+
+    /** Type converted from NC type to adios type */
+    enum ADIOS_DATATYPES adios_type;
+} adios_att_desc_t;
+#endif
+
 /**
  * File descriptor structure.
  *
@@ -749,6 +822,54 @@ typedef struct file_desc_t
     /** The ncid returned for this file by the underlying library
      * (netcdf or pnetcdf). */
     int fh;
+
+#ifdef _ADIOS
+    /** Save the filename, now just for printing it at close */
+    char *filename;
+
+    /** ADIOS file handler is 64bit integer */
+    int64_t adios_fh;
+
+    /** Handler for ADIOS group (of variables) */
+    int64_t adios_group;
+
+    /** ADIOS output transport method name, POSIX or MPI_AGGREGATE */
+    char transport[PIO_MAX_NAME];
+
+    /** Parameters for the transport method, required for MPI_AGGREGATE.
+     * Created automatically from the application setup */
+    char params[PIO_MAX_NAME];
+
+    /** Need to store the dim names for finding them and using them when defining variables */
+    char *dim_names[PIO_MAX_DIMS];
+    PIO_Offset dim_values[PIO_MAX_DIMS];
+
+    /** Number of dim vars defined */
+    int num_dim_vars;
+
+    /** Variable information, max PIO_MAX_VARS variables allowed */
+    struct adios_var_desc_t adios_vars[PIO_MAX_VARS];
+
+    /** Number of vars defined */
+    int num_vars;
+
+    /** Number of global attributes defined. Needed to support PIOc_inq_nattrs() */
+    int num_gattrs;
+
+    /* ADIOS: assume all procs are also IO tasks */
+    int adios_iomaster;
+
+    /* Track attributes */
+    /** attribute information. Allow PIO_MAX_VARS for now. */
+    struct adios_att_desc_t adios_attrs[PIO_MAX_VARS];
+    int num_attrs;
+
+    int fillmode;
+
+    /** Array for decompositions that has been written already (must write only once) */
+    int n_written_ioids;
+    int written_ioids[ADIOS_PIO_MAX_DECOMPS]; /* written_ioids[N] = ioid if that decomp has been already written, */
+#endif
 
     /* File name - cached */
     char fname[PIO_MAX_NAME + 1];
@@ -811,7 +932,10 @@ enum PIO_IOTYPE
     PIO_IOTYPE_NETCDF4C = 3,
 
     /** NetCDF4 (HDF5) parallel */
-    PIO_IOTYPE_NETCDF4P = 4
+    PIO_IOTYPE_NETCDF4P = 4,
+
+    /** ADIOS parallel */
+    PIO_IOTYPE_ADIOS = 5
 };
 
 /**
@@ -1293,6 +1417,15 @@ extern "C" {
                             const PIO_Offset *stride, const PIO_Offset *imap, float *buf);
     int PIOc_get_varm_long(int ncid, int varid, const PIO_Offset *start, const PIO_Offset *count,
                            const PIO_Offset *stride, const PIO_Offset *imap, long *buf);
+
+#ifdef _ADIOS
+    enum ADIOS_DATATYPES PIOc_get_adios_type(nc_type xtype);
+    nc_type PIOc_get_nctype_from_adios_type(enum ADIOS_DATATYPES atype);
+#ifndef strdup
+    char *strdup(const char *str);
+#endif
+#endif
+
 #if defined(__cplusplus)
 }
 #endif

@@ -29,6 +29,8 @@ option (PIO_MICRO_TIMING     "Enable internal micro timers"                 OFF)
 option (PIO_SAVE_DECOMPS     "Dump the decomposition information"           OFF)
 option (WITH_PNETCDF         "Require the use of PnetCDF"                   ON)
 option (WITH_NETCDF          "Require the use of NetCDF"                    ON)
+option (WITH_ADIOS           "Require the use of ADIOS"                     OFF)
+option (ADIOS_BP2NC_TEST     "Enable testing of BP to NetCDF conversion"    ON)
 
 # Set a variable that appears in the config.h.in file.
 if(PIO_USE_MALLOC)
@@ -123,7 +125,8 @@ set (PIO_FILESYSTEM_HINTS IGNORE CACHE STRING "Filesystem hints (lustre or gpfs)
 option (PIO_ENABLE_TESTS  "Enable the testing builds"                           ON)
 option (PIO_ENABLE_LARGE_TESTS  "Enable large (file, processes) tests"         OFF)
 option (PIO_VALGRIND_CHECK  "Enable memory leak check using valgrind"           OFF)
-option (PIO_TEST_CLOSE_OPEN_FOR_SYNC  "PIO fortran tests will close+open for sync"  OFF)
+include(CMakeDependentOption)
+cmake_dependent_option (PIO_TEST_CLOSE_OPEN_FOR_SYNC  "PIO fortran tests will close+open for sync" ON "WITH_ADIOS" OFF)
 
 #==============================================================================
 #  BACKWARDS COMPATIBILITY
@@ -213,6 +216,9 @@ add_custom_target (tests)
 # Custom "check" target that depends upon "tests"
 add_custom_target (check COMMAND ${CMAKE_CTEST_COMMAND})
 add_dependencies (check tests)
+
+# Tools
+add_subdirectory(tools)
 
 # Tests
 if (PIO_ENABLE_TESTS)

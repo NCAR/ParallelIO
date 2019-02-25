@@ -2,6 +2,7 @@
  * Support functions for the PIO library.
  */
 #include <config.h>
+#include <stdio.h>
 #if PIO_ENABLE_LOGGING
 #include <stdarg.h>
 #include <unistd.h>
@@ -10,6 +11,10 @@
 #include <pio_internal.h>
 
 #include <execinfo.h>
+
+#ifdef _ADIOS
+#include <dirent.h>
+#endif
 
 #define VERSNO 2001
 
@@ -36,6 +41,65 @@ extern int pio_next_ncid;
 extern int default_error_handler;
 
 extern bool fortran_order;
+
+#ifdef _ADIOS
+/**
+ * Utility function to remove a directory and all its contents.
+ */
+int remove_directory(const char *path)
+{
+    DIR *d = opendir(path);
+    size_t path_len = strlen(path);
+    int r = -1;
+
+    if (d)
+    {
+        struct dirent *p;
+
+        r = 0;
+
+        while (!r && (p = readdir(d)))
+        {
+            int r2 = -1;
+            char *buf;
+            size_t len;
+
+            /* Skip the names "." and ".." as we don't want to recurse on them. */
+            if (!strcmp(p->d_name, ".") || !strcmp(p->d_name, ".."))
+                continue;
+
+            len = path_len + strlen(p->d_name) + 2;
+            buf = malloc(len);
+
+            if (buf)
+            {
+                struct stat statbuf;
+
+                snprintf(buf, len, "%s/%s", path, p->d_name);
+
+                if (!stat(buf, &statbuf))
+                {
+                    if (S_ISDIR(statbuf.st_mode))
+                        r2 = remove_directory(buf);
+                    else
+                        r2 = unlink(buf);
+                }
+
+                free(buf);
+            }
+
+            r = r2;
+        }
+
+        closedir(d);
+    }
+
+    if (!r)
+        r = rmdir(path);
+
+    return r;
+}
+#endif
 
 /**
  * Return a string description of an error code. If zero is passed,
@@ -79,6 +143,11 @@ int PIOc_strerror(int pioerr, char *errmsg)
         case PIO_EBADIOTYPE:
             strcpy(errmsg, "Bad IO type");
             break;
+#ifdef _ADIOS
+        case PIO_EADIOSREAD:
+            strcpy(errmsg, "ADIOS IO type does not support read operations");
+            break;
+#endif
         default:
             strcpy(errmsg, "Unknown Error: Unrecognized error code");
         }
@@ -1869,6 +1938,96 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
         }
     }
 
+    /* ADIOS: assume all procs are also IO tasks */
+#ifdef _ADIOS
+    if (file->iotype == PIO_IOTYPE_ADIOS)
+    {
+        LOG((2, "Calling adios_open mode = %d", file->mode));
+        /* 
+         * Create a new ADIOS variable group, names the same as the
+         * filename for lack of better solution here
+         */
+        int len = strlen(filename);
+        file->filename = malloc(len + 3 + 3);
+        if (file->filename == NULL)
+            return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__);
+        sprintf(file->filename, "%s.bp", filename);
+
+        ierr = PIO_NOERR;
+        if (file->mode & PIO_NOCLOBBER) /* Check adios file/folder exists */
+        {
+            struct stat sf, sd;
+            char *filefolder = malloc(strlen(file->filename) + 6);
+            sprintf(filefolder, "%s.dir", file->filename);
+            if (0 == stat(file->filename, &sf) || 0 == stat(filefolder, &sd))
+                ierr = PIO_EEXIST;
+            free(filefolder);
+        }
+        else
+        {
+            /* Delete directory filename.bp.dir if it exists */
+            if (ios->union_rank == 0)
+            {
+                char bpdirname[PIO_MAX_NAME + 1];
+                assert(len + 7 <= PIO_MAX_NAME);
+                sprintf(bpdirname, "%s.bp.dir", filename);
+                struct stat sd;
+                if (0 == stat(bpdirname, &sd))
+                    remove_directory(bpdirname);
+            }
+
+            /* Make sure that no task is trying to operate on the
+             * directory while it is being deleted */
+            if ((mpierr = MPI_Barrier(ios->union_comm)))
+                return check_mpi(ios, file, mpierr, __FILE__, __LINE__);
+        }
+
+        if (PIO_NOERR == ierr)
+        {
+            adios_declare_group(&file->adios_group, file->filename, NULL, adios_stat_default);
+
+            int do_aggregate = (ios->num_comptasks != ios->num_iotasks);
+            if (do_aggregate)
+            {
+                sprintf(file->transport, "%s", "MPI_AGGREGATE");
+                sprintf(file->params, "num_aggregators=%d,random_offset=1,striping_count=1,have_metadata_file=0",
+                        ios->num_iotasks);
+            }
+            else
+            {
+                int num_adios_io_tasks = ios->num_comptasks / 16;
+                if (num_adios_io_tasks == 0)
+                    num_adios_io_tasks = ios->num_comptasks;
+                sprintf(file->transport, "%s", "MPI_AGGREGATE");
+                sprintf(file->params, "num_aggregators=%d,random_offset=1,striping_count=1,have_metadata_file=0",
+                        num_adios_io_tasks);
+            }
+
+            adios_select_method(file->adios_group, file->transport, file->params, "");
+            ierr = adios_open(&file->adios_fh, file->filename, file->filename, "w", ios->union_comm);
+
+            memset(file->dim_names, 0, sizeof(file->dim_names));
+
+            file->num_dim_vars = 0;
+            file->num_vars = 0;
+            file->num_gattrs = 0;
+            file->fillmode = NC_NOFILL;
+            file->n_written_ioids = 0;
+
+            if (ios->union_rank==0)
+                file->adios_iomaster = MPI_ROOT;
+            else
+                file->adios_iomaster = MPI_PROC_NULL;
+
+            /* Track attributes */
+            file->num_attrs = 0;
+
+            int64_t vid = adios_define_var(file->adios_group, "/__pio__/info/nproc", "", adios_integer, "", "", "");
+            adios_write_byid(file->adios_fh, vid, &ios->num_uniontasks);
+        }
+    }
+#endif
+ 
     /* If this task is in the IO component, do the IO. */
     if (ios->ioproc)
     {
@@ -2133,7 +2292,7 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
     /* User must provide valid input for these parameters. */
     if (!ncidp || !iotype || !filename)
         return pio_err(ios, NULL, PIO_EINVAL, __FILE__, __LINE__);
-    if (*iotype < PIO_IOTYPE_PNETCDF || *iotype > PIO_IOTYPE_NETCDF4P)
+    if (*iotype < PIO_IOTYPE_PNETCDF || *iotype > PIO_IOTYPE_ADIOS)
         return pio_err(ios, NULL, PIO_EINVAL, __FILE__, __LINE__);
 
     LOG((2, "PIOc_openfile_retry iosysid = %d iotype = %d filename = %s mode = %d retry = %d",
@@ -2147,6 +2306,22 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
     file->fh = -1;
     strncpy(file->fname, filename, PIO_MAX_NAME);
     file->iotype = *iotype;
+#ifdef _ADIOS
+    if (file->iotype == PIO_IOTYPE_ADIOS)
+    {
+#ifdef _PNETCDF
+        file->iotype = PIO_IOTYPE_PNETCDF;
+#else
+#ifdef _NETCDF4
+#ifdef _MPISERIAL
+        file->iotype = PIO_IOTYPE_NETCDF4C;
+#else
+        file->iotype = PIO_IOTYPE_NETCDF4P;
+#endif
+#endif
+#endif
+    }
+#endif
     file->iosystem = ios;
     file->mode = mode;
     /*
@@ -2519,7 +2694,7 @@ int pioc_change_def(int ncid, int is_enddef)
         }
 #endif /* _PNETCDF */
 #ifdef _NETCDF
-        if (file->iotype != PIO_IOTYPE_PNETCDF && file->do_io)
+        if (file->iotype != PIO_IOTYPE_PNETCDF && file->iotype != PIO_IOTYPE_ADIOS && file->do_io)
         {
             if (is_enddef)
             {
@@ -2570,6 +2745,11 @@ int iotype_is_valid(int iotype)
     if (iotype == PIO_IOTYPE_PNETCDF)
         ret++;
 #endif /* _PNETCDF */
+
+#ifdef _ADIOS
+    if (iotype == PIO_IOTYPE_ADIOS)
+        ret++;
+#endif
 
     return ret;
 }
@@ -2909,3 +3089,115 @@ int __wrap_ADIOI_Type_create_hindexed_x(int count,
     return ret;
 }
 #endif
+
+#ifdef _ADIOS
+enum ADIOS_DATATYPES PIOc_get_adios_type(nc_type xtype)
+{
+    enum ADIOS_DATATYPES t;
+    switch (xtype)
+    {
+    case NC_BYTE:
+        t = adios_byte;
+        break;
+    case NC_CHAR:
+        t = adios_byte;
+        break;
+    case NC_SHORT:
+        t = adios_short;
+        break;
+    case NC_INT:
+        t = adios_integer;
+        break;
+    case NC_FLOAT:
+        t = adios_real;
+        break;
+    case NC_DOUBLE:
+        t = adios_double;
+        break;
+    case NC_UBYTE:
+        t = adios_unsigned_byte;
+        break;
+    case NC_USHORT:
+        t = adios_unsigned_short;
+        break;
+    case NC_UINT:
+        t = adios_unsigned_integer;
+        break;
+    case NC_INT64:
+        t = adios_long;
+        break;
+    case NC_UINT64:
+        t = adios_unsigned_long;
+        break;
+    case NC_STRING:
+        t = adios_string;
+        break;
+    default:
+        t = adios_byte;
+        break;
+    }
+
+    return t;
+}
+
+nc_type PIOc_get_nctype_from_adios_type(enum ADIOS_DATATYPES atype)
+{
+    nc_type t;
+    switch (atype)
+    {
+    case adios_byte:
+        t = NC_BYTE;
+        break;
+    case adios_short:
+        t = NC_SHORT;
+        break;
+    case adios_integer:
+        t = NC_INT;
+        break;
+    case adios_real:
+        t = NC_FLOAT;
+        break;
+    case adios_double:
+        t = NC_DOUBLE;
+        break;
+    case adios_unsigned_byte:
+        t = NC_UBYTE;
+        break;
+    case adios_unsigned_short:
+        t = NC_USHORT;
+        break;
+    case adios_unsigned_integer:
+        t = NC_UINT;
+        break;
+    case adios_long:
+        t = NC_INT64;
+        break;
+    case adios_unsigned_long:
+        t = NC_UINT64;
+        break;
+    case adios_string:
+        t = NC_CHAR;
+        break;
+    default:
+        t = NC_BYTE;
+        break;
+    }
+
+    return t;
+}
+
+#ifndef strdup
+char *strdup(const char *str)
+{
+    int n = strlen(str) + 1;
+    char *dup = (char*)malloc(n);
+    if (dup)
+    {
+        strcpy(dup, str);
+    }
+
+    return dup;
+}
+#endif
+
+#endif /* _ADIOS */

@@ -103,6 +103,49 @@ int PIOc_put_att_tc(int ncid, int varid, const char *name, nc_type atttype,
              atttype_len, memtype_len));
     }
 
+    /* ADIOS: assume all procs are also IO tasks */
+#ifdef _ADIOS
+    if (file->iotype == PIO_IOTYPE_ADIOS)
+    {
+        LOG((2, "ADIOS define attribute %s, varid %d, type %d", name, varid, atttype));
+
+        enum ADIOS_DATATYPES adios_type = PIOc_get_adios_type(atttype);
+
+        char path[PIO_MAX_NAME];
+        if (varid != PIO_GLOBAL)
+        {
+            adios_var_desc_t *av = &(file->adios_vars[varid]);
+            strncpy(path, av->name, sizeof(path));
+            ++file->adios_vars[varid].nattrs;
+        }
+        else
+        {
+            strncpy(path, "pio_global", sizeof(path));
+            file->num_gattrs++;
+        }
+
+        /* Tack attributes */
+        assert(file->num_attrs < PIO_MAX_VARS);
+        int num_attrs = file->num_attrs;
+        file->adios_attrs[num_attrs].att_name = strdup(name);
+        file->adios_attrs[num_attrs].att_len = len;
+        file->adios_attrs[num_attrs].att_type = atttype;
+        file->adios_attrs[num_attrs].att_varid = varid;
+        file->adios_attrs[num_attrs].att_ncid = ncid;
+        file->adios_attrs[num_attrs].adios_type = adios_type;
+        file->num_attrs++;
+
+        /*  Workaround for adios 1.12.0, where adios_define_attribute_byvalue */
+        /*  throws an error on a string attribute of ""                       */
+        if (adios_type == adios_string || atttype == NC_CHAR)
+            adios_define_attribute(file->adios_group, name, path, adios_string, op, NULL);
+        else
+            adios_define_attribute_byvalue(file->adios_group, name, path, adios_type, 1, op);
+
+        ierr = 0;
+    }
+#endif
+
     /* If this is an IO task, then call the netCDF function. */
     if (ios->ioproc)
     {
@@ -138,7 +181,7 @@ int PIOc_put_att_tc(int ncid, int varid, const char *name, nc_type atttype,
         }
 #endif /* _PNETCDF */
 
-        if (file->iotype != PIO_IOTYPE_PNETCDF && file->do_io)
+        if (file->iotype != PIO_IOTYPE_PNETCDF && file->iotype != PIO_IOTYPE_ADIOS && file->do_io)
         {
             switch(memtype)
             {
@@ -1002,6 +1045,157 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
         LOG((2, "PIOc_put_vars_tc complete bcast from comproot ndims = %d", ndims));
     }
 
+    /* ADIOS: assume all procs are also IO tasks */
+#ifdef _ADIOS
+    if (file->iotype == PIO_IOTYPE_ADIOS)
+    {
+        if (varid < 0 || varid >= file->num_vars)
+            return pio_err(file->iosystem, file, PIO_EBADID, __FILE__, __LINE__);
+
+        /* First we need to define the variable now that we know it's decomposition */
+        adios_var_desc_t *av = &(file->adios_vars[varid]);
+
+        /* Write ADIOS with memory type since ADIOS does not do conversions.
+         * Add an attribute describing the target output type (defined type).
+         */
+        if (xtype == NC_NAT)
+            xtype = vartype;
+
+        if (xtype == PIO_LONG_INTERNAL)
+        {
+            int typesize = sizeof(long int);
+            if (typesize == 4)
+                xtype = PIO_INT;
+            else
+                xtype = PIO_INT64;
+        }
+
+        if (xtype != vartype)
+            av->adios_type = PIOc_get_adios_type(xtype);
+
+        /* Scalars have to be handled differently. */
+        if (av->ndims == 0)
+        {
+            /* This is a scalar var. */
+            pioassert(!start && !count && !stride, "expected NULLs", __FILE__, __LINE__);
+
+            /* Only the IO master does the IO, so we are not really
+             * getting parallel IO here. */
+            if (file->adios_iomaster == MPI_ROOT)
+            {
+                if (av->adios_varid == 0)
+                {
+                    av->adios_varid = adios_define_var(file->adios_group, av->name, "",
+                                                       av->adios_type, "", "", "");
+                }
+                adios_write_byid(file->adios_fh, av->adios_varid, buf);
+            }
+        }
+        else if (av->ndims == 1 && file->dim_values[av->gdimids[0]] == PIO_UNLIMITED)
+        {
+            /* This is a scalar variable over time */
+
+            /* Only the IO master does the IO, so we are not really
+             * getting parallel IO here. */
+            if (file->adios_iomaster == MPI_ROOT)
+            {
+                if (av->adios_varid == 0)
+                {
+                    av->adios_varid = adios_define_var(file->adios_group, av->name, "",
+                                                       av->adios_type, "", "", "");
+                }
+                adios_write_byid(file->adios_fh, av->adios_varid, buf);
+
+                char* dimnames[PIO_MAX_DIMS];
+                assert(av->ndims <= PIO_MAX_DIMS);
+                for (int i = 0; i < av->ndims; i++)
+                {
+                    dimnames[i] = file->dim_names[av->gdimids[i]];
+                }
+
+                adios_define_attribute_byvalue(file->adios_group, "__pio__/dims", av->name,
+                                               adios_string_array, av->ndims, dimnames);
+            }
+        }
+        else
+        {
+            /* This is not a scalar var. */
+            if (stride_present)
+            {
+                LOG((2, "ADIOS does not support striding %s:%s\n"
+                        "Variable %s will be corrupted in the output"
+                        , __FILE__, __func__, av->name));
+            }
+
+            int d_start = 0;
+            if (file->dim_values[av->gdimids[0]] == PIO_UNLIMITED)
+            {
+                d_start = 1; // omit the unlimited time dimension from the adios variable definition
+            }
+
+            char ldims[PIO_MAX_NAME], gdims[PIO_MAX_NAME], offs[PIO_MAX_NAME], tmp[PIO_MAX_NAME];
+
+            ldims[0] = '\0';
+            for (int d = d_start; d < av->ndims; d++)
+            {
+                sprintf(tmp, "%lld", count[d]);
+                strcat(ldims, tmp);
+                if (d < av->ndims - 1)
+                    strcat(ldims, ",");
+            }
+
+            gdims[0] = '\0';
+            for (int d = d_start; d < av->ndims; d++)
+            {
+                char dimname[PIO_MAX_NAME];
+                snprintf(dimname, sizeof(dimname), "/__pio__/dim/%s", file->dim_names[av->gdimids[d]]);
+                strcat(gdims, dimname);
+                if (d < av->ndims - 1)
+                    strcat(gdims, ",");
+            }
+
+            offs[0] = '\0';
+            for (int d = d_start; d < av->ndims; d++)
+            {
+                sprintf(tmp, "%lld", start[d]);
+                strcat(offs, tmp);
+                if (d < av->ndims - 1)
+                    strcat(offs, ",");
+            }
+
+            /* PIOc_put_var may be called multiple times with different start/count values
+             * for a variable. ADIOS should output data for each of those calls not just
+             * when the variable is not defined */
+            av->adios_varid = adios_define_var(file->adios_group, av->name, "",
+                                               av->adios_type, ldims, gdims, offs);
+
+            adios_write_byid(file->adios_fh, av->adios_varid, buf);
+
+            char* dimnames[PIO_MAX_DIMS];
+            assert(av->ndims <= PIO_MAX_DIMS);
+
+            /* Record the NC dimensions in an attribute, including the unlimited dimension */
+            for (int i = 0; i < av->ndims; i++)
+            {
+                dimnames[i] = file->dim_names[av->gdimids[i]];
+            }
+
+            adios_define_attribute_byvalue(file->adios_group, "__pio__/dims", av->name,
+                                           adios_string_array, av->ndims, dimnames);
+        }
+
+        if (file->adios_iomaster == MPI_ROOT)
+        {
+            adios_define_attribute_byvalue(file->adios_group, "__pio__/ndims", av->name,
+                                           adios_integer, 1, &av->ndims);
+            adios_define_attribute_byvalue(file->adios_group, "__pio__/nctype", av->name,
+                                           adios_integer, 1, &av->nc_type);
+            adios_define_attribute(file->adios_group, "__pio__/ncop", av->name,
+                                           adios_string, "put_var", NULL);
+        }
+    }
+#endif
+
     /* If this is an IO task, then call the netCDF function. */
     if (ios->ioproc)
     {
@@ -1125,7 +1319,7 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
         }
 #endif /* _PNETCDF */
 
-        if (file->iotype != PIO_IOTYPE_PNETCDF && file->do_io)
+        if (file->iotype != PIO_IOTYPE_PNETCDF && file->iotype != PIO_IOTYPE_ADIOS && file->do_io)
         {
             LOG((2, "PIOc_put_vars_tc calling netcdf function file->iotype = %d",
                  file->iotype));

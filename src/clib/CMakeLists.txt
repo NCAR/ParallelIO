@@ -147,6 +147,27 @@ else ()
     PUBLIC _NOPNETCDF)
 endif ()
 
+#===== ADIOS-C =====
+if (WITH_ADIOS)
+  find_package (ADIOS "1.10.0")
+endif ()
+if (ADIOS_FOUND)
+  target_include_directories (pioc
+    PUBLIC ${ADIOS_INCLUDE_DIRS})
+  target_compile_definitions (pioc
+    PUBLIC _ADIOS)
+  target_link_libraries (pioc
+    PUBLIC ${ADIOS_LIBRARIES} adios2pio-nm-lib)
+else ()
+  target_compile_definitions (pioc
+    PUBLIC _NOADIOS)
+endif ()
+
+if (ADIOS_BP2NC_TEST)
+  target_compile_definitions (pioc
+    PUBLIC _ADIOS_BP2NC_TEST)
+endif ()
+
 #===== Add EXTRAs =====
 target_include_directories (pioc
   PUBLIC ${PIO_C_EXTRA_INCLUDE_DIRS})
