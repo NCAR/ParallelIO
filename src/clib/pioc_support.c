@@ -1879,7 +1879,7 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
 
     /* A valid iotype must be specified. */
     if (!iotype_is_valid(*iotype))
-        return pio_err(ios, NULL, PIO_EINVAL, __FILE__, __LINE__);
+        return pio_err(ios, NULL, PIO_EBADIOTYPE, __FILE__, __LINE__);
 
     LOG((1, "PIOc_createfile iosysid = %d iotype = %d filename = %s mode = %d",
          iosysid, *iotype, filename, mode));
