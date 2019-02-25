@@ -2416,7 +2416,8 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
 #endif
 
         default:
-            return pio_err(ios, file, PIO_EBADIOTYPE, __FILE__, __LINE__);
+            free(file);
+            return pio_err(ios, NULL, PIO_EBADIOTYPE, __FILE__, __LINE__);
         }
 
         /* If the caller requested a retry, and we failed to open a
