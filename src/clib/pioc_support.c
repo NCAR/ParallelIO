@@ -2292,8 +2292,10 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
     /* User must provide valid input for these parameters. */
     if (!ncidp || !iotype || !filename)
         return pio_err(ios, NULL, PIO_EINVAL, __FILE__, __LINE__);
-    if (*iotype < PIO_IOTYPE_PNETCDF || *iotype > PIO_IOTYPE_ADIOS)
-        return pio_err(ios, NULL, PIO_EINVAL, __FILE__, __LINE__);
+
+    /* A valid iotype must be specified. */
+    if (!iotype_is_valid(*iotype))
+        return pio_err(ios, NULL, PIO_EBADIOTYPE, __FILE__, __LINE__);
 
     LOG((2, "PIOc_openfile_retry iosysid = %d iotype = %d filename = %s mode = %d retry = %d",
          iosysid, *iotype, filename, mode, retry));
