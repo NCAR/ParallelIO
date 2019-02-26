@@ -174,7 +174,7 @@ int main(int argc, char **argv)
             if (PIOc_openfile(iosysid_world, &ncid, &flavor[i], NULL, PIO_WRITE) != PIO_EINVAL)
                 return ERR_WRONG;
             int bad_iotype = flavor[i] + TEST_VAL_42;
-            if (PIOc_openfile(iosysid_world, &ncid, &bad_iotype, fn[0], PIO_WRITE) != PIO_EINVAL)
+            if (PIOc_openfile(iosysid_world, &ncid, &bad_iotype, fn[0], PIO_WRITE) != PIO_EBADIOTYPE)
                 return ERR_WRONG;
 
             /* Open the first file with world iosystem. */

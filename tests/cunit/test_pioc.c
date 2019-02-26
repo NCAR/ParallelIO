@@ -1125,7 +1125,7 @@ int test_deletefile(int iosysid, int num_flavors, int *flavor, int my_rank)
         printf("%d testing delete for file %s with format %d...\n",
                my_rank, filename, flavor[fmt]);
         int bad_iotype = TEST_VAL_42;
-        if (PIOc_createfile(iosysid, &ncid, &bad_iotype, filename, PIO_CLOBBER) != PIO_EINVAL)
+        if (PIOc_createfile(iosysid, &ncid, &bad_iotype, filename, PIO_CLOBBER) != PIO_EBADIOTYPE)
             return ERR_WRONG;
         if ((ret = PIOc_createfile(iosysid, &ncid, &(flavor[fmt]), filename, PIO_CLOBBER)))
             ERR(ret);
