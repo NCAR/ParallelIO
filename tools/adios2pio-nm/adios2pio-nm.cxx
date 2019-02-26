@@ -5,7 +5,7 @@
 #include <iostream>
 #include "adios2pio-nm-lib.h"
 
-void usage_nm(string prgname)
+static void usage_nm(const string &prgname)
 {
     cout << "Usage: " << prgname << " bp_file  nc_file  pio_io_type\n";
     cout << "   bp file   :  data produced by PIO with ADIOS format\n";
