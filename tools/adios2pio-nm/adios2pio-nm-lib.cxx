@@ -1532,16 +1532,6 @@ void ConvertBPFile(string infilepath, string outfilename, int pio_iotype, int io
     }
 }
 
-void usage_nm(string prgname)
-{
-    cout << "Usage: " << prgname << " bp_file  nc_file  pio_io_type\n";
-    cout << "   bp file   :  data produced by PIO with ADIOS format\n";
-    cout << "   nc file   :  output file name after conversion\n";
-    cout << "   pio format:  output PIO_IO_TYPE. Supported parameters:\n";
-    cout << "                pnetcdf  netcdf  netcdf4c  netcdf4p   or:\n";
-    cout << "                   1       2        3         4\n";
-}
-
 enum PIO_IOTYPE GetIOType_nm(string t)
 {
     enum PIO_IOTYPE iotype = PIO_IOTYPE_NETCDF;
