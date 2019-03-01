@@ -11,7 +11,7 @@ namespace adios2pio_utils{
 
 class ArgParser{
   public:
-    ArgParser() = default;
+    ArgParser(MPI_Comm comm);
     ArgParser &add_opt( const std::string &opt,
                         const std::string &help_str);
     void parse(int argc, char *argv[]);
@@ -23,6 +23,9 @@ class ArgParser{
     std::map<std::string, std::string> opts_map_;
     std::map<std::string, std::string> arg_map_;
     std::string prog_name_;
+    MPI_Comm comm_;
+    const int COMM_ROOT = 0;
+    bool is_root_;
 };
 
 template<typename T>

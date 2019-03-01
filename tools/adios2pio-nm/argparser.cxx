@@ -10,6 +10,16 @@
 
 namespace adios2pio_utils{
 
+ArgParser::ArgParser(MPI_Comm comm):comm_(comm), is_root_(false)
+{
+    int rank;
+    MPI_Comm_rank(comm, &rank);
+    if (rank == COMM_ROOT)
+    {
+        is_root_ = true;
+    }
+}
+
 ArgParser &ArgParser::add_opt(const std::string &opt,
                     const std::string &help_str)
 {
@@ -32,8 +42,11 @@ void ArgParser::parse(int argc, char *argv[])
         {
             if (opts_map_.count(match.str(1)) != 1)
             {
-                std::cerr << "Error: Invalid option, "
-                          << match.str(1).c_str() << "\n";
+                if (is_root_)
+                {
+                    std::cerr << "Error: Invalid option, "
+                              << match.str(1).c_str() << "\n";
+                }
                 throw std::runtime_error("Invalid option");
             }
             /* FIXME: No validation performed on the option value
@@ -49,7 +62,11 @@ void ArgParser::parse(int argc, char *argv[])
         }
         else
         {
-            std::cerr << "Error: Unable to parse option : " << argvi << "\n";
+            if (is_root_)
+            {
+                std::cerr << "Error: Unable to parse option : "
+                          << argvi << "\n";
+            }
             throw std::runtime_error("Invalid option");
         }
     }
@@ -62,6 +79,10 @@ bool ArgParser::has_arg(const std::string &opt) const
 
 void ArgParser::print_usage(std::ostream &ostr) const
 {
+    if (!is_root_)
+    {
+        return;
+    }
     ostr << "Usage : " << prog_name_ << " [OPTIONAL ARGS] \n";
     ostr << "Optional Arguments :\n";
     for (std::map<std::string, std::string>::const_iterator
