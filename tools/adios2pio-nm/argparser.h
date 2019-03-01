@@ -26,6 +26,7 @@ class ArgParser{
     MPI_Comm comm_;
     const int COMM_ROOT = 0;
     bool is_root_;
+    mutable bool printed_usage_;
 };
 
 template<typename T>

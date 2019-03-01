@@ -10,7 +10,8 @@
 
 namespace adios2pio_utils{
 
-ArgParser::ArgParser(MPI_Comm comm):comm_(comm), is_root_(false)
+ArgParser::ArgParser(MPI_Comm comm):comm_(comm), is_root_(false),
+                                    printed_usage_(false) 
 {
     int rank;
     MPI_Comm_rank(comm, &rank);
@@ -79,10 +80,12 @@ bool ArgParser::has_arg(const std::string &opt) const
 
 void ArgParser::print_usage(std::ostream &ostr) const
 {
-    if (!is_root_)
+    if (printed_usage_ || !is_root_)
     {
         return;
     }
+    /* Ensure we only print usage once */
+    printed_usage_ = true;
     ostr << "Usage : " << prog_name_ << " [OPTIONAL ARGS] \n";
     ostr << "Optional Arguments :\n";
     for (std::map<std::string, std::string>::const_iterator
