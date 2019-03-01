@@ -6,6 +6,7 @@
 #include <vector>
 #include <map>
 #include <stdexcept>
+#include <regex>
 #include <unistd.h> // usleep
 #include <mpi.h>
 #include <sys/types.h>
@@ -1643,6 +1644,87 @@ int ConvertBPToNC(const string &infilepath, const string &outfilename,
     }
 
     TimerFinalize_nm();
+
+    return ret;
+}
+
+/* Find BP directories, named "*.bp.dir", in bppdir and the
+ * corresponding file name prefixes to be used for converted
+ * files
+ */
+static int FindBPDirs(const string &bppdir,
+                      vector<string> &bpdirs,
+                      vector<string> &conv_fname_prefixes)
+{
+    DIR *pdir = opendir(bppdir.c_str());
+    if (!pdir)
+    {
+        fprintf(stderr, "Folder %s does not exist.\n", bppdir.c_str());
+        return -1;
+    }
+
+    const string BPDIR_NAME_RGX_STR("(.*)([.]nc)[.]bp[.]dir");
+    regex bpdir_name_rgx(BPDIR_NAME_RGX_STR.c_str());
+    struct dirent *pde = NULL;
+    while ((pde = readdir(pdir)) != NULL)
+    {
+        smatch match;
+        string dname(pde->d_name);
+        assert(pde);
+        /* Add dirs named "*.bp.dir" to bpdirs */
+        if ((pde->d_type == DT_DIR) &&
+            regex_search(dname, match, bpdir_name_rgx) &&
+            (match.size() == 3))
+        {
+            conv_fname_prefixes.push_back(match.str(1));
+            const std::string NC_SUFFIX(".nc");
+            const std::string BP_SUFFIX(".bp");
+            bpdirs.push_back(match.str(1) + match.str(2) + BP_SUFFIX);
+        }
+    }
+
+    closedir(pdir);
+    return 0;
+}
+
+/* Convert all BP files in "bppdir" to NetCDF files
+ * bppdir:  Directory containing multiple directories, named "*.bp.dir",
+ *          each directory containing BP files corresponding to a single
+ *          file. This is the "BP Parent Directory".
+ * piotype: The PIO IO type used for converting BP files to NetCDF using PIO
+ * comm:    The MPI communicator to be used for conversion
+ *
+ * The function looks for all directories in bppdir named "*.bp.dir"
+ * and converts them, one at a time, to NetCDF files
+ */
+int MConvertBPToNC(const string &bppdir, const string &piotype,
+                    MPI_Comm comm)
+{
+    int ret = 0;
+    vector<string> bpdirs;
+    vector<string> conv_fname_prefixes;
+    const std::string CONV_FNAME_SUFFIX(".nc");
+
+    ret = FindBPDirs(bppdir, bpdirs, conv_fname_prefixes);
+    if (ret != 0)
+    {
+        fprintf(stderr, "Unable to read directory, %s\n", bppdir.c_str());
+        return -1;
+    }
+
+    assert(bpdirs.size() == conv_fname_prefixes.size());
+    for (size_t i = 0; i < bpdirs.size(); i++)
+    {
+        ret = ConvertBPToNC(bpdirs[i],
+                conv_fname_prefixes[i] + CONV_FNAME_SUFFIX,
+                piotype, comm);
+        if (ret != 0)
+        {
+            fprintf(stderr, "Unable to convert BP file (%s) to NetCDF\n",
+                    bpdirs[i].c_str());
+            return -1;
+        }
+    }
 
     return ret;
 }
