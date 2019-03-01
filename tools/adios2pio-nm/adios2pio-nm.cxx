@@ -3,6 +3,7 @@
 #include <gptl.h>
 #endif
 #include <iostream>
+#include <regex>
 #include "adios2pio-nm-lib.h"
 #include "argparser.h"
 
@@ -18,17 +19,43 @@ static int get_user_options(
               int argc, char *argv[],
               std::string &ifile, std::string &ofile, std::string &otype)
 {
+    const std::string DEFAULT_PIO_FORMAT("pnetcdf");
     ap.parse(argc, argv);
-    if (  !ap.has_arg("bp-file") ||
-          !ap.has_arg("nc-file") ||
-          !ap.has_arg("pio-format") )
+    if (!ap.has_arg("bp-file"))
     {
         ap.print_usage(std::cerr);
         return 1;
     }
     ifile = ap.get_arg<std::string>("bp-file");
-    ofile = ap.get_arg<std::string>("nc-file");
-    otype = ap.get_arg<std::string>("pio-format");
+    if (ap.has_arg("nc-file"))
+    {
+        ofile = ap.get_arg<std::string>("nc-file");
+    }
+    else
+    {
+        const std::string BP_DIR_RGX_STR("(.*)([.]nc)?[.]bp");
+        std::regex bp_dir_rgx(BP_DIR_RGX_STR.c_str());
+        std::smatch match;
+        if (std::regex_search(ifile, match, bp_dir_rgx) &&
+            match.size() >= 2)
+        {
+            ofile = match.str(1);
+        }
+        else
+        {
+            ap.print_usage(std::cerr);
+            return 1;
+        }
+    }
+
+    if (ap.has_arg("pio-format"))
+    {
+        otype = ap.get_arg<std::string>("pio-format");
+    }
+    else
+    {
+        otype = DEFAULT_PIO_FORMAT;
+    }
     return 0;
 }
 
