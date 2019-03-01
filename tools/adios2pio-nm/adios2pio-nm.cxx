@@ -10,6 +10,7 @@
 static void init_user_options(adios2pio_utils::ArgParser &ap)
 {
     ap.add_opt("bp-file", "data produced by PIO with ADIOS format")
+      .add_opt("idir", "Directory containing data output from PIO (in ADIOS format)")
       .add_opt("nc-file", "output file name after conversion")
       .add_opt("pio-format", "output PIO_IO_TYPE. Supported parameters: \"pnetcdf\",  \"netcdf\",  \"netcdf4c\",  \"netcdf4p\"");
 }
@@ -17,35 +18,45 @@ static void init_user_options(adios2pio_utils::ArgParser &ap)
 static int get_user_options(
               adios2pio_utils::ArgParser &ap,
               int argc, char *argv[],
-              std::string &ifile, std::string &ofile, std::string &otype)
+              std::string &idir,
+              std::string &ifile, std::string &ofile,
+              std::string &otype)
 {
     const std::string DEFAULT_PIO_FORMAT("pnetcdf");
     ap.parse(argc, argv);
-    if (!ap.has_arg("bp-file"))
+    if (!ap.has_arg("bp-file") && !ap.has_arg("idir"))
     {
         ap.print_usage(std::cerr);
         return 1;
     }
-    ifile = ap.get_arg<std::string>("bp-file");
-    if (ap.has_arg("nc-file"))
+    if (ap.has_arg("bp-file"))
     {
-        ofile = ap.get_arg<std::string>("nc-file");
-    }
-    else
-    {
-        const std::string BP_DIR_RGX_STR("(.*)([.]nc)?[.]bp");
-        std::regex bp_dir_rgx(BP_DIR_RGX_STR.c_str());
-        std::smatch match;
-        if (std::regex_search(ifile, match, bp_dir_rgx) &&
-            match.size() >= 2)
+        ifile = ap.get_arg<std::string>("bp-file");
+        if (ap.has_arg("nc-file"))
         {
-            ofile = match.str(1);
+            ofile = ap.get_arg<std::string>("nc-file");
         }
         else
         {
-            ap.print_usage(std::cerr);
-            return 1;
+            const std::string BP_DIR_RGX_STR("(.*)([.]nc)?[.]bp");
+            std::regex bp_dir_rgx(BP_DIR_RGX_STR.c_str());
+            std::smatch match;
+            if (std::regex_search(ifile, match, bp_dir_rgx) &&
+                match.size() >= 2)
+            {
+                ofile = match.str(1);
+            }
+            else
+            {
+                ap.print_usage(std::cerr);
+                return 1;
+            }
         }
+    }
+    else
+    {
+        assert(ap.has_arg("idir"));
+        idir = ap.get_arg<std::string>("idir");
     }
 
     if (ap.has_arg("pio-format"))
@@ -73,9 +84,9 @@ int main(int argc, char *argv[])
     init_user_options(ap);
 
     /* Parse the user options */
-    string infilepath, outfilename, piotype;
+    string idir, infilepath, outfilename, piotype;
     ret = get_user_options(ap, argc, argv,
-                            infilepath, outfilename, piotype);
+                            idir, infilepath, outfilename, piotype);
     if (ret != 0)
     {
         return ret;
@@ -88,7 +99,14 @@ int main(int argc, char *argv[])
 #endif
 
     SetDebugOutput(0);
-    ret = ConvertBPToNC(infilepath, outfilename, piotype, comm_in);
+    if (idir.size() == 0)
+    {
+        ret = ConvertBPToNC(infilepath, outfilename, piotype, comm_in);
+    }
+    else
+    {
+        ret = MConvertBPToNC(idir, piotype, comm_in);
+    }
 
 #ifdef TIMING
     /* Finalize the GPTL timing library. */
