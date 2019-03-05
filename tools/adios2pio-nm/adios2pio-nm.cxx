@@ -12,7 +12,8 @@ static void init_user_options(adios2pio_utils::ArgParser &ap)
     ap.add_opt("bp-file", "data produced by PIO with ADIOS format")
       .add_opt("idir", "Directory containing data output from PIO (in ADIOS format)")
       .add_opt("nc-file", "output file name after conversion")
-      .add_opt("pio-format", "output PIO_IO_TYPE. Supported parameters: \"pnetcdf\",  \"netcdf\",  \"netcdf4c\",  \"netcdf4p\"");
+      .add_opt("pio-format", "output PIO_IO_TYPE. Supported parameters: \"pnetcdf\",  \"netcdf\",  \"netcdf4c\",  \"netcdf4p\"")
+      .add_opt("verbose", "Turn on verbose info messages");
 }
 
 static int get_user_options(
@@ -20,9 +21,12 @@ static int get_user_options(
               int argc, char *argv[],
               std::string &idir,
               std::string &ifile, std::string &ofile,
-              std::string &otype)
+              std::string &otype,
+              int &debug_lvl)
 {
     const std::string DEFAULT_PIO_FORMAT("pnetcdf");
+    debug_lvl = 0;
+
     ap.parse(argc, argv);
     if (!ap.has_arg("bp-file") && !ap.has_arg("idir"))
     {
@@ -67,6 +71,12 @@ static int get_user_options(
     {
         otype = DEFAULT_PIO_FORMAT;
     }
+
+    if (ap.has_arg("verbose"))
+    {
+        debug_lvl = 1;
+    }
+
     return 0;
 }
 
@@ -85,8 +95,11 @@ int main(int argc, char *argv[])
 
     /* Parse the user options */
     string idir, infilepath, outfilename, piotype;
+    int debug_lvl = 0;
     ret = get_user_options(ap, argc, argv,
-                            idir, infilepath, outfilename, piotype);
+                            idir, infilepath, outfilename,
+                            piotype, debug_lvl);
+
     if (ret != 0)
     {
         return ret;
@@ -98,7 +111,7 @@ int main(int argc, char *argv[])
         return ret;
 #endif
 
-    SetDebugOutput(0);
+    SetDebugOutput(debug_lvl);
     if (idir.size() == 0)
     {
         ret = ConvertBPToNC(infilepath, outfilename, piotype, comm_in);
