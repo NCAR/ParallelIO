@@ -56,19 +56,42 @@ void ArgParser::parse(int argc, char *argv[])
              */
             arg_map_[match.str(1)] = match.str(2);
         }
-        else if ((argvi == "--help") || (argvi == "-h"))
-        {
-            print_usage(std::cout);
-            return;
-        }
         else
         {
-            if (is_root_)
+            const std::string NOVAL_OPT_RGX_STR("--([^=]+)");
+            std::regex noval_opt_rgx(NOVAL_OPT_RGX_STR.c_str());
+            std::smatch noval_match;
+            /* The "--help" option is provided by default */
+            if ((argvi == "--help") || (argvi == "-h"))
             {
-                std::cerr << "Error: Unable to parse option : "
-                          << argvi << "\n";
+                print_usage(std::cout);
+                return;
             }
-            throw std::runtime_error("Invalid option");
+            else if (std::regex_search(argvi, noval_match, noval_opt_rgx) &&
+                (noval_match.size() == 2))
+            {
+                const std::string NOVAL_STR("noval");
+                /* No value arguments like "--verbose" */
+                if (opts_map_.count(noval_match.str(1)) != 1)
+                {
+                    if (is_root_)
+                    {
+                        std::cerr << "Error: Invalid option, "
+                                  << noval_match.str(1).c_str() << "\n";
+                    }
+                    throw std::runtime_error("Invalid option");
+                }
+                arg_map_[noval_match.str(1)] = NOVAL_STR;
+            }
+            else
+            {
+                if (is_root_)
+                {
+                    std::cerr << "Error: Unable to parse option : "
+                              << argvi << "\n";
+                }
+                throw std::runtime_error("Invalid option");
+            }
         }
     }
 }
