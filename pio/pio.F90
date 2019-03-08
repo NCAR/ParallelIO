@@ -1,7 +1,7 @@
 !>
-!! @file 
+!! @file
 !! @brief User interface Module for PIO, this is the only file a user program should 'use'
-!! 
+!!
 !! $Revision: 856 $
 !! $LastChangedDate: 2013-11-19 15:48:54 -0600 (Tue, 19 Nov 2013) $
 !<
@@ -12,7 +12,7 @@ module pio
 ! only pio_offset is intended for export from kinds
   use pio_kinds, only : pio_offset
 
-  use piolib_mod, only : pio_initdecomp, &
+  use piolib_mod, only : pio_initdecomp, pio_set_rearr_opts, &
        pio_openfile, pio_closefile, pio_createfile, pio_setdebuglevel, &
        pio_seterrorhandling, pio_setframe, pio_init, pio_get_local_array_size, &
        pio_freedecomp, pio_syncfile,pio_numtowrite,pio_numtoread,pio_setiotype, &
@@ -37,7 +37,7 @@ module pio
 	pio_iotype_vdc2, &
         pio_rearr_box, pio_internal_error, pio_bcast_error, pio_return_error
 
-  use piodarray, only : pio_read_darray, pio_write_darray, pio_set_buffer_size_limit  
+  use piodarray, only : pio_read_darray, pio_write_darray, pio_set_buffer_size_limit
 
   use nf_mod, only:        &
        PIO_enddef,            &
@@ -59,7 +59,7 @@ module pio
        PIO_redef     ,          &
        PIO_copy_att  ,       &
        PIO_inquire_variable , &
-       PIO_inquire_dimension 
+       PIO_inquire_dimension
 
   use pionfatt_mod, only : PIO_put_att   => put_att,        &
        PIO_get_att   => get_att
@@ -67,7 +67,7 @@ module pio
   use pionfget_mod, only : PIO_get_var   => get_var
 
   use calcdecomp, only : pio_set_blocksize
-   
+
 
 
   implicit none
