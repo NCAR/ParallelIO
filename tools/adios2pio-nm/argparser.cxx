@@ -109,7 +109,7 @@ void ArgParser::print_usage(std::ostream &ostr) const
     }
     /* Ensure we only print usage once */
     printed_usage_ = true;
-    ostr << "Usage : " << prog_name_ << " [OPTIONAL ARGS] \n";
+    ostr << "Usage : " << prog_name_ << " --[OPTIONAL ARG1 NAME]=[OPTIONAL ARG1 VALUE] --[OPTIONAL ARG2 NAME]=[OPTIONAL ARG2 VALUE] ... \n";
     ostr << "Optional Arguments :\n";
     for (std::map<std::string, std::string>::const_iterator
           citer = opts_map_.cbegin();
