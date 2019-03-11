@@ -267,12 +267,13 @@ int test_decomp_read_write(int iosysid, int ioid, int num_flavors, int *flavor, 
     char title_in[PIO_MAX_NAME + 1];   /* Optional title. */
     char history_in[PIO_MAX_NAME + 1]; /* Optional history. */
     int fortran_order_in; /* Indicates fortran vs. c order. */
-    int ret;              /* Return code. */
 
     /* Use PIO to create the decomp file in each of the four
      * available ways. */
     for (int fmt = 0; fmt < num_flavors; fmt++)
     {
+        int ret;              /* Return code. */
+
         /* Create the filename. */
         sprintf(filename, "decomp_%s_iotype_%d.nc", TEST_NAME, flavor[fmt]);
 

@@ -113,7 +113,7 @@ do_some_computation(long long int max_i)
 {
     for (int i = 0; i < max_i; i++)
     {
-        float a, b, c;
+        float a, b = 11.1, c = -33333.33;
         a = b * c;
         b = a * c;
         c = a * b;
@@ -269,12 +269,12 @@ int run_benchmark(int iosysid, int num_flavors, int *flavor, int my_rank, int nt
     char filename[NC_MAX_NAME + 1];
     int dim_len_3d[NDIM3] = {Z_DIM_LEN, X_DIM_LEN, Y_DIM_LEN};
     long long delta;
-    int ret; /* Return code. */
 
     /* for (int t = 0; t < num_types; t++) */
     for (int t = 0; t < 1; t++)
     {
         float time;
+        int ret; /* Return code. */
 
         /* This will be our file name for writing out decompositions. */
         sprintf(filename, "%s_decomp_rank_%d_flavor_%d_type_%d.nc", TEST_NAME, my_rank,
