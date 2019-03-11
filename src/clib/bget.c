@@ -616,7 +616,7 @@ static inline void *pio_ubuf_malloc(bufsize ubuf_sz)
         totalloc += ubuf_sz;
         pio_use_malloc_totoverhead += PIO_USE_MALLOC_IBUF_HDR_SZ;
         ubuf = PIO_USE_MALLOC_IBUF2UBUF(ibuf);
-        /* printf("malloc: total mem allocated = %lld, mem overhead = %lld\n", totalloc, pio_use_malloc_totoverhead); */
+        LOG((2, "malloc: total mem allocated = %lld, mem overhead = %lld", totalloc, pio_use_malloc_totoverhead));
     }
 
     return ubuf;
@@ -631,7 +631,7 @@ static inline void *pio_ubuf_realloc(void *ubuf, bufsize ubuf_sz)
         ibuf = PIO_USE_MALLOC_UBUF2IBUF(ubuf);
         struct ibufmhdr *hdr = (struct ibufmhdr *)ibuf;
         totalloc -= hdr->sz;
-        /* printf("realloc 1: total mem allocated = %lld, mem overhead = %lld\n", totalloc, pio_use_malloc_totoverhead); */
+        LOG((2, "realloc 1: total mem allocated = %lld, mem overhead = %lld", totalloc, pio_use_malloc_totoverhead));
     }
 
     ibuf = realloc(ibuf, PIO_USE_MALLOC_IBUF_SZ(ubuf_sz));
@@ -649,7 +649,7 @@ static inline void *pio_ubuf_realloc(void *ubuf, bufsize ubuf_sz)
             pio_use_malloc_totoverhead += PIO_USE_MALLOC_IBUF_HDR_SZ;
         }
         ubuf = PIO_USE_MALLOC_IBUF2UBUF(ibuf);
-        /* printf("realloc 2: total mem allocated = %lld, mem overhead = %lld\n", totalloc, pio_use_malloc_totoverhead); */
+        LOG((2, "realloc 2: total mem allocated = %lld, mem overhead = %lld", totalloc, pio_use_malloc_totoverhead));
     }
     else
     {
@@ -668,7 +668,7 @@ static inline void pio_ubuf_free(void *ubuf)
         struct ibufmhdr *hdr = (struct ibufmhdr *)ibuf;
         totalloc -= hdr->sz;
         pio_use_malloc_totoverhead -= PIO_USE_MALLOC_IBUF_HDR_SZ;
-        /* printf("free: total mem allocated = %lld, mem overhead = %lld\n", totalloc, pio_use_malloc_totoverhead); */
+        LOG((2, "free: total mem allocated = %lld, mem overhead = %lld", totalloc, pio_use_malloc_totoverhead));
     }
     free(ibuf);
 }
@@ -701,7 +701,7 @@ void *bget(bufsize requested_size)
 #else
     buf = malloc(requested_size);
 #endif /* BufStats */
-    //    printf("bget allocated %ld %x\n",requested_size,buf);
+    LOG((2, "bget allocated %ld %x",requested_size,buf));
     numget++;
     return(buf);
 #endif /* PIO_USE_MALLOC */
@@ -857,8 +857,7 @@ void *bget(bufsize requested_size)
                 buf =  (void *) (bdh + 1);
 
                 /*only let this happen once */
-                printf("%s %d memory request exceeds block size %ld %ld\n",__FILE__,__LINE__,
-                       size,exp_incr);
+                LOG((2, "%s %d memory request exceeds block size %ld %ld",__FILE__,__LINE__, size,exp_incr));
                 exp_incr = size+sizeof(struct bhead);
 
                 return buf;
@@ -874,7 +873,7 @@ void *bget(bufsize requested_size)
                 bpool(newpool, exp_incr);
                 buf =  bget(requested_size);  /* This can't, I say, can't
                                                  get into a loop. */
-                //              printf("%s %d new memory block of size %d\n",__FILE__,__LINE__,exp_incr);
+                LOG((2, "%s %d new memory block of size %d",__FILE__,__LINE__,exp_incr));
                 return buf;
             }
         }
@@ -965,7 +964,7 @@ void brel(void *buf)
     struct bfhead *b, *bn;
 
 #if PIO_USE_MALLOC
-    //    printf("bget free %d %x\n",__LINE__,buf);
+    LOG((2, "bget free %d %x",__LINE__,buf));
 #ifdef BufStats
     pio_ubuf_free(buf);
 #else
@@ -1306,7 +1305,7 @@ void bufdump(void *buf)
             bascii[i] = isprint(bdump[i]) ? bdump[i] : ' ';
         }
         bascii[i] = 0;
-        V printf("%-48s   %s\n", bhex, bascii);
+        LOG((0, "%-48s   %s", bhex, bascii));
         bdump += l;
         bdlen -= l;
         while ((bdlen > 16) && (memcmp((char *) (bdump - 16),
@@ -1316,9 +1315,9 @@ void bufdump(void *buf)
             bdlen -= 16;
         }
         if (dupes > 1) {
-            V printf(
-                "     (%d lines [%d bytes] identical to above line skipped)\n",
-                dupes, dupes * 16);
+            LOG((0,
+                "     (%d lines [%d bytes] identical to above line skipped)",
+                dupes, dupes * 16));
         } else if (dupes == 1) {
             bdump -= 16;
             bdlen += 16;
@@ -1344,7 +1343,7 @@ void bpoold(void *buf, int dumpalloc, int dumpfree)
 
         if (bs < 0) {
             bs = -bs;
-            V printf("Allocated buffer: size %6ld bytes.\n", (long) bs);
+            LOG((0, "Allocated buffer: size %6ld bytes.", (long) bs));
             if (dumpalloc) {
                 bufdump((void *) (((char *) b) + sizeof(struct bhead)));
             }
@@ -1356,15 +1355,15 @@ void bpoold(void *buf, int dumpalloc, int dumpfree)
                 (b->ql.flink->ql.blink != b)) {
                 lerr = "  (Bad free list links)";
             }
-            V printf("Free block:       size %6ld bytes.%s\n",
-                     (long) bs, lerr);
+            LOG((0, "Free block:       size %6ld bytes.%s",
+                     (long) bs, lerr));
 #ifdef FreeWipe
             lerr = ((char *) b) + sizeof(struct bfhead);
             if ((bs > sizeof(struct bfhead)) && ((*lerr != 0x55) ||
                                                  (memcmp(lerr, lerr + 1,
                                                          (MemSize) (bs - (sizeof(struct bfhead) + 1))) != 0))) {
-                V printf(
-                    "(Contents of above free block have been overstored.)\n");
+                LOG((0,
+                    "(Contents of above free block have been overstored.)"));
                 bufdump((void *) (((char *) b) + sizeof(struct bhead)));
             } else
 #endif
@@ -1400,8 +1399,8 @@ int bpoolv(void *buf)
             }
             if ((b->ql.blink->ql.flink != b) ||
                 (b->ql.flink->ql.blink != b)) {
-                V printf("Free block: size %6ld bytes.  (Bad free list links)\n",
-                         (long) bs);
+                LOG((0, "Free block: size %6ld bytes.  (Bad free list links)",
+                         (long) bs));
                 assert(0);
                 return 0;
             }
@@ -1410,8 +1409,8 @@ int bpoolv(void *buf)
             if ((bs > sizeof(struct bfhead)) && ((*lerr != 0x55) ||
                                                  (memcmp(lerr, lerr + 1,
                                                          (MemSize) (bs - (sizeof(struct bfhead) + 1))) != 0))) {
-                V printf(
-                    "(Contents of above free block have been overstored.)\n");
+                LOG((0,
+                    "(Contents of above free block have been overstored.)"));
                 bufdump((void *) (((char *) b) + sizeof(struct bhead)));
                 assert(0);
                 return 0;
@@ -1497,15 +1496,15 @@ static void stats(char *when)
 #endif
 
     bstats(&cural, &totfree, &maxfree, &nget, &nfree);
-    V printf(
-        "%s: %ld gets, %ld releases.  %ld in use, %ld free, largest = %ld\n",
-        when, nget, nfree, (long) cural, (long) totfree, (long) maxfree);
+    LOG((0,
+        "%s: %ld gets, %ld releases.  %ld in use, %ld free, largest = %ld",
+        when, nget, nfree, (long) cural, (long) totfree, (long) maxfree));
 #ifdef BECtl
     bstatse(&pincr, &totblocks, &npget, &nprel, &ndget, &ndrel);
-    V printf(
-        "  Blocks: size = %ld, %ld (%ld bytes) in use, %ld gets, %ld frees\n",
-        (long)pincr, totblocks, pincr * totblocks, npget, nprel);
-    V printf("  %ld direct gets, %ld direct frees\n", ndget, ndrel);
+    LOG((0,
+        "  Blocks: size = %ld, %ld (%ld bytes) in use, %ld gets, %ld frees",
+        (long)pincr, totblocks, pincr * totblocks, npget, nprel));
+    LOG((0, "  %ld direct gets, %ld direct frees", ndget, ndrel));
 #endif /* BECtl */
 }
 
@@ -1521,13 +1520,13 @@ static int bcompact(bufsize bsize, int seq)
     int i = rand() & 0x3;
 
 #ifdef COMPACTRACE
-    V printf("Compaction requested.  %ld bytes needed, sequence %d.\n",
-             (long) bsize, seq);
+    LOG((0, "Compaction requested.  %ld bytes needed, sequence %d.",
+             (long) bsize, seq));
 #endif
 
     if (protect || (seq > CompactTries)) {
 #ifdef COMPACTRACE
-        V printf("Compaction gave up.\n");
+        LOG((0, "Compaction gave up."));
 #endif
         return 0;
     }
@@ -1551,7 +1550,7 @@ static int bcompact(bufsize bsize, int seq)
     }
 
 #ifdef COMPACTRACE
-    V printf("Compaction bailed out.\n");
+    LOG((0, "Compaction bailed out."));
 #endif
 #endif /* CompactTries */
     return 0;
@@ -1573,8 +1572,8 @@ static void *bexpand(bufsize size)
         np = (void *) malloc((unsigned) size);
     }
 #ifdef EXPTRACE
-    V printf("Expand pool by %ld -- %s.\n", (long) size,
-             np == NULL ? "failed" : "succeeded");
+    LOG((0, "Expand pool by %ld -- %s.", (long) size,
+             np == NULL ? "failed" : "succeeded"));
 #endif
     return np;
 }
@@ -1585,12 +1584,12 @@ static void bshrink(void *buf)
 {
     if (((char *) buf) == bp) {
 #ifdef EXPTRACE
-        V printf("Initial pool released.\n");
+        LOG((0, "Initial pool released."));
 #endif
         bp = NULL;
     }
 #ifdef EXPTRACE
-    V printf("Shrink pool.\n");
+    LOG((0, "Shrink pool."));
 #endif
     free((char *) buf);
 }
