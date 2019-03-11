@@ -1365,14 +1365,11 @@ int PIOc_put_var_tc(int ncid, int varid, nc_type xtype, const void *op)
     if (ndims)
     {
         int dimid[ndims];
-	if (!(startp = malloc(ndims * sizeof(PIO_Offset))))
-	    return pio_err(ios, file, PIO_ENOMEM, __FILE__, __LINE__);
-	if (!(countp = malloc(ndims * sizeof(PIO_Offset))))
-	    return pio_err(ios, file, PIO_ENOMEM, __FILE__, __LINE__);
+        PIO_Offset my_startp[ndims], my_countp[ndims];
 
         /* Set up start array. */
         for (int d = 0; d < ndims; d++)
-            startp[d] = 0;
+            my_startp[d] = 0;
 
         /* Get the dimids for this var. */
         if ((ierr = PIOc_inq_vardimid(ncid, varid, dimid)))
@@ -1380,15 +1377,15 @@ int PIOc_put_var_tc(int ncid, int varid, nc_type xtype, const void *op)
 
         /* Count array are the dimlens. */
         for (int d = 0; d < ndims; d++)
-            if ((ierr = PIOc_inq_dimlen(ncid, dimid[d], &countp[d])))
+            if ((ierr = PIOc_inq_dimlen(ncid, dimid[d], &my_countp[d])))
                 return pio_err(ios, file, ierr, __FILE__, __LINE__);
 
+        startp = my_startp;
+        countp = my_countp;
     }
 
-    ierr = PIOc_put_vars_tc(ncid, varid, startp, countp, NULL, xtype, op);
-    if (startp != NULL)
-	free(startp);
-    if (countp != NULL)
-	free(countp);
-    return ierr;
+    if ((ierr = PIOc_put_vars_tc(ncid, varid, startp, countp, NULL, xtype, op)))
+        return pio_err(ios, file, ierr, __FILE__, __LINE__);
+
+    return PIO_NOERR;
 }
