@@ -45,7 +45,7 @@ int PIOc_put_att_tc(int ncid, int varid, const char *name, nc_type atttype,
     ios = file->iosystem;
 
     /* User must provide some valid parameters. */
-    if (!name || !op || strlen(name) > NC_MAX_NAME || len < 0)
+    if (!name || !op || strnlen(name, NC_MAX_NAME + 1) > NC_MAX_NAME || len < 0)
         return pio_err(ios, file, PIO_EINVAL, __FILE__, __LINE__);
 
     LOG((1, "PIOc_put_att_tc ncid = %d varid = %d name = %s atttype = %d len = %d memtype = %d",
@@ -302,7 +302,7 @@ int PIOc_get_att_tc(int ncid, int varid, const char *name, nc_type memtype, void
                 mpierr = MPI_Bcast(&ncid, 1, MPI_INT, ios->compmaster, ios->intercomm);
             if (!mpierr)
                 mpierr = MPI_Bcast(&varid, 1, MPI_INT, ios->compmaster, ios->intercomm);
-            int namelen = strlen(name);
+            int namelen = strnlen(name, NC_MAX_NAME);
             if (!mpierr)
                 mpierr = MPI_Bcast(&namelen, 1, MPI_INT,  ios->compmaster, ios->intercomm);
             if (!mpierr)
