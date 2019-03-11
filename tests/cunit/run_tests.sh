@@ -1,3 +1,4 @@
+#!/bin/sh
 # This is a test script for PIO.
 # Ed Hartnett
 
@@ -24,7 +25,7 @@ for TEST in $PIO_TESTS
 do
     success1=false
     echo "running ${TEST}"
-    mpiexec -n 4 ./${TEST} && success1=true || break
+    (mpiexec -n 4 ./${TEST} && success1=true) || break
 done
 
 PIO_TESTS_8='test_async_multi2'
@@ -33,7 +34,7 @@ for TEST in $PIO_TESTS_8
 do
     success2=false
     echo "running ${TEST}"
-    mpiexec -n 8 ./${TEST} && success2=true || break
+    (mpiexec -n 8 ./${TEST} && success2=true) || break
 done
 
 # Did we succeed?
