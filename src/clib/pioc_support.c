@@ -402,7 +402,7 @@ void print_trace(FILE *fp)
  */
 void piodie(const char *msg, const char *fname, int line)
 {
-    fprintf(stderr,"Abort with message %s in file %s at line %d\n",
+    fprintf(stderr,"FATAL ERROR: Aborting...%s (%s: %d)\n",
             msg ? msg : "_", fname ? fname : "_", line);
 
     print_trace(stderr);
@@ -426,7 +426,10 @@ void pioassert(_Bool expression, const char *msg, const char *fname, int line)
 {
 #ifndef NDEBUG
     if (!expression)
+    {
+        fprintf(stderr, "Assertion failed...\n");
         piodie(msg, fname, line);
+    }
 #endif
 }
 
@@ -525,7 +528,7 @@ int check_netcdf(iosystem_desc_t *ios, file_desc_t *file, int status,
         if(eh == PIO_INTERNAL_ERROR){
             int ret = PIOc_strerror(status, errmsg);
             assert(ret == PIO_NOERR);
-            fprintf(stderr, "%s\n", errmsg);
+            fprintf(stderr, "FATAL ERROR: %s (%s:%d)\n", errmsg, (fname) ? fname : "_", line);
             LOG((1, "check_netcdf errmsg = %s", errmsg));
             piodie(errmsg, fname, line);
         }
@@ -583,7 +586,7 @@ int check_netcdf(iosystem_desc_t *ios, file_desc_t *file, int status,
                         /* Log prev range error and start new range */
                         int ret = PIOc_strerror(prev_err, errmsg);
                         assert(ret == PIO_NOERR);
-                        LOG((1, "Error: ranks[%d-%d] = %d (%s)",
+                        LOG((1, "ERROR: ranks[%d-%d] = %d (%s)",
                               start_rank, end_rank, prev_err, errmsg));
                         prev_err = err_info[i];
                         start_rank = i;
@@ -594,7 +597,7 @@ int check_netcdf(iosystem_desc_t *ios, file_desc_t *file, int status,
                 if(err_info[end_rank] == prev_err){
                     int ret = PIOc_strerror(prev_err, errmsg);
                     assert(ret == PIO_NOERR);
-                    LOG((1, "Error: ranks[%d-%d] = %d (%s)",
+                    LOG((1, "ERROR: ranks[%d-%d] = %d (%s)",
                           start_rank, end_rank, prev_err, errmsg));
                 }
                 free(err_info);
@@ -642,7 +645,7 @@ int pio_err(iosystem_desc_t *ios, file_desc_t *file, int err_num, const char *fn
         return ret;
 
     /* If logging is in use, log an error message. */
-    LOG((0, "%s err_num = %d fname = %s line = %d", err_msg, err_num, fname ? fname : '\0', line));
+    LOG((0, "ERROR: %s err_num = %d fname = %s line = %d", err_msg, err_num, fname ? fname : '\0', line));
 
     /* What error handler should we use? */
     if (file)
