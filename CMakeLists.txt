@@ -177,6 +177,16 @@ configure_file (
   )
 
 #==============================================================================
+#  CHECK MIN VERSION OF COMPILERS REQD
+#==============================================================================
+# Regex is only available in GCC 4.9+ (> 4.8)
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+  if (NOT CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 4.8)
+    message (FATAL_ERROR "PIO requires GCC 4.9+ to build correctly")
+  endif()
+endif ()
+
+#==============================================================================
 #  SET CODE COVERAGE COMPILER FLAGS
 #==============================================================================
 
