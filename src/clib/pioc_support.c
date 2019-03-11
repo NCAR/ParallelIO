@@ -3,8 +3,8 @@
  */
 #include <config.h>
 #include <stdio.h>
-#if PIO_ENABLE_LOGGING
 #include <stdarg.h>
+#if PIO_ENABLE_LOGGING
 #include <unistd.h>
 #endif /* PIO_ENABLE_LOGGING */
 #include <pio.h>
@@ -400,10 +400,16 @@ void print_trace(FILE *fp)
  * @param fname name of code file where error occured
  * @param line the line of code where the error occurred.
  */
-void piodie(const char *msg, const char *fname, int line)
+void piodie(const char *fname, int line, const char *fmt, ...)
 {
-    fprintf(stderr,"FATAL ERROR: Aborting...%s (%s: %d)\n",
-            msg ? msg : "_", fname ? fname : "_", line);
+    assert(fname && fmt);
+
+    va_list argp;
+    va_start(argp, fmt);
+    fprintf(stderr, "FATAL ERROR: Aborting... ");
+    vfprintf(stderr, fmt, argp);
+    fprintf(stderr, " (%s: %d)\n", (fname) ? fname : "_", line);
+    va_end(argp);
 
     print_trace(stderr);
 #ifdef MPI_SERIAL
@@ -428,7 +434,7 @@ void pioassert(_Bool expression, const char *msg, const char *fname, int line)
     if (!expression)
     {
         fprintf(stderr, "Assertion failed...\n");
-        piodie(msg, fname, line);
+        piodie(fname, line, msg);
     }
 #endif
 }
@@ -530,7 +536,7 @@ int check_netcdf(iosystem_desc_t *ios, file_desc_t *file, int status,
             assert(ret == PIO_NOERR);
             fprintf(stderr, "FATAL ERROR: %s (%s:%d)\n", errmsg, (fname) ? fname : "_", line);
             LOG((1, "check_netcdf errmsg = %s", errmsg));
-            piodie(errmsg, fname, line);
+            piodie(fname, line, errmsg);
         }
     }
 

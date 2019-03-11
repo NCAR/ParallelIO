@@ -155,7 +155,21 @@ extern "C" {
     int iotype_is_valid(int iotype);
 
     /* Print error message and abort. */
-    void piodie(const char *msg, const char *fname, int line);
+#ifdef __GNUC__
+    /* Specify that piodie() uses printf style formatting. This
+     * allows the gnu compiler to parse and print warnings on
+     * the message format, fmt, and variable argument
+     * incompatibilities
+     * Note: fmt, the printf style format string, is the
+     *        3rd argument and the arguments following the format
+     *        in the format string start from the 4th argument
+     *        passed to the piodie() function
+     */
+    #define PIODIE_FUNC_ATTR __attribute__ (( format (printf, 3, 4) ))
+#else
+    #define PIODIE_FUNC_ATTR
+#endif
+    void piodie(const char *fname, int line, const char *fmt, ...) PIODIE_FUNC_ATTR;
 
     /* Assert that an expression is true. */
     void pioassert(bool exp, const char *msg, const char *fname, int line);
