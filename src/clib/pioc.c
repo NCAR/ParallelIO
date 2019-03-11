@@ -96,7 +96,7 @@ int PIOc_Set_File_Error_Handling(int ncid, int method)
 
     /* Check that valid error handler was provided. */
     if (method != PIO_INTERNAL_ERROR && method != PIO_BCAST_ERROR &&
-        method != PIO_RETURN_ERROR)
+        method != PIO_RETURN_ERROR && method != PIO_REDUCE_ERROR)
         piodie("Invalid error hanlder method", __FILE__, __LINE__);
 
     /* Get the old method. */
