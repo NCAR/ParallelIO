@@ -244,7 +244,7 @@ int PIOc_get_att_tc(int ncid, int varid, const char *name, nc_type memtype, void
     PIO_Offset attlen;      /* Number of elements in the attribute array. */
     PIO_Offset atttype_len; /* Length in bytes of one element of the attribute type. */
     PIO_Offset memtype_len; /* Length in bytes of one element of the memory type. */
-    int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI function calls. */
+    int mpierr = MPI_SUCCESS;  /* Return code from MPI function calls. */
     int ierr;               /* Return code from function calls. */
 
     /* Find the info about this file. */
@@ -288,6 +288,8 @@ int PIOc_get_att_tc(int ncid, int varid, const char *name, nc_type memtype, void
      * parameters and the attribute and type information we fetched. */
     if (ios->async)
     {
+        int mpierr2;  /* Return code from MPI function calls. */
+
         if (!ios->ioproc)
         {
             int msg = PIO_MSG_GET_ATT;
