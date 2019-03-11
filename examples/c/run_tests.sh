@@ -1,3 +1,4 @@
+#!/bin/sh
 # This is a test script for PIO examples.
 # Ed Hartnett 5/7/18
 
@@ -17,7 +18,7 @@ for EXAMPLE in $PIO_EXAMPLES
 do
     success1=false
     echo "running ${EXAMPLE}"
-    mpiexec -n 4 ./${EXAMPLE} && success1=true || break
+    (mpiexec -n 4 ./${EXAMPLE} && success1=true) || break
 done
 
 # Did we succeed?
