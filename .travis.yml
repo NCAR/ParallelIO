@@ -7,7 +7,7 @@ addons:
     sources:
     - ubuntu-toolchain-r-test
     packages:
-    - pkg-config netcdf-bin libnetcdf-dev openmpi-bin libopenmpi-dev gfortran
+    - pkg-config netcdf-bin libnetcdf-dev openmpi-bin libopenmpi-dev gfortran netcdf-fortran libnetcdff-dev
 
 before_install:
   - test -n $CC && unset CC
@@ -33,6 +33,6 @@ script:
   - make -j distclean
   - mkdir build
   - cd build
-  - cmake -DPIO_HDF5_LOGGING=On -DPIO_USE_MALLOC=On -DPIO_ENABLE_LOGGING=On ..
+  - cmake -DWITH_PNETCDF=Off -DPIO_HDF5_LOGGING=On -DPIO_USE_MALLOC=On -DPIO_ENABLE_LOGGING=On ..
   - make VERBOSE=1 all tests check
  
