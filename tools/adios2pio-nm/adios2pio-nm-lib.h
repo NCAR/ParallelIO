@@ -6,8 +6,11 @@
 
 using namespace std;
 
-int ConvertBPToNC(string infilepath, string outfilename, string piotype, MPI_Comm comm_in);
-void usage_nm(string prgname);
+int ConvertBPToNC(const string &infilepath,
+                  const string &outfilename,
+                  const string &piotype, MPI_Comm comm_in);
+int MConvertBPToNC(const string &bppdir, const string &piotype,
+                    MPI_Comm comm);
 void SetDebugOutput(int val);
 
 #endif /* #ifndef _ADIOS2PIO_NM_LIB_H_ */

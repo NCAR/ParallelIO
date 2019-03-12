@@ -2,7 +2,83 @@
 #ifdef TIMING
 #include <gptl.h>
 #endif
+#include <iostream>
+#include <regex>
 #include "adios2pio-nm-lib.h"
+#include "argparser.h"
+
+static void init_user_options(adios2pio_utils::ArgParser &ap)
+{
+    ap.add_opt("bp-file", "data produced by PIO with ADIOS format")
+      .add_opt("idir", "Directory containing data output from PIO (in ADIOS format)")
+      .add_opt("nc-file", "output file name after conversion")
+      .add_opt("pio-format", "output PIO_IO_TYPE. Supported parameters: \"pnetcdf\",  \"netcdf\",  \"netcdf4c\",  \"netcdf4p\"")
+      .add_opt("verbose", "Turn on verbose info messages");
+}
+
+static int get_user_options(
+              adios2pio_utils::ArgParser &ap,
+              int argc, char *argv[],
+              std::string &idir,
+              std::string &ifile, std::string &ofile,
+              std::string &otype,
+              int &debug_lvl)
+{
+    const std::string DEFAULT_PIO_FORMAT("pnetcdf");
+    debug_lvl = 0;
+
+    ap.parse(argc, argv);
+    if (!ap.has_arg("bp-file") && !ap.has_arg("idir"))
+    {
+        ap.print_usage(std::cerr);
+        return 1;
+    }
+    if (ap.has_arg("bp-file"))
+    {
+        ifile = ap.get_arg<std::string>("bp-file");
+        if (ap.has_arg("nc-file"))
+        {
+            ofile = ap.get_arg<std::string>("nc-file");
+        }
+        else
+        {
+            const std::string BP_DIR_RGX_STR("(.*)([.]nc)?[.]bp");
+            std::regex bp_dir_rgx(BP_DIR_RGX_STR.c_str());
+            std::smatch match;
+            if (std::regex_search(ifile, match, bp_dir_rgx) &&
+                match.size() >= 2)
+            {
+                ofile = match.str(1);
+            }
+            else
+            {
+                ap.print_usage(std::cerr);
+                return 1;
+            }
+        }
+    }
+    else
+    {
+        assert(ap.has_arg("idir"));
+        idir = ap.get_arg<std::string>("idir");
+    }
+
+    if (ap.has_arg("pio-format"))
+    {
+        otype = ap.get_arg<std::string>("pio-format");
+    }
+    else
+    {
+        otype = DEFAULT_PIO_FORMAT;
+    }
+
+    if (ap.has_arg("verbose"))
+    {
+        debug_lvl = 1;
+    }
+
+    return 0;
+}
 
 int main(int argc, char *argv[])
 {
@@ -10,20 +86,24 @@ int main(int argc, char *argv[])
 
     MPI_Init(&argc, &argv);
 
-    int mpirank;
     MPI_Comm comm_in = MPI_COMM_WORLD;
-    MPI_Comm_rank(comm_in, &mpirank);
 
-    if (argc < 4)
+    adios2pio_utils::ArgParser ap(comm_in);
+
+    /* Init the standard user options for the tool */
+    init_user_options(ap);
+
+    /* Parse the user options */
+    string idir, infilepath, outfilename, piotype;
+    int debug_lvl = 0;
+    ret = get_user_options(ap, argc, argv,
+                            idir, infilepath, outfilename,
+                            piotype, debug_lvl);
+
+    if (ret != 0)
     {
-        if (!mpirank)
-            usage_nm(argv[0]);
-        return 1;
+        return ret;
     }
-
-    string infilepath  = argv[1];
-    string outfilename = argv[2];
-    string piotype     = argv[3];
 
 #ifdef TIMING
     /* Initialize the GPTL timing library. */
@@ -31,8 +111,15 @@ int main(int argc, char *argv[])
         return ret;
 #endif
 
-    SetDebugOutput(0);
-    ret = ConvertBPToNC(infilepath, outfilename, piotype, comm_in);
+    SetDebugOutput(debug_lvl);
+    if (idir.size() == 0)
+    {
+        ret = ConvertBPToNC(infilepath, outfilename, piotype, comm_in);
+    }
+    else
+    {
+        ret = MConvertBPToNC(idir, piotype, comm_in);
+    }
 
 #ifdef TIMING
     /* Finalize the GPTL timing library. */

@@ -6,6 +6,7 @@
 #include <vector>
 #include <map>
 #include <stdexcept>
+#include <regex>
 #include <unistd.h> // usleep
 #include <mpi.h>
 #include <sys/types.h>
@@ -166,7 +167,7 @@ void ProcessGlobalFillmode(ADIOS_FILE **infile, int ncid)
     free(fillmode);
 }
 
-void ProcessVarAttributes(ADIOS_FILE **infile, int adios_varid, std::string varname,
+void ProcessVarAttributes(ADIOS_FILE **infile, int adios_varid, const std::string &varname,
                           int ncid, int nc_varid)
 {
     ADIOS_VARINFO *vi = adios_inq_var(infile[0], infile[0]->var_namelist[adios_varid]);
@@ -330,8 +331,10 @@ void ProcessGlobalAttributes(ADIOS_FILE **infile, int ncid, DimensionMap& dimens
     }
 }
 
-Decomposition ProcessOneDecomposition(ADIOS_FILE **infile, int ncid, const char *varname,
-                                      std::vector<int>& wfiles, int iosysid, int mpirank,
+Decomposition ProcessOneDecomposition(ADIOS_FILE **infile, int ncid,
+                                      const char *varname,
+                                      const std::vector<int>& wfiles,
+                                      int iosysid, int mpirank,
                                       int nproc, int forced_type = NC_NAT)
 {
     /* Read all decomposition blocks assigned to this process,
@@ -430,8 +433,10 @@ Decomposition ProcessOneDecomposition(ADIOS_FILE **infile, int ncid, const char 
     return Decomposition{ioid, decomp_piotype};
 }
 
-DecompositionMap ProcessDecompositions(ADIOS_FILE **infile, int ncid, std::vector<int>& wfiles,
-                                       int iosysid, MPI_Comm comm, int mpirank, int nproc)
+DecompositionMap ProcessDecompositions(ADIOS_FILE **infile, int ncid,
+                                        const std::vector<int>& wfiles,
+                                        int iosysid, MPI_Comm comm,
+                                        int mpirank, int nproc)
 {
     DecompositionMap decomp_map;
     for (int i = 0; i < infile[0]->nvars; i++)
@@ -453,9 +458,12 @@ DecompositionMap ProcessDecompositions(ADIOS_FILE **infile, int ncid, std::vecto
     return decomp_map;
 }
 
-Decomposition GetNewDecomposition(DecompositionMap& decompmap, string decompname,
-                                  ADIOS_FILE **infile, int ncid, std::vector<int>& wfiles,
-                                  int nctype, int iosysid, int mpirank, int nproc)
+Decomposition GetNewDecomposition(DecompositionMap& decompmap,
+                                  const string &decompname,
+                                  ADIOS_FILE **infile, int ncid,
+                                  const std::vector<int>& wfiles,
+                                  int nctype, int iosysid,
+                                  int mpirank, int nproc)
 {
     char ss[PIO_MAX_NAME];
     sprintf(ss, "%s_%d", decompname.c_str(), nctype);
@@ -644,7 +652,8 @@ int put_var_nm(int ncid, int varid, int nctype, enum ADIOS_DATATYPES memtype, co
 }
 
 int put_vara_nm(int ncid, int varid, int nctype, enum ADIOS_DATATYPES memtype,
-                PIO_Offset *start, PIO_Offset *count, const void* buf)
+                const PIO_Offset *start, const PIO_Offset *count,
+                const void* buf)
 {
     int ret = 0;
 
@@ -695,7 +704,8 @@ int put_vara_nm(int ncid, int varid, int nctype, enum ADIOS_DATATYPES memtype,
     return ret;
 }
 
-int ConvertVariablePutVar(ADIOS_FILE **infile, std::vector<int> wfiles, int adios_varid,
+int ConvertVariablePutVar(ADIOS_FILE **infile,
+                          const std::vector<int> &wfiles, int adios_varid,
                           int ncid, Variable& var, int mpirank, int nproc)
 {
     int ret = 0;
@@ -801,9 +811,11 @@ int ConvertVariablePutVar(ADIOS_FILE **infile, std::vector<int> wfiles, int adio
     return ret;
 }
 
-int ConvertVariableTimedPutVar(ADIOS_FILE **infile, std::vector<int> wfiles, int adios_varid,
-                               int ncid, Variable& var, int nblocks_per_step,
-                               MPI_Comm comm, int mpirank, int nproc)
+int ConvertVariableTimedPutVar(ADIOS_FILE **infile,
+                                const std::vector<int> &wfiles,
+                                int adios_varid,
+                                int ncid, Variable& var, int nblocks_per_step,
+                                MPI_Comm comm, int mpirank, int nproc)
 {
     int ret = 0;
 
@@ -1016,8 +1028,10 @@ int ConvertVariableTimedPutVar(ADIOS_FILE **infile, std::vector<int> wfiles, int
     return ret;
 }
 
-int ConvertVariableDarray(ADIOS_FILE **infile, int adios_varid, int ncid, Variable& var,
-                          std::vector<int>& wfiles, DecompositionMap& decomp_map,
+int ConvertVariableDarray(ADIOS_FILE **infile, int adios_varid,
+                          int ncid, Variable& var,
+                          const std::vector<int>& wfiles,
+                          DecompositionMap& decomp_map,
                           int nblocks_per_step, int iosysid,
                           MPI_Comm comm, int mpirank, int nproc)
 {
@@ -1229,7 +1243,7 @@ int ConvertVariableDarray(ADIOS_FILE **infile, int adios_varid, int ncid, Variab
  * assumes the file extensions are "infilename.bp.X"
  * where X is 0 to N-1.
  */
-int GetNumOfFiles(string infilename)
+int GetNumOfFiles(const string &infilename)
 {
     int file_count = 0;
     string foldername = infilename + ".dir/";
@@ -1253,7 +1267,7 @@ int GetNumOfFiles(string infilename)
     return file_count;
 }
 
-std::string ExtractFilename(std::string pathname)
+std::string ExtractFilename(const std::string &pathname)
 {
     size_t pos = pathname.find_last_of("/\\");
     if (pos == std::string::npos)
@@ -1266,7 +1280,7 @@ std::string ExtractFilename(std::string pathname)
     }
 }
 
-std::string ExtractPathname(std::string pathname)
+std::string ExtractPathname(const std::string &pathname)
 {
     size_t pos = pathname.find_last_of("/\\");
     if (pos == std::string::npos)
@@ -1279,8 +1293,9 @@ std::string ExtractPathname(std::string pathname)
     }
 }
 
-void ConvertBPFile(string infilepath, string outfilename, int pio_iotype, int iosysid,
-                   MPI_Comm comm, int mpirank, int nproc)
+void ConvertBPFile(const string &infilepath, const string &outfilename,
+                    int pio_iotype, int iosysid,
+                    MPI_Comm comm, int mpirank, int nproc)
 {
     ADIOS_FILE **infile = NULL;
     int num_infiles = 0;
@@ -1532,17 +1547,7 @@ void ConvertBPFile(string infilepath, string outfilename, int pio_iotype, int io
     }
 }
 
-void usage_nm(string prgname)
-{
-    cout << "Usage: " << prgname << " bp_file  nc_file  pio_io_type\n";
-    cout << "   bp file   :  data produced by PIO with ADIOS format\n";
-    cout << "   nc file   :  output file name after conversion\n";
-    cout << "   pio format:  output PIO_IO_TYPE. Supported parameters:\n";
-    cout << "                pnetcdf  netcdf  netcdf4c  netcdf4p   or:\n";
-    cout << "                   1       2        3         4\n";
-}
-
-enum PIO_IOTYPE GetIOType_nm(string t)
+enum PIO_IOTYPE GetIOType_nm(const string &t)
 {
     enum PIO_IOTYPE iotype = PIO_IOTYPE_NETCDF;
     if (t == "pnetcdf" || t == "PNETCDF" || t == "1")
@@ -1569,7 +1574,8 @@ enum PIO_IOTYPE GetIOType_nm(string t)
     return iotype;
 }
 
-int ConvertBPToNC(string infilepath, string outfilename, string piotype, MPI_Comm comm_in)
+int ConvertBPToNC(const string &infilepath, const string &outfilename,
+                  const string &piotype, MPI_Comm comm_in)
 {
     int ret = 0;
     int iosysid = 0;
@@ -1638,6 +1644,87 @@ int ConvertBPToNC(string infilepath, string outfilename, string piotype, MPI_Com
     }
 
     TimerFinalize_nm();
+
+    return ret;
+}
+
+/* Find BP directories, named "*.bp.dir", in bppdir and the
+ * corresponding file name prefixes to be used for converted
+ * files
+ */
+static int FindBPDirs(const string &bppdir,
+                      vector<string> &bpdirs,
+                      vector<string> &conv_fname_prefixes)
+{
+    DIR *pdir = opendir(bppdir.c_str());
+    if (!pdir)
+    {
+        fprintf(stderr, "Folder %s does not exist.\n", bppdir.c_str());
+        return -1;
+    }
+
+    const string BPDIR_NAME_RGX_STR("(.*)([.]nc)[.]bp[.]dir");
+    regex bpdir_name_rgx(BPDIR_NAME_RGX_STR.c_str());
+    struct dirent *pde = NULL;
+    while ((pde = readdir(pdir)) != NULL)
+    {
+        smatch match;
+        string dname(pde->d_name);
+        assert(pde);
+        /* Add dirs named "*.bp.dir" to bpdirs */
+        if ((pde->d_type == DT_DIR) &&
+            regex_search(dname, match, bpdir_name_rgx) &&
+            (match.size() == 3))
+        {
+            conv_fname_prefixes.push_back(match.str(1));
+            const std::string NC_SUFFIX(".nc");
+            const std::string BP_SUFFIX(".bp");
+            bpdirs.push_back(match.str(1) + match.str(2) + BP_SUFFIX);
+        }
+    }
+
+    closedir(pdir);
+    return 0;
+}
+
+/* Convert all BP files in "bppdir" to NetCDF files
+ * bppdir:  Directory containing multiple directories, named "*.bp.dir",
+ *          each directory containing BP files corresponding to a single
+ *          file. This is the "BP Parent Directory".
+ * piotype: The PIO IO type used for converting BP files to NetCDF using PIO
+ * comm:    The MPI communicator to be used for conversion
+ *
+ * The function looks for all directories in bppdir named "*.bp.dir"
+ * and converts them, one at a time, to NetCDF files
+ */
+int MConvertBPToNC(const string &bppdir, const string &piotype,
+                    MPI_Comm comm)
+{
+    int ret = 0;
+    vector<string> bpdirs;
+    vector<string> conv_fname_prefixes;
+    const std::string CONV_FNAME_SUFFIX(".nc");
+
+    ret = FindBPDirs(bppdir, bpdirs, conv_fname_prefixes);
+    if (ret != 0)
+    {
+        fprintf(stderr, "Unable to read directory, %s\n", bppdir.c_str());
+        return -1;
+    }
+
+    assert(bpdirs.size() == conv_fname_prefixes.size());
+    for (size_t i = 0; i < bpdirs.size(); i++)
+    {
+        ret = ConvertBPToNC(bpdirs[i],
+                conv_fname_prefixes[i] + CONV_FNAME_SUFFIX,
+                piotype, comm);
+        if (ret != 0)
+        {
+            fprintf(stderr, "Unable to convert BP file (%s) to NetCDF\n",
+                    bpdirs[i].c_str());
+            return -1;
+        }
+    }
 
     return ret;
 }
