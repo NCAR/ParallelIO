@@ -7,7 +7,7 @@ addons:
     sources:
     - ubuntu-toolchain-r-test
     packages:
-    - pkg-config netcdf-bin libnetcdf-dev openmpi-bin libopenmpi-dev gfortran
+    - pkg-config netcdf-bin libnetcdf-dev openmpi-bin libopenmpi-dev gfortran libpnetcdf-dev
 
 before_install:
   - test -n $CC && unset CC
