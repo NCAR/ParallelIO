@@ -136,10 +136,8 @@ get_iotypes(int *num_flavors, int *flavors)
     num++;
     format[fmtidx++] = PIO_IOTYPE_PNETCDF;
 #endif
-#ifdef _NETCDF
     num++;
     format[fmtidx++] = PIO_IOTYPE_NETCDF;
-#endif
 #ifdef _NETCDF4
     num += 2;
     format[fmtidx++] = PIO_IOTYPE_NETCDF4C;
