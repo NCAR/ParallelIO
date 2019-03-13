@@ -3,6 +3,7 @@
  */
 #include <config.h>
 #include <stdio.h>
+#include <stdbool.h>
 #include <stdarg.h>
 #if PIO_ENABLE_LOGGING
 #include <unistd.h>
@@ -655,7 +656,10 @@ int pio_err(iosystem_desc_t *ios, file_desc_t *file, int err_num, const char *fn
 
     /* What error handler should we use? */
     if (file)
-        err_handler = file->iosystem->error_handler;
+    {
+        ios = file->iosystem;
+        err_handler = ios->error_handler;
+    }
     else if (ios)
         err_handler = ios->error_handler;
 
@@ -666,6 +670,19 @@ int pio_err(iosystem_desc_t *ios, file_desc_t *file, int err_num, const char *fn
     {
         /* For debugging only, this will print a traceback of the call tree.  */
         piodie(fname, line, "An error occured, err=%d. Aborting since the error handler was set to PIO_INTERNAL_ERROR...", err_num);
+    }
+    else if (err_handler != PIO_RETURN_ERROR)
+    {
+        /* If the user does not explicitly ask to return error, print
+         * the error message in stderr on the root IO proc
+         */
+        bool print_err_msg = (ios) ? (ios->union_rank == ios->ioroot) : true;
+
+        if (print_err_msg)
+        {
+            fprintf(stderr, "ERROR: %s (error num=%d), (%s:%d)\n", err_msg, err_num, (fname) ? fname : '\0', line); 
+            fflush(stderr);
+        }
     }
 
     /* For PIO_BCAST_ERROR and PIO_RETURN_ERROR error handlers
