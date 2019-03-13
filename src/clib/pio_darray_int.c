@@ -362,9 +362,7 @@ int write_darray_multi_par(file_desc_t *file, int nvars, int fndims, const int *
     int dsize;             /* Data size (for one region). */
     int ierr = PIO_NOERR;
 #if USE_VARD_WRITE
-    PIO_Offset gdim0;  /* global size of first dimension if no unlimited dimension and ndims<fndims */
-    bool use_vard=true;
-    gdim0 = 0;
+    PIO_Offset gdim0 = 0;  /* global size of first dimension if no unlimited dimension and ndims<fndims */
 #endif
     /* Check inputs. */
     pioassert(file && file->iosystem && varids && varids[0] >= 0 && varids[0] <= PIO_MAX_VARS &&
