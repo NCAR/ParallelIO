@@ -31,8 +31,8 @@ script:
   - ./configure
   - make -j distcheck
   - make -j distclean
-  - rm -rf build
-  - mkdir build
-  - cd build
-  - cmake -DPIO_HDF5_LOGGING=On -DPIO_USE_MALLOC=On -DPIO_ENABLE_LOGGING=On ..
+#  - rm -rf build
+#  - mkdir build
+#  - cd build
+#  - cmake -DPIO_HDF5_LOGGING=On -DPIO_USE_MALLOC=On -DPIO_ENABLE_LOGGING=On ..
  
