@@ -1225,9 +1225,9 @@ int inq_var_deflate_handler(iosystem_desc_t *ios)
     char shuffle_present;
     char deflate_present;
     char deflate_level_present;
-    int shuffle, *shufflep;
-    int deflate, *deflatep;
-    int deflate_level, *deflate_levelp;
+    int shuffle, *shufflep = NULL;
+    int deflate, *deflatep = NULL;
+    int deflate_level, *deflate_levelp = NULL;
     int mpierr;
 
     assert(ios);
