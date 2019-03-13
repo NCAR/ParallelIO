@@ -69,6 +69,21 @@ int PIOc_File_is_Open(int ncid)
         return 1;
 }
 
+static const char *PIO_error_handler_to_string(int eh)
+{
+    if(eh == PIO_INTERNAL_ERROR){
+        return "PIO_INTERNAL_ERROR";
+    } else if(eh == PIO_BCAST_ERROR){
+        return "PIO_BCAST_ERROR";
+    } else if(eh == PIO_REDUCE_ERROR){
+        return "PIO_REDUCE_ERROR";
+    } else if(eh == PIO_RETURN_ERROR){
+        return "PIO_RETURN_ERROR";
+    } else{
+        return "UNKNOWN ERROR";
+    }
+}
+
 /**
  * Set the error handling method to be used for subsequent pio library
  * calls, returns the previous method setting. Note that this changes
@@ -92,12 +107,12 @@ int PIOc_Set_File_Error_Handling(int ncid, int method)
 
     /* Get the file info. */
     if (pio_get_file(ncid, &file))
-        piodie(__FILE__, __LINE__, "Could not find file");
+        piodie(__FILE__, __LINE__, "Invalid file id (ncid) provided. Could not find file corresponding to ncid=%d", ncid);
 
     /* Check that valid error handler was provided. */
     if (method != PIO_INTERNAL_ERROR && method != PIO_BCAST_ERROR &&
         method != PIO_RETURN_ERROR && method != PIO_REDUCE_ERROR)
-        piodie(__FILE__, __LINE__, "Invalid error hanlder method");
+        piodie(__FILE__, __LINE__, "Invalid error handler method (%s) provided.", PIO_error_handler_to_string(method));
 
     /* Get the old method. */
     oldmethod = file->iosystem->error_handler;
@@ -246,7 +261,7 @@ int PIOc_get_local_array_size(int ioid)
     io_desc_t *iodesc;
 
     if (!(iodesc = pio_get_iodesc_from_id(ioid)))
-        piodie(__FILE__, __LINE__, "Could not get iodesc");
+        piodie(__FILE__, __LINE__, "Invalid iodesc id provided. Could not get iodesc corresponding to ioid = %d", ioid);
 
     return iodesc->ndof;
 }
@@ -271,11 +286,11 @@ int PIOc_Set_IOSystem_Error_Handling(int iosysid, int method)
     /* Get the iosystem info. */
     if (iosysid != PIO_DEFAULT)
         if (!(ios = pio_get_iosystem_from_id(iosysid)))
-            piodie(__FILE__, __LINE__, "Could not find IO system.");
+            piodie(__FILE__, __LINE__, "Invalid iosystem id provided. Could not find IO system corresponding to id=%d.", iosysid);
 
     /* Set the error handler. */
     if (PIOc_set_iosystem_error_handling(iosysid, method, &oldmethod))
-        piodie(__FILE__, __LINE__, "Could not set the IOSystem error hanlder");
+        piodie(__FILE__, __LINE__, "Could not set the error handler for iosystem (id=%d)", iosysid);
 
     return oldmethod;
 }

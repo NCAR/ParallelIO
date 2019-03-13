@@ -454,7 +454,7 @@ int CalcStartandCount(int pio_type, int ndims, const int *gdims, int num_io_proc
                     compute_one_dim(gdims[i], ioprocs, tiorank, &start[i], &count[i]);
                     if (start[i] + count[i] > gdims[i] + 1)
                     {
-                        piodie(__FILE__, __LINE__, "Start plus count exceeds dimension bound");
+                        piodie(__FILE__, __LINE__, "Start (%lld) plus count (%lld) exceeds dimension bound, (gdims[%d] = %d) + 1", (long long int)start, (long long int) count, i, gdims[i]);
                     }
                 }
                 else if(gdims[i] > 1)

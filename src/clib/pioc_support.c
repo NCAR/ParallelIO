@@ -665,8 +665,7 @@ int pio_err(iosystem_desc_t *ios, file_desc_t *file, int err_num, const char *fn
     if (err_handler == PIO_INTERNAL_ERROR)
     {
         /* For debugging only, this will print a traceback of the call tree.  */
-        print_trace(stderr);
-        MPI_Abort(MPI_COMM_WORLD, -1);
+        piodie(fname, line, "An error occured, err=%d. Aborting since the error handler was set to PIO_INTERNAL_ERROR...", err_num);
     }
 
     /* For PIO_BCAST_ERROR and PIO_RETURN_ERROR error handlers
