@@ -64,7 +64,7 @@ int check_darray_file(int iosysid, char *data_filename, int iotype, int my_rank,
     void *data_in;
     void *data_in_norec;
     PIO_Offset type_size;
-    int ret;
+    int ret = PIO_NOERR;
 
     /* Reopen the file. */
     if ((ret = PIOc_openfile(iosysid, &ncid, &iotype, data_filename, NC_NOWRITE)))
@@ -219,7 +219,8 @@ int check_darray_file(int iosysid, char *data_filename, int iotype, int my_rank,
     if ((ret = PIOc_closefile(ncid)))
         ERR(ret);
 
-    return 0;
+exit:
+    return ret;
 }
 
 /* Run a simple test using darrays with async. */
