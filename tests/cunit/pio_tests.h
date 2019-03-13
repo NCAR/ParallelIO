@@ -81,7 +81,16 @@
 #define BAIL(e) do {                                                     \
         fprintf(stderr, "%d Error %d in %s, line %d\n", my_rank, e, __FILE__, __LINE__); \
         MPI_Finalize();                                                 \
-        goto exit;                                                       \
+        goto exit;                                                      \
+    } while (0)
+
+/** Handle MPI errors. This should only be used with MPI library
+ * function calls. */
+#define MPIBAIL(e) do {                                                  \
+        MPI_Error_string(e, err_buffer, &resultlen);                    \
+        fprintf(stderr, "MPI error, line %d, file %s: %s\n", __LINE__, __FILE__, err_buffer); \
+        MPI_Finalize();                                                 \
+        goto exit;                                                      \
     } while (0)
 
 /** Global err buffer for MPI. When there is an MPI error, this buffer
