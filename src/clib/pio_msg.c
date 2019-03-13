@@ -2331,9 +2331,9 @@ int get_chunk_cache_handler(iosystem_desc_t *ios)
     int iosysid;
     int iotype;
     char size_present, nelems_present, preemption_present;
-    PIO_Offset size, *sizep;
-    PIO_Offset nelems, *nelemsp;
-    float preemption, *preemptionp;
+    PIO_Offset size, *sizep = NULL;
+    PIO_Offset nelems, *nelemsp = NULL;
+    float preemption, *preemptionp = NULL;
     int mpierr = MPI_SUCCESS;  /* Return code from MPI function codes. */
 
     LOG((1, "get_chunk_cache_handler called"));
@@ -2384,9 +2384,9 @@ int get_var_chunk_cache_handler(iosystem_desc_t *ios)
     int ncid;
     int varid;
     char size_present, nelems_present, preemption_present;
-    PIO_Offset size, *sizep;
-    PIO_Offset nelems, *nelemsp;
-    float preemption, *preemptionp;
+    PIO_Offset size, *sizep = NULL;
+    PIO_Offset nelems, *nelemsp = NULL;
+    float preemption, *preemptionp = NULL;
     int mpierr = MPI_SUCCESS;  /* Return code from MPI function codes. */
 
     LOG((1, "get_var_chunk_cache_handler called"));
