@@ -201,6 +201,7 @@ module pio_types
    integer, public, parameter :: PIO_MAX_VAR_DIMS = min(nf_max_var_dims, PIO_MAX_VAR_DIMS_UB)
    integer, public, parameter :: PIO_64BIT_OFFSET = nf_64bit_offset
    integer, public, parameter :: PIO_64BIT_DATA = nf_64bit_data
+   integer, public, parameter :: PIO_FILL_CHAR = nf_fill_char;
    integer, public, parameter :: PIO_FILL_INT = nf_fill_int;
    real, public, parameter :: PIO_FILL_FLOAT = nf_fill_float;
    double precision, public, parameter :: PIO_FILL_DOUBLE = nf_fill_double;
@@ -227,6 +228,7 @@ module pio_types
    integer, public, parameter :: PIO_MAX_VAR_DIMS = min(nf_max_var_dims, PIO_MAX_VAR_DIMS_UB)
    integer, public, parameter :: PIO_64BIT_OFFSET = nf_64bit_offset
    integer, public, parameter :: PIO_64BIT_DATA = 0
+   integer, public, parameter :: PIO_FILL_CHAR = nf_fill_char;
    integer, public, parameter :: PIO_FILL_INT = nf_fill_int;
    real, public, parameter :: PIO_FILL_FLOAT = nf_fill_float;
    double precision, public, parameter :: PIO_FILL_DOUBLE = nf_fill_double;
@@ -248,6 +250,7 @@ module pio_types
    integer, public, parameter :: PIO_NOWRITE = 21
    integer, public, parameter :: PIO_64BIT_OFFSET = 0
    integer, public, parameter :: PIO_64BIT_DATA = 0
+   integer, public, parameter :: PIO_FILL_CHAR = achar(0);
    integer, public, parameter :: PIO_FILL_INT = -2147483647;
    real, public, parameter :: PIO_FILL_FLOAT =  9.9692099683868690e+36;
    double precision, public, parameter :: PIO_FILL_DOUBLE = 9.9692099683868690e+36;
