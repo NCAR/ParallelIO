@@ -48,6 +48,9 @@ install (TARGETS adios2pio-nm-lib DESTINATION lib)
 # Include/Header File
 install (FILES ${CMAKE_CURRENT_SOURCE_DIR}/adios2pio-nm-lib.h DESTINATION include)
 
+# Binary utilities
+install (TARGETS adios2pio-nm.exe DESTINATION bin)
+
 #===== NetCDF-C =====
 if (WITH_NETCDF)
 find_package (NetCDF "4.3.3" COMPONENTS C)
