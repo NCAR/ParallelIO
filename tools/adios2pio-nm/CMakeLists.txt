@@ -39,8 +39,8 @@ target_compile_definitions (adios2pio-nm-lib
 target_compile_definitions (adios2pio-nm-lib
   PUBLIC ${CMAKE_C_COMPILER_DIRECTIVE})
 
-ADD_EXECUTABLE(adios2pio-nm ${SRC})
-TARGET_LINK_LIBRARIES(adios2pio-nm adios2pio-nm-lib pioc)
+ADD_EXECUTABLE(adios2pio-nm.exe ${SRC})
+TARGET_LINK_LIBRARIES(adios2pio-nm.exe adios2pio-nm-lib pioc)
 
 # Library
 install (TARGETS adios2pio-nm-lib DESTINATION lib)
