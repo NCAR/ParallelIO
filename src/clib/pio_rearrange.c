@@ -1222,6 +1222,7 @@ int box_rearrange_create(iosystem_desc_t *ios, int maplen, const PIO_Offset *com
     /* Allocate arrays needed for this function. */
     int *dest_ioproc = NULL; /* Destination IO task for each data element on compute task. */
     PIO_Offset *dest_ioindex = NULL;    /* Offset into IO task array for each data element. */
+    PIO_Offset **gcoord_map = NULL; /* Global coordinate value for each data element. */
     int sendcounts[ios->num_uniontasks]; /* Send counts for swapm call. */
     int sdispls[ios->num_uniontasks];    /* Send displacements for swapm. */
     int recvcounts[ios->num_uniontasks]; /* Receive counts for swapm. */
@@ -1249,6 +1250,15 @@ int box_rearrange_create(iosystem_desc_t *ios, int maplen, const PIO_Offset *com
 
         if (!(dest_ioindex = malloc(maplen * sizeof(PIO_Offset))))
             return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__);
+
+        if (!(gcoord_map = malloc(maplen * sizeof(PIO_Offset*))))
+            return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__);
+
+        for (int i = 0; i < maplen; i++)
+        {
+            if (!(gcoord_map[i] = calloc(ndims, sizeof(PIO_Offset))))
+                return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__);
+        }
     }
 
     /* Initialize the sc_info send and recv messages */
@@ -1372,6 +1382,18 @@ int box_rearrange_create(iosystem_desc_t *ios, int maplen, const PIO_Offset *com
         LOG((3, "iomaplen[%d] = %d", i, sc_info_msg_recv[i * sc_info_msg_sz]));
 #endif /* PIO_ENABLE_LOGGING */
 
+    /* Convert a 1-D index into a global coordinate value for each data element */
+    for (int k = 0; k < maplen; k++)
+    {
+        /* The compmap array is 1 based but calculations are 0 based */
+        LOG((3, "about to call idx_to_dim_list ndims = %d ", ndims));
+        idx_to_dim_list(ndims, gdimlen, compmap[k] - 1, gcoord_map[k]);
+#if PIO_ENABLE_LOGGING
+        for (int d = 0; d < ndims; d++)
+            LOG((3, "gcoord_map[%d][%d] = %lld", k, d, gcoord_map[k][d]));
+#endif /* PIO_ENABLE_LOGGING */
+    }
+
     for (int i = 0; i < ios->num_iotasks; i++)
     {
         /* First entry in the sc_info msg is the iomaplen */
@@ -1394,23 +1416,19 @@ int box_rearrange_create(iosystem_desc_t *ios, int maplen, const PIO_Offset *com
              * offset into the global data array. */
             for (int k = 0; k < maplen; k++)
             {
-                PIO_Offset gcoord[ndims], lcoord[ndims];
-                bool found = true;
+                /* An IO task has already been found for this element */
+                if (dest_ioproc[k] >= 0)
+                    continue;
 
-                /* The compmap array is 1 based but calculations are 0 based */
-                LOG((3, "about to call idx_to_dim_list ndims = %d ", ndims));
-                idx_to_dim_list(ndims, gdimlen, compmap[k] - 1, gcoord);
-  #if PIO_ENABLE_LOGGING
-                for (int d = 0; d < ndims; d++)
-                    LOG((3, "gcoord[%d] = %lld", d, gcoord[d]));
-  #endif /* PIO_ENABLE_LOGGING */
+                PIO_Offset lcoord[ndims];
+                bool found = true;
 
                 /* Find a destination for each entry in the compmap. */
                 for (int j = 0; j < ndims; j++)
                 {
-                    if (gcoord[j] >= start[j] && gcoord[j] < start[j] + count[j])
+                    if (gcoord_map[k][j] >= start[j] && gcoord_map[k][j] < start[j] + count[j])
                     {
-                        lcoord[j] = gcoord[j] - start[j];
+                        lcoord[j] = gcoord_map[k][j] - start[j];
                     }
                     else
                     {
@@ -1433,6 +1451,11 @@ int box_rearrange_create(iosystem_desc_t *ios, int maplen, const PIO_Offset *com
             }
         }
     }
+
+    for (int i = 0; i < maplen; i++)
+        free(gcoord_map[i]);
+    free(gcoord_map);
+    gcoord_map = NULL;
 
     /* Check that a destination is found for each compmap entry. */
     for (int k = 0; k < maplen; k++)
@@ -1492,6 +1515,7 @@ int box_rearrange_create_with_holes(iosystem_desc_t *ios, int maplen, const PIO_
     /* Allocate arrays needed for this function. */
     int *dest_ioproc = NULL; /* Destination IO task for each data element on compute task. */
     PIO_Offset *dest_ioindex = NULL;    /* Offset into IO task array for each data element. */
+    PIO_Offset **gcoord_map = NULL; /* Global coordinate value for each data element. */
     int sendcounts[ios->num_uniontasks]; /* Send counts for swapm call. */
     int sdispls[ios->num_uniontasks];    /* Send displacements for swapm. */
     int recvcounts[ios->num_uniontasks]; /* Receive counts for swapm. */
@@ -1512,6 +1536,15 @@ int box_rearrange_create_with_holes(iosystem_desc_t *ios, int maplen, const PIO_
 
         if (!(dest_ioindex = malloc(maplen * sizeof(PIO_Offset))))
             return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__);
+
+        if (!(gcoord_map = malloc(maplen * sizeof(PIO_Offset*))))
+            return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__);
+
+        for (int i = 0; i < maplen; i++)
+        {
+            if (!(gcoord_map[i] = calloc(ndims, sizeof(PIO_Offset))))
+                return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__);
+        }
     }
 
     /* Initialize array values. */
@@ -1589,6 +1622,18 @@ int box_rearrange_create_with_holes(iosystem_desc_t *ios, int maplen, const PIO_
         LOG((3, "iomaplen[%d] = %d", i, iomaplen[i]));
 #endif /* PIO_ENABLE_LOGGING */
 
+    /* Convert a 1-D index into a global coordinate value for each data element */
+    for (int k = 0; k < maplen; k++)
+    {
+        /* The compmap array is 1 based but calculations are 0 based */
+        LOG((3, "about to call idx_to_dim_list ndims = %d ", ndims));
+        idx_to_dim_list(ndims, gdimlen, compmap[k] - 1, gcoord_map[k]);
+#if PIO_ENABLE_LOGGING
+        for (int d = 0; d < ndims; d++)
+            LOG((3, "gcoord_map[%d][%d] = %lld", k, d, gcoord_map[k][d]));
+#endif /* PIO_ENABLE_LOGGING */
+    }
+
     /* For each IO task send starts/counts to all compute tasks. */
     for (int i = 0; i < ios->num_iotasks; i++)
     {
@@ -1645,23 +1690,19 @@ int box_rearrange_create_with_holes(iosystem_desc_t *ios, int maplen, const PIO_
              * offset into the global data array. */
             for (int k = 0; k < maplen; k++)
             {
-                PIO_Offset gcoord[ndims], lcoord[ndims];
-                bool found = true;
+                /* An IO task has already been found for this element */
+                if (dest_ioproc[k] >= 0)
+                    continue;
 
-                /* The compmap array is 1 based but calculations are 0 based */
-                LOG((3, "about to call idx_to_dim_list ndims = %d ", ndims));
-                idx_to_dim_list(ndims, gdimlen, compmap[k] - 1, gcoord);
-#if PIO_ENABLE_LOGGING
-                for (int d = 0; d < ndims; d++)
-                    LOG((3, "gcoord[%d] = %lld", d, gcoord[d]));
-#endif /* PIO_ENABLE_LOGGING */
+                PIO_Offset lcoord[ndims];
+                bool found = true;
 
                 /* Find a destination for each entry in the compmap. */
                 for (int j = 0; j < ndims; j++)
                 {
-                    if (gcoord[j] >= start[j] && gcoord[j] < start[j] + count[j])
+                    if (gcoord_map[k][j] >= start[j] && gcoord_map[k][j] < start[j] + count[j])
                     {
-                        lcoord[j] = gcoord[j] - start[j];
+                        lcoord[j] = gcoord_map[k][j] - start[j];
                     }
                     else
                     {
@@ -1684,6 +1725,11 @@ int box_rearrange_create_with_holes(iosystem_desc_t *ios, int maplen, const PIO_
             }
         }
     }
+
+    for (int i = 0; i < maplen; i++)
+        free(gcoord_map[i]);
+    free(gcoord_map);
+    gcoord_map = NULL;
 
     /* Check that a destination is found for each compmap entry. */
     for (int k = 0; k < maplen; k++)
