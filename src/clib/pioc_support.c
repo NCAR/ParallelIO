@@ -874,6 +874,7 @@ int PIOc_readmap(const char *file, int *ndims, int **gdims, PIO_Offset *fmaplen,
     PIO_Offset *tmap;
     MPI_Status status;
     PIO_Offset maplen;
+    int ret;
     int mpierr; /* Return code for MPI calls. */
 
     /* Check inputs. */
@@ -892,44 +893,87 @@ int PIOc_readmap(const char *file, int *ndims, int **gdims, PIO_Offset *fmaplen,
             pio_err(NULL, NULL, PIO_EINVAL, __FILE__, __LINE__);
 
         if (fscanf(fp,"version %d npes %d ndims %d\n", &rversno, &rnpes, ndims) != 3)
+        {
+            fclose(fp);
             pio_err(NULL, NULL, PIO_EINVAL, __FILE__, __LINE__);
-        if (rversno != VERSNO)
+        }
+        if (rversno != VERSNO || rnpes < 1 || rnpes > npes)
+        {
+            fclose(fp);
             return pio_err(NULL, NULL, PIO_EINVAL, __FILE__, __LINE__);
-
-        if (rnpes < 1 || rnpes > npes)
-            return pio_err(NULL, NULL, PIO_EINVAL, __FILE__, __LINE__);
+        }
 
         if ((mpierr = MPI_Bcast(&rnpes, 1, MPI_INT, 0, comm)))
+        {
+            fclose(fp);
             return check_mpi(NULL, mpierr, __FILE__, __LINE__);
+        }
         if ((mpierr = MPI_Bcast(ndims, 1, MPI_INT, 0, comm)))
+        {
+            fclose(fp);
             return check_mpi(NULL, mpierr, __FILE__, __LINE__);
+        }
         if (!(tdims = calloc(*ndims, sizeof(int))))
+        {
+            fclose(fp);
             return pio_err(NULL, NULL, PIO_ENOMEM, __FILE__, __LINE__);
+        }
         for (int i = 0; i < *ndims; i++)
+        {
             if (fscanf(fp,"%d ", tdims + i) != 1)
+            {
+                fclose(fp);
                 pio_err(NULL, NULL, PIO_EINVAL, __FILE__, __LINE__);
+            }
+        }
 
         if ((mpierr = MPI_Bcast(tdims, *ndims, MPI_INT, 0, comm)))
+        {
+            fclose(fp);
             return check_mpi(NULL, mpierr, __FILE__, __LINE__);
+        }
 
         for (int i = 0; i < rnpes; i++)
         {
             if (fscanf(fp, "%d %lld", &j, &maplen) != 2)
+            {
+                fclose(fp);
                 pio_err(NULL, NULL, PIO_EINVAL, __FILE__, __LINE__);
+            }
             if (j != i)  // Not sure how this could be possible
+            {
+                fclose(fp);
                 return pio_err(NULL, NULL, PIO_EINVAL, __FILE__, __LINE__);
+            }
             if (!(tmap = malloc(maplen * sizeof(PIO_Offset))))
+            {
+                fclose(fp);
                 return pio_err(NULL, NULL, PIO_ENOMEM, __FILE__, __LINE__);
+            }
             for (j = 0; j < maplen; j++)
+            {
                 if (fscanf(fp, "%lld ", tmap + j) != 1)
+                {
+                    fclose(fp);
+                    free(tmap);
                     pio_err(NULL, NULL, PIO_EINVAL, __FILE__, __LINE__);
+                }
+            }
 
             if (i > 0)
             {
                 if ((mpierr = MPI_Send(&maplen, 1, PIO_OFFSET, i, i + npes, comm)))
+                {
+                    fclose(fp);
+                    free(tmap);
                     return check_mpi(NULL, mpierr, __FILE__, __LINE__);
+                }
                 if ((mpierr = MPI_Send(tmap, maplen, PIO_OFFSET, i, i, comm)))
+                {
+                    fclose(fp);
+                    free(tmap);
                     return check_mpi(NULL, mpierr, __FILE__, __LINE__);
+                }
                 free(tmap);
             }
             else
