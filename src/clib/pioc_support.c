@@ -694,8 +694,13 @@ int malloc_iodesc(iosystem_desc_t *ios, int piotype, int ndims,
     if (mpi_type == MPI_DATATYPE_NULL)
 	(*iodesc)->mpitype_size = 0;
     else
+    {
 	if ((mpierr = MPI_Type_size((*iodesc)->mpitype, &(*iodesc)->mpitype_size)))
+        {
+            free(*iodesc);
 	    return check_mpi2(ios, NULL, mpierr, __FILE__, __LINE__);
+        }
+    }
 
     /* Initialize some values in the struct. */
     (*iodesc)->maxregions = 1;
@@ -704,7 +709,10 @@ int malloc_iodesc(iosystem_desc_t *ios, int piotype, int ndims,
 
     /* Allocate space for, and initialize, the first region. */
     if ((ret = alloc_region2(ios, ndims, &((*iodesc)->firstregion))))
+    {
+        free(*iodesc);
         return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+    }
 
     /* Set the swap memory settings to defaults for this IO system. */
     (*iodesc)->rearr_opts = ios->rearr_opts;
