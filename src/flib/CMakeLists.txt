@@ -96,10 +96,6 @@ install (FILES ${PIO_Fortran_MODS} DESTINATION include)
 #  DEFINE THE DEPENDENCIES
 #==============================================================================
 
-#===== pioc =====
-target_link_libraries(piof
-  PUBLIC pioc)
-
 #===== genf90 =====
 if (DEFINED GENF90_PATH)
   add_custom_target(genf90
@@ -263,6 +259,10 @@ if (PIO_Fortran_EXTRA_LINK_FLAGS)
   set_target_properties(piof PROPERTIES
     LINK_FLAGS ${PIO_Fortran_EXTRA_LINK_FLAGS})
 endif ()
+
+#===== pioc =====
+target_link_libraries(piof
+  PUBLIC pioc)
 
 #===== Check for necessities =====
 if (NOT PnetCDF_Fortran_FOUND AND NOT NetCDF_Fortran_FOUND)

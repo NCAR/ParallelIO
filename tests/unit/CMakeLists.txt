@@ -21,6 +21,7 @@ set (SRCS basic_tests.F90
   ncdf_tests.F90)
 
 add_executable (pio_unit_test EXCLUDE_FROM_ALL ${SRCS})
+set_property(TARGET pio_unit_test PROPERTY LINKER_LANGUAGE Fortran)
 target_link_libraries (pio_unit_test piof)
 if ("${CMAKE_Fortran_COMPILER_ID}" STREQUAL "GNU")
   target_compile_options (pio_unit_test

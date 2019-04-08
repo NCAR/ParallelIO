@@ -4,11 +4,13 @@
 
 add_executable (pioperf EXCLUDE_FROM_ALL
   pioperformance.F90)
+set_property(TARGET pioperf PROPERTY LINKER_LANGUAGE Fortran)
 target_link_libraries (pioperf piof)
 add_dependencies (tests pioperf)
 
 add_executable (pioperf_rearr EXCLUDE_FROM_ALL
   pioperformance_rearr.F90)
+set_property(TARGET pioperf_rearr PROPERTY LINKER_LANGUAGE Fortran)
 target_link_libraries (pioperf_rearr piof)
 add_dependencies (tests pioperf_rearr)
 
