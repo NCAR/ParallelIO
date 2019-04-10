@@ -314,7 +314,7 @@ PIO_TF_AUTO_TEST_SUB_BEGIN nc_wr_2d_two_iodescs
     PIO_TF_CHECK_ERR(ierr, "Failed to end redef mode : " // trim(filename))
 
     do f=1,NFRAMES
-      if(mod(f,2) == 0) then
+      if(mod(INT(f),2) == 0) then
         is_even_frame = .true.
       else
         is_even_frame = .false.
