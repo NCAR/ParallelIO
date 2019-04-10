@@ -1,0 +1,36 @@
+#!/bin/bash
+#
+# Arguments:
+#
+#   $1  - Number of MPI Tasks
+#   $2+ - Executable and its arguments
+#
+
+# =============== Arguments ===================
+NTASKS=$1
+shift
+EXE=$@
+
+# =============== Constants ===================
+# Summit 1 node = 2 sockets = 42 physical cores = 168 hardware cores 
+# Summit 1 node has 6 GPUs, we use 0 GPUs, the default
+# The mpiexec command below 
+# --nrs ALL_HOSTS : Number of resource sets = number of hosts (number of nodes)
+#                   i.e., One resource set per node
+# --cpu_per_rs ALL_CPUS : Each resource set gets all CPUs on each node
+#                         i.e., Each resource set gets 42 CPUs
+# --latency-priority cpu-cpu : Ensures that CPU to CPU latency for CPUs within
+#                               a resource set is minimized. This setting is not
+#                               relevant since we only use 1 resource set/node
+# --launch_distribution packed : Consecutive MPI processes are assigned to a
+#                                 resource set till its filled up (pack MPI
+#                                 processes as tightly as possible in resource
+#                                 sets). Again not relevant since we only use
+#                                 1 resource set/node
+# --np $NTASKS : launches $NTASKS mpi processes
+
+# =============== MPIEXEC command =============
+#mpirun="jsrun --np $NTASKS --rs_per_host 1 $EXE"
+mpirun="jsrun --nrs ALL_HOSTS --cpu_per_rs ALL_CPUS --latency_priority cpu-cpu --launch_distribution packed --np $NTASKS $EXE"
+echo "Running: $mpirun"
+$mpirun

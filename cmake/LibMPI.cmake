@@ -68,8 +68,13 @@ function (platform_name RETURN_VARIABLE)
         set (${RETURN_VARIABLE} "olcf" PARENT_SCOPE)
         
     else ()
-
-        set (${RETURN_VARIABLE} "unknown" PARENT_SCOPE)
+        cmake_host_system_information (RESULT FQDN_SITENAME QUERY FQDN)
+        if (FQDN_SITENAME MATCHES "^.*summit[.]olcf")
+            set (${RETURN_VARIABLE} "summit" PARENT_SCOPE)
+        else()
+            message (WARNING "Unsupported system, ${FQDN_SITENAME}, using defaults")
+            set (${RETURN_VARIABLE} "unknown" PARENT_SCOPE)
+        endif ()
     
     endif ()
 
