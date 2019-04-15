@@ -72,7 +72,6 @@ function (platform_name RETURN_VARIABLE)
         if (FQDN_SITENAME MATCHES "^.*summit[.]olcf")
             set (${RETURN_VARIABLE} "summit" PARENT_SCOPE)
         else()
-            message (WARNING "Unsupported system, ${FQDN_SITENAME}, using defaults")
             set (${RETURN_VARIABLE} "unknown" PARENT_SCOPE)
         endif ()
     
