@@ -149,6 +149,9 @@ CONTAINS
     IF (pio_tf_num_io_tasks_ <= 1 .AND. pio_tf_stride_ > 1) THEN
        pio_tf_stride_ = 1
     END IF
+    IF (pio_tf_stride_ * (pio_tf_num_io_tasks_ - 1) >= pio_tf_world_sz_) THEN
+       pio_tf_stride_ = pio_tf_world_sz_ / pio_tf_num_io_tasks_
+    END IF
     IF (pio_tf_num_io_tasks_ == 0) THEN
       pio_tf_num_io_tasks_ = pio_tf_world_sz_ / pio_tf_stride_
       IF (pio_tf_num_io_tasks_ < 1) pio_tf_num_io_tasks_ = 1

@@ -1,4 +1,5 @@
 include (LibMPI)
+include (PIOTest)
 
 #==============================================================================
 #  GENERATE TARGET SOURCES
@@ -63,8 +64,73 @@ endif()
 #  DEFINE THE TARGETS AND TESTS
 #==============================================================================
 
-# Test Timeout (4 min = 240 sec)
+# Test Timeout (8 min = 480 sec)
 set (DEFAULT_TEST_TIMEOUT 480)
+set (DEFAULT_TEST_MAXNUMPROCS 4)
+
+# Use environment variable PIO_TF_MAXNUMPROCS to set the maximum number
+# of MPI processes used to run the tests (default is 4)
+# This setting is typically used to run PIO Fortran test suite on a
+# cluster (with larger number of MPI processes)
+if (DEFINED ENV{PIO_TF_MAXNUMPROCS})
+  set(PIO_TF_MAXNUMPROCS $ENV{PIO_TF_MAXNUMPROCS})
+else ()
+  set(PIO_TF_MAXNUMPROCS ${DEFAULT_TEST_MAXNUMPROCS})
+endif ()
+
+# Since the testing framework exponentially increases the number of
+# I/O processes and stride we need to limit the number of combinations
+# of MPI processes + I/O processes + stride to limit the total test suite
+# execution time. We divide tests into multiple tiers based on their
+# nightly test execution times and limit the number of I/O processes and
+# strides for costly tiers.
+# Cost tiers C1, C2, C3, ... : cost(C1) < cost(C2) < cost(C3), ...
+# Approx cost : cost(C1) < 1s, cost(C2) < 10s, cost(C3) >= 10s
+
+# Strides are always restricted to 1,2 for all cost tiers
+# (to reduce the number of test combinations)
+set (PIO_TF_STRIDE_UB "2")
+
+# Cost tier C1 variables - low cost, very less restrictions
+# Only allow upto 8 I/O procs & strides upto 2
+set (PIO_TF_C1_UB "8")
+set (PIO_TF_C1_MAXNUMIOPROCS ${PIO_TF_MAXNUMPROCS})
+set (PIO_TF_C1_MAXSTRIDE ${PIO_TF_MAXNUMPROCS})
+
+if (PIO_TF_C1_MAXNUMIOPROCS GREATER PIO_TF_C1_UB)
+  set (PIO_TF_C1_MAXNUMIOPROCS ${PIO_TF_C1_UB})
+endif ()
+if (PIO_TF_C1_MAXSTRIDE GREATER PIO_TF_STRIDE_UB)
+  set (PIO_TF_C1_MAXSTRIDE ${PIO_TF_STRIDE_UB})
+endif ()
+
+# Cost tier C2 variables - medium cost, some restrictions
+# Only allow upto 4 I/O procs & strides upto 2
+set (PIO_TF_C2_UB "4")
+set (PIO_TF_C2_MAXNUMIOPROCS ${PIO_TF_MAXNUMPROCS})
+set (PIO_TF_C2_MAXSTRIDE ${PIO_TF_MAXNUMPROCS})
+
+if (PIO_TF_C2_MAXNUMIOPROCS GREATER PIO_TF_C2_UB)
+  set (PIO_TF_C2_MAXNUMIOPROCS ${PIO_TF_C2_UB})
+endif ()
+if (PIO_TF_C2_MAXSTRIDE GREATER PIO_TF_STRIDE_UB)
+  set (PIO_TF_C2_MAXSTRIDE ${PIO_TF_STRIDE_UB})
+endif ()
+
+# Cost tier C3 variables - high cost, limit combinations tested
+# Only allow upto 2 I/O procs & strides upto 2
+set (PIO_TF_C3_UB "2")
+set (PIO_TF_C3_MAXNUMIOPROCS ${PIO_TF_MAXNUMPROCS})
+set (PIO_TF_C3_MAXSTRIDE ${PIO_TF_MAXNUMPROCS})
+
+if (PIO_TF_C3_MAXNUMIOPROCS GREATER PIO_TF_C3_UB)
+  set (PIO_TF_C3_MAXNUMIOPROCS ${PIO_TF_C3_UB})
+endif ()
+if (PIO_TF_C3_MAXSTRIDE GREATER PIO_TF_STRIDE_UB)
+  set (PIO_TF_C3_MAXSTRIDE ${PIO_TF_STRIDE_UB})
+endif ()
+
+message(STATUS "Adding Fortran tests with [1...${PIO_TF_MAXNUMPROCS}] MPI processes")
 
 #===== Build the PIO testing framework =========
 add_library(pio_tutil EXCLUDE_FROM_ALL
@@ -79,44 +145,15 @@ target_link_libraries (pio_init_finalize pio_tutil piof)
 add_dependencies (pio_init_finalize pio_tutil)
 add_dependencies (tests pio_init_finalize)
 
-if (PIO_USE_MPISERIAL)
-  add_test(NAME init_finialize_1_proc
-    COMMAND pio_init_finalize)
-  set_tests_properties(init_finialize_1_proc
-    PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-
-  add_test(NAME init_finialize_2_proc
-    COMMAND pio_init_finalize)
-  set_tests_properties(init_finialize_2_proc
-    PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-
-  add_test(NAME init_finalize_2_proc_with_args
-    COMMAND pio_init_finalize --pio-tf-stride=2 --pio-tf-num-aggregators=2)
-  set_tests_properties(init_finalize_2_proc_with_args
-    PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-else ()
-  add_mpi_test(init_finialize_1_proc
-    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_init_finalize
-    NUMPROCS 1
-    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-
-  add_mpi_test(init_finialize_2_proc
-    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_init_finalize
-    NUMPROCS 2
-    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-
-  add_mpi_test(init_finalize_2_proc_with_args
-    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_init_finalize
-    ARGUMENTS --pio-tf-stride=2 --pio-tf-num-aggregators=2
-    NUMPROCS 2
-    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-
-  add_mpi_test(init_finalize_4_proc_2iop_3str
-    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_init_finalize
-    ARGUMENTS --pio-tf-num-io-tasks=2 --pio-tf-stride=3
-    NUMPROCS 4
-    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-endif ()
+add_pio_test(init_finalize
+  EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_init_finalize
+  MINNUMPROCS 1
+  MAXNUMPROCS ${PIO_TF_MAXNUMPROCS}
+  MINNUMIOPROCS 1
+  MAXNUMIOPROCS ${PIO_TF_C1_MAXNUMIOPROCS}
+  MINSTRIDE 1
+  MAXSTRIDE ${PIO_TF_C1_MAXSTRIDE}
+  TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== pio_async_init_finalize =====
 add_executable (pio_async_init_finalize EXCLUDE_FROM_ALL
@@ -126,27 +163,16 @@ target_link_libraries (pio_async_init_finalize pio_tutil piof)
 add_dependencies (pio_async_init_finalize pio_tutil)
 add_dependencies (tests pio_async_init_finalize)
 
-if (PIO_USE_MPISERIAL)
-  add_test(NAME async_init_finalize_1_proc
-    COMMAND pio_async_init_finalize)
-  set_tests_properties(async_init_finalize_1_proc
-    PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-else ()
-  add_mpi_test(async_init_finalize_2_proc
-    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_async_init_finalize
-    NUMPROCS 2
-    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-
-  add_mpi_test(async_init_finalize_3_proc
-    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_async_init_finalize
-    NUMPROCS 3
-    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-
-  add_mpi_test(async_init_finalize_4_proc
-    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_async_init_finalize
-    NUMPROCS 4
-    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-endif ()
+# Note: Async tests don't use ioprocs/stride specified by user
+add_pio_test(async_init_finalize
+  EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_async_init_finalize
+  MINNUMPROCS 2
+  MAXNUMPROCS ${PIO_TF_MAXNUMPROCS}
+  MINNUMIOPROCS 1
+  MAXNUMIOPROCS 1
+  MINSTRIDE 1
+  MAXSTRIDE 1
+  TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== pio_file_simple_tests =====
 add_executable (pio_file_simple_tests EXCLUDE_FROM_ALL
@@ -156,38 +182,36 @@ target_link_libraries (pio_file_simple_tests pio_tutil piof)
 add_dependencies (pio_file_simple_tests pio_tutil)
 add_dependencies (tests pio_file_simple_tests)
 
-if (PIO_USE_MPISERIAL)
-  add_test(NAME pio_file_simple_tests
-    COMMAND pio_file_simple_tests)
-  set_tests_properties(pio_file_simple_tests
-    PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-else ()
-  add_mpi_test(pio_file_simple_tests
-    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_file_simple_tests
-    NUMPROCS 2
-    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-endif ()
+# The number of io procs/stride doesn't significantly impact this test
+add_pio_test(pio_file_simple_tests
+  EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_file_simple_tests
+  MINNUMPROCS 2
+  MAXNUMPROCS ${PIO_TF_MAXNUMPROCS}
+  MINNUMIOPROCS 1
+  MAXNUMIOPROCS 2
+  MINSTRIDE 1
+  MAXSTRIDE 1
+  TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== pio_large_file_tests =====
 if (PIO_ENABLE_LARGE_TESTS)
-add_executable (pio_large_file_tests EXCLUDE_FROM_ALL
-  pio_large_file_tests.F90
-  ${CMAKE_CURRENT_SOURCE_DIR}/util/pio_tutil.F90)
-set_property(TARGET pio_large_file_tests PROPERTY LINKER_LANGUAGE Fortran)
-target_link_libraries (pio_large_file_tests pio_tutil piof)
-add_dependencies (tests pio_large_file_tests)
+  add_executable (pio_large_file_tests EXCLUDE_FROM_ALL
+    pio_large_file_tests.F90
+    ${CMAKE_CURRENT_SOURCE_DIR}/util/pio_tutil.F90)
+  set_property(TARGET pio_large_file_tests PROPERTY LINKER_LANGUAGE Fortran)
+  target_link_libraries (pio_large_file_tests pio_tutil piof)
+  add_dependencies (tests pio_large_file_tests)
 
-  if (PIO_USE_MPISERIAL)
-    add_test(NAME pio_large_file_tests
-      COMMAND pio_large_file_tests)
-    set_tests_properties(pio_large_file_tests
-      PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-  else ()
-    add_mpi_test(pio_large_file_tests
-      EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_large_file_tests
-      NUMPROCS 2
-      TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-  endif ()
+  # Costly test only test with 2 I/O procs
+  add_pio_test(pio_large_file_tests
+    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_large_file_tests
+    MINNUMPROCS 2
+    MAXNUMPROCS ${PIO_TF_MAXNUMPROCS}
+    MINNUMIOPROCS 2
+    MAXNUMIOPROCS 2
+    MINSTRIDE 1
+    MAXSTRIDE 1
+    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 endif ()
 
 #===== pio_file_fail =====
@@ -202,17 +226,16 @@ endif()
 add_dependencies (pio_file_fail pio_tutil)
 add_dependencies (tests pio_file_fail)
 
-if (PIO_USE_MPISERIAL)
-  add_test(NAME pio_file_fail
-    COMMAND pio_file_fail)
-  set_tests_properties(pio_file_fail
-    PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-else ()
-  add_mpi_test(pio_file_fail
-    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_file_fail
-    NUMPROCS 2
-    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-endif ()
+# The number of io procs/stride doesn't significantly impact this test
+add_pio_test(pio_file_fail
+  EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_file_fail
+  MINNUMPROCS 4
+  MAXNUMPROCS ${PIO_TF_MAXNUMPROCS}
+  MINNUMIOPROCS 2
+  MAXNUMIOPROCS 2
+  MINSTRIDE 2
+  MAXSTRIDE 2
+  TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== ncdf_simple_tests =====
 add_executable (ncdf_simple_tests EXCLUDE_FROM_ALL
@@ -222,17 +245,15 @@ target_link_libraries (ncdf_simple_tests pio_tutil piof)
 add_dependencies (ncdf_simple_tests pio_tutil)
 add_dependencies (tests ncdf_simple_tests)
 
-if (PIO_USE_MPISERIAL)
-  add_test(NAME ncdf_simple_tests
-    COMMAND ncdf_simple_tests)
-  set_tests_properties(ncdf_simple_tests
-    PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-else ()
-  add_mpi_test(ncdf_simple_tests
-    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/ncdf_simple_tests
-    NUMPROCS 2
-    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-endif ()
+add_pio_test(ncdf_simple_tests
+  EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/ncdf_simple_tests
+  MINNUMPROCS 4
+  MAXNUMPROCS ${PIO_TF_MAXNUMPROCS}
+  MINNUMIOPROCS 2
+  MAXNUMIOPROCS ${PIO_TF_C2_MAXNUMIOPROCS}
+  MINSTRIDE 2
+  MAXSTRIDE ${PIO_TF_C2_MAXSTRIDE}
+  TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== ncdf_get_put =====
 add_executable (ncdf_get_put EXCLUDE_FROM_ALL
@@ -242,25 +263,15 @@ target_link_libraries (ncdf_get_put pio_tutil piof)
 add_dependencies (ncdf_get_put pio_tutil)
 add_dependencies (tests ncdf_get_put)
 
-if (PIO_USE_MPISERIAL)
-  add_test(NAME ncdf_get_put_1proc
-    COMMAND ncdf_get_put)
-  set_tests_properties(ncdf_get_put_1proc
-    PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-  add_test(NAME ncdf_get_put_2proc
-    COMMAND ncdf_get_put)
-  set_tests_properties(ncdf_get_put_2proc
-    PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-else ()
-  add_mpi_test(ncdf_get_put_1proc
-    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/ncdf_get_put
-    NUMPROCS 1
-    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-  add_mpi_test(ncdf_get_put_2proc
-    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/ncdf_get_put
-    NUMPROCS 2
-    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-endif ()
+add_pio_test(ncdf_get_put
+  EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/ncdf_get_put
+  MINNUMPROCS 4
+  MAXNUMPROCS ${PIO_TF_MAXNUMPROCS}
+  MINNUMIOPROCS 2
+  MAXNUMIOPROCS ${PIO_TF_C3_MAXNUMIOPROCS}
+  MINSTRIDE 2
+  MAXSTRIDE ${PIO_TF_C3_MAXSTRIDE}
+  TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== ncdf_fail =====
 add_executable (ncdf_fail EXCLUDE_FROM_ALL
@@ -270,26 +281,26 @@ target_link_libraries (ncdf_fail pio_tutil piof)
 add_dependencies (ncdf_fail pio_tutil)
 add_dependencies (tests ncdf_fail)
 
-if (PIO_USE_MPISERIAL)
-  add_test(NAME ncdf_fail_bcast
-    COMMAND ncdf_fail)
-  set_tests_properties(ncdf_fail_bcast
-    PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-  add_test(NAME ncdf_fail_reduce
-    COMMAND ncdf_fail --pio-tf-err-handler=PIO_REDUCE_ERROR)
-  set_tests_properties(ncdf_fail_reduce
-    PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-else ()
-  add_mpi_test(ncdf_fail_bcast
-    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/ncdf_fail
-    NUMPROCS 2
-    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-  add_mpi_test(ncdf_fail_reduce
-    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/ncdf_fail
-    ARGUMENTS --pio-tf-err-handler=PIO_REDUCE_ERROR
-    NUMPROCS 2
-    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-endif ()
+add_pio_test(ncdf_fail_bcast
+  EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/ncdf_fail
+  MINNUMPROCS 4
+  MAXNUMPROCS ${PIO_TF_MAXNUMPROCS}
+  MINNUMIOPROCS 2
+  MAXNUMIOPROCS ${PIO_TF_C2_MAXNUMIOPROCS}
+  MINSTRIDE 1
+  MAXSTRIDE ${PIO_TF_C2_MAXSTRIDE}
+  TIMEOUT ${DEFAULT_TEST_TIMEOUT})
+
+add_pio_test(ncdf_fail_reduce
+  EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/ncdf_fail
+  ARGUMENTS --pio-tf-err-handler=PIO_REDUCE_ERROR
+  MINNUMPROCS 4
+  MAXNUMPROCS ${PIO_TF_MAXNUMPROCS}
+  MINNUMIOPROCS 2
+  MAXNUMIOPROCS ${PIO_TF_C2_MAXNUMIOPROCS}
+  MINSTRIDE 1
+  MAXSTRIDE ${PIO_TF_C2_MAXSTRIDE}
+  TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== ncdf_inq =====
 add_executable (ncdf_inq EXCLUDE_FROM_ALL
@@ -299,17 +310,15 @@ target_link_libraries (ncdf_inq pio_tutil piof)
 add_dependencies (ncdf_inq pio_tutil)
 add_dependencies (tests ncdf_inq)
 
-if (PIO_USE_MPISERIAL)
-  add_test(NAME ncdf_inq
-    COMMAND ncdf_inq)
-  set_tests_properties(ncdf_inq
-    PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-else ()
-  add_mpi_test(ncdf_inq
-    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/ncdf_inq
-    NUMPROCS 2
-    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-endif ()
+add_pio_test(ncdf_inq
+  EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/ncdf_inq
+  MINNUMPROCS 4
+  MAXNUMPROCS ${PIO_TF_MAXNUMPROCS}
+  MINNUMIOPROCS 2
+  MAXNUMIOPROCS ${PIO_TF_C2_MAXNUMIOPROCS}
+  MINSTRIDE 1
+  MAXSTRIDE ${PIO_TF_C2_MAXSTRIDE}
+  TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== pio_rearr =====
 add_executable (pio_rearr EXCLUDE_FROM_ALL
@@ -319,17 +328,16 @@ target_link_libraries (pio_rearr pio_tutil piof)
 add_dependencies (pio_rearr pio_tutil)
 add_dependencies (tests pio_rearr)
 
-if (PIO_USE_MPISERIAL)
-    add_test(NAME pio_rearr
-        COMMAND pio_rearr)
-    set_tests_properties(pio_rearr
-        PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-else ()
-    add_mpi_test(pio_rearr
-        EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_rearr
-        NUMPROCS 4
-        TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-endif ()
+# Costly test
+add_pio_test(pio_rearr
+  EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_rearr
+  MINNUMPROCS 4
+  MAXNUMPROCS ${PIO_TF_MAXNUMPROCS}
+  MINNUMIOPROCS 2
+  MAXNUMIOPROCS ${PIO_TF_C3_MAXNUMIOPROCS}
+  MINSTRIDE 1
+  MAXSTRIDE ${PIO_TF_C3_MAXSTRIDE}
+  TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== pio_async_file_tests =====
 add_executable (pio_async_file_tests EXCLUDE_FROM_ALL
@@ -339,22 +347,16 @@ target_link_libraries (pio_async_file_tests pio_tutil piof)
 add_dependencies (pio_async_file_tests pio_tutil)
 add_dependencies (tests pio_async_file_tests)
 
-if (PIO_USE_MPISERIAL)
-  add_test(NAME pio_async_file_tests_1_proc
-    COMMAND pio_async_file_tests)
-  set_tests_properties(pio_async_file_tests_1_proc
-    PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-else ()
-  add_mpi_test(pio_async_file_tests_3_proc
-    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_async_file_tests
-    NUMPROCS 3
-    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-
-  add_mpi_test(pio_async_file_tests_4_proc
-    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_async_file_tests
-    NUMPROCS 4
-    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-endif ()
+# Async file tests don't use ioprocs/stride set by user
+add_pio_test(pio_async_file_tests
+  EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_async_file_tests
+  MINNUMPROCS 3
+  MAXNUMPROCS ${PIO_TF_MAXNUMPROCS}
+  MINNUMIOPROCS 2
+  MAXNUMIOPROCS 2
+  MINSTRIDE 2
+  MAXSTRIDE 2
+  TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== pio_rearr_opts =====
 add_executable (pio_rearr_opts EXCLUDE_FROM_ALL
@@ -364,17 +366,16 @@ target_link_libraries (pio_rearr_opts pio_tutil piof)
 add_dependencies (pio_rearr_opts pio_tutil)
 add_dependencies (tests pio_rearr_opts)
 
-if (PIO_USE_MPISERIAL)
-    add_test(NAME pio_rearr_opts
-        COMMAND pio_rearr_opts)
-    set_tests_properties(pio_rearr_opts
-        PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-else ()
-    add_mpi_test(pio_rearr_opts
-        EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_rearr_opts
-        NUMPROCS 4
-        TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-endif ()
+# PIO rearr opts is a costly test
+add_pio_test(pio_rearr_opts
+  EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_rearr_opts
+  MINNUMPROCS 4
+  MAXNUMPROCS ${PIO_TF_MAXNUMPROCS}
+  MINNUMIOPROCS 2
+  MAXNUMIOPROCS ${PIO_TF_C3_MAXNUMIOPROCS}
+  MINSTRIDE 2
+  MAXSTRIDE ${PIO_TF_C3_MAXSTRIDE}
+  TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== pio_rearr_opts2 =====
 add_executable (pio_rearr_opts2 EXCLUDE_FROM_ALL
@@ -384,25 +385,16 @@ target_link_libraries (pio_rearr_opts2 pio_tutil piof)
 add_dependencies (pio_rearr_opts2 pio_tutil)
 add_dependencies (tests pio_rearr_opts2)
 
-if (PIO_USE_MPISERIAL)
-    add_test(NAME pio_rearr_opts2
-        COMMAND pio_rearr_opts2)
-    set_tests_properties(pio_rearr_opts2
-        PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-else ()
-    add_mpi_test(pio_rearr_opts2_1p
-        EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_rearr_opts2
-        NUMPROCS 1
-        TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-    add_mpi_test(pio_rearr_opts2_3p
-        EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_rearr_opts2
-        NUMPROCS 3
-        TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-    add_mpi_test(pio_rearr_opts2_4p
-        EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_rearr_opts2
-        NUMPROCS 4
-        TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-endif ()
+# This is a costly test
+add_pio_test(pio_rearr_opts2
+  EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_rearr_opts2
+  MINNUMPROCS 1
+  MAXNUMPROCS ${PIO_TF_MAXNUMPROCS}
+  MINNUMIOPROCS 1
+  MAXNUMIOPROCS ${PIO_TF_C3_MAXNUMIOPROCS}
+  MINSTRIDE 2
+  MAXSTRIDE ${PIO_TF_C3_MAXSTRIDE}
+  TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== pio_decomp_tests =====
 add_executable (pio_decomp_tests EXCLUDE_FROM_ALL
@@ -412,73 +404,15 @@ target_link_libraries (pio_decomp_tests pio_tutil piof)
 add_dependencies (pio_decomp_tests pio_tutil)
 add_dependencies (tests pio_decomp_tests)
 
-if (PIO_USE_MPISERIAL)
-  add_test(NAME pio_decomp_tests_1p
-    COMMAND pio_decomp_tests)
-  set_tests_properties(pio_decomp_tests_1p
-    PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-  add_test(NAME pio_decomp_tests_2p
-    COMMAND pio_decomp_tests)
-  set_tests_properties(pio_decomp_tests_2p
-    PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-  add_test(NAME pio_decomp_tests_3p
-    COMMAND pio_decomp_tests)
-  set_tests_properties(pio_decomp_tests_3p
-    PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-
-  add_test(NAME pio_decomp_tests_4p_1iop
-    COMMAND pio_decomp_tests --pio-tf-num-io-tasks=1)
-  set_tests_properties(pio_decomp_tests_4p_1iop
-    PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-  add_test(NAME pio_decomp_tests_4p_2iop
-    COMMAND pio_decomp_tests --pio-tf-num-io-tasks=2)
-  set_tests_properties(pio_decomp_tests_4p_2iop
-    PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-  add_test(NAME pio_decomp_tests_4p_3iop
-    COMMAND pio_decomp_tests --pio-tf-num-io-tasks=3)
-  set_tests_properties(pio_decomp_tests_4p_3iop
-    PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-
-  add_test(NAME pio_decomp_tests_4p_2iop_2str
-    COMMAND pio_decomp_tests --pio-tf-num-io-tasks=2 --pio-tf-stride=2)
-  set_tests_properties(pio_decomp_tests_4p_2iop_2str
-    PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-else ()
-  add_mpi_test(pio_decomp_tests_1p
-    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_tests
-    NUMPROCS 1
-    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-  add_mpi_test(pio_decomp_tests_2p
-    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_tests
-    NUMPROCS 2
-    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-  add_mpi_test(pio_decomp_tests_3p
-    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_tests
-    NUMPROCS 3
-    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-
-  add_mpi_test(pio_decomp_tests_4p_1iop
-    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_tests
-    ARGUMENTS --pio-tf-num-io-tasks=1
-    NUMPROCS 4
-    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-  add_mpi_test(pio_decomp_tests_4p_2iop
-    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_tests
-    ARGUMENTS --pio-tf-num-io-tasks=2
-    NUMPROCS 4
-    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-  add_mpi_test(pio_decomp_tests_4p_3iop
-    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_tests
-    ARGUMENTS --pio-tf-num-io-tasks=3
-    NUMPROCS 4
-    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-
-  add_mpi_test(pio_decomp_tests_4p_2iop_2str
-    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_tests
-    ARGUMENTS --pio-tf-num-io-tasks=2 --pio-tf-stride=2
-    NUMPROCS 4
-    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-endif ()
+add_pio_test(pio_decomp_tests
+  EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_tests
+  MINNUMPROCS 1
+  MAXNUMPROCS ${PIO_TF_MAXNUMPROCS}
+  MINNUMIOPROCS 1
+  MAXNUMIOPROCS ${PIO_TF_C2_MAXNUMIOPROCS}
+  MINSTRIDE 1
+  MAXSTRIDE ${PIO_TF_C2_MAXSTRIDE}
+  TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== pio_async_decomp_tests =====
 add_executable (pio_async_decomp_tests EXCLUDE_FROM_ALL
@@ -488,22 +422,16 @@ target_link_libraries (pio_async_decomp_tests pio_tutil piof)
 add_dependencies (pio_async_decomp_tests pio_tutil)
 add_dependencies (tests pio_async_decomp_tests)
 
-if (PIO_USE_MPISERIAL)
-  add_test(NAME pio_async_decomp_tests_1p
-    COMMAND pio_async_decomp_tests)
-  set_tests_properties(pio_async_decomp_tests_1p
-    PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-else ()
-  add_mpi_test(pio_async_decomp_tests_3p
-    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_async_decomp_tests
-    NUMPROCS 3
-    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-
-  add_mpi_test(pio_async_decomp_tests_4p
-    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_async_decomp_tests
-    NUMPROCS 4
-    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-endif ()
+# Async tests don't use ioprocs/stride set by the user
+add_pio_test(pio_async_decomp_tests
+  EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_async_decomp_tests
+  MINNUMPROCS 3
+  MAXNUMPROCS ${PIO_TF_MAXNUMPROCS}
+  MINNUMIOPROCS 1
+  MAXNUMIOPROCS 1
+  MINSTRIDE 1
+  MAXSTRIDE 1
+  TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== pio_decomp_tests_1d =====
 add_executable (pio_decomp_tests_1d EXCLUDE_FROM_ALL
@@ -513,73 +441,16 @@ target_link_libraries (pio_decomp_tests_1d pio_tutil piof)
 add_dependencies (pio_decomp_tests_1d pio_tutil)
 add_dependencies (tests pio_decomp_tests_1d)
 
-if (PIO_USE_MPISERIAL)
-  add_test(NAME pio_decomp_tests_1d_1p
-    COMMAND pio_decomp_tests_1d)
-  set_tests_properties(pio_decomp_tests_1d_1p
-    PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-  add_test(NAME pio_decomp_tests_1d_2p
-    COMMAND pio_decomp_tests_1d)
-  set_tests_properties(pio_decomp_tests_1d_2p
-    PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-  add_test(NAME pio_decomp_tests_1d_3p
-    COMMAND pio_decomp_tests_1d)
-  set_tests_properties(pio_decomp_tests_1d_3p
-    PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-
-  add_test(NAME pio_decomp_tests_1d_4p_1iop
-    COMMAND pio_decomp_tests_1d --pio-tf-num-io-tasks=1)
-  set_tests_properties(pio_decomp_tests_1d_4p_1iop
-    PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-  add_test(NAME pio_decomp_tests_1d_4p_2iop
-    COMMAND pio_decomp_tests_1d --pio-tf-num-io-tasks=2)
-  set_tests_properties(pio_decomp_tests_1d_4p_2iop
-    PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-  add_test(NAME pio_decomp_tests_1d_4p_3iop
-    COMMAND pio_decomp_tests_1d --pio-tf-num-io-tasks=3)
-  set_tests_properties(pio_decomp_tests_1d_4p_3iop
-    PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-
-  add_test(NAME pio_decomp_tests_1d_4p_2iop_2str
-    COMMAND pio_decomp_tests_1d --pio-tf-num-io-tasks=2 --pio-tf-stride=2)
-  set_tests_properties(pio_decomp_tests_1d_4p_2iop_2str
-    PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-else ()
-  add_mpi_test(pio_decomp_tests_1d_1p
-    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_tests_1d
-    NUMPROCS 1
-    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-  add_mpi_test(pio_decomp_tests_1d_2p
-    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_tests_1d
-    NUMPROCS 2
-    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-  add_mpi_test(pio_decomp_tests_1d_3p
-    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_tests_1d
-    NUMPROCS 3
-    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-
-  add_mpi_test(pio_decomp_tests_1d_4p_1iop
-    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_tests_1d
-    ARGUMENTS --pio-tf-num-io-tasks=1
-    NUMPROCS 4
-    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-  add_mpi_test(pio_decomp_tests_1d_4p_2iop
-    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_tests_1d
-    ARGUMENTS --pio-tf-num-io-tasks=2
-    NUMPROCS 4
-    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-  add_mpi_test(pio_decomp_tests_1d_4p_3iop
-    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_tests_1d
-    ARGUMENTS --pio-tf-num-io-tasks=3
-    NUMPROCS 4
-    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-
-  add_mpi_test(pio_decomp_tests_1d_4p_2iop_2str
-    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_tests_1d
-    ARGUMENTS --pio-tf-num-io-tasks=2 --pio-tf-stride=2
-    NUMPROCS 4
-    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-endif ()
+# Costly test
+add_pio_test(pio_decomp_tests_1d
+  EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_tests_1d
+  MINNUMPROCS 1
+  MAXNUMPROCS ${PIO_TF_MAXNUMPROCS}
+  MINNUMIOPROCS 1
+  MAXNUMIOPROCS ${PIO_TF_C3_MAXNUMIOPROCS}
+  MINSTRIDE 1
+  MAXSTRIDE ${PIO_TF_C3_MAXSTRIDE}
+  TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== pio_async_decomp_tests_1d =====
 add_executable (pio_async_decomp_tests_1d EXCLUDE_FROM_ALL
@@ -589,22 +460,16 @@ target_link_libraries (pio_async_decomp_tests_1d pio_tutil piof)
 add_dependencies (pio_async_decomp_tests_1d pio_tutil)
 add_dependencies (tests pio_async_decomp_tests_1d)
 
-if (PIO_USE_MPISERIAL)
-  add_test(NAME pio_async_decomp_tests_1d_1p
-    COMMAND pio_async_decomp_tests_1d)
-  set_tests_properties(pio_async_decomp_tests_1d_1p
-    PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-else ()
-  add_mpi_test(pio_async_decomp_tests_1d_3p
-    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_async_decomp_tests_1d
-    NUMPROCS 3
-    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-
-  add_mpi_test(pio_async_decomp_tests_1d_4p
-    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_async_decomp_tests_1d
-    NUMPROCS 4
-    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-endif ()
+# Async tests don't use ioprocs/stride set by the user
+add_pio_test(pio_async_decomp_tests_1d
+  EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_async_decomp_tests_1d
+  MINNUMPROCS 3
+  MAXNUMPROCS ${PIO_TF_MAXNUMPROCS}
+  MINNUMIOPROCS 1
+  MAXNUMIOPROCS 1
+  MINSTRIDE 1
+  MAXSTRIDE 1
+  TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== pio_decomp_tests_2d =====
 add_executable (pio_decomp_tests_2d EXCLUDE_FROM_ALL
@@ -614,73 +479,15 @@ target_link_libraries (pio_decomp_tests_2d pio_tutil piof)
 add_dependencies (pio_decomp_tests_2d pio_tutil)
 add_dependencies (tests pio_decomp_tests_2d)
 
-if (PIO_USE_MPISERIAL)
-  add_test(NAME pio_decomp_tests_2d_1p
-    COMMAND pio_decomp_tests_2d)
-  set_tests_properties(pio_decomp_tests_2d_1p
-    PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-  add_test(NAME pio_decomp_tests_2d_2p
-    COMMAND pio_decomp_tests_2d)
-  set_tests_properties(pio_decomp_tests_2d_2p
-    PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-  add_test(NAME pio_decomp_tests_2d_3p
-    COMMAND pio_decomp_tests_2d)
-  set_tests_properties(pio_decomp_tests_2d_3p
-    PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-
-  add_test(NAME pio_decomp_tests_2d_4p_1iop
-    COMMAND pio_decomp_tests_2d --pio-tf-num-io-tasks=1)
-  set_tests_properties(pio_decomp_tests_2d_4p_1iop
-    PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-  add_test(NAME pio_decomp_tests_2d_4p_2iop
-    COMMAND pio_decomp_tests_2d --pio-tf-num-io-tasks=2)
-  set_tests_properties(pio_decomp_tests_2d_4p_2iop
-    PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-  add_test(NAME pio_decomp_tests_2d_4p_3iop
-    COMMAND pio_decomp_tests_2d --pio-tf-num-io-tasks=3)
-  set_tests_properties(pio_decomp_tests_2d_4p_3iop
-    PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-
-  add_test(NAME pio_decomp_tests_2d_4p_2iop_2str
-    COMMAND pio_decomp_tests_2d --pio-tf-num-io-tasks=2 --pio-tf-stride=2)
-  set_tests_properties(pio_decomp_tests_2d_4p_2iop_2str
-    PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-else ()
-  add_mpi_test(pio_decomp_tests_2d_1p
-    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_tests_2d
-    NUMPROCS 1
-    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-  add_mpi_test(pio_decomp_tests_2d_2p
-    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_tests_2d
-    NUMPROCS 2
-    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-  add_mpi_test(pio_decomp_tests_2d_3p
-    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_tests_2d
-    NUMPROCS 3
-    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-
-  add_mpi_test(pio_decomp_tests_2d_4p_1iop
-    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_tests_2d
-    ARGUMENTS --pio-tf-num-io-tasks=1
-    NUMPROCS 4
-    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-  add_mpi_test(pio_decomp_tests_2d_4p_2iop
-    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_tests_2d
-    ARGUMENTS --pio-tf-num-io-tasks=2
-    NUMPROCS 4
-    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-  add_mpi_test(pio_decomp_tests_2d_4p_3iop
-    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_tests_2d
-    ARGUMENTS --pio-tf-num-io-tasks=3
-    NUMPROCS 4
-    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-
-  add_mpi_test(pio_decomp_tests_2d_4p_2iop_2str
-    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_tests_2d
-    ARGUMENTS --pio-tf-num-io-tasks=2 --pio-tf-stride=2
-    NUMPROCS 4
-    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-endif ()
+add_pio_test(pio_decomp_tests_2d
+  EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_tests_2d
+  MINNUMPROCS 1
+  MAXNUMPROCS ${PIO_TF_MAXNUMPROCS}
+  MINNUMIOPROCS 1
+  MAXNUMIOPROCS ${PIO_TF_C2_MAXNUMIOPROCS}
+  MINSTRIDE 1
+  MAXSTRIDE ${PIO_TF_C2_MAXSTRIDE}
+  TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== pio_decomp_tests_3d =====
 add_executable (pio_decomp_tests_3d EXCLUDE_FROM_ALL
@@ -690,73 +497,15 @@ target_link_libraries (pio_decomp_tests_3d pio_tutil piof)
 add_dependencies (pio_decomp_tests_3d pio_tutil)
 add_dependencies (tests pio_decomp_tests_3d)
 
-if (PIO_USE_MPISERIAL)
-  add_test(NAME pio_decomp_tests_3d_1p
-    COMMAND pio_decomp_tests_3d)
-  set_tests_properties(pio_decomp_tests_3d_1p
-    PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-  add_test(NAME pio_decomp_tests_3d_2p
-    COMMAND pio_decomp_tests_3d)
-  set_tests_properties(pio_decomp_tests_3d_2p
-    PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-  add_test(NAME pio_decomp_tests_3d_3p
-    COMMAND pio_decomp_tests_3d)
-  set_tests_properties(pio_decomp_tests_3d_3p
-    PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-
-  add_test(NAME pio_decomp_tests_3d_4p_1iop
-    COMMAND pio_decomp_tests_3d --pio-tf-num-io-tasks=1)
-  set_tests_properties(pio_decomp_tests_3d_4p_1iop
-    PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-  add_test(NAME pio_decomp_tests_3d_4p_2iop
-    COMMAND pio_decomp_tests_3d --pio-tf-num-io-tasks=2)
-  set_tests_properties(pio_decomp_tests_3d_4p_2iop
-    PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-  add_test(NAME pio_decomp_tests_3d_4p_3iop
-    COMMAND pio_decomp_tests_3d --pio-tf-num-io-tasks=3)
-  set_tests_properties(pio_decomp_tests_3d_4p_3iop
-    PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-
-  add_test(NAME pio_decomp_tests_3d_4p_2iop_2str
-    COMMAND pio_decomp_tests_3d --pio-tf-num-io-tasks=2 --pio-tf-stride=2)
-  set_tests_properties(pio_decomp_tests_3d_4p_2iop_2str
-    PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-else ()
-  add_mpi_test(pio_decomp_tests_3d_1p
-    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_tests_3d
-    NUMPROCS 1
-    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-  add_mpi_test(pio_decomp_tests_3d_2p
-    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_tests_3d
-    NUMPROCS 2
-    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-  add_mpi_test(pio_decomp_tests_3d_3p
-    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_tests_3d
-    NUMPROCS 3
-    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-
-  add_mpi_test(pio_decomp_tests_3d_4p_1iop
-    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_tests_3d
-    ARGUMENTS --pio-tf-num-io-tasks=1
-    NUMPROCS 4
-    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-  add_mpi_test(pio_decomp_tests_3d_4p_2iop
-    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_tests_3d
-    ARGUMENTS --pio-tf-num-io-tasks=2
-    NUMPROCS 4
-    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-  add_mpi_test(pio_decomp_tests_3d_4p_3iop
-    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_tests_3d
-    ARGUMENTS --pio-tf-num-io-tasks=3
-    NUMPROCS 4
-    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-
-  add_mpi_test(pio_decomp_tests_3d_4p_2iop_2str
-    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_tests_3d
-    ARGUMENTS --pio-tf-num-io-tasks=2 --pio-tf-stride=2
-    NUMPROCS 4
-    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-endif ()
+add_pio_test(pio_decomp_tests_3d
+  EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_tests_3d
+  MINNUMPROCS 1
+  MAXNUMPROCS ${PIO_TF_MAXNUMPROCS}
+  MINNUMIOPROCS 1
+  MAXNUMIOPROCS ${PIO_TF_C2_MAXNUMIOPROCS}
+  MINSTRIDE 1
+  MAXSTRIDE ${PIO_TF_C2_MAXSTRIDE}
+  TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== pio_sync_tests =====
 add_executable (pio_sync_tests EXCLUDE_FROM_ALL
@@ -766,17 +515,16 @@ target_link_libraries (pio_sync_tests pio_tutil piof)
 add_dependencies (pio_sync_tests pio_tutil)
 add_dependencies (tests pio_sync_tests)
 
-if (PIO_USE_MPISERIAL)
-  add_test(NAME pio_sync_tests
-    COMMAND pio_sync_tests)
-  set_tests_properties(pio_sync_tests
-    PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-else ()
-  add_mpi_test(pio_sync_tests
-    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_sync_tests
-    NUMPROCS 4
-    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-endif ()
+# Costly test
+add_pio_test(pio_sync_tests
+  EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_sync_tests
+  MINNUMPROCS 4
+  MAXNUMPROCS ${PIO_TF_MAXNUMPROCS}
+  MINNUMIOPROCS 2
+  MAXNUMIOPROCS ${PIO_TF_C3_MAXNUMIOPROCS}
+  MINSTRIDE 2
+  MAXSTRIDE ${PIO_TF_C3_MAXSTRIDE}
+  TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== pio_buf_lim_tests =====
 add_executable (pio_buf_lim_tests EXCLUDE_FROM_ALL
@@ -786,17 +534,15 @@ target_link_libraries (pio_buf_lim_tests pio_tutil piof)
 add_dependencies (pio_buf_lim_tests pio_tutil)
 add_dependencies (tests pio_buf_lim_tests)
 
-if (PIO_USE_MPISERIAL)
-  add_test(NAME pio_buf_lim_tests
-    COMMAND pio_buf_lim_tests)
-  set_tests_properties(pio_buf_lim_tests
-    PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-else ()
-  add_mpi_test(pio_buf_lim_tests
-    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_buf_lim_tests
-    NUMPROCS 4
-    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-endif ()
+add_pio_test(pio_buf_lim_tests
+  EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_buf_lim_tests
+  MINNUMPROCS 2
+  MAXNUMPROCS ${PIO_TF_MAXNUMPROCS}
+  MINNUMIOPROCS 2
+  MAXNUMIOPROCS ${PIO_TF_C2_MAXNUMIOPROCS}
+  MINSTRIDE 1
+  MAXSTRIDE ${PIO_TF_C2_MAXSTRIDE}
+  TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== pio_iodesc_tests =====
 add_executable (pio_iodesc_tests EXCLUDE_FROM_ALL
@@ -806,17 +552,15 @@ target_link_libraries (pio_iodesc_tests pio_tutil piof)
 add_dependencies (pio_iodesc_tests pio_tutil)
 add_dependencies (tests pio_iodesc_tests)
 
-if (PIO_USE_MPISERIAL)
-  add_test(NAME pio_iodesc_tests
-    COMMAND pio_iodesc_tests)
-  set_tests_properties(pio_iodesc_tests
-    PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-else ()
-  add_mpi_test(pio_iodesc_tests
-    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_iodesc_tests
-    NUMPROCS 4
-    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-endif ()
+add_pio_test(pio_iodesc_tests
+  EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_iodesc_tests
+  MINNUMPROCS 1
+  MAXNUMPROCS ${PIO_TF_MAXNUMPROCS}
+  MINNUMIOPROCS 1
+  MAXNUMIOPROCS ${PIO_TF_C2_MAXNUMIOPROCS}
+  MINSTRIDE 1
+  MAXSTRIDE ${PIO_TF_C2_MAXSTRIDE}
+  TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== pio_decomp_frame_tests =====
 add_executable (pio_decomp_frame_tests EXCLUDE_FROM_ALL
@@ -826,17 +570,15 @@ target_link_libraries (pio_decomp_frame_tests pio_tutil piof)
 add_dependencies (pio_decomp_frame_tests pio_tutil)
 add_dependencies (tests pio_decomp_frame_tests)
 
-if (PIO_USE_MPISERIAL)
-  add_test(NAME pio_decomp_frame_tests
-    COMMAND pio_decomp_frame_tests)
-  set_tests_properties(pio_decomp_frame_tests
-    PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-else ()
-  add_mpi_test(pio_decomp_frame_tests
-    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_frame_tests
-    NUMPROCS 4
-    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-endif ()
+add_pio_test(pio_decomp_frame_tests
+  EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_frame_tests
+  MINNUMPROCS 1
+  MAXNUMPROCS ${PIO_TF_MAXNUMPROCS}
+  MINNUMIOPROCS 1
+  MAXNUMIOPROCS ${PIO_TF_C2_MAXNUMIOPROCS}
+  MINSTRIDE 1
+  MAXSTRIDE ${PIO_TF_C2_MAXSTRIDE}
+  TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== pio_decomp_fillval =====
 add_executable (pio_decomp_fillval EXCLUDE_FROM_ALL
@@ -846,17 +588,16 @@ target_link_libraries (pio_decomp_fillval pio_tutil piof)
 add_dependencies (pio_decomp_fillval pio_tutil)
 add_dependencies (tests pio_decomp_fillval)
 
-if (PIO_USE_MPISERIAL)
-  add_test(NAME pio_decomp_fillval
-    COMMAND pio_decomp_fillval)
-  set_tests_properties(pio_decomp_fillval
-    PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-else ()
-  add_mpi_test(pio_decomp_fillval
-    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_fillval
-    NUMPROCS 4
-    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-endif ()
+# Costly test
+add_pio_test(pio_decomp_fillval
+  EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_fillval
+  MINNUMPROCS 4
+  MAXNUMPROCS ${PIO_TF_MAXNUMPROCS}
+  MINNUMIOPROCS 2
+  MAXNUMIOPROCS ${PIO_TF_C3_MAXNUMIOPROCS}
+  MINSTRIDE 2
+  MAXSTRIDE ${PIO_TF_C3_MAXSTRIDE}
+  TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== pio_decomp_fillval2 =====
 add_executable (pio_decomp_fillval2 EXCLUDE_FROM_ALL
@@ -866,17 +607,15 @@ target_link_libraries (pio_decomp_fillval2 pio_tutil piof)
 add_dependencies (pio_decomp_fillval2 pio_tutil)
 add_dependencies (tests pio_decomp_fillval2)
 
-if (PIO_USE_MPISERIAL)
-  add_test(NAME pio_decomp_fillval2
-    COMMAND pio_decomp_fillval2)
-  set_tests_properties(pio_decomp_fillval2
-    PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-else ()
-  add_mpi_test(pio_decomp_fillval2
-    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_fillval2
-    NUMPROCS 4
-    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-endif ()
+add_pio_test(pio_decomp_fillval2
+  EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_fillval2
+  MINNUMPROCS 4
+  MAXNUMPROCS ${PIO_TF_MAXNUMPROCS}
+  MINNUMIOPROCS 2
+  MAXNUMIOPROCS ${PIO_TF_C3_MAXNUMIOPROCS}
+  MINSTRIDE 2
+  MAXSTRIDE ${PIO_TF_C3_MAXSTRIDE}
+  TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== pio_decomp_extra_dims =====
 add_executable (pio_decomp_extra_dims EXCLUDE_FROM_ALL
@@ -886,17 +625,16 @@ target_link_libraries (pio_decomp_extra_dims pio_tutil piof)
 add_dependencies (pio_decomp_extra_dims pio_tutil)
 add_dependencies (tests pio_decomp_extra_dims)
 
-if (PIO_USE_MPISERIAL)
-  add_test(NAME pio_decomp_extra_dims
-    COMMAND pio_decomp_extra_dims)
-  set_tests_properties(pio_decomp_extra_dims
-    PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-else ()
-  add_mpi_test(pio_decomp_extra_dims
-    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_extra_dims
-    NUMPROCS 4
-    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-endif ()
+# This is a costly test
+add_pio_test(pio_decomp_extra_dims
+  EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_extra_dims
+  MINNUMPROCS 4
+  MAXNUMPROCS ${PIO_TF_MAXNUMPROCS}
+  MINNUMIOPROCS 2
+  MAXNUMIOPROCS ${PIO_TF_C3_MAXNUMIOPROCS}
+  MINSTRIDE 2
+  MAXSTRIDE ${PIO_TF_C3_MAXSTRIDE}
+  TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== pio_iosystems_test =====
 add_executable (pio_iosystem_tests EXCLUDE_FROM_ALL
@@ -906,18 +644,15 @@ target_link_libraries (pio_iosystem_tests pio_tutil piof)
 add_dependencies (pio_iosystem_tests pio_tutil)
 add_dependencies (tests pio_iosystem_tests)
 
-if (PIO_USE_MPISERIAL)
-  add_test(NAME pio_iosystem_tests
-    COMMAND pio_iosystem_tests)
-  set_tests_properties(pio_iosystem_tests
-    PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-else ()
-  add_mpi_test(pio_iosystem_tests
-    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_iosystem_tests
-    NUMPROCS 4
-    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-endif ()
-
+add_pio_test(pio_iosystem_tests
+  EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_iosystem_tests
+  MINNUMPROCS 4
+  MAXNUMPROCS ${PIO_TF_MAXNUMPROCS}
+  MINNUMIOPROCS 1
+  MAXNUMIOPROCS ${PIO_TF_C2_MAXNUMIOPROCS}
+  MINSTRIDE 1
+  MAXSTRIDE ${PIO_TF_C2_MAXSTRIDE}
+  TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== pio_iosystems_test2 =====
 add_executable (pio_iosystem_tests2 EXCLUDE_FROM_ALL
@@ -927,17 +662,15 @@ target_link_libraries (pio_iosystem_tests2 pio_tutil piof)
 add_dependencies (pio_iosystem_tests2 pio_tutil)
 add_dependencies (tests pio_iosystem_tests2)
 
-if (PIO_USE_MPISERIAL)
-  add_test(NAME pio_iosystem_tests2
-    COMMAND pio_iosystem_tests2)
-  set_tests_properties(pio_iosystem_tests2
-    PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-else ()
-  add_mpi_test(pio_iosystem_tests2
-    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_iosystem_tests2
-    NUMPROCS 4
-    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-endif ()
+add_pio_test(pio_iosystem_tests2
+  EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_iosystem_tests2
+  MINNUMPROCS 4
+  MAXNUMPROCS ${PIO_TF_MAXNUMPROCS}
+  MINNUMIOPROCS 1
+  MAXNUMIOPROCS ${PIO_TF_C1_MAXNUMIOPROCS}
+  MINSTRIDE 1
+  MAXSTRIDE ${PIO_TF_C1_MAXSTRIDE}
+  TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== pio_iosystems_test3 =====
 add_executable (pio_iosystem_tests3 EXCLUDE_FROM_ALL
@@ -947,14 +680,12 @@ target_link_libraries (pio_iosystem_tests3 pio_tutil piof)
 add_dependencies (pio_iosystem_tests3 pio_tutil)
 add_dependencies (tests pio_iosystem_tests3)
 
-if (PIO_USE_MPISERIAL)
-  add_test(NAME pio_iosystem_tests3
-    COMMAND pio_iosystem_tests3)
-  set_tests_properties(pio_iosystem_tests3
-    PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-else ()
-  add_mpi_test(pio_iosystem_tests3
-    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_iosystem_tests3
-    NUMPROCS 4
-    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-endif ()
+add_pio_test(pio_iosystem_tests3
+  EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_iosystem_tests3
+  MINNUMPROCS 4
+  MAXNUMPROCS ${PIO_TF_MAXNUMPROCS}
+  MINNUMIOPROCS 1
+  MAXNUMIOPROCS ${PIO_TF_C1_MAXNUMIOPROCS}
+  MINSTRIDE 1
+  MAXSTRIDE ${PIO_TF_C1_MAXSTRIDE}
+  TIMEOUT ${DEFAULT_TEST_TIMEOUT})

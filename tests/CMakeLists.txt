@@ -15,14 +15,15 @@ project (PIOTests C Fortran)
 #==============================================================================
 #  INCLUDE SOURCE DIRECTORIES
 #==============================================================================
-add_subdirectory (cunit)
 
 if (PIO_ENABLE_FORTRAN)
-  add_subdirectory (unit)
   add_subdirectory (general)
+  add_subdirectory (unit)
   if (PIO_ENABLE_TIMING)
     add_subdirectory (performance)
   else ()
     message (STATUS "Cannot build performance test without gptl timing library")
   endif ()
 endif()
+
+add_subdirectory (cunit)
