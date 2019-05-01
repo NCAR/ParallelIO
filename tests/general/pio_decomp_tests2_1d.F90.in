@@ -246,6 +246,10 @@ PIO_TF_AUTO_TEST_SUB_BEGIN nc_wr_rev_rd
   integer :: num_iotypes
 
   ! Set the decomposition for writing data
+  ! The data is written out using reverse order of the block decomposition
+  ! returned by get_1d_bc_info()
+  ! e.g. start = 10, count = 3
+  ! The data is written out with [12, 11, 10]
   call get_1d_bc_info(pio_tf_world_rank_, pio_tf_world_sz_, dims, start, count)
   PIO_TF_PASSERT(start(1) > 0, "Invalid start calculated for bc decomp")
   PIO_TF_PASSERT(count(1) > 0, "Invalid count calculated for bc decomp")
@@ -264,15 +268,21 @@ PIO_TF_AUTO_TEST_SUB_BEGIN nc_wr_rev_rd
   deallocate(compdof)
 
   ! Set the decomposition for reading data
+  ! The data is read out using a cyclic left-shifted (by 1) order of the block
+  ! decomposition returned by get_1d_bc_info()
+  ! e.g. start = 10, count = 3
+  ! The data is read with [11, 12, 10]
   allocate(rbuf(tot_count))
   rbuf = 0
   allocate(exp_val(tot_count))
   allocate(compdof(tot_count))
 
-  do i=1,count(1)
-    exp_val(i) = start(1) + i - 1
-    compdof(i) = exp_val(i)
+  do i=2,count(1)
+    exp_val(i-1) = start(1) + i - 1
+    compdof(i-1) = exp_val(i-1)
   end do
+  exp_val(count(1)) = start(1)
+  compdof(count(1)) = exp_val(count(1))
 
   call PIO_initdecomp(pio_tf_iosystem_, PIO_TF_DATA_TYPE, dims, compdof, rd_iodesc)
   deallocate(compdof)
