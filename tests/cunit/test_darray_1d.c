@@ -278,6 +278,10 @@ int test_darray_fill(int iosysid, int ioid, int pio_type, int num_flavors, int *
             if ((ret = PIOc_openfile(iosysid, &ncid, &flavor[fmt], filename, PIO_NOWRITE)))
                 ERR(ret);
 
+            /* Inquire the varid */
+            if ((ret = PIOc_inq_varid(ncid, VAR_NAME, &varid)))
+                ERR(ret);
+
             /* Allocate space for data. */
             if (!(test_data_in = malloc(type_size * arraylen)))
                 ERR(PIO_ENOMEM);
@@ -580,6 +584,10 @@ int test_darray_fill_unlim(int iosysid, int ioid, int pio_type, int num_flavors,
 
         /* Reopen the file. */
         if ((ret = PIOc_openfile(iosysid, &ncid, &flavor[fmt], filename, PIO_NOWRITE)))
+            ERR(ret);
+
+        /* Inquire the varid */
+        if ((ret = PIOc_inq_varid(ncid, VAR_NAME, &varid)))
             ERR(ret);
 
         /* Allocate space for data. */

@@ -336,6 +336,13 @@ int test_multivar_darray(int iosysid, int ioid, int num_flavors, int *flavor,
             if ((ret = PIOc_openfile2(iosysid, &ncid2, &flavor[fmt], filename, PIO_NOWRITE)))
                 ERR(ret);
 
+            /* Inquire varids */
+            for (int v = 0; v < NUM_VAR; v++)
+            {
+                if ((ret = PIOc_inq_varid(ncid2, var_name[v], &(varid[v]))))
+                    ERR(ret);
+            }
+
             for (int v = 0; v < NUM_VAR; v++)
             {
                 /* Read the data. */
