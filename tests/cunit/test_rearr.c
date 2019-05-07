@@ -62,13 +62,11 @@ int test_rearranger_opts1(int iosysid)
     if (!(ios = pio_get_iosystem_from_id(iosysid)))
         return pio_err(NULL, NULL, PIO_EBADID, __FILE__, __LINE__);
 
-    /* Check the rearranger settings. */
+    /* Check the rearranger comp2io settings. */
     if (ios->rearr_opts.comm_type != PIO_REARR_COMM_P2P ||
         ios->rearr_opts.fcd != PIO_REARR_COMM_FC_1D_COMP2IO ||
         !ios->rearr_opts.comp2io.hs || !ios->rearr_opts.comp2io.isend ||
-        !ios->rearr_opts.io2comp.hs || !ios->rearr_opts.io2comp.isend ||
-        ios->rearr_opts.comp2io.max_pend_req != TEST_VAL_42 ||
-        ios->rearr_opts.io2comp.max_pend_req != TEST_VAL_42 + 1)
+        ios->rearr_opts.comp2io.max_pend_req != TEST_VAL_42)
         return ERR_WRONG;
 
     return 0;
