@@ -97,22 +97,11 @@ install (FILES ${PIO_Fortran_MODS} DESTINATION include)
 #==============================================================================
 
 #===== genf90 =====
-if (DEFINED GENF90_PATH)
-  add_custom_target(genf90
-    DEPENDS ${GENF90_PATH}/genf90.pl)
-else ()
-  ExternalProject_Add (genf90
-    PREFIX ${CMAKE_CURRENT_BINARY_DIR}/genf90
-    GIT_REPOSITORY https://github.com/PARALLELIO/genf90
-    GIT_TAG genf90_140121
-    UPDATE_COMMAND ""
-    CONFIGURE_COMMAND ""
-    BUILD_COMMAND ""
-    INSTALL_COMMAND "")
-  ExternalProject_Get_Property (genf90 SOURCE_DIR)
-  set (GENF90_PATH ${SOURCE_DIR})
-  unset (SOURCE_DIR)
+if (NOT DEFINED GENF90_PATH)
+  set (GENF90_PATH ${CMAKE_SOURCE_DIR}/src/genf90)
 endif ()
+add_custom_target(genf90
+  DEPENDS ${GENF90_PATH}/genf90.pl)
 add_dependencies (piof genf90)
 
 #===== Fortran Source Generation with GenF90 =====
