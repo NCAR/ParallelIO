@@ -1,0 +1,344 @@
+! Get a decomposition such that each process has to perform
+! an alltoall (communicate with all processes including itself)
+! communication to write data out.
+! If force_all2all is FALSE, the decomposition is such that
+! NPROCS * (NPROCS * VEC_BLOCK_SZ) elements are evenly distributed
+! across all processes
+! # All procs have NPROCS * VEC_BLOCK_SZ elements
+! e.g. For NPROCS = 3, VEC_BLOCK_SZ = 1,
+!       [1,2,3] [4,5,6] [7,8,9]
+! e.g. For NPROCS = 3, VEC_BLOCK_SZ = 2,
+!       [1,2,3,4,5,6] [7,8,9,10,11,12] [13,14,15,16,17,18]
+! If force_all2all is TRUE, the decomposition is such that,
+! each process reads/writes elements in
+! [rank*VEC_BLOCK_SZ + 1, rank*VEC_BLOCK_SZ + VEC_BLOCK_SZ] from
+! each process in the decomposition with the force_all2all set to 
+! FALSE
+! # All procs have NPROCS * VEC_BLOCK_SZ elements
+! e.g. For NPROCS = 3, VEC_BLOCK_SZ = 1,
+!       [1,4,7] [2,5,8] [3,6,9]
+! e.g. For NPROCS = 3, VEC_BLOCK_SZ = 2,
+!       [1,2,7,8,13,14] [3,4,9,10,15,16] [5,6,11,12,17,18]
+SUBROUTINE get_1d_a2a_info(rank, sz, dims, start, count, force_all2all)
+  integer, parameter :: VEC_BLOCK_SZ = 7
+  integer, intent(in) :: rank
+  integer, intent(in) :: sz
+  integer, dimension(1), intent(out) :: dims
+  integer, dimension(:), allocatable, intent(out) :: start
+  integer, dimension(:), allocatable, intent(out) :: count
+  logical, intent(in) :: force_all2all
+
+  integer :: i
+  integer :: lsz
+
+  ! Number of elemeents in local process
+  lsz = sz * VEC_BLOCK_SZ
+
+  ! Global dimension size
+  dims(1) = lsz * sz
+
+  ! Compute start/count
+  if(force_all2all) then
+    ! Local elements belong to multiple contiguous regions
+    ! : sz regions, each region of size VEC_BLOCK_SZ
+    allocate(start(sz))
+    allocate(count(sz))
+
+    start=1
+    count=0
+
+    do i=1,sz
+      start(i) = (rank * VEC_BLOCK_SZ + 1) + (i - 1) * lsz
+      count(i) = VEC_BLOCK_SZ
+    end do
+  else
+    ! Evenly distribute elements across all procs
+    ! Local elements belong to a single contiguous region
+    allocate(start(1))
+    allocate(count(1))
+
+    start(1) = rank * lsz + 1
+    count(1) = lsz
+  end if
+
+END SUBROUTINE
+
+! Get 1d block cycle decomposition
+SUBROUTINE get_1d_bc_info(rank, sz, dims, start, count)
+  integer, parameter :: VEC_BLOCK_SZ = 7
+  integer, intent(in) :: rank
+  integer, intent(in) :: sz
+  integer, dimension(1), intent(out) :: dims
+  integer, dimension(1), intent(out) :: start
+  integer, dimension(1), intent(out) :: count
+
+  integer :: lsz
+
+  ! Number of elemeents in local process
+  lsz = sz * VEC_BLOCK_SZ
+
+  ! Global dimension size
+  dims(1) = lsz * sz
+
+  ! Evenly distribute elements across all procs
+  ! Local elements belong to a single contiguous region
+  start(1) = rank * lsz + 1
+  count(1) = lsz
+
+END SUBROUTINE
+
+! Write (and read back) data with a decomposition that forces
+! alltoall communication between the MPI processes
+PIO_TF_TEMPLATE<PIO_TF_PREDEF_TYPENAME PIO_TF_DATA_TYPE, PIO_TF_PREDEF_TYPENAME PIO_TF_FC_DATA_TYPE>
+PIO_TF_AUTO_TEST_SUB_BEGIN nc_wr_rd_a2a
+  implicit none
+  INTERFACE
+    SUBROUTINE get_1d_a2a_info(rank, sz, dims, start, count, force_all2all)
+      integer, intent(in) :: rank
+      integer, intent(in) :: sz
+      integer, dimension(1), intent(out) :: dims
+      integer, dimension(:), allocatable, intent(out) :: start
+      integer, dimension(:), allocatable, intent(out) :: count
+      logical, intent(in) :: force_all2all
+    END SUBROUTINE get_1d_a2a_info
+  END INTERFACE
+  type(var_desc_t)  :: pio_var
+  type(file_desc_t) :: pio_file
+  character(len=PIO_TF_MAX_STR_LEN) :: filename
+  character(len=*), parameter :: PIO_VAR_NAME = 'PIO_TF_test_var'
+  type(io_desc_t) :: wr_iodesc, rd_iodesc
+  integer, dimension(:), allocatable :: compdof
+  integer, dimension(:), allocatable :: start, count
+  integer :: tot_count
+  PIO_TF_FC_DATA_TYPE, dimension(:), allocatable :: rbuf, wbuf, exp_val
+  integer, dimension(1) :: dims
+  integer :: pio_dim
+  integer :: i, j, k, ierr, lsz
+  ! iotypes = valid io types
+  integer, dimension(:), allocatable :: iotypes
+  character(len=PIO_TF_MAX_STR_LEN), dimension(:), allocatable :: iotype_descs
+  integer :: num_iotypes
+
+  ! Set the decomposition for writing data
+  call get_1d_a2a_info(pio_tf_world_rank_, pio_tf_world_sz_, dims, start, count, .true.)
+  PIO_TF_PASSERT(size(start) == size(count), "Invalid start/count calculated for wr decomposition")
+  PIO_TF_PASSERT(size(start) > 0, "Invalid start calculated for wr decomposition")
+
+  tot_count = 0
+  do i=1,size(count)
+    tot_count = tot_count + count(i) 
+  end do
+  allocate(wbuf(tot_count))
+  allocate(compdof(tot_count))
+  k = 1
+  do i=1,size(start)
+    do j=1,count(i)
+      wbuf(k) = start(i) + j - 1
+      compdof(k) = wbuf(k)
+      k = k + 1
+    end do
+  end do
+
+  call PIO_initdecomp(pio_tf_iosystem_, PIO_TF_DATA_TYPE, dims, compdof, wr_iodesc)
+  deallocate(compdof)
+  deallocate(start)
+  deallocate(count)
+
+  ! Set the decomposition for reading data
+  allocate(rbuf(tot_count))
+  rbuf = 0
+  allocate(exp_val(tot_count))
+  call get_1d_a2a_info(pio_tf_world_rank_, pio_tf_world_sz_, dims, start, count, .false.)
+  PIO_TF_PASSERT(size(start) == size(count), "Invalid start/count calculated for rd decomposition")
+  PIO_TF_PASSERT(size(start) > 0, "Invalid start calculated for rd decomposition")
+
+  allocate(compdof(tot_count))
+  k = 1
+  do i=1,size(start)
+    do j=1,count(i)
+      exp_val(k) = start(i) + j - 1
+      compdof(k) = exp_val(k)
+      k = k + 1
+    end do
+  end do
+
+  call PIO_initdecomp(pio_tf_iosystem_, PIO_TF_DATA_TYPE, dims, compdof, rd_iodesc)
+  deallocate(compdof)
+  deallocate(start)
+  deallocate(count)
+
+  ! Define/write/read data
+  num_iotypes = 0
+  call PIO_TF_Get_nc_iotypes(iotypes, iotype_descs, num_iotypes)
+  filename = "test_pio_decomp_simple_tests.testfile"
+  do i=1,num_iotypes
+    PIO_TF_LOG(0,*) "Testing : PIO_TF_DATA_TYPE : ", iotype_descs(i)
+    ierr = PIO_createfile(pio_tf_iosystem_, pio_file, iotypes(i), filename, PIO_CLOBBER) 
+    PIO_TF_CHECK_ERR(ierr, "Could not create file " // trim(filename))
+
+    ierr = PIO_def_dim(pio_file, 'PIO_TF_test_dim', dims(1), pio_dim)
+    PIO_TF_CHECK_ERR(ierr, "Failed to define a dim : " // trim(filename))
+
+    ierr = PIO_def_var(pio_file, PIO_VAR_NAME, PIO_TF_DATA_TYPE, (/pio_dim/), pio_var)
+    PIO_TF_CHECK_ERR(ierr, "Failed to define a var : " // trim(filename))
+
+    ierr = PIO_enddef(pio_file)
+    PIO_TF_CHECK_ERR(ierr, "Failed to end redef mode : " // trim(filename))
+
+    ! Write the variable out - alltoall communication forced via wr_iodesc
+    call PIO_write_darray(pio_file, pio_var, wr_iodesc, wbuf, ierr)
+    PIO_TF_CHECK_ERR(ierr, "Failed to write darray : " // trim(filename))
+
+#ifdef PIO_TEST_CLOSE_OPEN_FOR_SYNC
+    call PIO_closefile(pio_file)
+
+    ierr = PIO_openfile(pio_tf_iosystem_, pio_file, iotypes(i), filename, PIO_nowrite)
+    PIO_TF_CHECK_ERR(ierr, "Could not reopen file " // trim(filename))
+
+    ierr = PIO_inq_varid(pio_file, PIO_VAR_NAME, pio_var)
+    PIO_TF_CHECK_ERR(ierr, "Could not inq var : " // trim(filename))
+#else
+    call PIO_syncfile(pio_file)
+#endif
+
+    call PIO_read_darray(pio_file, pio_var, rd_iodesc, rbuf, ierr)
+    PIO_TF_CHECK_ERR(ierr, "Failed to read darray : " // trim(filename))
+
+    PIO_TF_CHECK_VAL((rbuf, exp_val), "Got wrong val")
+
+    call PIO_closefile(pio_file)
+    
+    call PIO_deletefile(pio_tf_iosystem_, filename);
+  end do
+
+  if(allocated(iotypes)) then
+    deallocate(iotypes)
+    deallocate(iotype_descs)
+  end if
+
+  call PIO_freedecomp(pio_tf_iosystem_, rd_iodesc)
+  call PIO_freedecomp(pio_tf_iosystem_, wr_iodesc)
+  deallocate(exp_val)
+  deallocate(rbuf)
+  deallocate(wbuf)
+PIO_TF_AUTO_TEST_SUB_END nc_wr_rd_a2a
+
+! Write (and read back) data with a decomposition that is not
+! monotonically increasing (is local reverse of block cyclic decomposition)
+PIO_TF_TEMPLATE<PIO_TF_PREDEF_TYPENAME PIO_TF_DATA_TYPE, PIO_TF_PREDEF_TYPENAME PIO_TF_FC_DATA_TYPE>
+PIO_TF_AUTO_TEST_SUB_BEGIN nc_wr_rev_rd
+  implicit none
+  type(var_desc_t)  :: pio_var
+  type(file_desc_t) :: pio_file
+  character(len=PIO_TF_MAX_STR_LEN) :: filename
+  character(len=*), parameter :: PIO_VAR_NAME = 'PIO_TF_test_var'
+  type(io_desc_t) :: wr_iodesc, rd_iodesc
+  integer, dimension(:), allocatable :: compdof
+  integer, dimension(1) :: start, count
+  integer :: tot_count
+  PIO_TF_FC_DATA_TYPE, dimension(:), allocatable :: rbuf, wbuf, exp_val
+  integer, dimension(1) :: dims
+  integer :: pio_dim
+  integer :: i, ierr, lsz
+  ! iotypes = valid io types
+  integer, dimension(:), allocatable :: iotypes
+  character(len=PIO_TF_MAX_STR_LEN), dimension(:), allocatable :: iotype_descs
+  integer :: num_iotypes
+
+  ! Set the decomposition for writing data
+  ! The data is written out using reverse order of the block decomposition
+  ! returned by get_1d_bc_info()
+  ! e.g. start = 10, count = 3
+  ! The data is written out with [12, 11, 10]
+  call get_1d_bc_info(pio_tf_world_rank_, pio_tf_world_sz_, dims, start, count)
+  PIO_TF_PASSERT(start(1) > 0, "Invalid start calculated for bc decomp")
+  PIO_TF_PASSERT(count(1) > 0, "Invalid count calculated for bc decomp")
+
+  tot_count = count(1)
+  allocate(wbuf(tot_count))
+  allocate(compdof(tot_count))
+
+  ! Reverse the local decomposition
+  do i=1,count(1)
+    wbuf(i) = start(1) + count(1) - i
+    compdof(i) = wbuf(i)
+  end do
+
+  call PIO_initdecomp(pio_tf_iosystem_, PIO_TF_DATA_TYPE, dims, compdof, wr_iodesc)
+  deallocate(compdof)
+
+  ! Set the decomposition for reading data
+  ! The data is read out using a cyclic left-shifted (by 1) order of the block
+  ! decomposition returned by get_1d_bc_info()
+  ! e.g. start = 10, count = 3
+  ! The data is read with [11, 12, 10]
+  allocate(rbuf(tot_count))
+  rbuf = 0
+  allocate(exp_val(tot_count))
+  allocate(compdof(tot_count))
+
+  do i=2,count(1)
+    exp_val(i-1) = start(1) + i - 1
+    compdof(i-1) = exp_val(i-1)
+  end do
+  exp_val(count(1)) = start(1)
+  compdof(count(1)) = exp_val(count(1))
+
+  call PIO_initdecomp(pio_tf_iosystem_, PIO_TF_DATA_TYPE, dims, compdof, rd_iodesc)
+  deallocate(compdof)
+
+  ! Define/write/read data
+  num_iotypes = 0
+  call PIO_TF_Get_nc_iotypes(iotypes, iotype_descs, num_iotypes)
+  filename = "test_pio_decomp_simple_tests.testfile"
+  do i=1,num_iotypes
+    PIO_TF_LOG(0,*) "Testing : PIO_TF_DATA_TYPE : ", iotype_descs(i)
+    ierr = PIO_createfile(pio_tf_iosystem_, pio_file, iotypes(i), filename, PIO_CLOBBER) 
+    PIO_TF_CHECK_ERR(ierr, "Could not create file " // trim(filename))
+
+    ierr = PIO_def_dim(pio_file, 'PIO_TF_test_dim', dims(1), pio_dim)
+    PIO_TF_CHECK_ERR(ierr, "Failed to define a dim : " // trim(filename))
+
+    ierr = PIO_def_var(pio_file, PIO_VAR_NAME, PIO_TF_DATA_TYPE, (/pio_dim/), pio_var)
+    PIO_TF_CHECK_ERR(ierr, "Failed to define a var : " // trim(filename))
+
+    ierr = PIO_enddef(pio_file)
+    PIO_TF_CHECK_ERR(ierr, "Failed to end redef mode : " // trim(filename))
+
+    ! Write the variable out - alltoall communication forced via wr_iodesc
+    call PIO_write_darray(pio_file, pio_var, wr_iodesc, wbuf, ierr)
+    PIO_TF_CHECK_ERR(ierr, "Failed to write darray : " // trim(filename))
+
+#ifdef PIO_TEST_CLOSE_OPEN_FOR_SYNC
+    call PIO_closefile(pio_file)
+
+    ierr = PIO_openfile(pio_tf_iosystem_, pio_file, iotypes(i), filename, PIO_nowrite)
+    PIO_TF_CHECK_ERR(ierr, "Could not reopen file " // trim(filename))
+
+    ierr = PIO_inq_varid(pio_file, PIO_VAR_NAME, pio_var)
+    PIO_TF_CHECK_ERR(ierr, "Could not inq var : " // trim(filename))
+#else
+    call PIO_syncfile(pio_file)
+#endif
+
+    call PIO_read_darray(pio_file, pio_var, rd_iodesc, rbuf, ierr)
+    PIO_TF_CHECK_ERR(ierr, "Failed to read darray : " // trim(filename))
+
+    PIO_TF_CHECK_VAL((rbuf, exp_val), "Got wrong val")
+
+    call PIO_closefile(pio_file)
+    
+    call PIO_deletefile(pio_tf_iosystem_, filename);
+  end do
+
+  if(allocated(iotypes)) then
+    deallocate(iotypes)
+    deallocate(iotype_descs)
+  end if
+
+  call PIO_freedecomp(pio_tf_iosystem_, rd_iodesc)
+  call PIO_freedecomp(pio_tf_iosystem_, wr_iodesc)
+  deallocate(exp_val)
+  deallocate(rbuf)
+  deallocate(wbuf)
+PIO_TF_AUTO_TEST_SUB_END nc_wr_rev_rd
