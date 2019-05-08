@@ -286,6 +286,13 @@ int test_darray(int iosysid, int ioid, int num_flavors, int *flavor, int my_rank
                 if ((ret = PIOc_openfile(iosysid, &ncid2, &flavor[fmt], filename, PIO_NOWRITE)))
                     ERR(ret);
 
+                /* Inquire varids */
+                for (int v = 0; v < NVAR; v++)
+                {
+                    if ((ret = PIOc_inq_varid(ncid2, var_name[v], &(varid[v]))))
+                        ERR(ret);
+                }
+
                 /* Now use read_darray on each var in turn and make
                  * sure we get correct data. */
                 for (int v = 0; v < NVAR; v++)

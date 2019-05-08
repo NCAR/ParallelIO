@@ -350,9 +350,6 @@ typedef struct var_desc_t
     /** Buffer that contains the holegrid fill values used to fill in
      * missing sections of data when using the subset rearranger. */
     void *fillbuf;
-
-    /** Pointer to next var in list. */
-    struct var_desc_t *next;
 } var_desc_t;
 
 /**
@@ -879,9 +876,6 @@ typedef struct file_desc_t
 
     /** The PIO_TYPE value that was used to open this file. */
     int iotype;
-
-    /** List of variables in this file. */
-    struct var_desc_t *varlist2;
 
     /** List of variables in this file (deprecated). */
     struct var_desc_t varlist[PIO_MAX_VARS];

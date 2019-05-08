@@ -120,11 +120,6 @@ extern "C" {
     int pio_get_file(int ncid, file_desc_t **filep);
     int pio_delete_file_from_list(int ncid);
     int pio_add_to_file_list(file_desc_t *file, MPI_Comm comm);
-    /* Add a var_desc_t to a varlist. */
-    int add_to_varlist(int varid, int rec_var, var_desc_t **varlist);
-
-    /* Find a var_desc_t in a varlist. */
-    int get_var_desc(int varid, var_desc_t **varlist, var_desc_t **var_desc);
 
     /* Get a description of the variable represented by varid */
     const char *get_var_desc_str(int ncid, int varid, const char *desc_prefix);
@@ -132,9 +127,6 @@ extern "C" {
     /* Calculate variable record size */
     int calc_var_rec_sz(int ncid, int varid);
 
-    /* Delete a var_desc_t from a varlist. */
-    int delete_var_desc(int varid, var_desc_t **varlist);    
-    
     void pio_push_request(file_desc_t *file, int request);
 
     /* Create a file (internal function). */
