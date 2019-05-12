@@ -1171,6 +1171,10 @@ int PIOc_finalize(int iosysid)
         pio_finalize_logging();
     }
 
+    /* Call this to free any residual memory held by the netCDF C
+     * library. */
+    nc_finalize();
+
     LOG((2, "PIOc_finalize completed successfully"));
     return PIO_NOERR;
 }
