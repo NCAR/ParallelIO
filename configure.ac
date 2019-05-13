@@ -137,6 +137,9 @@ AC_DEFINE([LINUX], [1], [defined by CMake build])
 # Check for netCDF library.
 AC_CHECK_LIB([netcdf], [nc_create], [], [AC_MSG_ERROR([Can't find or link to the netcdf library.])])
 
+# Do we have nc_finalize() in the netcdf library?
+AC_CHECK_FUNCS(nc_finalize)
+
 # Check for pnetcdf library.
 AC_CHECK_LIB([pnetcdf], [ncmpi_create], [], [])
 if test "x$ac_cv_lib_pnetcdf_ncmpi_create" = xno -a $enable_pnetcdf = yes; then
