@@ -140,6 +140,21 @@ AC_CHECK_LIB([netcdf], [nc_create], [], [AC_MSG_ERROR([Can't find or link to the
 # Do we have nc_finalize() in the netcdf library?
 AC_CHECK_FUNCS(nc_finalize)
 
+# But nc_finalize should only be used after 4.6.2.
+AC_MSG_CHECKING([if nc_finalize is of recent version and can be used])
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([], [[
+#include <netcdf_meta.h>
+#if !defined(NC_VERSION_MINOR) || (NC_VERSION_MINOR == 6 && NC_VERSION_PATCH < 3)
+      choke me
+#endif]])], [has_nc_finalize=yes], [has_nc_finalize=no])
+if test "x$has_nc_finalize" = xyes; then
+   if test -z ${HAVE_NC_FINALIZE+x}; then
+      AC_DEFINE([ENABLE_NC_FINALIZE], [1], [Enable use of nc_finalize()])
+   fi
+fi
+AC_MSG_RESULT([$has_nc_finalize])
+
+
 # Check for pnetcdf library.
 AC_CHECK_LIB([pnetcdf], [ncmpi_create], [], [])
 if test "x$ac_cv_lib_pnetcdf_ncmpi_create" = xno -a $enable_pnetcdf = yes; then
