@@ -17,6 +17,7 @@
 # If no components are specified, it assumes only C
 include (LibFind)
 include (LibCheck)
+include (FindPackageHandleStandardArgs)
 
 # Define PnetCDF C Component
 define_package_component (PnetCDF DEFAULT
@@ -61,6 +62,10 @@ foreach (PNCDFcomp IN LISTS PnetCDF_FIND_VALID_COMPONENTS)
                            HINTS ${PnetCDF_${PNCDFcomp}_INCLUDE_DIR}
                            MACRO_REGEX "PNETCDF_VERSION_")
 
+            find_package_handle_standard_args(PnetCDF
+              FOUND_VAR PnetCDF_FOUND
+              REQUIRED_VARS PnetCDF_${PNCDFcomp}_LIBRARY PnetCDF_${PNCDFcomp}_INCLUDE_DIR
+              VERSION_VAR PnetCDF_VERSION)
         endif ()
             
     endif ()

@@ -99,7 +99,7 @@ endif ()
 if (WITH_NETCDF)
   find_package (NetCDF "4.3.3" COMPONENTS C)
 endif ()
-if (NetCDF_C_FOUND)
+if (NetCDF_FOUND)
   target_include_directories (pioc
     PUBLIC ${NetCDF_C_INCLUDE_DIRS})
   target_compile_definitions (pioc
@@ -126,7 +126,7 @@ endif ()
 if (WITH_PNETCDF)
   find_package (PnetCDF "1.7.0" COMPONENTS C)
 endif ()
-if (PnetCDF_C_FOUND)
+if (PnetCDF_FOUND)
   target_include_directories (pioc
     PUBLIC ${PnetCDF_C_INCLUDE_DIRS})
   target_compile_definitions (pioc

@@ -194,7 +194,7 @@ endif ()
 if (WITH_NETCDF)
   find_package (NetCDF "4.3.3" COMPONENTS Fortran)
 endif ()
-if (NetCDF_Fortran_FOUND)
+if (NetCDF_FOUND)
   target_include_directories (piof
     PUBLIC ${NetCDF_Fortran_INCLUDE_DIRS})
   target_compile_definitions (piof
@@ -214,7 +214,7 @@ endif ()
 if (WITH_PNETCDF)
   find_package (PnetCDF "1.7.0" COMPONENTS Fortran)
 endif ()
-if (PnetCDF_Fortran_FOUND)
+if (PnetCDF_FOUND)
   target_include_directories (piof
     PUBLIC ${PnetCDF_Fortran_INCLUDE_DIRS})
   target_compile_definitions (piof
