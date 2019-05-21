@@ -212,7 +212,7 @@ endif ()
 
 #===== PnetCDF =====
 if (WITH_PNETCDF)
-  find_package (PnetCDF "1.7.0" COMPONENTS Fortran REQUIRED)
+  find_package (PnetCDF "1.7.0" COMPONENTS Fortran)
 endif ()
 if (PnetCDF_Fortran_FOUND)
   target_include_directories (piof
