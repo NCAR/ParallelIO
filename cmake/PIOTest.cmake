@@ -110,7 +110,7 @@ function (add_pio_test TESTNAME)
               # Only 1 stride, stride == 1, is available with 1 I/O process
               set (max_istride "1")
             else ()
-              math (EXPR max_istride "${inprocs} / (${inioprocs} - 1)")
+              math (EXPR max_istride "(${inprocs} - 1)/ (${inioprocs} - 1)")
             endif ()
             if (istride GREATER max_istride)
               break ()
