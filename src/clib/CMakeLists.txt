@@ -124,7 +124,7 @@ endif ()
 
 #===== PnetCDF-C =====
 if (WITH_PNETCDF)
-  find_package (PnetCDF "1.7.0" COMPONENTS C)
+  find_package (PnetCDF "1.8.1" COMPONENTS C)
 endif ()
 if (PnetCDF_FOUND)
   target_include_directories (pioc

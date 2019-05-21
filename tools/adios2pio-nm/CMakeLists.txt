@@ -80,7 +80,7 @@ endif ()
 
 #===== PnetCDF-C =====
 if (WITH_PNETCDF)
-  find_package (PnetCDF "1.7.0" COMPONENTS C)
+  find_package (PnetCDF "1.8.1" COMPONENTS C)
 endif ()
 if (PnetCDF_C_FOUND)
   target_include_directories (adios2pio-nm-lib
