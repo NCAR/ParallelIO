@@ -59,7 +59,7 @@ endif ()
 
 
 #===== MPE =====
-find_package (MPE "2.4.8" COMPONENTS C)
+find_package (MPE ${MPE_MIN_VER_REQD} COMPONENTS C)
 if (PIO_ENABLE_FORTRAN)
   if (MPE_C_FOUND)
     SET(SRC example2.c)

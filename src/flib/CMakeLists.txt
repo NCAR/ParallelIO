@@ -192,7 +192,7 @@ endif ()
 
 #===== NetCDF-Fortran =====
 if (WITH_NETCDF)
-  find_package (NetCDF "4.3.3" COMPONENTS Fortran)
+  find_package (NetCDF ${NETCDF_FORTRAN_MIN_VER_REQD} COMPONENTS Fortran)
 endif ()
 if (NetCDF_FOUND)
   target_include_directories (piof
@@ -212,7 +212,7 @@ endif ()
 
 #===== PnetCDF =====
 if (WITH_PNETCDF)
-  find_package (PnetCDF "1.8.1" COMPONENTS Fortran)
+  find_package (PnetCDF ${PNETCDF_MIN_VER_REQD} COMPONENTS Fortran)
 endif ()
 if (PnetCDF_FOUND)
   target_include_directories (piof
