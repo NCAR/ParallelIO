@@ -41,6 +41,7 @@ env:
   
 script:
   - set -e
+  - doxygen -v
   - autoreconf -i
   - export CFLAGS='-std=c99  -fsanitize=address -fno-omit-frame-pointer'
   - export FFLAGS='-fsanitize=address -fno-omit-frame-pointer'
