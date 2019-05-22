@@ -9,6 +9,8 @@ DoxygenLayout.xml doxygen.sty
 check: all
 all:
 	doxygen Doxyfile
+	ls -l doxywarn.log
+	cat doxywarn.log
 	[ ! -s doxywarn.log ]
 
 CLEANFILES = *.log
