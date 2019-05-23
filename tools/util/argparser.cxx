@@ -8,7 +8,7 @@
 #include <stdexcept>
 #include "argparser.h"
 
-namespace adios2pio_utils{
+namespace pio_tool_utils{
 
 ArgParser::ArgParser(MPI_Comm comm):comm_(comm), is_root_(false),
                                     printed_usage_(false) 
@@ -119,4 +119,4 @@ void ArgParser::print_usage(std::ostream &ostr) const
     }
 }
 
-} // namespace adios2pio_utils
+} // namespace pio_tool_utils
