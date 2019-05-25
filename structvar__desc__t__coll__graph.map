@@ -1,0 +1,5 @@
+<map id="var_desc_t" name="var_desc_t">
+<area shape="rect" id="node2" href="$struct_u_t__hash__handle.html" title="Hash handle. " alt="" coords="118,7,238,33"/>
+<area shape="rect" id="node3" href="$struct_u_t__hash__table.html" title="Hash table. " alt="" coords="192,187,303,213"/>
+<area shape="rect" id="node4" href="$struct_u_t__hash__bucket.html" title="Hash bucket. " alt="" coords="187,97,308,124"/>
+</map>

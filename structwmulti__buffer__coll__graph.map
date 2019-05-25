@@ -1,0 +1,5 @@
+<map id="wmulti_buffer" name="wmulti_buffer">
+<area shape="rect" id="node2" href="$struct_u_t__hash__handle.html" title="Hash handle. " alt="" coords="131,7,251,33"/>
+<area shape="rect" id="node3" href="$struct_u_t__hash__table.html" title="Hash table. " alt="" coords="205,187,316,213"/>
+<area shape="rect" id="node4" href="$struct_u_t__hash__bucket.html" title="Hash bucket. " alt="" coords="200,97,321,124"/>
+</map>
