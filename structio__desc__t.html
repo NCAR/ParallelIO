@@ -77,12 +77,9 @@ Collaboration diagram for io_desc_t:</div>
 <div class="dyncontent">
 <div class="center"><img src="structio__desc__t__coll__graph.png" border="0" usemap="#io__desc__t_coll__map" alt="Collaboration graph"/></div>
 <map name="io__desc__t_coll__map" id="io__desc__t_coll__map">
-<area shape="rect" id="node2" href="struct_u_t__hash__handle.html" title="Hash handle. " alt="" coords="49,111,169,137"/>
-<area shape="rect" id="node3" href="struct_u_t__hash__table.html" title="Hash table. " alt="" coords="48,305,159,332"/>
-<area shape="rect" id="node4" href="struct_u_t__hash__bucket.html" title="Hash bucket. " alt="" coords="43,216,164,243"/>
-<area shape="rect" id="node5" href="structrearr__opt.html" title="Rearranger options. " alt="" coords="268,111,342,137"/>
-<area shape="rect" id="node6" href="structrearr__comm__fc__opt.html" title="Rearranger comm flow control options. " alt="" coords="238,5,372,32"/>
-<area shape="rect" id="node7" href="structio__region.html" title="IO region structure. " alt="" coords="366,111,441,137"/>
+<area shape="rect" id="node2" href="structrearr__opt.html" title="Rearranger options. " alt="" coords="36,109,109,136"/>
+<area shape="rect" id="node3" href="structrearr__comm__fc__opt.html" title="Rearranger comm flow control options. " alt="" coords="5,5,140,32"/>
+<area shape="rect" id="node4" href="structio__region.html" title="IO region structure. " alt="" coords="134,109,209,136"/>
 </map>
 <center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
 <table class="memberdecls">
@@ -156,7 +153,7 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="stru
 <tr class="memdesc:aff1ad34793e462c3807ebb3c1384dea9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Array (length nrecvs) of counts of data to be received from each computation task by the IO tasks.  <a href="#aff1ad34793e462c3807ebb3c1384dea9">More...</a><br /></td></tr>
 <tr class="separator:aff1ad34793e462c3807ebb3c1384dea9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a85a813c99910c2791d70718dc2984a4d"><td class="memItemLeft" align="right" valign="top">int *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structio__desc__t.html#a85a813c99910c2791d70718dc2984a4d">scount</a></td></tr>
-<tr class="memdesc:a85a813c99910c2791d70718dc2984a4d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Array (length numiotasks) of data counts to send to each task in the communication in <a class="el" href="pio__internal_8h.html#a4d341649c03cba93c667c26e4fb1ec9c" title="Provides the functionality of MPI_Alltoallw with flow control options. ">pio_swapm()</a>.  <a href="#a85a813c99910c2791d70718dc2984a4d">More...</a><br /></td></tr>
+<tr class="memdesc:a85a813c99910c2791d70718dc2984a4d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Array (length numiotasks) of data counts to send to each task in the communication in pio_swapm().  <a href="#a85a813c99910c2791d70718dc2984a4d">More...</a><br /></td></tr>
 <tr class="separator:a85a813c99910c2791d70718dc2984a4d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7c861a0543de55882f06a3bf8e273622"><td class="memItemLeft" align="right" valign="top"><a class="el" href="pio_8h.html#a1225edb54e6d6de678bf675485549eb0">PIO_Offset</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structio__desc__t.html#a7c861a0543de55882f06a3bf8e273622">sindex</a></td></tr>
 <tr class="memdesc:a7c861a0543de55882f06a3bf8e273622"><td class="mdescLeft">&#160;</td><td class="mdescRight">Array (length ndof) for the BOX rearranger with the index for computation taks (send side during writes).  <a href="#a7c861a0543de55882f06a3bf8e273622">More...</a><br /></td></tr>
@@ -165,13 +162,13 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="stru
 <tr class="memdesc:a1c5a340bb797121121f8c17203e5fb3c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Index for the IO tasks (receive side during writes).  <a href="#a1c5a340bb797121121f8c17203e5fb3c">More...</a><br /></td></tr>
 <tr class="separator:a1c5a340bb797121121f8c17203e5fb3c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2ebce2622d8c52bdaf07e00350acadce"><td class="memItemLeft" align="right" valign="top">MPI_Datatype *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structio__desc__t.html#a2ebce2622d8c52bdaf07e00350acadce">rtype</a></td></tr>
-<tr class="memdesc:a2ebce2622d8c52bdaf07e00350acadce"><td class="mdescLeft">&#160;</td><td class="mdescRight">Array (of length nrecvs) of receive MPI types in <a class="el" href="pio__internal_8h.html#a4d341649c03cba93c667c26e4fb1ec9c" title="Provides the functionality of MPI_Alltoallw with flow control options. ">pio_swapm()</a> call.  <a href="#a2ebce2622d8c52bdaf07e00350acadce">More...</a><br /></td></tr>
+<tr class="memdesc:a2ebce2622d8c52bdaf07e00350acadce"><td class="mdescLeft">&#160;</td><td class="mdescRight">Array (of length nrecvs) of receive MPI types in pio_swapm() call.  <a href="#a2ebce2622d8c52bdaf07e00350acadce">More...</a><br /></td></tr>
 <tr class="separator:a2ebce2622d8c52bdaf07e00350acadce"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a46870b00a1e603c3c3e91cc0287c3f33"><td class="memItemLeft" align="right" valign="top">MPI_Datatype *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structio__desc__t.html#a46870b00a1e603c3c3e91cc0287c3f33">stype</a></td></tr>
-<tr class="memdesc:a46870b00a1e603c3c3e91cc0287c3f33"><td class="mdescLeft">&#160;</td><td class="mdescRight">Array of send MPI types in <a class="el" href="pio__internal_8h.html#a4d341649c03cba93c667c26e4fb1ec9c" title="Provides the functionality of MPI_Alltoallw with flow control options. ">pio_swapm()</a> call.  <a href="#a46870b00a1e603c3c3e91cc0287c3f33">More...</a><br /></td></tr>
+<tr class="memdesc:a46870b00a1e603c3c3e91cc0287c3f33"><td class="mdescLeft">&#160;</td><td class="mdescRight">Array of send MPI types in pio_swapm() call.  <a href="#a46870b00a1e603c3c3e91cc0287c3f33">More...</a><br /></td></tr>
 <tr class="separator:a46870b00a1e603c3c3e91cc0287c3f33"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a54cb4400ea3ac248cccb1b52a839686c"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structio__desc__t.html#a54cb4400ea3ac248cccb1b52a839686c">num_stypes</a></td></tr>
-<tr class="memdesc:a54cb4400ea3ac248cccb1b52a839686c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of send MPI types in <a class="el" href="pio__internal_8h.html#a4d341649c03cba93c667c26e4fb1ec9c" title="Provides the functionality of MPI_Alltoallw with flow control options. ">pio_swapm()</a> call.  <a href="#a54cb4400ea3ac248cccb1b52a839686c">More...</a><br /></td></tr>
+<tr class="memdesc:a54cb4400ea3ac248cccb1b52a839686c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of send MPI types in pio_swapm() call.  <a href="#a54cb4400ea3ac248cccb1b52a839686c">More...</a><br /></td></tr>
 <tr class="separator:a54cb4400ea3ac248cccb1b52a839686c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2792b197c9a69fc19bec4171edd19b48"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structio__desc__t.html#a2792b197c9a69fc19bec4171edd19b48">holegridsize</a></td></tr>
 <tr class="memdesc:a2792b197c9a69fc19bec4171edd19b48"><td class="mdescLeft">&#160;</td><td class="mdescRight">Used when writing fill data.  <a href="#a2792b197c9a69fc19bec4171edd19b48">More...</a><br /></td></tr>
@@ -196,7 +193,7 @@ int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struc
 <tr class="memitem:ae9e9fc0c4d6fea535c4fbe51ccd4d71f"><td class="memItemLeft" align="right" valign="top">MPI_Comm&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structio__desc__t.html#ae9e9fc0c4d6fea535c4fbe51ccd4d71f">subset_comm</a></td></tr>
 <tr class="memdesc:ae9e9fc0c4d6fea535c4fbe51ccd4d71f"><td class="mdescLeft">&#160;</td><td class="mdescRight">In the subset communicator each io task is associated with a unique group of comp tasks this is the communicator for that group.  <a href="#ae9e9fc0c4d6fea535c4fbe51ccd4d71f">More...</a><br /></td></tr>
 <tr class="separator:ae9e9fc0c4d6fea535c4fbe51ccd4d71f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a68ef277b19b7dcea43eafcd0cac7d63f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="struct_u_t__hash__handle.html">UT_hash_handle</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structio__desc__t.html#a68ef277b19b7dcea43eafcd0cac7d63f">hh</a></td></tr>
+<tr class="memitem:a68ef277b19b7dcea43eafcd0cac7d63f"><td class="memItemLeft" align="right" valign="top">UT_hash_handle&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structio__desc__t.html#a68ef277b19b7dcea43eafcd0cac7d63f">hh</a></td></tr>
 <tr class="memdesc:a68ef277b19b7dcea43eafcd0cac7d63f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Hash table entry.  <a href="#a68ef277b19b7dcea43eafcd0cac7d63f">More...</a><br /></td></tr>
 <tr class="separator:a68ef277b19b7dcea43eafcd0cac7d63f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
@@ -259,7 +256,7 @@ int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struc
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="struct_u_t__hash__handle.html">UT_hash_handle</a> io_desc_t::hh</td>
+          <td class="memname">UT_hash_handle io_desc_t::hh</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -537,7 +534,7 @@ int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struc
       </table>
 </div><div class="memdoc">
 
-<p>Number of send MPI types in <a class="el" href="pio__internal_8h.html#a4d341649c03cba93c667c26e4fb1ec9c" title="Provides the functionality of MPI_Alltoallw with flow control options. ">pio_swapm()</a> call. </p>
+<p>Number of send MPI types in pio_swapm() call. </p>
 
 </div>
 </div>
@@ -666,7 +663,7 @@ int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struc
       </table>
 </div><div class="memdoc">
 
-<p>Array (of length nrecvs) of receive MPI types in <a class="el" href="pio__internal_8h.html#a4d341649c03cba93c667c26e4fb1ec9c" title="Provides the functionality of MPI_Alltoallw with flow control options. ">pio_swapm()</a> call. </p>
+<p>Array (of length nrecvs) of receive MPI types in pio_swapm() call. </p>
 
 </div>
 </div>
@@ -682,7 +679,7 @@ int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struc
       </table>
 </div><div class="memdoc">
 
-<p>Array (length numiotasks) of data counts to send to each task in the communication in <a class="el" href="pio__internal_8h.html#a4d341649c03cba93c667c26e4fb1ec9c" title="Provides the functionality of MPI_Alltoallw with flow control options. ">pio_swapm()</a>. </p>
+<p>Array (length numiotasks) of data counts to send to each task in the communication in pio_swapm(). </p>
 
 </div>
 </div>
@@ -714,7 +711,7 @@ int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struc
       </table>
 </div><div class="memdoc">
 
-<p>Array of send MPI types in <a class="el" href="pio__internal_8h.html#a4d341649c03cba93c667c26e4fb1ec9c" title="Provides the functionality of MPI_Alltoallw with flow control options. ">pio_swapm()</a> call. </p>
+<p>Array of send MPI types in pio_swapm() call. </p>
 
 </div>
 </div>
@@ -740,7 +737,7 @@ int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struc
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sat May 25 2019 08:15:39 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun May 26 2019 18:21:06 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.13
 </small></address>

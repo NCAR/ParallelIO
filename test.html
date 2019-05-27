@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.13"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>PIO: Testing</title>
+<title>PIO: Cmake Testing Information</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -61,12 +61,12 @@ $(function() {
 </div><!-- top -->
 <div class="header">
   <div class="headertitle">
-<div class="title">Testing </div>  </div>
+<div class="title">Cmake Testing Information </div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><h2>Building PIO2 Tests</h2>
-<p>To build both the Unit and Performance tests for PIO2, follow the general instructions for building PIO2 in either the <a class="el" href="install.html">Installation</a> page or the <a class="el" href="mach_walkthrough.html">Machine Walk-Through</a> page. During the Build step after (or instead of) the <b>make</b> command, type <b>make tests</b>.</p>
-<h2>PIO2 Unit Tests</h2>
+<div class="textblock"><h2>Building PIO Tests</h2>
+<p>To build both the Unit and Performance tests for PIO, follow the general instructions for building PIO in either the <a class="el" href="install.html">Installation</a> page or the [Machine Walk-Through](<a class="el" href="mach_walkthrough.html">CMake Install Walk-through</a>) page. During the Build step after (or instead of) the <b>make</b> command, type <b>make tests</b>.</p>
+<h2>PIO Unit Tests</h2>
 <p>The Parallel IO library comes with more than 20 built-in unit tests to verify that the library is installed and working correctly. These tests utilize the <em>CMake</em> and <em>CTest</em> automation framework. Because the Parallel IO library is built for parallel applications, the unit tests should be run in a parallel environment. The simplest way to do this is to submit a PBS job to run the <b>ctest</b> command.</p>
 <p>For a library built into the example directory <code>/scratch/user/PIO_build/</code>, an example PBS script would be: </p><pre class="fragment">  #!/bin/bash
 
@@ -82,8 +82,9 @@ $(function() {
 <div class="fragment"><div class="line">Test project /scratch/cluster/katec/PIO_build</div><div class="line">      Start  1: test_names</div><div class="line"> 1/24 Test  #1: test_names .......................   Passed    0.60 sec</div><div class="line">      Start  2: test_nc4</div><div class="line"> 2/24 Test  #2: test_nc4 .........................   Passed    0.53 sec</div><div class="line">      Start  3: pio_unit_test</div><div class="line"> 3/24 Test  #3: pio_unit_test ....................   Passed    0.45 sec</div><div class="line">      Start  4: init_finialize_1_proc</div><div class="line"> 4/24 Test  #4: init_finialize_1_proc ............   Passed    0.54 sec</div><div class="line">      Start  5: init_finialize_2_proc</div><div class="line"> 5/24 Test  #5: init_finialize_2_proc ............   Passed    0.53 sec</div><div class="line">      Start  6: init_finalize_2_proc_with_args</div><div class="line"> 6/24 Test  #6: init_finalize_2_proc_with_args ...   Passed    0.55 sec</div><div class="line">      Start  7: pio_file_simple_tests</div><div class="line"> 7/24 Test  #7: pio_file_simple_tests ............   Passed    0.58 sec</div><div class="line">      Start  8: pio_file_fail</div><div class="line"> 8/24 Test  #8: pio_file_fail ....................   Passed    0.62 sec</div><div class="line">      Start  9: ncdf_simple_tests</div><div class="line"> 9/24 Test  #9: ncdf_simple_tests ................   Passed    0.60 sec</div><div class="line">      Start 10: ncdf_get_put_1proc</div><div class="line">10/24 Test #10: ncdf_get_put_1proc ...............   Passed    0.65 sec</div><div class="line">      Start 11: ncdf_get_put_2proc</div><div class="line">11/24 Test #11: ncdf_get_put_2proc ...............   Passed    0.63 sec</div><div class="line">      Start 12: ncdf_fail</div><div class="line">12/24 Test #12: ncdf_fail ........................   Passed    0.52 sec</div><div class="line">      Start 13: pio_decomp_tests_1p</div><div class="line">13/24 Test #13: pio_decomp_tests_1p ..............   Passed    1.54 sec</div><div class="line">      Start 14: pio_decomp_tests_2p</div><div class="line">14/24 Test #14: pio_decomp_tests_2p ..............   Passed    1.99 sec</div><div class="line">      Start 15: pio_decomp_tests_3p</div><div class="line">15/24 Test #15: pio_decomp_tests_3p ..............   Passed    2.11 sec</div><div class="line">      Start 16: pio_decomp_tests_4p_1agg</div><div class="line">16/24 Test #16: pio_decomp_tests_4p_1agg .........   Passed    2.12 sec</div><div class="line">      Start 17: pio_decomp_tests_4p_2agg</div><div class="line">17/24 Test #17: pio_decomp_tests_4p_2agg .........   Passed    2.08 sec</div><div class="line">      Start 18: pio_decomp_tests_4p_3agg</div><div class="line">18/24 Test #18: pio_decomp_tests_4p_3agg .........   Passed    2.08 sec</div><div class="line">      Start 19: pio_decomp_tests_4p_1iop</div><div class="line">19/24 Test #19: pio_decomp_tests_4p_1iop .........   Passed    1.91 sec</div><div class="line">      Start 20: pio_decomp_tests_4p_2iop</div><div class="line">20/24 Test #20: pio_decomp_tests_4p_2iop .........   Passed    2.50 sec</div><div class="line">      Start 21: pio_decomp_tests_4p_3iop</div><div class="line">21/24 Test #21: pio_decomp_tests_4p_3iop .........   Passed    2.20 sec</div><div class="line">      Start 22: pio_decomp_tests_4p_2iop_2str</div><div class="line">22/24 Test #22: pio_decomp_tests_4p_2iop_2str ....   Passed    2.16 sec</div><div class="line">      Start 23: pio_decomp_tests_4p_2iop_1agg</div><div class="line">23/24 Test #23: pio_decomp_tests_4p_2iop_1agg ....   Passed    2.20 sec</div><div class="line">      Start 24: pio_decomp_fillval2</div><div class="line">24/24 Test #24: pio_decomp_fillval2 ..............   Passed    0.60 sec</div><div class="line"></div><div class="line">100% tests passed, 0 tests failed out of 24</div><div class="line"></div><div class="line">Total Test time (real) =  30.80 sec</div></div><!-- fragment --><p>Another option would be to launch an interactive session, change into the build directory, and run the <b>ctest</b> command.</p>
 <p>On Yellowstone, the unit tests can run using the <b>execca</b> or <b>execgy</b> commands as: </p><pre class="fragment">  &gt; setenv DAV_CORES 4
   &gt; execca ctest
-</pre><h2>PIO2 Performance Test</h2>
-<p>To run the performance tests, you will need to add two files to the <b>tests/performance</b> subdirectory of the PIO build directory. First, you will need a decomp file. You can download one from our google code page here: <a href="https://svn-ccsm-piodecomps.cgd.ucar.edu/trunk/">https://svn-ccsm-piodecomps.cgd.ucar.edu/trunk/</a> . You can use any of these files, and save them to your home or base work directory. Secondly, you will need to add a namelist file, named "pioperf.nl". Save this file in the directory with your <b>pioperf</b> executable (this is found in the <b>tests/performance</b> subdirectory of the PIO build directory).</p>
+</pre><h2>PIO Performance Test</h2>
+<p>To run the performance tests, you will need to add two files to the tests/performance** subdirectory of the PIO build directory. First, you will need a decomp file. You can download one from our google code page here: <a href="https://svn-ccsm-piodecomps.cgd.ucar.edu/trunk/">https://svn-ccsm-piodecomps.cgd.ucar.edu/trunk/</a> .</p>
+<p>You can use any of these files, and save them to your home or base work directory. Secondly, you will need to add a namelist file, named "pioperf.nl". Save this file in the directory with your <b>pioperf</b> executable (this is found in the <b>tests/performance</b> subdirectory of the PIO build directory).</p>
 <p>The contents of the namelist file should look like: </p><pre class="fragment"> &amp;pioperf
 
  decompfile = "/u/home/user/piodecomp30tasks01dims06.dat"
@@ -130,7 +131,7 @@ $(function() {
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sat May 25 2019 08:15:39 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun May 26 2019 18:21:06 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.13
 </small></address>
