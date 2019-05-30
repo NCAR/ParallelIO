@@ -1665,40 +1665,37 @@ void cn_buffer_report(iosystem_desc_t *ios, bool collective)
 {
     int mpierr = MPI_SUCCESS;  /* Return code from MPI functions. */
 
-    LOG((2, "cn_buffer_report ios->iossysid = %d collective = %d CN_bpool = %d",
-         ios->iosysid, collective, CN_bpool));
-    if (CN_bpool)
-    {
-        long bget_stats[5];
-        long bget_mins[5];
-        long bget_maxs[5];
+    LOG((2, "cn_buffer_report ios->iossysid = %d collective = %d",
+         ios->iosysid, collective));
+    long bget_stats[5];
+    long bget_mins[5];
+    long bget_maxs[5];
 
-        bstats(bget_stats, bget_stats+1,bget_stats+2,bget_stats+3,bget_stats+4);
-        if (collective)
+    bstats(bget_stats, bget_stats+1,bget_stats+2,bget_stats+3,bget_stats+4);
+    if (collective)
+    {
+        LOG((3, "cn_buffer_report calling MPI_Reduce ios->comp_comm = %d", ios->comp_comm));
+        if ((mpierr = MPI_Reduce(bget_stats, bget_maxs, 5, MPI_LONG, MPI_MAX, 0, ios->comp_comm)))
+            check_mpi(NULL, NULL, mpierr, __FILE__, __LINE__);
+        LOG((3, "cn_buffer_report calling MPI_Reduce"));
+        if ((mpierr = MPI_Reduce(bget_stats, bget_mins, 5, MPI_LONG, MPI_MIN, 0, ios->comp_comm)))
+            check_mpi(NULL, NULL, mpierr, __FILE__, __LINE__);
+        if (ios->compmaster == MPI_ROOT)
         {
-            LOG((3, "cn_buffer_report calling MPI_Reduce ios->comp_comm = %d", ios->comp_comm));
-            if ((mpierr = MPI_Reduce(bget_stats, bget_maxs, 5, MPI_LONG, MPI_MAX, 0, ios->comp_comm)))
-                check_mpi(NULL, NULL, mpierr, __FILE__, __LINE__);
-            LOG((3, "cn_buffer_report calling MPI_Reduce"));
-            if ((mpierr = MPI_Reduce(bget_stats, bget_mins, 5, MPI_LONG, MPI_MIN, 0, ios->comp_comm)))
-                check_mpi(NULL, NULL, mpierr, __FILE__, __LINE__);
-            if (ios->compmaster == MPI_ROOT)
-            {
-                LOG((1, "Currently allocated buffer space %ld %ld", bget_mins[0], bget_maxs[0]));
-                LOG((1, "Currently available buffer space %ld %ld", bget_mins[1], bget_maxs[1]));
-                LOG((1, "Current largest free block %ld %ld", bget_mins[2], bget_maxs[2]));
-                LOG((1, "Number of successful bget calls %ld %ld", bget_mins[3], bget_maxs[3]));
-                LOG((1, "Number of successful brel calls  %ld %ld", bget_mins[4], bget_maxs[4]));
-            }
+            LOG((1, "Currently allocated buffer space %ld %ld", bget_mins[0], bget_maxs[0]));
+            LOG((1, "Currently available buffer space %ld %ld", bget_mins[1], bget_maxs[1]));
+            LOG((1, "Current largest free block %ld %ld", bget_mins[2], bget_maxs[2]));
+            LOG((1, "Number of successful bget calls %ld %ld", bget_mins[3], bget_maxs[3]));
+            LOG((1, "Number of successful brel calls  %ld %ld", bget_mins[4], bget_maxs[4]));
         }
-        else
-        {
-            LOG((1, "Currently allocated buffer space %ld", bget_stats[0]));
-            LOG((1, "Currently available buffer space %ld", bget_stats[1]));
-            LOG((1, "Current largest free block %ld", bget_stats[2]));
-            LOG((1, "Number of successful bget calls %ld", bget_stats[3]));
-            LOG((1, "Number of successful brel calls  %ld", bget_stats[4]));
-        }
+    }
+    else
+    {
+        LOG((1, "Currently allocated buffer space %ld", bget_stats[0]));
+        LOG((1, "Currently available buffer space %ld", bget_stats[1]));
+        LOG((1, "Current largest free block %ld", bget_stats[2]));
+        LOG((1, "Number of successful bget calls %ld", bget_stats[3]));
+        LOG((1, "Number of successful brel calls  %ld", bget_stats[4]));
     }
 }
 
@@ -1713,16 +1710,16 @@ void cn_buffer_report(iosystem_desc_t *ios, bool collective)
 void free_cn_buffer_pool(iosystem_desc_t *ios)
 {
 #if !PIO_USE_MALLOC
-    LOG((2, "free_cn_buffer_pool CN_bpool = %d", CN_bpool));
+    LOG((2, "free_cn_buffer_pool CN_bpool = %p", CN_bpool));
     /* Note: it is possible that CN_bpool has been freed and set to NULL by bpool_free() */
+    cn_buffer_report(ios, false);
+    bpoolrelease();
     if (CN_bpool)
     {
-        cn_buffer_report(ios, false);
-        bpoolrelease();
-        LOG((2, "free_cn_buffer_pool done!"));
         free(CN_bpool);
         CN_bpool = NULL;
     }
+    LOG((2, "free_cn_buffer_pool done!"));
 #endif /* !PIO_USE_MALLOC */
 }
 
