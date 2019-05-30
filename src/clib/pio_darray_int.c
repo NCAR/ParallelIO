@@ -37,6 +37,12 @@ void bpool_free(void *p)
   }
 }
 
+/* Handler for allocating more memory for the bget buffer pool */
+void *bpool_alloc(bufsize sz)
+{
+  void *p = malloc((size_t ) sz);
+  return p;
+}
 
 /**
  * Initialize the compute buffer to size pio_cnbuffer_limit.
@@ -65,7 +71,7 @@ int compute_buffer_init(iosystem_desc_t *ios)
         if (!CN_bpool)
             return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__);
 
-        bectl(NULL, malloc, bpool_free, pio_cnbuffer_limit);
+        bectl(NULL, bpool_alloc, bpool_free, pio_cnbuffer_limit);
     }
 #endif /* PIO_USE_MALLOC */
     LOG((2, "compute_buffer_init complete"));
