@@ -20,7 +20,7 @@
 extern PIO_Offset pio_buffer_size_limit;
 
 /* Initial size of compute buffer. */
-bufsize pio_cnbuffer_limit = 33554432;
+bufsize pio_cnbuffer_limit = 0;
 
 /* Maximum buffer usage. */
 extern PIO_Offset maxusage;
@@ -52,6 +52,11 @@ void *bpool_alloc(bufsize sz)
  */
 int compute_buffer_init(iosystem_desc_t *ios)
 {
+    /* Default block size increment = 32 MB */
+    const bufsize DEFAULT_BUF_INC_SZ = (bufsize ) (32L * 1024L * 1024L);
+    bufsize bpool_block_inc_sz = (bufsize )((pio_buffer_size_limit > 0) ? pio_buffer_size_limit : DEFAULT_BUF_INC_SZ);
+    LOG((2, "Initializing buffer pool with block increment = %lld bytes", (long long int) bpool_block_inc_sz));
+    pio_cnbuffer_limit = bpool_block_inc_sz;
 #if PIO_USE_MALLOC
     bpool(NULL, pio_cnbuffer_limit);
 #else
