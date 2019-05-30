@@ -19,9 +19,6 @@
 /* 10MB default limit. */
 PIO_Offset pio_buffer_size_limit = 10485760;
 
-/* Global buffer pool pointer. */
-void *CN_bpool = NULL;
-
 /* Maximum buffer usage. */
 PIO_Offset maxusage = 0;
 

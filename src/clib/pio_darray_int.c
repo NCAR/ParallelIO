@@ -22,9 +22,6 @@ extern PIO_Offset pio_buffer_size_limit;
 /* Initial size of compute buffer. */
 bufsize pio_cnbuffer_limit = 33554432;
 
-/* Global buffer pool pointer. */
-extern void *CN_bpool;
-
 /* Maximum buffer usage. */
 extern PIO_Offset maxusage;
 
@@ -32,9 +29,6 @@ extern PIO_Offset maxusage;
 void bpool_free(void *p)
 {
   free(p);
-  if(p == CN_bpool){
-    CN_bpool = NULL;
-  }
 }
 
 /* Handler for allocating more memory for the bget buffer pool */
@@ -61,18 +55,7 @@ int compute_buffer_init(iosystem_desc_t *ios)
 #if PIO_USE_MALLOC
     bpool(NULL, pio_cnbuffer_limit);
 #else
-
-    if (!CN_bpool)
-    {
-        if (!(CN_bpool = malloc(pio_cnbuffer_limit)))
-            return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__);
-
-        bpool(CN_bpool, pio_cnbuffer_limit);
-        if (!CN_bpool)
-            return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__);
-
-        bectl(NULL, bpool_alloc, bpool_free, pio_cnbuffer_limit);
-    }
+    bectl(NULL, bpool_alloc, bpool_free, pio_cnbuffer_limit);
 #endif /* PIO_USE_MALLOC */
     LOG((2, "compute_buffer_init complete"));
 
@@ -1710,15 +1693,9 @@ void cn_buffer_report(iosystem_desc_t *ios, bool collective)
 void free_cn_buffer_pool(iosystem_desc_t *ios)
 {
 #if !PIO_USE_MALLOC
-    LOG((2, "free_cn_buffer_pool CN_bpool = %p", CN_bpool));
-    /* Note: it is possible that CN_bpool has been freed and set to NULL by bpool_free() */
+    LOG((2, "free_cn_buffer_pool"));
     cn_buffer_report(ios, false);
     bpoolrelease();
-    if (CN_bpool)
-    {
-        free(CN_bpool);
-        CN_bpool = NULL;
-    }
     LOG((2, "free_cn_buffer_pool done!"));
 #endif /* !PIO_USE_MALLOC */
 }
