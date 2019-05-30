@@ -1718,7 +1718,7 @@ void free_cn_buffer_pool(iosystem_desc_t *ios)
     if (CN_bpool)
     {
         cn_buffer_report(ios, false);
-        bpoolrelease(CN_bpool);
+        bpoolrelease();
         LOG((2, "free_cn_buffer_pool done!"));
         free(CN_bpool);
         CN_bpool = NULL;
