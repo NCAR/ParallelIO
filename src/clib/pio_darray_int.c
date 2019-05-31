@@ -1688,24 +1688,6 @@ void cn_buffer_report(iosystem_desc_t *ios, bool collective)
 }
 
 /**
- * Free the buffer pool. If malloc is used (that is, PIO_USE_MALLOC is
- * non zero), this function does nothing.
- *
- * @param ios pointer to the IO system structure.
- * @ingroup PIO_write_darray
- * @author Jim Edwards
- */
-void free_cn_buffer_pool(iosystem_desc_t *ios)
-{
-#if !PIO_USE_MALLOC
-    LOG((2, "free_cn_buffer_pool"));
-    cn_buffer_report(ios, false);
-    bpoolrelease();
-    LOG((2, "free_cn_buffer_pool done!"));
-#endif /* !PIO_USE_MALLOC */
-}
-
-/**
  * Flush the buffer.
  *
  * @param ncid identifies the netCDF file.

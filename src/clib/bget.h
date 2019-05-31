@@ -27,7 +27,6 @@ void    bstatse(bufsize *pool_incr, long *npool, long *npget,
 void    bufdump(void *buf);
 void    bpoold(void *pool, int dumpalloc, int dumpfree);
 int     bpoolv(void *pool);
-void bpoolrelease();
 void bfreespace(bufsize *maxfree, bufsize *totfree);
 
 #endif

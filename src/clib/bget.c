@@ -677,44 +677,6 @@ static inline void pio_ubuf_free(void *ubuf)
 
 #endif /* PIO_USE_MALLOC */
 
-/* added for PIO so that a bpool can be freed and another allocated */
-void bpoolrelease()
-{
-    LOG((2, "bpoolrelease"));
-    freelist.bh.prevfree=0;
-    freelist.bh.bsize=0;
-    freelist.ql.flink=&freelist;
-    freelist.ql.blink=&freelist;
-    LOG((2, "bpoolrelease"));
-
-#ifdef BufStats
-    totalloc = 0;             /* Total space currently allocated */
-    numget = 0;
-    numrel = 0;   /* Number of bget() and brel() calls */
-#ifdef BECtl
-    numpblk = 0;              /* Number of pool blocks */
-    numpget = 0;
-    numprel = 0; /* Number of block gets and rels */
-    numdget = 0;
-    numdrel = 0; /* Number of direct gets and rels */
-#endif /* BECtl */
-#endif /* BufStats */
-    LOG((2, "bpoolrelease"));
-
-#ifdef BECtl
-/* Automatic expansion block management functions */
-    compfcn = NULL;
-    acqfcn = NULL;
-    relfcn = NULL;
-    exp_incr = 0;
-    pool_len = 0;
-#endif
-    LOG((2, "bpoolrelease"));
-
-}
-
-
-
 /*  BGET  --  Allocate a buffer.  */
 
 void *bget(bufsize requested_size)
