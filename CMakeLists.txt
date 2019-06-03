@@ -81,25 +81,11 @@ endif()
 list (APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
 #===== External modules =====
-if (NOT DEFINED USER_CMAKE_MODULE_PATH)
-  message (STATUS "Importing CMake_Fortran_utils")
-  execute_process(
-    COMMAND git clone https://github.com/CESM-Development/CMake_Fortran_utils
-    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-    OUTPUT_QUIET
-    ERROR_QUIET)
-  find_path (USER_CMAKE_MODULE_PATH
-    NAMES mpiexec.cmake
-    HINTS ${CMAKE_BINARY_DIR}/CMake_Fortran_utils)
-  if (USER_CMAKE_MODULE_PATH)
-    message (STATUS "Importing CMake_Fortran_utils - success")
-  else ()
-    message (FATAL_ERROR "Failed to import CMake_Fortran_utils")
-  endif ()
+if (DEFINED USER_CMAKE_MODULE_PATH)
+  set (USER_CMAKE_MODULE_PATH ${USER_CMAKE_MODULE_PATH}
+    CACHE STRING "Location of the CMake_Fortran_utils")
+  list (APPEND CMAKE_MODULE_PATH ${USER_CMAKE_MODULE_PATH})
 endif ()
-set (USER_CMAKE_MODULE_PATH ${USER_CMAKE_MODULE_PATH}
-  CACHE STRING "Location of the CMake_Fortran_utils")
-list (APPEND CMAKE_MODULE_PATH ${USER_CMAKE_MODULE_PATH})
 
 INCLUDE (CheckTypeSize)
 
@@ -185,6 +171,15 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     message (FATAL_ERROR "PIO requires GCC 4.9+ to build correctly")
   endif()
 endif ()
+
+#==============================================================================
+#  MIN VERSION OF LIBRARIES REQD
+#==============================================================================
+set (MPE_MIN_VER_REQD "2.4.8")
+set (NETCDF_C_MIN_VER_REQD "4.3.3")
+set (NETCDF_FORTRAN_MIN_VER_REQD "4.3.3")
+set (PNETCDF_MIN_VER_REQD "1.8.1")
+set (ADIOS_MIN_VER_REQD "1.10.0")
 
 #==============================================================================
 #  SET CODE COVERAGE COMPILER FLAGS

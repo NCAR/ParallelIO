@@ -97,9 +97,9 @@ endif ()
 
 #===== NetCDF-C =====
 if (WITH_NETCDF)
-  find_package (NetCDF "4.3.3" COMPONENTS C)
+  find_package (NetCDF ${NETCDF_C_MIN_VER_REQD} COMPONENTS C)
 endif ()
-if (NetCDF_C_FOUND)
+if (NetCDF_FOUND)
   target_include_directories (pioc
     PUBLIC ${NetCDF_C_INCLUDE_DIRS})
   target_compile_definitions (pioc
@@ -124,9 +124,9 @@ endif ()
 
 #===== PnetCDF-C =====
 if (WITH_PNETCDF)
-  find_package (PnetCDF "1.7.0" COMPONENTS C)
+  find_package (PnetCDF ${PNETCDF_MIN_VER_REQD} COMPONENTS C)
 endif ()
-if (PnetCDF_C_FOUND)
+if (PnetCDF_FOUND)
   target_include_directories (pioc
     PUBLIC ${PnetCDF_C_INCLUDE_DIRS})
   target_compile_definitions (pioc
@@ -149,7 +149,7 @@ endif ()
 
 #===== ADIOS-C =====
 if (WITH_ADIOS)
-  find_package (ADIOS "1.10.0")
+  find_package (ADIOS ${ADIOS_MIN_VER_REQD})
 endif ()
 if (ADIOS_FOUND)
   target_include_directories (pioc

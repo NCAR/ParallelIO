@@ -17,6 +17,7 @@
 # If no components are specified, it assumes only C
 include (LibFind)
 include (LibCheck)
+include (FindPackageHandleStandardArgs)
 
 # Define NetCDF C Component
 define_package_component (NetCDF DEFAULT
@@ -63,6 +64,11 @@ foreach (NCDFcomp IN LISTS NetCDF_FIND_VALID_COMPONENTS)
                                NAME "netcdf_meta.h"
                                HINTS ${NetCDF_C_INCLUDE_DIRS}
                                MACRO_REGEX "NC_VERSION_")
+
+                find_package_handle_standard_args(NetCDF
+                  FOUND_VAR NetCDF_FOUND
+                  REQUIRED_VARS NetCDF_${NCDFcomp}_LIBRARY NetCDF_${NCDFcomp}_INCLUDE_DIR
+                  VERSION_VAR NetCDF_VERSION)
 
                 # Check for parallel support
                 check_macro (NetCDF_C_HAS_PARALLEL
