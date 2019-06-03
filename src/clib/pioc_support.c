@@ -2434,7 +2434,7 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
             if(mpierr != MPI_SUCCESS){
                 return check_mpi(NULL, file, ierr, __FILE__, __LINE__);
             }
-            if ((ierr == NC_ENOTNC || ierr == NC_EINVAL) && (file->iotype != PIO_IOTYPE_NETCDF))
+            if ((ierr != NC_NOERR) && (file->iotype != PIO_IOTYPE_NETCDF))
             {
                 if (ios->iomaster == MPI_ROOT)
                     printf("PIO2 pio_file.c retry NETCDF\n");
