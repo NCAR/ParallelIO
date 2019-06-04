@@ -1888,16 +1888,12 @@ PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filename,
 #endif
 #ifdef _Z5
         case PIO_IOTYPE_Z5:
-            printf("checkpoint for PIO_IOTYPE_Z5\n");
             if (!ios->io_rank)
             {
                 LOG((2, "Calling z5_create"));
-                printf("before create!!!!!!!!!!\n");
                 // TODO: no error code throw here?!
                 z5CreateFile(filename);
-//                file->fname=filename;
                 ierr = 0;
-                printf("after create!!!!!!!!!!\n");
             }
             break;
 #endif
@@ -2377,21 +2373,6 @@ PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filename,
             if (!ierr)
                 ierr = inq_file_metadata(file, file->fh, PIO_IOTYPE_PNETCDF, &nvars, &rec_var, &pio_type,
                                          &pio_type_size, &mpi_type, &mpi_type_size);
-            break;
-#endif
-#ifdef _Z5
-            case PIO_IOTYPE_Z5:
-            printf("checkpoint for PIO_IOTYPE_Z5\n");
-            if (!ios->io_rank)
-            {
-                LOG((2, "Calling z5_create"));
-                printf( stderr,"before create!!!!!!!!!!\n");
-                // TODO: no error code throw here?!
-                z5CreateFile(filename);
-                //file->fname=filename;
-                ierr = 0;
-                printf( stderr,"after create!!!!!!!!!!\n");
-            }
             break;
 #endif
 

@@ -30,8 +30,6 @@ int create_file(MPI_Comm comm, int iosysid, int format, char *filename,
     int ret;
 
     /* Create the file. */
-//    printf("create_file\n");
-    printf("format in PIOc_createfile: %d\n", format);
     if ((ret = PIOc_createfile(iosysid, &ncid, &format, filename, NC_CLOBBER)))
         return ret;
 //    printf("end of PIOc_createfile ret:%d\n", ret);
@@ -61,7 +59,6 @@ int create_file(MPI_Comm comm, int iosysid, int format, char *filename,
     /* Close the file. */
 //    if ((ret = PIOc_closefile(ncid)))
 //        return ret;
-    printf("end of PIOc_closefile PIO_NOERR:%d\n", PIO_NOERR);
     return PIO_NOERR;
 }
 
@@ -126,9 +123,6 @@ int main(int argc, char **argv)
         /* Figure out iotypes. */
         if ((ret = get_iotypes(&num_flavors, iotypes)))
             ERR(ret);
-//        if ((ret = get_iotype_name(flavor[fmt], iotype_name)))
-//            ERR(ret);
-//        printf("iotypename=%s\n", iotypes);
 
         /* Split world into odd and even. */
         MPI_Comm newcomm;
@@ -154,19 +148,13 @@ int main(int argc, char **argv)
         /* Initialize another PIO system. */
         if ((ret = PIOc_Init_Intracomm(test_comm, 4, 1, 0, 1, &iosysid_world)))
             ERR(ret);
-//        printf("before num_flavors\n");
-//        printf("num_flavors = %d\n", num_flavors);
-//        num_flavors = 5;
         for (int i = 0; i < num_flavors; i++)
         {
-//            iotypes[i] = 5;
-//            printf("====%d, %d\n", i, iotypes[i]);
             if (iotypes[i] == 5)
             {
                 char fname0[] = "pio_iosys_test_file0.z5";
                 char fname1[] = "pio_iosys_test_file1.z5";
                 char fname2[] = "pio_iosys_test_file2.z5";
-                printf("before create_file %d\n", iotypes[i]);
                 if ((ret = create_file(test_comm, iosysid_world, iotypes[i], fname0, ATTNAME,
                                        DIMNAME, my_rank)))
                     ERR(ret);
