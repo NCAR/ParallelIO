@@ -20,10 +20,7 @@
 extern PIO_Offset pio_buffer_size_limit;
 
 /* Initial size of compute buffer. */
-bufsize pio_cnbuffer_limit = 33554432;
-
-/* Global buffer pool pointer. */
-extern void *CN_bpool;
+bufsize pio_cnbuffer_limit = 0;
 
 /* Maximum buffer usage. */
 extern PIO_Offset maxusage;
@@ -32,11 +29,14 @@ extern PIO_Offset maxusage;
 void bpool_free(void *p)
 {
   free(p);
-  if(p == CN_bpool){
-    CN_bpool = NULL;
-  }
 }
 
+/* Handler for allocating more memory for the bget buffer pool */
+void *bpool_alloc(bufsize sz)
+{
+  void *p = malloc((size_t ) sz);
+  return p;
+}
 
 /**
  * Initialize the compute buffer to size pio_cnbuffer_limit.
@@ -52,21 +52,15 @@ void bpool_free(void *p)
  */
 int compute_buffer_init(iosystem_desc_t *ios)
 {
+    /* Default block size increment = 32 MB */
+    const bufsize DEFAULT_BUF_INC_SZ = (bufsize ) (32L * 1024L * 1024L);
+    bufsize bpool_block_inc_sz = (bufsize )((pio_buffer_size_limit > 0) ? pio_buffer_size_limit : DEFAULT_BUF_INC_SZ);
+    LOG((2, "Initializing buffer pool with block increment = %lld bytes", (long long int) bpool_block_inc_sz));
+    pio_cnbuffer_limit = bpool_block_inc_sz;
 #if PIO_USE_MALLOC
     bpool(NULL, pio_cnbuffer_limit);
 #else
-
-    if (!CN_bpool)
-    {
-        if (!(CN_bpool = malloc(pio_cnbuffer_limit)))
-            return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__);
-
-        bpool(CN_bpool, pio_cnbuffer_limit);
-        if (!CN_bpool)
-            return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__);
-
-        bectl(NULL, malloc, bpool_free, pio_cnbuffer_limit);
-    }
+    bectl(NULL, bpool_alloc, bpool_free, pio_cnbuffer_limit);
 #endif /* PIO_USE_MALLOC */
     LOG((2, "compute_buffer_init complete"));
 
@@ -1659,65 +1653,38 @@ void cn_buffer_report(iosystem_desc_t *ios, bool collective)
 {
     int mpierr = MPI_SUCCESS;  /* Return code from MPI functions. */
 
-    LOG((2, "cn_buffer_report ios->iossysid = %d collective = %d CN_bpool = %d",
-         ios->iosysid, collective, CN_bpool));
-    if (CN_bpool)
-    {
-        long bget_stats[5];
-        long bget_mins[5];
-        long bget_maxs[5];
+    LOG((2, "cn_buffer_report ios->iossysid = %d collective = %d",
+         ios->iosysid, collective));
+    long bget_stats[5];
+    long bget_mins[5];
+    long bget_maxs[5];
 
-        bstats(bget_stats, bget_stats+1,bget_stats+2,bget_stats+3,bget_stats+4);
-        if (collective)
+    bstats(bget_stats, bget_stats+1,bget_stats+2,bget_stats+3,bget_stats+4);
+    if (collective)
+    {
+        LOG((3, "cn_buffer_report calling MPI_Reduce ios->comp_comm = %d", ios->comp_comm));
+        if ((mpierr = MPI_Reduce(bget_stats, bget_maxs, 5, MPI_LONG, MPI_MAX, 0, ios->comp_comm)))
+            check_mpi(NULL, NULL, mpierr, __FILE__, __LINE__);
+        LOG((3, "cn_buffer_report calling MPI_Reduce"));
+        if ((mpierr = MPI_Reduce(bget_stats, bget_mins, 5, MPI_LONG, MPI_MIN, 0, ios->comp_comm)))
+            check_mpi(NULL, NULL, mpierr, __FILE__, __LINE__);
+        if (ios->compmaster == MPI_ROOT)
         {
-            LOG((3, "cn_buffer_report calling MPI_Reduce ios->comp_comm = %d", ios->comp_comm));
-            if ((mpierr = MPI_Reduce(bget_stats, bget_maxs, 5, MPI_LONG, MPI_MAX, 0, ios->comp_comm)))
-                check_mpi(NULL, NULL, mpierr, __FILE__, __LINE__);
-            LOG((3, "cn_buffer_report calling MPI_Reduce"));
-            if ((mpierr = MPI_Reduce(bget_stats, bget_mins, 5, MPI_LONG, MPI_MIN, 0, ios->comp_comm)))
-                check_mpi(NULL, NULL, mpierr, __FILE__, __LINE__);
-            if (ios->compmaster == MPI_ROOT)
-            {
-                LOG((1, "Currently allocated buffer space %ld %ld", bget_mins[0], bget_maxs[0]));
-                LOG((1, "Currently available buffer space %ld %ld", bget_mins[1], bget_maxs[1]));
-                LOG((1, "Current largest free block %ld %ld", bget_mins[2], bget_maxs[2]));
-                LOG((1, "Number of successful bget calls %ld %ld", bget_mins[3], bget_maxs[3]));
-                LOG((1, "Number of successful brel calls  %ld %ld", bget_mins[4], bget_maxs[4]));
-            }
-        }
-        else
-        {
-            LOG((1, "Currently allocated buffer space %ld", bget_stats[0]));
-            LOG((1, "Currently available buffer space %ld", bget_stats[1]));
-            LOG((1, "Current largest free block %ld", bget_stats[2]));
-            LOG((1, "Number of successful bget calls %ld", bget_stats[3]));
-            LOG((1, "Number of successful brel calls  %ld", bget_stats[4]));
+            LOG((1, "Currently allocated buffer space %ld %ld", bget_mins[0], bget_maxs[0]));
+            LOG((1, "Currently available buffer space %ld %ld", bget_mins[1], bget_maxs[1]));
+            LOG((1, "Current largest free block %ld %ld", bget_mins[2], bget_maxs[2]));
+            LOG((1, "Number of successful bget calls %ld %ld", bget_mins[3], bget_maxs[3]));
+            LOG((1, "Number of successful brel calls  %ld %ld", bget_mins[4], bget_maxs[4]));
         }
     }
-}
-
-/**
- * Free the buffer pool. If malloc is used (that is, PIO_USE_MALLOC is
- * non zero), this function does nothing.
- *
- * @param ios pointer to the IO system structure.
- * @ingroup PIO_write_darray
- * @author Jim Edwards
- */
-void free_cn_buffer_pool(iosystem_desc_t *ios)
-{
-#if !PIO_USE_MALLOC
-    LOG((2, "free_cn_buffer_pool CN_bpool = %d", CN_bpool));
-    /* Note: it is possible that CN_bpool has been freed and set to NULL by bpool_free() */
-    if (CN_bpool)
+    else
     {
-        cn_buffer_report(ios, false);
-        bpoolrelease(CN_bpool);
-        LOG((2, "free_cn_buffer_pool done!"));
-        free(CN_bpool);
-        CN_bpool = NULL;
+        LOG((1, "Currently allocated buffer space %ld", bget_stats[0]));
+        LOG((1, "Currently available buffer space %ld", bget_stats[1]));
+        LOG((1, "Current largest free block %ld", bget_stats[2]));
+        LOG((1, "Number of successful bget calls %ld", bget_stats[3]));
+        LOG((1, "Number of successful brel calls  %ld", bget_stats[4]));
     }
-#endif /* !PIO_USE_MALLOC */
 }
 
 /**

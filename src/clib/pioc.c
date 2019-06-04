@@ -1166,13 +1166,6 @@ int PIOc_finalize(int iosysid)
         return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
     LOG((2, "%d iosystems are still open.", niosysid));
 
-    /* Only free the buffer pool if this is the last open iosysid. */
-    if (niosysid == 1)
-    {
-        free_cn_buffer_pool(ios);
-        LOG((2, "Freed buffer pool."));
-    }
-
     /* Free the MPI groups. */
     if (ios->compgroup != MPI_GROUP_NULL)
         MPI_Group_free(&ios->compgroup);

@@ -288,8 +288,6 @@ extern "C" {
     /* Initialize the compute buffer. */
     int compute_buffer_init(iosystem_desc_t *ios);
 
-    void free_cn_buffer_pool(iosystem_desc_t *ios);
-
     /* Flush PIO's data buffer. */
     int flush_buffer(int ncid, wmulti_buffer *wmb, bool flushtodisk);
 
