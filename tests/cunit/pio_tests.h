@@ -18,8 +18,8 @@
 
 /** The number of possible output netCDF output flavors available to
  * the ParallelIO library. */
-#define NUM_FLAVORS 4
-#define NUM_IOTYPES 4
+#define NUM_FLAVORS 5
+#define NUM_IOTYPES 5
 
 /** Number of netCDF types. */
 #define NUM_NETCDF_TYPES 12

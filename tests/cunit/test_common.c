@@ -145,7 +145,10 @@ get_iotypes(int *num_flavors, int *flavors)
     format[fmtidx++] = PIO_IOTYPE_NETCDF4C;
     format[fmtidx] = PIO_IOTYPE_NETCDF4P;
 #endif
-
+#ifdef _Z5
+    num++;
+    format[fmtidx++] = PIO_IOTYPE_Z5;
+#endif
     /* Pass results back to caller. */
     if (num_flavors)
         *num_flavors = num;

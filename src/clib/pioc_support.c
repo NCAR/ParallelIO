@@ -1815,7 +1815,7 @@ PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filename,
     /* Set to true if this task should participate in IO (only true for
      * one task with netcdf serial files. */
     if (file->iotype == PIO_IOTYPE_NETCDF4P || file->iotype == PIO_IOTYPE_PNETCDF ||
-        ios->io_rank == 0)
+        file->iotype == PIO_IOTYPE_Z5 || ios->io_rank == 0)
         file->do_io = 1;
 
     LOG((2, "file->do_io = %d ios->async = %d", file->do_io, ios->async));
@@ -1884,6 +1884,21 @@ PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filename,
             ierr = ncmpi_create(ios->io_comm, filename, mode, ios->info, &file->fh);
             if (!ierr)
                 ierr = ncmpi_buffer_attach(file->fh, pio_buffer_size_limit);
+            break;
+#endif
+#ifdef _Z5
+        case PIO_IOTYPE_Z5:
+            printf("checkpoint for PIO_IOTYPE_Z5\n");
+            if (!ios->io_rank)
+            {
+                LOG((2, "Calling z5_create"));
+                printf("before create!!!!!!!!!!\n");
+                // TODO: no error code throw here?!
+                z5CreateFile(filename);
+//                file->fname=filename;
+                ierr = 0;
+                printf("after create!!!!!!!!!!\n");
+            }
             break;
 #endif
         }
@@ -2262,7 +2277,7 @@ PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filename,
     /* Set to true if this task should participate in IO (only true
      * for one task with netcdf serial files. */
     if (file->iotype == PIO_IOTYPE_NETCDF4P || file->iotype == PIO_IOTYPE_PNETCDF ||
-        ios->io_rank == 0)
+        file->iotype == PIO_IOTYPE_Z5 || ios->io_rank == 0)
         file->do_io = 1;
 
     /* If async is in use, and this is not an IO task, bcast the parameters. */
@@ -2362,6 +2377,21 @@ PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filename,
             if (!ierr)
                 ierr = inq_file_metadata(file, file->fh, PIO_IOTYPE_PNETCDF, &nvars, &rec_var, &pio_type,
                                          &pio_type_size, &mpi_type, &mpi_type_size);
+            break;
+#endif
+#ifdef _Z5
+            case PIO_IOTYPE_Z5:
+            printf("checkpoint for PIO_IOTYPE_Z5\n");
+            if (!ios->io_rank)
+            {
+                LOG((2, "Calling z5_create"));
+                printf( stderr,"before create!!!!!!!!!!\n");
+                // TODO: no error code throw here?!
+                z5CreateFile(filename);
+                //file->fname=filename;
+                ierr = 0;
+                printf( stderr,"after create!!!!!!!!!!\n");
+            }
             break;
 #endif
 
@@ -2663,7 +2693,10 @@ iotype_is_valid(int iotype)
         ret++;
 #ifdef _PNETCDF
 #endif /* _PNETCDF */
-
+#ifdef _Z5
+    if (iotype == PIO_IOTYPE_Z5)
+        ret++;
+#endif
     return ret;
 }
 

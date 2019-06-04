@@ -1,5 +1,5 @@
 cmake_minimum_required (VERSION 2.8.12)
-project (PIO C Fortran)
+project (PIO C CXX Fortran)
 #cmake_policy(VERSION 3.5.2)
 
 # The project version number.
@@ -29,6 +29,7 @@ option (PIO_USE_MPISERIAL    "Enable mpi-serial support (instead of MPI)"   OFF)
 option (PIO_USE_MALLOC       "Use native malloc (instead of bget package)"  ON)
 option (PIO_USE_PNETCDF_VARD       "Use pnetcdf put_vard "  OFF)
 option (WITH_PNETCDF         "Require the use of PnetCDF"                   ON)
+option (WITH_Z5              "Require the use of Z5"                        ON)
 
 # Set a variable that appears in the config.h.in file.
 if(PIO_USE_PNETCDF_VARD)
@@ -108,6 +109,47 @@ set (PIO_FILESYSTEM_HINTS IGNORE CACHE STRING "Filesystem hints (lustre or gpfs)
 #===== Testing Options =====
 option (PIO_ENABLE_TESTS  "Enable the testing builds"                           ON)
 option (PIO_VALGRIND_CHECK  "Enable memory leak check using valgrind"           OFF)
+
+#==============================================================================
+#  Z5 BACKEND
+#==============================================================================
+
+# Z5
+if (DEFINED Z5_DIR)
+  message("Z5_DIR: " ${Z5_DIR})
+  set(Z5_DIR CACHE PATH "z5 location")
+  include_directories(${Z5_DIR})
+  #boost
+  find_package(Boost REQUIRED COMPONENTS system filesystem)
+  message("Boost_FILESYSTEM_LIBRARY:" ${Boost_FILESYSTEM_LIBRARY})
+  message("Boost_SYSTEM_LIBRARY:" ${Boost_SYSTEM_LIBRARY})
+  set(BOOST_LIBRARIES
+          ${Boost_FILESYSTEM_LIBRARY}
+          ${Boost_SYSTEM_LIBRARY})
+  #zlib
+  option(WITH_ZLIB ON)
+  if(WITH_ZLIB)
+    find_package(ZLIB REQUIRED)
+    set(ZLIB_ROOT CACHE PATH "zlib location")
+    include_directories(${ZLIB_INCLUDE_DIRS})
+    message("ZLIB_INCLUDE_DIRS: " ${ZLIB_INCLUDE_DIRS})
+    add_definitions(-DWITH_ZLIB)
+    SET(COMPRESSION_LIBRARIES "${COMPRESSION_LIBRARIES};${ZLIB_LIBRARIES}")
+  endif()
+  #CXX 11
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++14")
+  message(${CMAKE_CXX_FLAGS})
+  set(CMAKE_CXX_STANDARD_REQUIRED ON)
+  #MARRAY
+  option(WITH_MARRAY ON)
+  if(WITH_MARRAY)
+    set(MARRAY_INCLUDE_DIR ${CMAKE_PREFIX_PATH} CACHE PATH "marray location")
+    add_definitions(-DWITH_MARRAY)
+    include_directories(${MARRAY_INCLUDE_DIR})
+    message("MARRAY_INCLUDE_DIR:" ${MARRAY_INCLUDE_DIR})
+  endif()
+  set(CMAKE_PREFIX_PATH CACHE PATH "CMAKE_PREFIX_PATH path")
+endif ()
 
 #==============================================================================
 #  BACKWARDS COMPATIBILITY

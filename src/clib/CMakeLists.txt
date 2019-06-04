@@ -1,6 +1,6 @@
 cmake_minimum_required (VERSION 2.8.12)
 include (CheckFunctionExists)
-project (PIOC C)
+project (PIOC C CXX)
 
 #==============================================================================
 #  DEFINE THE TARGET
@@ -135,6 +135,30 @@ else ()
   target_compile_definitions (pioc
     PUBLIC _NOPNETCDF)
 endif ()
+
+#===== Z5 =====
+project(Z5WRAPPER C CXX)
+include_directories(
+        "${Z5_DIR}"
+        "${Z5_DIR}/z5"
+        ${MARRAY_INCLUDE_DIR}
+        ${ZLIB_INCLUDE_DIRS})
+set(SRC_FILES ${Z5_DIR}/z5/file.hxx ${Z5_DIR}/z5/metadata.hxx)
+add_library(z5wrapper z5wrapper.h z5wrapper.cc ${SRC_FILES})
+
+#==============================================================================
+#  DEFINE THE INSTALL
+#==============================================================================
+target_include_directories (z5wrapper
+        PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} include ${Z5_DIR} ${Z5_DIR}/z5 ${MARRAY_INCLUDE_DIR} ${ZLIB_INCLUDE_DIRS})
+# Library
+install (TARGETS z5wrapper DESTINATION lib)
+
+# Include/Header File
+install (FILES ${CMAKE_CURRENT_SOURCE_DIR}/z5wrapper.h DESTINATION include)
+target_link_libraries (z5wrapper LINK_PUBLIC ${BOOST_LIBRARIES} ${COMPRESSION_LIBRARIES})
+target_compile_definitions (pioc PUBLIC _Z5)
+target_link_libraries (pioc PUBLIC z5wrapper)
 
 #===== Add EXTRAs =====
 target_include_directories (pioc

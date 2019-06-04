@@ -155,7 +155,7 @@ int PIOc_createfile(int iosysid, int *ncidp, int *iotype, const char *filename,
     /* Create the file. */
     if ((ret = PIOc_createfile_int(iosysid, ncidp, iotype, filename, mode)))
         return pio_err(ios, NULL, ret, __FILE__, __LINE__);
-
+    printf("<<<<<<<<<<<<<<<<<<\n");
     /* Run this on all tasks if async is not in use, but only on
      * non-IO tasks if async is in use. (Because otherwise, in async
      * mode, set_fill would be called twice by each IO task, since
@@ -166,7 +166,7 @@ int PIOc_createfile(int iosysid, int *ncidp, int *iotype, const char *filename,
         if ((ret = PIOc_set_fill(*ncidp, NC_NOFILL, NULL)))
             return ret;
     }
-
+    printf(">>>>>>>>>>>>>>>>\n");
     return ret;
 }
 
@@ -278,6 +278,11 @@ int PIOc_closefile(int ncid)
                 ierr = ncmpi_buffer_detach(file->fh);
             ierr = ncmpi_close(file->fh);
             break;
+#endif
+#ifdef _Z5
+        // TODO: Z5Z5 do not need to close file
+        case PIO_IOTYPE_Z5:
+            ierr = 0;
 #endif
         default:
             return pio_err(ios, file, PIO_EBADIOTYPE, __FILE__, __LINE__);

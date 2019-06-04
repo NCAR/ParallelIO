@@ -25,6 +25,9 @@
 #ifdef _PNETCDF
 #include <pnetcdf.h>
 #endif
+#ifdef _Z5
+#include "z5wrapper.h"
+#endif
 
 #ifndef MPI_OFFSET
 /** MPI_OFFSET is an integer type of size sufficient to represent the
@@ -610,7 +613,10 @@ enum PIO_IOTYPE
     PIO_IOTYPE_NETCDF4C = 3,
 
     /** NetCDF4 (HDF5) parallel */
-    PIO_IOTYPE_NETCDF4P = 4
+    PIO_IOTYPE_NETCDF4P = 4,
+
+    /** Z5 Type */
+    PIO_IOTYPE_Z5 = 5
 };
 
 /**

@@ -1953,6 +1953,13 @@ PIOc_set_fill(int ncid, int fillmode, int *old_modep)
 
         if (file->iotype != PIO_IOTYPE_PNETCDF && file->do_io)
             ierr = nc_set_fill(file->fh, fillmode, old_modep);
+#ifdef _Z5
+        //TODO: Z5Z5 maybe need some othe code
+        if (file->iotype == PIO_IOTYPE_Z5 && file->do_io)
+           {
+                ierr = 0;
+           }
+#endif
     }
 
     /* Broadcast and check the return code. */
