@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.13"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>PIO: error_methods</title>
+<title>PIO: Error Handling Methods</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -61,19 +61,22 @@ $(function() {
 
 <div class="header">
   <div class="headertitle">
-<div class="title">error_methods</div>  </div>
+<div class="title">Error Handling Methods</div>  </div>
 </div><!--header-->
 <div class="contents">
+
+<p>The error handling setting controls what happens if errors are encountered by PIO.  
+<a href="#details">More...</a></p>
+<p>The error handling setting controls what happens if errors are encountered by PIO. </p>
 <p>The three types of error handling methods are:</p><ul>
 <li>PIO_INTERNAL_ERROR : abort on error from any task</li>
 <li>PIO_BCAST_ERROR : broadcast an error from io_rank 0 to all tasks in comm</li>
-<li>PIO_RETURN_ERROR : do nothing - allow the user to handle it</li>
+<li>PIO_RETURN_ERROR : do nothing - allow the user to handle it </li>
 </ul>
-<p>Use this instead of ios to set error handling for the library. </p>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun May 26 2019 18:21:06 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Jun 4 2019 11:03:24 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.13
 </small></address>

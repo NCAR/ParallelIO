@@ -20,7 +20,7 @@ var searchData=
   ['err_5ffile',['ERR_FILE',['../example2_8c.html#a846551741a0d8ec6d1efd5491798d50d',1,'example2.c']]],
   ['error_20handling',['Error Handling',['../error.html',1,'']]],
   ['error_5fhandler',['error_handler',['../structiosystem__desc__t.html#a5feeb0ee83c989df85476df5f9b891e5',1,'iosystem_desc_t']]],
-  ['error_20return_20codes',['error return codes',['../group__error__return.html',1,'']]],
+  ['error_20return_20codes',['Error Return Codes',['../group__error__return.html',1,'']]],
   ['examples',['Examples',['../examp.html',1,'']]],
   ['example1_2ec',['example1.c',['../example1_8c.html',1,'']]],
   ['example2_2ec',['example2.c',['../example2_8c.html',1,'']]],
@@ -28,5 +28,7 @@ var searchData=
   ['examplepio_2ef90',['examplePio.f90',['../example_pio_8f90.html',1,'']]],
   ['examplepioclass',['examplePioClass',['../example_pio_8c.html#a979ddb2d426025010ad5160da5c9e9e8',1,'examplePio.c']]],
   ['end_20define_20mode',['End Define Mode',['../group___p_i_o__enddef__c.html',1,'']]],
-  ['error_5fmethods',['error_methods',['../group___p_i_o__error__method.html',1,'']]]
+  ['error_20handling_20methods',['Error Handling Methods',['../group___p_i_o__error__method.html',1,'']]],
+  ['error_20handling_20for_20fortran',['Error Handling for Fortran',['../group___p_i_o__seterrorhandling.html',1,'']]],
+  ['error_20messages',['Error Messages',['../group___p_i_o__strerror.html',1,'']]]
 ];

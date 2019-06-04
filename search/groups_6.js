@@ -1,9 +1,7 @@
 var searchData=
 [
-  ['learn_20about_20an_20attribute',['Learn About an Attribute',['../group___p_i_o__inq__att__c.html',1,'']]],
-  ['learn_20about_20file_20contents',['Learn About File Contents',['../group___p_i_o__inq__c.html',1,'']]],
-  ['learn_20about_20dimensions',['Learn About Dimensions',['../group___p_i_o__inq__dim__c.html',1,'']]],
-  ['learn_20about_20file_20binary_20format',['Learn About File Binary Format',['../group___p_i_o__inq__format__c.html',1,'']]],
-  ['learn_20about_20a_20variable',['Learn About a Variable',['../group___p_i_o__inq__var__c.html',1,'']]],
-  ['learn_20length_20of_20a_20data_20type',['Learn Length of a Data Type',['../group___p_i_o__typelen__c.html',1,'']]]
+  ['initialize_20an_20iosystem',['Initialize an IOSystem',['../group___p_i_o__init.html',1,'']]],
+  ['initialize_20the_20io_20system',['Initialize the IO System',['../group___p_i_o__init__c.html',1,'']]],
+  ['initialize_20a_20decomposition',['Initialize a Decomposition',['../group___p_i_o__initdecomp__c.html',1,'']]],
+  ['internal_20debug_20settings_20for_20fortran',['Internal Debug Settings for Fortran',['../group___p_i_o__setdebuglevel.html',1,'']]]
 ];

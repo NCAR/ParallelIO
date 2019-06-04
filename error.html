@@ -64,7 +64,7 @@ $(function() {
 <div class="title">Error Handling </div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p>By default, PIO handles errors internally by printing a string describing the error and then calling mpi_abort. Application developers can change this behaivior with a call to <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> or <a class="el" href="group___p_i_o__error__method__c.html#gac4d7bb3ea04026a1269a0e87608d13f3" title="Set the error handling method used for subsequent calls for this IO system. ">PIOc_set_iosystem_error_handling()</a>.</p>
+<div class="textblock"><p>By default, PIO handles errors internally by printing a string describing the error and then calling mpi_abort. Application developers can change this behaivior with a call to <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a> or <a class="el" href="group___p_i_o__error__method__c.html#gac4d7bb3ea04026a1269a0e87608d13f3" title="Set the error handling method used for subsequent calls for this IO system. ">PIOc_set_iosystem_error_handling()</a>.</p>
 <p>The three types of error handling are:</p>
 <p>1 - <a class="el" href="pio_8h.html#a982191cb68f550f75091a40c3a133189a22b2f4375485086b711ac51c936bb460" title="Errors cause abort. ">PIO_INTERNAL_ERROR</a> abort on error from any task.</p>
 <p>2 - <a class="el" href="pio_8h.html#a982191cb68f550f75091a40c3a133189af4294f43fb4548f7c3bb5ddbfc1db232" title="Error codes are broadcast to all tasks. ">PIO_BCAST_ERROR</a> broadcast error to all tasks on IO communicator</p>
@@ -72,7 +72,7 @@ $(function() {
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun May 26 2019 18:21:06 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Jun 4 2019 11:03:24 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.13
 </small></address>

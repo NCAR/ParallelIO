@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.13"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>PIO: PIO_inquire</title>
+<title>PIO: Learn About a File</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -63,12 +63,39 @@ $(function() {
   <div class="summary">
 <a href="#func-members">Functions/Subroutines</a>  </div>
   <div class="headertitle">
-<div class="title">PIO_inquire</div>  </div>
+<div class="title">Learn About a File</div>  </div>
 </div><!--header-->
 <div class="contents">
+
+<p>Learn the number of variables, dimensions, global attributes, and the unlimited dimension ID in Fortran.  
+<a href="#details">More...</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions/Subroutines</h2></td></tr>
+<tr class="memitem:gaec2b049f9b160befc8705aa475621387"><td class="memItemLeft" align="right" valign="top">integer function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__inquire.html#gaec2b049f9b160befc8705aa475621387">pio_nf::inq_ndims_desc</a> (File, ndims)</td></tr>
+<tr class="memdesc:gaec2b049f9b160befc8705aa475621387"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get information about the number of dimensions of a file or group.  <a href="group___p_i_o__inquire.html#gaec2b049f9b160befc8705aa475621387">More...</a><br /></td></tr>
+<tr class="separator:gaec2b049f9b160befc8705aa475621387"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga6c4b1ac748a3ca0c85360f0d1362309d"><td class="memItemLeft" align="right" valign="top">integer function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__inquire.html#ga6c4b1ac748a3ca0c85360f0d1362309d">pio_nf::inq_ndims_id</a> (ncid, ndims)</td></tr>
+<tr class="memdesc:ga6c4b1ac748a3ca0c85360f0d1362309d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get information about the number of dimensions of a file or group.  <a href="group___p_i_o__inquire.html#ga6c4b1ac748a3ca0c85360f0d1362309d">More...</a><br /></td></tr>
+<tr class="separator:ga6c4b1ac748a3ca0c85360f0d1362309d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga75745bf73050d2ba33f50c96e5ca9737"><td class="memItemLeft" align="right" valign="top">integer function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__inquire.html#ga75745bf73050d2ba33f50c96e5ca9737">pio_nf::inq_nvars_desc</a> (File, nvars)</td></tr>
+<tr class="memdesc:ga75745bf73050d2ba33f50c96e5ca9737"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get information about the number of variables in a file or group.  <a href="group___p_i_o__inquire.html#ga75745bf73050d2ba33f50c96e5ca9737">More...</a><br /></td></tr>
+<tr class="separator:ga75745bf73050d2ba33f50c96e5ca9737"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga64f78f2105aa0c8114a9995c114b738d"><td class="memItemLeft" align="right" valign="top">integer function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__inquire.html#ga64f78f2105aa0c8114a9995c114b738d">pio_nf::inq_nvars_id</a> (ncid, nvars)</td></tr>
+<tr class="memdesc:ga64f78f2105aa0c8114a9995c114b738d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get information about the number of variables in a file or group.  <a href="group___p_i_o__inquire.html#ga64f78f2105aa0c8114a9995c114b738d">More...</a><br /></td></tr>
+<tr class="separator:ga64f78f2105aa0c8114a9995c114b738d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga31a00d65a2bd6c6fefe70e85d84bd9b4"><td class="memItemLeft" align="right" valign="top">integer function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__inquire.html#ga31a00d65a2bd6c6fefe70e85d84bd9b4">pio_nf::inq_natts_desc</a> (File, natts)</td></tr>
+<tr class="memdesc:ga31a00d65a2bd6c6fefe70e85d84bd9b4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get information about the number of global attributes in a file or group.  <a href="group___p_i_o__inquire.html#ga31a00d65a2bd6c6fefe70e85d84bd9b4">More...</a><br /></td></tr>
+<tr class="separator:ga31a00d65a2bd6c6fefe70e85d84bd9b4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga0145a80fb028e8f80fa545dd45bdf2bf"><td class="memItemLeft" align="right" valign="top">integer function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__inquire.html#ga0145a80fb028e8f80fa545dd45bdf2bf">pio_nf::inq_natts_id</a> (ncid, natts)</td></tr>
+<tr class="memdesc:ga0145a80fb028e8f80fa545dd45bdf2bf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get information about the number of global attributes in a file or group.  <a href="group___p_i_o__inquire.html#ga0145a80fb028e8f80fa545dd45bdf2bf">More...</a><br /></td></tr>
+<tr class="separator:ga0145a80fb028e8f80fa545dd45bdf2bf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gac9b95e29502dececfa46daf02a451817"><td class="memItemLeft" align="right" valign="top">integer function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__inquire.html#gac9b95e29502dececfa46daf02a451817">pio_nf::inq_unlimdim_desc</a> (File, unlimdim)</td></tr>
+<tr class="memdesc:gac9b95e29502dececfa46daf02a451817"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get information about the unlimited dimension in a file.  <a href="group___p_i_o__inquire.html#gac9b95e29502dececfa46daf02a451817">More...</a><br /></td></tr>
+<tr class="separator:gac9b95e29502dececfa46daf02a451817"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga4e62e2c5174c482a51467a542f22b6ca"><td class="memItemLeft" align="right" valign="top">integer function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__inquire.html#ga4e62e2c5174c482a51467a542f22b6ca">pio_nf::inq_unlimdim_id</a> (ncid, unlimdim)</td></tr>
+<tr class="memdesc:ga4e62e2c5174c482a51467a542f22b6ca"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get information about the unlimited dimension in a file.  <a href="group___p_i_o__inquire.html#ga4e62e2c5174c482a51467a542f22b6ca">More...</a><br /></td></tr>
+<tr class="separator:ga4e62e2c5174c482a51467a542f22b6ca"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gaaefd5a9aaf2b61b0b5e2270868d0c076"><td class="memItemLeft" align="right" valign="top">integer function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__inquire.html#gaaefd5a9aaf2b61b0b5e2270868d0c076">pio_nf::inquire_desc</a> (File, nDimensions, nVariables, nAttributes, unlimitedDimID)</td></tr>
 <tr class="memdesc:gaaefd5a9aaf2b61b0b5e2270868d0c076"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets metadata information for netcdf file.  <a href="group___p_i_o__inquire.html#gaaefd5a9aaf2b61b0b5e2270868d0c076">More...</a><br /></td></tr>
 <tr class="separator:gaaefd5a9aaf2b61b0b5e2270868d0c076"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -77,7 +104,308 @@ Functions/Subroutines</h2></td></tr>
 <tr class="separator:ga195f13262360e2f389b612508b4e2744"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<p>Learn the number of variables, dimensions, global attributes, and the unlimited dimension ID in Fortran. </p>
 <h2 class="groupheader">Function/Subroutine Documentation</h2>
+<a id="ga31a00d65a2bd6c6fefe70e85d84bd9b4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga31a00d65a2bd6c6fefe70e85d84bd9b4">&#9670;&nbsp;</a></span>inq_natts_desc()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">integer function pio_nf::inq_natts_desc </td>
+          <td>(</td>
+          <td class="paramtype">type (<a class="el" href="structpio__types_1_1file__desc__t.html">file_desc_t</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>File</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer, intent(out)&#160;</td>
+          <td class="paramname"><em>natts</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get information about the number of global attributes in a file or group. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">File</td><td>File descriptor structure. This structure holds information associated with each open file </td></tr>
+    <tr><td class="paramname">natts</td><td>The number of attributes in the file. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="retval"><dt>Return values</dt><dd>
+  <table class="retval">
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>Jim Edwards </dd></dl>
+
+</div>
+</div>
+<a id="ga0145a80fb028e8f80fa545dd45bdf2bf"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga0145a80fb028e8f80fa545dd45bdf2bf">&#9670;&nbsp;</a></span>inq_natts_id()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">integer function pio_nf::inq_natts_id </td>
+          <td>(</td>
+          <td class="paramtype">integer, intent(in)&#160;</td>
+          <td class="paramname"><em>ncid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer, intent(out)&#160;</td>
+          <td class="paramname"><em>natts</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get information about the number of global attributes in a file or group. </p>
+<dl class="section author"><dt>Author</dt><dd>Jim Edwards </dd></dl>
+
+</div>
+</div>
+<a id="gaec2b049f9b160befc8705aa475621387"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaec2b049f9b160befc8705aa475621387">&#9670;&nbsp;</a></span>inq_ndims_desc()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">integer function pio_nf::inq_ndims_desc </td>
+          <td>(</td>
+          <td class="paramtype">type (<a class="el" href="structpio__types_1_1file__desc__t.html">file_desc_t</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>File</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer, intent(out)&#160;</td>
+          <td class="paramname"><em>ndims</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get information about the number of dimensions of a file or group. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">File</td><td>File descriptor structure. This structure holds information associated with each open file </td></tr>
+    <tr><td class="paramname">ndims</td><td>The number of dimensions in the file. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="retval"><dt>Return values</dt><dd>
+  <table class="retval">
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>Jim Edwards </dd></dl>
+
+</div>
+</div>
+<a id="ga6c4b1ac748a3ca0c85360f0d1362309d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga6c4b1ac748a3ca0c85360f0d1362309d">&#9670;&nbsp;</a></span>inq_ndims_id()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">integer function pio_nf::inq_ndims_id </td>
+          <td>(</td>
+          <td class="paramtype">integer, intent(in)&#160;</td>
+          <td class="paramname"><em>ncid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer, intent(out)&#160;</td>
+          <td class="paramname"><em>ndims</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get information about the number of dimensions of a file or group. </p>
+<dl class="section author"><dt>Author</dt><dd>Jim Edwards </dd></dl>
+
+</div>
+</div>
+<a id="ga75745bf73050d2ba33f50c96e5ca9737"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga75745bf73050d2ba33f50c96e5ca9737">&#9670;&nbsp;</a></span>inq_nvars_desc()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">integer function pio_nf::inq_nvars_desc </td>
+          <td>(</td>
+          <td class="paramtype">type (<a class="el" href="structpio__types_1_1file__desc__t.html">file_desc_t</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>File</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer, intent(out)&#160;</td>
+          <td class="paramname"><em>nvars</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get information about the number of variables in a file or group. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">File</td><td>File descriptor structure. This structure holds information associated with each open file </td></tr>
+    <tr><td class="paramname">nvars</td><td>The number of variables in the file. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="retval"><dt>Return values</dt><dd>
+  <table class="retval">
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>Jim Edwards </dd></dl>
+
+</div>
+</div>
+<a id="ga64f78f2105aa0c8114a9995c114b738d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga64f78f2105aa0c8114a9995c114b738d">&#9670;&nbsp;</a></span>inq_nvars_id()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">integer function pio_nf::inq_nvars_id </td>
+          <td>(</td>
+          <td class="paramtype">integer, intent(in)&#160;</td>
+          <td class="paramname"><em>ncid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer, intent(out)&#160;</td>
+          <td class="paramname"><em>nvars</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get information about the number of variables in a file or group. </p>
+<dl class="section author"><dt>Author</dt><dd>Jim Edwards </dd></dl>
+
+</div>
+</div>
+<a id="gac9b95e29502dececfa46daf02a451817"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gac9b95e29502dececfa46daf02a451817">&#9670;&nbsp;</a></span>inq_unlimdim_desc()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">integer function pio_nf::inq_unlimdim_desc </td>
+          <td>(</td>
+          <td class="paramtype">type (<a class="el" href="structpio__types_1_1file__desc__t.html">file_desc_t</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>File</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer, intent(out)&#160;</td>
+          <td class="paramname"><em>unlimdim</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get information about the unlimited dimension in a file. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">File</td><td>File descriptor structure. This structure holds information associated with each open file </td></tr>
+    <tr><td class="paramname">unlimdim</td><td>Pointer to the unlimted dimension. If no unlimited dimension, this will be -1. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="retval"><dt>Return values</dt><dd>
+  <table class="retval">
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>Jim Edwards </dd></dl>
+
+</div>
+</div>
+<a id="ga4e62e2c5174c482a51467a542f22b6ca"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga4e62e2c5174c482a51467a542f22b6ca">&#9670;&nbsp;</a></span>inq_unlimdim_id()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">integer function pio_nf::inq_unlimdim_id </td>
+          <td>(</td>
+          <td class="paramtype">integer, intent(in)&#160;</td>
+          <td class="paramname"><em>ncid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer, intent(out)&#160;</td>
+          <td class="paramname"><em>unlimdim</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get information about the unlimited dimension in a file. </p>
+<dl class="section author"><dt>Author</dt><dd>Jim Edwards </dd></dl>
+
+</div>
+</div>
 <a id="gaaefd5a9aaf2b61b0b5e2270868d0c076"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#gaaefd5a9aaf2b61b0b5e2270868d0c076">&#9670;&nbsp;</a></span>inquire_desc()</h2>
 
@@ -126,19 +454,20 @@ Functions/Subroutines</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">File</td><td>File descriptor structure. This structure holds information associated with each open file </td></tr>
-    <tr><td class="paramname">nDimensions</td><td>: Number of dimensions defined for the netcdf file </td></tr>
-    <tr><td class="paramname">nVariables</td><td>: Number of variables defined for the netcdf file </td></tr>
-    <tr><td class="paramname">nAttributes</td><td>: Number of attributes defined for the netcdf file </td></tr>
-    <tr><td class="paramname">unlimitedDimID</td><td>: the Unlimited dimension ID </td></tr>
+    <tr><td class="paramname">nDimensions</td><td>Number of dimensions defined for the netcdf file </td></tr>
+    <tr><td class="paramname">nVariables</td><td>Number of variables defined for the netcdf file </td></tr>
+    <tr><td class="paramname">nAttributes</td><td>Number of attributes defined for the netcdf file </td></tr>
+    <tr><td class="paramname">unlimitedDimID</td><td>the Unlimited dimension ID </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
+<dl class="section author"><dt>Author</dt><dd>Jim Edwards </dd></dl>
 
 </div>
 </div>
@@ -187,13 +516,14 @@ Functions/Subroutines</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Gets metadata information for netcdf file. </p>
+<dl class="section author"><dt>Author</dt><dd>Jim Edwards </dd></dl>
 
 </div>
 </div>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun May 26 2019 18:21:06 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Jun 4 2019 11:03:24 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.13
 </small></address>

@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.13"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>PIO: PIO_def_dim</title>
+<title>PIO: Define a Dimension</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -63,11 +63,11 @@ $(function() {
   <div class="summary">
 <a href="#func-members">Functions/Subroutines</a>  </div>
   <div class="headertitle">
-<div class="title">PIO_def_dim</div>  </div>
+<div class="title">Define a Dimension</div>  </div>
 </div><!--header-->
 <div class="contents">
 
-<p>A set of functions to define dimensions and their attributes in NetCDF files.  
+<p>Define a new dimension, with name and length in Fortran.  
 <a href="#details">More...</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
@@ -75,103 +75,10 @@ Functions/Subroutines</h2></td></tr>
 <tr class="memitem:gabbfcbd8041efadf245d4a2f1ebf671b0"><td class="memItemLeft" align="right" valign="top">integer function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__def__dim.html#gabbfcbd8041efadf245d4a2f1ebf671b0">pio_nf::def_dim_int_desc</a> (File, name, len, dimid)</td></tr>
 <tr class="memdesc:gabbfcbd8041efadf245d4a2f1ebf671b0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Defines the netcdf dimension.  <a href="group___p_i_o__def__dim.html#gabbfcbd8041efadf245d4a2f1ebf671b0">More...</a><br /></td></tr>
 <tr class="separator:gabbfcbd8041efadf245d4a2f1ebf671b0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga50b5096923dcf55c5099635850322fae"><td class="memItemLeft" align="right" valign="top">integer function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__def__dim.html#ga50b5096923dcf55c5099635850322fae">pio_nf::def_dim_int_id</a> (ncid, name, len, dimid)</td></tr>
-<tr class="memdesc:ga50b5096923dcf55c5099635850322fae"><td class="mdescLeft">&#160;</td><td class="mdescRight">Defines the netcdf dimension.  <a href="group___p_i_o__def__dim.html#ga50b5096923dcf55c5099635850322fae">More...</a><br /></td></tr>
-<tr class="separator:ga50b5096923dcf55c5099635850322fae"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga1fe0ae159057cf101e8eede7575e492a"><td class="memItemLeft" align="right" valign="top">integer function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__def__dim.html#ga1fe0ae159057cf101e8eede7575e492a">pio_nf::def_dim_desc</a> (File, name, len, dimid)</td></tr>
-<tr class="memdesc:ga1fe0ae159057cf101e8eede7575e492a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Defines the netcdf dimension.  <a href="group___p_i_o__def__dim.html#ga1fe0ae159057cf101e8eede7575e492a">More...</a><br /></td></tr>
-<tr class="separator:ga1fe0ae159057cf101e8eede7575e492a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga08732588a313c6130c840dbe70635d2f"><td class="memItemLeft" align="right" valign="top">integer function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__def__dim.html#ga08732588a313c6130c840dbe70635d2f">pio_nf::def_dim_id</a> (ncid, name, len, dimid)</td></tr>
-<tr class="memdesc:ga08732588a313c6130c840dbe70635d2f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Defines the netcdf dimension.  <a href="group___p_i_o__def__dim.html#ga08732588a313c6130c840dbe70635d2f">More...</a><br /></td></tr>
-<tr class="separator:ga08732588a313c6130c840dbe70635d2f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<p>A set of functions to define dimensions and their attributes in NetCDF files. </p>
+<p>Define a new dimension, with name and length in Fortran. </p>
 <h2 class="groupheader">Function/Subroutine Documentation</h2>
-<a id="ga1fe0ae159057cf101e8eede7575e492a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga1fe0ae159057cf101e8eede7575e492a">&#9670;&nbsp;</a></span>def_dim_desc()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">integer function pio_nf::def_dim_desc </td>
-          <td>(</td>
-          <td class="paramtype">type (<a class="el" href="structpio__types_1_1file__desc__t.html">file_desc_t</a>), intent(in)&#160;</td>
-          <td class="paramname"><em>File</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">character(len=*), intent(in)&#160;</td>
-          <td class="paramname"><em>name</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">integer(pio_offset_kind), intent(in)&#160;</td>
-          <td class="paramname"><em>len</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">integer, intent(out)&#160;</td>
-          <td class="paramname"><em>dimid</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Defines the netcdf dimension. </p>
-
-</div>
-</div>
-<a id="ga08732588a313c6130c840dbe70635d2f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga08732588a313c6130c840dbe70635d2f">&#9670;&nbsp;</a></span>def_dim_id()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">integer function pio_nf::def_dim_id </td>
-          <td>(</td>
-          <td class="paramtype">integer, intent(in)&#160;</td>
-          <td class="paramname"><em>ncid</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">character(len=*), intent(in)&#160;</td>
-          <td class="paramname"><em>name</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">integer(pio_offset_kind), intent(in)&#160;</td>
-          <td class="paramname"><em>len</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">integer, intent(out)&#160;</td>
-          <td class="paramname"><em>dimid</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Defines the netcdf dimension. </p>
-
-</div>
-</div>
 <a id="gabbfcbd8041efadf245d4a2f1ebf671b0"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#gabbfcbd8041efadf245d4a2f1ebf671b0">&#9670;&nbsp;</a></span>def_dim_int_desc()</h2>
 
@@ -214,61 +121,20 @@ Functions/Subroutines</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">File</td><td>File descriptor structure. This structure holds information associated with each open file </td></tr>
-    <tr><td class="paramname">name</td><td>: The name of the dimension to define </td></tr>
-    <tr><td class="paramname">len</td><td>: The size of the dimension </td></tr>
-    <tr><td class="paramname">dimid</td><td>: The dimension identifier </td></tr>
+    <tr><td class="paramname">name</td><td>The name of the dimension to define </td></tr>
+    <tr><td class="paramname">len</td><td>The size of the dimension </td></tr>
+    <tr><td class="paramname">dimid</td><td>The dimension identifier </td></tr>
   </table>
   </dd>
 </dl>
-
-</div>
-</div>
-<a id="ga50b5096923dcf55c5099635850322fae"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga50b5096923dcf55c5099635850322fae">&#9670;&nbsp;</a></span>def_dim_int_id()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">integer function pio_nf::def_dim_int_id </td>
-          <td>(</td>
-          <td class="paramtype">integer, intent(in)&#160;</td>
-          <td class="paramname"><em>ncid</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">character(len=*), intent(in)&#160;</td>
-          <td class="paramname"><em>name</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">integer, intent(in)&#160;</td>
-          <td class="paramname"><em>len</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">integer, intent(out)&#160;</td>
-          <td class="paramname"><em>dimid</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Defines the netcdf dimension. </p>
+<dl class="section author"><dt>Author</dt><dd>Jim Edwards </dd></dl>
 
 </div>
 </div>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun May 26 2019 18:21:06 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Jun 4 2019 11:03:24 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.13
 </small></address>

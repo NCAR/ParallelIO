@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.13"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>PIO: PIO_put_var</title>
+<title>PIO: Write Variable</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -63,11 +63,11 @@ $(function() {
   <div class="summary">
 <a href="#func-members">Functions/Subroutines</a>  </div>
   <div class="headertitle">
-<div class="title">PIO_put_var</div>  </div>
+<div class="title">Write Variable</div>  </div>
 </div><!--header-->
 <div class="contents">
 
-<p>Writes data to a netCDF file.  
+<p>Writes data to a variable.  
 <a href="#details">More...</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
@@ -362,8 +362,8 @@ Functions/Subroutines</h2></td></tr>
 <tr class="separator:ga823bd3538a78a0be3ff5109ad1d54c01"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<p>Writes data to a netCDF file. </p>
-<p>The put_var interface is provided as a simplified interface to write variables to a netcdf format file. </p><dl class="section warning"><dt>Warning</dt><dd>Although this is a collective call the variable is written from the root IO task, no consistancy check is made with data passed on other tasks. </dd></dl>
+<p>Writes data to a variable. </p>
+<dl class="section warning"><dt>Warning</dt><dd>Although this is a collective call the variable is written from the root IO task, no consistancy check is made with data passed on other tasks. </dd></dl>
 <h2 class="groupheader">Function/Subroutine Documentation</h2>
 <a id="ga149f46b92b9796a2021806590e86299c"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ga149f46b92b9796a2021806590e86299c">&#9670;&nbsp;</a></span>put_var1_double()</h2>
@@ -415,7 +415,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -472,7 +472,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -529,7 +529,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -586,7 +586,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -643,7 +643,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -686,7 +686,7 @@ Functions/Subroutines</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">File</td><td>File descriptor structure. This structure holds information associated with each open file </td></tr>
-    <tr><td class="paramname">File</td><td>: A file handle returne from <a class="el" href="group___p_i_o__openfile.html">PIO_openfile</a> or <a class="el" href="group___p_i_o__createfile.html">PIO_createfile</a>. </td></tr>
+    <tr><td class="paramname">File</td><td>: A file handle returne from <a class="el" href="group___p_i_o__openfile.html">Open a File</a> or <a class="el" href="group___p_i_o__createfile.html">Create a File</a>. </td></tr>
     <tr><td class="paramname">varid</td><td>: The netcdf variable identifier </td></tr>
     <tr><td class="paramname">ival</td><td>: The value for the netcdf metadata </td></tr>
   </table>
@@ -694,7 +694,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -737,7 +737,7 @@ Functions/Subroutines</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">File</td><td>File descriptor structure. This structure holds information associated with each open file </td></tr>
-    <tr><td class="paramname">File</td><td>: A file handle returne from <a class="el" href="group___p_i_o__openfile.html">PIO_openfile</a> or <a class="el" href="group___p_i_o__createfile.html">PIO_createfile</a>. </td></tr>
+    <tr><td class="paramname">File</td><td>: A file handle returne from <a class="el" href="group___p_i_o__openfile.html">Open a File</a> or <a class="el" href="group___p_i_o__createfile.html">Create a File</a>. </td></tr>
     <tr><td class="paramname">varid</td><td>: The netcdf variable identifier </td></tr>
     <tr><td class="paramname">ival</td><td>: The value for the netcdf metadata </td></tr>
   </table>
@@ -745,7 +745,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -788,7 +788,7 @@ Functions/Subroutines</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">File</td><td>File descriptor structure. This structure holds information associated with each open file </td></tr>
-    <tr><td class="paramname">File</td><td>: A file handle returne from <a class="el" href="group___p_i_o__openfile.html">PIO_openfile</a> or <a class="el" href="group___p_i_o__createfile.html">PIO_createfile</a>. </td></tr>
+    <tr><td class="paramname">File</td><td>: A file handle returne from <a class="el" href="group___p_i_o__openfile.html">Open a File</a> or <a class="el" href="group___p_i_o__createfile.html">Create a File</a>. </td></tr>
     <tr><td class="paramname">varid</td><td>: The netcdf variable identifier </td></tr>
     <tr><td class="paramname">ival</td><td>: The value for the netcdf metadata </td></tr>
   </table>
@@ -796,7 +796,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -839,7 +839,7 @@ Functions/Subroutines</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">File</td><td>File descriptor structure. This structure holds information associated with each open file </td></tr>
-    <tr><td class="paramname">File</td><td>: A file handle returne from <a class="el" href="group___p_i_o__openfile.html">PIO_openfile</a> or <a class="el" href="group___p_i_o__createfile.html">PIO_createfile</a>. </td></tr>
+    <tr><td class="paramname">File</td><td>: A file handle returne from <a class="el" href="group___p_i_o__openfile.html">Open a File</a> or <a class="el" href="group___p_i_o__createfile.html">Create a File</a>. </td></tr>
     <tr><td class="paramname">varid</td><td>: The netcdf variable identifier </td></tr>
     <tr><td class="paramname">ival</td><td>: The value for the netcdf variable </td></tr>
   </table>
@@ -847,7 +847,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -890,7 +890,7 @@ Functions/Subroutines</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">File</td><td>File descriptor structure. This structure holds information associated with each open file </td></tr>
-    <tr><td class="paramname">File</td><td>: A file handle returne from <a class="el" href="group___p_i_o__openfile.html">PIO_openfile</a> or <a class="el" href="group___p_i_o__createfile.html">PIO_createfile</a>. </td></tr>
+    <tr><td class="paramname">File</td><td>: A file handle returne from <a class="el" href="group___p_i_o__openfile.html">Open a File</a> or <a class="el" href="group___p_i_o__createfile.html">Create a File</a>. </td></tr>
     <tr><td class="paramname">varid</td><td>: The netcdf variable identifier </td></tr>
     <tr><td class="paramname">ival</td><td>: The value for the netcdf metadata </td></tr>
   </table>
@@ -898,7 +898,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -941,7 +941,7 @@ Functions/Subroutines</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">File</td><td>File descriptor structure. This structure holds information associated with each open file </td></tr>
-    <tr><td class="paramname">File</td><td>: A file handle returne from <a class="el" href="group___p_i_o__openfile.html">PIO_openfile</a> or <a class="el" href="group___p_i_o__createfile.html">PIO_createfile</a>. </td></tr>
+    <tr><td class="paramname">File</td><td>: A file handle returne from <a class="el" href="group___p_i_o__openfile.html">Open a File</a> or <a class="el" href="group___p_i_o__createfile.html">Create a File</a>. </td></tr>
     <tr><td class="paramname">varid</td><td>: The netcdf variable identifier </td></tr>
     <tr><td class="paramname">ival</td><td>: The value for the netcdf metadata </td></tr>
   </table>
@@ -949,7 +949,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -992,7 +992,7 @@ Functions/Subroutines</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">File</td><td>File descriptor structure. This structure holds information associated with each open file </td></tr>
-    <tr><td class="paramname">File</td><td>: A file handle returne from <a class="el" href="group___p_i_o__openfile.html">PIO_openfile</a> or <a class="el" href="group___p_i_o__createfile.html">PIO_createfile</a>. </td></tr>
+    <tr><td class="paramname">File</td><td>: A file handle returne from <a class="el" href="group___p_i_o__openfile.html">Open a File</a> or <a class="el" href="group___p_i_o__createfile.html">Create a File</a>. </td></tr>
     <tr><td class="paramname">varid</td><td>: The netcdf variable identifier </td></tr>
     <tr><td class="paramname">ival</td><td>: The value for the netcdf metadata </td></tr>
   </table>
@@ -1000,7 +1000,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -1043,7 +1043,7 @@ Functions/Subroutines</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">File</td><td>File descriptor structure. This structure holds information associated with each open file </td></tr>
-    <tr><td class="paramname">File</td><td>: A file handle returne from <a class="el" href="group___p_i_o__openfile.html">PIO_openfile</a> or <a class="el" href="group___p_i_o__createfile.html">PIO_createfile</a>. </td></tr>
+    <tr><td class="paramname">File</td><td>: A file handle returne from <a class="el" href="group___p_i_o__openfile.html">Open a File</a> or <a class="el" href="group___p_i_o__createfile.html">Create a File</a>. </td></tr>
     <tr><td class="paramname">varid</td><td>: The netcdf variable identifier </td></tr>
     <tr><td class="paramname">ival</td><td>: The value for the netcdf metadata </td></tr>
   </table>
@@ -1051,7 +1051,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -1094,7 +1094,7 @@ Functions/Subroutines</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">File</td><td>File descriptor structure. This structure holds information associated with each open file </td></tr>
-    <tr><td class="paramname">File</td><td>: A file handle returne from <a class="el" href="group___p_i_o__openfile.html">PIO_openfile</a> or <a class="el" href="group___p_i_o__createfile.html">PIO_createfile</a>. </td></tr>
+    <tr><td class="paramname">File</td><td>: A file handle returne from <a class="el" href="group___p_i_o__openfile.html">Open a File</a> or <a class="el" href="group___p_i_o__createfile.html">Create a File</a>. </td></tr>
     <tr><td class="paramname">varid</td><td>: The netcdf variable identifier </td></tr>
     <tr><td class="paramname">ival</td><td>: The value for the netcdf metadata </td></tr>
   </table>
@@ -1102,7 +1102,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -1145,7 +1145,7 @@ Functions/Subroutines</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">File</td><td>File descriptor structure. This structure holds information associated with each open file </td></tr>
-    <tr><td class="paramname">File</td><td>: A file handle returne from <a class="el" href="group___p_i_o__openfile.html">PIO_openfile</a> or <a class="el" href="group___p_i_o__createfile.html">PIO_createfile</a>. </td></tr>
+    <tr><td class="paramname">File</td><td>: A file handle returne from <a class="el" href="group___p_i_o__openfile.html">Open a File</a> or <a class="el" href="group___p_i_o__createfile.html">Create a File</a>. </td></tr>
     <tr><td class="paramname">varid</td><td>: The netcdf variable identifier </td></tr>
     <tr><td class="paramname">ival</td><td>: The value for the netcdf metadata </td></tr>
   </table>
@@ -1153,7 +1153,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -1196,7 +1196,7 @@ Functions/Subroutines</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">File</td><td>File descriptor structure. This structure holds information associated with each open file </td></tr>
-    <tr><td class="paramname">File</td><td>: A file handle returne from <a class="el" href="group___p_i_o__openfile.html">PIO_openfile</a> or <a class="el" href="group___p_i_o__createfile.html">PIO_createfile</a>. </td></tr>
+    <tr><td class="paramname">File</td><td>: A file handle returne from <a class="el" href="group___p_i_o__openfile.html">Open a File</a> or <a class="el" href="group___p_i_o__createfile.html">Create a File</a>. </td></tr>
     <tr><td class="paramname">varid</td><td>: The netcdf variable identifier </td></tr>
     <tr><td class="paramname">ival</td><td>: The value for the netcdf metadata </td></tr>
   </table>
@@ -1204,7 +1204,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -1247,7 +1247,7 @@ Functions/Subroutines</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">File</td><td>File descriptor structure. This structure holds information associated with each open file </td></tr>
-    <tr><td class="paramname">File</td><td>: A file handle returne from <a class="el" href="group___p_i_o__openfile.html">PIO_openfile</a> or <a class="el" href="group___p_i_o__createfile.html">PIO_createfile</a>. </td></tr>
+    <tr><td class="paramname">File</td><td>: A file handle returne from <a class="el" href="group___p_i_o__openfile.html">Open a File</a> or <a class="el" href="group___p_i_o__createfile.html">Create a File</a>. </td></tr>
     <tr><td class="paramname">varid</td><td>: The netcdf variable identifier </td></tr>
     <tr><td class="paramname">ival</td><td>: The value for the netcdf metadata </td></tr>
   </table>
@@ -1255,7 +1255,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -1298,7 +1298,7 @@ Functions/Subroutines</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">File</td><td>File descriptor structure. This structure holds information associated with each open file </td></tr>
-    <tr><td class="paramname">File</td><td>: A file handle returne from <a class="el" href="group___p_i_o__openfile.html">PIO_openfile</a> or <a class="el" href="group___p_i_o__createfile.html">PIO_createfile</a>. </td></tr>
+    <tr><td class="paramname">File</td><td>: A file handle returne from <a class="el" href="group___p_i_o__openfile.html">Open a File</a> or <a class="el" href="group___p_i_o__createfile.html">Create a File</a>. </td></tr>
     <tr><td class="paramname">varid</td><td>: The netcdf variable identifier </td></tr>
     <tr><td class="paramname">ival</td><td>: The value for the netcdf metadata </td></tr>
   </table>
@@ -1306,7 +1306,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -1349,7 +1349,7 @@ Functions/Subroutines</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">File</td><td>File descriptor structure. This structure holds information associated with each open file </td></tr>
-    <tr><td class="paramname">File</td><td>: A file handle returne from <a class="el" href="group___p_i_o__openfile.html">PIO_openfile</a> or <a class="el" href="group___p_i_o__createfile.html">PIO_createfile</a>. </td></tr>
+    <tr><td class="paramname">File</td><td>: A file handle returne from <a class="el" href="group___p_i_o__openfile.html">Open a File</a> or <a class="el" href="group___p_i_o__createfile.html">Create a File</a>. </td></tr>
     <tr><td class="paramname">varid</td><td>: The netcdf variable identifier </td></tr>
     <tr><td class="paramname">ival</td><td>: The value for the netcdf metadata </td></tr>
   </table>
@@ -1357,7 +1357,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -1400,7 +1400,7 @@ Functions/Subroutines</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">File</td><td>File descriptor structure. This structure holds information associated with each open file </td></tr>
-    <tr><td class="paramname">File</td><td>: A file handle returne from <a class="el" href="group___p_i_o__openfile.html">PIO_openfile</a> or <a class="el" href="group___p_i_o__createfile.html">PIO_createfile</a>. </td></tr>
+    <tr><td class="paramname">File</td><td>: A file handle returne from <a class="el" href="group___p_i_o__openfile.html">Open a File</a> or <a class="el" href="group___p_i_o__createfile.html">Create a File</a>. </td></tr>
     <tr><td class="paramname">varid</td><td>: The netcdf variable identifier </td></tr>
     <tr><td class="paramname">ival</td><td>: The value for the netcdf metadata </td></tr>
   </table>
@@ -1408,7 +1408,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -1451,7 +1451,7 @@ Functions/Subroutines</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">File</td><td>File descriptor structure. This structure holds information associated with each open file </td></tr>
-    <tr><td class="paramname">File</td><td>: A file handle returne from <a class="el" href="group___p_i_o__openfile.html">PIO_openfile</a> or <a class="el" href="group___p_i_o__createfile.html">PIO_createfile</a>. </td></tr>
+    <tr><td class="paramname">File</td><td>: A file handle returne from <a class="el" href="group___p_i_o__openfile.html">Open a File</a> or <a class="el" href="group___p_i_o__createfile.html">Create a File</a>. </td></tr>
     <tr><td class="paramname">varid</td><td>: The netcdf variable identifier </td></tr>
     <tr><td class="paramname">ival</td><td>: The value for the netcdf metadata </td></tr>
   </table>
@@ -1459,7 +1459,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -1502,7 +1502,7 @@ Functions/Subroutines</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">File</td><td>File descriptor structure. This structure holds information associated with each open file </td></tr>
-    <tr><td class="paramname">File</td><td>: A file handle returne from <a class="el" href="group___p_i_o__openfile.html">PIO_openfile</a> or <a class="el" href="group___p_i_o__createfile.html">PIO_createfile</a>. </td></tr>
+    <tr><td class="paramname">File</td><td>: A file handle returne from <a class="el" href="group___p_i_o__openfile.html">Open a File</a> or <a class="el" href="group___p_i_o__createfile.html">Create a File</a>. </td></tr>
     <tr><td class="paramname">varid</td><td>: The netcdf variable identifier </td></tr>
     <tr><td class="paramname">ival</td><td>: The value for the netcdf metadata </td></tr>
   </table>
@@ -1510,7 +1510,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -1553,7 +1553,7 @@ Functions/Subroutines</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">File</td><td>File descriptor structure. This structure holds information associated with each open file </td></tr>
-    <tr><td class="paramname">File</td><td>: A file handle returne from <a class="el" href="group___p_i_o__openfile.html">PIO_openfile</a> or <a class="el" href="group___p_i_o__createfile.html">PIO_createfile</a>. </td></tr>
+    <tr><td class="paramname">File</td><td>: A file handle returne from <a class="el" href="group___p_i_o__openfile.html">Open a File</a> or <a class="el" href="group___p_i_o__createfile.html">Create a File</a>. </td></tr>
     <tr><td class="paramname">varid</td><td>: The netcdf variable identifier </td></tr>
     <tr><td class="paramname">ival</td><td>: The value for the netcdf metadata </td></tr>
   </table>
@@ -1561,7 +1561,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -1604,7 +1604,7 @@ Functions/Subroutines</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">File</td><td>File descriptor structure. This structure holds information associated with each open file </td></tr>
-    <tr><td class="paramname">File</td><td>: A file handle returne from <a class="el" href="group___p_i_o__openfile.html">PIO_openfile</a> or <a class="el" href="group___p_i_o__createfile.html">PIO_createfile</a>. </td></tr>
+    <tr><td class="paramname">File</td><td>: A file handle returne from <a class="el" href="group___p_i_o__openfile.html">Open a File</a> or <a class="el" href="group___p_i_o__createfile.html">Create a File</a>. </td></tr>
     <tr><td class="paramname">varid</td><td>: The netcdf variable identifier </td></tr>
     <tr><td class="paramname">ival</td><td>: The value for the netcdf metadata </td></tr>
   </table>
@@ -1612,7 +1612,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -1655,7 +1655,7 @@ Functions/Subroutines</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">File</td><td>File descriptor structure. This structure holds information associated with each open file </td></tr>
-    <tr><td class="paramname">File</td><td>: A file handle returne from <a class="el" href="group___p_i_o__openfile.html">PIO_openfile</a> or <a class="el" href="group___p_i_o__createfile.html">PIO_createfile</a>. </td></tr>
+    <tr><td class="paramname">File</td><td>: A file handle returne from <a class="el" href="group___p_i_o__openfile.html">Open a File</a> or <a class="el" href="group___p_i_o__createfile.html">Create a File</a>. </td></tr>
     <tr><td class="paramname">varid</td><td>: The netcdf variable identifier </td></tr>
     <tr><td class="paramname">ival</td><td>: The value for the netcdf metadata </td></tr>
   </table>
@@ -1663,7 +1663,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -1706,7 +1706,7 @@ Functions/Subroutines</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">File</td><td>File descriptor structure. This structure holds information associated with each open file </td></tr>
-    <tr><td class="paramname">File</td><td>: A file handle returne from <a class="el" href="group___p_i_o__openfile.html">PIO_openfile</a> or <a class="el" href="group___p_i_o__createfile.html">PIO_createfile</a>. </td></tr>
+    <tr><td class="paramname">File</td><td>: A file handle returne from <a class="el" href="group___p_i_o__openfile.html">Open a File</a> or <a class="el" href="group___p_i_o__createfile.html">Create a File</a>. </td></tr>
     <tr><td class="paramname">varid</td><td>: The netcdf variable identifier </td></tr>
     <tr><td class="paramname">ival</td><td>: The value for the netcdf metadata </td></tr>
   </table>
@@ -1714,7 +1714,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -1757,7 +1757,7 @@ Functions/Subroutines</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">File</td><td>File descriptor structure. This structure holds information associated with each open file </td></tr>
-    <tr><td class="paramname">File</td><td>: A file handle returne from <a class="el" href="group___p_i_o__openfile.html">PIO_openfile</a> or <a class="el" href="group___p_i_o__createfile.html">PIO_createfile</a>. </td></tr>
+    <tr><td class="paramname">File</td><td>: A file handle returne from <a class="el" href="group___p_i_o__openfile.html">Open a File</a> or <a class="el" href="group___p_i_o__createfile.html">Create a File</a>. </td></tr>
     <tr><td class="paramname">varid</td><td>: The netcdf variable identifier </td></tr>
     <tr><td class="paramname">ival</td><td>: The value for the netcdf metadata </td></tr>
   </table>
@@ -1765,7 +1765,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -1808,7 +1808,7 @@ Functions/Subroutines</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">File</td><td>File descriptor structure. This structure holds information associated with each open file </td></tr>
-    <tr><td class="paramname">File</td><td>: A file handle returne from <a class="el" href="group___p_i_o__openfile.html">PIO_openfile</a> or <a class="el" href="group___p_i_o__createfile.html">PIO_createfile</a>. </td></tr>
+    <tr><td class="paramname">File</td><td>: A file handle returne from <a class="el" href="group___p_i_o__openfile.html">Open a File</a> or <a class="el" href="group___p_i_o__createfile.html">Create a File</a>. </td></tr>
     <tr><td class="paramname">varid</td><td>: The netcdf variable identifier </td></tr>
     <tr><td class="paramname">ival</td><td>: The value for the netcdf metadata </td></tr>
   </table>
@@ -1816,7 +1816,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -1859,7 +1859,7 @@ Functions/Subroutines</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">File</td><td>File descriptor structure. This structure holds information associated with each open file </td></tr>
-    <tr><td class="paramname">File</td><td>: A file handle returne from <a class="el" href="group___p_i_o__openfile.html">PIO_openfile</a> or <a class="el" href="group___p_i_o__createfile.html">PIO_createfile</a>. </td></tr>
+    <tr><td class="paramname">File</td><td>: A file handle returne from <a class="el" href="group___p_i_o__openfile.html">Open a File</a> or <a class="el" href="group___p_i_o__createfile.html">Create a File</a>. </td></tr>
     <tr><td class="paramname">varid</td><td>: The netcdf variable identifier </td></tr>
     <tr><td class="paramname">ival</td><td>: The value for the netcdf metadata </td></tr>
   </table>
@@ -1867,7 +1867,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -1917,7 +1917,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -1967,7 +1967,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -2017,7 +2017,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -2067,7 +2067,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -2117,7 +2117,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -2167,7 +2167,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -2217,7 +2217,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -2267,7 +2267,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -2317,7 +2317,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -2367,7 +2367,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -2417,7 +2417,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -2467,7 +2467,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -2517,7 +2517,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -2567,7 +2567,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -2617,7 +2617,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -2667,7 +2667,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -2717,7 +2717,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -2767,7 +2767,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -2817,7 +2817,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -2867,7 +2867,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -2917,7 +2917,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -2967,7 +2967,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -3017,7 +3017,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -3067,7 +3067,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -3117,7 +3117,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -3167,7 +3167,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -3217,7 +3217,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -3281,7 +3281,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -3345,7 +3345,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -3409,7 +3409,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -3473,7 +3473,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -3537,7 +3537,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -3601,7 +3601,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -3665,7 +3665,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -3729,7 +3729,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -3793,7 +3793,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -3857,7 +3857,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -3921,7 +3921,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -3985,7 +3985,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -4049,7 +4049,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -4113,7 +4113,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -4177,7 +4177,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -4241,7 +4241,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -4305,7 +4305,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -4369,7 +4369,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -4433,7 +4433,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -4497,7 +4497,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -4561,7 +4561,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -4625,7 +4625,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -4689,7 +4689,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -4753,7 +4753,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -4817,7 +4817,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -4881,7 +4881,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -4945,7 +4945,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -5009,7 +5009,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -5073,7 +5073,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -5137,7 +5137,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -5201,7 +5201,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -5265,7 +5265,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -5329,7 +5329,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -5393,7 +5393,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -5457,7 +5457,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -5521,7 +5521,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -5585,7 +5585,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -5649,7 +5649,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -5713,7 +5713,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -5777,7 +5777,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -5787,7 +5787,7 @@ Functions/Subroutines</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun May 26 2019 18:21:06 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Jun 4 2019 11:03:24 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.13
 </small></address>

@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.13"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>PIO: PIO_get_var</title>
+<title>PIO: Read Non-Decomposed Data</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -63,11 +63,11 @@ $(function() {
   <div class="summary">
 <a href="#func-members">Functions/Subroutines</a>  </div>
   <div class="headertitle">
-<div class="title">PIO_get_var</div>  </div>
+<div class="title">Read Non-Decomposed Data</div>  </div>
 </div><!--header-->
 <div class="contents">
 
-<p>Reads non-decomposed data from a NetCDF file.  
+<p>Reads non-decomposed data from a NetCDF file in Fortran.  
 <a href="#details">More...</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
@@ -191,7 +191,7 @@ Functions/Subroutines</h2></td></tr>
 <tr class="separator:gaf0fe9ff4680d853dba15d048274147c8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<p>Reads non-decomposed data from a NetCDF file. </p>
+<p>Reads non-decomposed data from a NetCDF file in Fortran. </p>
 <p>The get_var interface is provided as a simplified interface to read variables from a NetCDF format file. The variable is read on the root IO task and broadcast in its entirety to all tasks. </p>
 <h2 class="groupheader">Function/Subroutine Documentation</h2>
 <a id="ga78364f943c7935728e20d509d7b6cec9"></a>
@@ -244,7 +244,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td><a class="el" href="group__error__return.html">error return codes</a> </td></tr>
+    <tr><td class="paramname">ierr</td><td><a class="el" href="group__error__return.html">Error Return Codes</a> </td></tr>
   </table>
   </dd>
 </dl>
@@ -301,7 +301,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td><a class="el" href="group__error__return.html">error return codes</a> </td></tr>
+    <tr><td class="paramname">ierr</td><td><a class="el" href="group__error__return.html">Error Return Codes</a> </td></tr>
   </table>
   </dd>
 </dl>
@@ -351,7 +351,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td><a class="el" href="group__error__return.html">error return codes</a> </td></tr>
+    <tr><td class="paramname">ierr</td><td><a class="el" href="group__error__return.html">Error Return Codes</a> </td></tr>
   </table>
   </dd>
 </dl>
@@ -401,7 +401,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td><a class="el" href="group__error__return.html">error return codes</a> </td></tr>
+    <tr><td class="paramname">ierr</td><td><a class="el" href="group__error__return.html">Error Return Codes</a> </td></tr>
   </table>
   </dd>
 </dl>
@@ -465,7 +465,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td><a class="el" href="group__error__return.html">error return codes</a> </td></tr>
+    <tr><td class="paramname">ierr</td><td><a class="el" href="group__error__return.html">Error Return Codes</a> </td></tr>
   </table>
   </dd>
 </dl>
@@ -529,7 +529,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td><a class="el" href="group__error__return.html">error return codes</a> </td></tr>
+    <tr><td class="paramname">ierr</td><td><a class="el" href="group__error__return.html">Error Return Codes</a> </td></tr>
   </table>
   </dd>
 </dl>
@@ -593,7 +593,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td><a class="el" href="group__error__return.html">error return codes</a> </td></tr>
+    <tr><td class="paramname">ierr</td><td><a class="el" href="group__error__return.html">Error Return Codes</a> </td></tr>
   </table>
   </dd>
 </dl>
@@ -657,7 +657,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td><a class="el" href="group__error__return.html">error return codes</a> </td></tr>
+    <tr><td class="paramname">ierr</td><td><a class="el" href="group__error__return.html">Error Return Codes</a> </td></tr>
   </table>
   </dd>
 </dl>
@@ -721,7 +721,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td><a class="el" href="group__error__return.html">error return codes</a> </td></tr>
+    <tr><td class="paramname">ierr</td><td><a class="el" href="group__error__return.html">Error Return Codes</a> </td></tr>
   </table>
   </dd>
 </dl>
@@ -785,7 +785,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td><a class="el" href="group__error__return.html">error return codes</a> </td></tr>
+    <tr><td class="paramname">ierr</td><td><a class="el" href="group__error__return.html">Error Return Codes</a> </td></tr>
   </table>
   </dd>
 </dl>
@@ -849,7 +849,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td><a class="el" href="group__error__return.html">error return codes</a> </td></tr>
+    <tr><td class="paramname">ierr</td><td><a class="el" href="group__error__return.html">Error Return Codes</a> </td></tr>
   </table>
   </dd>
 </dl>
@@ -913,7 +913,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td><a class="el" href="group__error__return.html">error return codes</a> </td></tr>
+    <tr><td class="paramname">ierr</td><td><a class="el" href="group__error__return.html">Error Return Codes</a> </td></tr>
   </table>
   </dd>
 </dl>
@@ -977,7 +977,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td><a class="el" href="group__error__return.html">error return codes</a> </td></tr>
+    <tr><td class="paramname">ierr</td><td><a class="el" href="group__error__return.html">Error Return Codes</a> </td></tr>
   </table>
   </dd>
 </dl>
@@ -1041,7 +1041,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td><a class="el" href="group__error__return.html">error return codes</a> </td></tr>
+    <tr><td class="paramname">ierr</td><td><a class="el" href="group__error__return.html">Error Return Codes</a> </td></tr>
   </table>
   </dd>
 </dl>
@@ -1105,7 +1105,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td><a class="el" href="group__error__return.html">error return codes</a> </td></tr>
+    <tr><td class="paramname">ierr</td><td><a class="el" href="group__error__return.html">Error Return Codes</a> </td></tr>
   </table>
   </dd>
 </dl>
@@ -1169,7 +1169,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td><a class="el" href="group__error__return.html">error return codes</a> </td></tr>
+    <tr><td class="paramname">ierr</td><td><a class="el" href="group__error__return.html">Error Return Codes</a> </td></tr>
   </table>
   </dd>
 </dl>
@@ -1233,7 +1233,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td><a class="el" href="group__error__return.html">error return codes</a> </td></tr>
+    <tr><td class="paramname">ierr</td><td><a class="el" href="group__error__return.html">Error Return Codes</a> </td></tr>
   </table>
   </dd>
 </dl>
@@ -1297,7 +1297,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td><a class="el" href="group__error__return.html">error return codes</a> </td></tr>
+    <tr><td class="paramname">ierr</td><td><a class="el" href="group__error__return.html">Error Return Codes</a> </td></tr>
   </table>
   </dd>
 </dl>
@@ -1361,7 +1361,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td><a class="el" href="group__error__return.html">error return codes</a> </td></tr>
+    <tr><td class="paramname">ierr</td><td><a class="el" href="group__error__return.html">Error Return Codes</a> </td></tr>
   </table>
   </dd>
 </dl>
@@ -1425,7 +1425,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td><a class="el" href="group__error__return.html">error return codes</a> </td></tr>
+    <tr><td class="paramname">ierr</td><td><a class="el" href="group__error__return.html">Error Return Codes</a> </td></tr>
   </table>
   </dd>
 </dl>
@@ -1489,7 +1489,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td><a class="el" href="group__error__return.html">error return codes</a> </td></tr>
+    <tr><td class="paramname">ierr</td><td><a class="el" href="group__error__return.html">Error Return Codes</a> </td></tr>
   </table>
   </dd>
 </dl>
@@ -1553,7 +1553,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td><a class="el" href="group__error__return.html">error return codes</a> </td></tr>
+    <tr><td class="paramname">ierr</td><td><a class="el" href="group__error__return.html">Error Return Codes</a> </td></tr>
   </table>
   </dd>
 </dl>
@@ -1617,7 +1617,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td><a class="el" href="group__error__return.html">error return codes</a> </td></tr>
+    <tr><td class="paramname">ierr</td><td><a class="el" href="group__error__return.html">Error Return Codes</a> </td></tr>
   </table>
   </dd>
 </dl>
@@ -1681,7 +1681,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td><a class="el" href="group__error__return.html">error return codes</a> </td></tr>
+    <tr><td class="paramname">ierr</td><td><a class="el" href="group__error__return.html">Error Return Codes</a> </td></tr>
   </table>
   </dd>
 </dl>
@@ -1745,7 +1745,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td><a class="el" href="group__error__return.html">error return codes</a> </td></tr>
+    <tr><td class="paramname">ierr</td><td><a class="el" href="group__error__return.html">Error Return Codes</a> </td></tr>
   </table>
   </dd>
 </dl>
@@ -1809,7 +1809,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td><a class="el" href="group__error__return.html">error return codes</a> </td></tr>
+    <tr><td class="paramname">ierr</td><td><a class="el" href="group__error__return.html">Error Return Codes</a> </td></tr>
   </table>
   </dd>
 </dl>
@@ -1873,7 +1873,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td><a class="el" href="group__error__return.html">error return codes</a> </td></tr>
+    <tr><td class="paramname">ierr</td><td><a class="el" href="group__error__return.html">Error Return Codes</a> </td></tr>
   </table>
   </dd>
 </dl>
@@ -1937,7 +1937,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td><a class="el" href="group__error__return.html">error return codes</a> </td></tr>
+    <tr><td class="paramname">ierr</td><td><a class="el" href="group__error__return.html">Error Return Codes</a> </td></tr>
   </table>
   </dd>
 </dl>
@@ -2001,7 +2001,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td><a class="el" href="group__error__return.html">error return codes</a> </td></tr>
+    <tr><td class="paramname">ierr</td><td><a class="el" href="group__error__return.html">Error Return Codes</a> </td></tr>
   </table>
   </dd>
 </dl>
@@ -2065,7 +2065,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td><a class="el" href="group__error__return.html">error return codes</a> </td></tr>
+    <tr><td class="paramname">ierr</td><td><a class="el" href="group__error__return.html">Error Return Codes</a> </td></tr>
   </table>
   </dd>
 </dl>
@@ -2129,7 +2129,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td><a class="el" href="group__error__return.html">error return codes</a> </td></tr>
+    <tr><td class="paramname">ierr</td><td><a class="el" href="group__error__return.html">Error Return Codes</a> </td></tr>
   </table>
   </dd>
 </dl>
@@ -2193,7 +2193,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td><a class="el" href="group__error__return.html">error return codes</a> </td></tr>
+    <tr><td class="paramname">ierr</td><td><a class="el" href="group__error__return.html">Error Return Codes</a> </td></tr>
   </table>
   </dd>
 </dl>
@@ -2257,7 +2257,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td><a class="el" href="group__error__return.html">error return codes</a> </td></tr>
+    <tr><td class="paramname">ierr</td><td><a class="el" href="group__error__return.html">Error Return Codes</a> </td></tr>
   </table>
   </dd>
 </dl>
@@ -2321,7 +2321,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td><a class="el" href="group__error__return.html">error return codes</a> </td></tr>
+    <tr><td class="paramname">ierr</td><td><a class="el" href="group__error__return.html">Error Return Codes</a> </td></tr>
   </table>
   </dd>
 </dl>
@@ -2385,7 +2385,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td><a class="el" href="group__error__return.html">error return codes</a> </td></tr>
+    <tr><td class="paramname">ierr</td><td><a class="el" href="group__error__return.html">Error Return Codes</a> </td></tr>
   </table>
   </dd>
 </dl>
@@ -2449,7 +2449,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td><a class="el" href="group__error__return.html">error return codes</a> </td></tr>
+    <tr><td class="paramname">ierr</td><td><a class="el" href="group__error__return.html">Error Return Codes</a> </td></tr>
   </table>
   </dd>
 </dl>
@@ -2513,7 +2513,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td><a class="el" href="group__error__return.html">error return codes</a> </td></tr>
+    <tr><td class="paramname">ierr</td><td><a class="el" href="group__error__return.html">Error Return Codes</a> </td></tr>
   </table>
   </dd>
 </dl>
@@ -2577,7 +2577,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td><a class="el" href="group__error__return.html">error return codes</a> </td></tr>
+    <tr><td class="paramname">ierr</td><td><a class="el" href="group__error__return.html">Error Return Codes</a> </td></tr>
   </table>
   </dd>
 </dl>
@@ -2641,7 +2641,7 @@ Functions/Subroutines</h2></td></tr>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td><a class="el" href="group__error__return.html">error return codes</a> </td></tr>
+    <tr><td class="paramname">ierr</td><td><a class="el" href="group__error__return.html">Error Return Codes</a> </td></tr>
   </table>
   </dd>
 </dl>
@@ -2651,7 +2651,7 @@ Functions/Subroutines</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun May 26 2019 18:21:06 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Jun 4 2019 11:03:24 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.13
 </small></address>

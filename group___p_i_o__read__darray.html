@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.13"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>PIO: PIO_read_darray</title>
+<title>PIO: Read to Distributed Arrays</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -63,18 +63,15 @@ $(function() {
   <div class="summary">
 <a href="#func-members">Functions/Subroutines</a>  </div>
   <div class="headertitle">
-<div class="title">PIO_read_darray</div>  </div>
+<div class="title">Read to Distributed Arrays</div>  </div>
 </div><!--header-->
 <div class="contents">
 
-<p>The overloaded PIO_read_darray function reads a distributed array from disk.  
+<p>The overloaded PIO_read_darray function reads a distributed array from disk in Fortran.  
 <a href="#details">More...</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions/Subroutines</h2></td></tr>
-<tr class="memitem:gae7ff1037681c06b33a86199defdf5d2c"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__read__darray.html#gae7ff1037681c06b33a86199defdf5d2c">piodarray::read_darray_1d_real</a> (File, varDesc, ioDesc, array, iostat)</td></tr>
-<tr class="memdesc:gae7ff1037681c06b33a86199defdf5d2c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read distributed array of type real from a netCDF variable of 1 dimension(s).  <a href="group___p_i_o__read__darray.html#gae7ff1037681c06b33a86199defdf5d2c">More...</a><br /></td></tr>
-<tr class="separator:gae7ff1037681c06b33a86199defdf5d2c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga759a19f17c15754c35a4a91af069c8ed"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__read__darray.html#ga759a19f17c15754c35a4a91af069c8ed">piodarray::read_darray_2d_real</a> (File, varDesc, ioDesc, array, iostat)</td></tr>
 <tr class="memdesc:ga759a19f17c15754c35a4a91af069c8ed"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read distributed array of type real from a netCDF variable of 2 dimension(s).  <a href="group___p_i_o__read__darray.html#ga759a19f17c15754c35a4a91af069c8ed">More...</a><br /></td></tr>
 <tr class="separator:ga759a19f17c15754c35a4a91af069c8ed"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -137,7 +134,7 @@ Functions/Subroutines</h2></td></tr>
 <tr class="separator:gafd439814b70b6ca6f04e4028fbf5d0bc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<p>The overloaded PIO_read_darray function reads a distributed array from disk. </p>
+<p>The overloaded PIO_read_darray function reads a distributed array from disk in Fortran. </p>
 <h2 class="groupheader">Function/Subroutine Documentation</h2>
 <a id="ga3a2dea5460dafc4645216f8325483c2e"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ga3a2dea5460dafc4645216f8325483c2e">&#9670;&nbsp;</a></span>read_darray_1d_double()</h2>
@@ -190,10 +187,11 @@ Functions/Subroutines</h2></td></tr>
     <tr><td class="paramname">varDesc</td><td><a class="el" href="structvar__desc__t.html">var_desc_t</a> </td></tr>
     <tr><td class="paramname">ioDesc</td><td><a class="el" href="structio__desc__t.html">io_desc_t</a> </td></tr>
     <tr><td class="paramname">array</td><td>: The read data </td></tr>
-    <tr><td class="paramname">iostat</td><td>: The status returned from this routine (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> for details) </td></tr>
+    <tr><td class="paramname">iostat</td><td>: The status returned from this routine (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a> for details) </td></tr>
   </table>
   </dd>
 </dl>
+<dl class="section author"><dt>Author</dt><dd>Jim Edwards </dd></dl>
 
 </div>
 </div>
@@ -248,68 +246,11 @@ Functions/Subroutines</h2></td></tr>
     <tr><td class="paramname">varDesc</td><td><a class="el" href="structvar__desc__t.html">var_desc_t</a> </td></tr>
     <tr><td class="paramname">ioDesc</td><td><a class="el" href="structio__desc__t.html">io_desc_t</a> </td></tr>
     <tr><td class="paramname">array</td><td>: The read data </td></tr>
-    <tr><td class="paramname">iostat</td><td>: The status returned from this routine (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> for details) </td></tr>
+    <tr><td class="paramname">iostat</td><td>: The status returned from this routine (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a> for details) </td></tr>
   </table>
   </dd>
 </dl>
-
-</div>
-</div>
-<a id="gae7ff1037681c06b33a86199defdf5d2c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#gae7ff1037681c06b33a86199defdf5d2c">&#9670;&nbsp;</a></span>read_darray_1d_real()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">subroutine piodarray::read_darray_1d_real </td>
-          <td>(</td>
-          <td class="paramtype">type (<a class="el" href="structpio__types_1_1file__desc__t.html">file_desc_t</a>), intent(inout)&#160;</td>
-          <td class="paramname"><em>File</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">type (<a class="el" href="structpio__types_1_1var__desc__t.html">var_desc_t</a>), intent(inout)&#160;</td>
-          <td class="paramname"><em>varDesc</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">type (<a class="el" href="structpio__types_1_1io__desc__t.html">io_desc_t</a>), intent(inout)&#160;</td>
-          <td class="paramname"><em>ioDesc</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">real(r4), dimension(:), intent(out)&#160;</td>
-          <td class="paramname"><em>array</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">integer(i4), intent(out)&#160;</td>
-          <td class="paramname"><em>iostat</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Read distributed array of type real from a netCDF variable of 1 dimension(s). </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">File</td><td><a class="el" href="structfile__desc__t.html">file_desc_t</a> </td></tr>
-    <tr><td class="paramname">varDesc</td><td><a class="el" href="structvar__desc__t.html">var_desc_t</a> </td></tr>
-    <tr><td class="paramname">ioDesc</td><td><a class="el" href="structio__desc__t.html">io_desc_t</a> </td></tr>
-    <tr><td class="paramname">array</td><td>: The read data </td></tr>
-    <tr><td class="paramname">iostat</td><td>: The status returned from this routine (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> for details) </td></tr>
-  </table>
-  </dd>
-</dl>
+<dl class="section author"><dt>Author</dt><dd>Jim Edwards </dd></dl>
 
 </div>
 </div>
@@ -364,10 +305,11 @@ Functions/Subroutines</h2></td></tr>
     <tr><td class="paramname">varDesc</td><td><a class="el" href="structvar__desc__t.html">var_desc_t</a> </td></tr>
     <tr><td class="paramname">ioDesc</td><td><a class="el" href="structio__desc__t.html">io_desc_t</a> </td></tr>
     <tr><td class="paramname">array</td><td>: The read data </td></tr>
-    <tr><td class="paramname">iostat</td><td>: The status returned from this routine (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> for details) </td></tr>
+    <tr><td class="paramname">iostat</td><td>: The status returned from this routine (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a> for details) </td></tr>
   </table>
   </dd>
 </dl>
+<dl class="section author"><dt>Author</dt><dd>Jim Edwards </dd></dl>
 
 </div>
 </div>
@@ -422,10 +364,11 @@ Functions/Subroutines</h2></td></tr>
     <tr><td class="paramname">varDesc</td><td><a class="el" href="structvar__desc__t.html">var_desc_t</a> </td></tr>
     <tr><td class="paramname">ioDesc</td><td><a class="el" href="structio__desc__t.html">io_desc_t</a> </td></tr>
     <tr><td class="paramname">array</td><td>: The read data </td></tr>
-    <tr><td class="paramname">iostat</td><td>: The status returned from this routine (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> for details) </td></tr>
+    <tr><td class="paramname">iostat</td><td>: The status returned from this routine (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a> for details) </td></tr>
   </table>
   </dd>
 </dl>
+<dl class="section author"><dt>Author</dt><dd>Jim Edwards </dd></dl>
 
 </div>
 </div>
@@ -480,10 +423,11 @@ Functions/Subroutines</h2></td></tr>
     <tr><td class="paramname">varDesc</td><td><a class="el" href="structvar__desc__t.html">var_desc_t</a> </td></tr>
     <tr><td class="paramname">ioDesc</td><td><a class="el" href="structio__desc__t.html">io_desc_t</a> </td></tr>
     <tr><td class="paramname">array</td><td>: The read data </td></tr>
-    <tr><td class="paramname">iostat</td><td>: The status returned from this routine (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> for details) </td></tr>
+    <tr><td class="paramname">iostat</td><td>: The status returned from this routine (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a> for details) </td></tr>
   </table>
   </dd>
 </dl>
+<dl class="section author"><dt>Author</dt><dd>Jim Edwards </dd></dl>
 
 </div>
 </div>
@@ -538,10 +482,11 @@ Functions/Subroutines</h2></td></tr>
     <tr><td class="paramname">varDesc</td><td><a class="el" href="structvar__desc__t.html">var_desc_t</a> </td></tr>
     <tr><td class="paramname">ioDesc</td><td><a class="el" href="structio__desc__t.html">io_desc_t</a> </td></tr>
     <tr><td class="paramname">array</td><td>: The read data </td></tr>
-    <tr><td class="paramname">iostat</td><td>: The status returned from this routine (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> for details) </td></tr>
+    <tr><td class="paramname">iostat</td><td>: The status returned from this routine (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a> for details) </td></tr>
   </table>
   </dd>
 </dl>
+<dl class="section author"><dt>Author</dt><dd>Jim Edwards </dd></dl>
 
 </div>
 </div>
@@ -596,10 +541,11 @@ Functions/Subroutines</h2></td></tr>
     <tr><td class="paramname">varDesc</td><td><a class="el" href="structvar__desc__t.html">var_desc_t</a> </td></tr>
     <tr><td class="paramname">ioDesc</td><td><a class="el" href="structio__desc__t.html">io_desc_t</a> </td></tr>
     <tr><td class="paramname">array</td><td>: The read data </td></tr>
-    <tr><td class="paramname">iostat</td><td>: The status returned from this routine (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> for details) </td></tr>
+    <tr><td class="paramname">iostat</td><td>: The status returned from this routine (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a> for details) </td></tr>
   </table>
   </dd>
 </dl>
+<dl class="section author"><dt>Author</dt><dd>Jim Edwards </dd></dl>
 
 </div>
 </div>
@@ -654,10 +600,11 @@ Functions/Subroutines</h2></td></tr>
     <tr><td class="paramname">varDesc</td><td><a class="el" href="structvar__desc__t.html">var_desc_t</a> </td></tr>
     <tr><td class="paramname">ioDesc</td><td><a class="el" href="structio__desc__t.html">io_desc_t</a> </td></tr>
     <tr><td class="paramname">array</td><td>: The read data </td></tr>
-    <tr><td class="paramname">iostat</td><td>: The status returned from this routine (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> for details) </td></tr>
+    <tr><td class="paramname">iostat</td><td>: The status returned from this routine (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a> for details) </td></tr>
   </table>
   </dd>
 </dl>
+<dl class="section author"><dt>Author</dt><dd>Jim Edwards </dd></dl>
 
 </div>
 </div>
@@ -712,10 +659,11 @@ Functions/Subroutines</h2></td></tr>
     <tr><td class="paramname">varDesc</td><td><a class="el" href="structvar__desc__t.html">var_desc_t</a> </td></tr>
     <tr><td class="paramname">ioDesc</td><td><a class="el" href="structio__desc__t.html">io_desc_t</a> </td></tr>
     <tr><td class="paramname">array</td><td>: The read data </td></tr>
-    <tr><td class="paramname">iostat</td><td>: The status returned from this routine (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> for details) </td></tr>
+    <tr><td class="paramname">iostat</td><td>: The status returned from this routine (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a> for details) </td></tr>
   </table>
   </dd>
 </dl>
+<dl class="section author"><dt>Author</dt><dd>Jim Edwards </dd></dl>
 
 </div>
 </div>
@@ -770,10 +718,11 @@ Functions/Subroutines</h2></td></tr>
     <tr><td class="paramname">varDesc</td><td><a class="el" href="structvar__desc__t.html">var_desc_t</a> </td></tr>
     <tr><td class="paramname">ioDesc</td><td><a class="el" href="structio__desc__t.html">io_desc_t</a> </td></tr>
     <tr><td class="paramname">array</td><td>: The read data </td></tr>
-    <tr><td class="paramname">iostat</td><td>: The status returned from this routine (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> for details) </td></tr>
+    <tr><td class="paramname">iostat</td><td>: The status returned from this routine (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a> for details) </td></tr>
   </table>
   </dd>
 </dl>
+<dl class="section author"><dt>Author</dt><dd>Jim Edwards </dd></dl>
 
 </div>
 </div>
@@ -828,10 +777,11 @@ Functions/Subroutines</h2></td></tr>
     <tr><td class="paramname">varDesc</td><td><a class="el" href="structvar__desc__t.html">var_desc_t</a> </td></tr>
     <tr><td class="paramname">ioDesc</td><td><a class="el" href="structio__desc__t.html">io_desc_t</a> </td></tr>
     <tr><td class="paramname">array</td><td>: The read data </td></tr>
-    <tr><td class="paramname">iostat</td><td>: The status returned from this routine (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> for details) </td></tr>
+    <tr><td class="paramname">iostat</td><td>: The status returned from this routine (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a> for details) </td></tr>
   </table>
   </dd>
 </dl>
+<dl class="section author"><dt>Author</dt><dd>Jim Edwards </dd></dl>
 
 </div>
 </div>
@@ -886,10 +836,11 @@ Functions/Subroutines</h2></td></tr>
     <tr><td class="paramname">varDesc</td><td><a class="el" href="structvar__desc__t.html">var_desc_t</a> </td></tr>
     <tr><td class="paramname">ioDesc</td><td><a class="el" href="structio__desc__t.html">io_desc_t</a> </td></tr>
     <tr><td class="paramname">array</td><td>: The read data </td></tr>
-    <tr><td class="paramname">iostat</td><td>: The status returned from this routine (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> for details) </td></tr>
+    <tr><td class="paramname">iostat</td><td>: The status returned from this routine (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a> for details) </td></tr>
   </table>
   </dd>
 </dl>
+<dl class="section author"><dt>Author</dt><dd>Jim Edwards </dd></dl>
 
 </div>
 </div>
@@ -944,10 +895,11 @@ Functions/Subroutines</h2></td></tr>
     <tr><td class="paramname">varDesc</td><td><a class="el" href="structvar__desc__t.html">var_desc_t</a> </td></tr>
     <tr><td class="paramname">ioDesc</td><td><a class="el" href="structio__desc__t.html">io_desc_t</a> </td></tr>
     <tr><td class="paramname">array</td><td>: The read data </td></tr>
-    <tr><td class="paramname">iostat</td><td>: The status returned from this routine (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> for details) </td></tr>
+    <tr><td class="paramname">iostat</td><td>: The status returned from this routine (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a> for details) </td></tr>
   </table>
   </dd>
 </dl>
+<dl class="section author"><dt>Author</dt><dd>Jim Edwards </dd></dl>
 
 </div>
 </div>
@@ -1002,10 +954,11 @@ Functions/Subroutines</h2></td></tr>
     <tr><td class="paramname">varDesc</td><td><a class="el" href="structvar__desc__t.html">var_desc_t</a> </td></tr>
     <tr><td class="paramname">ioDesc</td><td><a class="el" href="structio__desc__t.html">io_desc_t</a> </td></tr>
     <tr><td class="paramname">array</td><td>: The read data </td></tr>
-    <tr><td class="paramname">iostat</td><td>: The status returned from this routine (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> for details) </td></tr>
+    <tr><td class="paramname">iostat</td><td>: The status returned from this routine (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a> for details) </td></tr>
   </table>
   </dd>
 </dl>
+<dl class="section author"><dt>Author</dt><dd>Jim Edwards </dd></dl>
 
 </div>
 </div>
@@ -1060,10 +1013,11 @@ Functions/Subroutines</h2></td></tr>
     <tr><td class="paramname">varDesc</td><td><a class="el" href="structvar__desc__t.html">var_desc_t</a> </td></tr>
     <tr><td class="paramname">ioDesc</td><td><a class="el" href="structio__desc__t.html">io_desc_t</a> </td></tr>
     <tr><td class="paramname">array</td><td>: The read data </td></tr>
-    <tr><td class="paramname">iostat</td><td>: The status returned from this routine (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> for details) </td></tr>
+    <tr><td class="paramname">iostat</td><td>: The status returned from this routine (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a> for details) </td></tr>
   </table>
   </dd>
 </dl>
+<dl class="section author"><dt>Author</dt><dd>Jim Edwards </dd></dl>
 
 </div>
 </div>
@@ -1118,10 +1072,11 @@ Functions/Subroutines</h2></td></tr>
     <tr><td class="paramname">varDesc</td><td><a class="el" href="structvar__desc__t.html">var_desc_t</a> </td></tr>
     <tr><td class="paramname">ioDesc</td><td><a class="el" href="structio__desc__t.html">io_desc_t</a> </td></tr>
     <tr><td class="paramname">array</td><td>: The read data </td></tr>
-    <tr><td class="paramname">iostat</td><td>: The status returned from this routine (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> for details) </td></tr>
+    <tr><td class="paramname">iostat</td><td>: The status returned from this routine (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a> for details) </td></tr>
   </table>
   </dd>
 </dl>
+<dl class="section author"><dt>Author</dt><dd>Jim Edwards </dd></dl>
 
 </div>
 </div>
@@ -1176,10 +1131,11 @@ Functions/Subroutines</h2></td></tr>
     <tr><td class="paramname">varDesc</td><td><a class="el" href="structvar__desc__t.html">var_desc_t</a> </td></tr>
     <tr><td class="paramname">ioDesc</td><td><a class="el" href="structio__desc__t.html">io_desc_t</a> </td></tr>
     <tr><td class="paramname">array</td><td>: The read data </td></tr>
-    <tr><td class="paramname">iostat</td><td>: The status returned from this routine (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> for details) </td></tr>
+    <tr><td class="paramname">iostat</td><td>: The status returned from this routine (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a> for details) </td></tr>
   </table>
   </dd>
 </dl>
+<dl class="section author"><dt>Author</dt><dd>Jim Edwards </dd></dl>
 
 </div>
 </div>
@@ -1234,10 +1190,11 @@ Functions/Subroutines</h2></td></tr>
     <tr><td class="paramname">varDesc</td><td><a class="el" href="structvar__desc__t.html">var_desc_t</a> </td></tr>
     <tr><td class="paramname">ioDesc</td><td><a class="el" href="structio__desc__t.html">io_desc_t</a> </td></tr>
     <tr><td class="paramname">array</td><td>: The read data </td></tr>
-    <tr><td class="paramname">iostat</td><td>: The status returned from this routine (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> for details) </td></tr>
+    <tr><td class="paramname">iostat</td><td>: The status returned from this routine (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a> for details) </td></tr>
   </table>
   </dd>
 </dl>
+<dl class="section author"><dt>Author</dt><dd>Jim Edwards </dd></dl>
 
 </div>
 </div>
@@ -1292,10 +1249,11 @@ Functions/Subroutines</h2></td></tr>
     <tr><td class="paramname">varDesc</td><td><a class="el" href="structvar__desc__t.html">var_desc_t</a> </td></tr>
     <tr><td class="paramname">ioDesc</td><td><a class="el" href="structio__desc__t.html">io_desc_t</a> </td></tr>
     <tr><td class="paramname">array</td><td>: The read data </td></tr>
-    <tr><td class="paramname">iostat</td><td>: The status returned from this routine (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> for details) </td></tr>
+    <tr><td class="paramname">iostat</td><td>: The status returned from this routine (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a> for details) </td></tr>
   </table>
   </dd>
 </dl>
+<dl class="section author"><dt>Author</dt><dd>Jim Edwards </dd></dl>
 
 </div>
 </div>
@@ -1350,17 +1308,18 @@ Functions/Subroutines</h2></td></tr>
     <tr><td class="paramname">varDesc</td><td><a class="el" href="structvar__desc__t.html">var_desc_t</a> </td></tr>
     <tr><td class="paramname">ioDesc</td><td><a class="el" href="structio__desc__t.html">io_desc_t</a> </td></tr>
     <tr><td class="paramname">array</td><td>: The read data </td></tr>
-    <tr><td class="paramname">iostat</td><td>: The status returned from this routine (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> for details) </td></tr>
+    <tr><td class="paramname">iostat</td><td>: The status returned from this routine (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a> for details) </td></tr>
   </table>
   </dd>
 </dl>
+<dl class="section author"><dt>Author</dt><dd>Jim Edwards </dd></dl>
 
 </div>
 </div>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun May 26 2019 18:21:06 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Jun 4 2019 11:03:24 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.13
 </small></address>

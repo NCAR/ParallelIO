@@ -5,7 +5,7 @@ var searchData=
   ['map',['map',['../structio__desc__t.html#a3837a3cd3532a18e3b510a21a3903f39',1,'io_desc_t']]],
   ['maplen',['maplen',['../structio__desc__t.html#a7ea4140687fe625b553d255e99112e95',1,'io_desc_t']]],
   ['max_5fbacktrace',['MAX_BACKTRACE',['../pioc__support_8c.html#a0943e0b42523c317b4c867f26e44dec6',1,'pioc_support.c']]],
-  ['max_5fpend_5freq',['max_pend_req',['../structrearr__comm__fc__opt.html#ac6aea4e835c71daa004ce1a69efaa5b8',1,'rearr_comm_fc_opt::max_pend_req()'],['../structpio__types_1_1pio__rearr__comm__fc__opt__t.html#af88b46e06801e8e9055b1c1f78027412',1,'pio_types::pio_rearr_comm_fc_opt_t::max_pend_req()']]],
+  ['max_5fpend_5freq',['max_pend_req',['../structpio__types_1_1pio__rearr__comm__fc__opt__t.html#af88b46e06801e8e9055b1c1f78027412',1,'pio_types::pio_rearr_comm_fc_opt_t::max_pend_req()'],['../structrearr__comm__fc__opt.html#ac6aea4e835c71daa004ce1a69efaa5b8',1,'rearr_comm_fc_opt::max_pend_req()']]],
   ['maxbytes',['maxbytes',['../structio__desc__t.html#a7f6bf3b3dc649e3cb87fdea2eff4fc6f',1,'io_desc_t']]],
   ['maxfillregions',['maxfillregions',['../structio__desc__t.html#a52e2f2be2c059d28a4df5e1f0de263d7',1,'io_desc_t']]],
   ['maxholegridsize',['maxholegridsize',['../structio__desc__t.html#abf7df02ce96310e2835c499e031f0607',1,'io_desc_t']]],

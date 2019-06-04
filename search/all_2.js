@@ -15,7 +15,7 @@ var searchData=
   ['cn_5fbpool',['CN_bpool',['../pio__darray_8c.html#ad8ea77d66c23466b306a6d74e751bd9c',1,'pio_darray.c']]],
   ['comm_5ffc_5fopts_5fcomp2io',['comm_fc_opts_comp2io',['../structpio__types_1_1pio__rearr__opt__t.html#a5d18036a2fceb1a4fcff8699d2f64d3a',1,'pio_types::pio_rearr_opt_t']]],
   ['comm_5ffc_5fopts_5fio2comp',['comm_fc_opts_io2comp',['../structpio__types_1_1pio__rearr__opt__t.html#ab2b57740e8477b11a260bc57e9e28164',1,'pio_types::pio_rearr_opt_t']]],
-  ['comm_5ftype',['comm_type',['../structrearr__opt.html#a342fe712d7506465b38916591820ae7e',1,'rearr_opt::comm_type()'],['../structpio__types_1_1pio__rearr__opt__t.html#a858797b8a0a36d4c19e6fc210b822adc',1,'pio_types::pio_rearr_opt_t::comm_type()']]],
+  ['comm_5ftype',['comm_type',['../structpio__types_1_1pio__rearr__opt__t.html#a858797b8a0a36d4c19e6fc210b822adc',1,'pio_types::pio_rearr_opt_t::comm_type()'],['../structrearr__opt.html#a342fe712d7506465b38916591820ae7e',1,'rearr_opt::comm_type()']]],
   ['comp2io',['comp2io',['../structrearr__opt.html#aeca20bb690f07a0caa04c5f1ae95a256',1,'rearr_opt']]],
   ['comp_5fcomm',['comp_comm',['../structiosystem__desc__t.html#a362435c96f238f4c90da56af73454199',1,'iosystem_desc_t']]],
   ['comp_5fidx',['comp_idx',['../structiosystem__desc__t.html#a57a0b192ffe2f569d21ae31fc998ef88',1,'iosystem_desc_t']]],
@@ -29,8 +29,12 @@ var searchData=
   ['count',['count',['../structio__region.html#ae9897b9dc1ae1abb8e6421d55a8e4b20',1,'io_region']]],
   ['createdecomp',['createdecomp',['../structpioexample_1_1pioexampleclass.html#a6a47fedad0fe0d131fd0305e25b26546',1,'pioexample::pioexampleclass']]],
   ['createfile',['createfile',['../structpioexample_1_1pioexampleclass.html#ac1010cbbdf5cd79112bab8e3dbd5dfdf',1,'pioexample::pioexampleclass::createfile()'],['../group___p_i_o__createfile.html#ga359c93e9d4f79c37d488f00535122177',1,'piolib_mod::createfile()']]],
+  ['creating_20decompositions',['Creating Decompositions',['../group__iodesc__generate.html',1,'']]],
   ['cmake_20install_20walk_2dthrough',['CMake Install Walk-through',['../mach_walkthrough.html',1,'']]],
   ['close_20a_20file',['Close a File',['../group___p_i_o__close__file__c.html',1,'']]],
+  ['close_20a_20file',['Close a File',['../group___p_i_o__closefile.html',1,'']]],
   ['create_20a_20file',['Create a File',['../group___p_i_o__create__file__c.html',1,'']]],
+  ['create_20a_20file',['Create a File',['../group___p_i_o__createfile.html',1,'']]],
+  ['check_20iosystem',['Check IOSystem',['../group___p_i_o__iosystem__is__active__c.html',1,'']]],
   ['cmake_20testing_20information',['Cmake Testing Information',['../test.html',1,'']]]
 ];

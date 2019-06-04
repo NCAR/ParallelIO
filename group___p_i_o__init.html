@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.13"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>PIO: PIO_init</title>
+<title>PIO: Initialize an IOSystem</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -63,24 +63,24 @@ $(function() {
   <div class="summary">
 <a href="#func-members">Functions/Subroutines</a>  </div>
   <div class="headertitle">
-<div class="title">PIO_init</div>  </div>
+<div class="title">Initialize an IOSystem</div>  </div>
 </div><!--header-->
 <div class="contents">
 
-<p>initializes the pio subsystem  
+<p>Create a new IO System, designating numbers of I/O and computation tasks in Fortran.  
 <a href="#details">More...</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions/Subroutines</h2></td></tr>
 <tr class="memitem:ga24013f7eb18aa1552bb0a9ccecc689b3"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__init.html#ga24013f7eb18aa1552bb0a9ccecc689b3">piolib_mod::init_intracom</a> (comp_rank, comp_comm, num_iotasks, num_aggregator, stride, rearr, iosystem, base, rearr_opts)</td></tr>
-<tr class="memdesc:ga24013f7eb18aa1552bb0a9ccecc689b3"><td class="mdescLeft">&#160;</td><td class="mdescRight">initialize the pio subsystem.  <a href="group___p_i_o__init.html#ga24013f7eb18aa1552bb0a9ccecc689b3">More...</a><br /></td></tr>
+<tr class="memdesc:ga24013f7eb18aa1552bb0a9ccecc689b3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize the pio subsystem.  <a href="group___p_i_o__init.html#ga24013f7eb18aa1552bb0a9ccecc689b3">More...</a><br /></td></tr>
 <tr class="separator:ga24013f7eb18aa1552bb0a9ccecc689b3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga2a34f801ef28767ad58b04cf99ebb207"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__init.html#ga2a34f801ef28767ad58b04cf99ebb207">piolib_mod::init_intercom</a> (component_count, peer_comm, comp_comms, io_comm, iosystem)</td></tr>
 <tr class="memdesc:ga2a34f801ef28767ad58b04cf99ebb207"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize the pio subsystem.  <a href="group___p_i_o__init.html#ga2a34f801ef28767ad58b04cf99ebb207">More...</a><br /></td></tr>
 <tr class="separator:ga2a34f801ef28767ad58b04cf99ebb207"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<p>initializes the pio subsystem </p>
+<p>Create a new IO System, designating numbers of I/O and computation tasks in Fortran. </p>
 <h2 class="groupheader">Function/Subroutine Documentation</h2>
 <a id="ga2a34f801ef28767ad58b04cf99ebb207"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ga2a34f801ef28767ad58b04cf99ebb207">&#9670;&nbsp;</a></span>init_intercom()</h2>
@@ -127,16 +127,18 @@ Functions/Subroutines</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Initialize the pio subsystem. </p>
-<p>This is a collective call. Input parameters are read on comp_rank=0 values on other tasks are ignored. This variation of PIO_init sets up a distinct set of tasks to handle IO, these tasks do not return from this call. Instead they go to an internal loop and wait to receive further instructions from the computational tasks </p><dl class="params"><dt>Parameters</dt><dd>
+<p>This is a collective call. Input parameters are read on comp_rank=0 values on other tasks are ignored. This variation of PIO_init sets up a distinct set of tasks to handle IO, these tasks do not return from this call. Instead they go to an internal loop and wait to receive further instructions from the computational tasks.</p>
+<dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">component_count</td><td>The number of computational components to associate with this IO component </td></tr>
-    <tr><td class="paramname">peer_comm</td><td>The communicator from which all other communicator arguments are derived </td></tr>
-    <tr><td class="paramname">comp_comms</td><td>The computational communicator for each of the computational components </td></tr>
-    <tr><td class="paramname">io_comm</td><td>The io communicator </td></tr>
+    <tr><td class="paramname">component_count</td><td>The number of computational components to associate with this IO component. </td></tr>
+    <tr><td class="paramname">peer_comm</td><td>The communicator from which all other communicator arguments are derived. </td></tr>
+    <tr><td class="paramname">comp_comms</td><td>The computational communicator for each of the computational components. </td></tr>
+    <tr><td class="paramname">io_comm</td><td>The io communicator. </td></tr>
     <tr><td class="paramname">iosystem</td><td>a derived type which can be used in subsequent pio operations (defined in PIO_types). </td></tr>
   </table>
   </dd>
 </dl>
+<dl class="section author"><dt>Author</dt><dd>Jim Edwards </dd></dl>
 
 </div>
 </div>
@@ -208,15 +210,16 @@ Functions/Subroutines</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>initialize the pio subsystem. </p>
-<p>This is a collective call. Input parameters are read on comp_rank=0 values on other tasks are ignored. This variation of PIO_init locates the IO tasks on a subset of the compute tasks. </p><dl class="params"><dt>Parameters</dt><dd>
+<p>Initialize the pio subsystem. </p>
+<p>This is a collective call. Input parameters are read on comp_rank=0 values on other tasks are ignored. This variation of PIO_init locates the IO tasks on a subset of the compute tasks.</p>
+<dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">comp_rank</td><td>mpi rank of each participating task, </td></tr>
     <tr><td class="paramname">comp_comm</td><td>the mpi communicator which defines the collective. </td></tr>
     <tr><td class="paramname">num_iotasks</td><td>the number of iotasks to define. </td></tr>
     <tr><td class="paramname">num_aggregator</td><td>the mpi aggregator count </td></tr>
     <tr><td class="paramname">stride</td><td>the stride in the mpi rank between io tasks. </td></tr>
-    <tr><td class="paramname">rearr</td><td>The three choices to control rearrangement are:<ul>
+    <tr><td class="paramname">rearr</td><td>Rearranger methods.<ul>
 <li>PIO_rearr_none : Do not use any form of rearrangement</li>
 <li>PIO_rearr_box : Use a PIO internal box rearrangement</li>
 <li>PIO_rearr_subset : Use a PIO internal subsetting rearrangement </li>
@@ -228,13 +231,14 @@ Functions/Subroutines</h2></td></tr>
   </table>
   </dd>
 </dl>
+<dl class="section author"><dt>Author</dt><dd>Jim Edwards </dd></dl>
 
 </div>
 </div>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun May 26 2019 18:21:06 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Jun 4 2019 11:03:24 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.13
 </small></address>

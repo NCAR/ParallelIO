@@ -5,7 +5,7 @@ var searchData=
   ['cn_5fbpool',['CN_bpool',['../pio__darray_8c.html#ad8ea77d66c23466b306a6d74e751bd9c',1,'pio_darray.c']]],
   ['comm_5ffc_5fopts_5fcomp2io',['comm_fc_opts_comp2io',['../structpio__types_1_1pio__rearr__opt__t.html#a5d18036a2fceb1a4fcff8699d2f64d3a',1,'pio_types::pio_rearr_opt_t']]],
   ['comm_5ffc_5fopts_5fio2comp',['comm_fc_opts_io2comp',['../structpio__types_1_1pio__rearr__opt__t.html#ab2b57740e8477b11a260bc57e9e28164',1,'pio_types::pio_rearr_opt_t']]],
-  ['comm_5ftype',['comm_type',['../structrearr__opt.html#a342fe712d7506465b38916591820ae7e',1,'rearr_opt::comm_type()'],['../structpio__types_1_1pio__rearr__opt__t.html#a858797b8a0a36d4c19e6fc210b822adc',1,'pio_types::pio_rearr_opt_t::comm_type()']]],
+  ['comm_5ftype',['comm_type',['../structpio__types_1_1pio__rearr__opt__t.html#a858797b8a0a36d4c19e6fc210b822adc',1,'pio_types::pio_rearr_opt_t::comm_type()'],['../structrearr__opt.html#a342fe712d7506465b38916591820ae7e',1,'rearr_opt::comm_type()']]],
   ['comp2io',['comp2io',['../structrearr__opt.html#aeca20bb690f07a0caa04c5f1ae95a256',1,'rearr_opt']]],
   ['comp_5fcomm',['comp_comm',['../structiosystem__desc__t.html#a362435c96f238f4c90da56af73454199',1,'iosystem_desc_t']]],
   ['comp_5fidx',['comp_idx',['../structiosystem__desc__t.html#a57a0b192ffe2f569d21ae31fc998ef88',1,'iosystem_desc_t']]],

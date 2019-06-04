@@ -72,7 +72,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>internal code for compiler workarounds, aborts and debug functions  
+<p>Internal code for compiler workarounds, aborts and debug functions.  
 <a href="#details">More...</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
@@ -109,7 +109,7 @@ logical, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el"
 <tr class="separator:a587dc3074a365ced4e67a1082b327023"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>internal code for compiler workarounds, aborts and debug functions </p>
+<div class="textblock"><p>Internal code for compiler workarounds, aborts and debug functions. </p>
 </div><h2 class="groupheader">Function/Subroutine Documentation</h2>
 <a id="file_ac7968ba27902096f4dd743d468f25274"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#file_ac7968ba27902096f4dd743d468f25274">&#9670;&nbsp;</a></span>checkmpireturn()</h2>
@@ -152,13 +152,14 @@ logical, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el"
 <p>Check and prints an error message if an error occured in an MPI subroutine. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">locmesg</td><td>: Message to output </td></tr>
-    <tr><td class="paramname">errcode</td><td>: MPI error code </td></tr>
-    <tr><td class="paramname">file</td><td>: The file where the error message originated. </td></tr>
-    <tr><td class="paramname">line</td><td>: The line number where the error message originated. </td></tr>
+    <tr><td class="paramname">locmesg</td><td>Message to output </td></tr>
+    <tr><td class="paramname">errcode</td><td>MPI error code </td></tr>
+    <tr><td class="paramname">file</td><td>The file where the error message originated. </td></tr>
+    <tr><td class="paramname">line</td><td>The line number where the error message originated. </td></tr>
   </table>
   </dd>
 </dl>
+<dl class="section author"><dt>Author</dt><dd>Jim Edwards </dd></dl>
 
 </div>
 </div>
@@ -215,15 +216,16 @@ logical, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el"
 <p>Fortran interface to read a mapping file. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">file</td><td>: The file from where the decomp map is read. </td></tr>
-    <tr><td class="paramname">ndims</td><td>: The number of dimensions of the data. </td></tr>
-    <tr><td class="paramname">gdims</td><td>: The actual dimensions of the data (pointer to an integer array of length ndims). </td></tr>
-    <tr><td class="paramname">DOF</td><td>: Pointer to an integer array where the Decomp map will be stored. </td></tr>
-    <tr><td class="paramname">comm</td><td>: MPI comm index </td></tr>
-    <tr><td class="paramname">punit</td><td>: Optional argument that is no longer used. </td></tr>
+    <tr><td class="paramname">file</td><td>The file from where the decomp map is read. </td></tr>
+    <tr><td class="paramname">ndims</td><td>The number of dimensions of the data. </td></tr>
+    <tr><td class="paramname">gdims</td><td>The actual dimensions of the data (pointer to an integer array of length ndims). </td></tr>
+    <tr><td class="paramname">DOF</td><td>Pointer to an integer array where the Decomp map will be stored. </td></tr>
+    <tr><td class="paramname">comm</td><td>MPI comm index </td></tr>
+    <tr><td class="paramname">punit</td><td>Optional argument that is no longer used. </td></tr>
   </table>
   </dd>
 </dl>
+<dl class="section author"><dt>Author</dt><dd>T Craig </dd></dl>
 
 </div>
 </div>
@@ -282,6 +284,7 @@ logical, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el"
   </table>
   </dd>
 </dl>
+<dl class="section author"><dt>Author</dt><dd>T Craig </dd></dl>
 
 </div>
 </div>
@@ -356,12 +359,13 @@ logical, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el"
 <p>Abort the model for abnormal termination. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">file</td><td>: File where piodie is called from. </td></tr>
-    <tr><td class="paramname">line</td><td>: Line number where it is called. </td></tr>
+    <tr><td class="paramname">file</td><td>File where piodie is called from. </td></tr>
+    <tr><td class="paramname">line</td><td>Line number where it is called. </td></tr>
     <tr><td class="paramname">msg,msg2,msg3,ival1,ival2,ival3,mpirank</td><td>: Optional argument for error messages. </td></tr>
   </table>
   </dd>
 </dl>
+<dl class="section author"><dt>Author</dt><dd>Jim Edwards </dd></dl>
 
 </div>
 </div>
@@ -398,7 +402,7 @@ logical, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el"
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun May 26 2019 18:21:06 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Jun 4 2019 11:03:24 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.13
 </small></address>

@@ -72,14 +72,6 @@ Functions/Subroutines</h2></td></tr>
 <tr class="memitem:ga5cd2661a09fd5a426b89ce2b473e19b6"><td class="memItemLeft" align="right" valign="top">integer function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__inq__attlen.html#ga5cd2661a09fd5a426b89ce2b473e19b6">pio_nf::inq_attlen_desc</a> (File, vardesc, name, len)</td></tr>
 <tr class="memdesc:ga5cd2661a09fd5a426b89ce2b473e19b6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the attribute length.  <a href="group___p_i_o__inq__attlen.html#ga5cd2661a09fd5a426b89ce2b473e19b6">More...</a><br /></td></tr>
 <tr class="separator:ga5cd2661a09fd5a426b89ce2b473e19b6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gabce6256ec04eb70386bac8cf670fbab5"><td class="memItemLeft" align="right" valign="top"><a id="gabce6256ec04eb70386bac8cf670fbab5"></a>
-integer function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__inq__attlen.html#gabce6256ec04eb70386bac8cf670fbab5">pio_nf::inq_attlen_vid</a> (File, varid, name, len)</td></tr>
-<tr class="memdesc:gabce6256ec04eb70386bac8cf670fbab5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the attribute length. <br /></td></tr>
-<tr class="separator:gabce6256ec04eb70386bac8cf670fbab5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga255c1f853ccf17c0f7bac0c083391697"><td class="memItemLeft" align="right" valign="top"><a id="ga255c1f853ccf17c0f7bac0c083391697"></a>
-integer function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__inq__attlen.html#ga255c1f853ccf17c0f7bac0c083391697">pio_nf::inq_attlen_id</a> (ncid, varid, name, len)</td></tr>
-<tr class="memdesc:ga255c1f853ccf17c0f7bac0c083391697"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the attribute length. <br /></td></tr>
-<tr class="separator:ga255c1f853ccf17c0f7bac0c083391697"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <h2 class="groupheader">Function/Subroutine Documentation</h2>
@@ -126,24 +118,25 @@ integer function&#160;</td><td class="memItemRight" valign="bottom"><a class="el
   <table class="params">
     <tr><td class="paramname">File</td><td>File descriptor structure. This structure holds information associated with each open file </td></tr>
     <tr><td class="paramname">vardesc</td><td>Variable description structure.</td></tr>
-    <tr><td class="paramname">name</td><td>: name of attribute </td></tr>
-    <tr><td class="paramname">len</td><td>: Length of attribute </td></tr>
+    <tr><td class="paramname">name</td><td>name of attribute </td></tr>
+    <tr><td class="paramname">len</td><td>Length of attribute </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling</a> ) </td></tr>
   </table>
   </dd>
 </dl>
+<dl class="section author"><dt>Author</dt><dd>Jim Edwards </dd></dl>
 
 </div>
 </div>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun May 26 2019 18:21:06 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri May 31 2019 07:36:42 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.13
 </small></address>

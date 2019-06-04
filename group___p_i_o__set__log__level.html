@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.13"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>PIO: PIO_set_log_level</title>
+<title>PIO: Debug Logging</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -60,15 +60,63 @@ $(function() {
 </div>
 
 <div class="header">
+  <div class="summary">
+<a href="#func-members">Functions/Subroutines</a>  </div>
   <div class="headertitle">
-<div class="title">PIO_set_log_level</div>  </div>
+<div class="title">Debug Logging</div>  </div>
 </div><!--header-->
 <div class="contents">
+
+<p>Set debugging log level in Fortran.  
+<a href="#details">More...</a></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Functions/Subroutines</h2></td></tr>
+<tr class="memitem:gab24e4e4c43c55715f97119f06aa216b2"><td class="memItemLeft" align="right" valign="top">integer function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__set__log__level.html#gab24e4e4c43c55715f97119f06aa216b2">pio_nf::set_log_level</a> (log_level)</td></tr>
+<tr class="memdesc:gab24e4e4c43c55715f97119f06aa216b2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets the logging level.  <a href="group___p_i_o__set__log__level.html#gab24e4e4c43c55715f97119f06aa216b2">More...</a><br /></td></tr>
+<tr class="separator:gab24e4e4c43c55715f97119f06aa216b2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<p>Set debugging log level in Fortran. </p>
+<h2 class="groupheader">Function/Subroutine Documentation</h2>
+<a id="gab24e4e4c43c55715f97119f06aa216b2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gab24e4e4c43c55715f97119f06aa216b2">&#9670;&nbsp;</a></span>set_log_level()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">integer function pio_nf::set_log_level </td>
+          <td>(</td>
+          <td class="paramtype">integer, intent(in)&#160;</td>
+          <td class="paramname"><em>log_level</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Sets the logging level. </p>
+<p>Only takes effect if PIO was built with PIO_ENABLE_LOGGING=On</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">log_level</td><td>the logging level. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="retval"><dt>Return values</dt><dd>
+  <table class="retval">
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>Jim Edwards </dd></dl>
+
+</div>
+</div>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun May 26 2019 18:21:06 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Jun 4 2019 11:03:24 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.13
 </small></address>

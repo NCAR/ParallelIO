@@ -64,16 +64,24 @@ $(function() {
 <div class="title">Frequently Asked Questions </div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p>Here is a list of frequently asked questions and their answers. </p><dl>
-<dt>How do I specify which tasks perform IO?  </dt>
-<dd>This is done in the call to <a class="el" href="group___p_i_o__init.html">PIO_init</a> which has two interfaces: init_intracom and init_intercom. <ul>
+<div class="textblock"><p>Here is a list of frequently asked questions and their answers.</p>
+<dl>
+<dt>How do I specify which tasks perform IO? </dt>
+<dd><p class="startdd">This is done in the call to <a class="el" href="group___p_i_o__init.html">Initialize an IOSystem</a> which has two interfaces: init_intracom and init_intercom.</p>
+<ul>
 <li>
-In the init_intracom interface, use the num_iotasks and stride variables to specify the total number of io tasks and the stride between them with respect to the mpi communicator, comp_comm, which is provided. You can also use the optional base argument to shift the first IO task away from the first computational task, this is often desirable because the applications first computational task often has higher memory requirements than other tasks. IO tasks are a subset of the tasks defined in comp_comm. </li>
+<p class="startli">In the init_intracom interface, use the num_iotasks and stride variables to specify the total number of io tasks and the stride between them with respect to the mpi communicator, comp_comm, which is provided. You can also use the optional base argument to shift the first IO task away from the first computational task, this is often desirable because the applications first computational task often has higher memory requirements than other tasks. IO tasks are a subset of the tasks defined in comp_comm.</p>
+<p class="endli"></p>
+</li>
 <li>
-In the init_intercom interface, IO tasks are a disjoint set of tasks from those in the computational communicator. <b>This interface is still experimental and not recommended for production use at this time. </b> </li>
+<p class="startli">In the init_intercom interface, IO tasks are a disjoint set of tasks from those in the computational communicator.</p>
+<p class="endli"></p>
+</li>
 </ul>
-Note that num_iotasks is the maximum number of IO tasks to use for an IO operation. The size of the field being read or written along with the tunable blocksize parameter, <a class="el" href="group___p_i_o__set__blocksize.html">PIO_set_blocksize</a>, determines the actual number of tasks used for a given IO operation.  </dd>
-<dt>How do I test if PIO is installed and working correctly?  </dt>
+<p>Note that num_iotasks is the maximum number of IO tasks to use for an IO operation. The size of the field being read or written along with the tunable blocksize parameter, <a class="el" href="group___p_i_o__set__blocksize.html">Box Rearranger Settings</a>, determines the actual number of tasks used for a given IO operation. </p>
+<p class="enddd"></p>
+</dd>
+<dt>How do I test if PIO is installed and working correctly? </dt>
 <dd><p class="startdd">The PIO Library distribution contains tests for PIO. They are run my 'make check'. The tests use mpiexec to run tests on 4, 8, or 16 processors. </p>
 <p class="enddd"></p>
 </dd>
@@ -81,7 +89,7 @@ Note that num_iotasks is the maximum number of IO tasks to use for an IO operati
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun May 26 2019 18:21:06 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Jun 4 2019 11:03:24 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.13
 </small></address>

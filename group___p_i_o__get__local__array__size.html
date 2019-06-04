@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.13"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>PIO: PIO_get_local_array_size</title>
+<title>PIO: Get Local Array Size</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -63,17 +63,21 @@ $(function() {
   <div class="summary">
 <a href="#func-members">Functions/Subroutines</a>  </div>
   <div class="headertitle">
-<div class="title">PIO_get_local_array_size</div>  </div>
+<div class="title">Get Local Array Size</div>  </div>
 </div><!--header-->
 <div class="contents">
+
+<p>Get the local size of the distributed array in a decomposition in Fortran.  
+<a href="#details">More...</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions/Subroutines</h2></td></tr>
 <tr class="memitem:gab8a9ffb0a03badbcfd71731a36acdf02"><td class="memItemLeft" align="right" valign="top">integer function, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__get__local__array__size.html#gab8a9ffb0a03badbcfd71731a36acdf02">piolib_mod::pio_get_local_array_size</a> (iodesc)</td></tr>
-<tr class="memdesc:gab8a9ffb0a03badbcfd71731a36acdf02"><td class="mdescLeft">&#160;</td><td class="mdescRight">This function returns the expected local size of an array associated with iodesc.  <a href="group___p_i_o__get__local__array__size.html#gab8a9ffb0a03badbcfd71731a36acdf02">More...</a><br /></td></tr>
+<tr class="memdesc:gab8a9ffb0a03badbcfd71731a36acdf02"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the expected local size of an array associated with a decomposition.  <a href="group___p_i_o__get__local__array__size.html#gab8a9ffb0a03badbcfd71731a36acdf02">More...</a><br /></td></tr>
 <tr class="separator:gab8a9ffb0a03badbcfd71731a36acdf02"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<p>Get the local size of the distributed array in a decomposition in Fortran. </p>
 <h2 class="groupheader">Function/Subroutine Documentation</h2>
 <a id="gab8a9ffb0a03badbcfd71731a36acdf02"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#gab8a9ffb0a03badbcfd71731a36acdf02">&#9670;&nbsp;</a></span>pio_get_local_array_size()</h2>
@@ -91,20 +95,21 @@ Functions/Subroutines</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>This function returns the expected local size of an array associated with iodesc. </p>
+<p>Return the expected local size of an array associated with a decomposition. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">iodesc</td><td>IO descriptor structure. This structure defines the mapping for a given variable between compute and IO decomposition. </td></tr>
+    <tr><td class="paramname">iodesc</td><td>the decomposition. IO descriptor structure. This structure defines the mapping for a given variable between compute and IO decomposition. </td></tr>
   </table>
   </dd>
 </dl>
+<dl class="section author"><dt>Author</dt><dd>Jim Edwards </dd></dl>
 
 </div>
 </div>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun May 26 2019 18:21:06 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Jun 4 2019 11:03:24 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.13
 </small></address>

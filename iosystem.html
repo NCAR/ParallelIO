@@ -66,24 +66,24 @@ $(function() {
 <div class="contents">
 <div class="textblock"><p>Using PIO begins with initializing the IO System.</p>
 <p>This sets up the MPI communicators with the computational and I/O processors.</p>
-<p>When the IO System is created, an IOSystem ID is returned and must be used in future PIO calls. The IOSystem ID is returned by C functions <a class="el" href="group___p_i_o__init__c.html#ga479a1d9fe2edfc7ca321a1b482fe0211" title="Library initialization used when IO tasks are a subset of compute tasks. ">PIOc_Init_Intracomm()</a> and <a class="el" href="group___p_i_o__init__c.html#ga017725f65a38a40963ac6936bbe7b5e9" title="Library initialization used when IO tasks are distinct from compute tasks. ">PIOc_init_async()</a>. Fortran users see <a class="el" href="group___p_i_o__init.html">PIO_init</a>.</p>
-<p>When the user program is complete, the IOSystem should be released by calling C function <a class="el" href="group___p_i_o__finalize__c.html#ga04e150e10a29f037979dc2eaa872bdb5" title="Clean up internal data structures, free MPI resources, and exit the pio library. ">PIOc_finalize()</a> or Fortran function <a class="el" href="group___p_i_o__finalize.html#ga01570706db6f1c5e61087045d558e9df" title="finalizes the pio subsystem. ">piolib_mod::finalize()</a> for each open IOSystem.</p>
-<h1><a class="anchor" id="intercomm_mode"></a>
-Intercomm Mode</h1>
+<p>When the IO System is created, an IOSystem ID is returned and must be used in future PIO calls. The IOSystem ID is returned by C functions <a class="el" href="group___p_i_o__init__c.html#ga479a1d9fe2edfc7ca321a1b482fe0211" title="Library initialization used when IO tasks are a subset of compute tasks. ">PIOc_Init_Intracomm()</a> and <a class="el" href="group___p_i_o__init__c.html#ga017725f65a38a40963ac6936bbe7b5e9" title="Library initialization used when IO tasks are distinct from compute tasks. ">PIOc_init_async()</a>. Fortran users see <a class="el" href="group___p_i_o__init.html">Initialize an IOSystem</a>.</p>
+<p>When the user program is complete, the IOSystem should be released by calling C function <a class="el" href="group___p_i_o__finalize__c.html#ga04e150e10a29f037979dc2eaa872bdb5" title="Clean up internal data structures, free MPI resources, and exit the pio library. ">PIOc_finalize()</a> or Fortran function <a class="el" href="group___p_i_o__finalize.html#ga01570706db6f1c5e61087045d558e9df" title="Finalizes an IO System. ">piolib_mod::finalize()</a> for each open IOSystem.</p>
+<h1><a class="anchor" id="intracomm_mode"></a>
+Intracomm Mode</h1>
 <div class="image">
-<img src="PIO_Intercomm1.png" alt="PIO_Intercomm1.png"/>
+<img src="PIO_Intracomm1.png" alt="PIO_Intracomm1.png"/>
 <div class="caption">
-PIO Intercomm Mode</div></div>
+PIO Intracomm Mode</div></div>
  <h1><a class="anchor" id="async_mode"></a>
 Async Mode</h1>
 <div class="image">
-<img src="PIO_Intracomm1.png" alt="PIO_Intracomm1.png"/>
+<img src="PIO_Async.png" alt="PIO_Async.png"/>
 <div class="caption">
 PIO Async Mode</div></div>
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun May 26 2019 18:21:06 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Jun 4 2019 11:03:24 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.13
 </small></address>

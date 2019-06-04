@@ -22,6 +22,7 @@ var searchData=
   ['get_5fatt_5fint',['get_att_int',['../pionfatt__mod__2_8f90.html#ab988f615f5e842e09594011a0d7e3d8a',1,'pionfatt_mod']]],
   ['get_5fatt_5freal',['get_att_real',['../pionfatt__mod__2_8f90.html#aeb72f770715d0a6633594385abb7a8d2',1,'pionfatt_mod']]],
   ['get_5fatt_5ftext',['get_att_text',['../pionfatt__mod__2_8f90.html#a6f7d1aaddb8b531c7434f8b388db1e4e',1,'pionfatt_mod']]],
+  ['get_5fchunk_5fcache',['get_chunk_cache',['../pio__nf_8_f90.html#abb351a63462633c394f6c50f812da53d',1,'pio_nf']]],
   ['get_5fvar1_5fid_5fdouble',['get_var1_id_double',['../pionfget__mod__2_8f90.html#ac9f2deeec95e8fd6334d6dd2cc3b9dc7',1,'pionfget_mod']]],
   ['get_5fvar1_5fid_5freal',['get_var1_id_real',['../pionfget__mod__2_8f90.html#af4912a40076f4284d06b387453ffa3b3',1,'pionfget_mod']]],
   ['get_5fvar1_5fid_5ftext_5finternal',['get_var1_id_text_internal',['../pionfget__mod__2_8f90.html#ae04f97f783db454498a5b80852a3c8e0',1,'pionfget_mod']]],
@@ -73,7 +74,8 @@ var searchData=
   ['get_5fvara_5fvdesc_5f5d_5ftext',['get_vara_vdesc_5d_text',['../group___p_i_o__get__var.html#ga1ceff299c01971f248e4bbcc14b1e006',1,'pionfget_mod']]],
   ['getnumiotasks',['getnumiotasks',['../group___p_i_o__getnumiotasks.html#ga2834d0bc70fba7466f08fd8a2da3b5ef',1,'piolib_mod']]],
   ['get_20attribute_20values',['Get Attribute Values',['../group___p_i_o__get__att__c.html',1,'']]],
-  ['get_20the_20local_20array_20size',['Get the Local Array Size',['../group___p_i_o__get__local__array__size__c.html',1,'']]],
-  ['get_20data_20from_20a_20variable',['Get Data from a Variable',['../group___p_i_o__get__var__c.html',1,'']]],
-  ['get_20the_20number_20of_20io_20tasks',['Get the Number of IO Tasks',['../group___p_i_o__getnumiotasks__c.html',1,'']]]
+  ['get_20local_20array_20size',['Get Local Array Size',['../group___p_i_o__get__local__array__size.html',1,'']]],
+  ['get_20the_20local_20size',['Get the Local Size',['../group___p_i_o__get__local__array__size__c.html',1,'']]],
+  ['get_20number_20io_20tasks',['Get Number IO Tasks',['../group___p_i_o__getnumiotasks.html',1,'']]],
+  ['get_20number_20io_20tasks',['Get Number IO Tasks',['../group___p_i_o__getnumiotasks__c.html',1,'']]]
 ];

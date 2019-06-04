@@ -1,7 +1,8 @@
 var searchData=
 [
-  ['io_20descriptors_2c_20generating',['io descriptors, generating',['../group__iodesc__generate.html',1,'']]],
-  ['initialize_20the_20io_20system',['Initialize the IO System',['../group___p_i_o__init__c.html',1,'']]],
-  ['initialize_20a_20decomposition',['Initialize a Decomposition',['../group___p_i_o__initdecomp__c.html',1,'']]],
-  ['is_20this_20io_20system_20active_3f',['Is this IO System Active?',['../group___p_i_o__iosystem__is__active__c.html',1,'']]]
+  ['get_20attribute_20values',['Get Attribute Values',['../group___p_i_o__get__att__c.html',1,'']]],
+  ['get_20local_20array_20size',['Get Local Array Size',['../group___p_i_o__get__local__array__size.html',1,'']]],
+  ['get_20the_20local_20size',['Get the Local Size',['../group___p_i_o__get__local__array__size__c.html',1,'']]],
+  ['get_20number_20io_20tasks',['Get Number IO Tasks',['../group___p_i_o__getnumiotasks.html',1,'']]],
+  ['get_20number_20io_20tasks',['Get Number IO Tasks',['../group___p_i_o__getnumiotasks__c.html',1,'']]]
 ];

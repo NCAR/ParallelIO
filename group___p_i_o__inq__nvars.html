@@ -72,9 +72,6 @@ Functions/Subroutines</h2></td></tr>
 <tr class="memitem:ga75745bf73050d2ba33f50c96e5ca9737"><td class="memItemLeft" align="right" valign="top">integer function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__inq__nvars.html#ga75745bf73050d2ba33f50c96e5ca9737">pio_nf::inq_nvars_desc</a> (File, nvars)</td></tr>
 <tr class="memdesc:ga75745bf73050d2ba33f50c96e5ca9737"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get information about the number of variables in a file or group.  <a href="group___p_i_o__inq__nvars.html#ga75745bf73050d2ba33f50c96e5ca9737">More...</a><br /></td></tr>
 <tr class="separator:ga75745bf73050d2ba33f50c96e5ca9737"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga64f78f2105aa0c8114a9995c114b738d"><td class="memItemLeft" align="right" valign="top">integer function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__inq__nvars.html#ga64f78f2105aa0c8114a9995c114b738d">pio_nf::inq_nvars_id</a> (ncid, nvars)</td></tr>
-<tr class="memdesc:ga64f78f2105aa0c8114a9995c114b738d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get information about the number of variables in a file or group.  <a href="group___p_i_o__inq__nvars.html#ga64f78f2105aa0c8114a9995c114b738d">More...</a><br /></td></tr>
-<tr class="separator:ga64f78f2105aa0c8114a9995c114b738d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <h2 class="groupheader">Function/Subroutine Documentation</h2>
@@ -108,53 +105,24 @@ Functions/Subroutines</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">File</td><td>File descriptor structure. This structure holds information associated with each open file </td></tr>
-    <tr><td class="paramname">nvars</td><td>: The number of variables in the file. </td></tr>
+    <tr><td class="paramname">nvars</td><td>The number of variables in the file. </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="retval"><dt>Return values</dt><dd>
   <table class="retval">
-    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">PIO_seterrorhandling</a> ) </td></tr>
+    <tr><td class="paramname">ierr</td><td>: The error return code; ierr != PIO_noerr indicates an error. (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling</a> ) </td></tr>
   </table>
   </dd>
 </dl>
-
-</div>
-</div>
-<a id="ga64f78f2105aa0c8114a9995c114b738d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga64f78f2105aa0c8114a9995c114b738d">&#9670;&nbsp;</a></span>inq_nvars_id()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">integer function pio_nf::inq_nvars_id </td>
-          <td>(</td>
-          <td class="paramtype">integer, intent(in)&#160;</td>
-          <td class="paramname"><em>ncid</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">integer, intent(out)&#160;</td>
-          <td class="paramname"><em>nvars</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Get information about the number of variables in a file or group. </p>
+<dl class="section author"><dt>Author</dt><dd>Jim Edwards </dd></dl>
 
 </div>
 </div>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun May 26 2019 18:21:06 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri May 31 2019 07:29:52 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.13
 </small></address>

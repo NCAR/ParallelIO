@@ -1,9 +1,7 @@
 var searchData=
 [
-  ['read_5fascii',['read_ascii',['../piolib__mod_8f90.html#a55cf208a51f3d97b0f10adcde4e5a780',1,'piolib_mod']]],
   ['read_5fdarray_5f1d_5fdouble',['read_darray_1d_double',['../group___p_i_o__read__darray.html#ga3a2dea5460dafc4645216f8325483c2e',1,'piodarray']]],
   ['read_5fdarray_5f1d_5fint',['read_darray_1d_int',['../group___p_i_o__read__darray.html#gaa919aa47e0d0e3e38f2af27614dfbd3b',1,'piodarray']]],
-  ['read_5fdarray_5f1d_5freal',['read_darray_1d_real',['../group___p_i_o__read__darray.html#gae7ff1037681c06b33a86199defdf5d2c',1,'piodarray']]],
   ['read_5fdarray_5f2d_5fdouble',['read_darray_2d_double',['../group___p_i_o__read__darray.html#ga97260e48211b060167b85f5aad382bfd',1,'piodarray']]],
   ['read_5fdarray_5f2d_5fint',['read_darray_2d_int',['../group___p_i_o__read__darray.html#gaccce9ae6a56f753952d72b6b43824ea6',1,'piodarray']]],
   ['read_5fdarray_5f2d_5freal',['read_darray_2d_real',['../group___p_i_o__read__darray.html#ga759a19f17c15754c35a4a91af069c8ed',1,'piodarray']]],
@@ -26,7 +24,7 @@ var searchData=
   ['read_5fdarray_5finternal_5fint',['read_darray_internal_int',['../piodarray_8f90.html#a108657d4f23ac08e5357d55e0966733a',1,'piodarray']]],
   ['read_5fdarray_5finternal_5freal',['read_darray_internal_real',['../piodarray_8f90.html#a7b8ffd691c5e583f7a1847d607a35627',1,'piodarray']]],
   ['readvar',['readvar',['../structpioexample_1_1pioexampleclass.html#aaf78ac9ebc4084edf35f295f6cf5598a',1,'pioexample::pioexampleclass']]],
-  ['redef_5fdesc',['redef_desc',['../group___p_i_o__redef.html#gaf44dad7065b2cbc0f8b0b0308d7f88c5',1,'pio_nf']]],
-  ['redef_5fid',['redef_id',['../group___p_i_o__redef.html#ga1a98648b5347710c172e49d556b2eae8',1,'pio_nf']]],
+  ['redef_5fdesc',['redef_desc',['../group___p_i_o__enddef.html#gaf44dad7065b2cbc0f8b0b0308d7f88c5',1,'pio_nf']]],
+  ['redef_5fid',['redef_id',['../group___p_i_o__enddef.html#ga1a98648b5347710c172e49d556b2eae8',1,'pio_nf']]],
   ['replace_5fc_5fnull',['replace_c_null',['../pio__support_8_f90.html#abcbf3a9d77e36435f9110d1efe8fb19a',1,'pio_support']]]
 ];

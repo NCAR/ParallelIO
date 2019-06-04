@@ -134,14 +134,14 @@ Functions/Subroutines</h2></td></tr>
 <p>This program creates a netCDF output file with the ParallelIO library, then writes and reads some data to and from the file.</p>
 <p>This example does the following:</p>
 <ul>
-<li>initialization initializes the MPI library, initializes the ParallelIO library with <a class="el" href="group___p_i_o__init.html">PIO_init</a>. Then allocate memory for a data array of sample data to write, and an array to read the data back into. Also allocate an array to hold decomposition information.</li>
-<li>creation of decomposition by calling <a class="el" href="group___p_i_o__initdecomp.html">PIO_initdecomp</a>.</li>
-<li>creation of netCDF file with <a class="el" href="group___p_i_o__createfile.html">PIO_createfile</a>.</li>
-<li>define netCDF metadata with <a class="el" href="group___p_i_o__def__dim.html">PIO_def_dim</a> and <a class="el" href="group___p_i_o__def__var.html">PIO_def_var</a>. Then end define mode with <a class="el" href="group___p_i_o__enddef.html">PIO_enddef</a>.</li>
-<li>write the sample data with <a class="el" href="group___p_i_o__write__darray.html">PIO_write_darray</a>. Then sync the file with <a class="el" href="group___p_i_o__syncfile.html">PIO_syncfile</a>.</li>
-<li>read the sample data with <a class="el" href="group___p_i_o__read__darray.html">PIO_read_darray</a>.</li>
-<li>close the netCDF file with <a class="el" href="group___p_i_o__closefile.html">PIO_closefile</a>.</li>
-<li>clean up local memory, ParallelIO library resources with <a class="el" href="group___p_i_o__freedecomp.html">PIO_freedecomp</a> and <a class="el" href="group___p_i_o__finalize.html">PIO_finalize</a>, and MPI library resources. </li>
+<li>initialization initializes the MPI library, initializes the ParallelIO library with <a class="el" href="group___p_i_o__init.html">Initialize an IOSystem</a>. Then allocate memory for a data array of sample data to write, and an array to read the data back into. Also allocate an array to hold decomposition information.</li>
+<li>creation of decomposition by calling <a class="el" href="group___p_i_o__initdecomp.html">Define a Decomposition</a>.</li>
+<li>creation of netCDF file with <a class="el" href="group___p_i_o__createfile.html">Create a File</a>.</li>
+<li>define netCDF metadata with <a class="el" href="group___p_i_o__def__dim.html">Define a Dimension</a> and <a class="el" href="group___p_i_o__def__var.html">Define a Variable</a>. Then end define mode with <a class="el" href="group___p_i_o__enddef.html">Define Mode</a>.</li>
+<li>write the sample data with <a class="el" href="group___p_i_o__write__darray.html">Write from Distributed Arrays</a>. Then sync the file with <a class="el" href="group___p_i_o__syncfile.html">Sync File</a>.</li>
+<li>read the sample data with <a class="el" href="group___p_i_o__read__darray.html">Read to Distributed Arrays</a>.</li>
+<li>close the netCDF file with <a class="el" href="group___p_i_o__closefile.html">Close a File</a>.</li>
+<li>clean up local memory, ParallelIO library resources with <a class="el" href="group___p_i_o__freedecomp.html">Free a Decomposition</a> and <a class="el" href="group___p_i_o__finalize.html">Free an IOSystem</a>, and MPI library resources. </li>
 </ul>
 
 </div>
@@ -149,7 +149,7 @@ Functions/Subroutines</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun May 26 2019 18:21:06 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Jun 4 2019 11:03:24 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.13
 </small></address>
