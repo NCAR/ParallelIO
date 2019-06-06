@@ -1,3 +1,4 @@
+#include "pio_config.h"
 #include <mpi.h>
 #ifdef TIMING
 #include <gptl.h>
@@ -6,6 +7,7 @@
 #include <string>
 #include <regex>
 #include "argparser.h"
+#include "pio_lib_info.h"
 
 static void init_user_options(pio_tool_utils::ArgParser &ap)
 {
@@ -45,10 +47,24 @@ static int get_user_options(
 int main(int argc, char *argv[])
 {
     int ret = 0;
+    int rank = 0;
 
     MPI_Init(&argc, &argv);
 
     MPI_Comm comm_in = MPI_COMM_WORLD;
+    MPI_Comm_rank(comm_in, &rank);
+
+    if (rank == 0){
+      /* Print out basic information header */
+      std::cout << "==================================================\n";
+      std::cout << "PIO File info tool (Version: " +
+                    pio_tool_utils::pio_lib_info::get_lib_version() +
+                    ")\n";
+      std::cout << "==================================================\n";
+      std::cout << "PIO Library info\n";
+      std::cout << "------------------\n";
+      std::cout << pio_tool_utils::pio_lib_info::get_lib_summary() + "\n";
+    }
 
     pio_tool_utils::ArgParser ap(comm_in);
 

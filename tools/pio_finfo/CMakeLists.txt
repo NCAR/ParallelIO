@@ -12,7 +12,10 @@ add_definitions(${PIO_DEFINITIONS})
 # Enable C++11 support
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
-set(SRC ${CMAKE_SOURCE_DIR}/tools/util/argparser.cxx pio_finfo.cxx)
+set(SRC ${CMAKE_SOURCE_DIR}/tools/util/argparser.cxx
+    ${CMAKE_SOURCE_DIR}/tools/util/pio_misc_tool_utils.cxx
+    ${CMAKE_SOURCE_DIR}/tools/util/pio_lib_info.cxx
+    pio_finfo.cxx)
 add_executable(pio_finfo.exe ${SRC})
 #include_directories(
 #  "${PROJECT_SOURCE_DIR}"   # to find foo/foo.h
