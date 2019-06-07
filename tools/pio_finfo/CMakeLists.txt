@@ -15,6 +15,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 set(SRC ${CMAKE_SOURCE_DIR}/tools/util/argparser.cxx
     ${CMAKE_SOURCE_DIR}/tools/util/pio_misc_tool_utils.cxx
     ${CMAKE_SOURCE_DIR}/tools/util/pio_lib_info.cxx
+    pio_file_test_utils.cxx
     pio_finfo.cxx)
 add_executable(pio_finfo.exe ${SRC})
 #include_directories(

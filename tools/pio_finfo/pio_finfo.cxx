@@ -8,6 +8,7 @@
 #include <regex>
 #include "argparser.h"
 #include "pio_lib_info.h"
+#include "pio_file_test_utils.h"
 
 static void init_user_options(pio_tool_utils::ArgParser &ap)
 {
@@ -185,6 +186,20 @@ int main(int argc, char *argv[])
 #endif
 #endif
 
+    /* Test the file/files using PIO and print info */
+    if (idir.length() == 0){
+      assert(ifile.length() != 0);
+      ret = pio_finfo_utils::pio_test_file(ifile, comm_in,
+              num_iotasks, iostride, ioroot, verbose);
+    }
+    else{
+      ret = pio_finfo_utils::pio_test_files(idir, comm_in,
+              num_iotasks, iostride, ioroot, verbose);
+    }
+
+    if (ret != 0) {
+        return ret;
+    }
 
 #ifdef TIMING
 #ifndef TIMING_INTERNAL
