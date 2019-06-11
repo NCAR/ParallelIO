@@ -77,6 +77,9 @@ function (platform_name RETURN_VARIABLE)
 
         set (${RETURN_VARIABLE} "olcf" PARENT_SCOPE)
         
+    # PNNL Machine - compy.pnl.gov
+    elseif (SITENAME MATCHES "^compy")
+        set (${RETURN_VARIABLE} "compy" PARENT_SCOPE)
     else ()
         cmake_host_system_information (RESULT FQDN_SITENAME QUERY FQDN)
         if (FQDN_SITENAME MATCHES "^.*summit[.]olcf")
