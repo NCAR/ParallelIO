@@ -30,15 +30,12 @@ target_compile_definitions (pioc
   PUBLIC MPICH_SKIP_MPICXX)
 
 # Compiler-specific compiler options
-if ("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
+string (TOUPPER "${CMAKE_C_COMPILER_ID}" CMAKE_C_COMPILER_NAME)
+if (CMAKE_C_COMPILER_NAME STREQUAL "CRAY")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -h std=c99")
+else ()
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99")
-elseif ("${CMAKE_C_COMPILER_ID}" STREQUAL "PGI")
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -c99")
-elseif ("${CMAKE_C_COMPILER_ID}" STREQUAL "Intel")
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99")
-elseif ("${CMAKE_C_COMPILER_ID}" STREQUAL "Clang")
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99")
-endif()
+endif ()
 
 string (TOUPPER "${CMAKE_CXX_COMPILER_ID}" CMAKE_CXX_COMPILER_NAME)
 if (CMAKE_CXX_COMPILER_NAME STREQUAL "CRAY")
@@ -46,7 +43,6 @@ if (CMAKE_CXX_COMPILER_NAME STREQUAL "CRAY")
 else ()
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 endif ()
-
 
 #==============================================================================
 #  DEFINE THE INSTALL
