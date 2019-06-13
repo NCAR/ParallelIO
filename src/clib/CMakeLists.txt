@@ -197,3 +197,12 @@ CHECK_TYPE_SIZE("long long" SIZEOF_LONG_LONG)
 if (NOT ${SIZEOF_SIZE_T} EQUAL ${SIZEOF_LONG_LONG})
   message (FATAL_ERROR "size_t and long long must be the same size!")
 endif ()
+
+# Hack to circumvent IBM XL (16.1.1-3) internal compiler error by
+# disabling optimization for pioc_support.c
+cmake_host_system_information (RESULT FQDN_SITENAME QUERY FQDN)
+if (FQDN_SITENAME MATCHES "^.*summit[.]olcf")
+  if (CMAKE_C_COMPILER_NAME STREQUAL "XL")
+    set_source_files_properties(pioc_support.c PROPERTIES COMPILE_FLAGS "-qnoopt -qnosmp")
+  endif()
+endif()
