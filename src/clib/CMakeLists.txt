@@ -33,6 +33,8 @@ target_compile_definitions (pioc
 string (TOUPPER "${CMAKE_C_COMPILER_ID}" CMAKE_C_COMPILER_NAME)
 if (CMAKE_C_COMPILER_NAME STREQUAL "CRAY")
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -h std=c99")
+elseif (CMAKE_C_COMPILER_NAME STREQUAL "PGI")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -c99")
 else ()
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99")
 endif ()
