@@ -10,4 +10,6 @@
 <area shape="rect" id="node10" href="$pioc__support_8c.html" title="Support functions for the PIO library. " alt="" coords="914,80,1021,107"/>
 <area shape="rect" id="node11" href="$pioc_8c.html" title="Some initialization and support functions. " alt="" coords="1045,80,1103,107"/>
 <area shape="rect" id="node12" href="$pio__file_8c.html" title="PIO File Handling. " alt="" coords="1127,80,1202,107"/>
+<area shape="rect" id="node13" href="$pio__get__vard_8c.html" title="PIO functions to get data with distributed arrays. " alt="" coords="1226,80,1333,107"/>
+<area shape="rect" id="node14" href="$pio__put__vard_8c.html" title="PIO functions to write data with distributed arrays. " alt="" coords="1357,80,1463,107"/>
 </map>

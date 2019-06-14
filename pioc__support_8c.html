@@ -23,7 +23,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">PIO
-   &#160;<span id="projectnumber">2.4.2</span>
+   &#160;<span id="projectnumber">2.4.3</span>
    </div>
   </td>
  </tr>
@@ -99,15 +99,21 @@ Macros</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
+<tr class="memitem:aea36dcb80c2c3b06b8ad45c5099f6b9c"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pioc__support_8c.html#aea36dcb80c2c3b06b8ad45c5099f6b9c">pio_start_timer</a> (const char *name)</td></tr>
+<tr class="memdesc:aea36dcb80c2c3b06b8ad45c5099f6b9c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Start the PIO timer.  <a href="#aea36dcb80c2c3b06b8ad45c5099f6b9c">More...</a><br /></td></tr>
+<tr class="separator:aea36dcb80c2c3b06b8ad45c5099f6b9c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2e9ddebeb608617b17a166439eacf51e"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pioc__support_8c.html#a2e9ddebeb608617b17a166439eacf51e">pio_stop_timer</a> (const char *name)</td></tr>
+<tr class="memdesc:a2e9ddebeb608617b17a166439eacf51e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Stop the PIO timer.  <a href="#a2e9ddebeb608617b17a166439eacf51e">More...</a><br /></td></tr>
+<tr class="separator:a2e9ddebeb608617b17a166439eacf51e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5354c4b50d70fa1cf7db81aadba8fb78"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pioc__support_8c.html#a5354c4b50d70fa1cf7db81aadba8fb78">PIOc_strerror</a> (int pioerr, char *errmsg)</td></tr>
 <tr class="memdesc:a5354c4b50d70fa1cf7db81aadba8fb78"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a string description of an error code.  <a href="#a5354c4b50d70fa1cf7db81aadba8fb78">More...</a><br /></td></tr>
 <tr class="separator:a5354c4b50d70fa1cf7db81aadba8fb78"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1bb546dedd6290cb450577658e955edb"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pioc__support_8c.html#a1bb546dedd6290cb450577658e955edb">PIOc_set_log_level</a> (int level)</td></tr>
 <tr class="memdesc:a1bb546dedd6290cb450577658e955edb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the logging level if PIO was built with PIO_ENABLE_LOGGING.  <a href="#a1bb546dedd6290cb450577658e955edb">More...</a><br /></td></tr>
 <tr class="separator:a1bb546dedd6290cb450577658e955edb"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9a721f024dd47d04f5dbad622adea7ee"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pioc__support_8c.html#a9a721f024dd47d04f5dbad622adea7ee">pio_init_logging</a> (void)</td></tr>
-<tr class="memdesc:a9a721f024dd47d04f5dbad622adea7ee"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize logging.  <a href="#a9a721f024dd47d04f5dbad622adea7ee">More...</a><br /></td></tr>
-<tr class="separator:a9a721f024dd47d04f5dbad622adea7ee"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8e05fc9406d040da57bda822262e9ff9"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pioc__support_8c.html#a8e05fc9406d040da57bda822262e9ff9">pio_init_logging</a> (void)</td></tr>
+<tr class="memdesc:a8e05fc9406d040da57bda822262e9ff9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize logging.  <a href="#a8e05fc9406d040da57bda822262e9ff9">More...</a><br /></td></tr>
+<tr class="separator:a8e05fc9406d040da57bda822262e9ff9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a632f01eafb324a77a83b2b13912f6746"><td class="memItemLeft" align="right" valign="top"><a id="a632f01eafb324a77a83b2b13912f6746"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pioc__support_8c.html#a632f01eafb324a77a83b2b13912f6746">pio_finalize_logging</a> (void)</td></tr>
 <tr class="memdesc:a632f01eafb324a77a83b2b13912f6746"><td class="mdescLeft">&#160;</td><td class="mdescRight">Finalize logging - close log files, if open. <br /></td></tr>
@@ -864,14 +870,14 @@ Variables</h2></td></tr>
 
 </div>
 </div>
-<a id="a9a721f024dd47d04f5dbad622adea7ee"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9a721f024dd47d04f5dbad622adea7ee">&#9670;&nbsp;</a></span>pio_init_logging()</h2>
+<a id="a8e05fc9406d040da57bda822262e9ff9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8e05fc9406d040da57bda822262e9ff9">&#9670;&nbsp;</a></span>pio_init_logging()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void pio_init_logging </td>
+          <td class="memname">int pio_init_logging </td>
           <td>(</td>
           <td class="paramtype">void&#160;</td>
           <td class="paramname"></td><td>)</td>
@@ -881,7 +887,64 @@ Variables</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Initialize logging. </p>
-<p>Open log file, if not opened yet, or increment ref count if already open. </p>
+<p>Open log file, if not opened yet, or increment ref count if already open.</p>
+<dl class="section author"><dt>Author</dt><dd>Jayesh Krishna, Ed Hartnett </dd></dl>
+
+</div>
+</div>
+<a id="aea36dcb80c2c3b06b8ad45c5099f6b9c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aea36dcb80c2c3b06b8ad45c5099f6b9c">&#9670;&nbsp;</a></span>pio_start_timer()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int pio_start_timer </td>
+          <td>(</td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>name</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Start the PIO timer. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">name</td><td>name of the timer. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>0 for success, error code otherwise. </dd></dl>
+<dl class="section author"><dt>Author</dt><dd>Ed Hartnett </dd></dl>
+
+</div>
+</div>
+<a id="a2e9ddebeb608617b17a166439eacf51e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2e9ddebeb608617b17a166439eacf51e">&#9670;&nbsp;</a></span>pio_stop_timer()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int pio_stop_timer </td>
+          <td>(</td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>name</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Stop the PIO timer. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">name</td><td>name of the timer. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>0 for success, error code otherwise. </dd></dl>
+<dl class="section author"><dt>Author</dt><dd>Ed Hartnett </dd></dl>
 
 </div>
 </div>
@@ -2130,7 +2193,7 @@ Variables</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Jun 4 2019 11:03:24 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Jun 14 2019 04:44:11 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.13
 </small></address>

@@ -23,7 +23,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">PIO
-   &#160;<span id="projectnumber">2.4.2</span>
+   &#160;<span id="projectnumber">2.4.3</span>
    </div>
   </td>
  </tr>
@@ -81,9 +81,46 @@ Functions</h2></td></tr>
 <tr class="memitem:gaa40fae759a2a5e39cb7af9b6f024db8f"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__write__darray__c.html#gaa40fae759a2a5e39cb7af9b6f024db8f">PIOc_write_darray</a> (int ncid, int varid, int ioid, <a class="el" href="pio_8h.html#a1225edb54e6d6de678bf675485549eb0">PIO_Offset</a> arraylen, void *array, void *fillvalue)</td></tr>
 <tr class="memdesc:gaa40fae759a2a5e39cb7af9b6f024db8f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write a distributed array to the output file.  <a href="#gaa40fae759a2a5e39cb7af9b6f024db8f">More...</a><br /></td></tr>
 <tr class="separator:gaa40fae759a2a5e39cb7af9b6f024db8f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gab26072cefe700cd7c93068892c3117eb"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__write__darray__c.html#gab26072cefe700cd7c93068892c3117eb">PIOc_put_vard_text</a> (int ncid, int varid, int decompid, const <a class="el" href="pio_8h.html#a1225edb54e6d6de678bf675485549eb0">PIO_Offset</a> recnum, const char *op)</td></tr>
+<tr class="memdesc:gab26072cefe700cd7c93068892c3117eb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Put distributed array subset of a text variable.  <a href="#gab26072cefe700cd7c93068892c3117eb">More...</a><br /></td></tr>
+<tr class="separator:gab26072cefe700cd7c93068892c3117eb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga8c060e2740c0de03dc74ca961362af4c"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__write__darray__c.html#ga8c060e2740c0de03dc74ca961362af4c">PIOc_put_vard_uchar</a> (int ncid, int varid, int decompid, const <a class="el" href="pio_8h.html#a1225edb54e6d6de678bf675485549eb0">PIO_Offset</a> recnum, const unsigned char *op)</td></tr>
+<tr class="memdesc:ga8c060e2740c0de03dc74ca961362af4c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Put distributed array subset of an unsigned char variable.  <a href="#ga8c060e2740c0de03dc74ca961362af4c">More...</a><br /></td></tr>
+<tr class="separator:ga8c060e2740c0de03dc74ca961362af4c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga0fb1c956013e1e78eb7880cc03868985"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__write__darray__c.html#ga0fb1c956013e1e78eb7880cc03868985">PIOc_put_vard_schar</a> (int ncid, int varid, int decompid, const <a class="el" href="pio_8h.html#a1225edb54e6d6de678bf675485549eb0">PIO_Offset</a> recnum, const signed char *op)</td></tr>
+<tr class="memdesc:ga0fb1c956013e1e78eb7880cc03868985"><td class="mdescLeft">&#160;</td><td class="mdescRight">Put distributed array subset of a signed char variable.  <a href="#ga0fb1c956013e1e78eb7880cc03868985">More...</a><br /></td></tr>
+<tr class="separator:ga0fb1c956013e1e78eb7880cc03868985"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga7aebf497d70b3cb478c256749e3dca03"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__write__darray__c.html#ga7aebf497d70b3cb478c256749e3dca03">PIOc_put_vard_ushort</a> (int ncid, int varid, int decompid, const <a class="el" href="pio_8h.html#a1225edb54e6d6de678bf675485549eb0">PIO_Offset</a> recnum, const unsigned short *op)</td></tr>
+<tr class="memdesc:ga7aebf497d70b3cb478c256749e3dca03"><td class="mdescLeft">&#160;</td><td class="mdescRight">Put distributed array subset of an unsigned 16-bit integer variable.  <a href="#ga7aebf497d70b3cb478c256749e3dca03">More...</a><br /></td></tr>
+<tr class="separator:ga7aebf497d70b3cb478c256749e3dca03"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga50ae2736978e9127a59c07667ec1a2f5"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__write__darray__c.html#ga50ae2736978e9127a59c07667ec1a2f5">PIOc_put_vard_short</a> (int ncid, int varid, int decompid, const <a class="el" href="pio_8h.html#a1225edb54e6d6de678bf675485549eb0">PIO_Offset</a> recnum, const short *op)</td></tr>
+<tr class="memdesc:ga50ae2736978e9127a59c07667ec1a2f5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Put distributed array subset of a 16-bit integer variable.  <a href="#ga50ae2736978e9127a59c07667ec1a2f5">More...</a><br /></td></tr>
+<tr class="separator:ga50ae2736978e9127a59c07667ec1a2f5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga4df47789ade4325452a36ed20cc59951"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__write__darray__c.html#ga4df47789ade4325452a36ed20cc59951">PIOc_put_vard_uint</a> (int ncid, int varid, int decompid, const <a class="el" href="pio_8h.html#a1225edb54e6d6de678bf675485549eb0">PIO_Offset</a> recnum, const unsigned int *op)</td></tr>
+<tr class="memdesc:ga4df47789ade4325452a36ed20cc59951"><td class="mdescLeft">&#160;</td><td class="mdescRight">Put distributed array subset of an unsigned integer variable.  <a href="#ga4df47789ade4325452a36ed20cc59951">More...</a><br /></td></tr>
+<tr class="separator:ga4df47789ade4325452a36ed20cc59951"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaffac219a97c8b88717447999d0c10373"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__write__darray__c.html#gaffac219a97c8b88717447999d0c10373">PIOc_put_vard_int</a> (int ncid, int varid, int decompid, const <a class="el" href="pio_8h.html#a1225edb54e6d6de678bf675485549eb0">PIO_Offset</a> recnum, const int *op)</td></tr>
+<tr class="memdesc:gaffac219a97c8b88717447999d0c10373"><td class="mdescLeft">&#160;</td><td class="mdescRight">Put distributed array subset of an integer variable.  <a href="#gaffac219a97c8b88717447999d0c10373">More...</a><br /></td></tr>
+<tr class="separator:gaffac219a97c8b88717447999d0c10373"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga219931255d578520eba324132c79ff3a"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__write__darray__c.html#ga219931255d578520eba324132c79ff3a">PIOc_put_vard_float</a> (int ncid, int varid, int decompid, const <a class="el" href="pio_8h.html#a1225edb54e6d6de678bf675485549eb0">PIO_Offset</a> recnum, const float *op)</td></tr>
+<tr class="memdesc:ga219931255d578520eba324132c79ff3a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Put distributed array subset of a floating point variable.  <a href="#ga219931255d578520eba324132c79ff3a">More...</a><br /></td></tr>
+<tr class="separator:ga219931255d578520eba324132c79ff3a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga300ae38fdf620d66a3e992296b639836"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__write__darray__c.html#ga300ae38fdf620d66a3e992296b639836">PIOc_put_vard_longlong</a> (int ncid, int varid, int decompid, const <a class="el" href="pio_8h.html#a1225edb54e6d6de678bf675485549eb0">PIO_Offset</a> recnum, const long long *op)</td></tr>
+<tr class="memdesc:ga300ae38fdf620d66a3e992296b639836"><td class="mdescLeft">&#160;</td><td class="mdescRight">Put distributed array subset of a 64-bit unsigned integer variable.  <a href="#ga300ae38fdf620d66a3e992296b639836">More...</a><br /></td></tr>
+<tr class="separator:ga300ae38fdf620d66a3e992296b639836"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga7593b9033c383d877f83eb441a6ad1ae"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__write__darray__c.html#ga7593b9033c383d877f83eb441a6ad1ae">PIOc_put_vard_double</a> (int ncid, int varid, int decompid, const <a class="el" href="pio_8h.html#a1225edb54e6d6de678bf675485549eb0">PIO_Offset</a> recnum, const double *op)</td></tr>
+<tr class="memdesc:ga7593b9033c383d877f83eb441a6ad1ae"><td class="mdescLeft">&#160;</td><td class="mdescRight">Put distributed array subset of a 64-bit floating point variable.  <a href="#ga7593b9033c383d877f83eb441a6ad1ae">More...</a><br /></td></tr>
+<tr class="separator:ga7593b9033c383d877f83eb441a6ad1ae"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gafdb6fdef05357b9268dbfcbe2c908ddc"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__write__darray__c.html#gafdb6fdef05357b9268dbfcbe2c908ddc">PIOc_put_vard_ulonglong</a> (int ncid, int varid, int decompid, const <a class="el" href="pio_8h.html#a1225edb54e6d6de678bf675485549eb0">PIO_Offset</a> recnum, const unsigned long long *op)</td></tr>
+<tr class="memdesc:gafdb6fdef05357b9268dbfcbe2c908ddc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Put distributed array subset of an unsigned 64-bit integer variable.  <a href="#gafdb6fdef05357b9268dbfcbe2c908ddc">More...</a><br /></td></tr>
+<tr class="separator:gafdb6fdef05357b9268dbfcbe2c908ddc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga0c6dc37c555f7b378724d67074ad1cfb"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__write__darray__c.html#ga0c6dc37c555f7b378724d67074ad1cfb">PIOc_put_vard</a> (int ncid, int varid, int decompid, const <a class="el" href="pio_8h.html#a1225edb54e6d6de678bf675485549eb0">PIO_Offset</a> recnum, const void *op)</td></tr>
+<tr class="memdesc:ga0c6dc37c555f7b378724d67074ad1cfb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write distributed array subset of a variable of any type.  <a href="#ga0c6dc37c555f7b378724d67074ad1cfb">More...</a><br /></td></tr>
+<tr class="separator:ga0c6dc37c555f7b378724d67074ad1cfb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <p>Write data from a distributed array to a netCDF file in C. </p>
+<p>Write distributed arrays to a Variable in C.</p>
 <h2 class="groupheader">Function Documentation</h2>
 <a id="gab3e7daa32e4bcbd54a1afa2508ed5f4f"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#gab3e7daa32e4bcbd54a1afa2508ed5f4f">&#9670;&nbsp;</a></span>find_var_fillvalue()</h2>
@@ -127,6 +164,738 @@ Functions</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>0 for success, non-zero error code for failure.</dd></dl>
+<dl class="section author"><dt>Author</dt><dd>Ed Hartnett </dd></dl>
+
+</div>
+</div>
+<a id="ga0c6dc37c555f7b378724d67074ad1cfb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga0c6dc37c555f7b378724d67074ad1cfb">&#9670;&nbsp;</a></span>PIOc_put_vard()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int PIOc_put_vard </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>ncid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>varid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>decompid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="pio_8h.html#a1225edb54e6d6de678bf675485549eb0">PIO_Offset</a>&#160;</td>
+          <td class="paramname"><em>recnum</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const void *&#160;</td>
+          <td class="paramname"><em>op</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Write distributed array subset of a variable of any type. </p>
+<p>This routine is called collectively by all tasks in the communicator ios.union_comm.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">ncid</td><td>identifies the netCDF file </td></tr>
+    <tr><td class="paramname">varid</td><td>the variable ID number </td></tr>
+    <tr><td class="paramname">decompid</td><td>the decomposition ID. </td></tr>
+    <tr><td class="paramname">recnum</td><td>the record number. </td></tr>
+    <tr><td class="paramname">op</td><td>pointer to the data to be written. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>PIO_NOERR on success, error code otherwise. </dd></dl>
+<dl class="section author"><dt>Author</dt><dd>Ed Hartnett </dd></dl>
+
+</div>
+</div>
+<a id="ga7593b9033c383d877f83eb441a6ad1ae"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga7593b9033c383d877f83eb441a6ad1ae">&#9670;&nbsp;</a></span>PIOc_put_vard_double()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int PIOc_put_vard_double </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>ncid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>varid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>decompid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="pio_8h.html#a1225edb54e6d6de678bf675485549eb0">PIO_Offset</a>&#160;</td>
+          <td class="paramname"><em>recnum</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const double *&#160;</td>
+          <td class="paramname"><em>op</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Put distributed array subset of a 64-bit floating point variable. </p>
+<p>This routine is called collectively by all tasks in the communicator ios.union_comm.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">ncid</td><td>identifies the netCDF file </td></tr>
+    <tr><td class="paramname">varid</td><td>the variable ID number </td></tr>
+    <tr><td class="paramname">decompid</td><td>the decomposition ID. </td></tr>
+    <tr><td class="paramname">recnum</td><td>the record number. </td></tr>
+    <tr><td class="paramname">op</td><td>pointer to the data to be written. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>PIO_NOERR on success, error code otherwise. </dd></dl>
+<dl class="section author"><dt>Author</dt><dd>Ed Hartnett </dd></dl>
+
+</div>
+</div>
+<a id="ga219931255d578520eba324132c79ff3a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga219931255d578520eba324132c79ff3a">&#9670;&nbsp;</a></span>PIOc_put_vard_float()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int PIOc_put_vard_float </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>ncid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>varid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>decompid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="pio_8h.html#a1225edb54e6d6de678bf675485549eb0">PIO_Offset</a>&#160;</td>
+          <td class="paramname"><em>recnum</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const float *&#160;</td>
+          <td class="paramname"><em>op</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Put distributed array subset of a floating point variable. </p>
+<p>This routine is called collectively by all tasks in the communicator ios.union_comm.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">ncid</td><td>identifies the netCDF file </td></tr>
+    <tr><td class="paramname">varid</td><td>the variable ID number </td></tr>
+    <tr><td class="paramname">decompid</td><td>the decomposition ID. </td></tr>
+    <tr><td class="paramname">recnum</td><td>the record number. </td></tr>
+    <tr><td class="paramname">op</td><td>pointer to the data to be written. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>PIO_NOERR on success, error code otherwise. </dd></dl>
+<dl class="section author"><dt>Author</dt><dd>Ed Hartnett </dd></dl>
+
+</div>
+</div>
+<a id="gaffac219a97c8b88717447999d0c10373"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaffac219a97c8b88717447999d0c10373">&#9670;&nbsp;</a></span>PIOc_put_vard_int()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int PIOc_put_vard_int </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>ncid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>varid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>decompid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="pio_8h.html#a1225edb54e6d6de678bf675485549eb0">PIO_Offset</a>&#160;</td>
+          <td class="paramname"><em>recnum</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const int *&#160;</td>
+          <td class="paramname"><em>op</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Put distributed array subset of an integer variable. </p>
+<p>This routine is called collectively by all tasks in the communicator ios.union_comm.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">ncid</td><td>identifies the netCDF file </td></tr>
+    <tr><td class="paramname">varid</td><td>the variable ID number </td></tr>
+    <tr><td class="paramname">decompid</td><td>the decomposition ID. </td></tr>
+    <tr><td class="paramname">recnum</td><td>the record number. </td></tr>
+    <tr><td class="paramname">op</td><td>pointer to the data to be written. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>PIO_NOERR on success, error code otherwise. </dd></dl>
+<dl class="section author"><dt>Author</dt><dd>Ed Hartnett </dd></dl>
+
+</div>
+</div>
+<a id="ga300ae38fdf620d66a3e992296b639836"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga300ae38fdf620d66a3e992296b639836">&#9670;&nbsp;</a></span>PIOc_put_vard_longlong()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int PIOc_put_vard_longlong </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>ncid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>varid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>decompid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="pio_8h.html#a1225edb54e6d6de678bf675485549eb0">PIO_Offset</a>&#160;</td>
+          <td class="paramname"><em>recnum</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const long long *&#160;</td>
+          <td class="paramname"><em>op</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Put distributed array subset of a 64-bit unsigned integer variable. </p>
+<p>This routine is called collectively by all tasks in the communicator ios.union_comm.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">ncid</td><td>identifies the netCDF file </td></tr>
+    <tr><td class="paramname">varid</td><td>the variable ID number </td></tr>
+    <tr><td class="paramname">decompid</td><td>the decomposition ID. </td></tr>
+    <tr><td class="paramname">recnum</td><td>the record number. </td></tr>
+    <tr><td class="paramname">op</td><td>pointer to the data to be written. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>PIO_NOERR on success, error code otherwise. </dd></dl>
+<dl class="section author"><dt>Author</dt><dd>Ed Hartnett </dd></dl>
+
+</div>
+</div>
+<a id="ga0fb1c956013e1e78eb7880cc03868985"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga0fb1c956013e1e78eb7880cc03868985">&#9670;&nbsp;</a></span>PIOc_put_vard_schar()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int PIOc_put_vard_schar </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>ncid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>varid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>decompid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="pio_8h.html#a1225edb54e6d6de678bf675485549eb0">PIO_Offset</a>&#160;</td>
+          <td class="paramname"><em>recnum</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const signed char *&#160;</td>
+          <td class="paramname"><em>op</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Put distributed array subset of a signed char variable. </p>
+<p>This routine is called collectively by all tasks in the communicator ios.union_comm.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">ncid</td><td>identifies the netCDF file </td></tr>
+    <tr><td class="paramname">varid</td><td>the variable ID number </td></tr>
+    <tr><td class="paramname">decompid</td><td>the decomposition ID. </td></tr>
+    <tr><td class="paramname">recnum</td><td>the record number. </td></tr>
+    <tr><td class="paramname">op</td><td>pointer to the data to be written. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>PIO_NOERR on success, error code otherwise. </dd></dl>
+<dl class="section author"><dt>Author</dt><dd>Ed Hartnett </dd></dl>
+
+</div>
+</div>
+<a id="ga50ae2736978e9127a59c07667ec1a2f5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga50ae2736978e9127a59c07667ec1a2f5">&#9670;&nbsp;</a></span>PIOc_put_vard_short()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int PIOc_put_vard_short </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>ncid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>varid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>decompid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="pio_8h.html#a1225edb54e6d6de678bf675485549eb0">PIO_Offset</a>&#160;</td>
+          <td class="paramname"><em>recnum</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const short *&#160;</td>
+          <td class="paramname"><em>op</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Put distributed array subset of a 16-bit integer variable. </p>
+<p>This routine is called collectively by all tasks in the communicator ios.union_comm.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">ncid</td><td>identifies the netCDF file </td></tr>
+    <tr><td class="paramname">varid</td><td>the variable ID number </td></tr>
+    <tr><td class="paramname">decompid</td><td>the decomposition ID. </td></tr>
+    <tr><td class="paramname">recnum</td><td>the record number. </td></tr>
+    <tr><td class="paramname">op</td><td>pointer to the data to be written. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>PIO_NOERR on success, error code otherwise. </dd></dl>
+<dl class="section author"><dt>Author</dt><dd>Ed Hartnett </dd></dl>
+
+</div>
+</div>
+<a id="gab26072cefe700cd7c93068892c3117eb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gab26072cefe700cd7c93068892c3117eb">&#9670;&nbsp;</a></span>PIOc_put_vard_text()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int PIOc_put_vard_text </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>ncid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>varid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>decompid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="pio_8h.html#a1225edb54e6d6de678bf675485549eb0">PIO_Offset</a>&#160;</td>
+          <td class="paramname"><em>recnum</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>op</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Put distributed array subset of a text variable. </p>
+<p>This routine is called collectively by all tasks in the communicator ios.union_comm.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">ncid</td><td>identifies the netCDF file </td></tr>
+    <tr><td class="paramname">varid</td><td>the variable ID number </td></tr>
+    <tr><td class="paramname">decompid</td><td>the decomposition ID. </td></tr>
+    <tr><td class="paramname">recnum</td><td>the record number. </td></tr>
+    <tr><td class="paramname">op</td><td>pointer to the data to be written. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>PIO_NOERR on success, error code otherwise. </dd></dl>
+<dl class="section author"><dt>Author</dt><dd>Ed Hartnett </dd></dl>
+
+</div>
+</div>
+<a id="ga8c060e2740c0de03dc74ca961362af4c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga8c060e2740c0de03dc74ca961362af4c">&#9670;&nbsp;</a></span>PIOc_put_vard_uchar()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int PIOc_put_vard_uchar </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>ncid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>varid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>decompid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="pio_8h.html#a1225edb54e6d6de678bf675485549eb0">PIO_Offset</a>&#160;</td>
+          <td class="paramname"><em>recnum</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const unsigned char *&#160;</td>
+          <td class="paramname"><em>op</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Put distributed array subset of an unsigned char variable. </p>
+<p>This routine is called collectively by all tasks in the communicator ios.union_comm.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">ncid</td><td>identifies the netCDF file </td></tr>
+    <tr><td class="paramname">varid</td><td>the variable ID number </td></tr>
+    <tr><td class="paramname">decompid</td><td>the decomposition ID. </td></tr>
+    <tr><td class="paramname">recnum</td><td>the record number. </td></tr>
+    <tr><td class="paramname">op</td><td>pointer to the data to be written. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>PIO_NOERR on success, error code otherwise. </dd></dl>
+<dl class="section author"><dt>Author</dt><dd>Ed Hartnett </dd></dl>
+
+</div>
+</div>
+<a id="ga4df47789ade4325452a36ed20cc59951"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga4df47789ade4325452a36ed20cc59951">&#9670;&nbsp;</a></span>PIOc_put_vard_uint()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int PIOc_put_vard_uint </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>ncid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>varid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>decompid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="pio_8h.html#a1225edb54e6d6de678bf675485549eb0">PIO_Offset</a>&#160;</td>
+          <td class="paramname"><em>recnum</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const unsigned int *&#160;</td>
+          <td class="paramname"><em>op</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Put distributed array subset of an unsigned integer variable. </p>
+<p>This routine is called collectively by all tasks in the communicator ios.union_comm.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">ncid</td><td>identifies the netCDF file </td></tr>
+    <tr><td class="paramname">varid</td><td>the variable ID number </td></tr>
+    <tr><td class="paramname">decompid</td><td>the decomposition ID. </td></tr>
+    <tr><td class="paramname">recnum</td><td>the record number. </td></tr>
+    <tr><td class="paramname">op</td><td>pointer to the data to be written. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>PIO_NOERR on success, error code otherwise. </dd></dl>
+<dl class="section author"><dt>Author</dt><dd>Ed Hartnett </dd></dl>
+
+</div>
+</div>
+<a id="gafdb6fdef05357b9268dbfcbe2c908ddc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gafdb6fdef05357b9268dbfcbe2c908ddc">&#9670;&nbsp;</a></span>PIOc_put_vard_ulonglong()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int PIOc_put_vard_ulonglong </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>ncid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>varid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>decompid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="pio_8h.html#a1225edb54e6d6de678bf675485549eb0">PIO_Offset</a>&#160;</td>
+          <td class="paramname"><em>recnum</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const unsigned long long *&#160;</td>
+          <td class="paramname"><em>op</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Put distributed array subset of an unsigned 64-bit integer variable. </p>
+<p>This routine is called collectively by all tasks in the communicator ios.union_comm.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">ncid</td><td>identifies the netCDF file </td></tr>
+    <tr><td class="paramname">varid</td><td>the variable ID number </td></tr>
+    <tr><td class="paramname">decompid</td><td>the decomposition ID. </td></tr>
+    <tr><td class="paramname">recnum</td><td>the record number. </td></tr>
+    <tr><td class="paramname">op</td><td>pointer to the data to be written. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>PIO_NOERR on success, error code otherwise. </dd></dl>
+<dl class="section author"><dt>Author</dt><dd>Ed Hartnett </dd></dl>
+
+</div>
+</div>
+<a id="ga7aebf497d70b3cb478c256749e3dca03"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga7aebf497d70b3cb478c256749e3dca03">&#9670;&nbsp;</a></span>PIOc_put_vard_ushort()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int PIOc_put_vard_ushort </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>ncid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>varid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>decompid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="pio_8h.html#a1225edb54e6d6de678bf675485549eb0">PIO_Offset</a>&#160;</td>
+          <td class="paramname"><em>recnum</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const unsigned short *&#160;</td>
+          <td class="paramname"><em>op</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Put distributed array subset of an unsigned 16-bit integer variable. </p>
+<p>This routine is called collectively by all tasks in the communicator ios.union_comm.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">ncid</td><td>identifies the netCDF file </td></tr>
+    <tr><td class="paramname">varid</td><td>the variable ID number </td></tr>
+    <tr><td class="paramname">decompid</td><td>the decomposition ID. </td></tr>
+    <tr><td class="paramname">recnum</td><td>the record number. </td></tr>
+    <tr><td class="paramname">op</td><td>pointer to the data to be written. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>PIO_NOERR on success, error code otherwise. </dd></dl>
 <dl class="section author"><dt>Author</dt><dd>Ed Hartnett </dd></dl>
 
 </div>
@@ -327,7 +1096,7 @@ Special buffer flush for pnetcdf. </li>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Jun 4 2019 11:03:24 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Jun 14 2019 04:44:11 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.13
 </small></address>

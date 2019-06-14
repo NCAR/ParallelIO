@@ -23,7 +23,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">PIO
-   &#160;<span id="projectnumber">2.4.2</span>
+   &#160;<span id="projectnumber">2.4.3</span>
    </div>
   </td>
  </tr>
@@ -75,10 +75,779 @@ Functions</h2></td></tr>
 <tr class="memitem:gaa4eb9375a17ec358a88c8e7e388880db"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__read__darray__c.html#gaa4eb9375a17ec358a88c8e7e388880db">PIOc_read_darray</a> (int ncid, int varid, int ioid, <a class="el" href="pio_8h.html#a1225edb54e6d6de678bf675485549eb0">PIO_Offset</a> arraylen, void *array)</td></tr>
 <tr class="memdesc:gaa4eb9375a17ec358a88c8e7e388880db"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read a field from a file to the IO library.  <a href="#gaa4eb9375a17ec358a88c8e7e388880db">More...</a><br /></td></tr>
 <tr class="separator:gaa4eb9375a17ec358a88c8e7e388880db"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga4f963ac324c4a7c720ba087f91bb49f8"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__read__darray__c.html#ga4f963ac324c4a7c720ba087f91bb49f8">PIOc_get_vard_text</a> (int ncid, int varid, int decompid, const <a class="el" href="pio_8h.html#a1225edb54e6d6de678bf675485549eb0">PIO_Offset</a> recnum, char *buf)</td></tr>
+<tr class="memdesc:ga4f963ac324c4a7c720ba087f91bb49f8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get a muti-dimensional subset of a text variable.  <a href="#ga4f963ac324c4a7c720ba087f91bb49f8">More...</a><br /></td></tr>
+<tr class="separator:ga4f963ac324c4a7c720ba087f91bb49f8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gadeedb5c08cf7bbeb276be5a896d774fd"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__read__darray__c.html#gadeedb5c08cf7bbeb276be5a896d774fd">PIOc_get_vard_uchar</a> (int ncid, int varid, int decompid, const <a class="el" href="pio_8h.html#a1225edb54e6d6de678bf675485549eb0">PIO_Offset</a> recnum, unsigned char *buf)</td></tr>
+<tr class="memdesc:gadeedb5c08cf7bbeb276be5a896d774fd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get a muti-dimensional subset of an unsigned char variable.  <a href="#gadeedb5c08cf7bbeb276be5a896d774fd">More...</a><br /></td></tr>
+<tr class="separator:gadeedb5c08cf7bbeb276be5a896d774fd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga2dae61eb7f6bad3ac7e43e2eb1748c00"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__read__darray__c.html#ga2dae61eb7f6bad3ac7e43e2eb1748c00">PIOc_get_vard_schar</a> (int ncid, int varid, int decompid, const <a class="el" href="pio_8h.html#a1225edb54e6d6de678bf675485549eb0">PIO_Offset</a> recnum, signed char *buf)</td></tr>
+<tr class="memdesc:ga2dae61eb7f6bad3ac7e43e2eb1748c00"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get a muti-dimensional subset of a signed char variable.  <a href="#ga2dae61eb7f6bad3ac7e43e2eb1748c00">More...</a><br /></td></tr>
+<tr class="separator:ga2dae61eb7f6bad3ac7e43e2eb1748c00"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gab34dfd2027144733a36837ff5781d702"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__read__darray__c.html#gab34dfd2027144733a36837ff5781d702">PIOc_get_vard_ushort</a> (int ncid, int varid, int decompid, const <a class="el" href="pio_8h.html#a1225edb54e6d6de678bf675485549eb0">PIO_Offset</a> recnum, unsigned short *buf)</td></tr>
+<tr class="memdesc:gab34dfd2027144733a36837ff5781d702"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get a muti-dimensional subset of an unsigned 16-bit integer variable.  <a href="#gab34dfd2027144733a36837ff5781d702">More...</a><br /></td></tr>
+<tr class="separator:gab34dfd2027144733a36837ff5781d702"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga03108f1a4bba36232bbeb0ae5a25665c"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__read__darray__c.html#ga03108f1a4bba36232bbeb0ae5a25665c">PIOc_get_vard_short</a> (int ncid, int varid, int decompid, const <a class="el" href="pio_8h.html#a1225edb54e6d6de678bf675485549eb0">PIO_Offset</a> recnum, short *buf)</td></tr>
+<tr class="memdesc:ga03108f1a4bba36232bbeb0ae5a25665c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get a muti-dimensional subset of a 16-bit integer variable.  <a href="#ga03108f1a4bba36232bbeb0ae5a25665c">More...</a><br /></td></tr>
+<tr class="separator:ga03108f1a4bba36232bbeb0ae5a25665c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga899ddd489648060a565e593fba74a28e"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__read__darray__c.html#ga899ddd489648060a565e593fba74a28e">PIOc_get_vard_uint</a> (int ncid, int varid, int decompid, const <a class="el" href="pio_8h.html#a1225edb54e6d6de678bf675485549eb0">PIO_Offset</a> recnum, unsigned int *buf)</td></tr>
+<tr class="memdesc:ga899ddd489648060a565e593fba74a28e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get a muti-dimensional subset of an unsigned integer variable.  <a href="#ga899ddd489648060a565e593fba74a28e">More...</a><br /></td></tr>
+<tr class="separator:ga899ddd489648060a565e593fba74a28e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga427232dc72c9eb27acb93d07cf0e5485"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__read__darray__c.html#ga427232dc72c9eb27acb93d07cf0e5485">PIOc_get_vard_int</a> (int ncid, int varid, int decompid, const <a class="el" href="pio_8h.html#a1225edb54e6d6de678bf675485549eb0">PIO_Offset</a> recnum, int *buf)</td></tr>
+<tr class="memdesc:ga427232dc72c9eb27acb93d07cf0e5485"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get a muti-dimensional subset of an integer variable.  <a href="#ga427232dc72c9eb27acb93d07cf0e5485">More...</a><br /></td></tr>
+<tr class="separator:ga427232dc72c9eb27acb93d07cf0e5485"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga80f947ed9c507cc69ea3560557e75819"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__read__darray__c.html#ga80f947ed9c507cc69ea3560557e75819">PIOc_get_vard_float</a> (int ncid, int varid, int decompid, const <a class="el" href="pio_8h.html#a1225edb54e6d6de678bf675485549eb0">PIO_Offset</a> recnum, float *buf)</td></tr>
+<tr class="memdesc:ga80f947ed9c507cc69ea3560557e75819"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get a muti-dimensional subset of a floating point variable.  <a href="#ga80f947ed9c507cc69ea3560557e75819">More...</a><br /></td></tr>
+<tr class="separator:ga80f947ed9c507cc69ea3560557e75819"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaf98842e4129d583eb3254e96d7dd87cb"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__read__darray__c.html#gaf98842e4129d583eb3254e96d7dd87cb">PIOc_get_vard_double</a> (int ncid, int varid, int decompid, const <a class="el" href="pio_8h.html#a1225edb54e6d6de678bf675485549eb0">PIO_Offset</a> recnum, double *buf)</td></tr>
+<tr class="memdesc:gaf98842e4129d583eb3254e96d7dd87cb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get a muti-dimensional subset of a 64-bit floating point variable.  <a href="#gaf98842e4129d583eb3254e96d7dd87cb">More...</a><br /></td></tr>
+<tr class="separator:gaf98842e4129d583eb3254e96d7dd87cb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga5946d05430f40e6eed3881e3f9ff198c"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__read__darray__c.html#ga5946d05430f40e6eed3881e3f9ff198c">PIOc_get_vard_ulonglong</a> (int ncid, int varid, int decompid, const <a class="el" href="pio_8h.html#a1225edb54e6d6de678bf675485549eb0">PIO_Offset</a> recnum, unsigned long long *buf)</td></tr>
+<tr class="memdesc:ga5946d05430f40e6eed3881e3f9ff198c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get a muti-dimensional subset of an unsigned 64-bit integer variable.  <a href="#ga5946d05430f40e6eed3881e3f9ff198c">More...</a><br /></td></tr>
+<tr class="separator:ga5946d05430f40e6eed3881e3f9ff198c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga835ac2f15db0899c8d3bc82f5bca5197"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__read__darray__c.html#ga835ac2f15db0899c8d3bc82f5bca5197">PIOc_get_vard_longlong</a> (int ncid, int varid, int decompid, const <a class="el" href="pio_8h.html#a1225edb54e6d6de678bf675485549eb0">PIO_Offset</a> recnum, long long *buf)</td></tr>
+<tr class="memdesc:ga835ac2f15db0899c8d3bc82f5bca5197"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get a muti-dimensional subset of a 64-bit integer variable.  <a href="#ga835ac2f15db0899c8d3bc82f5bca5197">More...</a><br /></td></tr>
+<tr class="separator:ga835ac2f15db0899c8d3bc82f5bca5197"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gab19880db828846565ef995118a2684a1"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__read__darray__c.html#gab19880db828846565ef995118a2684a1">PIOc_get_vard</a> (int ncid, int varid, int decompid, const <a class="el" href="pio_8h.html#a1225edb54e6d6de678bf675485549eb0">PIO_Offset</a> recnum, void *buf)</td></tr>
+<tr class="memdesc:gab19880db828846565ef995118a2684a1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get a muti-dimensional subset of a variable the same type as the variable in the file.  <a href="#gab19880db828846565ef995118a2684a1">More...</a><br /></td></tr>
+<tr class="separator:gab19880db828846565ef995118a2684a1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <p>Read data from a netCDF file to a distributed array in C. </p>
+<p>Read distributed arrays from a variable in C.</p>
 <h2 class="groupheader">Function Documentation</h2>
+<a id="gab19880db828846565ef995118a2684a1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gab19880db828846565ef995118a2684a1">&#9670;&nbsp;</a></span>PIOc_get_vard()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int PIOc_get_vard </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>ncid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>varid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>decompid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="pio_8h.html#a1225edb54e6d6de678bf675485549eb0">PIO_Offset</a>&#160;</td>
+          <td class="paramname"><em>recnum</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>buf</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get a muti-dimensional subset of a variable the same type as the variable in the file. </p>
+<p>This routine is called collectively by all tasks in the communicator ios.union_comm.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">ncid</td><td>identifies the netCDF file </td></tr>
+    <tr><td class="paramname">varid</td><td>the variable ID number </td></tr>
+    <tr><td class="paramname">decompid</td><td>the decomposition ID. </td></tr>
+    <tr><td class="paramname">recnum</td><td>the record number. </td></tr>
+    <tr><td class="paramname">buf</td><td>pointer that will get the data. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>PIO_NOERR on success, error code otherwise. </dd></dl>
+<dl class="section author"><dt>Author</dt><dd>Ed Hartnett </dd></dl>
+
+</div>
+</div>
+<a id="gaf98842e4129d583eb3254e96d7dd87cb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaf98842e4129d583eb3254e96d7dd87cb">&#9670;&nbsp;</a></span>PIOc_get_vard_double()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int PIOc_get_vard_double </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>ncid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>varid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>decompid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="pio_8h.html#a1225edb54e6d6de678bf675485549eb0">PIO_Offset</a>&#160;</td>
+          <td class="paramname"><em>recnum</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double *&#160;</td>
+          <td class="paramname"><em>buf</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get a muti-dimensional subset of a 64-bit floating point variable. </p>
+<p>This routine is called collectively by all tasks in the communicator ios.union_comm.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">ncid</td><td>identifies the netCDF file </td></tr>
+    <tr><td class="paramname">varid</td><td>the variable ID number </td></tr>
+    <tr><td class="paramname">decompid</td><td>the decomposition ID. </td></tr>
+    <tr><td class="paramname">recnum</td><td>the record number. </td></tr>
+    <tr><td class="paramname">buf</td><td>pointer that will get the data. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>PIO_NOERR on success, error code otherwise. </dd></dl>
+<dl class="section author"><dt>Author</dt><dd>Ed Hartnett </dd></dl>
+
+</div>
+</div>
+<a id="ga80f947ed9c507cc69ea3560557e75819"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga80f947ed9c507cc69ea3560557e75819">&#9670;&nbsp;</a></span>PIOc_get_vard_float()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int PIOc_get_vard_float </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>ncid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>varid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>decompid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="pio_8h.html#a1225edb54e6d6de678bf675485549eb0">PIO_Offset</a>&#160;</td>
+          <td class="paramname"><em>recnum</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float *&#160;</td>
+          <td class="paramname"><em>buf</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get a muti-dimensional subset of a floating point variable. </p>
+<p>This routine is called collectively by all tasks in the communicator ios.union_comm.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">ncid</td><td>identifies the netCDF file </td></tr>
+    <tr><td class="paramname">varid</td><td>the variable ID number </td></tr>
+    <tr><td class="paramname">decompid</td><td>the decomposition ID. </td></tr>
+    <tr><td class="paramname">recnum</td><td>the record number. </td></tr>
+    <tr><td class="paramname">buf</td><td>pointer that will get the data. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>PIO_NOERR on success, error code otherwise. </dd></dl>
+<dl class="section author"><dt>Author</dt><dd>Ed Hartnett </dd></dl>
+
+</div>
+</div>
+<a id="ga427232dc72c9eb27acb93d07cf0e5485"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga427232dc72c9eb27acb93d07cf0e5485">&#9670;&nbsp;</a></span>PIOc_get_vard_int()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int PIOc_get_vard_int </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>ncid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>varid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>decompid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="pio_8h.html#a1225edb54e6d6de678bf675485549eb0">PIO_Offset</a>&#160;</td>
+          <td class="paramname"><em>recnum</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int *&#160;</td>
+          <td class="paramname"><em>buf</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get a muti-dimensional subset of an integer variable. </p>
+<p>This routine is called collectively by all tasks in the communicator ios.union_comm.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">ncid</td><td>identifies the netCDF file </td></tr>
+    <tr><td class="paramname">varid</td><td>the variable ID number </td></tr>
+    <tr><td class="paramname">decompid</td><td>the decomposition ID. </td></tr>
+    <tr><td class="paramname">recnum</td><td>the record number. </td></tr>
+    <tr><td class="paramname">buf</td><td>pointer that will get the data. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>PIO_NOERR on success, error code otherwise. </dd></dl>
+<dl class="section author"><dt>Author</dt><dd>Ed Hartnett </dd></dl>
+
+</div>
+</div>
+<a id="ga835ac2f15db0899c8d3bc82f5bca5197"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga835ac2f15db0899c8d3bc82f5bca5197">&#9670;&nbsp;</a></span>PIOc_get_vard_longlong()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int PIOc_get_vard_longlong </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>ncid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>varid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>decompid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="pio_8h.html#a1225edb54e6d6de678bf675485549eb0">PIO_Offset</a>&#160;</td>
+          <td class="paramname"><em>recnum</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">long long *&#160;</td>
+          <td class="paramname"><em>buf</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get a muti-dimensional subset of a 64-bit integer variable. </p>
+<p>This routine is called collectively by all tasks in the communicator ios.union_comm.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">ncid</td><td>identifies the netCDF file </td></tr>
+    <tr><td class="paramname">varid</td><td>the variable ID number </td></tr>
+    <tr><td class="paramname">decompid</td><td>the decomposition ID. </td></tr>
+    <tr><td class="paramname">recnum</td><td>the record number. </td></tr>
+    <tr><td class="paramname">buf</td><td>pointer that will get the data. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>PIO_NOERR on success, error code otherwise. </dd></dl>
+<dl class="section author"><dt>Author</dt><dd>Ed Hartnett </dd></dl>
+
+</div>
+</div>
+<a id="ga2dae61eb7f6bad3ac7e43e2eb1748c00"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga2dae61eb7f6bad3ac7e43e2eb1748c00">&#9670;&nbsp;</a></span>PIOc_get_vard_schar()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int PIOc_get_vard_schar </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>ncid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>varid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>decompid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="pio_8h.html#a1225edb54e6d6de678bf675485549eb0">PIO_Offset</a>&#160;</td>
+          <td class="paramname"><em>recnum</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">signed char *&#160;</td>
+          <td class="paramname"><em>buf</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get a muti-dimensional subset of a signed char variable. </p>
+<p>This routine is called collectively by all tasks in the communicator ios.union_comm.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">ncid</td><td>identifies the netCDF file </td></tr>
+    <tr><td class="paramname">varid</td><td>the variable ID number </td></tr>
+    <tr><td class="paramname">decompid</td><td>the decomposition ID. </td></tr>
+    <tr><td class="paramname">recnum</td><td>the record number. </td></tr>
+    <tr><td class="paramname">buf</td><td>pointer that will get the data. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>PIO_NOERR on success, error code otherwise. </dd></dl>
+<dl class="section author"><dt>Author</dt><dd>Ed Hartnett </dd></dl>
+
+</div>
+</div>
+<a id="ga03108f1a4bba36232bbeb0ae5a25665c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga03108f1a4bba36232bbeb0ae5a25665c">&#9670;&nbsp;</a></span>PIOc_get_vard_short()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int PIOc_get_vard_short </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>ncid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>varid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>decompid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="pio_8h.html#a1225edb54e6d6de678bf675485549eb0">PIO_Offset</a>&#160;</td>
+          <td class="paramname"><em>recnum</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">short *&#160;</td>
+          <td class="paramname"><em>buf</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get a muti-dimensional subset of a 16-bit integer variable. </p>
+<p>This routine is called collectively by all tasks in the communicator ios.union_comm.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">ncid</td><td>identifies the netCDF file </td></tr>
+    <tr><td class="paramname">varid</td><td>the variable ID number </td></tr>
+    <tr><td class="paramname">decompid</td><td>the decomposition ID. </td></tr>
+    <tr><td class="paramname">recnum</td><td>the record number. </td></tr>
+    <tr><td class="paramname">buf</td><td>pointer that will get the data. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>PIO_NOERR on success, error code otherwise. </dd></dl>
+<dl class="section author"><dt>Author</dt><dd>Ed Hartnett </dd></dl>
+
+</div>
+</div>
+<a id="ga4f963ac324c4a7c720ba087f91bb49f8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga4f963ac324c4a7c720ba087f91bb49f8">&#9670;&nbsp;</a></span>PIOc_get_vard_text()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int PIOc_get_vard_text </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>ncid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>varid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>decompid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="pio_8h.html#a1225edb54e6d6de678bf675485549eb0">PIO_Offset</a>&#160;</td>
+          <td class="paramname"><em>recnum</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">char *&#160;</td>
+          <td class="paramname"><em>buf</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get a muti-dimensional subset of a text variable. </p>
+<p>This routine is called collectively by all tasks in the communicator ios.union_comm.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">ncid</td><td>identifies the netCDF file </td></tr>
+    <tr><td class="paramname">varid</td><td>the variable ID number </td></tr>
+    <tr><td class="paramname">decompid</td><td>the decomposition ID. </td></tr>
+    <tr><td class="paramname">recnum</td><td>the record number. </td></tr>
+    <tr><td class="paramname">buf</td><td>pointer that will get the data. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>PIO_NOERR on success, error code otherwise. </dd></dl>
+<dl class="section author"><dt>Author</dt><dd>Ed Hartnett </dd></dl>
+
+</div>
+</div>
+<a id="gadeedb5c08cf7bbeb276be5a896d774fd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gadeedb5c08cf7bbeb276be5a896d774fd">&#9670;&nbsp;</a></span>PIOc_get_vard_uchar()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int PIOc_get_vard_uchar </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>ncid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>varid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>decompid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="pio_8h.html#a1225edb54e6d6de678bf675485549eb0">PIO_Offset</a>&#160;</td>
+          <td class="paramname"><em>recnum</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">unsigned char *&#160;</td>
+          <td class="paramname"><em>buf</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get a muti-dimensional subset of an unsigned char variable. </p>
+<p>This routine is called collectively by all tasks in the communicator ios.union_comm.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">ncid</td><td>identifies the netCDF file </td></tr>
+    <tr><td class="paramname">varid</td><td>the variable ID number </td></tr>
+    <tr><td class="paramname">decompid</td><td>the decomposition ID. </td></tr>
+    <tr><td class="paramname">recnum</td><td>the record number. </td></tr>
+    <tr><td class="paramname">buf</td><td>pointer that will get the data. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>PIO_NOERR on success, error code otherwise. </dd></dl>
+<dl class="section author"><dt>Author</dt><dd>Ed Hartnett </dd></dl>
+
+</div>
+</div>
+<a id="ga899ddd489648060a565e593fba74a28e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga899ddd489648060a565e593fba74a28e">&#9670;&nbsp;</a></span>PIOc_get_vard_uint()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int PIOc_get_vard_uint </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>ncid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>varid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>decompid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="pio_8h.html#a1225edb54e6d6de678bf675485549eb0">PIO_Offset</a>&#160;</td>
+          <td class="paramname"><em>recnum</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">unsigned int *&#160;</td>
+          <td class="paramname"><em>buf</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get a muti-dimensional subset of an unsigned integer variable. </p>
+<p>This routine is called collectively by all tasks in the communicator ios.union_comm.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">ncid</td><td>identifies the netCDF file </td></tr>
+    <tr><td class="paramname">varid</td><td>the variable ID number </td></tr>
+    <tr><td class="paramname">decompid</td><td>the decomposition ID. </td></tr>
+    <tr><td class="paramname">recnum</td><td>the record number. </td></tr>
+    <tr><td class="paramname">buf</td><td>pointer that will get the data. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>PIO_NOERR on success, error code otherwise. </dd></dl>
+<dl class="section author"><dt>Author</dt><dd>Ed Hartnett </dd></dl>
+
+</div>
+</div>
+<a id="ga5946d05430f40e6eed3881e3f9ff198c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga5946d05430f40e6eed3881e3f9ff198c">&#9670;&nbsp;</a></span>PIOc_get_vard_ulonglong()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int PIOc_get_vard_ulonglong </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>ncid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>varid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>decompid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="pio_8h.html#a1225edb54e6d6de678bf675485549eb0">PIO_Offset</a>&#160;</td>
+          <td class="paramname"><em>recnum</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">unsigned long long *&#160;</td>
+          <td class="paramname"><em>buf</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get a muti-dimensional subset of an unsigned 64-bit integer variable. </p>
+<p>This routine is called collectively by all tasks in the communicator ios.union_comm.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">ncid</td><td>identifies the netCDF file </td></tr>
+    <tr><td class="paramname">varid</td><td>the variable ID number </td></tr>
+    <tr><td class="paramname">decompid</td><td>the decomposition ID. </td></tr>
+    <tr><td class="paramname">recnum</td><td>the record number. </td></tr>
+    <tr><td class="paramname">buf</td><td>pointer that will get the data. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>PIO_NOERR on success, error code otherwise. </dd></dl>
+<dl class="section author"><dt>Author</dt><dd>Ed Hartnett </dd></dl>
+
+</div>
+</div>
+<a id="gab34dfd2027144733a36837ff5781d702"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gab34dfd2027144733a36837ff5781d702">&#9670;&nbsp;</a></span>PIOc_get_vard_ushort()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int PIOc_get_vard_ushort </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>ncid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>varid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>decompid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="pio_8h.html#a1225edb54e6d6de678bf675485549eb0">PIO_Offset</a>&#160;</td>
+          <td class="paramname"><em>recnum</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">unsigned short *&#160;</td>
+          <td class="paramname"><em>buf</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get a muti-dimensional subset of an unsigned 16-bit integer variable. </p>
+<p>This routine is called collectively by all tasks in the communicator ios.union_comm.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">ncid</td><td>identifies the netCDF file </td></tr>
+    <tr><td class="paramname">varid</td><td>the variable ID number </td></tr>
+    <tr><td class="paramname">decompid</td><td>the decomposition ID. </td></tr>
+    <tr><td class="paramname">recnum</td><td>the record number. </td></tr>
+    <tr><td class="paramname">buf</td><td>pointer that will get the data. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>PIO_NOERR on success, error code otherwise. </dd></dl>
+<dl class="section author"><dt>Author</dt><dd>Ed Hartnett </dd></dl>
+
+</div>
+</div>
 <a id="gaa4eb9375a17ec358a88c8e7e388880db"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#gaa4eb9375a17ec358a88c8e7e388880db">&#9670;&nbsp;</a></span>PIOc_read_darray()</h2>
 
@@ -129,7 +898,7 @@ Functions</h2></td></tr>
     <tr><td class="paramname">ncid</td><td>identifies the netCDF file </td></tr>
     <tr><td class="paramname">varid</td><td>the variable ID to be read </td></tr>
     <tr><td class="paramname">ioid</td><td>the I/O description ID as passed back by <a class="el" href="group___p_i_o__initdecomp__c.html#ga56c119d47d1082df044968f80acbe265" title="Initialize the decomposition used with distributed arrays. ">PIOc_InitDecomp()</a>. </td></tr>
-    <tr><td class="paramname">arraylen</td><td>the length of the array to be read. This is the length of the distrubited array. That is, the length of the portion of the data that is on the processor. </td></tr>
+    <tr><td class="paramname">arraylen</td><td>this parameter is ignored. Nominally it is the length of the array to be read. This is the length of the distrubited array. That is, the length of the portion of the data that is on the processor. This is already known because it is in the decomposition. </td></tr>
     <tr><td class="paramname">array</td><td>pointer to the data to be read. This is a pointer to the distributed portion of the array that is on this processor. </td></tr>
   </table>
   </dd>
@@ -142,7 +911,7 @@ Functions</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Jun 4 2019 11:03:24 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Jun 14 2019 04:44:11 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.13
 </small></address>
