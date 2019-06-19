@@ -236,6 +236,11 @@ int PIOc_closefile(int ncid)
         return pio_err(NULL, NULL, ierr, __FILE__, __LINE__);
     ios = file->iosystem;
 
+#ifdef TIMING
+    if (file->mode & PIO_WRITE)
+        GPTLstart("PIO:PIOc_closefile_write_mode");
+#endif
+
     /* Sync changes before closing on all tasks if async is not in
      * use, but only on non-IO tasks if async is in use. */
     if (!ios->async || !ios->ioproc)
@@ -366,6 +371,11 @@ int PIOc_closefile(int ncid)
         LOG((1, "nc*_close failed, ierr = %d", ierr));
         return ierr;
     }
+
+#ifdef TIMING
+    if (file->mode & PIO_WRITE)
+        GPTLstop("PIO:PIOc_closefile_write_mode");
+#endif
 
     /* Delete file from our list of open files. */
     pio_delete_file_from_list(ncid);
