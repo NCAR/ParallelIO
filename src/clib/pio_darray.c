@@ -1041,6 +1041,9 @@ int PIOc_write_darray(int ncid, int varid, int ioid, PIO_Offset arraylen, void *
     if (file->iotype == PIO_IOTYPE_ADIOS)
     {
         ierr = PIOc_write_darray_adios(file, varid, ioid, iodesc, arraylen, array, fillvalue);
+#ifdef TIMING
+        GPTLstop("PIO:PIOc_write_darray");
+#endif
         return ierr;
     }
 #endif
