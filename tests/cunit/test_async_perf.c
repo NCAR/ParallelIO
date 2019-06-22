@@ -36,15 +36,15 @@
 #define LON_LEN 3
 
 /* The length of our sample data along each dimension. */
-#define X_DIM_LEN 128
-#define Y_DIM_LEN 128
-#define Z_DIM_LEN 32
-/* #define X_DIM_LEN 1024 */
-/* #define Y_DIM_LEN 1024 */
-/* #define Z_DIM_LEN 256 */
+/* #define X_DIM_LEN 128 */
+/* #define Y_DIM_LEN 128 */
+/* #define Z_DIM_LEN 32 */
+#define X_DIM_LEN 1024
+#define Y_DIM_LEN 1024
+#define Z_DIM_LEN 256
 
 /* The number of timesteps of data to write. */
-#define NUM_TIMESTEPS 3
+#define NUM_TIMESTEPS 10
 
 /* Name of record test var. */
 #define REC_VAR_NAME "Duncan_McCloud_of_the_clan_McCloud"
@@ -270,7 +270,8 @@ int main(int argc, char **argv)
     int ret;     /* Return code. */
 
     /* Initialize test. */
-    if ((ret = pio_test_init2(argc, argv, &my_rank, &ntasks, 1, 0, -1, &test_comm)))
+    if ((ret = pio_test_init2(argc, argv, &my_rank, &ntasks, 1, 0, 2,
+                              &test_comm)))
         ERR(ERR_INIT);
 
 #ifdef USE_MPE
@@ -306,7 +307,8 @@ int main(int argc, char **argv)
     {
         num_computation_procs = ntasks - num_io_procs[niotest];
 
-        for (fmt = 0; fmt < num_flavors; fmt++)
+        /* for (fmt = 0; fmt < num_flavors; fmt++) */
+        for (fmt = 0; fmt < 1; fmt++)
         {
             struct timeval starttime, endtime;
             long long startt, endt;

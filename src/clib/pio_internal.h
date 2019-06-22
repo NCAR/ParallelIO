@@ -57,6 +57,8 @@
 #define PIO_DATATYPE_NULL MPI_DATATYPE_NULL
 #endif
 
+/* If logging is enabled, define LOG to call pio_log(), otherwise to
+ * do nothing. */
 #if PIO_ENABLE_LOGGING
 void pio_log(int severity, const char *fmt, ...);
 #define LOG(e) pio_log e
@@ -64,6 +66,15 @@ void pio_log(int severity, const char *fmt, ...);
 /** Logging macro for debugging. */
 #define LOG(e)
 #endif /* PIO_ENABLE_LOGGING */
+
+/** On error, when resources have to be freed, log message based on
+ * error code, set retval, and goto exit label. */
+#define BAIL(e)                                                         \
+    do {                                                                \
+        ret = e;                                                        \
+        LOG((0, "file %s, line %d, error %d.", __FILE__, __LINE__, e)); \
+        goto exit;                                                      \
+    } while (0)
 
 /** Find maximum. */
 #define max(a,b)                                \
