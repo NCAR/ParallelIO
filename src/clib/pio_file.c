@@ -274,7 +274,17 @@ static int sync_file(int ncid)
         }
     }
 
-    /* Call the sync function on IO tasks. */
+    /* Call the sync function on IO tasks.
+
+       We choose not to call ncmpi_sync() for PIO_IOTYPE_PNETCDF,
+       as it has been confirmed to have a very high cost on some
+       systems. ncmpi_sync() itself does nothing but simply calls
+       MPI_File_sync(), which usually incurs a huge performance
+       penalty by calling POSIX sync internally. It is designed
+       to ensure the data is safely stored on the disk hardware,
+       before the function returns. People use it for extremely
+       cautious behavior only.
+     */
     if (file->mode & PIO_WRITE)
     {
         if (ios->ioproc)
@@ -296,7 +306,6 @@ static int sync_file(int ncid)
 #ifdef _PNETCDF
             case PIO_IOTYPE_PNETCDF:
                 flush_output_buffer(file, true, 0);
-                ierr = ncmpi_sync(file->fh);
                 break;
 #endif
             default:
