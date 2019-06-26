@@ -2445,6 +2445,9 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
                 /* reset file markers for NETCDF on all tasks */
                 file->iotype = PIO_IOTYPE_NETCDF;
 
+                /* modify the user-specified iotype on all tasks */
+                *iotype = PIO_IOTYPE_NETCDF;
+
                 /* open netcdf file serially on main task */
                 if (ios->io_rank == 0)
                 {
