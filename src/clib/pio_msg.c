@@ -1785,41 +1785,41 @@ int put_vars_handler(iosystem_desc_t *ios)
     switch(xtype)
     {
     case NC_BYTE:
-        PIOc_put_vars_schar(ncid, varid, startp, countp, stridep, buf);
+        ret = PIOc_put_vars_schar(ncid, varid, startp, countp, stridep, buf);
         break;
     case NC_CHAR:
-        PIOc_put_vars_text(ncid, varid, startp, countp, stridep, buf);
+        ret = PIOc_put_vars_text(ncid, varid, startp, countp, stridep, buf);
         break;
     case NC_SHORT:
-        PIOc_put_vars_short(ncid, varid, startp, countp, stridep, buf);
+        ret = PIOc_put_vars_short(ncid, varid, startp, countp, stridep, buf);
         break;
     case NC_INT:
-        PIOc_put_vars_int(ncid, varid, startp, countp, stridep, buf);
+        ret = PIOc_put_vars_int(ncid, varid, startp, countp, stridep, buf);
         break;
     case PIO_LONG_INTERNAL:
-        PIOc_put_vars_long(ncid, varid, startp, countp, stridep, buf);
+        ret = PIOc_put_vars_long(ncid, varid, startp, countp, stridep, buf);
         break;
     case NC_FLOAT:
-        PIOc_put_vars_float(ncid, varid, startp, countp, stridep, buf);
+        ret = PIOc_put_vars_float(ncid, varid, startp, countp, stridep, buf);
         break;
     case NC_DOUBLE:
-        PIOc_put_vars_double(ncid, varid, startp, countp, stridep, buf);
+        ret = PIOc_put_vars_double(ncid, varid, startp, countp, stridep, buf);
         break;
 #ifdef _NETCDF4
     case NC_UBYTE:
-        PIOc_put_vars_uchar(ncid, varid, startp, countp, stridep, buf);
+        ret = PIOc_put_vars_uchar(ncid, varid, startp, countp, stridep, buf);
         break;
     case NC_USHORT:
-        PIOc_put_vars_ushort(ncid, varid, startp, countp, stridep, buf);
+        ret = PIOc_put_vars_ushort(ncid, varid, startp, countp, stridep, buf);
         break;
     case NC_UINT:
-        PIOc_put_vars_uint(ncid, varid, startp, countp, stridep, buf);
+        ret = PIOc_put_vars_uint(ncid, varid, startp, countp, stridep, buf);
         break;
     case NC_INT64:
-        PIOc_put_vars_longlong(ncid, varid, startp, countp, stridep, buf);
+        ret = PIOc_put_vars_longlong(ncid, varid, startp, countp, stridep, buf);
         break;
     case NC_UINT64:
-        PIOc_put_vars_ulonglong(ncid, varid, startp, countp, stridep, buf);
+        ret = PIOc_put_vars_ulonglong(ncid, varid, startp, countp, stridep, buf);
         break;
         /* case NC_STRING: */
         /*      PIOc_put_vars_string(ncid, varid, startp, countp, */
@@ -1832,6 +1832,9 @@ int put_vars_handler(iosystem_desc_t *ios)
     }
 
     free(buf);
+
+    if (ret)
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
 
     return PIO_NOERR;
 }
@@ -1903,41 +1906,41 @@ int get_vars_handler(iosystem_desc_t *ios)
     switch(xtype)
     {
     case NC_BYTE:
-        PIOc_get_vars_schar(ncid, varid, startp, countp, stridep, buf);
+        ret = PIOc_get_vars_schar(ncid, varid, startp, countp, stridep, buf);
         break;
     case NC_CHAR:
-        PIOc_get_vars_text(ncid, varid, startp, countp, stridep, buf);
+        ret = PIOc_get_vars_text(ncid, varid, startp, countp, stridep, buf);
         break;
     case NC_SHORT:
-        PIOc_get_vars_short(ncid, varid, startp, countp, stridep, buf);
+        ret = PIOc_get_vars_short(ncid, varid, startp, countp, stridep, buf);
         break;
     case NC_INT:
-        PIOc_get_vars_int(ncid, varid, startp, countp, stridep, buf);
+        ret = PIOc_get_vars_int(ncid, varid, startp, countp, stridep, buf);
         break;
     case PIO_LONG_INTERNAL:
-        PIOc_get_vars_long(ncid, varid, startp, countp, stridep, buf);
+        ret = PIOc_get_vars_long(ncid, varid, startp, countp, stridep, buf);
         break;
     case NC_FLOAT:
-        PIOc_get_vars_float(ncid, varid, startp, countp, stridep, buf);
+        ret = PIOc_get_vars_float(ncid, varid, startp, countp, stridep, buf);
         break;
     case NC_DOUBLE:
-        PIOc_get_vars_double(ncid, varid, startp, countp, stridep, buf);
+        ret = PIOc_get_vars_double(ncid, varid, startp, countp, stridep, buf);
         break;
 #ifdef _NETCDF4
     case NC_UBYTE:
-        PIOc_get_vars_uchar(ncid, varid, startp, countp, stridep, buf);
+        ret = PIOc_get_vars_uchar(ncid, varid, startp, countp, stridep, buf);
         break;
     case NC_USHORT:
-        PIOc_get_vars_ushort(ncid, varid, startp, countp, stridep, buf);
+        ret = PIOc_get_vars_ushort(ncid, varid, startp, countp, stridep, buf);
         break;
     case NC_UINT:
-        PIOc_get_vars_uint(ncid, varid, startp, countp, stridep, buf);
+        ret = PIOc_get_vars_uint(ncid, varid, startp, countp, stridep, buf);
         break;
     case NC_INT64:
-        PIOc_get_vars_longlong(ncid, varid, startp, countp, stridep, buf);
+        ret = PIOc_get_vars_longlong(ncid, varid, startp, countp, stridep, buf);
         break;
     case NC_UINT64:
-        PIOc_get_vars_ulonglong(ncid, varid, startp, countp, stridep, buf);
+        ret = PIOc_get_vars_ulonglong(ncid, varid, startp, countp, stridep, buf);
         break;
         /* case NC_STRING: */
         /*      PIOc_get_vars_string(ncid, varid, startp, countp, */
@@ -1952,6 +1955,9 @@ int get_vars_handler(iosystem_desc_t *ios)
     /* Free resourses. */
     free(buf);
     
+    if (ret)
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+
     LOG((1, "get_vars_handler succeeded!"));
     return PIO_NOERR;
 }
@@ -2104,11 +2110,14 @@ int inq_var_fill_handler(iosystem_desc_t *ios)
         fill_valuep = fill_value;
 
     /* Call the inq function to get the values. */
-    PIOc_inq_var_fill(ncid, varid, fill_modep, fill_valuep);
+    ret = PIOc_inq_var_fill(ncid, varid, fill_modep, fill_valuep);
 
     /* Free fill value storage if we allocated some. */
     if (fill_value_present)
         free(fill_value);
+
+    if (ret)
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
 
     return PIO_NOERR;
 }
@@ -2387,9 +2396,12 @@ int change_def_file_handler(iosystem_desc_t *ios, int msg)
 
     /* Call the function. */
     if (msg == PIO_MSG_ENDDEF)
-        PIOc_enddef(ncid);
+        ret = PIOc_enddef(ncid);
     else
-        PIOc_redef(ncid);
+        ret = PIOc_redef(ncid);
+
+    if (ret)
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
 
     LOG((1, "change_def_file_handler succeeded!"));
     return PIO_NOERR;
@@ -2521,11 +2533,14 @@ int def_var_fill_handler(iosystem_desc_t *ios)
          "type_size = %lld fill_value_present = %d", ncid, varid, fill_mode, type_size, fill_value_present));
 
     /* Call the function. */
-    PIOc_def_var_fill(ncid, varid, fill_mode, (fill_value_present) ? (fill_valuep) : NULL);
+    ret = PIOc_def_var_fill(ncid, varid, fill_mode, (fill_value_present) ? (fill_valuep) : NULL);
 
     /* Free memory allocated for the fill value. */
     if (fill_valuep)
         free(fill_valuep);
+
+    if (ret)
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
 
     LOG((1, "def_var_fill_handler succeeded!"));
     return PIO_NOERR;
@@ -2888,9 +2903,10 @@ int open_file_handler(iosystem_desc_t *ios)
     LOG((2, "open_file_handler got parameters len = %d filename = %s iotype = %d mode = %d",
          len, filename, iotype, mode));
 
-    /* Call the open file function. Errors are handling within
-     * function, so return code can be ignored. */
-    PIOc_openfile_retry(ios->iosysid, &ncid, &iotype, filename, mode, 0);
+    /* Call the open file function */
+    ret = PIOc_openfile_retry(ios->iosysid, &ncid, &iotype, filename, mode, 0);
+    if (ret)
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
 
     return PIO_NOERR;
 }
@@ -3005,6 +3021,9 @@ int initdecomp_dof_handler(iosystem_desc_t *ios)
     }
     
     LOG((1, "PIOc_InitDecomp returned %d", ret));
+    if (ret)
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+
     return PIO_NOERR;
 }
 
@@ -3079,8 +3098,8 @@ int write_darray_multi_handler(iosystem_desc_t *ios)
 
     /* Call the function from IO tasks. Errors are handled within
      * function. */
-    PIOc_write_darray_multi(ncid, varids, ioid, nvars, arraylen, array, framep,
-                            fillvaluep, flushtodisk);
+    ret = PIOc_write_darray_multi(ncid, varids, ioid, nvars, arraylen,
+                            array, framep, fillvaluep, flushtodisk);
 
     /* Free resources. */
     if(varids_sz > 0)
@@ -3097,6 +3116,9 @@ int write_darray_multi_handler(iosystem_desc_t *ios)
     }
     free(array);
     
+    if (ret)
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+
     LOG((1, "write_darray_multi_handler succeeded!"));
     return PIO_NOERR;
 }
@@ -3132,8 +3154,11 @@ int readdarray_handler(iosystem_desc_t *ios)
      * i.e., arraylen == 0
      */
     ierr = PIOc_read_darray(ncid, varid, ioid, 0, NULL);
+    if (ierr)
+        return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
 
-    return ierr;
+
+    return PIO_NOERR;
 }
 
 /** 
@@ -3357,8 +3382,10 @@ int freedecomp_handler(iosystem_desc_t *ios)
 
     /* Call the function. */
     ret = PIOc_freedecomp(iosysid, ioid);
-    
     LOG((1, "PIOc_freedecomp returned %d", ret));
+    if (ret)
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+    
     return PIO_NOERR;
 }
 
@@ -3483,95 +3510,95 @@ int pio_msg_handler2(int io_rank, int component_count, iosystem_desc_t **iosys,
         switch (msg)
         {
         case PIO_MSG_INQ_TYPE:
-            inq_type_handler(my_iosys);
+            ret = inq_type_handler(my_iosys);
             break;
         case PIO_MSG_INQ_FORMAT:
-            inq_format_handler(my_iosys);
+            ret = inq_format_handler(my_iosys);
             break;
         case PIO_MSG_CREATE_FILE:
-            create_file_handler(my_iosys);
+            ret = create_file_handler(my_iosys);
             LOG((2, "returned from create_file_handler"));
             break;
         case PIO_MSG_SYNC:
-            sync_file_handler(my_iosys);
+            ret = sync_file_handler(my_iosys);
             break;
         case PIO_MSG_ENDDEF:
         case PIO_MSG_REDEF:
             LOG((2, "calling change_def_file_handler"));
-            change_def_file_handler(my_iosys, msg);
+            ret = change_def_file_handler(my_iosys, msg);
             LOG((2, "returned from change_def_file_handler"));
             break;
         case PIO_MSG_OPEN_FILE:
-            open_file_handler(my_iosys);
+            ret = open_file_handler(my_iosys);
             break;
         case PIO_MSG_CLOSE_FILE:
-            close_file_handler(my_iosys);
+            ret = close_file_handler(my_iosys);
             break;
         case PIO_MSG_DELETE_FILE:
-            delete_file_handler(my_iosys);
+            ret = delete_file_handler(my_iosys);
             break;
         case PIO_MSG_RENAME_DIM:
-            rename_dim_handler(my_iosys);
+            ret = rename_dim_handler(my_iosys);
             break;
         case PIO_MSG_RENAME_VAR:
-            rename_var_handler(my_iosys);
+            ret = rename_var_handler(my_iosys);
             break;
         case PIO_MSG_RENAME_ATT:
-            rename_att_handler(my_iosys);
+            ret = rename_att_handler(my_iosys);
             break;
         case PIO_MSG_DEL_ATT:
-            delete_att_handler(my_iosys);
+            ret = delete_att_handler(my_iosys);
             break;
         case PIO_MSG_DEF_DIM:
-            def_dim_handler(my_iosys);
+            ret = def_dim_handler(my_iosys);
             break;
         case PIO_MSG_DEF_VAR:
-            def_var_handler(my_iosys);
+            ret = def_var_handler(my_iosys);
             break;
         case PIO_MSG_DEF_VAR_CHUNKING:
-            def_var_chunking_handler(my_iosys);
+            ret = def_var_chunking_handler(my_iosys);
             break;
         case PIO_MSG_DEF_VAR_FILL:
-            def_var_fill_handler(my_iosys);
+            ret = def_var_fill_handler(my_iosys);
             break;
         case PIO_MSG_DEF_VAR_ENDIAN:
-            def_var_endian_handler(my_iosys);
+            ret = def_var_endian_handler(my_iosys);
             break;
         case PIO_MSG_DEF_VAR_DEFLATE:
-            def_var_deflate_handler(my_iosys);
+            ret = def_var_deflate_handler(my_iosys);
             break;
         case PIO_MSG_INQ_VAR_ENDIAN:
-            inq_var_endian_handler(my_iosys);
+            ret = inq_var_endian_handler(my_iosys);
             break;
         case PIO_MSG_SET_VAR_CHUNK_CACHE:
-            set_var_chunk_cache_handler(my_iosys);
+            ret = set_var_chunk_cache_handler(my_iosys);
             break;
         case PIO_MSG_GET_VAR_CHUNK_CACHE:
-            get_var_chunk_cache_handler(my_iosys);
+            ret = get_var_chunk_cache_handler(my_iosys);
             break;
         case PIO_MSG_INQ:
-            inq_handler(my_iosys);
+            ret = inq_handler(my_iosys);
             break;
         case PIO_MSG_INQ_UNLIMDIMS:
-            inq_unlimdims_handler(my_iosys);
+            ret = inq_unlimdims_handler(my_iosys);
             break;
         case PIO_MSG_INQ_DIM:
-            inq_dim_handler(my_iosys, msg);
+            ret = inq_dim_handler(my_iosys, msg);
             break;
         case PIO_MSG_INQ_DIMID:
-            inq_dimid_handler(my_iosys);
+            ret = inq_dimid_handler(my_iosys);
             break;
         case PIO_MSG_INQ_VAR:
-            inq_var_handler(my_iosys);
+            ret = inq_var_handler(my_iosys);
             break;
         case PIO_MSG_INQ_VAR_CHUNKING:
-            inq_var_chunking_handler(my_iosys);
+            ret = inq_var_chunking_handler(my_iosys);
             break;
         case PIO_MSG_INQ_VAR_FILL:
-            inq_var_fill_handler(my_iosys);
+            ret = inq_var_fill_handler(my_iosys);
             break;
         case PIO_MSG_INQ_VAR_DEFLATE:
-            inq_var_deflate_handler(my_iosys);
+            ret = inq_var_deflate_handler(my_iosys);
             break;
         case PIO_MSG_GET_ATT:
             ret = att_get_handler(my_iosys);
@@ -3580,55 +3607,55 @@ int pio_msg_handler2(int io_rank, int component_count, iosystem_desc_t **iosys,
             ret = att_put_handler(my_iosys);
             break;
         case PIO_MSG_INQ_VARID:
-            inq_varid_handler(my_iosys);
+            ret = inq_varid_handler(my_iosys);
             break;
         case PIO_MSG_INQ_ATT:
-            inq_att_handler(my_iosys);
+            ret = inq_att_handler(my_iosys);
             break;
         case PIO_MSG_INQ_ATTNAME:
-            inq_attname_handler(my_iosys);
+            ret = inq_attname_handler(my_iosys);
             break;
         case PIO_MSG_INQ_ATTID:
-            inq_attid_handler(my_iosys);
+            ret = inq_attid_handler(my_iosys);
             break;
         case PIO_MSG_GET_VARS:
-            get_vars_handler(my_iosys);
+            ret = get_vars_handler(my_iosys);
             break;
         case PIO_MSG_PUT_VARS:
-            put_vars_handler(my_iosys);
+            ret = put_vars_handler(my_iosys);
             break;
         case PIO_MSG_INITDECOMP_DOF:
-            initdecomp_dof_handler(my_iosys);
+            ret = initdecomp_dof_handler(my_iosys);
             break;
         case PIO_MSG_WRITEDARRAYMULTI:
-            write_darray_multi_handler(my_iosys);
+            ret = write_darray_multi_handler(my_iosys);
             break;
         case PIO_MSG_SETFRAME:
-            setframe_handler(my_iosys);
+            ret = setframe_handler(my_iosys);
             break;
         case PIO_MSG_ADVANCEFRAME:
-            advanceframe_handler(my_iosys);
+            ret = advanceframe_handler(my_iosys);
             break;
         case PIO_MSG_READDARRAY:
-            readdarray_handler(my_iosys);
+            ret = readdarray_handler(my_iosys);
             break;
         case PIO_MSG_SETERRORHANDLING:
-            seterrorhandling_handler(my_iosys);
+            ret = seterrorhandling_handler(my_iosys);
             break;
         case PIO_MSG_SET_CHUNK_CACHE:
-            set_chunk_cache_handler(my_iosys);
+            ret = set_chunk_cache_handler(my_iosys);
             break;
         case PIO_MSG_GET_CHUNK_CACHE:
-            get_chunk_cache_handler(my_iosys);
+            ret = get_chunk_cache_handler(my_iosys);
             break;
         case PIO_MSG_FREEDECOMP:
-            freedecomp_handler(my_iosys);
+            ret = freedecomp_handler(my_iosys);
             break;
         case PIO_MSG_SET_FILL:
-            set_fill_handler(my_iosys);
+            ret = set_fill_handler(my_iosys);
             break;
         case PIO_MSG_FINALIZE:
-            finalize_handler(my_iosys, index);
+            ret = finalize_handler(my_iosys, index);
             break;
         default:
             LOG((0, "unknown message received %d", msg));
