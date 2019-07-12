@@ -2482,8 +2482,8 @@ int PIOc_def_var_fill(int ncid, int varid, int fill_mode, const void *fill_value
 {
     iosystem_desc_t *ios;  /* Pointer to io system information. */
     file_desc_t *file;     /* Pointer to file information. */
-    nc_type xtype;         /* The type of the variable (and fill value att). */
-    PIO_Offset type_size;  /* Size in bytes of this variable's type. */
+    nc_type xtype = NC_NAT;    /* The type of the variable (and fill value att). */
+    PIO_Offset type_size = 0;  /* Size in bytes of this variable's type. */
     int ierr = PIO_NOERR;              /* Return code from function calls. */
     int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI function codes. */
 
@@ -2618,8 +2618,8 @@ int PIOc_inq_var_fill(int ncid, int varid, int *no_fill, void *fill_valuep)
 {
     iosystem_desc_t *ios;  /* Pointer to io system information. */
     file_desc_t *file;     /* Pointer to file information. */
-    nc_type xtype;         /* Type of variable and its _FillValue attribute. */
-    PIO_Offset type_size;  /* Size in bytes of this variable's type. */
+    nc_type xtype = NC_NAT;  /* Type of variable and its _FillValue attribute. */
+    PIO_Offset type_size = 0;  /* Size in bytes of this variable's type. */
     int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI function codes. */
     int ierr = PIO_NOERR;  /* Return code from function calls. */
 
