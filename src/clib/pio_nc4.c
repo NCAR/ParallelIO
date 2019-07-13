@@ -320,7 +320,7 @@ int PIOc_inq_var_chunking(int ncid, int varid, int *storagep, PIO_Offset *chunks
     file_desc_t *file;     /* Pointer to file information. */
     int ierr = PIO_NOERR;              /* Return code from function calls. */
     int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI function codes. */
-    int ndims; /* The number of dimensions in the variable. */
+    int ndims = 0; /* The number of dimensions in the variable. */
 
     LOG((1, "PIOc_inq_var_chunking ncid = %d varid = %d"));
 

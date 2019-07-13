@@ -34,8 +34,8 @@ int PIOc_put_att_tc(int ncid, int varid, const char *name, nc_type atttype,
 {
     iosystem_desc_t *ios;  /* Pointer to io system information. */
     file_desc_t *file;     /* Pointer to file information. */
-    PIO_Offset atttype_len;    /* Length (in bytes) of the att type in file. */
-    PIO_Offset memtype_len;    /* Length of the att data type in memory. */
+    PIO_Offset atttype_len = 0;    /* Length (in bytes) of the att type in file. */
+    PIO_Offset memtype_len = 0;    /* Length of the att data type in memory. */
     int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI function codes. */
     int ierr = PIO_NOERR;           /* Return code from function calls. */
 
@@ -269,10 +269,10 @@ int PIOc_get_att_tc(int ncid, int varid, const char *name, nc_type memtype, void
 {
     iosystem_desc_t *ios;   /* Pointer to io system information. */
     file_desc_t *file;      /* Pointer to file information. */
-    nc_type atttype;        /* The type of the attribute. */
-    PIO_Offset attlen;      /* Number of elements in the attribute array. */
-    PIO_Offset atttype_len; /* Length in bytes of one element of the attribute type. */
-    PIO_Offset memtype_len; /* Length in bytes of one element of the memory type. */
+    nc_type atttype = NC_NAT;   /* The type of the attribute. */
+    PIO_Offset attlen = 0;      /* Number of elements in the attribute array. */
+    PIO_Offset atttype_len = 0; /* Length in bytes of one element of the attribute type. */
+    PIO_Offset memtype_len = 0; /* Length in bytes of one element of the memory type. */
     int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI function calls. */
     int ierr = PIO_NOERR;               /* Return code from function calls. */
 
@@ -500,10 +500,10 @@ int PIOc_get_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
 {
     iosystem_desc_t *ios;  /* Pointer to io system information. */
     file_desc_t *file;     /* Pointer to file information. */
-    int ndims;             /* The number of dimensions in the variable. */
-    PIO_Offset typelen;    /* Size (in bytes) of the data type of data in buf. */
+    int ndims = 0;         /* The number of dimensions in the variable. */
+    PIO_Offset typelen = 0; /* Size (in bytes) of the data type of data in buf. */
     PIO_Offset num_elem = 1; /* Number of data elements in the buffer. */
-    nc_type vartype;         /* The type of the var we are reading from. */
+    nc_type vartype = NC_NAT; /* The type of the var we are reading from. */
     char start_present = start ? true : false;
     char count_present = count ? true : false;
     char stride_present = stride ? true : false;
@@ -915,15 +915,15 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
 {
     iosystem_desc_t *ios;  /* Pointer to io system information. */
     file_desc_t *file;  /* Pointer to file information. */
-    int ndims;          /* The number of dimensions in the variable. */
-    PIO_Offset typelen; /* Size (in bytes) of the data type of data in buf. */
+    int ndims = 0;      /* The number of dimensions in the variable. */
+    PIO_Offset typelen = 0; /* Size (in bytes) of the data type of data in buf. */
     PIO_Offset num_elem = 1; /* Number of data elements in the buffer. */
     char start_present = start ? true : false;    /* Is start non-NULL? */
     char count_present = count ? true : false;    /* Is count non-NULL? */
     char stride_present = stride ? true : false;  /* Is stride non-NULL? */
     var_desc_t *vdesc;
     int *request;
-    nc_type vartype;   /* The type of the var we are reading from. */
+    nc_type vartype = NC_NAT;   /* The type of the var we are reading from. */
     int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI function codes. */
     int ierr = PIO_NOERR;          /* Return code from function calls. */
 
