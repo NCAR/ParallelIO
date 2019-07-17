@@ -306,11 +306,11 @@ int test_decomp_read_write(int iosysid, int ioid, int num_flavors, int *flavor, 
             
                 /* Get the IO system info. */
                 if (!(ios = pio_get_iosystem_from_id(iosysid)))
-                    return pio_err(NULL, NULL, PIO_EBADID, __FILE__, __LINE__);
+                    return pio_err(NULL, NULL, PIO_EBADID, __FILE__, __LINE__, "Getting I/O system from id failed");
 
                 /* Get the IO desc, which describes the decomposition. */
                 if (!(iodesc = pio_get_iodesc_from_id(ioid2)))
-                    return pio_err(ios, NULL, PIO_EBADID, __FILE__, __LINE__);
+                    return pio_err(ios, NULL, PIO_EBADID, __FILE__, __LINE__, "Getting I/O decomposition from id failed");
                 if (iodesc->ioid != ioid2 || iodesc->maplen != TARGET_NTASKS || iodesc->ndims != NDIM2 ||
                     iodesc->nrecvs != 1 || iodesc->ndof != TARGET_NTASKS || iodesc->num_aiotasks != TARGET_NTASKS
                     || iodesc->rearranger != PIO_REARR_SUBSET || iodesc->maxregions != 1 ||

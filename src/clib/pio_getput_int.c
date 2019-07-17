@@ -44,12 +44,18 @@ int PIOc_put_att_tc(int ncid, int varid, const char *name, nc_type atttype,
 #endif
     /* Find the info about this file. */
     if ((ierr = pio_get_file(ncid, &file)))
-        return pio_err(NULL, NULL, ierr, __FILE__, __LINE__);
+    {
+        return pio_err(NULL, NULL, ierr, __FILE__, __LINE__,
+                        "Writing variable (varid=%d) attribute (%s) to file failed. Invalid file id (ncid=%d) provided", varid, (name) ? name : "NULL", ncid);
+    }
     ios = file->iosystem;
 
     /* User must provide some valid parameters. */
     if (!name || !op || strlen(name) > PIO_MAX_NAME || len < 0)
-        return pio_err(ios, file, PIO_EINVAL, __FILE__, __LINE__);
+    {
+        return pio_err(ios, file, PIO_EINVAL, __FILE__, __LINE__,
+                        "Writing variable (%s, varid=%d) attribute (%s) to file (%s, ncid=%d) failed. Invalid arguments provided, Attribute name (name) is %s (expected not NULL), Attribute data pointer (op) is %s (expected not NULL), Attribute name length is %lld (expected <= %d), Attribute length is %lld (expected >= 0)", pio_get_vname_from_file(file, varid), varid, PIO_IS_NULL(name), pio_get_fname_from_file(file), file->pio_ncid, PIO_IS_NULL(name), PIO_IS_NULL(op), (name) ? ((unsigned long long )strlen(name)) : 0,  PIO_MAX_NAME, (unsigned long long ) len);
+    }
 
     LOG((1, "PIOc_put_att_tc ncid = %d varid = %d name = %s atttype = %d len = %d memtype = %d",
          ncid, varid, name, atttype, len, memtype));
@@ -90,8 +96,8 @@ int PIOc_put_att_tc(int ncid, int varid, const char *name, nc_type atttype,
             len * memtype_len, op);
         if(ierr != PIO_NOERR)
         {
-            LOG((1, "Error sending async mesg for PIO_MSG_PUT_ATT"));
-            return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
+            return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
+                            "Writing variable (%s, varid=%d) attribute (%s) to file (%s, ncid=%d) failed. Error sending asynchronous message, PIO_MSG_PUT_ATT",  pio_get_vname_from_file(file, varid), varid, name, pio_get_fname_from_file(file), file->pio_ncid);
         }
 
         /* Broadcast values currently only known on computation tasks to IO tasks. */
@@ -176,7 +182,8 @@ int PIOc_put_att_tc(int ncid, int varid, const char *name, nc_type atttype,
                 ierr = ncmpi_put_att_double(file->fh, varid, name, atttype, len, op);
                 break;
             default:
-                return pio_err(ios, file, PIO_EBADTYPE, __FILE__, __LINE__);
+                return pio_err(ios, file, PIO_EBADTYPE, __FILE__, __LINE__,
+                                "Writing variable (%s, varid=%d) attribute (%s) to file (%s, ncid=%d) failed. Unsupported PnetCDF attribute type (memtype = %x)", pio_get_vname_from_file(file, varid), varid, name, pio_get_fname_from_file(file), file->pio_ncid, memtype);
             }
         }
 #endif /* _PNETCDF */
@@ -230,7 +237,8 @@ int PIOc_put_att_tc(int ncid, int varid, const char *name, nc_type atttype,
                 /*      break; */
 #endif /* _NETCDF4 */
             default:
-                return pio_err(ios, file, PIO_EBADTYPE, __FILE__, __LINE__);
+                return pio_err(ios, file, PIO_EBADTYPE, __FILE__, __LINE__,
+                                "Writing variable (%s, varid=%d) attribute (%s) to file (%s, ncid=%d) failed. Unsupported attribute type (memtype = %x)", pio_get_vname_from_file(file, varid), varid, name, pio_get_fname_from_file(file), file->pio_ncid, memtype);
             }
         }
     }
@@ -238,7 +246,8 @@ int PIOc_put_att_tc(int ncid, int varid, const char *name, nc_type atttype,
     ierr = check_netcdf(NULL, file, ierr, __FILE__, __LINE__);
     if(ierr != PIO_NOERR){
         LOG((1, "nc*_put_att_* failed, ierr = %d", ierr));
-        return ierr;
+        return pio_err(NULL, file, ierr, __FILE__, __LINE__,
+                        "Writing variable (%s, varid=%d) attribute (%s) to file (%s, ncid=%d) failed. Internal I/O library (%s) call failed", pio_get_vname_from_file(file, varid), varid, name, pio_get_fname_from_file(file), file->pio_ncid, pio_iotype_to_string(file->iotype));
     }
 
 #ifdef TIMING
@@ -281,12 +290,18 @@ int PIOc_get_att_tc(int ncid, int varid, const char *name, nc_type memtype, void
 #endif
     /* Find the info about this file. */
     if ((ierr = pio_get_file(ncid, &file)))
-        return pio_err(NULL, NULL, ierr, __FILE__, __LINE__);
+    {
+        return pio_err(NULL, NULL, ierr, __FILE__, __LINE__,
+                        "Reading attribute (%s) from file failed. Invalid file id (ncid=%d) provided", (name) ? name : "NULL", ncid);
+    }
     ios = file->iosystem;
 
     /* User must provide a name and destination pointer. */
     if (!name || !ip || strlen(name) > PIO_MAX_NAME)
-        return pio_err(ios, file, PIO_EINVAL, __FILE__, __LINE__);
+    {
+        return pio_err(ios, file, PIO_EINVAL, __FILE__, __LINE__,
+                        "Reading variable (%s, varid=%d) attribute (%s) failed. Invalid arguments provided, Attribute name is %s (expected not NULL), attribute data pointer is %s (expected not NULL), attribute name length = %lld (expected <= %d)", pio_get_vname_from_file(file, varid), varid, (name) ? name : "UNKNOWN", PIO_IS_NULL(name), PIO_IS_NULL(ip), (name) ? ((unsigned long long )strlen(name)) : 0, PIO_MAX_NAME);
+    }
 
     LOG((1, "PIOc_get_att_tc ncid %d varid %d name %s memtype %d",
          ncid, varid, name, memtype));
@@ -336,7 +351,8 @@ int PIOc_get_att_tc(int ncid, int varid, const char *name, nc_type memtype, void
         if(ierr != PIO_NOERR)
         {
             LOG((1, "Error sending async msg for PIO_MSG_GET_ATT"));
-            return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
+            return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
+                            "Reading variable (%s, varid=%d) attribute (%s) failed. Error sending asynchronous message, PIO_MSG_GET_ATT", (varid != PIO_GLOBAL) ? file->varlist[varid].vname : "PIO_GLOBAL", varid, name);
         }
 
         /* Broadcast values currently only known on computation tasks to IO tasks. */
@@ -382,7 +398,8 @@ int PIOc_get_att_tc(int ncid, int varid, const char *name, nc_type memtype, void
                 ierr = ncmpi_get_att_double(file->fh, varid, name, ip);
                 break;
             default:
-                return pio_err(ios, file, PIO_EBADTYPE, __FILE__, __LINE__);
+                return pio_err(ios, file, PIO_EBADTYPE, __FILE__, __LINE__,
+                                "Reading variable (%s, varid=%d) attribute (%s) failed. Unsupported PnetCDF attribute type (type = %x)", (varid != PIO_GLOBAL) ? file->varlist[varid].vname : "PIO_GLOBAL", varid, name, memtype);
             }
         }
 #endif /* _PNETCDF */
@@ -436,7 +453,8 @@ int PIOc_get_att_tc(int ncid, int varid, const char *name, nc_type memtype, void
                 /*      break; */
 #endif /* _NETCDF4 */
             default:
-                return pio_err(ios, file, PIO_EBADTYPE, __FILE__, __LINE__);
+                return pio_err(ios, file, PIO_EBADTYPE, __FILE__, __LINE__,
+                                "Reading variable (%s, varid=%d) attribute (%s) failed. Unsupported attribute type (type = %x)", (varid != PIO_GLOBAL) ? file->varlist[varid].vname : "PIO_GLOBAL", varid, name, memtype);
             }
         }
     }
@@ -444,7 +462,8 @@ int PIOc_get_att_tc(int ncid, int varid, const char *name, nc_type memtype, void
     ierr = check_netcdf(NULL, file, ierr, __FILE__, __LINE__);
     if(ierr != PIO_NOERR){
         LOG((1, "nc*_get_att_* failed, ierr = %d", ierr));
-        return ierr;
+        return pio_err(NULL, file, ierr, __FILE__, __LINE__,
+                        "Reading variable (%s, varid=%d) attribute (%s) failed. Internal I/O library (%s) call failed", (varid != PIO_GLOBAL) ? file->varlist[varid].vname : "PIO_GLOBAL", varid, name, pio_iotype_to_string(file->iotype));
     }
 
     /* Broadcast results to all tasks. */
@@ -519,12 +538,18 @@ int PIOc_get_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
 
     /* Find the info about this file. */
     if ((ierr = pio_get_file(ncid, &file)))
-        return pio_err(NULL, NULL, ierr, __FILE__, __LINE__);
+    {
+        return pio_err(NULL, NULL, ierr, __FILE__, __LINE__,
+                        "Reading variable (varid=%d) from file failed. Invalid file id (ncid=%d) provided", varid, ncid);
+    }
     ios = file->iosystem;
 
     /* User must provide a place to put some data. */
     if (!buf)
-        return pio_err(ios, file, PIO_EINVAL, __FILE__, __LINE__);
+    {
+        return pio_err(ios, file, PIO_EINVAL, __FILE__, __LINE__,
+                        "Reading variable (%s, varid=%d) from file (%s, ncid=%d) failed. The user buffer (buf) provided is NULL (expected a valid user buffer to read data)", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid);
+    }
 
     /* Run these on all tasks if async is not in use, but only on
      * non-IO tasks if async is in use. */
@@ -533,8 +558,8 @@ int PIOc_get_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
         /* Get the type of this var. */
         ierr = PIOc_inq_vartype(ncid, varid, &vartype);
         if(ierr != PIO_NOERR){
-            LOG((1, "PIOc_inq_vartype failed, ierr = %d", ierr));
-            return ierr;
+            return pio_err(NULL, NULL, ierr, __FILE__, __LINE__,
+                        "Reading variable (%s, varid=%d) from file (%s, ncid=%d) failed. Inquiring the variable type failed", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid);
         }
 
         /* If no type was specified, use the var type. */
@@ -548,16 +573,16 @@ int PIOc_get_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
         {
             ierr = PIOc_inq_type(ncid, xtype, NULL, &typelen);
             if(ierr != PIO_NOERR){
-                LOG((1, "PIOc_inq_type failed, ierr = %d", ierr));
-                return ierr;
+                return pio_err(NULL, NULL, ierr, __FILE__, __LINE__,
+                            "Reading variable (%s, varid=%d) from file (%s, ncid=%d) failed. Inquiring the variable type length failed", pio_get_vname_from_file(file, varid), varid, pio_get_vname_from_file(file, varid), ncid);
             }
         }
 
         /* Get the number of dims for this var. */
         ierr = PIOc_inq_varndims(ncid, varid, &ndims);
         if(ierr != PIO_NOERR){
-            LOG((1, "PIOc_inq_varndims failed, ierr = %d", ierr));
-            return ierr;
+            return pio_err(NULL, NULL, ierr, __FILE__, __LINE__,
+                        "Reading variable (%s, varid=%d) from file (%s, ncid=%d) failed. Inquiring the number of variable dimensions failed", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid);
         }
         LOG((3, "ndims = %d", ndims));
 
@@ -603,8 +628,8 @@ int PIOc_get_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                             xtype, num_elem, typelen);
         if(ierr != PIO_NOERR)
         {
-            LOG((1, "Error sending async msg for PIO_MSG_GET_VARS"));
-            return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
+            return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
+                            "Reading variable (%s, varid=%d) from file (%s, ncid=%d) failed. Error sending asynchronous message, PIO_MSG_GET_VARS", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid);
         }
 
         if(!start_present)
@@ -639,7 +664,10 @@ int PIOc_get_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
             LOG((2, "pnetcdf calling ncmpi_get_vars_*() file->fh = %d varid = %d", file->fh, varid));
             /* Turn on independent access for pnetcdf file. */
             if ((ierr = ncmpi_begin_indep_data(file->fh)))
-                return pio_err(ios, file, ierr, __FILE__, __LINE__);
+            {
+                return pio_err(ios, file, ierr, __FILE__, __LINE__,
+                                "Reading variable (%s, varid=%d) from file (%s, ncid=%d) failed. Starting independent (across processes) access failed on the file", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid);
+            }
 
             /* Only the IO master does the IO, so we are not really
              * getting parallel IO here. */
@@ -669,13 +697,17 @@ int PIOc_get_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                     ierr = ncmpi_get_vars_double(file->fh, varid, start, count, stride, buf);
                     break;
                 default:
-                    return pio_err(ios, file, PIO_EBADIOTYPE, __FILE__, __LINE__);
+                    return pio_err(ios, file, PIO_EBADIOTYPE, __FILE__, __LINE__,
+                                    "Reading variable (%s, varid=%d) from file (%s, ncid=%d) failed. Unsupported variable type (type=%x)", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid, xtype);
                 }
             }
 
             /* Turn off independent access for pnetcdf file. */
             if ((ierr = ncmpi_end_indep_data(file->fh)))
-                return pio_err(ios, file, ierr, __FILE__, __LINE__);
+            {
+                return pio_err(ios, file, ierr, __FILE__, __LINE__,
+                                "Reading variable (%s, varid=%d) from file (%s, ncid=%d) failed. Ending independent (across processes) access failed on the file", pio_get_vname_from_file(file, varid), varid, pio_get_vname_from_file(file, varid), ncid);
+            }
         }
 #endif /* _PNETCDF */
 
@@ -740,14 +772,16 @@ int PIOc_get_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                 /*      break; */
 #endif /* _NETCDF4 */
             default:
-                return pio_err(ios, file, PIO_EBADTYPE, __FILE__, __LINE__);
+                return pio_err(ios, file, PIO_EBADTYPE, __FILE__, __LINE__,
+                                "Reading variable (%s, varid=%d) from file (%s, ncid=%d) failed. Unsupported variable type (type=%x)", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid, xtype);
             }
     }
 
     ierr = check_netcdf(NULL, file, ierr, __FILE__, __LINE__);
     if(ierr != PIO_NOERR){
         LOG((1, "nc*_get_vars_* failed, ierr = %d", ierr));
-        return ierr;
+        return pio_err(NULL, file, ierr, __FILE__, __LINE__,
+                        "Reading variable (%s, varid=%d) from file (%s, ncid=%d) failed. The internal I/O library (%s) call failed", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid, pio_iotype_to_string(file->iotype));
     }
 
     /* Send the data. */
@@ -790,12 +824,18 @@ int PIOc_get_var1_tc(int ncid, int varid, const PIO_Offset *index, nc_type xtype
 
     /* Find the info about this file. We need this for error handling. */
     if ((ierr = pio_get_file(ncid, &file)))
-        return pio_err(NULL, NULL, ierr, __FILE__, __LINE__);
+    {
+        return pio_err(NULL, NULL, ierr, __FILE__, __LINE__,
+                        "Reading variable (varid=%d) from file failed. Invalid file id (ncid=%d) provided", varid, ncid);
+    }
     ios = file->iosystem;
 
     /* Find the number of dimensions. */
     if ((ierr = PIOc_inq_varndims(ncid, varid, &ndims)))
-        return pio_err(ios, file, ierr, __FILE__, __LINE__);
+    {
+        return pio_err(ios, file, ierr, __FILE__, __LINE__,
+                        "Reading variable (%s, varid=%d) from file (%s, ncid=%d) failed. Unable to inquire the number of dimensions in the variable", pio_get_vname_from_file(file, varid), varid, pio_get_vname_from_file(file, varid), file->pio_ncid);
+    }
 
     /* Set up count array. */
     PIO_Offset count[ndims];
@@ -837,12 +877,18 @@ int PIOc_get_var_tc(int ncid, int varid, nc_type xtype, void *buf)
 
     /* Find the info about this file. We need this for error handling. */
     if ((ierr = pio_get_file(ncid, &file)))
-        return pio_err(NULL, NULL, ierr, __FILE__, __LINE__);
+    {
+        return pio_err(NULL, NULL, ierr, __FILE__, __LINE__,
+                        "Reading variable (varid=%d) from file failed. Invalid file id (ncid=%d) failed", varid, ncid);
+    }
     ios = file->iosystem;
 
     /* Find the number of dimensions. */
     if ((ierr = PIOc_inq_varndims(ncid, varid, &ndims)))
-        return pio_err(ios, file, ierr, __FILE__, __LINE__);
+    {
+        return pio_err(ios, file, ierr, __FILE__, __LINE__,
+                        "Reading variable (%s, varid=%d) from file (%s, ncid=%d) failed. Inquiring number of dimensions in the variable failed", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid);
+    }
 
     /* Scalar vars (which have ndims == 0) should just pass NULLs for
      * start/count. */
@@ -851,12 +897,18 @@ int PIOc_get_var_tc(int ncid, int varid, nc_type xtype, void *buf)
         /* Find the dimension IDs. */
         int dimids[ndims];
         if ((ierr = PIOc_inq_vardimid(ncid, varid, dimids)))
-            return pio_err(ios, file, ierr, __FILE__, __LINE__);
+        {
+            return pio_err(ios, file, ierr, __FILE__, __LINE__,
+                            "Reading variable (%s, varid=%d) from file (%s, ncid=%d) failed. Inquiring variable dimension ids failed", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid);
+        }
 
         /* Find the dimension lengths. */
         for (int d = 0; d < ndims; d++)
             if ((ierr = PIOc_inq_dimlen(ncid, dimids[d], &dimlen[d])))
-                return pio_err(ios, file, ierr, __FILE__, __LINE__);
+            {
+                return pio_err(ios, file, ierr, __FILE__, __LINE__,
+                                "Reading variable (%s, varid=%d) from file (%s, ncid=%d) failed. Inquiring variable dimension length for dim %d (dimid = %d) failed", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid, d, dimids[d]);
+            }
 
         /* Set up start array. */
         for (int d = 0; d < ndims; d++)
@@ -936,12 +988,18 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
 
     /* Get file info. */
     if ((ierr = pio_get_file(ncid, &file)))
-        return pio_err(NULL, NULL, ierr, __FILE__, __LINE__);
+    {
+        return pio_err(NULL, NULL, ierr, __FILE__, __LINE__,
+                        "Writing variable (varid=%d) to file failed. Invalid file id (ncid=%d) provided", varid, ncid);
+    }
     ios = file->iosystem;
 
     /* User must provide a place to put some data. */
     if (!buf)
-        return pio_err(ios, file, PIO_EINVAL, __FILE__, __LINE__);
+    {
+        return pio_err(ios, file, PIO_EINVAL, __FILE__, __LINE__,
+                        "Writing variable (%s, varid=%d) to file (%s, ncid=%d) failed. Invalid/NULL user buffer provided", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid);
+    }
 
     /* Run these on all tasks if async is not in use, but only on
      * non-IO tasks if async is in use. */
@@ -950,8 +1008,8 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
         /* Get the type of this var. */
         ierr = PIOc_inq_vartype(ncid, varid, &vartype);
         if(ierr != PIO_NOERR){
-            LOG((1, "PIOc_inq_vartype failed, ierr = %d", ierr));
-            return ierr;
+            return pio_err(NULL, NULL, ierr, __FILE__, __LINE__,
+                            "Writing variable (%s, varid=%d) to file (%s, ncid=%d) failed. Inquiring variable type failed", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid);
         }
 
         /* If no type was specified, use the var type. */
@@ -961,8 +1019,8 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
         /* Get the number of dims for this var. */
         ierr = PIOc_inq_varndims(ncid, varid, &ndims);
         if(ierr != PIO_NOERR){
-            LOG((1, "PIOc_inq_varndims failed, ierr = %d", ierr));
-            return ierr;
+            return pio_err(NULL, NULL, ierr, __FILE__, __LINE__,
+                            "Writing variable (%s, varid=%d) to file (%s, ncid=%d) failed. Inquiring number of dimensions of the variable failed", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid);
         }
 
         /* Get the length of the data type. */
@@ -972,8 +1030,8 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
         {
             ierr = PIOc_inq_type(ncid, xtype, NULL, &typelen);
             if(ierr != PIO_NOERR){
-                LOG((1, "PIOc_inq_type failed, ierr = %d", ierr));
-                return ierr;
+                return pio_err(NULL, NULL, ierr, __FILE__, __LINE__,
+                                "Writing variable (%s, varid=%d) to file (%s, ncid=%d) failed. Inquiring variable type length failed", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid);
             }
         }
 
@@ -1019,8 +1077,8 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                             num_elem * typelen, buf); 
         if(ierr != PIO_NOERR)
         {
-            LOG((1, "Error sending async msg for PIO_MSG_PUT_VARS"));
-            return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
+            return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
+                            "Writing variable (%s, varid=%d) to file (%s, ncid=%d) failed. Error sending asynchronous message, PIO_MSG_PUT_VARS", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid);
         }
 
         if(!start_present)
@@ -1050,7 +1108,10 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
     if (file->iotype == PIO_IOTYPE_ADIOS)
     {
         if (varid < 0 || varid >= file->num_vars)
-            return pio_err(file->iosystem, file, PIO_EBADID, __FILE__, __LINE__);
+        {
+            return pio_err(file->iosystem, file, PIO_EBADID, __FILE__, __LINE__,
+                            "Writing variable to file (%s, ncid=%d) failed. Invalid variable id (varid=%d, expected >=0 and < number of variables in the file, %d) provided", pio_get_fname_from_file(file), ncid, varid, file->num_vars);
+        }
 
         /* First we need to define the variable now that we know it's decomposition */
         adios_var_desc_t *av = &(file->adios_vars[varid]);
@@ -1207,7 +1268,10 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
             if (vdesc->nreqs % PIO_REQUEST_ALLOC_CHUNK == 0)
                 if (!(vdesc->request = realloc(vdesc->request,
                                                sizeof(int) * (vdesc->nreqs + PIO_REQUEST_ALLOC_CHUNK))))
-                    return pio_err(ios, file, PIO_ENOMEM, __FILE__, __LINE__);
+                {
+                    return pio_err(ios, file, PIO_ENOMEM, __FILE__, __LINE__,
+                                    "Writing variable (%s, varid=%d) to file (%s, ncid=%d) failed. Out of memory, reallocating memory (%lld bytes) for array to store PnetCDF request handles", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid, (long long int) (sizeof(int) * (vdesc->nreqs + PIO_REQUEST_ALLOC_CHUNK)));
+                }
             request = vdesc->request + vdesc->nreqs;
             LOG((2, "PIOc_put_vars_tc request = %d", vdesc->request));
 
@@ -1247,7 +1311,8 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                         ierr = ncmpi_bput_var_double(file->fh, varid, buf, request);
                         break;
                     default:
-                        return pio_err(ios, file, PIO_EBADIOTYPE, __FILE__, __LINE__);
+                        return pio_err(ios, file, PIO_EBADIOTYPE, __FILE__, __LINE__,
+                                        "Writing variable (%s, varid=%d) to file (%s, ncid=%d) failed. Unsupported PnetCDF variable type (type=%x)", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid, xtype);
                     }
                     LOG((2, "PIOc_put_vars_tc io_rank 0 done with pnetcdf call, ierr=%d", ierr));
                 }
@@ -1267,7 +1332,10 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                 {
                     LOG((2, "stride not present"));
                     if (!(fake_stride = malloc(ndims * sizeof(PIO_Offset))))
-                        return pio_err(ios, file, PIO_ENOMEM, __FILE__, __LINE__);
+                    {
+                        return pio_err(ios, file, PIO_ENOMEM, __FILE__, __LINE__,
+                                        "Writing variable (%s, varid=%d) to file (%s, ncid=%d) failed. Out of memory, allocating memory (%lld bytes) for default variable stride", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid, (long long int) (ndims * sizeof(PIO_Offset)));
+                    }
                     for (int d = 0; d < ndims; d++)
                         fake_stride[d] = 1;
                 }
@@ -1301,7 +1369,8 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                         ierr = ncmpi_bput_vars_double(file->fh, varid, start, count, fake_stride, buf, request);
                         break;
                     default:
-                        return pio_err(ios, file, PIO_EBADTYPE, __FILE__, __LINE__);
+                        return pio_err(ios, file, PIO_EBADTYPE, __FILE__, __LINE__,
+                                        "Writing variable (%s, varid=%d) to file (%s, ncid=%d) failed. Unsupported PnetCDF variable type (%x)", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid, xtype);
                     }
                     LOG((2, "PIOc_put_vars_tc io_rank 0 done with pnetcdf call, ierr=%d", ierr));
                 }
@@ -1382,7 +1451,8 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                 /*      break; */
 #endif /* _NETCDF4 */
             default:
-                return pio_err(ios, file, PIO_EBADTYPE, __FILE__, __LINE__);
+                return pio_err(ios, file, PIO_EBADTYPE, __FILE__, __LINE__,
+                                "Writing variable (%s, varid=%d) to file (%s, ncid=%d) failed. Unsupported variable type (%x) for iotype=%s", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid, xtype, pio_iotype_to_string(file->iotype));
             }
             LOG((2, "PIOc_put_vars_tc io_rank 0 done with netcdf call, ierr=%d", ierr));
         }
@@ -1391,7 +1461,9 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
     ierr = check_netcdf(NULL, file, ierr, __FILE__, __LINE__);
     if(ierr != PIO_NOERR){
         LOG((1, "nc*_put_vars_* failed, ierr = %d", ierr));
-        return ierr;
+        return pio_err(NULL, file, ierr, __FILE__, __LINE__,
+                        "Writing variable (%s, varid=%d) to file (%s, ncid=%d) failed. Underlying I/O library call failed(iotype=%x:%s) ", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid, xtype, pio_iotype_to_string(file->iotype));
+                    
     }
 
     LOG((2, "PIOc_put_vars_tc bcast netcdf return code %d complete", ierr));
@@ -1441,12 +1513,18 @@ int PIOc_put_var1_tc(int ncid, int varid, const PIO_Offset *index, nc_type xtype
 
     /* Find the info about this file. We need this for error handling. */
     if ((ierr = pio_get_file(ncid, &file)))
-        return pio_err(NULL, NULL, ierr, __FILE__, __LINE__);
+    {
+        return pio_err(NULL, NULL, ierr, __FILE__, __LINE__,
+                        "Writing variable (varid=%d) to file failed. Invalid file id (ncid = %d) provided", varid, ncid);
+    }
     ios = file->iosystem;
 
     /* Find the number of dimensions. */
     if ((ierr = PIOc_inq_varndims(ncid, varid, &ndims)))
-        return pio_err(ios, file, ierr, __FILE__, __LINE__);
+    {
+        return pio_err(ios, file, ierr, __FILE__, __LINE__,
+                        "Writing variable (%s, varid=%d) to file (%s, ncid=%d) failed. Finding the number of dimensions of the variable failed", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid);
+    }
 
     /* Set up count array. */
     PIO_Offset count[ndims];
@@ -1498,12 +1576,18 @@ int PIOc_put_var_tc(int ncid, int varid, nc_type xtype, const void *op)
 
     /* Find the info about this file. We need this for error handling. */
     if ((ierr = pio_get_file(ncid, &file)))
-        return pio_err(NULL, NULL, ierr, __FILE__, __LINE__);
+    {
+        return pio_err(NULL, NULL, ierr, __FILE__, __LINE__,
+                        "Writing variable (varid=%d) to file failed. Invalid file id (ncid = %d) provided", varid, ncid);
+    }
     ios = file->iosystem;
 
     /* Find the number of dimensions. */
     if ((ierr = PIOc_inq_varndims(ncid, varid, &ndims)))
-        return pio_err(ios, file, ierr, __FILE__, __LINE__);
+    {
+        return pio_err(ios, file, ierr, __FILE__, __LINE__,
+                        "Writing variable (%s, varid=%d) to file (%s, ncid=%d) failed. Finding the number of dimensions of the variable failed", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid);
+    }
 
     /* Scalar vars (which have ndims == 0) should just pass NULLs for
      * start/count. */
@@ -1519,13 +1603,17 @@ int PIOc_put_var_tc(int ncid, int varid, nc_type xtype, const void *op)
         ierr = PIOc_inq_vardimid(ncid, varid, dimid);
         if(ierr != PIO_NOERR){
             LOG((1, "PIOc_inq_vardimid failed, ierr = %d", ierr));
-            return ierr;
+            return pio_err(ios, file, ierr, __FILE__, __LINE__,
+                            "Writing variable (%s, varid=%d) to file (%s, ncid=%d) failed. Finding the dimension ids of dimensions in the file failed", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid);
         }
 
         /* Count array are the dimlens. */
         for (int d = 0; d < ndims; d++)
             if ((ierr = PIOc_inq_dimlen(ncid, dimid[d], &count[d])))
-                return pio_err(ios, file, ierr, __FILE__, __LINE__);
+            {
+                return pio_err(ios, file, ierr, __FILE__, __LINE__,
+                                "Writing variable (%s, varid=%d) to file (%s, ncid=%d) failed. Finding the dimension length of dim %d in the file failed", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid, d);
+            }
 
         /* Set the array pointers. */
         startp = start;

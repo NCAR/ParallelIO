@@ -174,7 +174,10 @@ PIO_Offset GCDblocksize_gaps(int arrlen, const PIO_Offset *arr_in)
     if (arrlen > 1)
     {
         if (!(del_arr = malloc((arrlen - 1) * sizeof(PIO_Offset))))
-            return pio_err(NULL, NULL, PIO_ENOMEM, __FILE__, __LINE__);
+        {
+            return pio_err(NULL, NULL, PIO_ENOMEM, __FILE__, __LINE__,
+                            "Internal error while calculating GCD block size. Out of memory allocating %lld bytes for internal array", (unsigned long long) ((arrlen - 1) * sizeof(PIO_Offset)));
+        }
     }
 
     /* Count the number of contiguous blocks in arr_in. If any if
@@ -225,7 +228,10 @@ PIO_Offset GCDblocksize_gaps(int arrlen, const PIO_Offset *arr_in)
         /* If numblks > 1 then arrlen must be > 1 */
         PIO_Offset *loc_arr = calloc(arrlen - 1, sizeof(PIO_Offset));
         if (!loc_arr)
-            return pio_err(NULL, NULL, PIO_ENOMEM, __FILE__, __LINE__);
+        {
+            return pio_err(NULL, NULL, PIO_ENOMEM, __FILE__, __LINE__,
+                            "Internal error while calculating GCD block size. Out of memory allocating %lld bytes for internal array", (unsigned long long) ((arrlen -1) * sizeof(PIO_Offset)));
+        }
 
         j = 0;
         /* If numblks > 1 then n must be <= (arrlen - 1) */
@@ -387,7 +393,10 @@ int CalcStartandCount(int pio_type, int ndims, const int *gdims, int num_io_proc
 
     /* Determine the size of the data type. */
     if ((ret = find_mpi_type(pio_type, NULL, &basesize)))
-        return ret;
+    {
+        return pio_err(NULL, NULL, ret, __FILE__, __LINE__,
+                        "Internal error while calculating start/count for I/O decomposition. Finding MPI type corresponding to PIO type (%d) failed", pio_type);
+    }
 
     /* Determine the minimum block size. */
     minblocksize = minbytes / basesize;

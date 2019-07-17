@@ -96,8 +96,23 @@ extern "C" {
     } pio_swapm_defaults;
 
     /* Handle an error in the PIO library. */
-    int pio_err(iosystem_desc_t *ios, file_desc_t *file, int err_num, const char *fname,
-                int line);
+#ifdef __GNUC__
+    /* Specify that pio_err() uses printf style formatting. This
+     * allows the gnu compiler to parse and print warnings on 
+     * the message format, uerr_msg_fmt, and variable argument
+     * incompatibilities
+     * Note: uerr_msg_fmt, the printf style format string, is the
+     *        6th argument and the arguments following the format
+     *        in the format string start from the 7th argument
+     *        passed to the pio_err() function
+     */
+    #define PIO_ERR_FUNC_ATTR __attribute__ (( format (printf, 6, 7) ))
+#else
+    #define PIO_ERR_FUNC_ATTR
+#endif
+    int pio_err(iosystem_desc_t *ios, file_desc_t *file,
+                int err_num, const char *fname, int line,
+                const char *uerr_msg_fmt, ...) PIO_ERR_FUNC_ATTR;
 
     /* For async cases, this runs on IO tasks and listens for messages. */
     int pio_msg_handler2(int io_rank, int component_count, iosystem_desc_t **iosys,
@@ -644,5 +659,20 @@ extern char pio_async_msg_sign[PIO_MAX_MSGS][PIO_MAX_ASYNC_MSG_ARGS];
             assert(PIO_VARNARGS(__VA_ARGS__) == strlen(pio_async_msg_sign[msg]));\
             *retp = recv_async_msg(ios, msg, __VA_ARGS__);\
         }while(0)
+
+
+/* Some useful utils to print out types/internal data structures etc */
+const char *pio_iotype_to_string(int iotype);
+const char *pio_eh_to_string(int eh);
+const char *pio_rearr_comm_type_to_string(int comm_type);
+const char *pio_get_fname_from_file(file_desc_t *file);
+const char *pio_get_fname_from_file_id(int pio_file_id);
+const char *pio_get_vname_from_file(file_desc_t *file, int varid);
+const char *pio_get_vname_from_file_id(int pio_file_id, int varid);
+const char *pio_get_vnames_from_file(file_desc_t *file,
+              int *varids, int varids_sz, char *buf, size_t buf_sz);
+const char *pio_get_vnames_from_file_id(int pio_file_id,
+              int *varids, int varids_sz, char *buf, size_t buf_sz);
+#define PIO_IS_NULL(p) ((p) ? "not NULL" : "NULL")
 
 #endif /* __PIO_INTERNAL__ */

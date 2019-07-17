@@ -60,7 +60,7 @@ int test_rearranger_opts1(int iosysid)
 
     /* Get the IO system info from the id. */
     if (!(ios = pio_get_iosystem_from_id(iosysid)))
-        return pio_err(NULL, NULL, PIO_EBADID, __FILE__, __LINE__);
+        return pio_err(NULL, NULL, PIO_EBADID, __FILE__, __LINE__, "Getting I/O system from id failed");
 
     /* Check the rearranger comp2io settings. */
     if (ios->rearr_opts.comm_type != PIO_REARR_COMM_P2P ||
@@ -580,7 +580,7 @@ int test_compute_counts(MPI_Comm test_comm, int my_rank)
     for (int t = 0; t < TARGET_NTASKS; t++)
         ios->ioranks[t] = t;
     if (!(ios->compranks = calloc(ios->num_comptasks, sizeof(int))))
-        return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__);
+        return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__, "Error allocating memory for comp ranks");
     for (int i = 0; i < TARGET_NTASKS; i++)
         ios->compranks[i] = i;
 
@@ -683,11 +683,11 @@ int test_box_rearrange_create(MPI_Comm test_comm, int my_rank)
     ios->num_comptasks = 4;
     ios->num_uniontasks = 4;
     if (!(ios->ioranks = calloc(ios->num_iotasks, sizeof(int))))
-        return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__);
+        return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__, "Error allocating memory for ioranks");
     for (int i = 0; i < TARGET_NTASKS; i++)
         ios->ioranks[i] = i;
     if (!(ios->compranks = calloc(ios->num_comptasks, sizeof(int))))
-        return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__);
+        return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__, "Error allocating memory for compranks");
     for (int i = 0; i < TARGET_NTASKS; i++)
         ios->compranks[i] = i;
 
@@ -801,11 +801,11 @@ int test_box_rearrange_create_2(MPI_Comm test_comm, int my_rank)
     ios->num_comptasks = 4;
     ios->num_uniontasks = 4;
     if (!(ios->ioranks = calloc(ios->num_iotasks, sizeof(int))))
-        return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__);
+        return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__, "Error allocating memory for ioranks");
     for (int i = 0; i < TARGET_NTASKS; i++)
         ios->ioranks[i] = i;
     if (!(ios->compranks = calloc(ios->num_comptasks, sizeof(int))))
-        return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__);
+        return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__, "Error allocating memory for compranks");
     for (int i = 0; i < TARGET_NTASKS; i++)
         ios->compranks[i] = i;
 
@@ -973,11 +973,11 @@ int test_rearrange_comp2io(MPI_Comm test_comm, int my_rank)
     ios->union_rank = my_rank;
     ios->num_comptasks = 4;
     if (!(ios->ioranks = calloc(ios->num_iotasks, sizeof(int))))
-        return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__);
+        return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__, "Error allocating memory for ioranks");
     for (int i = 0; i < TARGET_NTASKS; i++)
         ios->ioranks[i] = i;
     if (!(ios->compranks = calloc(ios->num_comptasks, sizeof(int))))
-        return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__);
+        return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__, "Error allocating memory for compranks");
     for (int i = 0; i < TARGET_NTASKS; i++)
         ios->compranks[i] = i;
 
@@ -1102,11 +1102,11 @@ int test_rearrange_io2comp(MPI_Comm test_comm, int my_rank)
     ios->num_comptasks = 4;
     ios->num_uniontasks = 4;
     if (!(ios->ioranks = calloc(ios->num_iotasks, sizeof(int))))
-        return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__);
+        return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__, "Error allocating memory for ioranks");
     for (int i = 0; i < TARGET_NTASKS; i++)
         ios->ioranks[i] = i;
     if (!(ios->compranks = calloc(ios->num_comptasks, sizeof(int))))
-        return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__);
+        return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__, "Error allocating memory for compranks");
     for (int i = 0; i < TARGET_NTASKS; i++)
         ios->compranks[i] = i;
 
