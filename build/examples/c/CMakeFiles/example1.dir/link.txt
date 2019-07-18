@@ -1,0 +1,1 @@
+/usr/lib64/openmpi/bin/mpic++    -std=c99 -g -O0    CMakeFiles/example1.dir/example1.c.o  -o example1 -rdynamic ../../src/clib/libpioc.a ../../src/gptl/libgptl.a ../../tools/adios2pio-nm/libadios2pio-nm-lib.a /home/tkurc/codar/acme/pnetcdf/lib/libpnetcdf.a /home/tkurc/codar/adios-install/lib/libadios.a -lpthread -lm 

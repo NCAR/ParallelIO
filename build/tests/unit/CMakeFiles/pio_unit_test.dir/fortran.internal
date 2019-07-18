@@ -1,0 +1,5 @@
+# The fortran modules provided by this target.
+provides
+ basic_tests
+ global_vars
+ ncdf_tests

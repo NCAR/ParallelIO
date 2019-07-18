@@ -1990,7 +1990,7 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
             if (do_aggregate)
             {
                 sprintf(file->transport, "%s", "MPI_AGGREGATE");
-                sprintf(file->params, "num_aggregators=%d,random_offset=1,striping_count=1,have_metadata_file=0",
+                sprintf(file->params, "num_aggregators=%d,threading=1,random_offset=1,striping_count=1,have_metadata_file=0",
                         ios->num_iotasks);
             }
             else
@@ -1999,7 +1999,7 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
                 if (num_adios_io_tasks == 0)
                     num_adios_io_tasks = ios->num_comptasks;
                 sprintf(file->transport, "%s", "MPI_AGGREGATE");
-                sprintf(file->params, "num_aggregators=%d,random_offset=1,striping_count=1,have_metadata_file=0",
+                sprintf(file->params, "num_aggregators=%d,threading=1,random_offset=1,striping_count=1,have_metadata_file=0",
                         num_adios_io_tasks);
             }
 

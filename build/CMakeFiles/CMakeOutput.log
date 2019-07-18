@@ -1,0 +1,587 @@
+The system is: Linux - 3.10.0-957.1.3.el7.x86_64 - x86_64
+Compiling the C compiler identification source file "CMakeCCompilerId.c" succeeded.
+Compiler: /usr/lib64/openmpi/bin/mpicc 
+Build flags: -g;-fPIC
+Id flags: 
+
+The output was:
+0
+
+
+Compilation of the C compiler identification source "CMakeCCompilerId.c" produced "a.out"
+
+The C compiler identification is GNU, found in "/home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/2.8.12.2/CompilerIdC/a.out"
+
+Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" succeeded.
+Compiler: /usr/lib64/openmpi/bin/mpic++ 
+Build flags: 
+Id flags: 
+
+The output was:
+0
+
+
+Compilation of the CXX compiler identification source "CMakeCXXCompilerId.cpp" produced "a.out"
+
+The CXX compiler identification is GNU, found in "/home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/2.8.12.2/CompilerIdCXX/a.out"
+
+Compiling the Fortran compiler identification source file "CMakeFortranCompilerId.F" succeeded.
+Compiler: /usr/lib64/openmpi/bin/mpif90 
+Build flags: 
+Id flags: 
+
+The output was:
+0
+
+
+Compilation of the Fortran compiler identification source "CMakeFortranCompilerId.F" produced "a.out"
+
+The Fortran compiler identification is GNU, found in "/home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/2.8.12.2/CompilerIdFortran/a.out"
+
+Determining if the C compiler works passed with the following output:
+Change Dir: /home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp
+
+Run Build Command:/usr/bin/gmake "cmTryCompileExec441681611/fast"
+/usr/bin/gmake -f CMakeFiles/cmTryCompileExec441681611.dir/build.make CMakeFiles/cmTryCompileExec441681611.dir/build
+gmake[1]: Entering directory `/home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp'
+/usr/bin/cmake -E cmake_progress_report /home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp/CMakeFiles 1
+Building C object CMakeFiles/cmTryCompileExec441681611.dir/testCCompiler.c.o
+/usr/lib64/openmpi/bin/mpicc   -g -fPIC     -o CMakeFiles/cmTryCompileExec441681611.dir/testCCompiler.c.o   -c /home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp/testCCompiler.c
+Linking C executable cmTryCompileExec441681611
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec441681611.dir/link.txt --verbose=1
+/usr/lib64/openmpi/bin/mpicc  -g -fPIC      CMakeFiles/cmTryCompileExec441681611.dir/testCCompiler.c.o  -o cmTryCompileExec441681611 -rdynamic 
+gmake[1]: Leaving directory `/home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp'
+
+
+Detecting C compiler ABI info compiled with the following output:
+Change Dir: /home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp
+
+Run Build Command:/usr/bin/gmake "cmTryCompileExec850610130/fast"
+/usr/bin/gmake -f CMakeFiles/cmTryCompileExec850610130.dir/build.make CMakeFiles/cmTryCompileExec850610130.dir/build
+gmake[1]: Entering directory `/home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp'
+/usr/bin/cmake -E cmake_progress_report /home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp/CMakeFiles 1
+Building C object CMakeFiles/cmTryCompileExec850610130.dir/CMakeCCompilerABI.c.o
+/usr/lib64/openmpi/bin/mpicc   -g -fPIC     -o CMakeFiles/cmTryCompileExec850610130.dir/CMakeCCompilerABI.c.o   -c /usr/share/cmake/Modules/CMakeCCompilerABI.c
+Linking C executable cmTryCompileExec850610130
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec850610130.dir/link.txt --verbose=1
+/usr/lib64/openmpi/bin/mpicc  -g -fPIC    -v CMakeFiles/cmTryCompileExec850610130.dir/CMakeCCompilerABI.c.o  -o cmTryCompileExec850610130 -rdynamic  
+Using built-in specs.
+COLLECT_GCC=/usr/bin/gcc
+COLLECT_LTO_WRAPPER=/usr/libexec/gcc/x86_64-redhat-linux/4.8.5/lto-wrapper
+Target: x86_64-redhat-linux
+Configured with: ../configure --prefix=/usr --mandir=/usr/share/man --infodir=/usr/share/info --with-bugurl=http://bugzilla.redhat.com/bugzilla --enable-bootstrap --enable-shared --enable-threads=posix --enable-checking=release --with-system-zlib --enable-__cxa_atexit --disable-libunwind-exceptions --enable-gnu-unique-object --enable-linker-build-id --with-linker-hash-style=gnu --enable-languages=c,c++,objc,obj-c++,java,fortran,ada,go,lto --enable-plugin --enable-initfini-array --disable-libgcj --with-isl=/builddir/build/BUILD/gcc-4.8.5-20150702/obj-x86_64-redhat-linux/isl-install --with-cloog=/builddir/build/BUILD/gcc-4.8.5-20150702/obj-x86_64-redhat-linux/cloog-install --enable-gnu-indirect-function --with-tune=generic --with-arch_32=x86-64 --build=x86_64-redhat-linux
+Thread model: posix
+gcc version 4.8.5 20150623 (Red Hat 4.8.5-36) (GCC) 
+COMPILER_PATH=/usr/libexec/gcc/x86_64-redhat-linux/4.8.5/:/usr/libexec/gcc/x86_64-redhat-linux/4.8.5/:/usr/libexec/gcc/x86_64-redhat-linux/:/usr/lib/gcc/x86_64-redhat-linux/4.8.5/:/usr/lib/gcc/x86_64-redhat-linux/
+LIBRARY_PATH=/usr/lib/gcc/x86_64-redhat-linux/4.8.5/:/usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../../../lib64/:/lib/../lib64/:/usr/lib/../lib64/:/usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../../:/lib/:/usr/lib/
+COLLECT_GCC_OPTIONS='-g' '-fPIC' '-v' '-o' 'cmTryCompileExec850610130' '-rdynamic' '-I' '/usr/include/openmpi-x86_64' '-pthread' '-m64' '-L/usr/lib64/openmpi/lib' '-mtune=generic' '-march=x86-64'
+ /usr/libexec/gcc/x86_64-redhat-linux/4.8.5/collect2 --build-id --no-add-needed --eh-frame-hdr --hash-style=gnu -m elf_x86_64 -export-dynamic -dynamic-linker /lib64/ld-linux-x86-64.so.2 -o cmTryCompileExec850610130 /usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../../../lib64/crt1.o /usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../../../lib64/crti.o /usr/lib/gcc/x86_64-redhat-linux/4.8.5/crtbegin.o -L/usr/lib64/openmpi/lib -L/usr/lib/gcc/x86_64-redhat-linux/4.8.5 -L/usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../../../lib64 -L/lib/../lib64 -L/usr/lib/../lib64 -L/usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../.. CMakeFiles/cmTryCompileExec850610130.dir/CMakeCCompilerABI.c.o -rpath /usr/lib64/openmpi/lib --enable-new-dtags -lmpi -lgcc --as-needed -lgcc_s --no-as-needed -lpthread -lc -lgcc --as-needed -lgcc_s --no-as-needed /usr/lib/gcc/x86_64-redhat-linux/4.8.5/crtend.o /usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../../../lib64/crtn.o
+gmake[1]: Leaving directory `/home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp'
+
+
+Parsed C implicit link information from above output:
+  link line regex: [^( *|.*[/\])(ld|([^/\]+-)?ld|collect2)[^/\]*( |$)]
+  ignore line: [Change Dir: /home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp]
+  ignore line: []
+  ignore line: [Run Build Command:/usr/bin/gmake "cmTryCompileExec850610130/fast"]
+  ignore line: [/usr/bin/gmake -f CMakeFiles/cmTryCompileExec850610130.dir/build.make CMakeFiles/cmTryCompileExec850610130.dir/build]
+  ignore line: [gmake[1]: Entering directory `/home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp']
+  ignore line: [/usr/bin/cmake -E cmake_progress_report /home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp/CMakeFiles 1]
+  ignore line: [Building C object CMakeFiles/cmTryCompileExec850610130.dir/CMakeCCompilerABI.c.o]
+  ignore line: [/usr/lib64/openmpi/bin/mpicc   -g -fPIC     -o CMakeFiles/cmTryCompileExec850610130.dir/CMakeCCompilerABI.c.o   -c /usr/share/cmake/Modules/CMakeCCompilerABI.c]
+  ignore line: [Linking C executable cmTryCompileExec850610130]
+  ignore line: [/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec850610130.dir/link.txt --verbose=1]
+  ignore line: [/usr/lib64/openmpi/bin/mpicc  -g -fPIC    -v CMakeFiles/cmTryCompileExec850610130.dir/CMakeCCompilerABI.c.o  -o cmTryCompileExec850610130 -rdynamic  ]
+  ignore line: [Using built-in specs.]
+  ignore line: [COLLECT_GCC=/usr/bin/gcc]
+  ignore line: [COLLECT_LTO_WRAPPER=/usr/libexec/gcc/x86_64-redhat-linux/4.8.5/lto-wrapper]
+  ignore line: [Target: x86_64-redhat-linux]
+  ignore line: [Configured with: ../configure --prefix=/usr --mandir=/usr/share/man --infodir=/usr/share/info --with-bugurl=http://bugzilla.redhat.com/bugzilla --enable-bootstrap --enable-shared --enable-threads=posix --enable-checking=release --with-system-zlib --enable-__cxa_atexit --disable-libunwind-exceptions --enable-gnu-unique-object --enable-linker-build-id --with-linker-hash-style=gnu --enable-languages=c,c++,objc,obj-c++,java,fortran,ada,go,lto --enable-plugin --enable-initfini-array --disable-libgcj --with-isl=/builddir/build/BUILD/gcc-4.8.5-20150702/obj-x86_64-redhat-linux/isl-install --with-cloog=/builddir/build/BUILD/gcc-4.8.5-20150702/obj-x86_64-redhat-linux/cloog-install --enable-gnu-indirect-function --with-tune=generic --with-arch_32=x86-64 --build=x86_64-redhat-linux]
+  ignore line: [Thread model: posix]
+  ignore line: [gcc version 4.8.5 20150623 (Red Hat 4.8.5-36) (GCC) ]
+  ignore line: [COMPILER_PATH=/usr/libexec/gcc/x86_64-redhat-linux/4.8.5/:/usr/libexec/gcc/x86_64-redhat-linux/4.8.5/:/usr/libexec/gcc/x86_64-redhat-linux/:/usr/lib/gcc/x86_64-redhat-linux/4.8.5/:/usr/lib/gcc/x86_64-redhat-linux/]
+  ignore line: [LIBRARY_PATH=/usr/lib/gcc/x86_64-redhat-linux/4.8.5/:/usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../../../lib64/:/lib/../lib64/:/usr/lib/../lib64/:/usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../../:/lib/:/usr/lib/]
+  ignore line: [COLLECT_GCC_OPTIONS='-g' '-fPIC' '-v' '-o' 'cmTryCompileExec850610130' '-rdynamic' '-I' '/usr/include/openmpi-x86_64' '-pthread' '-m64' '-L/usr/lib64/openmpi/lib' '-mtune=generic' '-march=x86-64']
+  link line: [ /usr/libexec/gcc/x86_64-redhat-linux/4.8.5/collect2 --build-id --no-add-needed --eh-frame-hdr --hash-style=gnu -m elf_x86_64 -export-dynamic -dynamic-linker /lib64/ld-linux-x86-64.so.2 -o cmTryCompileExec850610130 /usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../../../lib64/crt1.o /usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../../../lib64/crti.o /usr/lib/gcc/x86_64-redhat-linux/4.8.5/crtbegin.o -L/usr/lib64/openmpi/lib -L/usr/lib/gcc/x86_64-redhat-linux/4.8.5 -L/usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../../../lib64 -L/lib/../lib64 -L/usr/lib/../lib64 -L/usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../.. CMakeFiles/cmTryCompileExec850610130.dir/CMakeCCompilerABI.c.o -rpath /usr/lib64/openmpi/lib --enable-new-dtags -lmpi -lgcc --as-needed -lgcc_s --no-as-needed -lpthread -lc -lgcc --as-needed -lgcc_s --no-as-needed /usr/lib/gcc/x86_64-redhat-linux/4.8.5/crtend.o /usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../../../lib64/crtn.o]
+    arg [/usr/libexec/gcc/x86_64-redhat-linux/4.8.5/collect2] ==> ignore
+    arg [--build-id] ==> ignore
+    arg [--no-add-needed] ==> ignore
+    arg [--eh-frame-hdr] ==> ignore
+    arg [--hash-style=gnu] ==> ignore
+    arg [-m] ==> ignore
+    arg [elf_x86_64] ==> ignore
+    arg [-export-dynamic] ==> ignore
+    arg [-dynamic-linker] ==> ignore
+    arg [/lib64/ld-linux-x86-64.so.2] ==> ignore
+    arg [-o] ==> ignore
+    arg [cmTryCompileExec850610130] ==> ignore
+    arg [/usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../../../lib64/crt1.o] ==> ignore
+    arg [/usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../../../lib64/crti.o] ==> ignore
+    arg [/usr/lib/gcc/x86_64-redhat-linux/4.8.5/crtbegin.o] ==> ignore
+    arg [-L/usr/lib64/openmpi/lib] ==> dir [/usr/lib64/openmpi/lib]
+    arg [-L/usr/lib/gcc/x86_64-redhat-linux/4.8.5] ==> dir [/usr/lib/gcc/x86_64-redhat-linux/4.8.5]
+    arg [-L/usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../../../lib64] ==> dir [/usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../../../lib64]
+    arg [-L/lib/../lib64] ==> dir [/lib/../lib64]
+    arg [-L/usr/lib/../lib64] ==> dir [/usr/lib/../lib64]
+    arg [-L/usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../..] ==> dir [/usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../..]
+    arg [CMakeFiles/cmTryCompileExec850610130.dir/CMakeCCompilerABI.c.o] ==> ignore
+    arg [-rpath] ==> ignore
+    arg [/usr/lib64/openmpi/lib] ==> ignore
+    arg [--enable-new-dtags] ==> ignore
+    arg [-lmpi] ==> lib [mpi]
+    arg [-lgcc] ==> lib [gcc]
+    arg [--as-needed] ==> ignore
+    arg [-lgcc_s] ==> lib [gcc_s]
+    arg [--no-as-needed] ==> ignore
+    arg [-lpthread] ==> lib [pthread]
+    arg [-lc] ==> lib [c]
+    arg [-lgcc] ==> lib [gcc]
+    arg [--as-needed] ==> ignore
+    arg [-lgcc_s] ==> lib [gcc_s]
+    arg [--no-as-needed] ==> ignore
+    arg [/usr/lib/gcc/x86_64-redhat-linux/4.8.5/crtend.o] ==> ignore
+    arg [/usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../../../lib64/crtn.o] ==> ignore
+  remove lib [gcc]
+  remove lib [gcc_s]
+  remove lib [gcc]
+  remove lib [gcc_s]
+  collapse library dir [/usr/lib64/openmpi/lib] ==> [/usr/lib64/openmpi/lib]
+  collapse library dir [/usr/lib/gcc/x86_64-redhat-linux/4.8.5] ==> [/usr/lib/gcc/x86_64-redhat-linux/4.8.5]
+  collapse library dir [/usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../../../lib64] ==> [/usr/lib64]
+  collapse library dir [/lib/../lib64] ==> [/lib64]
+  collapse library dir [/usr/lib/../lib64] ==> [/usr/lib64]
+  collapse library dir [/usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../..] ==> [/usr/lib]
+  implicit libs: [mpi;pthread;c]
+  implicit dirs: [/usr/lib64/openmpi/lib;/usr/lib/gcc/x86_64-redhat-linux/4.8.5;/usr/lib64;/lib64;/usr/lib]
+  implicit fwks: []
+
+
+Determining if the CXX compiler works passed with the following output:
+Change Dir: /home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp
+
+Run Build Command:/usr/bin/gmake "cmTryCompileExec4212432927/fast"
+/usr/bin/gmake -f CMakeFiles/cmTryCompileExec4212432927.dir/build.make CMakeFiles/cmTryCompileExec4212432927.dir/build
+gmake[1]: Entering directory `/home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp'
+/usr/bin/cmake -E cmake_progress_report /home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp/CMakeFiles 1
+Building CXX object CMakeFiles/cmTryCompileExec4212432927.dir/testCXXCompiler.cxx.o
+/usr/lib64/openmpi/bin/mpic++     -o CMakeFiles/cmTryCompileExec4212432927.dir/testCXXCompiler.cxx.o -c /home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp/testCXXCompiler.cxx
+Linking CXX executable cmTryCompileExec4212432927
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec4212432927.dir/link.txt --verbose=1
+/usr/lib64/openmpi/bin/mpic++        CMakeFiles/cmTryCompileExec4212432927.dir/testCXXCompiler.cxx.o  -o cmTryCompileExec4212432927 -rdynamic 
+gmake[1]: Leaving directory `/home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp'
+
+
+Detecting CXX compiler ABI info compiled with the following output:
+Change Dir: /home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp
+
+Run Build Command:/usr/bin/gmake "cmTryCompileExec4061681595/fast"
+/usr/bin/gmake -f CMakeFiles/cmTryCompileExec4061681595.dir/build.make CMakeFiles/cmTryCompileExec4061681595.dir/build
+gmake[1]: Entering directory `/home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp'
+/usr/bin/cmake -E cmake_progress_report /home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp/CMakeFiles 1
+Building CXX object CMakeFiles/cmTryCompileExec4061681595.dir/CMakeCXXCompilerABI.cpp.o
+/usr/lib64/openmpi/bin/mpic++     -o CMakeFiles/cmTryCompileExec4061681595.dir/CMakeCXXCompilerABI.cpp.o -c /usr/share/cmake/Modules/CMakeCXXCompilerABI.cpp
+Linking CXX executable cmTryCompileExec4061681595
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec4061681595.dir/link.txt --verbose=1
+/usr/lib64/openmpi/bin/mpic++      -v CMakeFiles/cmTryCompileExec4061681595.dir/CMakeCXXCompilerABI.cpp.o  -o cmTryCompileExec4061681595 -rdynamic  
+Using built-in specs.
+COLLECT_GCC=/usr/bin/g++
+COLLECT_LTO_WRAPPER=/usr/libexec/gcc/x86_64-redhat-linux/4.8.5/lto-wrapper
+Target: x86_64-redhat-linux
+Configured with: ../configure --prefix=/usr --mandir=/usr/share/man --infodir=/usr/share/info --with-bugurl=http://bugzilla.redhat.com/bugzilla --enable-bootstrap --enable-shared --enable-threads=posix --enable-checking=release --with-system-zlib --enable-__cxa_atexit --disable-libunwind-exceptions --enable-gnu-unique-object --enable-linker-build-id --with-linker-hash-style=gnu --enable-languages=c,c++,objc,obj-c++,java,fortran,ada,go,lto --enable-plugin --enable-initfini-array --disable-libgcj --with-isl=/builddir/build/BUILD/gcc-4.8.5-20150702/obj-x86_64-redhat-linux/isl-install --with-cloog=/builddir/build/BUILD/gcc-4.8.5-20150702/obj-x86_64-redhat-linux/cloog-install --enable-gnu-indirect-function --with-tune=generic --with-arch_32=x86-64 --build=x86_64-redhat-linux
+Thread model: posix
+gcc version 4.8.5 20150623 (Red Hat 4.8.5-36) (GCC) 
+COMPILER_PATH=/usr/libexec/gcc/x86_64-redhat-linux/4.8.5/:/usr/libexec/gcc/x86_64-redhat-linux/4.8.5/:/usr/libexec/gcc/x86_64-redhat-linux/:/usr/lib/gcc/x86_64-redhat-linux/4.8.5/:/usr/lib/gcc/x86_64-redhat-linux/
+LIBRARY_PATH=/usr/lib/gcc/x86_64-redhat-linux/4.8.5/:/usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../../../lib64/:/lib/../lib64/:/usr/lib/../lib64/:/usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../../:/lib/:/usr/lib/
+COLLECT_GCC_OPTIONS='-v' '-o' 'cmTryCompileExec4061681595' '-rdynamic' '-I' '/usr/include/openmpi-x86_64' '-pthread' '-m64' '-L/usr/lib64/openmpi/lib' '-shared-libgcc' '-mtune=generic' '-march=x86-64'
+ /usr/libexec/gcc/x86_64-redhat-linux/4.8.5/collect2 --build-id --no-add-needed --eh-frame-hdr --hash-style=gnu -m elf_x86_64 -export-dynamic -dynamic-linker /lib64/ld-linux-x86-64.so.2 -o cmTryCompileExec4061681595 /usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../../../lib64/crt1.o /usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../../../lib64/crti.o /usr/lib/gcc/x86_64-redhat-linux/4.8.5/crtbegin.o -L/usr/lib64/openmpi/lib -L/usr/lib/gcc/x86_64-redhat-linux/4.8.5 -L/usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../../../lib64 -L/lib/../lib64 -L/usr/lib/../lib64 -L/usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../.. CMakeFiles/cmTryCompileExec4061681595.dir/CMakeCXXCompilerABI.cpp.o -rpath /usr/lib64/openmpi/lib --enable-new-dtags -lmpi_cxx -lmpi -lstdc++ -lm -lgcc_s -lgcc -lpthread -lc -lgcc_s -lgcc /usr/lib/gcc/x86_64-redhat-linux/4.8.5/crtend.o /usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../../../lib64/crtn.o
+gmake[1]: Leaving directory `/home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp'
+
+
+Parsed CXX implicit link information from above output:
+  link line regex: [^( *|.*[/\])(ld|([^/\]+-)?ld|collect2)[^/\]*( |$)]
+  ignore line: [Change Dir: /home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp]
+  ignore line: []
+  ignore line: [Run Build Command:/usr/bin/gmake "cmTryCompileExec4061681595/fast"]
+  ignore line: [/usr/bin/gmake -f CMakeFiles/cmTryCompileExec4061681595.dir/build.make CMakeFiles/cmTryCompileExec4061681595.dir/build]
+  ignore line: [gmake[1]: Entering directory `/home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp']
+  ignore line: [/usr/bin/cmake -E cmake_progress_report /home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp/CMakeFiles 1]
+  ignore line: [Building CXX object CMakeFiles/cmTryCompileExec4061681595.dir/CMakeCXXCompilerABI.cpp.o]
+  ignore line: [/usr/lib64/openmpi/bin/mpic++     -o CMakeFiles/cmTryCompileExec4061681595.dir/CMakeCXXCompilerABI.cpp.o -c /usr/share/cmake/Modules/CMakeCXXCompilerABI.cpp]
+  ignore line: [Linking CXX executable cmTryCompileExec4061681595]
+  ignore line: [/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec4061681595.dir/link.txt --verbose=1]
+  ignore line: [/usr/lib64/openmpi/bin/mpic++      -v CMakeFiles/cmTryCompileExec4061681595.dir/CMakeCXXCompilerABI.cpp.o  -o cmTryCompileExec4061681595 -rdynamic  ]
+  ignore line: [Using built-in specs.]
+  ignore line: [COLLECT_GCC=/usr/bin/g++]
+  ignore line: [COLLECT_LTO_WRAPPER=/usr/libexec/gcc/x86_64-redhat-linux/4.8.5/lto-wrapper]
+  ignore line: [Target: x86_64-redhat-linux]
+  ignore line: [Configured with: ../configure --prefix=/usr --mandir=/usr/share/man --infodir=/usr/share/info --with-bugurl=http://bugzilla.redhat.com/bugzilla --enable-bootstrap --enable-shared --enable-threads=posix --enable-checking=release --with-system-zlib --enable-__cxa_atexit --disable-libunwind-exceptions --enable-gnu-unique-object --enable-linker-build-id --with-linker-hash-style=gnu --enable-languages=c,c++,objc,obj-c++,java,fortran,ada,go,lto --enable-plugin --enable-initfini-array --disable-libgcj --with-isl=/builddir/build/BUILD/gcc-4.8.5-20150702/obj-x86_64-redhat-linux/isl-install --with-cloog=/builddir/build/BUILD/gcc-4.8.5-20150702/obj-x86_64-redhat-linux/cloog-install --enable-gnu-indirect-function --with-tune=generic --with-arch_32=x86-64 --build=x86_64-redhat-linux]
+  ignore line: [Thread model: posix]
+  ignore line: [gcc version 4.8.5 20150623 (Red Hat 4.8.5-36) (GCC) ]
+  ignore line: [COMPILER_PATH=/usr/libexec/gcc/x86_64-redhat-linux/4.8.5/:/usr/libexec/gcc/x86_64-redhat-linux/4.8.5/:/usr/libexec/gcc/x86_64-redhat-linux/:/usr/lib/gcc/x86_64-redhat-linux/4.8.5/:/usr/lib/gcc/x86_64-redhat-linux/]
+  ignore line: [LIBRARY_PATH=/usr/lib/gcc/x86_64-redhat-linux/4.8.5/:/usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../../../lib64/:/lib/../lib64/:/usr/lib/../lib64/:/usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../../:/lib/:/usr/lib/]
+  ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'cmTryCompileExec4061681595' '-rdynamic' '-I' '/usr/include/openmpi-x86_64' '-pthread' '-m64' '-L/usr/lib64/openmpi/lib' '-shared-libgcc' '-mtune=generic' '-march=x86-64']
+  link line: [ /usr/libexec/gcc/x86_64-redhat-linux/4.8.5/collect2 --build-id --no-add-needed --eh-frame-hdr --hash-style=gnu -m elf_x86_64 -export-dynamic -dynamic-linker /lib64/ld-linux-x86-64.so.2 -o cmTryCompileExec4061681595 /usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../../../lib64/crt1.o /usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../../../lib64/crti.o /usr/lib/gcc/x86_64-redhat-linux/4.8.5/crtbegin.o -L/usr/lib64/openmpi/lib -L/usr/lib/gcc/x86_64-redhat-linux/4.8.5 -L/usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../../../lib64 -L/lib/../lib64 -L/usr/lib/../lib64 -L/usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../.. CMakeFiles/cmTryCompileExec4061681595.dir/CMakeCXXCompilerABI.cpp.o -rpath /usr/lib64/openmpi/lib --enable-new-dtags -lmpi_cxx -lmpi -lstdc++ -lm -lgcc_s -lgcc -lpthread -lc -lgcc_s -lgcc /usr/lib/gcc/x86_64-redhat-linux/4.8.5/crtend.o /usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../../../lib64/crtn.o]
+    arg [/usr/libexec/gcc/x86_64-redhat-linux/4.8.5/collect2] ==> ignore
+    arg [--build-id] ==> ignore
+    arg [--no-add-needed] ==> ignore
+    arg [--eh-frame-hdr] ==> ignore
+    arg [--hash-style=gnu] ==> ignore
+    arg [-m] ==> ignore
+    arg [elf_x86_64] ==> ignore
+    arg [-export-dynamic] ==> ignore
+    arg [-dynamic-linker] ==> ignore
+    arg [/lib64/ld-linux-x86-64.so.2] ==> ignore
+    arg [-o] ==> ignore
+    arg [cmTryCompileExec4061681595] ==> ignore
+    arg [/usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../../../lib64/crt1.o] ==> ignore
+    arg [/usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../../../lib64/crti.o] ==> ignore
+    arg [/usr/lib/gcc/x86_64-redhat-linux/4.8.5/crtbegin.o] ==> ignore
+    arg [-L/usr/lib64/openmpi/lib] ==> dir [/usr/lib64/openmpi/lib]
+    arg [-L/usr/lib/gcc/x86_64-redhat-linux/4.8.5] ==> dir [/usr/lib/gcc/x86_64-redhat-linux/4.8.5]
+    arg [-L/usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../../../lib64] ==> dir [/usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../../../lib64]
+    arg [-L/lib/../lib64] ==> dir [/lib/../lib64]
+    arg [-L/usr/lib/../lib64] ==> dir [/usr/lib/../lib64]
+    arg [-L/usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../..] ==> dir [/usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../..]
+    arg [CMakeFiles/cmTryCompileExec4061681595.dir/CMakeCXXCompilerABI.cpp.o] ==> ignore
+    arg [-rpath] ==> ignore
+    arg [/usr/lib64/openmpi/lib] ==> ignore
+    arg [--enable-new-dtags] ==> ignore
+    arg [-lmpi_cxx] ==> lib [mpi_cxx]
+    arg [-lmpi] ==> lib [mpi]
+    arg [-lstdc++] ==> lib [stdc++]
+    arg [-lm] ==> lib [m]
+    arg [-lgcc_s] ==> lib [gcc_s]
+    arg [-lgcc] ==> lib [gcc]
+    arg [-lpthread] ==> lib [pthread]
+    arg [-lc] ==> lib [c]
+    arg [-lgcc_s] ==> lib [gcc_s]
+    arg [-lgcc] ==> lib [gcc]
+    arg [/usr/lib/gcc/x86_64-redhat-linux/4.8.5/crtend.o] ==> ignore
+    arg [/usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../../../lib64/crtn.o] ==> ignore
+  remove lib [gcc_s]
+  remove lib [gcc]
+  remove lib [gcc_s]
+  remove lib [gcc]
+  collapse library dir [/usr/lib64/openmpi/lib] ==> [/usr/lib64/openmpi/lib]
+  collapse library dir [/usr/lib/gcc/x86_64-redhat-linux/4.8.5] ==> [/usr/lib/gcc/x86_64-redhat-linux/4.8.5]
+  collapse library dir [/usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../../../lib64] ==> [/usr/lib64]
+  collapse library dir [/lib/../lib64] ==> [/lib64]
+  collapse library dir [/usr/lib/../lib64] ==> [/usr/lib64]
+  collapse library dir [/usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../..] ==> [/usr/lib]
+  implicit libs: [mpi_cxx;mpi;stdc++;m;pthread;c]
+  implicit dirs: [/usr/lib64/openmpi/lib;/usr/lib/gcc/x86_64-redhat-linux/4.8.5;/usr/lib64;/lib64;/usr/lib]
+  implicit fwks: []
+
+
+Determining if the Fortran compiler works passed with the following output:
+Change Dir: /home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp
+
+Run Build Command:/usr/bin/gmake "cmTryCompileExec3370130506/fast"
+/usr/bin/gmake -f CMakeFiles/cmTryCompileExec3370130506.dir/build.make CMakeFiles/cmTryCompileExec3370130506.dir/build
+gmake[1]: Entering directory `/home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp'
+/usr/bin/cmake -E cmake_progress_report /home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp/CMakeFiles 1
+Building Fortran object CMakeFiles/cmTryCompileExec3370130506.dir/testFortranCompiler.f.o
+/usr/lib64/openmpi/bin/mpif90    -c /home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp/testFortranCompiler.f -o CMakeFiles/cmTryCompileExec3370130506.dir/testFortranCompiler.f.o
+Linking Fortran executable cmTryCompileExec3370130506
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec3370130506.dir/link.txt --verbose=1
+/usr/lib64/openmpi/bin/mpif90       CMakeFiles/cmTryCompileExec3370130506.dir/testFortranCompiler.f.o  -o cmTryCompileExec3370130506 -rdynamic 
+gmake[1]: Leaving directory `/home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp'
+
+
+Detecting Fortran compiler ABI info compiled with the following output:
+Change Dir: /home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp
+
+Run Build Command:/usr/bin/gmake "cmTryCompileExec1775567962/fast"
+/usr/bin/gmake -f CMakeFiles/cmTryCompileExec1775567962.dir/build.make CMakeFiles/cmTryCompileExec1775567962.dir/build
+gmake[1]: Entering directory `/home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp'
+/usr/bin/cmake -E cmake_progress_report /home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp/CMakeFiles 1
+Building Fortran object CMakeFiles/cmTryCompileExec1775567962.dir/CMakeFortranCompilerABI.F.o
+/usr/lib64/openmpi/bin/mpif90    -c /usr/share/cmake/Modules/CMakeFortranCompilerABI.F -o CMakeFiles/cmTryCompileExec1775567962.dir/CMakeFortranCompilerABI.F.o
+Linking Fortran executable cmTryCompileExec1775567962
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec1775567962.dir/link.txt --verbose=1
+/usr/lib64/openmpi/bin/mpif90   -v   CMakeFiles/cmTryCompileExec1775567962.dir/CMakeFortranCompilerABI.F.o  -o cmTryCompileExec1775567962 -rdynamic  
+Driving: /usr/bin/gfortran -v CMakeFiles/cmTryCompileExec1775567962.dir/CMakeFortranCompilerABI.F.o -o cmTryCompileExec1775567962 -rdynamic -I/usr/include/openmpi-x86_64 -pthread -m64 -I/usr/lib64/openmpi/lib -Wl,-rpath -Wl,/usr/lib64/openmpi/lib -Wl,--enable-new-dtags -L/usr/lib64/openmpi/lib -lmpi_usempi -lmpi_mpifh -lmpi -l gfortran -l m -shared-libgcc
+Using built-in specs.
+COLLECT_GCC=/usr/bin/gfortran
+COLLECT_LTO_WRAPPER=/usr/libexec/gcc/x86_64-redhat-linux/4.8.5/lto-wrapper
+Target: x86_64-redhat-linux
+Configured with: ../configure --prefix=/usr --mandir=/usr/share/man --infodir=/usr/share/info --with-bugurl=http://bugzilla.redhat.com/bugzilla --enable-bootstrap --enable-shared --enable-threads=posix --enable-checking=release --with-system-zlib --enable-__cxa_atexit --disable-libunwind-exceptions --enable-gnu-unique-object --enable-linker-build-id --with-linker-hash-style=gnu --enable-languages=c,c++,objc,obj-c++,java,fortran,ada,go,lto --enable-plugin --enable-initfini-array --disable-libgcj --with-isl=/builddir/build/BUILD/gcc-4.8.5-20150702/obj-x86_64-redhat-linux/isl-install --with-cloog=/builddir/build/BUILD/gcc-4.8.5-20150702/obj-x86_64-redhat-linux/cloog-install --enable-gnu-indirect-function --with-tune=generic --with-arch_32=x86-64 --build=x86_64-redhat-linux
+Thread model: posix
+gcc version 4.8.5 20150623 (Red Hat 4.8.5-36) (GCC) 
+Reading specs from /usr/lib/gcc/x86_64-redhat-linux/4.8.5/libgfortran.spec
+rename spec lib to liborig
+COLLECT_GCC_OPTIONS='-v' '-o' 'cmTryCompileExec1775567962' '-rdynamic' '-I' '/usr/include/openmpi-x86_64' '-pthread' '-m64' '-I' '/usr/lib64/openmpi/lib' '-L/usr/lib64/openmpi/lib' '-shared-libgcc' '-mtune=generic' '-march=x86-64'
+COMPILER_PATH=/usr/libexec/gcc/x86_64-redhat-linux/4.8.5/:/usr/libexec/gcc/x86_64-redhat-linux/4.8.5/:/usr/libexec/gcc/x86_64-redhat-linux/:/usr/lib/gcc/x86_64-redhat-linux/4.8.5/:/usr/lib/gcc/x86_64-redhat-linux/
+LIBRARY_PATH=/usr/lib/gcc/x86_64-redhat-linux/4.8.5/:/usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../../../lib64/:/lib/../lib64/:/usr/lib/../lib64/:/usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../../:/lib/:/usr/lib/
+COLLECT_GCC_OPTIONS='-v' '-o' 'cmTryCompileExec1775567962' '-rdynamic' '-I' '/usr/include/openmpi-x86_64' '-pthread' '-m64' '-I' '/usr/lib64/openmpi/lib' '-L/usr/lib64/openmpi/lib' '-shared-libgcc' '-mtune=generic' '-march=x86-64'
+ /usr/libexec/gcc/x86_64-redhat-linux/4.8.5/collect2 --build-id --no-add-needed --eh-frame-hdr --hash-style=gnu -m elf_x86_64 -export-dynamic -dynamic-linker /lib64/ld-linux-x86-64.so.2 -o cmTryCompileExec1775567962 /usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../../../lib64/crt1.o /usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../../../lib64/crti.o /usr/lib/gcc/x86_64-redhat-linux/4.8.5/crtbegin.o -L/usr/lib64/openmpi/lib -L/usr/lib/gcc/x86_64-redhat-linux/4.8.5 -L/usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../../../lib64 -L/lib/../lib64 -L/usr/lib/../lib64 -L/usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../.. CMakeFiles/cmTryCompileExec1775567962.dir/CMakeFortranCompilerABI.F.o -rpath /usr/lib64/openmpi/lib --enable-new-dtags -lmpi_usempi -lmpi_mpifh -lmpi -lgfortran -lm -lgcc_s -lgcc -lquadmath -lm -lgcc_s -lgcc -lpthread -lc -lgcc_s -lgcc /usr/lib/gcc/x86_64-redhat-linux/4.8.5/crtend.o /usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../../../lib64/crtn.o
+gmake[1]: Leaving directory `/home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp'
+
+
+Parsed Fortran implicit link information from above output:
+  link line regex: [^( *|.*[/\])(ld|([^/\]+-)?ld|collect2)[^/\]*( |$)]
+  ignore line: [Change Dir: /home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp]
+  ignore line: []
+  ignore line: [Run Build Command:/usr/bin/gmake "cmTryCompileExec1775567962/fast"]
+  ignore line: [/usr/bin/gmake -f CMakeFiles/cmTryCompileExec1775567962.dir/build.make CMakeFiles/cmTryCompileExec1775567962.dir/build]
+  ignore line: [gmake[1]: Entering directory `/home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp']
+  ignore line: [/usr/bin/cmake -E cmake_progress_report /home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp/CMakeFiles 1]
+  ignore line: [Building Fortran object CMakeFiles/cmTryCompileExec1775567962.dir/CMakeFortranCompilerABI.F.o]
+  ignore line: [/usr/lib64/openmpi/bin/mpif90    -c /usr/share/cmake/Modules/CMakeFortranCompilerABI.F -o CMakeFiles/cmTryCompileExec1775567962.dir/CMakeFortranCompilerABI.F.o]
+  ignore line: [Linking Fortran executable cmTryCompileExec1775567962]
+  ignore line: [/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec1775567962.dir/link.txt --verbose=1]
+  ignore line: [/usr/lib64/openmpi/bin/mpif90   -v   CMakeFiles/cmTryCompileExec1775567962.dir/CMakeFortranCompilerABI.F.o  -o cmTryCompileExec1775567962 -rdynamic  ]
+  ignore line: [Driving: /usr/bin/gfortran -v CMakeFiles/cmTryCompileExec1775567962.dir/CMakeFortranCompilerABI.F.o -o cmTryCompileExec1775567962 -rdynamic -I/usr/include/openmpi-x86_64 -pthread -m64 -I/usr/lib64/openmpi/lib -Wl,-rpath -Wl,/usr/lib64/openmpi/lib -Wl,--enable-new-dtags -L/usr/lib64/openmpi/lib -lmpi_usempi -lmpi_mpifh -lmpi -l gfortran -l m -shared-libgcc]
+  ignore line: [Using built-in specs.]
+  ignore line: [COLLECT_GCC=/usr/bin/gfortran]
+  ignore line: [COLLECT_LTO_WRAPPER=/usr/libexec/gcc/x86_64-redhat-linux/4.8.5/lto-wrapper]
+  ignore line: [Target: x86_64-redhat-linux]
+  ignore line: [Configured with: ../configure --prefix=/usr --mandir=/usr/share/man --infodir=/usr/share/info --with-bugurl=http://bugzilla.redhat.com/bugzilla --enable-bootstrap --enable-shared --enable-threads=posix --enable-checking=release --with-system-zlib --enable-__cxa_atexit --disable-libunwind-exceptions --enable-gnu-unique-object --enable-linker-build-id --with-linker-hash-style=gnu --enable-languages=c,c++,objc,obj-c++,java,fortran,ada,go,lto --enable-plugin --enable-initfini-array --disable-libgcj --with-isl=/builddir/build/BUILD/gcc-4.8.5-20150702/obj-x86_64-redhat-linux/isl-install --with-cloog=/builddir/build/BUILD/gcc-4.8.5-20150702/obj-x86_64-redhat-linux/cloog-install --enable-gnu-indirect-function --with-tune=generic --with-arch_32=x86-64 --build=x86_64-redhat-linux]
+  ignore line: [Thread model: posix]
+  ignore line: [gcc version 4.8.5 20150623 (Red Hat 4.8.5-36) (GCC) ]
+  ignore line: [Reading specs from /usr/lib/gcc/x86_64-redhat-linux/4.8.5/libgfortran.spec]
+  ignore line: [rename spec lib to liborig]
+  ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'cmTryCompileExec1775567962' '-rdynamic' '-I' '/usr/include/openmpi-x86_64' '-pthread' '-m64' '-I' '/usr/lib64/openmpi/lib' '-L/usr/lib64/openmpi/lib' '-shared-libgcc' '-mtune=generic' '-march=x86-64']
+  ignore line: [COMPILER_PATH=/usr/libexec/gcc/x86_64-redhat-linux/4.8.5/:/usr/libexec/gcc/x86_64-redhat-linux/4.8.5/:/usr/libexec/gcc/x86_64-redhat-linux/:/usr/lib/gcc/x86_64-redhat-linux/4.8.5/:/usr/lib/gcc/x86_64-redhat-linux/]
+  ignore line: [LIBRARY_PATH=/usr/lib/gcc/x86_64-redhat-linux/4.8.5/:/usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../../../lib64/:/lib/../lib64/:/usr/lib/../lib64/:/usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../../:/lib/:/usr/lib/]
+  ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'cmTryCompileExec1775567962' '-rdynamic' '-I' '/usr/include/openmpi-x86_64' '-pthread' '-m64' '-I' '/usr/lib64/openmpi/lib' '-L/usr/lib64/openmpi/lib' '-shared-libgcc' '-mtune=generic' '-march=x86-64']
+  link line: [ /usr/libexec/gcc/x86_64-redhat-linux/4.8.5/collect2 --build-id --no-add-needed --eh-frame-hdr --hash-style=gnu -m elf_x86_64 -export-dynamic -dynamic-linker /lib64/ld-linux-x86-64.so.2 -o cmTryCompileExec1775567962 /usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../../../lib64/crt1.o /usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../../../lib64/crti.o /usr/lib/gcc/x86_64-redhat-linux/4.8.5/crtbegin.o -L/usr/lib64/openmpi/lib -L/usr/lib/gcc/x86_64-redhat-linux/4.8.5 -L/usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../../../lib64 -L/lib/../lib64 -L/usr/lib/../lib64 -L/usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../.. CMakeFiles/cmTryCompileExec1775567962.dir/CMakeFortranCompilerABI.F.o -rpath /usr/lib64/openmpi/lib --enable-new-dtags -lmpi_usempi -lmpi_mpifh -lmpi -lgfortran -lm -lgcc_s -lgcc -lquadmath -lm -lgcc_s -lgcc -lpthread -lc -lgcc_s -lgcc /usr/lib/gcc/x86_64-redhat-linux/4.8.5/crtend.o /usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../../../lib64/crtn.o]
+    arg [/usr/libexec/gcc/x86_64-redhat-linux/4.8.5/collect2] ==> ignore
+    arg [--build-id] ==> ignore
+    arg [--no-add-needed] ==> ignore
+    arg [--eh-frame-hdr] ==> ignore
+    arg [--hash-style=gnu] ==> ignore
+    arg [-m] ==> ignore
+    arg [elf_x86_64] ==> ignore
+    arg [-export-dynamic] ==> ignore
+    arg [-dynamic-linker] ==> ignore
+    arg [/lib64/ld-linux-x86-64.so.2] ==> ignore
+    arg [-o] ==> ignore
+    arg [cmTryCompileExec1775567962] ==> ignore
+    arg [/usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../../../lib64/crt1.o] ==> ignore
+    arg [/usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../../../lib64/crti.o] ==> ignore
+    arg [/usr/lib/gcc/x86_64-redhat-linux/4.8.5/crtbegin.o] ==> ignore
+    arg [-L/usr/lib64/openmpi/lib] ==> dir [/usr/lib64/openmpi/lib]
+    arg [-L/usr/lib/gcc/x86_64-redhat-linux/4.8.5] ==> dir [/usr/lib/gcc/x86_64-redhat-linux/4.8.5]
+    arg [-L/usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../../../lib64] ==> dir [/usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../../../lib64]
+    arg [-L/lib/../lib64] ==> dir [/lib/../lib64]
+    arg [-L/usr/lib/../lib64] ==> dir [/usr/lib/../lib64]
+    arg [-L/usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../..] ==> dir [/usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../..]
+    arg [CMakeFiles/cmTryCompileExec1775567962.dir/CMakeFortranCompilerABI.F.o] ==> ignore
+    arg [-rpath] ==> ignore
+    arg [/usr/lib64/openmpi/lib] ==> ignore
+    arg [--enable-new-dtags] ==> ignore
+    arg [-lmpi_usempi] ==> lib [mpi_usempi]
+    arg [-lmpi_mpifh] ==> lib [mpi_mpifh]
+    arg [-lmpi] ==> lib [mpi]
+    arg [-lgfortran] ==> lib [gfortran]
+    arg [-lm] ==> lib [m]
+    arg [-lgcc_s] ==> lib [gcc_s]
+    arg [-lgcc] ==> lib [gcc]
+    arg [-lquadmath] ==> lib [quadmath]
+    arg [-lm] ==> lib [m]
+    arg [-lgcc_s] ==> lib [gcc_s]
+    arg [-lgcc] ==> lib [gcc]
+    arg [-lpthread] ==> lib [pthread]
+    arg [-lc] ==> lib [c]
+    arg [-lgcc_s] ==> lib [gcc_s]
+    arg [-lgcc] ==> lib [gcc]
+    arg [/usr/lib/gcc/x86_64-redhat-linux/4.8.5/crtend.o] ==> ignore
+    arg [/usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../../../lib64/crtn.o] ==> ignore
+  remove lib [gcc_s]
+  remove lib [gcc]
+  remove lib [gcc_s]
+  remove lib [gcc]
+  remove lib [gcc_s]
+  remove lib [gcc]
+  collapse library dir [/usr/lib64/openmpi/lib] ==> [/usr/lib64/openmpi/lib]
+  collapse library dir [/usr/lib/gcc/x86_64-redhat-linux/4.8.5] ==> [/usr/lib/gcc/x86_64-redhat-linux/4.8.5]
+  collapse library dir [/usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../../../lib64] ==> [/usr/lib64]
+  collapse library dir [/lib/../lib64] ==> [/lib64]
+  collapse library dir [/usr/lib/../lib64] ==> [/usr/lib64]
+  collapse library dir [/usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../..] ==> [/usr/lib]
+  implicit libs: [mpi_usempi;mpi_mpifh;mpi;gfortran;m;quadmath;m;pthread;c]
+  implicit dirs: [/usr/lib64/openmpi/lib;/usr/lib/gcc/x86_64-redhat-linux/4.8.5;/usr/lib64;/lib64;/usr/lib]
+  implicit fwks: []
+
+
+Determining if the Fortran compiler supports Fortran 90 passed with the following output:
+Change Dir: /home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp
+
+Run Build Command:/usr/bin/gmake "cmTryCompileExec2964068054/fast"
+/usr/bin/gmake -f CMakeFiles/cmTryCompileExec2964068054.dir/build.make CMakeFiles/cmTryCompileExec2964068054.dir/build
+gmake[1]: Entering directory `/home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp'
+/usr/bin/cmake -E cmake_progress_report /home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp/CMakeFiles 1
+Building Fortran object CMakeFiles/cmTryCompileExec2964068054.dir/testFortranCompilerF90.f90.o
+/usr/lib64/openmpi/bin/mpif90    -c /home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp/testFortranCompilerF90.f90 -o CMakeFiles/cmTryCompileExec2964068054.dir/testFortranCompilerF90.f90.o
+Linking Fortran executable cmTryCompileExec2964068054
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec2964068054.dir/link.txt --verbose=1
+/usr/lib64/openmpi/bin/mpif90       CMakeFiles/cmTryCompileExec2964068054.dir/testFortranCompilerF90.f90.o  -o cmTryCompileExec2964068054 -rdynamic 
+gmake[1]: Leaving directory `/home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp'
+
+
+Determining if the include file sys/types.h exists passed with the following output:
+Change Dir: /home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp
+
+Run Build Command:/usr/bin/gmake "cmTryCompileExec3903152827/fast"
+/usr/bin/gmake -f CMakeFiles/cmTryCompileExec3903152827.dir/build.make CMakeFiles/cmTryCompileExec3903152827.dir/build
+gmake[1]: Entering directory `/home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp'
+/usr/bin/cmake -E cmake_progress_report /home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp/CMakeFiles 1
+Building C object CMakeFiles/cmTryCompileExec3903152827.dir/CheckIncludeFile.c.o
+/usr/lib64/openmpi/bin/mpicc   -g -fPIC   -I/usr/include/openmpi-x86_64    -o CMakeFiles/cmTryCompileExec3903152827.dir/CheckIncludeFile.c.o   -c /home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp/CheckIncludeFile.c
+Linking C executable cmTryCompileExec3903152827
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec3903152827.dir/link.txt --verbose=1
+/usr/lib64/openmpi/bin/mpicc  -g -fPIC      CMakeFiles/cmTryCompileExec3903152827.dir/CheckIncludeFile.c.o  -o cmTryCompileExec3903152827 -rdynamic 
+gmake[1]: Leaving directory `/home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp'
+
+
+Determining if the include file stdint.h exists passed with the following output:
+Change Dir: /home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp
+
+Run Build Command:/usr/bin/gmake "cmTryCompileExec2678005631/fast"
+/usr/bin/gmake -f CMakeFiles/cmTryCompileExec2678005631.dir/build.make CMakeFiles/cmTryCompileExec2678005631.dir/build
+gmake[1]: Entering directory `/home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp'
+/usr/bin/cmake -E cmake_progress_report /home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp/CMakeFiles 1
+Building C object CMakeFiles/cmTryCompileExec2678005631.dir/CheckIncludeFile.c.o
+/usr/lib64/openmpi/bin/mpicc   -g -fPIC   -I/usr/include/openmpi-x86_64    -o CMakeFiles/cmTryCompileExec2678005631.dir/CheckIncludeFile.c.o   -c /home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp/CheckIncludeFile.c
+Linking C executable cmTryCompileExec2678005631
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec2678005631.dir/link.txt --verbose=1
+/usr/lib64/openmpi/bin/mpicc  -g -fPIC      CMakeFiles/cmTryCompileExec2678005631.dir/CheckIncludeFile.c.o  -o cmTryCompileExec2678005631 -rdynamic 
+gmake[1]: Leaving directory `/home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp'
+
+
+Determining if the include file stddef.h exists passed with the following output:
+Change Dir: /home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp
+
+Run Build Command:/usr/bin/gmake "cmTryCompileExec4138697423/fast"
+/usr/bin/gmake -f CMakeFiles/cmTryCompileExec4138697423.dir/build.make CMakeFiles/cmTryCompileExec4138697423.dir/build
+gmake[1]: Entering directory `/home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp'
+/usr/bin/cmake -E cmake_progress_report /home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp/CMakeFiles 1
+Building C object CMakeFiles/cmTryCompileExec4138697423.dir/CheckIncludeFile.c.o
+/usr/lib64/openmpi/bin/mpicc   -g -fPIC   -I/usr/include/openmpi-x86_64    -o CMakeFiles/cmTryCompileExec4138697423.dir/CheckIncludeFile.c.o   -c /home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp/CheckIncludeFile.c
+Linking C executable cmTryCompileExec4138697423
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec4138697423.dir/link.txt --verbose=1
+/usr/lib64/openmpi/bin/mpicc  -g -fPIC      CMakeFiles/cmTryCompileExec4138697423.dir/CheckIncludeFile.c.o  -o cmTryCompileExec4138697423 -rdynamic 
+gmake[1]: Leaving directory `/home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp'
+
+
+Determining size of MPI_Offset passed with the following output:
+Change Dir: /home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp
+
+Run Build Command:/usr/bin/gmake "cmTryCompileExec1483177960/fast"
+/usr/bin/gmake -f CMakeFiles/cmTryCompileExec1483177960.dir/build.make CMakeFiles/cmTryCompileExec1483177960.dir/build
+gmake[1]: Entering directory `/home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp'
+/usr/bin/cmake -E cmake_progress_report /home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp/CMakeFiles 1
+Building C object CMakeFiles/cmTryCompileExec1483177960.dir/SIZEOF_MPI_OFFSET.c.o
+/usr/lib64/openmpi/bin/mpicc   -g -fPIC   -I/usr/include/openmpi-x86_64    -o CMakeFiles/cmTryCompileExec1483177960.dir/SIZEOF_MPI_OFFSET.c.o   -c /home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CheckTypeSize/SIZEOF_MPI_OFFSET.c
+Linking C executable cmTryCompileExec1483177960
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec1483177960.dir/link.txt --verbose=1
+/usr/lib64/openmpi/bin/mpicc  -g -fPIC      CMakeFiles/cmTryCompileExec1483177960.dir/SIZEOF_MPI_OFFSET.c.o  -o cmTryCompileExec1483177960 -rdynamic 
+gmake[1]: Leaving directory `/home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp'
+
+
+Determining size of unsigned short passed with the following output:
+Change Dir: /home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp
+
+Run Build Command:/usr/bin/gmake "cmTryCompileExec2192074783/fast"
+/usr/bin/gmake -f CMakeFiles/cmTryCompileExec2192074783.dir/build.make CMakeFiles/cmTryCompileExec2192074783.dir/build
+gmake[1]: Entering directory `/home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp'
+/usr/bin/cmake -E cmake_progress_report /home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp/CMakeFiles 1
+Building C object CMakeFiles/cmTryCompileExec2192074783.dir/CMAKE_SIZEOF_UNSIGNED_SHORT.c.o
+/usr/lib64/openmpi/bin/mpicc   -g -fPIC   -I/usr/include/openmpi-x86_64    -o CMakeFiles/cmTryCompileExec2192074783.dir/CMAKE_SIZEOF_UNSIGNED_SHORT.c.o   -c /home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CheckTypeSize/CMAKE_SIZEOF_UNSIGNED_SHORT.c
+Linking C executable cmTryCompileExec2192074783
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec2192074783.dir/link.txt --verbose=1
+/usr/lib64/openmpi/bin/mpicc  -g -fPIC      CMakeFiles/cmTryCompileExec2192074783.dir/CMAKE_SIZEOF_UNSIGNED_SHORT.c.o  -o cmTryCompileExec2192074783 -rdynamic 
+gmake[1]: Leaving directory `/home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp'
+
+
+Determining if the function MPI_Comm_f2c exists passed with the following output:
+Change Dir: /home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp
+
+Run Build Command:/usr/bin/gmake "cmTryCompileExec2367271110/fast"
+/usr/bin/gmake -f CMakeFiles/cmTryCompileExec2367271110.dir/build.make CMakeFiles/cmTryCompileExec2367271110.dir/build
+gmake[1]: Entering directory `/home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp'
+/usr/bin/cmake -E cmake_progress_report /home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp/CMakeFiles 1
+Building C object CMakeFiles/cmTryCompileExec2367271110.dir/CheckFunctionExists.c.o
+/usr/lib64/openmpi/bin/mpicc   -g -fPIC  -DCHECK_FUNCTION_EXISTS=MPI_Comm_f2c -I/usr/include/openmpi-x86_64    -o CMakeFiles/cmTryCompileExec2367271110.dir/CheckFunctionExists.c.o   -c /usr/share/cmake/Modules/CheckFunctionExists.c
+Linking C executable cmTryCompileExec2367271110
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec2367271110.dir/link.txt --verbose=1
+/usr/lib64/openmpi/bin/mpicc  -g -fPIC  -DCHECK_FUNCTION_EXISTS=MPI_Comm_f2c    CMakeFiles/cmTryCompileExec2367271110.dir/CheckFunctionExists.c.o  -o cmTryCompileExec2367271110 -rdynamic -lmpi 
+gmake[1]: Leaving directory `/home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp'
+
+
+Determining if the function gettimeofday exists passed with the following output:
+Change Dir: /home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp
+
+Run Build Command:/usr/bin/gmake "cmTryCompileExec3373995869/fast"
+/usr/bin/gmake -f CMakeFiles/cmTryCompileExec3373995869.dir/build.make CMakeFiles/cmTryCompileExec3373995869.dir/build
+gmake[1]: Entering directory `/home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp'
+/usr/bin/cmake -E cmake_progress_report /home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp/CMakeFiles 1
+Building C object CMakeFiles/cmTryCompileExec3373995869.dir/CheckFunctionExists.c.o
+/usr/lib64/openmpi/bin/mpicc   -g -fPIC  -DCHECK_FUNCTION_EXISTS=gettimeofday -I/usr/include/openmpi-x86_64    -o CMakeFiles/cmTryCompileExec3373995869.dir/CheckFunctionExists.c.o   -c /usr/share/cmake/Modules/CheckFunctionExists.c
+Linking C executable cmTryCompileExec3373995869
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec3373995869.dir/link.txt --verbose=1
+/usr/lib64/openmpi/bin/mpicc  -g -fPIC  -DCHECK_FUNCTION_EXISTS=gettimeofday    CMakeFiles/cmTryCompileExec3373995869.dir/CheckFunctionExists.c.o  -o cmTryCompileExec3373995869 -rdynamic 
+gmake[1]: Leaving directory `/home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp'
+
+
+Determining if the function ncmpi_get_varn exists passed with the following output:
+Change Dir: /home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp
+
+Run Build Command:/usr/bin/gmake "cmTryCompileExec3794033568/fast"
+/usr/bin/gmake -f CMakeFiles/cmTryCompileExec3794033568.dir/build.make CMakeFiles/cmTryCompileExec3794033568.dir/build
+gmake[1]: Entering directory `/home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp'
+/usr/bin/cmake -E cmake_progress_report /home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp/CMakeFiles 1
+Building C object CMakeFiles/cmTryCompileExec3794033568.dir/CheckFunctionExists.c.o
+/usr/lib64/openmpi/bin/mpicc   -g -fPIC  -std=c99 -DCHECK_FUNCTION_EXISTS=ncmpi_get_varn -I/usr/include/openmpi-x86_64    -o CMakeFiles/cmTryCompileExec3794033568.dir/CheckFunctionExists.c.o   -c /usr/share/cmake/Modules/CheckFunctionExists.c
+Linking C executable cmTryCompileExec3794033568
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec3794033568.dir/link.txt --verbose=1
+/usr/lib64/openmpi/bin/mpicc  -g -fPIC  -std=c99 -DCHECK_FUNCTION_EXISTS=ncmpi_get_varn    CMakeFiles/cmTryCompileExec3794033568.dir/CheckFunctionExists.c.o  -o cmTryCompileExec3794033568 -rdynamic /home/tkurc/codar/acme/pnetcdf/lib/libpnetcdf.a 
+gmake[1]: Leaving directory `/home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp'
+
+
+Determining size of size_t passed with the following output:
+Change Dir: /home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp
+
+Run Build Command:/usr/bin/gmake "cmTryCompileExec271786282/fast"
+/usr/bin/gmake -f CMakeFiles/cmTryCompileExec271786282.dir/build.make CMakeFiles/cmTryCompileExec271786282.dir/build
+gmake[1]: Entering directory `/home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp'
+/usr/bin/cmake -E cmake_progress_report /home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp/CMakeFiles 1
+Building C object CMakeFiles/cmTryCompileExec271786282.dir/SIZEOF_SIZE_T.c.o
+/usr/lib64/openmpi/bin/mpicc   -g -fPIC  -std=c99  -I/usr/include/openmpi-x86_64    -o CMakeFiles/cmTryCompileExec271786282.dir/SIZEOF_SIZE_T.c.o   -c /home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CheckTypeSize/SIZEOF_SIZE_T.c
+Linking C executable cmTryCompileExec271786282
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec271786282.dir/link.txt --verbose=1
+/usr/lib64/openmpi/bin/mpicc  -g -fPIC  -std=c99     CMakeFiles/cmTryCompileExec271786282.dir/SIZEOF_SIZE_T.c.o  -o cmTryCompileExec271786282 -rdynamic /home/tkurc/codar/acme/pnetcdf/lib/libpnetcdf.a 
+gmake[1]: Leaving directory `/home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp'
+
+
+Determining size of long long passed with the following output:
+Change Dir: /home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp
+
+Run Build Command:/usr/bin/gmake "cmTryCompileExec1987623181/fast"
+/usr/bin/gmake -f CMakeFiles/cmTryCompileExec1987623181.dir/build.make CMakeFiles/cmTryCompileExec1987623181.dir/build
+gmake[1]: Entering directory `/home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp'
+/usr/bin/cmake -E cmake_progress_report /home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp/CMakeFiles 1
+Building C object CMakeFiles/cmTryCompileExec1987623181.dir/SIZEOF_LONG_LONG.c.o
+/usr/lib64/openmpi/bin/mpicc   -g -fPIC  -std=c99  -I/usr/include/openmpi-x86_64    -o CMakeFiles/cmTryCompileExec1987623181.dir/SIZEOF_LONG_LONG.c.o   -c /home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CheckTypeSize/SIZEOF_LONG_LONG.c
+Linking C executable cmTryCompileExec1987623181
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec1987623181.dir/link.txt --verbose=1
+/usr/lib64/openmpi/bin/mpicc  -g -fPIC  -std=c99     CMakeFiles/cmTryCompileExec1987623181.dir/SIZEOF_LONG_LONG.c.o  -o cmTryCompileExec1987623181 -rdynamic /home/tkurc/codar/acme/pnetcdf/lib/libpnetcdf.a 
+gmake[1]: Leaving directory `/home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp'
+
+
+Determining if the function ncmpi_get_varn exists passed with the following output:
+Change Dir: /home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp
+
+Run Build Command:/usr/bin/gmake "cmTryCompileExec4116395444/fast"
+/usr/bin/gmake -f CMakeFiles/cmTryCompileExec4116395444.dir/build.make CMakeFiles/cmTryCompileExec4116395444.dir/build
+gmake[1]: Entering directory `/home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp'
+/usr/bin/cmake -E cmake_progress_report /home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp/CMakeFiles 1
+Building C object CMakeFiles/cmTryCompileExec4116395444.dir/CheckFunctionExists.c.o
+/usr/lib64/openmpi/bin/mpicc   -g -fPIC  -DCHECK_FUNCTION_EXISTS=ncmpi_get_varn -I/usr/include/openmpi-x86_64    -o CMakeFiles/cmTryCompileExec4116395444.dir/CheckFunctionExists.c.o   -c /usr/share/cmake/Modules/CheckFunctionExists.c
+Linking C executable cmTryCompileExec4116395444
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec4116395444.dir/link.txt --verbose=1
+/usr/lib64/openmpi/bin/mpicc  -g -fPIC  -DCHECK_FUNCTION_EXISTS=ncmpi_get_varn    CMakeFiles/cmTryCompileExec4116395444.dir/CheckFunctionExists.c.o  -o cmTryCompileExec4116395444 -rdynamic /home/tkurc/codar/acme/pnetcdf/lib/libpnetcdf.a 
+gmake[1]: Leaving directory `/home/tkurc/codar/e3sm/pio_adios1/ParallelIO/build/CMakeFiles/CMakeTmp'
+
+

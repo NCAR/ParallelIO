@@ -1,0 +1,1 @@
+/usr/lib64/openmpi/bin/mpic++    -std=c++11 -g -O0    CMakeFiles/test_decomps.dir/test_decomps.c.o CMakeFiles/test_decomps.dir/test_common.c.o  -o test_decomps -rdynamic ../../src/clib/libpioc.a ../../src/gptl/libgptl.a ../../tools/adios2pio-nm/libadios2pio-nm-lib.a /home/tkurc/codar/acme/pnetcdf/lib/libpnetcdf.a /home/tkurc/codar/adios-install/lib/libadios.a -lpthread -lm 

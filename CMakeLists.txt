@@ -28,8 +28,8 @@ option (PIO_USE_MALLOC       "Use native malloc (instead of bget package)"  OFF)
 option (PIO_MICRO_TIMING     "Enable internal micro timers"                 OFF)
 option (PIO_SAVE_DECOMPS     "Dump the decomposition information"           OFF)
 option (WITH_PNETCDF         "Require the use of PnetCDF"                   ON)
-option (WITH_NETCDF          "Require the use of NetCDF"                    ON)
-option (WITH_ADIOS           "Require the use of ADIOS"                     OFF)
+option (WITH_NETCDF          "Require the use of NetCDF"                    OFF)
+option (WITH_ADIOS           "Require the use of ADIOS"                     ON)
 option (ADIOS_BP2NC_TEST     "Enable testing of BP to NetCDF conversion"    ON)
 
 # Set a variable that appears in the config.h.in file.

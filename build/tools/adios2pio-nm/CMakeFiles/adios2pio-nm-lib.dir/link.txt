@@ -1,0 +1,2 @@
+/usr/bin/ar cr libadios2pio-nm-lib.a  CMakeFiles/adios2pio-nm-lib.dir/adios2pio-nm-lib.cxx.o
+/usr/bin/ranlib libadios2pio-nm-lib.a
