@@ -1,2 +1,0 @@
-/usr/bin/ar cr libpio_tutil.a  CMakeFiles/pio_tutil.dir/util/pio_tutil.F90.o
-/usr/bin/ranlib libpio_tutil.a
