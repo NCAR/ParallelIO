@@ -49,7 +49,10 @@ int PIOc_inq(int ncid, int *ndimsp, int *nvarsp, int *ngattsp, int *unlimdimidp)
 
     /* Find the info about this file. */
     if ((ierr = pio_get_file(ncid, &file)))
-        return pio_err(NULL, NULL, ierr, __FILE__, __LINE__);
+    {
+        return pio_err(NULL, NULL, ierr, __FILE__, __LINE__,
+                        "Inquiring information about file (ncid=%d) failed. Invalid file id. Unable to find internal structure assocaited with the file id", ncid);
+    }
     ios = file->iosystem;
 
     /* If async is in use, and this is not an IO task, bcast the parameters. */
@@ -65,8 +68,8 @@ int PIOc_inq(int ncid, int *ndimsp, int *nvarsp, int *ngattsp, int *unlimdimidp)
             ngatts_present, unlimdimid_present);
         if(ierr != PIO_NOERR)
         {
-            LOG((1, "Error sending async mesg for PIO_MSG_INQ"));
-            return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
+            return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
+                            "Inquiring information about file %s (ncid=%d) failed. Unable to send asynchronous message, PIO_MSG_INQ on iosystem (iosysid=%d)", pio_get_fname_from_file(file), ncid, ios->iosysid);
         }
     }
 
@@ -260,7 +263,10 @@ int PIOc_inq_unlimdims(int ncid, int *nunlimdimsp, int *unlimdimidsp)
 
     /* Find the info about this file. */
     if ((ierr = pio_get_file(ncid, &file)))
-        return pio_err(NULL, NULL, ierr, __FILE__, __LINE__);
+    {
+        return pio_err(NULL, NULL, ierr, __FILE__, __LINE__,
+                        "Inquiring unlimited dimension information failed on file (ncid=%d). Invalid file id. Unable to find internal structure associated with the file id", ncid);
+    }
     ios = file->iosystem;
 
     /* If async is in use, and this is not an IO task, bcast the parameters. */
@@ -274,8 +280,8 @@ int PIOc_inq_unlimdims(int ncid, int *nunlimdimsp, int *unlimdimidsp)
             nunlimdimsp_present, unlimdimidsp_present);
         if(ierr != PIO_NOERR)
         {
-            LOG((1, "Error sending async msg for PIO_MSG_INQ_UNLIMDIMS"));
-            return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
+            return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
+                            "Inquiring unlimited dimension information on file %s (ncid=%d) failed. Unable to send asynchronous message, PIO_MSG_INQ_UNLIMDIMS on iosystem (iosysid=%d)", pio_get_fname_from_file(file), ncid, ios->iosysid);
         }
     }
 
@@ -398,7 +404,10 @@ int PIOc_inq_type(int ncid, nc_type xtype, char *name, PIO_Offset *sizep)
 
     /* Find the info about this file. */
     if ((ierr = pio_get_file(ncid, &file)))
-        return pio_err(NULL, NULL, ierr, __FILE__, __LINE__);
+    {
+        return pio_err(NULL, NULL, ierr, __FILE__, __LINE__,
+                        "Inquiring type information failed on file (ncid=%d). Invalid file id. Unable to find internal structure associated with the file id", ncid);
+    }
     ios = file->iosystem;
 
     /* If async is in use, and this is not an IO task, bcast the parameters. */
@@ -411,8 +420,8 @@ int PIOc_inq_type(int ncid, nc_type xtype, char *name, PIO_Offset *sizep)
         PIO_SEND_ASYNC_MSG(ios, msg, &ierr, ncid, xtype, name_present, size_present);
         if(ierr != PIO_NOERR)
         {
-            LOG((1, "Error sending async msg for PIO_MSG_INQ_TYPE"));
-            return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
+            return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
+                            "Inquiring type information on file %s (ncid=%d) failed. Unable to send asynchronous message, PIO_MSG_INQ_TYPE on iosystem (iosysid=%d)", pio_get_fname_from_file(file), ncid, ios->iosysid);
         }
     }
 
@@ -492,7 +501,10 @@ int PIOc_inq_format(int ncid, int *formatp)
 
     /* Find the info about this file. */
     if ((ierr = pio_get_file(ncid, &file)))
-        return pio_err(NULL, NULL, ierr, __FILE__, __LINE__);
+    {
+        return pio_err(NULL, NULL, ierr, __FILE__, __LINE__,
+                        "Inquiring format failed on file (ncid=%d). Invalid fild id. Unable to find internal structure associated with the file id", ncid);
+    }
     ios = file->iosystem;
 
     /* If async is in use, and this is not an IO task, bcast the parameters. */
@@ -504,8 +516,8 @@ int PIOc_inq_format(int ncid, int *formatp)
         PIO_SEND_ASYNC_MSG(ios, msg, &ierr, ncid, format_present);
         if(ierr != PIO_NOERR)
         {
-            LOG((1, "Error while sending async msg for PIO_MSG_INQ_FORMAT"));
-            return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
+            return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
+                            "Inquiring format of file %s (ncid=%d) failed. Unable to send asynchronous message, PIO_MSG_INQ_FORMAT, on iosystem (iosysid=%d)", pio_get_fname_from_file(file), ncid, ios->iosysid);
         }
     }
 
@@ -582,7 +594,10 @@ int PIOc_inq_dim(int ncid, int dimid, char *name, PIO_Offset *lenp)
 
     /* Get the file info, based on the ncid. */
     if ((ierr = pio_get_file(ncid, &file)))
-        return pio_err(NULL, NULL, ierr, __FILE__, __LINE__);
+    {
+        return pio_err(NULL, NULL, ierr, __FILE__, __LINE__,
+                        "Inquiring dimension (dimid=%d) information failed on file (ncid=%d). Invalid file id. Unable to find internal structure associated with the file id", dimid, ncid);
+    }
     ios = file->iosystem;
 
     /* If async is in use, and this is not an IO task, bcast the parameters. */
@@ -595,8 +610,9 @@ int PIOc_inq_dim(int ncid, int dimid, char *name, PIO_Offset *lenp)
         PIO_SEND_ASYNC_MSG(ios, msg, &ierr, ncid, dimid, name_present, len_present);
         if(ierr != PIO_NOERR)
         {
-            LOG((1, "Error sending async msg for PIO_MSG_INQ_DIM"));
-            return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
+            const char *dname = (name) ? name : "UNKNOWN";
+            return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
+                            "Inquiring information about dimension %s (dimid=%d) failed on file %s (ncid=%d) failed. Unable to send asynchronous message, PIO_MSG_INQ_DIM, on iosystem (iosysid=%d)", dname, dimid, pio_get_fname_from_file(file), ncid, ios->iosysid);
         }
     }
 
@@ -745,13 +761,22 @@ int PIOc_inq_dimid(int ncid, const char *name, int *idp)
 
     /* Get the file info, based on the ncid. */
     if ((ierr = pio_get_file(ncid, &file)))
-        return pio_err(NULL, NULL, ierr, __FILE__, __LINE__);
+    {
+        const char *dname = (name) ? name : "UNKNOWN";
+        return pio_err(NULL, NULL, ierr, __FILE__, __LINE__,
+                        "Inquiring id of dimension %s failed on file (ncid=%d). Invalid file id. Unable to find internal structure associated with the file id", dname, ncid);
+    }
     ios = file->iosystem;
     LOG((2, "iosysid = %d", ios->iosysid));
 
     /* User must provide name shorter than PIO_MAX_NAME +1. */
     if (!name || strlen(name) > PIO_MAX_NAME)
-        return pio_err(ios, file, PIO_EINVAL, __FILE__, __LINE__);
+    {
+        const char *str_null_msg = "The specified dimension name pointer is NULL";
+        const char *str_too_long_msg = "The specified dimension name is too long (> PIO_MAX_NAME chars)";
+        return pio_err(ios, file, PIO_EINVAL, __FILE__, __LINE__,
+                        "Inquiring id of dimension failed on file %s (ncid=%d). %s", pio_get_fname_from_file(file), ncid, (!name) ? str_null_msg : str_too_long_msg);
+    }
 
     LOG((1, "PIOc_inq_dimid ncid = %d name = %s", ncid, name));
 
@@ -765,8 +790,8 @@ int PIOc_inq_dimid(int ncid, const char *name, int *idp)
         PIO_SEND_ASYNC_MSG(ios, msg, &ierr, ncid, namelen, name, id_present);
         if(ierr != PIO_NOERR)
         {
-            LOG((1, "Error sending async msg for PIO_MSG_INQ_DIMID"));
-            return pio_err(ios, file, ierr, __FILE__, __LINE__);
+            return pio_err(ios, file, ierr, __FILE__, __LINE__,
+                            "Inquiring id of dimension %s failed on file %s (ncid=%d) failed. Unable to send asynchronous message, PIO_MSG_INQ_DIMID, on iosystem (iosysid=%d)", name, pio_get_fname_from_file(file), ncid, ios->iosysid);
         }
     }
 
@@ -867,7 +892,10 @@ int PIOc_inq_var(int ncid, int varid, char *name, int namelen, nc_type *xtypep, 
 
     /* Get the file info, based on the ncid. */
     if ((ierr = pio_get_file(ncid, &file)))
-        return pio_err(NULL, NULL, ierr, __FILE__, __LINE__);
+    {
+        return pio_err(NULL, NULL, ierr, __FILE__, __LINE__,
+                        "Inquiring information on variable (varid=%d) failed on file (ncid=%d). Invalid file id. Unable to find internal structure associated with the file id", varid, ncid);
+    }
     ios = file->iosystem;
 
     /* If async is in use, and this is not an IO task, bcast the parameters. */
@@ -884,8 +912,8 @@ int PIOc_inq_var(int ncid, int varid, char *name, int namelen, nc_type *xtypep, 
             xtype_present, ndims_present, dimids_present, natts_present);
         if(ierr != PIO_NOERR)
         {
-            LOG((1, "Error sending async msg for PIO_MSG_INQ_VAR"));
-            return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
+            return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
+                            "Inquiring information of variable %s (varid=%d) failed on file %s (ncid=%d) failed. Unable to send asynchronous message, PIO_MSG_INQ_VAR, on iosystem (iosysid=%d)", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid, ios->iosysid);
         }
     }
 
@@ -933,7 +961,8 @@ int PIOc_inq_var(int ncid, int varid, char *name, int namelen, nc_type *xtypep, 
                 tmp_dimidsp = (int *)malloc(ndims * sizeof(int));
                 if(!tmp_dimidsp)
                 {
-                    return pio_err(ios, file, PIO_ENOMEM, __FILE__, __LINE__);
+                    return pio_err(ios, file, PIO_ENOMEM, __FILE__, __LINE__,
+                                    "Inquiring information of variable %s (varid=%d) failed on file %s (ncid=%d) failed. Out of memory allocating %lld bytes for storing dimension ids", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid, (unsigned long long) (ndims * sizeof(int)));
                 }
             }
             if (!ierr)
@@ -1051,31 +1080,31 @@ int PIOc_inq_var(int ncid, int varid, char *name, int namelen, nc_type *xtypep, 
         file->varlist[varid].rd_mtimer = mtimer_create(tmp_timer_name, ios->my_comm, timer_log_fname);
         if(!mtimer_is_valid(file->varlist[varid].rd_mtimer))
         {
-            LOG((1, "Error creating timers (rd) for variable"));
-            return pio_err(ios, file, PIO_EINTERNAL, __FILE__, __LINE__);
+            return pio_err(ios, file, PIO_EINTERNAL, __FILE__, __LINE__,
+                            "Inquiring information of variable %s (varid=%d) failed on file %s (ncid=%d) failed. Error creating micro timer (read) for variable", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid);
         }
         assert(!mtimer_is_valid(file->varlist[varid].rd_rearr_mtimer));
         snprintf(tmp_timer_name, PIO_MAX_NAME, "%s_%s", "rd_rearr", file->varlist[varid].vname);
         file->varlist[varid].rd_rearr_mtimer = mtimer_create(tmp_timer_name, ios->my_comm, timer_log_fname);
         if(!mtimer_is_valid(file->varlist[varid].rd_rearr_mtimer))
         {
-            LOG((1, "Error creating timers (rd_rearr) for variable"));
-            return pio_err(ios, file, PIO_EINTERNAL, __FILE__, __LINE__);
+            return pio_err(ios, file, PIO_EINTERNAL, __FILE__, __LINE__,
+                            "Inquiring information of variable %s (varid=%d) failed on file %s (ncid=%d) failed. Error creating micro timer (read rearrange) for variable", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid);
         }
         snprintf(tmp_timer_name, PIO_MAX_NAME, "%s_%s", "wr", file->varlist[varid].vname);
         file->varlist[varid].wr_mtimer = mtimer_create(tmp_timer_name, ios->my_comm, timer_log_fname);
         if(!mtimer_is_valid(file->varlist[varid].wr_mtimer))
         {
-            LOG((1, "Error creating timers (wr) for variable"));
-            return pio_err(ios, file, PIO_EINTERNAL, __FILE__, __LINE__);
+            return pio_err(ios, file, PIO_EINTERNAL, __FILE__, __LINE__,
+                            "Inquiring information of variable %s (varid=%d) failed on file %s (ncid=%d) failed. Error creating micro timer (write) for variable", pio_get_fname_from_file(file), varid, pio_get_fname_from_file(file), ncid);
         }
         assert(!mtimer_is_valid(file->varlist[varid].wr_rearr_mtimer));
         snprintf(tmp_timer_name, PIO_MAX_NAME, "%s_%s", "wr_rearr", file->varlist[varid].vname);
         file->varlist[varid].wr_rearr_mtimer = mtimer_create(tmp_timer_name, ios->my_comm, timer_log_fname);
         if(!mtimer_is_valid(file->varlist[varid].wr_rearr_mtimer))
         {
-            LOG((1, "Error creating timers (wr_rearr) for variable"));
-            return pio_err(ios, file, PIO_EINTERNAL, __FILE__, __LINE__);
+            return pio_err(ios, file, PIO_EINTERNAL, __FILE__, __LINE__,
+                            "Inquiring information of variable %s (varid=%d) failed on file %s (ncid=%d) failed. Error creating micro timer (write rearrange) for variable", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid);
         }
     }
 #endif
@@ -1217,12 +1246,21 @@ int PIOc_inq_varid(int ncid, const char *name, int *varidp)
 
     /* Get file info based on ncid. */
     if ((ierr = pio_get_file(ncid, &file)))
-        return pio_err(NULL, NULL, ierr, __FILE__, __LINE__);
+    {
+        const char *vname = (name) ? name : "UNKNOWN";
+        return pio_err(NULL, NULL, ierr, __FILE__, __LINE__,
+                        "Inquiring id for variable %s failed on file (ncid=%d). Invalid file id. Unable to find internal structure associated with the file id", vname, ncid);
+    }
     ios = file->iosystem;
 
     /* Caller must provide name. */
     if (!name || strlen(name) > PIO_MAX_NAME)
-        return pio_err(ios, file, PIO_EINVAL, __FILE__, __LINE__);
+    {
+        const char *vname = (name) ? name : "UNKNOWN";
+        const char *err_msg = (!name) ? "The pointer to variable name is NULL" : "The length of variable name exceeds PIO_MAX_NAME";
+        return pio_err(ios, file, PIO_EINVAL, __FILE__, __LINE__,
+                        "Inquiring id for variable %s failed on file %s (ncid=%d). %s", vname, pio_get_fname_from_file(file), ncid, err_msg);
+    }
 
     LOG((1, "PIOc_inq_varid ncid = %d name = %s", ncid, name));
 
@@ -1233,8 +1271,8 @@ int PIOc_inq_varid(int ncid, const char *name, int *varidp)
         PIO_SEND_ASYNC_MSG(ios, msg, &ierr, ncid, namelen, name);
         if(ierr != PIO_NOERR)
         {
-            LOG((1, "Error while sending async msg for PIO_MSG_INQ_VARID"));
-            return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
+            return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
+                        "Inquiring id for variable %s failed on file %s (ncid=%d). Unable to send asynchronous message, PIO_MSG_INQ_VARID, on iosystem (iosysid=%d)", name, pio_get_fname_from_file(file), ncid, ios->iosysid);
         }
     }
 
@@ -1298,31 +1336,31 @@ int PIOc_inq_varid(int ncid, const char *name, int *varidp)
         file->varlist[*varidp].rd_mtimer = mtimer_create(tmp_timer_name, ios->my_comm, timer_log_fname);
         if(!mtimer_is_valid(file->varlist[*varidp].rd_mtimer))
         {
-            LOG((1, "Error creating timers (rd) for variable"));
-            return pio_err(ios, file, PIO_EINTERNAL, __FILE__, __LINE__);
+            return pio_err(ios, file, PIO_EINTERNAL, __FILE__, __LINE__,
+                            "Inquiring id for variable %s failed on file %s (ncid=%d). Unable to create micro timers (read) for variable", name, pio_get_fname_from_file(file), ncid);
         }
         assert(!mtimer_is_valid(file->varlist[*varidp].rd_rearr_mtimer));
         snprintf(tmp_timer_name, PIO_MAX_NAME, "%s_%s", "rd_rearr", name);
         file->varlist[*varidp].rd_rearr_mtimer = mtimer_create(tmp_timer_name, ios->my_comm, timer_log_fname);
         if(!mtimer_is_valid(file->varlist[*varidp].rd_rearr_mtimer))
         {
-            LOG((1, "Error creating timers (rd_rearr) for variable"));
-            return pio_err(ios, file, PIO_EINTERNAL, __FILE__, __LINE__);
+            return pio_err(ios, file, PIO_EINTERNAL, __FILE__, __LINE__,
+                            "Inquiring id for variable %s failed on file %s (ncid=%d). Unable to create micro timers (read rearrange) for variable", name, pio_get_fname_from_file(file), ncid);
         }
         snprintf(tmp_timer_name, PIO_MAX_NAME, "%s_%s", "wr", name);
         file->varlist[*varidp].wr_mtimer = mtimer_create(tmp_timer_name, ios->my_comm, timer_log_fname);
         if(!mtimer_is_valid(file->varlist[*varidp].wr_mtimer))
         {
-            LOG((1, "Error creating timers (wr) for variable"));
-            return pio_err(ios, file, PIO_EINTERNAL, __FILE__, __LINE__);
+            return pio_err(ios, file, PIO_EINTERNAL, __FILE__, __LINE__,
+                            "Inquiring id for variable %s failed on file %s (ncid=%d). Unable to create micro timers (write) for variable", name, pio_get_fname_from_file(file), ncid);
         }
         assert(!mtimer_is_valid(file->varlist[*varidp].wr_rearr_mtimer));
         snprintf(tmp_timer_name, PIO_MAX_NAME, "%s_%s", "wr_rearr", name);
         file->varlist[*varidp].wr_rearr_mtimer = mtimer_create(tmp_timer_name, ios->my_comm, timer_log_fname);
         if(!mtimer_is_valid(file->varlist[*varidp].wr_rearr_mtimer))
         {
-            LOG((1, "Error creating timers (wr_rearr) for variable"));
-            return pio_err(ios, file, PIO_EINTERNAL, __FILE__, __LINE__);
+            return pio_err(ios, file, PIO_EINTERNAL, __FILE__, __LINE__,
+                            "Inquiring id for variable %s failed on file %s (ncid=%d). Unable to create micro timers (write rearrange) for variable", name, pio_get_fname_from_file(file), ncid);
         }
     }
 #endif
@@ -1357,12 +1395,21 @@ int PIOc_inq_att(int ncid, int varid, const char *name, nc_type *xtypep,
 
     /* Find file based on ncid. */
     if ((ierr = pio_get_file(ncid, &file)))
-        return pio_err(NULL, NULL, ierr, __FILE__, __LINE__);
+    {
+        const char *aname = (name) ? name : "UNKNOWN";
+        return pio_err(NULL, NULL, ierr, __FILE__, __LINE__,
+                        "Inquiring attribute (%s) associated with variable (varid=%d) failed on file (ncid=%d). Unable to query internal structure associated with the file id", aname, varid, ncid);
+    }
     ios = file->iosystem;
 
     /* User must provide name shorter than PIO_MAX_NAME +1. */
     if (!name || strlen(name) > PIO_MAX_NAME)
-        return pio_err(ios, file, PIO_EINVAL, __FILE__, __LINE__);
+    {
+        const char *aname = (name) ? name : "UNKNOWN";
+        const char *err_msg = (!name) ? "The pointer to attribute name is NULL" : "The length of attribute name exceeds PIO_MAX_NAME";
+        return pio_err(ios, file, PIO_EINVAL, __FILE__, __LINE__,
+                        "Inquiring info for attribute, %s, associated with variable %s (varid=%d) failed on file %s (ncid=%d). %s", aname, pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid, err_msg);
+    }
 
     LOG((1, "PIOc_inq_att ncid = %d varid = %d", ncid, varid));
 
@@ -1375,8 +1422,9 @@ int PIOc_inq_att(int ncid, int varid, const char *name, nc_type *xtypep,
         PIO_SEND_ASYNC_MSG(ios, msg, &ierr, ncid, varid, namelen, name, xtype_present, len_present);
         if(ierr != PIO_NOERR)
         {
-            LOG((1, "Sending async message for PIO_MSG_INQ_ATT failed"));
-            return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
+            const char *aname = (name) ? name : "UNKNOWN";
+            return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
+                            "Inquiring info for attribute, %s, associated with variable %s (varid=%d) failed on file %s (ncid=%d). Unable to send asynchronous message, PIO_MSG_INQ_ATT, on iosystem (iosysid=%d)", aname, pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid, ios->iosysid);
         } 
     }
 
@@ -1501,7 +1549,10 @@ int PIOc_inq_attname(int ncid, int varid, int attnum, char *name)
 
     /* Find the info about this file. */
     if ((ierr = pio_get_file(ncid, &file)))
-        return pio_err(NULL, NULL, ierr, __FILE__, __LINE__);
+    {
+        return pio_err(NULL, NULL, ierr, __FILE__, __LINE__,
+                        "Inquiring name of attribute with id=%d associated with variable (varid=%d) on file (ncid%d) failed. Unable to inquire internal structure associated with the file id", attnum, varid, ncid);
+    }
     ios = file->iosystem;
 
     /* If async is in use, and this is not an IO task, bcast the parameters. */
@@ -1513,8 +1564,8 @@ int PIOc_inq_attname(int ncid, int varid, int attnum, char *name)
         PIO_SEND_ASYNC_MSG(ios, msg, &ierr, ncid, varid, attnum, name_present);
         if(ierr != PIO_NOERR)
         {
-            LOG((1, "Error sending async msg for PIO_MSG_INQ_ATTNAME"));
-            return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
+            return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
+                            "Inquiring name of attribute with id=%d associated with variable %s (varid=%d) on file %s (ncid%d) failed. Unable to send asynchronous message, PIO_MSG_INQ_ATTNAME, on iosystem (iosysid=%d)", attnum, pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid, ios->iosysid);
         }
     }
 
@@ -1588,12 +1639,21 @@ int PIOc_inq_attid(int ncid, int varid, const char *name, int *idp)
 
     /* Find the info about this file. */
     if ((ierr = pio_get_file(ncid, &file)))
-        return pio_err(NULL, NULL, ierr, __FILE__, __LINE__);
+    {
+        const char *aname = (name) ? name : "UNKNOWN";
+        return pio_err(NULL, NULL, ierr, __FILE__, __LINE__,
+                        "Inquiring id of attribute %s associated with variable (varid=%d) on file (ncid%d) failed. Unable to inquire internal structure associated with the file id", aname, varid, ncid);
+    }
     ios = file->iosystem;
 
     /* User must provide name shorter than PIO_MAX_NAME +1. */
     if (!name || strlen(name) > PIO_MAX_NAME)
-        return pio_err(ios, file, PIO_EINVAL, __FILE__, __LINE__);
+    {
+        const char *aname = (name) ? name : "UNKNOWN";
+        const char *err_msg = (!name) ? "The pointer to attribute name is NULL" : "The length of attribute name exceeds PIO_MAX_NAME";
+        return pio_err(ios, file, PIO_EINVAL, __FILE__, __LINE__,
+                        "Inquiring id for attribute, %s, associated with variable %s (varid=%d) failed on file %s (ncid=%d). %s", aname, pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid, err_msg);
+    }
 
     LOG((1, "PIOc_inq_attid ncid = %d varid = %d name = %s", ncid, varid, name));
 
@@ -1607,8 +1667,9 @@ int PIOc_inq_attid(int ncid, int varid, const char *name, int *idp)
         PIO_SEND_ASYNC_MSG(ios, msg, &ierr, ncid, varid, namelen, name, id_present);
         if(ierr != PIO_NOERR)
         {
-            LOG((1, "Error sending async msg for PIO_MSG_INQ_ATTID"));
-            return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
+            const char *aname = (name) ? name : "UNKNOWN";
+            return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
+                            "Inquiring id for attribute, %s, associated with variable %s (varid=%d) failed on file %s (ncid=%d). Unable to send asynchronous message, PIO_MSG_INQ_ATTID, on iosystem (iosysid=%d)", aname, pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid, ios->iosysid);
         }
     }
 
@@ -1678,12 +1739,21 @@ int PIOc_rename_dim(int ncid, int dimid, const char *name)
 
     /* Find the info about this file. */
     if ((ierr = pio_get_file(ncid, &file)))
-        return pio_err(NULL, NULL, ierr, __FILE__, __LINE__);
+    {
+        const char *dname = (name) ? name : "UNKNOWN";
+        return pio_err(NULL, NULL, ierr, __FILE__, __LINE__,
+                        "Renaming dimension (dimid=%d) to %s failed on file (ncid=%d). Unable to inquire internal structure associated with the file id", dimid, dname, ncid);
+    }
     ios = file->iosystem;
 
     /* User must provide name shorter than PIO_MAX_NAME +1. */
     if (!name || strlen(name) > PIO_MAX_NAME)
-        return pio_err(ios, file, PIO_EINVAL, __FILE__, __LINE__);
+    {
+        const char *dname = (name) ? name : "UNKNOWN";
+        const char *err_msg = (!name) ? "The pointer to dimension name is NULL" : "The length of dimension name exceeds PIO_MAX_NAME";
+        return pio_err(ios, file, PIO_EINVAL, __FILE__, __LINE__,
+                        "Renaming dimension (dimid=%d) to %s failed on file %s (ncid=%d). %s", dimid, dname, pio_get_fname_from_file(file), ncid, err_msg);
+    }
 
     LOG((1, "PIOc_rename_dim ncid = %d dimid = %d name = %s", ncid, dimid, name));
 
@@ -1696,8 +1766,9 @@ int PIOc_rename_dim(int ncid, int dimid, const char *name)
         PIO_SEND_ASYNC_MSG(ios, msg, &ierr, ncid, dimid, namelen, name);
         if(ierr != PIO_NOERR)
         {
-            LOG((1, "Error sending async msg for PIO-MSG_RENAME_DIM"));
-            return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
+            const char *dname = (name) ? name : "UNKNOWN";
+            return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
+                            "Renaming dimension (dimid=%d) to %s failed on file %s (ncid=%d). Unable to send asynchronous message, PIO_MSG_RENAME_DIM, on iosystem (iosysid=%d)", dimid, dname, pio_get_fname_from_file(file), ncid, ios->iosysid);
         }
     }
 
@@ -1758,12 +1829,21 @@ int PIOc_rename_var(int ncid, int varid, const char *name)
 
     /* Find the info about this file. */
     if ((ierr = pio_get_file(ncid, &file)))
-        return pio_err(NULL, NULL, ierr, __FILE__, __LINE__);
+    {
+        const char *vname = (name) ? name : "UNKNOWN";
+        return pio_err(NULL, NULL, ierr, __FILE__, __LINE__,
+                        "Renaming variable (varid=%d) to %s failed on file (ncid=%d). Unable to inquire internal structure associated with the file id", varid, vname, ncid);
+    }
     ios = file->iosystem;
 
     /* User must provide name shorter than PIO_MAX_NAME +1. */
     if (!name || strlen(name) > PIO_MAX_NAME)
-        return pio_err(ios, file, PIO_EINVAL, __FILE__, __LINE__);
+    {
+        const char *vname = (name) ? name : "UNKNOWN";
+        const char *err_msg = (!name) ? "The pointer to variable name is NULL" : "The length of variable name exceeds PIO_MAX_NAME";
+        return pio_err(ios, file, PIO_EINVAL, __FILE__, __LINE__,
+                        "Renaming variable (varid=%d) to %s failed on file %s (ncid=%d). %s", varid, vname, pio_get_fname_from_file(file), ncid, err_msg);
+    }
 
     LOG((1, "PIOc_rename_var ncid = %d varid = %d name = %s", ncid, varid, name));
 
@@ -1776,8 +1856,9 @@ int PIOc_rename_var(int ncid, int varid, const char *name)
         PIO_SEND_ASYNC_MSG(ios, msg, &ierr, ncid, varid, namelen, name);
         if(ierr != PIO_NOERR)
         {
-            LOG((1, "Error sending async msg for PIO_MSG_RENAME_VAR"));
-            return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
+            const char *vname = (name) ? name : "UNKNOWN";
+            return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
+                            "Renaming variable (varid=%d) to %s failed on file %s (ncid=%d). Unable to send asynchronous message, PIO_MSG_RENAME_VAR, on iosystem (iosysid=%d)", varid, vname, pio_get_fname_from_file(file), ncid, ios->iosysid);
         }
     }
 
@@ -1840,13 +1921,25 @@ int PIOc_rename_att(int ncid, int varid, const char *name,
 
     /* Find the info about this file. */
     if ((ierr = pio_get_file(ncid, &file)))
-        return pio_err(NULL, NULL, ierr, __FILE__, __LINE__);
+    {
+        const char *aname = (name) ? name : "UNKNOWN";
+        const char *anewname = (newname) ? newname : "UNKNOWN";
+        return pio_err(NULL, NULL, ierr, __FILE__, __LINE__,
+                        "Renaming attribute %s associated with variable (varid=%d) to %s failed on file (ncid=%d). Unable to inquire internal structure associated with the file id", aname, varid, anewname, ncid);
+    }
     ios = file->iosystem;
 
     /* User must provide names of correct length. */
     if (!name || strlen(name) > PIO_MAX_NAME ||
         !newname || strlen(newname) > PIO_MAX_NAME)
-        return pio_err(ios, file, PIO_EINVAL, __FILE__, __LINE__);
+    {
+        const char *aname = (name) ? name : "UNKNOWN";
+        const char *anewname = (newname) ? newname : "UNKNOWN";
+        const char *err_msg_name = (!name) ? "The pointer to attribute name is NULL" : "The length of attribute name exceeds PIO_MAX_NAME";
+        const char *err_msg_newname = (!newname) ? "The pointer to the new attribute name is NULL" : "The length of the new attribute name exceeds PIO_MAX_NAME";
+        return pio_err(ios, file, PIO_EINVAL, __FILE__, __LINE__,
+                        "Renaming attribute %s associated with variable %s (varid=%d) to %s failed on file %s (ncid=%d). %s", aname, pio_get_vname_from_file(file, varid), varid, anewname, pio_get_fname_from_file(file), ncid, (!name || (strlen(name) > PIO_MAX_NAME) ? err_msg_name : err_msg_newname));
+    }
 
     LOG((1, "PIOc_rename_att ncid = %d varid = %d name = %s newname = %s",
          ncid, varid, name, newname));
@@ -1862,8 +1955,10 @@ int PIOc_rename_att(int ncid, int varid, const char *name,
           newnamelen, newname);
         if(ierr != PIO_NOERR)
         {
-            LOG((1, "Error while sending async msg PIO_MSG_RENAME_ATT"));
-            return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
+            const char *aname = (name) ? name : "UNKNOWN";
+            const char *anewname = (newname) ? newname : "UNKNOWN";
+            return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
+                        "Renaming attribute %s associated with variable %s (varid=%d) to %s failed on file %s (ncid=%d). Unable to send asynchronous message, PIO_MSG_RENAME_ATT, on iosystem (iosysid=%d)", aname, pio_get_vname_from_file(file, varid), varid, anewname, pio_get_fname_from_file(file), ncid, ios->iosysid);
         }
     }
 
@@ -1925,12 +2020,21 @@ int PIOc_del_att(int ncid, int varid, const char *name)
 
     /* Find the info about this file. */
     if ((ierr = pio_get_file(ncid, &file)))
-        return pio_err(NULL, NULL, ierr, __FILE__, __LINE__);
+    {
+        const char *aname = (name) ? name : "UNKNOWN";
+        return pio_err(NULL, NULL, ierr, __FILE__, __LINE__,
+                        "Deleting attribute %s associated with variable (varid=%d) failed on file (ncid=%d). Unable to inquire internal structure associated with the file id", aname, varid, ncid);
+    }
     ios = file->iosystem;
 
     /* User must provide name shorter than PIO_MAX_NAME +1. */
     if (!name || strlen(name) > PIO_MAX_NAME)
-        return pio_err(ios, file, PIO_EINVAL, __FILE__, __LINE__);
+    {
+        const char *aname = (name) ? name : "UNKNOWN";
+        const char *err_msg = (!name) ? "The pointer to attribute name is NULL" : "The length of attribute name exceeds PIO_MAX_NAME";
+        return pio_err(ios, file, PIO_EINVAL, __FILE__, __LINE__,
+                        "Deleting attribute %s associated with variable %s (varid=%d) failed on file %s (ncid=%d). %s", aname, pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid, err_msg);
+    }
 
     LOG((1, "PIOc_del_att ncid = %d varid = %d name = %s", ncid, varid, name));
 
@@ -1943,8 +2047,9 @@ int PIOc_del_att(int ncid, int varid, const char *name)
         PIO_SEND_ASYNC_MSG(ios, msg, &ierr, ncid, varid, namelen, name);
         if(ierr != PIO_NOERR)
         {
-            LOG((1, "Error sending async msg PIO_MSG_DEL_ATT"));
-            return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
+            const char *aname = (name) ? name : "UNKNOWN";
+            return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
+                            "Deleting attribute %s associated with variable %s (varid=%d) failed on file %s (ncid=%d). Unable to send asynchronous message, PIO_MSG_DEL_ATT, on iosystem (iosysid=%d)", aname, pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid, ios->iosysid);
         }
     }
 
@@ -2007,7 +2112,10 @@ int PIOc_set_fill(int ncid, int fillmode, int *old_modep)
 
     /* Find the info about this file. */
     if ((ierr = pio_get_file(ncid, &file)))
-        return pio_err(NULL, NULL, ierr, __FILE__, __LINE__);
+    {
+        return pio_err(NULL, NULL, ierr, __FILE__, __LINE__,
+                        "Setting fill mode failed on file (ncid=%d). Unable to query internal structure associated with the file id", ncid);
+    }
     ios = file->iosystem;
 
     /* If async is in use, and this is not an IO task, bcast the parameters. */
@@ -2019,8 +2127,8 @@ int PIOc_set_fill(int ncid, int fillmode, int *old_modep)
         PIO_SEND_ASYNC_MSG(ios, msg, &ierr, ncid, fillmode, old_modep_present);
         if(ierr != PIO_NOERR)
         {
-            LOG((1, "Error sending async msg for PIO_MSG_SET_FILL"));
-            return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
+            return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
+                            "Setting fill mode failed on file %s (ncid=%d). Unable to send asynchronous message, PIO_MSG_SET_FILL, on iosystem (iosysid=%d)", pio_get_fname_from_file(file), ncid, ios->iosysid);
         }
     }
 
@@ -2135,12 +2243,21 @@ int PIOc_def_dim(int ncid, const char *name, PIO_Offset len, int *idp)
 
     /* Find the info about this file. */
     if ((ierr = pio_get_file(ncid, &file)))
-        return pio_err(NULL, NULL, ierr, __FILE__, __LINE__);
+    {
+        const char *dname = (name) ? name : "UNKNOWN";
+        return pio_err(NULL, NULL, ierr, __FILE__, __LINE__,
+                        "Defining dimension %s in file (ncid=%d) failed. Unable to inquire internal structure associated with the file id", dname, ncid);
+    }
     ios = file->iosystem;
 
     /* User must provide name shorter than PIO_MAX_NAME +1. */
     if (!name || strlen(name) > PIO_MAX_NAME)
-        return pio_err(ios, file, PIO_EINVAL, __FILE__, __LINE__);
+    {
+        const char *dname = (name) ? name : "UNKNOWN";
+        const char *err_msg = (!name) ? "The pointer to dimension name is NULL" : "The length of dimension name exceeds PIO_MAX_NAME";
+        return pio_err(ios, file, PIO_EINVAL, __FILE__, __LINE__,
+                        "Defining dimension %s in file %s (ncid=%d) failed. %s", dname, pio_get_fname_from_file(file), ncid, err_msg);
+    }
 
     if(!idp)
     {
@@ -2158,8 +2275,9 @@ int PIOc_def_dim(int ncid, const char *name, PIO_Offset len, int *idp)
         PIO_SEND_ASYNC_MSG(ios, msg, &ierr, ncid, namelen, name, len);
         if(ierr != PIO_NOERR)
         {
-            LOG((1, "Error sending async msg for PIO_MSG_DEF_DIM"));
-            return pio_err(ios, file, ierr, __FILE__, __LINE__);
+            const char *dname = (name) ? name : "UNKNOWN";
+            return pio_err(ios, file, ierr, __FILE__, __LINE__,
+                        "Defining dimension %s in file %s (ncid=%d) failed. Unable to send asynchronous message, PIO_MSG_DEF_DIM, on iosystem (iosysid=%d)", dname, pio_get_fname_from_file(file), ncid, ios->iosysid);
         }
     }
 
@@ -2217,7 +2335,9 @@ int PIOc_def_dim(int ncid, const char *name, PIO_Offset len, int *idp)
                                       file->num_unlim_dimids * sizeof(int));
         if(!file->unlim_dimids)
         {
-            return pio_err(ios, file, PIO_ENOMEM, __FILE__, __LINE__);
+            const char *dname = (name) ? name : "UNKNOWN";
+            return pio_err(ios, file, PIO_ENOMEM, __FILE__, __LINE__,
+                        "Defining dimension %s in file %s (ncid=%d) failed. Out of memory allocating %lld bytes to cache unlimited dimension ids", dname, pio_get_fname_from_file(file), ncid, (unsigned long long) (file->num_unlim_dimids * sizeof(int)));
         }
         file->unlim_dimids[file->num_unlim_dimids-1] = *idp;
         LOG((1, "pio_def_dim : %d dim is unlimited", *idp));
@@ -2257,12 +2377,22 @@ int PIOc_def_var(int ncid, const char *name, nc_type xtype, int ndims,
 
     /* Get the file information. */
     if ((ierr = pio_get_file(ncid, &file)))
-        return pio_err(NULL, NULL, ierr, __FILE__, __LINE__);
+    {
+        const char *vname = (name) ? name : "UNKNOWN";
+        return pio_err(NULL, NULL, ierr, __FILE__, __LINE__,
+                        "Defining variable %s in file (ncid=%d) failed. Unable to inquire internal structure associated with the file id", vname, ncid);
+    }
     ios = file->iosystem;
 
     /* User must provide name and storage for varid. */
     if (!name || !varidp || strlen(name) > PIO_MAX_NAME)
-        return pio_err(ios, file, PIO_EINVAL, __FILE__, __LINE__);
+    {
+        const char *vname = (name) ? name : "UNKNOWN";
+        const char *err_msg_varidp = "Invalid (NULL) pointer to buffer to return variable id";
+        const char *err_msg_name = (!name) ? "The pointer to variable name is NULL" : "The length of variable name exceeds PIO_MAX_NAME";
+        return pio_err(ios, file, PIO_EINVAL, __FILE__, __LINE__,
+                        "Defining variable %s in file %s (ncid=%d) failed. %s", vname, pio_get_fname_from_file(file), ncid, ((!varidp) ? err_msg_varidp : err_msg_name));
+    }
 
     LOG((1, "PIOc_def_var ncid = %d name = %s xtype = %d ndims = %d", ncid, name,
          xtype, ndims));
@@ -2298,8 +2428,9 @@ int PIOc_def_var(int ncid, const char *name, nc_type xtype, int ndims,
             ndims, (ndims > 0) ? ndims : 1, (ndims > 0) ? dimidsp : &amsg_dimids);
         if(ierr != PIO_NOERR)
         {
-            LOG((1, "Error sending async msg for PIO_MSG_DEF_VAR"));
-            return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
+            const char *vname = (name) ? name : "UNKNOWN";
+            return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
+                            "Defining variable %s in file %s (ncid=%d) failed. Unable to send asynchronous message, PIO_MSG_DEF_VAR, on iosystem (iosysid=%d)", vname, pio_get_fname_from_file(file), ncid, ios->iosysid);
         }
 
         /* Broadcast values currently only known on computation tasks to IO tasks. */
@@ -2420,31 +2551,35 @@ int PIOc_def_var(int ncid, const char *name, nc_type xtype, int ndims,
         file->varlist[*varidp].rd_mtimer = mtimer_create(tmp_timer_name, ios->my_comm, timer_log_fname);
         if(!mtimer_is_valid(file->varlist[*varidp].rd_mtimer))
         {
-            LOG((1, "Error creating timers (rd) for variable"));
-            return pio_err(ios, file, PIO_EINTERNAL, __FILE__, __LINE__);
+            const char *vname = (name) ? name : "UNKNOWN";
+            return pio_err(ios, file, PIO_EINTERNAL, __FILE__, __LINE__,
+                            "Defining variable %s in file %s (ncid=%d) failed. Unable to create micro timer (read) for the variable", vname, pio_get_fname_from_file(file), ncid);
         }
         assert(!mtimer_is_valid(file->varlist[*varidp].rd_rearr_mtimer));
         snprintf(tmp_timer_name, PIO_MAX_NAME, "%s_%s", "rd_rearr", name);
         file->varlist[*varidp].rd_rearr_mtimer = mtimer_create(tmp_timer_name, ios->my_comm, timer_log_fname);
         if(!mtimer_is_valid(file->varlist[*varidp].rd_rearr_mtimer))
         {
-            LOG((1, "Error creating timers (rd_rearr) for variable"));
-            return pio_err(ios, file, PIO_EINTERNAL, __FILE__, __LINE__);
+            const char *vname = (name) ? name : "UNKNOWN";
+            return pio_err(ios, file, PIO_EINTERNAL, __FILE__, __LINE__,
+                            "Defining variable %s in file %s (ncid=%d) failed. Unable to create micro timer (read rearrange) for the variable", vname, pio_get_fname_from_file(file), ncid);
         }
         snprintf(tmp_timer_name, PIO_MAX_NAME, "%s_%s", "wr", name);
         file->varlist[*varidp].wr_mtimer = mtimer_create(tmp_timer_name, ios->my_comm, timer_log_fname);
         if(!mtimer_is_valid(file->varlist[*varidp].wr_mtimer))
         {
-            LOG((1, "Error creating timers (wr) for variable"));
-            return pio_err(ios, file, PIO_EINTERNAL, __FILE__, __LINE__);
+            const char *vname = (name) ? name : "UNKNOWN";
+            return pio_err(ios, file, PIO_EINTERNAL, __FILE__, __LINE__,
+                            "Defining variable %s in file %s (ncid=%d) failed. Unable to create micro timer (write) for the variable", vname, pio_get_fname_from_file(file), ncid);
         }
         assert(!mtimer_is_valid(file->varlist[*varidp].wr_rearr_mtimer));
         snprintf(tmp_timer_name, PIO_MAX_NAME, "%s_%s", "wr_rearr", name);
         file->varlist[*varidp].wr_rearr_mtimer = mtimer_create(tmp_timer_name, ios->my_comm, timer_log_fname);
         if(!mtimer_is_valid(file->varlist[*varidp].wr_rearr_mtimer))
         {
-            LOG((1, "Error creating timers (wr_rearr) for variable"));
-            return pio_err(ios, file, PIO_EINTERNAL, __FILE__, __LINE__);
+            const char *vname = (name) ? name : "UNKNOWN";
+            return pio_err(ios, file, PIO_EINTERNAL, __FILE__, __LINE__,
+                            "Defining variable %s in file %s (ncid=%d) failed. Unable to create micro timer (write rearrange) for the variable", vname, pio_get_fname_from_file(file), ncid);
         }
     }
 #endif
@@ -2492,13 +2627,20 @@ int PIOc_def_var_fill(int ncid, int varid, int fill_mode, const void *fill_value
 
     /* Get the file info. */
     if ((ierr = pio_get_file(ncid, &file)))
-        return pio_err(NULL, NULL, ierr, __FILE__, __LINE__);
+    {
+        return pio_err(NULL, NULL, ierr, __FILE__, __LINE__,
+                        "Defining fillvalue for variable (varid=%d) failed on file (ncid=%d). Unable to inquire internal structure associated with the file id", varid, ncid);
+    }
     ios = file->iosystem;
 
     /* Caller must provide correct values. */
     if ((fill_mode != NC_FILL && fill_mode != NC_NOFILL) ||
         (fill_mode == NC_FILL && !fill_valuep))
-        return pio_err(ios, file, PIO_EINVAL, __FILE__, __LINE__);
+    {
+        const char *err_msg = (fill_mode != NC_NOFILL) ? "Fill mode specified by the user is not valid" : "The pointer to fill value is invalid (NULL)";
+        return pio_err(ios, file, PIO_EINVAL, __FILE__, __LINE__,
+                        "Defining fillvalue for variable %s (varid=%d) failed on file %s (ncid=%d). %s", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid, err_msg);
+    }
 
     /* Run this on all tasks if async is not in use, but only on
      * non-IO tasks if async is in use. Get the size of this vars
@@ -2534,8 +2676,8 @@ int PIOc_def_var_fill(int ncid, int varid, int fill_mode, const void *fill_value
             (fill_value_present) ? fill_valuep : amsg_fillvalue_p);
         if(ierr != PIO_NOERR)
         {
-            LOG((1, "Error sending async msg for PIO_MSG_DEF_VAR_FILL"));
-            return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
+            return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
+                        "Defining fillvalue for variable %s (varid=%d) failed on file %s (ncid=%d). Unable to send asynchronous message, PIO_MSG_DEF_VAR_FILL, on iosystem (iosysid=%d)", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid, ios->iosysid);
         }
 
         if(!fill_value_present)
@@ -2627,7 +2769,10 @@ int PIOc_inq_var_fill(int ncid, int varid, int *no_fill, void *fill_valuep)
 
     /* Find the info about this file. */
     if ((ierr = pio_get_file(ncid, &file)))
-        return pio_err(NULL, NULL, ierr, __FILE__, __LINE__);
+    {
+        return pio_err(NULL, NULL, ierr, __FILE__, __LINE__,
+                        "Inquiring fill value settings for the variable (varid=%d) failed on file (ncid=%d). Unable to query internal structure associated with the file id", varid, ncid);
+    }
     ios = file->iosystem;
     LOG((2, "found file"));
 
@@ -2660,8 +2805,8 @@ int PIOc_inq_var_fill(int ncid, int varid, int *no_fill, void *fill_valuep)
             no_fill_present, fill_value_present);
         if(ierr != PIO_NOERR)
         {
-            LOG((1, "Error sending async msg for PIO_MSG_INQ_VAR_FILL"));
-            return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
+            return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
+                            "Inquiring fill value settings for the variable %s (varid=%d) failed on file %s (ncid=%d). Unable to send asynchronous message, PIO_MSG_INQ_VAR_FILL, on iosystem (iosysid=%d)", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid, ios->iosysid);
         }
 
         /* Broadcast values currently only known on computation tasks to IO tasks. */
@@ -2725,7 +2870,10 @@ int PIOc_inq_var_fill(int ncid, int varid, int *no_fill, void *fill_valuep)
                         memcpy(fill_valuep, &double_fill_value, sizeof(double));
                         break;
                     default:
-                        return pio_err(ios, file, NC_EBADTYPE, __FILE__, __LINE__);
+                        {
+                          return pio_err(ios, file, NC_EBADTYPE, __FILE__, __LINE__,
+                                          "Inquiring fill value settings for the variable %s (varid=%d) failed on file %s (ncid=%d). Unsupported type (xtype=%x) specified for the fillvalue", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid, xtype);
+                        }
                     }
                     ierr = PIO_NOERR;
                 }
@@ -2793,12 +2941,22 @@ int PIOc_get_att(int ncid, int varid, const char *name, void *ip)
 
     /* Find the info about this file. */
     if ((ierr = pio_get_file(ncid, &file)))
-        return pio_err(NULL, NULL, ierr, __FILE__, __LINE__);
+    {
+        const char *aname = (name) ? name : "UNKNOWN";
+        return pio_err(NULL, NULL, ierr, __FILE__, __LINE__,
+                        "Getting attribute %s associated with variable (varid=%d) failed on file (ncid=%d). Unable to query internal structure associated with the file id", aname, varid, ncid);
+    }
     ios = file->iosystem;
 
     /* User must provide a name and destination pointer. */
     if (!name || !ip || strlen(name) > PIO_MAX_NAME)
-        return pio_err(ios, file, PIO_EINVAL, __FILE__, __LINE__);
+    {
+        const char *aname = (name) ? name : "UNKNOWN";
+        const char *err_msg_ip = "Invalid (NULL) pointer to buffer to store attribute value";
+        const char *err_msg_name = (!name) ? "Invalid (NULL) pointer to attribute name" : "The length of attribute name exceeds PIO_MAX_NAME";
+        return pio_err(ios, file, PIO_EINVAL, __FILE__, __LINE__,
+                        "Getting attribute %s associated with variable %s(varid=%d) failed on file %s (ncid=%d). %s", aname, pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid, (!ip) ? err_msg_ip : err_msg_name);
+    }
 
     LOG((1, "PIOc_get_att ncid %d varid %d name %s", ncid, varid, name));
 

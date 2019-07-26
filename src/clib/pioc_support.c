@@ -3,8 +3,9 @@
  */
 #include <config.h>
 #include <stdio.h>
-#if PIO_ENABLE_LOGGING
+#include <stdbool.h>
 #include <stdarg.h>
+#if PIO_ENABLE_LOGGING
 #include <unistd.h>
 #endif /* PIO_ENABLE_LOGGING */
 #include <pio.h>
@@ -184,7 +185,10 @@ int PIOc_set_log_level(int level)
     /* If netcdf logging is available turn it on starting at level = 4. */
     if (level > NC_LEVEL_DIFF)
         if ((ret = nc_set_log_level(level - NC_LEVEL_DIFF)))
-            return pio_err(NULL, NULL, ret, __FILE__, __LINE__);
+        {
+            return pio_err(NULL, NULL, ret, __FILE__, __LINE__,
+                            "Setting NetCDF log level (level=%d) failed", level);
+        }
 #endif /* NETCDF_C_LOGGING_ENABLED */
 #endif /* PIO_ENABLE_LOGGING */
 
@@ -400,10 +404,16 @@ void print_trace(FILE *fp)
  * @param fname name of code file where error occured
  * @param line the line of code where the error occurred.
  */
-void piodie(const char *msg, const char *fname, int line)
+void piodie(const char *fname, int line, const char *fmt, ...)
 {
-    fprintf(stderr,"Abort with message %s in file %s at line %d\n",
-            msg ? msg : "_", fname ? fname : "_", line);
+    assert(fname && fmt);
+
+    va_list argp;
+    va_start(argp, fmt);
+    fprintf(stderr, "PIO: FATAL ERROR: Aborting... ");
+    vfprintf(stderr, fmt, argp);
+    fprintf(stderr, " (%s: %d)\n", (fname) ? fname : "_", line);
+    va_end(argp);
 
     print_trace(stderr);
 #ifdef MPI_SERIAL
@@ -426,7 +436,10 @@ void pioassert(_Bool expression, const char *msg, const char *fname, int line)
 {
 #ifndef NDEBUG
     if (!expression)
-        piodie(msg, fname, line);
+    {
+        fprintf(stderr, "Assertion failed...\n");
+        piodie(fname, line, msg);
+    }
 #endif
 }
 
@@ -454,11 +467,12 @@ int check_mpi(iosystem_desc_t *ios, file_desc_t *file, int mpierr,
 
         /* If we can get an error string from MPI, print it to stderr. */
         if (!MPI_Error_string(mpierr, errstring, &errstrlen))
-            fprintf(stderr, "MPI ERROR: %s in file %s at line %d\n",
+            fprintf(stderr, "PIO: MPI ERROR: %s in file %s at line %d\n",
                     errstring, filename ? filename : "_", line);
 
         /* Handle all MPI errors as PIO_EIO. */
-        return pio_err(ios, file, PIO_EIO, filename, line);
+        return pio_err(ios, file, PIO_EIO, filename, line,
+                        "An MPI error (mpierr=%d) occured", mpierr);
     }
     return PIO_NOERR;
 }
@@ -525,9 +539,8 @@ int check_netcdf(iosystem_desc_t *ios, file_desc_t *file, int status,
         if(eh == PIO_INTERNAL_ERROR){
             int ret = PIOc_strerror(status, errmsg);
             assert(ret == PIO_NOERR);
-            fprintf(stderr, "%s\n", errmsg);
             LOG((1, "check_netcdf errmsg = %s", errmsg));
-            piodie(errmsg, fname, line);
+            piodie(fname, line, "FATAL ERROR: %s", errmsg);
         }
     }
 
@@ -565,7 +578,8 @@ int check_netcdf(iosystem_desc_t *ios, file_desc_t *file, int status,
             if(comm_rank == COMM_ROOT){
                 err_info = (int *)malloc(err_info_sz * sizeof(int));
                 if(!err_info){
-                    return pio_err(ios, file, PIO_ENOMEM, __FILE__, __LINE__);  
+                    return pio_err(ios, file, PIO_ENOMEM, __FILE__, __LINE__,
+                                    "Internal error while handling NetCDF error. Out of memory allocating %lld bytes gathering error codes", (unsigned long long) (err_info_sz * sizeof(int)));  
                 }
             }
             mpierr = MPI_Gather(&lstatus, 1, MPI_INT, err_info,
@@ -583,7 +597,7 @@ int check_netcdf(iosystem_desc_t *ios, file_desc_t *file, int status,
                         /* Log prev range error and start new range */
                         int ret = PIOc_strerror(prev_err, errmsg);
                         assert(ret == PIO_NOERR);
-                        LOG((1, "Error: ranks[%d-%d] = %d (%s)",
+                        LOG((1, "ERROR: ranks[%d-%d] = %d (%s)",
                               start_rank, end_rank, prev_err, errmsg));
                         prev_err = err_info[i];
                         start_rank = i;
@@ -594,7 +608,7 @@ int check_netcdf(iosystem_desc_t *ios, file_desc_t *file, int status,
                 if(err_info[end_rank] == prev_err){
                     int ret = PIOc_strerror(prev_err, errmsg);
                     assert(ret == PIO_NOERR);
-                    LOG((1, "Error: ranks[%d-%d] = %d (%s)",
+                    LOG((1, "ERROR: ranks[%d-%d] = %d (%s)",
                           start_rank, end_rank, prev_err, errmsg));
                 }
                 free(err_info);
@@ -621,10 +635,13 @@ int check_netcdf(iosystem_desc_t *ios, file_desc_t *file, int status,
  * @param err_num the error code
  * @param fname name of code file where error occured.
  * @param line the line of code where the error occurred.
+ * @param uerr_msg_fmt User error message format
+ * @param ... User error message arguments
  * @returns err_num if abort is not called.
  */
-int pio_err(iosystem_desc_t *ios, file_desc_t *file, int err_num, const char *fname,
-            int line)
+int pio_err(iosystem_desc_t *ios, file_desc_t *file,
+            int err_num, const char *fname, int line,
+            const char *uerr_msg_fmt, ...)
 {
     char err_msg[PIO_MAX_NAME + 1];
     int err_handler = default_error_handler; /* Default error handler. */
@@ -641,12 +658,21 @@ int pio_err(iosystem_desc_t *ios, file_desc_t *file, int err_num, const char *fn
     if ((ret = PIOc_strerror(err_num, err_msg)))
         return ret;
 
+    char uerr_msg[PIO_MAX_NAME + 1];
+    va_list argp;
+    va_start(argp, uerr_msg_fmt);
+    vsnprintf(uerr_msg, PIO_MAX_NAME, uerr_msg_fmt, argp);
+    va_end(argp);
+
     /* If logging is in use, log an error message. */
-    LOG((0, "%s err_num = %d fname = %s line = %d", err_msg, err_num, fname ? fname : '\0', line));
+    LOG((1, "ERROR: %s. %s err_num = %d fname = %s line = %d", uerr_msg, err_msg, err_num, fname ? fname : '\0', line));
 
     /* What error handler should we use? */
     if (file)
-        err_handler = file->iosystem->error_handler;
+    {
+        ios = file->iosystem;
+        err_handler = ios->error_handler;
+    }
     else if (ios)
         err_handler = ios->error_handler;
 
@@ -656,8 +682,20 @@ int pio_err(iosystem_desc_t *ios, file_desc_t *file, int err_num, const char *fn
     if (err_handler == PIO_INTERNAL_ERROR)
     {
         /* For debugging only, this will print a traceback of the call tree.  */
-        print_trace(stderr);
-        MPI_Abort(MPI_COMM_WORLD, -1);
+        piodie(fname, line, "An error occured, %s. err=%d. Aborting since the error handler was set to PIO_INTERNAL_ERROR...", uerr_msg, err_num);
+    }
+    else if (err_handler != PIO_RETURN_ERROR)
+    {
+        /* If the user does not explicitly ask to return error, print
+         * the error message in stderr on the root IO proc
+         */
+        bool print_err_msg = (ios) ? (ios->union_rank == ios->ioroot) : true;
+
+        if (print_err_msg)
+        {
+            fprintf(stderr, "PIO: ERROR: %s. %s (error num=%d), (%s:%d)\n", uerr_msg, err_msg, err_num, (fname) ? fname : '\0', line); 
+            fflush(stderr);
+        }
     }
 
     /* For PIO_BCAST_ERROR and PIO_RETURN_ERROR error handlers
@@ -687,15 +725,24 @@ int alloc_region2(iosystem_desc_t *ios, int ndims, io_region **regionp)
     
     /* Allocate memory for the io_region struct. */
     if (!(region = calloc(1, sizeof(io_region))))
-        return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__);
+    {
+        return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__,
+                        "Internal error while allocating region. Out of memory allocating %lld bytes I/O region", (unsigned long long) sizeof(io_region));
+    }
 
     /* Allocate memory for the array of start indicies. */
     if (!(region->start = calloc(ndims, sizeof(PIO_Offset))))
-        return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__);
+    {
+        return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__,
+                        "Internal error while allocating region. Out of memory allocating %lld bytes  for start array in the I/O region", (unsigned long long) (ndims * sizeof(PIO_Offset)));
+    }
 
     /* Allocate memory for the array of counts. */
     if (!(region->count = calloc(ndims, sizeof(PIO_Offset))))
-        return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__);
+    {
+        return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__,
+                        "Internal error while allocating region. Out of memory allocating %lld bytes  for count array in the I/O region", (unsigned long long) (ndims * sizeof(PIO_Offset)));
+    }
 
     /* Return pointer to new region to caller. */
     *regionp = region;
@@ -812,15 +859,24 @@ int malloc_iodesc(iosystem_desc_t *ios, int piotype, int ndims,
 
     /* Get the MPI type corresponding with the PIO type. */
     if ((ret = find_mpi_type(piotype, &mpi_type, NULL)))
-        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+    {
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__,
+                        "Internal error while allocating memory for iodesc. Unable to find MPI type corresponding to PIO type (%d)", piotype);
+    }
 
     /* What is the size of the pio type? */
     if ((ret = pioc_pnetcdf_inq_type(0, piotype, NULL, &type_size)))
-        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+    {
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__,
+                        "Internal error while allocating memory for iodesc. Finding the size of PIO type (%d) failed", piotype);
+    }
 
     /* Allocate space for the io_desc_t struct. */
     if (!(*iodesc = calloc(1, sizeof(io_desc_t))))
-        return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__);
+    {
+        return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__,
+                        "Internal error while allocating memory for iodesc. Out of memory allocating %lld bytes for the I/O descriptor", (unsigned long long) sizeof(io_desc_t));
+    }
 
     /* Remember the pio type and its size. */
     (*iodesc)->piotype = piotype;
@@ -840,7 +896,10 @@ int malloc_iodesc(iosystem_desc_t *ios, int piotype, int ndims,
 
     /* Allocate space for, and initialize, the first region. */
     if ((ret = alloc_region2(ios, ndims, &((*iodesc)->firstregion))))
-        return pio_err(ios, NULL, ret, __FILE__, __LINE__);        
+    {
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__,
+                        "Internal error while allocating memory for iodesc. Allocating memory for 1st region failed. Out of memory allocating memory for I/O region in the I/O descriptor");
+    }
 
     /* Set the swap memory settings to defaults for this IO system. */
     (*iodesc)->rearr_opts = ios->rearr_opts;
@@ -893,10 +952,16 @@ int PIOc_freedecomp(int iosysid, int ioid)
     GPTLstart("PIO:PIOc_freedecomp");
 #endif
     if (!(ios = pio_get_iosystem_from_id(iosysid)))
-        return pio_err(NULL, NULL, PIO_EBADID, __FILE__, __LINE__);
+    {
+        return pio_err(NULL, NULL, PIO_EBADID, __FILE__, __LINE__,
+                        "Freeing PIO decomposition failed. Invalid iosystem id (%d) provided", iosysid);
+    }
 
     if (!(iodesc = pio_get_iodesc_from_id(ioid)))
-        return pio_err(ios, NULL, PIO_EBADID, __FILE__, __LINE__);
+    {
+        return pio_err(ios, NULL, PIO_EBADID, __FILE__, __LINE__,
+                        "Freeing PIO decomposition failed. Invalid io decomposition id (%d) provided", ioid);
+    }
 
     /* If async is in use, and this is not an IO task, bcast the parameters. */
     if (ios->async)
@@ -906,8 +971,8 @@ int PIOc_freedecomp(int iosysid, int ioid)
         PIO_SEND_ASYNC_MSG(ios, msg, &ret, iosysid, ioid);
         if(ret != PIO_NOERR)
         {
-            LOG((1, "Error sending async msg for PIO_MSG_FREEDECOMP"));
-            return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+            return pio_err(ios, NULL, ret, __FILE__, __LINE__,
+                            "Freeing PIO decomposition failed (iosysid = %d, iodesc id=%d). Error sending asynchronous message, PIO_MSG_FREEDECOMP, on iosystem", iosysid, ioid);
         }
     }
 
@@ -964,6 +1029,11 @@ int PIOc_freedecomp(int iosysid, int ioid)
             return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
 
     ret = pio_delete_iodesc_from_list(ioid);
+    if (ret != PIO_NOERR)
+    {
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__,
+                        "Freeing PIO decomposition failed (iosysid = %d, ioid=%d). Error while trying to delete I/O descriptor from internal list", iosysid, ioid); 
+    }
 #ifdef TIMING
     GPTLstop("PIO:PIOc_freedecomp");
 #endif
@@ -998,7 +1068,10 @@ int PIOc_readmap(const char *file, int *ndims, int **gdims, PIO_Offset *fmaplen,
 
     /* Check inputs. */
     if (!file || !ndims || !gdims || !fmaplen || !map)
-        return pio_err(NULL, NULL, PIO_EINVAL, __FILE__, __LINE__);
+    {
+        return pio_err(NULL, NULL, PIO_EINVAL, __FILE__, __LINE__,
+                        "Reading I/O decomposition failed. Invalid arguments provided, file is %s (expected not NULL), ndims is %s (expected not NULL), gdims is %s (expected not NULL), fmaplen is %s (expected not NULL), map is %s (expected not NULL)", PIO_IS_NULL(file), PIO_IS_NULL(ndims), PIO_IS_NULL(gdims), PIO_IS_NULL(fmaplen), PIO_IS_NULL(map));
+    }
 
     if ((mpierr = MPI_Comm_size(comm, &npes)))
         return check_mpi(NULL, NULL, mpierr, __FILE__, __LINE__);
@@ -1009,22 +1082,34 @@ int PIOc_readmap(const char *file, int *ndims, int **gdims, PIO_Offset *fmaplen,
     {
         FILE *fp = fopen(file, "r");
         if (!fp)
-            pio_err(NULL, NULL, PIO_EINVAL, __FILE__, __LINE__);
+        {
+            pio_err(NULL, NULL, PIO_EINVAL, __FILE__, __LINE__,
+                    "Reading I/O decomposition from file (%s) failed. Opening the file failed", file);
+        }
 
         fscanf(fp,"%s%d%s%d%s%d\n",rversstr, &rversno, rnpesstr, &rnpes, rndimsstr, ndims);
 
         if (rversno != VERSNO)
-            return pio_err(NULL, NULL, PIO_EINVAL, __FILE__, __LINE__);
+        {
+            return pio_err(NULL, NULL, PIO_EINVAL, __FILE__, __LINE__,
+                            "Reading I/O decomposition from file (%s) failed. Version mismatch. The version read from file, %d, does not match the expected/supported version (%d)", file, rversno, VERSNO);
+        }
 
         if (rnpes < 1 || rnpes > npes)
-            return pio_err(NULL, NULL, PIO_EINVAL, __FILE__, __LINE__);
+        {
+            return pio_err(NULL, NULL, PIO_EINVAL, __FILE__, __LINE__,
+                            "Reading I/O decomposition from file (%s) failed. Corrupt/Invalid entries in file. Number of PEs = %d (expected >= 1 && <= npes, %d)", file, rnpes, npes);
+        }
 
         if ((mpierr = MPI_Bcast(&rnpes, 1, MPI_INT, 0, comm)))
             return check_mpi(NULL, NULL, mpierr, __FILE__, __LINE__);
         if ((mpierr = MPI_Bcast(ndims, 1, MPI_INT, 0, comm)))
             return check_mpi(NULL, NULL, mpierr, __FILE__, __LINE__);
         if (!(tdims = calloc(*ndims, sizeof(int))))
-            return pio_err(NULL, NULL, PIO_ENOMEM, __FILE__, __LINE__);
+        {
+            return pio_err(NULL, NULL, PIO_ENOMEM, __FILE__, __LINE__,
+                            "Reading I/O decomposition from file (%s) failed. Out of memory allocating %lld bytes for temp buffer to store dimension ids", file, (unsigned long long) ((*ndims) * sizeof(int)));
+        }
         for (int i = 0; i < *ndims; i++)
             fscanf(fp,"%d ", tdims + i);
 
@@ -1035,9 +1120,15 @@ int PIOc_readmap(const char *file, int *ndims, int **gdims, PIO_Offset *fmaplen,
         {
             fscanf(fp, "%d %lld", &j, &maplen);
             if (j != i)  // Not sure how this could be possible
-                return pio_err(NULL, NULL, PIO_EINVAL, __FILE__, __LINE__);
+            {
+                return pio_err(NULL, NULL, PIO_EINVAL, __FILE__, __LINE__,
+                                "Reading I/O decomposition from file (%s) failed. Corrupt/invalid entries in file. Expected decomposition info of process %d but read decomposition info of process %d instead", file, i, j);
+            }
             if (!(tmap = malloc(maplen * sizeof(PIO_Offset))))
-                return pio_err(NULL, NULL, PIO_ENOMEM, __FILE__, __LINE__);
+            {
+                return pio_err(NULL, NULL, PIO_ENOMEM, __FILE__, __LINE__,
+                                "Reading I/O decomposition from file (%s) failed. Out of memory allocating %lld bytes for storing I/O decomposition map", file, (unsigned long long) (maplen * sizeof(PIO_Offset)));
+            }
             for (j = 0; j < maplen; j++)
                 fscanf(fp, "%lld ", tmap+j);
 
@@ -1064,7 +1155,10 @@ int PIOc_readmap(const char *file, int *ndims, int **gdims, PIO_Offset *fmaplen,
         if ((mpierr = MPI_Bcast(ndims, 1, MPI_INT, 0, comm)))
             return check_mpi(NULL, NULL, mpierr, __FILE__, __LINE__);
         if (!(tdims = calloc(*ndims, sizeof(int))))
-            return pio_err(NULL, NULL, PIO_ENOMEM, __FILE__, __LINE__);
+        {
+            return pio_err(NULL, NULL, PIO_ENOMEM, __FILE__, __LINE__,
+                            "Reading I/O decomposition from file (%s) failed. Out of memory allocating %lld bytes for temp buffer to store dimension ids", file, (unsigned long long)((*ndims) * sizeof(int)));
+        }
         if ((mpierr = MPI_Bcast(tdims, *ndims, MPI_INT, 0, comm)))
             return check_mpi(NULL, NULL, mpierr, __FILE__, __LINE__);
 
@@ -1073,7 +1167,10 @@ int PIOc_readmap(const char *file, int *ndims, int **gdims, PIO_Offset *fmaplen,
             if ((mpierr = MPI_Recv(&maplen, 1, PIO_OFFSET, 0, myrank + npes, comm, &status)))
                 return check_mpi(NULL, NULL, mpierr, __FILE__, __LINE__);
             if (!(tmap = malloc(maplen * sizeof(PIO_Offset))))
-                return pio_err(NULL, NULL, PIO_ENOMEM, __FILE__, __LINE__);
+            {
+                return pio_err(NULL, NULL, PIO_ENOMEM, __FILE__, __LINE__,
+                                "Reading I/O decomposition from file (%s) failed. Out of memory allocating %lld bytes to store I/O decomposition map", file, (unsigned long long) (maplen * sizeof(PIO_Offset)));
+            }
             if ((mpierr = MPI_Recv(tmap, maplen, PIO_OFFSET, 0, myrank, comm, &status)))
                 return check_mpi(NULL, NULL, mpierr, __FILE__, __LINE__);
             *map = tmap;
@@ -1133,24 +1230,39 @@ int PIOc_write_nc_decomp(int iosysid, const char *filename, int cmode, int ioid,
 
     /* Get the IO system info. */
     if (!(ios = pio_get_iosystem_from_id(iosysid)))
-        return pio_err(NULL, NULL, PIO_EBADID, __FILE__, __LINE__);
+    {
+        return pio_err(NULL, NULL, PIO_EBADID, __FILE__, __LINE__,
+                        "Writing I/O decomposition (%d) to NetCDF file(%s) failed. Invalid io system id (%d) provided", ioid, (filename) ? filename : "UNKNOWN", iosysid);
+    }
 
     /* Check inputs. */
     if (!filename)
-        return pio_err(ios, NULL, PIO_EINVAL, __FILE__, __LINE__);
+    {
+        return pio_err(ios, NULL, PIO_EINVAL, __FILE__, __LINE__,
+                        "Writing I/O decomposition (%d) to NetCDF file failed. Invalid filename (NULL) provided", ioid);
+    }
     if (title)
         if (strlen(title) > PIO_MAX_NAME)
-            return pio_err(ios, NULL, PIO_EINVAL, __FILE__, __LINE__);
+        {
+            return pio_err(ios, NULL, PIO_EINVAL, __FILE__, __LINE__,
+                            "Writing I/O decomposition (%d) to NetCDF file(%s) failed. The title (%s) exceeds the maximum length (%d) allowed", ioid, filename, title, (int ) PIO_MAX_NAME);
+        }
     if (history)
         if (strlen(history) > PIO_MAX_NAME)
-            return pio_err(ios, NULL, PIO_EINVAL, __FILE__, __LINE__);
+        {
+            return pio_err(ios, NULL, PIO_EINVAL, __FILE__, __LINE__,
+                            "Writing I/O decomposition (%d) to NetCDF file(%s) failed. The history (%s) exceeds the maximum length (%d) allowed", ioid, filename, history, (int ) PIO_MAX_NAME);
+        }
 
     LOG((1, "PIOc_write_nc_decomp filename = %s iosysid = %d ioid = %d "
          "ios->num_comptasks = %d", filename, iosysid, ioid, ios->num_comptasks));
 
     /* Get the IO desc, which describes the decomposition. */
     if (!(iodesc = pio_get_iodesc_from_id(ioid)))
-        return pio_err(ios, NULL, PIO_EBADID, __FILE__, __LINE__);
+    {
+        return pio_err(ios, NULL, PIO_EBADID, __FILE__, __LINE__,
+                        "Writing I/O decomposition to NetCDF file(%s) failed. Invalid I/O decomposition id (%d) provided", filename, ioid);
+    }
 
     /* Allocate memory for array which will contain the length of the
      * map on each task, for all computation tasks. */
@@ -1196,7 +1308,10 @@ int PIOc_write_nc_decomp(int iosysid, const char *filename, int cmode, int ioid,
     if ((ret = pioc_write_nc_decomp_int(ios, filename, cmode, iodesc->ndims, iodesc->dimlen,
                                         ios->num_comptasks, task_maplen, (int *)full_map, title,
                                         history, fortran_order)))
-        return ret;
+    {
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__,
+                        "Writing I/O decomposition (%d) to NetCDF file(%s) failed. Internal error", ioid, filename);
+    }
 
     return PIO_NOERR;
 }
@@ -1240,11 +1355,17 @@ int PIOc_read_nc_decomp(int iosysid, const char *filename, int *ioidp, MPI_Comm 
 
     /* Get the IO system info. */
     if (!(ios = pio_get_iosystem_from_id(iosysid)))
-        return pio_err(NULL, NULL, PIO_EBADID, __FILE__, __LINE__);
+    {
+        return pio_err(NULL, NULL, PIO_EBADID, __FILE__, __LINE__,
+                        "Reading I/O decompsition from NetCDF file (%s) failed. Invalid io system id (%d) provided", (filename) ? filename : "UNKNOWN", iosysid);
+    }
 
     /* Check inputs. */
     if (!filename || !ioidp)
-        return pio_err(ios, NULL, PIO_EINVAL, __FILE__, __LINE__);
+    {
+        return pio_err(ios, NULL, PIO_EINVAL, __FILE__, __LINE__,
+                        "Reading I/O decomposition from NetCDF file failed. Invalid arguments provided, filename=%s (expected not UNKNOWN), ioidp is %s (expected not NULL)", (filename) ? filename : "UNKNOWN", PIO_IS_NULL(ioidp));
+    }
 
     LOG((1, "PIOc_read_nc_decomp filename = %s iosysid = %d pio_type = %d",
          filename, iosysid, pio_type));
@@ -1261,7 +1382,10 @@ int PIOc_read_nc_decomp(int iosysid, const char *filename, int *ioidp, MPI_Comm 
     if ((ret = pioc_read_nc_decomp_int(iosysid, filename, &ndims, &global_dimlen, &num_tasks_decomp,
                                        &task_maplen, &max_maplen, &full_map, title, history,
                                        source_in, version_in, fortran_order)))
-        return ret;
+    {
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__,
+                        "Reading I/O decomposition from NetCDF file (%s) failed. Internal error reading the file", filename);
+    }
     LOG((2, "ndims = %d num_tasks_decomp = %d max_maplen = %d", ndims, num_tasks_decomp,
          max_maplen));
 
@@ -1282,6 +1406,11 @@ int PIOc_read_nc_decomp(int iosysid, const char *filename, int *ioidp, MPI_Comm 
         /* Initialize the decomposition. */
         ret = PIOc_InitDecomp(iosysid, pio_type, ndims, global_dimlen, task_maplen[my_rank],
                               compmap, ioidp, NULL, NULL, NULL);
+        if (ret != PIO_NOERR)
+        {
+            return pio_err(ios, NULL, ret, __FILE__, __LINE__,
+                            "Reading I/O decomposition from NetCDF file (%s) failed. Error while initializing the I/O decomposition", filename);
+        }
     }
 
     /* Free resources. */
@@ -1341,37 +1470,55 @@ int pioc_write_nc_decomp_int(iosystem_desc_t *ios, const char *filename, int cmo
 
     /* Create the netCDF decomp file. */
     if ((ret = PIOc_create(ios->iosysid, filename, cmode | NC_WRITE, &ncid)))
-        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+    {
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__,
+                        "Writing I/O decomposition to NetCDF file (%s) failed. Create the file failed", filename);
+    }
 
     /* Write an attribute with the version of this file. */
     char version[PIO_MAX_NAME + 1];
     sprintf(version, "%d.%d.%d", PIO_VERSION_MAJOR, PIO_VERSION_MINOR, PIO_VERSION_PATCH);
     if ((ret = PIOc_put_att_text(ncid, NC_GLOBAL, DECOMP_VERSION_ATT_NAME,
                                  strlen(version) + 1, version)))
-        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+    {
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__,
+                        "Writing I/O decomposition to NetCDF file (%s) failed. Unable to put an attribute (%s) with the PIO Version info", filename, DECOMP_VERSION_ATT_NAME);
+    }
 
     /* Write an attribute with the max map len. */
     if ((ret = PIOc_put_att_int(ncid, NC_GLOBAL, DECOMP_MAX_MAPLEN_ATT_NAME,
                                 PIO_INT, 1, &max_maplen)))
-        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+    {
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__,
+                        "Writing I/O decomposition to NetCDF file (%s) failed. Unable to put an attribute (%s) with the max map length (%d)", filename, DECOMP_MAX_MAPLEN_ATT_NAME, max_maplen);
+    }
 
     /* Write title attribute, if the user provided one. */
     if (title)
         if ((ret = PIOc_put_att_text(ncid, NC_GLOBAL, DECOMP_TITLE_ATT_NAME,
                                      strlen(title) + 1, title)))
-            return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+        {
+            return pio_err(ios, NULL, ret, __FILE__, __LINE__,
+                            "Writing I/O decomposition to NetCDF file (%s) failed. Unable to put an attribute (%s) for the title (%s)", filename, DECOMP_TITLE_ATT_NAME, title);
+        }
 
     /* Write history attribute, if the user provided one. */
     if (history)
         if ((ret = PIOc_put_att_text(ncid, NC_GLOBAL, DECOMP_HISTORY_ATT_NAME,
                                      strlen(history) + 1, history)))
-            return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+        {
+            return pio_err(ios, NULL, ret, __FILE__, __LINE__,
+                            "Writing I/O decomposition to NetCDF file (%s) failed. Unable to put an attribute (%s) for the history (%s)", filename, DECOMP_HISTORY_ATT_NAME, history);
+        }
 
     /* Write a source attribute. */
     char source[] = "Decomposition file produced by PIO library.";
     if ((ret = PIOc_put_att_text(ncid, NC_GLOBAL, DECOMP_SOURCE_ATT_NAME,
                                  strlen(source) + 1, source)))
-        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+    {
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__,
+                        "Writing I/O decomposition to NetCDF file (%s) failed. Unable to put an attribute (%s) with source information (%s)", filename, DECOMP_SOURCE_ATT_NAME, source);
+    }
 
     /* Write an attribute with array ordering (C or Fortran). */
     char c_order_str[] = DECOMP_C_ORDER_STR;
@@ -1379,7 +1526,10 @@ int pioc_write_nc_decomp_int(iosystem_desc_t *ios, const char *filename, int cmo
     char *my_order_str = fortran_order ? fortran_order_str : c_order_str;
     if ((ret = PIOc_put_att_text(ncid, NC_GLOBAL, DECOMP_ORDER_ATT_NAME,
                                  strlen(my_order_str) + 1, my_order_str)))
-        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+    {
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__,
+                        "Writing I/O decomposition to NetCDF file (%s) failed. Unable to put an attribute (%s) for the array ordering (%s)", filename, DECOMP_ORDER_ATT_NAME, my_order_str);
+    }
 
     /* Write an attribute with the stack trace. This can be helpful
      * for debugging. */
@@ -1412,67 +1562,103 @@ int pioc_write_nc_decomp_int(iosystem_desc_t *ios, const char *filename, int cmo
     /* Write the stack trace as an attribute. */
     if ((ret = PIOc_put_att_text(ncid, NC_GLOBAL, DECOMP_BACKTRACE_ATT_NAME,
                                  strlen(full_bt) + 1, full_bt)))
-        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+    {
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__,
+                        "Writing I/O decomposition to NetCDF file (%s) failed. Unable to put an attribute (%s) with the back trace of the call (%s)", filename, DECOMP_BACKTRACE_ATT_NAME, full_bt);
+    }
 
     /* We need a dimension for the dimensions in the data. (Example:
      * for 4D data we will need to store 4 dimension IDs.) */
     int dim_dimid;
     if ((ret = PIOc_def_dim(ncid, DECOMP_DIM_DIM, ndims, &dim_dimid)))
-        return ret;
+    {
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__,
+                        "Writing I/O decomposition to NetCDF file (%s) failed. Unable to define dim (%s) for the array representing dims in data", filename, DECOMP_DIM_DIM);
+    }
 
     /* We need a dimension for tasks. If we have 4 tasks, we need to
      * store an array of length 4 with the size of the local array on
      * each task. */
     int task_dimid;
     if ((ret = PIOc_def_dim(ncid, DECOMP_TASK_DIM_NAME, num_tasks, &task_dimid)))
-        return ret;
+    {
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__,
+                        "Writing I/O decomposition to NetCDF file (%s) failed. Unable to define dim (%s) for the array representing local size of array/data on each process", filename, DECOMP_TASK_DIM_NAME);
+    }
 
     /* We need a dimension for the map. It's length may vary, we will
      * use the max_maplen for the dimension size. */
     int mapelem_dimid;
     if ((ret = PIOc_def_dim(ncid, DECOMP_MAPELEM_DIM_NAME, max_maplen,
                             &mapelem_dimid)))
-        return ret;
+    {
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__,
+                        "Writing I/O decomposition to NetCDF file (%s) failed. Unable to define dim (%s) for the dimension of the map", filename, DECOMP_MAPELEM_DIM_NAME);
+    }
 
     /* Define a var to hold the global size of the array for each
      * dimension. */
     int gsize_varid;
     if ((ret = PIOc_def_var(ncid, DECOMP_GLOBAL_SIZE_VAR_NAME, NC_INT, 1,
                             &dim_dimid, &gsize_varid)))
-        return ret;
+    {
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__,
+                        "Writing I/O decomposition to NetCDF file (%s) failed. Unable to define variable (%s) to store the global dimensions", filename, DECOMP_GLOBAL_SIZE_VAR_NAME);
+    }
 
     /* Define a var to hold the length of the local array on each task. */
     int maplen_varid;
     if ((ret = PIOc_def_var(ncid, DECOMP_MAPLEN_VAR_NAME, NC_INT, 1, &task_dimid,
                             &maplen_varid)))
-        return ret;
+    {
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__,
+                        "Writing I/O decomposition to NetCDF file (%s) failed. Unable to define variable (%s) to store the local size of the array on each task", filename, DECOMP_MAPLEN_VAR_NAME);
+    }
 
     /* Define a 2D var to hold the length of the local array on each task. */
     int map_varid;
     int map_dimids[2] = {task_dimid, mapelem_dimid};
     if ((ret = PIOc_def_var(ncid, DECOMP_MAP_VAR_NAME, NC_INT, 2, map_dimids,
                             &map_varid)))
-        return ret;
+    {
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__,
+                        "Writing I/O decomposition to NetCDF file (%s) failed. Unable to define variable (%s) to store the I/O decomposition map", filename, DECOMP_MAP_VAR_NAME);
+    }
 
     /* End define mode, to write data. */
     if ((ret = PIOc_enddef(ncid)))
-        return ret;
+    {
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__,
+                        "Writing I/O decomposition to NetCDF file (%s) failed. Ending the define mode failed", filename);
+    }
 
     /* Write the global dimension sizes. */
     if ((PIOc_put_var_int(ncid, gsize_varid, global_dimlen)))
-        return ret;
+    {
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__,
+                        "Writing I/O decomposition to NetCDF file (%s) failed. Unable to write variable (%s) that contains the global dimensions", filename, DECOMP_GLOBAL_SIZE_VAR_NAME);
+    }
 
     /* Write the size of the local array on each task. */
     if ((PIOc_put_var_int(ncid, maplen_varid, task_maplen)))
-        return ret;
+    {
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__,
+                        "Writing I/O decomposition to NetCDF file (%s) failed. Unable to write variable (%s) that contains the local size of the array on each task", filename, DECOMP_MAPLEN_VAR_NAME);
+    }
 
     /* Write the map. */
     if ((PIOc_put_var_int(ncid, map_varid, map)))
-        return ret;
+    {
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__,
+                        "Writing I/O decomposition to NetCDF file (%s) failed. Unable to write variable (%s) that contains the I/O decomposition map", filename, DECOMP_MAP_VAR_NAME);
+    }
 
     /* Close the netCDF decomp file. */
     if ((ret = PIOc_closefile(ncid)))
-        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+    {
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__,
+                        "Writing I/O decomposition to NetCDF file (%s) failed. Closing the file failed", filename);
+    }
 
     return PIO_NOERR;
 }
@@ -1524,22 +1710,34 @@ int pioc_read_nc_decomp_int(int iosysid, const char *filename, int *ndims, int *
 
     /* Get the IO system info. */
     if (!(ios = pio_get_iosystem_from_id(iosysid)))
-        return pio_err(NULL, NULL, PIO_EBADID, __FILE__, __LINE__);
+    {
+        return pio_err(NULL, NULL, PIO_EBADID, __FILE__, __LINE__,
+                        "Reading I/O decomposition from NetCDF file (%s) failed. Invalid iosystem id (%d) provided", (filename) ? filename : "UNKNOWN", iosysid);
+    }
 
     /* Check inputs. */
     if (!filename)
-        return pio_err(ios, NULL, PIO_EINVAL, __FILE__, __LINE__);
+    {
+        return pio_err(ios, NULL, PIO_EINVAL, __FILE__, __LINE__,
+                        "Reading I/O decomposition from NetCDF file failed. Invalid filename (NULL) provided");
+    }
 
     LOG((1, "pioc_read_nc_decomp_int iosysid = %d filename = %s", iosysid, filename));
 
     /* Open the netCDF decomp file. */
     if ((ret = PIOc_open(iosysid, filename, NC_WRITE, &ncid)))
-        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+    {
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__,
+                        "Reading I/O decomposition from NetCDF file (%s) failed. Error opening the file", filename);
+    }
 
     /* Read version attribute. */
     char version_in[PIO_MAX_NAME + 1];
     if ((ret = PIOc_get_att_text(ncid, NC_GLOBAL, DECOMP_VERSION_ATT_NAME, version_in)))
-        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+    {
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__,
+                        "Reading I/O decomposition from NetCDF file (%s) failed. Error reading attribute (%s) containing version information", filename, DECOMP_VERSION_ATT_NAME);
+    }
     LOG((3, "version_in = %s", version_in));
     if (version)
         strncpy(version, version_in, PIO_MAX_NAME + 1);
@@ -1547,7 +1745,10 @@ int pioc_read_nc_decomp_int(int iosysid, const char *filename, int *ndims, int *
     /* Read order attribute. */
     char order_in[PIO_MAX_NAME + 1];
     if ((ret = PIOc_get_att_text(ncid, NC_GLOBAL, DECOMP_ORDER_ATT_NAME, order_in)))
-        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+    {
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__,
+                        "Reading I/O decomposition from NetCDF file (%s) failed. Error reading attribute (%s) containing order information", filename, DECOMP_ORDER_ATT_NAME);
+    }
     LOG((3, "order_in = %s", order_in));
     if (fortran_order)
     {
@@ -1556,13 +1757,19 @@ int pioc_read_nc_decomp_int(int iosysid, const char *filename, int *ndims, int *
         else if (!strncmp(order_in, DECOMP_FORTRAN_ORDER_STR, PIO_MAX_NAME + 1))
             *fortran_order = 1;
         else
-            return pio_err(ios, NULL, PIO_EINVAL, __FILE__, __LINE__);
+        {
+            return pio_err(ios, NULL, PIO_EINVAL, __FILE__, __LINE__,
+                            "Reading I/O decomposition from NetCDF file (%s) failed. Invalid/corrupt entry (%s) in attribute (%s) containing order information", filename, order_in, DECOMP_ORDER_ATT_NAME);
+        }
     }
 
     /* Read attribute with the max map len. */
     int max_maplen_in;
     if ((ret = PIOc_get_att_int(ncid, NC_GLOBAL, DECOMP_MAX_MAPLEN_ATT_NAME, &max_maplen_in)))
-        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+    {
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__,
+                        "Reading I/O decomposition from NetCDF file (%s) failed. Error reading attribute (%s) containing max map lengths", filename, DECOMP_MAX_MAPLEN_ATT_NAME);
+    }
     LOG((3, "max_maplen_in = %d", max_maplen_in));
     if (max_maplen)
         *max_maplen = max_maplen_in;
@@ -1583,7 +1790,10 @@ int pioc_read_nc_decomp_int(int iosysid, const char *filename, int *ndims, int *
             title[0] = '\0';
     }
     else
-        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+    {
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__,
+                        "Reading I/O decomposition from NetCDF file (%s) failed. Error reading attribute (%s) containing the title", filename, DECOMP_TITLE_ATT_NAME);
+    }
 
     /* Read history attribute, if it is in the file. */
     char history_in[PIO_MAX_NAME + 1];
@@ -1601,12 +1811,18 @@ int pioc_read_nc_decomp_int(int iosysid, const char *filename, int *ndims, int *
             history[0] = '\0';
     }
     else
-        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+    {
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__,
+                        "Reading I/O decomposition from NetCDF file (%s) failed. Error reading attribute (%s) containing the history information", filename, DECOMP_HISTORY_ATT_NAME);
+    }
 
     /* Read source attribute. */
     char source_in[PIO_MAX_NAME + 1];
     if ((ret = PIOc_get_att_text(ncid, NC_GLOBAL, DECOMP_SOURCE_ATT_NAME, source_in)))
-        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+    {
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__,
+                        "Reading I/O decomposition from NetCDF file (%s) failed. Error reading attribute (%s) containing the source information", filename, DECOMP_SOURCE_ATT_NAME);
+    }
     if (source)
         strncpy(source, source_in, PIO_MAX_NAME + 1);
 
@@ -1615,9 +1831,15 @@ int pioc_read_nc_decomp_int(int iosysid, const char *filename, int *ndims, int *
     int dim_dimid;
     PIO_Offset ndims_in;
     if ((ret = PIOc_inq_dimid(ncid, DECOMP_DIM_DIM, &dim_dimid)))
-        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+    {
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__,
+                        "Reading I/O decomposition from NetCDF file (%s) failed. Error inquiring id for attribute (%s) containing dims ", filename, DECOMP_DIM_DIM);
+    }
     if ((ret = PIOc_inq_dim(ncid, dim_dimid, NULL, &ndims_in)))
-        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+    {
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__,
+                        "Reading I/O decomposition from NetCDF file (%s) failed. Error reading attribute (%s) containing dims ", filename, DECOMP_DIM_DIM);
+    }
     if (ndims)
         *ndims = ndims_in;
 
@@ -1625,13 +1847,22 @@ int pioc_read_nc_decomp_int(int iosysid, const char *filename, int *ndims, int *
     int gsize_varid;
     int global_dimlen_in[ndims_in];
     if ((ret = PIOc_inq_varid(ncid, DECOMP_GLOBAL_SIZE_VAR_NAME, &gsize_varid)))
-        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+    {
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__,
+                        "Reading I/O decomposition from NetCDF file (%s) failed. Error inquiring id for variable (%s) containing global dimensions", filename, DECOMP_GLOBAL_SIZE_VAR_NAME);
+    }
     if ((ret = PIOc_get_var_int(ncid, gsize_varid, global_dimlen_in)))
-        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+    {
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__,
+                        "Reading I/O decomposition from NetCDF file (%s) failed. Error reading variable (%s) containing global dimensions", filename, DECOMP_GLOBAL_SIZE_VAR_NAME);
+    }
     if (global_dimlen)
     {
         if (!(*global_dimlen = malloc(ndims_in * sizeof(int))))
-            return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__);
+        {
+            return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__,
+                            "Reading I/O decomposition from NetCDF file (%s) failed. Out of memory allocating %lld bytes for global dimension length array", filename, (unsigned long long) (ndims_in * sizeof(int)));
+        }
         for (int d = 0; d < ndims_in; d++)
             (*global_dimlen)[d] = global_dimlen_in[d];
     }
@@ -1642,9 +1873,15 @@ int pioc_read_nc_decomp_int(int iosysid, const char *filename, int *ndims, int *
     int task_dimid;
     PIO_Offset num_tasks_in;
     if ((ret = PIOc_inq_dimid(ncid, DECOMP_TASK_DIM_NAME, &task_dimid)))
-        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+    {
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__,
+                        "Reading I/O decomposition from NetCDF file (%s) failed. Error inquiring id for dimension (%s) for tasks", filename, DECOMP_TASK_DIM_NAME);
+    }
     if ((ret = PIOc_inq_dim(ncid, task_dimid, NULL, &num_tasks_in)))
-        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+    {
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__,
+                        "Reading I/O decomposition from NetCDF file (%s) failed. Error inquiring dimension (%s) for tasks", filename, DECOMP_TASK_DIM_NAME);
+    }
     if (num_tasks)
         *num_tasks = num_tasks_in;
 
@@ -1652,13 +1889,22 @@ int pioc_read_nc_decomp_int(int iosysid, const char *filename, int *ndims, int *
     int maplen_varid;
     int task_maplen_in[num_tasks_in];
     if ((ret = PIOc_inq_varid(ncid, DECOMP_MAPLEN_VAR_NAME, &maplen_varid)))
-        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+    {
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__,
+                        "Reading I/O decomposition from NetCDF file (%s) failed. Error inquiring id for variable (%s) containing local size of array", filename, DECOMP_MAPLEN_VAR_NAME);
+    }
     if ((ret = PIOc_get_var_int(ncid, maplen_varid, task_maplen_in)))
-        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+    {
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__,
+                        "Reading I/O decomposition from NetCDF file (%s) failed. Error reading variable (%s) containing local size of array", filename, DECOMP_MAPLEN_VAR_NAME);
+    }
     if (task_maplen)
     {
         if (!(*task_maplen = malloc(num_tasks_in * sizeof(int))))
-            return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__);
+        {
+            return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__,
+                            "Reading I/O decomposition from NetCDF file (%s) failed. Out of memory allocating %lld bytes to store length of I/O decomposition maps for each task", filename, (unsigned long long) (num_tasks_in * sizeof(int)));
+        }
         for (int t = 0; t < num_tasks_in; t++)
             (*task_maplen)[t] = task_maplen_in[t];
     }
@@ -1667,13 +1913,22 @@ int pioc_read_nc_decomp_int(int iosysid, const char *filename, int *ndims, int *
     int map_varid;
     int map_in[num_tasks_in][max_maplen_in];
     if ((ret = PIOc_inq_varid(ncid, DECOMP_MAP_VAR_NAME, &map_varid)))
-        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+    {
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__,
+                        "Reading I/O decomposition from NetCDF file (%s) failed. Error inquiring id for variable (%s) containing the map", filename, DECOMP_MAP_VAR_NAME);
+    }
     if ((ret = PIOc_get_var_int(ncid, map_varid, (int *)map_in)))
-        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+    {
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__,
+                        "Reading I/O decomposition from NetCDF file (%s) failed. Error reading variable (%s) containing the decomposition map", filename, DECOMP_MAP_VAR_NAME);
+    }
     if (map)
     {
         if (!(*map = malloc(num_tasks_in * max_maplen_in * sizeof(int))))
-            return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__);
+        {
+            return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__,
+                            "Reading I/O decomposition from NetCDF file (%s) failed. Out of memory allocating %lld bytes for the I/O decomposition map", filename, (unsigned long long) (num_tasks_in * max_maplen_in * sizeof(int)));
+        }
         for (int t = 0; t < num_tasks_in; t++)
             for (int l = 0; l < max_maplen_in; l++)
                 (*map)[t * max_maplen_in + l] = map_in[t][l];
@@ -1681,7 +1936,10 @@ int pioc_read_nc_decomp_int(int iosysid, const char *filename, int *ndims, int *
 
     /* Close the netCDF decomp file. */
     if ((ret = PIOc_closefile(ncid)))
-        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+    {
+        return pio_err(ios, NULL, ret, __FILE__, __LINE__,
+                        "Reading I/O decomposition from NetCDF file (%s) failed. Closing the file failed", filename);
+    }
 
     return PIO_NOERR;
 }
@@ -1703,10 +1961,16 @@ int PIOc_write_decomp(const char *file, int iosysid, int ioid, MPI_Comm comm)
     LOG((1, "PIOc_write_decomp file = %s iosysid = %d ioid = %d", file, iosysid, ioid));
 
     if (!(ios = pio_get_iosystem_from_id(iosysid)))
-        return pio_err(NULL, NULL, PIO_EBADID, __FILE__, __LINE__);
+    {
+        return pio_err(NULL, NULL, PIO_EBADID, __FILE__, __LINE__,
+                        "Write I/O decomposition to file (%s) failed. Invalid iosystem id (%d) provided", (file) ? file : "UNKNOWN", iosysid);
+    }
 
     if (!(iodesc = pio_get_iodesc_from_id(ioid)))
-        return pio_err(ios, NULL, PIO_EBADID, __FILE__, __LINE__);
+    {
+        return pio_err(ios, NULL, PIO_EBADID, __FILE__, __LINE__,
+                        "Write I/O decomposition to file (%s) failed. Invalid io descriptor id (%d) provided (iosysid=%d)", (file) ? file : "UNKNOWN", ioid, iosysid);
+    }
 
     return PIOc_writemap(file, iodesc->ioid, iodesc->ndims, iodesc->dimlen, iodesc->maplen, iodesc->map,
                          comm);
@@ -1737,6 +2001,12 @@ int PIOc_writemap(const char *file, int ioid, int ndims, const int *gdims, PIO_O
 
     LOG((1, "PIOc_writemap file = %s ioid = %d ndims = %d maplen = %d", file, ioid, ndims, maplen));
 
+    if (!file || !gdims || !map)
+    {
+        return pio_err(NULL, NULL, PIO_EINVAL, __FILE__, __LINE__,
+                        "Writing I/O decomposition to file failed. Invalid arguments, file is %s (expected not NULL), gdims is %s (expected not NULL), map is %s (expected not NULL)", PIO_IS_NULL(file), PIO_IS_NULL(gdims), PIO_IS_NULL(map));
+    }
+
     if ((mpierr = MPI_Comm_size(comm, &npes)))
         return check_mpi(NULL, NULL, mpierr, __FILE__, __LINE__);
     if ((mpierr = MPI_Comm_rank(comm, &myrank)))
@@ -1746,7 +2016,10 @@ int PIOc_writemap(const char *file, int ioid, int ndims, const int *gdims, PIO_O
     /* Allocate memory for the nmaplen. */
     if (myrank == 0)
         if (!(nmaplen = malloc(npes * sizeof(PIO_Offset))))
-            return pio_err(NULL, NULL, PIO_ENOMEM, __FILE__, __LINE__);
+        {
+            return pio_err(NULL, NULL, PIO_ENOMEM, __FILE__, __LINE__,
+                            "Writing I/O decomposition to file (%s) failed. Out of memory allocating %lld bytes for array of map lengths", file, (unsigned long long) (npes * sizeof(PIO_Offset)));
+        }
 
     if ((mpierr = MPI_Gather(&maplen, 1, PIO_OFFSET, nmaplen, 1, PIO_OFFSET, 0, comm)))
         return check_mpi(NULL, NULL, mpierr, __FILE__, __LINE__);
@@ -1758,7 +2031,10 @@ int PIOc_writemap(const char *file, int ioid, int ndims, const int *gdims, PIO_O
 
         /* Open the file to write. */
         if (!(fp = fopen(file, "w")))
-            return pio_err(NULL, NULL, PIO_EIO, __FILE__, __LINE__);
+        {
+            return pio_err(NULL, NULL, PIO_EIO, __FILE__, __LINE__,
+                            "Writing I/O decomposition to file (%s) failed. Error opening the file", file);
+        }
 
         /* Write the version and dimension info. */
         fprintf(fp,"version %d npes %d ndims %d \n", VERSNO, npes, ndims);
@@ -1784,6 +2060,11 @@ int PIOc_writemap(const char *file, int ioid, int ndims, const int *gdims, PIO_O
         {
             LOG((2, "creating nmap for i = %d", i));
             nmap = (PIO_Offset *)malloc(nmaplen[i] * sizeof(PIO_Offset));
+            if (!nmap)
+            {
+                return pio_err(NULL, NULL, PIO_ENOMEM, __FILE__, __LINE__,
+                                "Writing I/O decomposition to file (%s) failed. Out of memory allocating %lld bytes for I/O decomposition map (map length = %lld) for process %d", file, (unsigned long long) (nmaplen[i] * sizeof(PIO_Offset)), (unsigned long long) nmaplen[i], i);
+            }
 
             if ((mpierr = MPI_Send(&i, 1, MPI_INT, i, npes + i, comm)))
                 return check_mpi(NULL, NULL, mpierr, __FILE__, __LINE__);
@@ -1841,6 +2122,45 @@ int PIOc_writemap_from_f90(const char *file, int ioid, int ndims, const int *gdi
                          MPI_Comm_f2c(f90_comm));
 }
 
+int PIO_get_avail_iotypes(char *buf, size_t sz)
+{
+    int ret = PIO_NOERR;
+    size_t max_sz = sz;
+    char *cbuf = buf;
+
+    assert(buf && (sz > 0));
+#ifdef _NETCDF
+    snprintf(cbuf, sz, "%s (%d)", pio_iotype_to_string(PIO_IOTYPE_NETCDF), PIO_IOTYPE_NETCDF);
+    sz = max_sz - strlen(buf);
+    cbuf = buf + strlen(buf);
+#endif /* _NETCDF */
+
+#ifdef _NETCDF4
+    assert(sz > 0);
+    snprintf(cbuf, sz, ", %s (%d), %s (%d)",
+              pio_iotype_to_string(PIO_IOTYPE_NETCDF4C), PIO_IOTYPE_NETCDF4C,
+              pio_iotype_to_string(PIO_IOTYPE_NETCDF4P), PIO_IOTYPE_NETCDF4P);
+    sz = max_sz - strlen(buf);
+    cbuf = buf + strlen(buf);
+#endif /* _NETCDF4 */
+
+#ifdef _PNETCDF
+    assert(sz > 0);
+    snprintf(cbuf, sz, ", %s (%d)", pio_iotype_to_string(PIO_IOTYPE_PNETCDF), PIO_IOTYPE_PNETCDF);
+    sz = max_sz - strlen(buf);
+    cbuf = buf + strlen(buf);
+#endif /* _PNETCDF */
+
+#ifdef _ADIOS
+    assert(sz > 0);
+    snprintf(cbuf, sz, ", %s (%d)", pio_iotype_to_string(PIO_IOTYPE_ADIOS), PIO_IOTYPE_ADIOS);
+    sz = max_sz - strlen(buf);
+    cbuf = buf + strlen(buf);
+#endif
+
+    return ret;
+}
+
 /**
  * Create a new file using pio. This is an internal function that is
  * called by both PIOc_create() and PIOc_createfile(). Input
@@ -1871,22 +2191,36 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
 #endif
     /* Get the IO system info from the iosysid. */
     if (!(ios = pio_get_iosystem_from_id(iosysid)))
-        return pio_err(NULL, NULL, PIO_EBADID, __FILE__, __LINE__);
+    {
+        return pio_err(NULL, NULL, PIO_EBADID, __FILE__, __LINE__,
+                        "Creating file (%s) failed. Invalid iosystem id (%d) provided", (filename) ? filename : "UNKNOWN", iosysid);
+    }
 
     /* User must provide valid input for these parameters. */
     if (!ncidp || !iotype || !filename || strlen(filename) > PIO_MAX_NAME)
-        return pio_err(ios, NULL, PIO_EINVAL, __FILE__, __LINE__);
+    {
+        return pio_err(ios, NULL, PIO_EINVAL, __FILE__, __LINE__,
+                        "Creating file failed. Invalid arguments provided, ncidp is %s (expected not NULL), iotype is %s (expected not NULL), filename is %s (expected not NULL), filename length = %lld (expected <= %d)", PIO_IS_NULL(ncidp), PIO_IS_NULL(iotype), PIO_IS_NULL(filename), (filename) ? ((unsigned long long )strlen(filename)) : 0, (int )PIO_MAX_NAME);
+    }
 
     /* A valid iotype must be specified. */
     if (!iotype_is_valid(*iotype))
-        return pio_err(ios, NULL, PIO_EBADIOTYPE, __FILE__, __LINE__);
+    {
+        char avail_iotypes[PIO_MAX_NAME + 1];
+        PIO_get_avail_iotypes(avail_iotypes, PIO_MAX_NAME);
+        return pio_err(ios, NULL, PIO_EBADIOTYPE, __FILE__, __LINE__,
+                        "Creating file (%s) failed. Invalid iotype (%s:%d) specified. Available iotypes are : %s", filename, pio_iotype_to_string(*iotype), *iotype, avail_iotypes);
+    }
 
     LOG((1, "PIOc_createfile iosysid = %d iotype = %d filename = %s mode = %d",
          iosysid, *iotype, filename, mode));
 
     /* Allocate space for the file info. */
     if (!(file = calloc(sizeof(file_desc_t), 1)))
-        return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__);
+    {
+        return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__,
+                        "Creating file (%s) failed. Out of memory allocating %lld bytes for the file descriptor", filename, (unsigned long long) (sizeof(file_desc_t)));
+    }
 
     /* Fill in some file values. */
     file->fh = -1;
@@ -1933,8 +2267,8 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
         PIO_SEND_ASYNC_MSG(ios, msg, &ierr, len, filename, file->iotype, file->mode);
         if(ierr != PIO_NOERR)
         {
-            LOG((1, "Sending async message, to create a file, failed"));
-            return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
+            return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
+                            "Creating file (%s) failed. Error sending asynchronous message, PIO_MSG_CREATE_FILE, to create the file on iosystem (iosysid=%d)", filename, ios->iosysid);
         }
     }
 
@@ -1950,7 +2284,10 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
         int len = strlen(filename);
         file->filename = malloc(len + 3 + 3);
         if (file->filename == NULL)
-            return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__);
+        {
+            return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__,
+                            "Creating file (%s) using ADIOS iotype failed. Out of memory allocating %lld bytes for the file name", filename, (unsigned long long) (len + 3 + 3));
+        }
         sprintf(file->filename, "%s.bp", filename);
 
         ierr = PIO_NOERR;
@@ -2162,8 +2499,8 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
 #ifdef TIMING
         GPTLstop("PIO:PIOc_createfile_int");
 #endif
-        LOG((1, "PIOc_create_file_int failed, ierr = %d\n", ierr));
-        return ierr;
+        return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
+                        "Creating file (%s) failed. Internal error", filename);
     }
 
     /* Broadcast mode to all tasks. */
@@ -2214,23 +2551,35 @@ int check_unlim_use(int ncid)
 
     /* Are there 2 or more unlimited dims in this file? */
     if ((ierr = nc_inq_unlimdims(ncid, &nunlimdims, NULL)))
-        return ierr;
+    {
+        return pio_err(NULL, NULL, ierr, __FILE__, __LINE__,
+                        "Checking unlimited use failed on file %s (ncid = %d). Querying the number of unlimited dimensions in the file failed", pio_get_fname_from_file_id(ncid), ncid);
+    }
     if (nunlimdims < 2)
         return PIO_NOERR;
 
     /* How many vars in file? */
     if ((ierr = nc_inq_nvars(ncid, &nvars)))
-        return ierr;
+    {
+        return pio_err(NULL, NULL, ierr, __FILE__, __LINE__,
+                        "Checking unlimited use failed on file %s (ncid = %d). Querying the number of variables in the file failed", pio_get_fname_from_file_id(ncid), ncid);
+    }
 
     /* Check each var. */
     for (int v = 0; v < nvars && !ierr; v++)
     {
         int nvardims;
         if ((ierr = nc_inq_varndims(ncid, v, &nvardims)))
-            return ierr;
+        {
+            return pio_err(NULL, NULL, ierr, __FILE__, __LINE__,
+                            "Checking unlimited use failed on file %s (ncid = %d) for variable %s (varid = %d). Querying the number of dimensions for the variable failed", pio_get_fname_from_file_id(ncid), ncid, pio_get_vname_from_file_id(ncid, v), v);
+        }
         int vardimid[nvardims];
         if ((ierr = nc_inq_vardimid(ncid, v, vardimid)))
-            return ierr;
+        {
+            return pio_err(NULL, NULL, ierr, __FILE__, __LINE__,
+                            "Checking unlimited use failed on file %s (ncid = %d) for variable %s (varid = %d). Querying the dimension ids for the variable failed", pio_get_fname_from_file_id(ncid), ncid, pio_get_vname_from_file_id(ncid, v), v);
+        }
 
         /* Check all var dimensions, except the first. If we find
          * unlimited, that's a problem. */
@@ -2238,11 +2587,15 @@ int check_unlim_use(int ncid)
         {
             size_t dimlen;
             if ((ierr = nc_inq_dimlen(ncid, vardimid[vd], &dimlen)))
-                return ierr;
+            {
+                return pio_err(NULL, NULL, ierr, __FILE__, __LINE__,
+                                "Checking unlimited use failed on file %s (ncid = %d) for variable %s (varid = %d). Querying dimension length of a dimension (dim id = %d) failed", pio_get_fname_from_file_id(ncid), ncid, pio_get_vname_from_file_id(ncid, v), v, vardimid[vd]);
+            }
             if (dimlen == NC_UNLIMITED)
             {
                 nc_close(ncid);
-                return PIO_EINVAL;
+                return pio_err(NULL, NULL, PIO_EINVAL, __FILE__, __LINE__,
+                                "Checking unlimited use failed on file %s (ncid = %d) for variable %s (varid = %d). Dimension length of dimension %d (dim id = %d) is unlimited. Only the first (0th) dimension is expected to be unlimited", pio_get_fname_from_file_id(ncid), ncid, pio_get_vname_from_file_id(ncid, v), v, vd, vardimid[vd]);
             }
         }
     }
@@ -2287,22 +2640,36 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
 
     /* Get the IO system info from the iosysid. */
     if (!(ios = pio_get_iosystem_from_id(iosysid)))
-        return pio_err(NULL, NULL, PIO_EBADID, __FILE__, __LINE__);
+    {
+        return pio_err(NULL, NULL, PIO_EBADID, __FILE__, __LINE__,
+                        "Opening file (%s) failed. Invalid iosystem id (%d) provided", (filename) ? filename : "UNKNOWN", iosysid);
+    }
 
     /* User must provide valid input for these parameters. */
     if (!ncidp || !iotype || !filename)
-        return pio_err(ios, NULL, PIO_EINVAL, __FILE__, __LINE__);
+    {
+        return pio_err(ios, NULL, PIO_EINVAL, __FILE__, __LINE__,
+                        "Opening file (%s) failed. Invalid arguments provided. ncidp is %s (expected not NULL), iotype is %s (expected not NULL), filename is %s (expected not NULL)", (filename) ? filename : "UNKNOWN", PIO_IS_NULL(ncidp), PIO_IS_NULL(iotype), PIO_IS_NULL(filename));
+    }
 
     /* A valid iotype must be specified. */
     if (!iotype_is_valid(*iotype))
-        return pio_err(ios, NULL, PIO_EBADIOTYPE, __FILE__, __LINE__);
+    {
+        char avail_iotypes[PIO_MAX_NAME + 1];
+        PIO_get_avail_iotypes(avail_iotypes, PIO_MAX_NAME);
+        return pio_err(ios, NULL, PIO_EBADIOTYPE, __FILE__, __LINE__,
+                        "Opening file (%s) failed. Invalid iotype (%s:%d) specified. Available iotypes are : %s", filename, pio_iotype_to_string(*iotype), *iotype, avail_iotypes);
+    }
 
     LOG((2, "PIOc_openfile_retry iosysid = %d iotype = %d filename = %s mode = %d retry = %d",
          iosysid, *iotype, filename, mode, retry));
 
     /* Allocate space for the file info. */
     if (!(file = calloc(sizeof(*file), 1)))
-        return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__);
+    {
+        return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__,
+                        "Opening file (%s) failed. Out of memory allocating %lld bytes for the file structure", filename, (unsigned long long) (sizeof(*file)));
+    }
 
     /* Fill in some file values. */
     file->fh = -1;
@@ -2353,7 +2720,8 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
         PIO_SEND_ASYNC_MSG(ios, PIO_MSG_OPEN_FILE, &ierr, len, filename, file->iotype, file->mode);
         if(ierr != PIO_NOERR)
         {
-            return pio_err(ios, file, ierr, __FILE__, __LINE__);
+            return pio_err(ios, file, ierr, __FILE__, __LINE__,
+                            "Opening file (%s) failed. Sending asynchronous message, PIO_MSG_OPEN_FILE, failed on iosystem (iosysid=%d)", filename, ios->iosysid);
         }
     }
 
@@ -2419,7 +2787,12 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
 
         default:
             free(file);
-            return pio_err(ios, NULL, PIO_EBADIOTYPE, __FILE__, __LINE__);
+            {
+                char avail_iotypes[PIO_MAX_NAME + 1];
+                PIO_get_avail_iotypes(avail_iotypes, PIO_MAX_NAME);
+                return pio_err(ios, NULL, PIO_EBADIOTYPE, __FILE__, __LINE__,
+                                "Opening file (%s) failed. Invalid iotype (%s:%d) specified. Available iotypes are : %s", filename, pio_iotype_to_string(file->iotype), file->iotype, avail_iotypes);
+            }
         }
 
         /* If the caller requested a retry, and we failed to open a
@@ -2436,9 +2809,6 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
             }
             if ((ierr != NC_NOERR) && (file->iotype != PIO_IOTYPE_NETCDF))
             {
-                if (ios->iomaster == MPI_ROOT)
-                    printf("PIO2 pio_file.c retry NETCDF\n");
-
                 /* reset ierr on all tasks */
                 ierr = PIO_NOERR;
 
@@ -2451,10 +2821,11 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
                 /* open netcdf file serially on main task */
                 if (ios->io_rank == 0)
                 {
+                    printf("PIO: WARNING: Opening file (%s) with iotype=%d (%s) failed. Retrying with iotype=PIO_IOTYPE_NETCDF\n", filename, *iotype, pio_iotype_to_string(*iotype));
                     ierr = nc_open(filename, file->mode, &file->fh);
                     if(ierr == NC_NOERR)
                     {
-                        printf("PIO: Opening file (%s) with iotype=%d failed. Switching iotype to PIO_IOTYPE_NETCDF\n", filename, *iotype);
+                        printf("PIO: WARNING: Opening file (%s) with iotype=%d failed. Switching iotype to PIO_IOTYPE_NETCDF\n", filename, *iotype);
                     }
                 }
                 else
@@ -2471,7 +2842,8 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
     if(ierr != PIO_NOERR){
         free(file);
         LOG((1, "PIOc_openfile_retry failed, ierr = %d", ierr));
-        return ierr;
+        return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
+                        "Opening file (%s) failed. The low level I/O library call failed", filename);;
     }
 
     /* Broadcast open mode to all tasks. */
@@ -2498,19 +2870,22 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
         ierr = PIOc_inq_unlimdims(*ncidp, &(file->num_unlim_dimids), NULL);
         if(ierr != PIO_NOERR)
         {
-            return pio_err(ios, file, ierr, __FILE__, __LINE__);
+            return pio_err(ios, file, ierr, __FILE__, __LINE__,
+                              "Opening file (%s) failed. Although the file was opened successfully, querying the number of unlimited dimensions in the file failed", filename);
         }
         if(file->num_unlim_dimids > 0)
         {
             file->unlim_dimids = (int *)malloc(file->num_unlim_dimids * sizeof(int));
             if(!file->unlim_dimids)
             {
-                return pio_err(ios, file, PIO_ENOMEM, __FILE__, __LINE__);
+                return pio_err(ios, file, PIO_ENOMEM, __FILE__, __LINE__,
+                                "Opening file (%s) failed. Out of memory allocating %lld bytes for caching the unlimited dimension ids", filename, (unsigned long long) (file->num_unlim_dimids * sizeof(int)));
             }
             ierr = PIOc_inq_unlimdims(*ncidp, NULL, file->unlim_dimids);
             if(ierr != PIO_NOERR)
             {
-                return pio_err(ios, file, ierr, __FILE__, __LINE__);
+                return pio_err(ios, file, ierr, __FILE__, __LINE__,
+                                "Opening file (%s) failed. Although the file was opened successfully, querying the unlimited dimensions in the file failed", filename);
             }
         }
         LOG((3, "File has %d unlimited dimensions", file->num_unlim_dimids));
@@ -2549,11 +2924,17 @@ int openfile_int(int iosysid, int *ncidp, int *iotype, const char *filename,
 
     /* Get the IO system info from the iosysid. */
     if (!(ios = pio_get_iosystem_from_id(iosysid)))
-        return pio_err(NULL, NULL, PIO_EBADID, __FILE__, __LINE__);
+    {
+        return pio_err(NULL, NULL, PIO_EBADID, __FILE__, __LINE__,
+                        "Opening file (%s) failed. Invalid iosystem id (%d) provided", (filename) ? filename : "UNKNOWN", iosysid);
+    }
     
     /* Open the file. */
     if ((ierr = PIOc_openfile_retry(iosysid, ncidp, iotype, filename, mode, retry)))
-        return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
+    {
+        return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
+                        "Opening file (%s) failed. Internal error", (filename) ? filename : "UNKNOWN");
+    }
 
     return PIO_NOERR;
 }
@@ -2626,7 +3007,10 @@ int pioc_change_def(int ncid, int is_enddef)
     /* Find the info about this file. When I check the return code
      * here, some tests fail. ???*/
     if ((ierr = pio_get_file(ncid, &file)))
-        return pio_err(NULL, NULL, ierr, __FILE__, __LINE__);
+    {
+        return pio_err(NULL, NULL, ierr, __FILE__, __LINE__,
+                        "Changing the define mode for file (ncid = %d) failed. Invalid file id", ncid);
+    }
     ios = file->iosystem;
 
     /* If async is in use, and this is not an IO task, bcast the parameters. */
@@ -2638,7 +3022,8 @@ int pioc_change_def(int ncid, int is_enddef)
         if(ierr != PIO_NOERR)
         {
             LOG((1, "Error sending async msg for PIO_MSG_ENDDEF/PIO_MSG_REDEF"));
-            return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
+            return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
+                            "Changing the define mode for file (%s) failed. Error sending async msg, PIO_MSG_ENDDEF/PIO_MSG_REDEF, on iosystem (iosysid=%d)", pio_get_fname_from_file(file), ios->iosysid);
         }
     }
 
@@ -2673,8 +3058,8 @@ int pioc_change_def(int ncid, int is_enddef)
 
     ierr = check_netcdf(NULL, file, ierr, __FILE__, __LINE__);
     if(ierr != PIO_NOERR){
-      LOG((1, "pioc_change_def failed, ierr = %d", ierr));
-      return ierr;
+      return pio_err(ios, file, ierr, __FILE__, __LINE__,
+                      "Changing the define mode for file (%s) failed. Low-level I/O library API failed", pio_get_fname_from_file(file));
     }
     LOG((3, "pioc_change_def succeeded"));
 
@@ -2932,7 +3317,10 @@ int PIOc_set_rearr_opts(int iosysid, int comm_type, int fcd, bool enable_hs_c2i,
 
     /* Get the IO system info. */
     if (!(ios = pio_get_iosystem_from_id(iosysid)))
-        return pio_err(NULL, NULL, PIO_EBADID, __FILE__, __LINE__);
+    {
+        return pio_err(NULL, NULL, PIO_EBADID, __FILE__, __LINE__,
+                        "Setting rearranger options failed. Invalid iosystem id (%d) provided", iosysid);
+    }
 
     /* Perform sanity checks on the user supplied values and reset 
      * values not set (or of no interest) by the user 
@@ -2965,8 +3353,8 @@ int calc_var_rec_sz(int ncid, int varid)
     ierr = pio_get_file(ncid, &file);
     if(ierr != PIO_NOERR)
     {
-        LOG((1, "Unable to get file corresponding to ncid = %d", ncid));
-        return pio_err(NULL, NULL, PIO_EBADID, __FILE__, __LINE__);
+        return pio_err(NULL, NULL, PIO_EBADID, __FILE__, __LINE__,
+                        "Internal error while calculating variable record size. Invalid file id (ncid = %d) provided, unable to query the associated file", ncid);
     }
     ios = file->iosystem;
     assert(ios != NULL);
@@ -2984,8 +3372,8 @@ int calc_var_rec_sz(int ncid, int varid)
     ierr = PIOc_inq_var(ncid, varid, NULL, 0, &vtype, &ndims, NULL, NULL);
     if(ierr != PIO_NOERR)
     {
-        LOG((1, "Unable to query ndims/type for var"));
-        return pio_err(ios, file, ierr, __FILE__, __LINE__);
+        return pio_err(ios, file, ierr, __FILE__, __LINE__,
+                        "Internal error while calculating the variable %s (varid=%d) record size in file %s (ncid=%d). Unable to query the number of dimensions and type of the variable.", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid);
     }
     if(ndims > 0)
     {
@@ -2995,15 +3383,15 @@ int calc_var_rec_sz(int ncid, int varid)
         ierr = PIOc_inq_type(ncid, vtype, NULL, &vtype_sz);
         if(ierr != PIO_NOERR)
         {
-            LOG((1, "Unable to query type info"));
-            return pio_err(ios, file, ierr, __FILE__, __LINE__);
+            return pio_err(ios, file, ierr, __FILE__, __LINE__,
+                        "Internal error while calculating the variable (%s) record size in file (%s). Unable to query type info for the variable.", pio_get_vname_from_file(file, varid), pio_get_fname_from_file(file));
         }
 
         ierr = PIOc_inq_vardimid(ncid, varid, dimids);
         if(ierr != PIO_NOERR)
         {
-            LOG((1, "Unable to query dimids for var"));
-            return pio_err(ios, file, ierr, __FILE__, __LINE__);
+            return pio_err(ios, file, ierr, __FILE__, __LINE__,
+                        "Internal error while calculating the variable (%s) record size in file (%s). Unable to query the variable dimension ids.", pio_get_vname_from_file(file, varid), pio_get_fname_from_file(file));
         }
 
         for(int i=0; i<ndims; i++)
@@ -3029,8 +3417,8 @@ int calc_var_rec_sz(int ncid, int varid)
                 ierr = PIOc_inq_dim(ncid, dimids[i], NULL, &(dimlen[i]));
                 if(ierr != PIO_NOERR)
                 {
-                    LOG((1, "Unable to query dims"));
-                    return pio_err(ios, file, ierr, __FILE__, __LINE__);
+                    return pio_err(ios, file, ierr, __FILE__, __LINE__,
+                                    "Internal error while calculating the variable (%s) record size in file (%s). Unable to query the length of dimension %d.", pio_get_vname_from_file(file, varid), pio_get_fname_from_file(file), i);
                 }
             }
             file->varlist[varid].vrsize = 

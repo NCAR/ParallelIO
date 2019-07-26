@@ -554,7 +554,7 @@ int check_strerror_netcdf(int my_rank)
      * and return 0. */
     if (check_mpi(NULL, NULL, 0, __FILE__, __LINE__))
         return ERR_WRONG;
-    if (pio_err(NULL, NULL, 0, __FILE__, __LINE__))
+    if (pio_err(NULL, NULL, 0, __FILE__, __LINE__, "Zero error code"))
         return ERR_WRONG;
     /* check_netcdf now uses asserts to ensure ios or file is valid */
     /*
@@ -1633,7 +1633,7 @@ int test_malloc_iodesc2(int iosysid, int my_rank)
     int ret;
 
     if (!(ios = pio_get_iosystem_from_id(iosysid)))
-        return pio_err(NULL, NULL, PIO_EBADID, __FILE__, __LINE__);
+        return pio_err(NULL, NULL, PIO_EBADID, __FILE__, __LINE__, "Getting I/O system from id failed");
     printf("test_malloc_iodesc2 num_types %d\n",num_types);
     /* Test with each type. */
     for (int t = 0; t < num_types; t++)
@@ -1689,7 +1689,7 @@ int test_decomp_internal(int my_test_size, int my_rank, int iosysid, int dim_len
 
     /* Get the IO system info. */
     if (!(ios = pio_get_iosystem_from_id(iosysid)))
-        return pio_err(NULL, NULL, PIO_EBADID, __FILE__, __LINE__);
+        return pio_err(NULL, NULL, PIO_EBADID, __FILE__, __LINE__, "Getting I/O system from id failed");
 
     /* Write the decomposition file. */
     if ((ret = pioc_write_nc_decomp_int(ios, nc_filename, 0, NDIM1, global_dimlen,
