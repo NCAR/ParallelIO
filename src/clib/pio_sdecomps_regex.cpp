@@ -475,35 +475,40 @@ namespace PIO_Util{
 
         str_trim(begin, end);
         std::string item_str(begin, end);
+        SDecomp_regex_item::SDecomp_regex_item_type
+          rgx_item_type = INVALID_REGEX;
         if(item_str == to_string(ID_REGEX)){
-          return ID_REGEX;
+          rgx_item_type = ID_REGEX;
         }
         else if(item_str == to_string(VAR_REGEX)){
-          return VAR_REGEX;
+          rgx_item_type = VAR_REGEX;
         }
         else if(item_str == to_string(FILE_REGEX)){
-          return FILE_REGEX;
+          rgx_item_type = FILE_REGEX;
         }
         else{
           assert(0);
         }
+        return rgx_item_type;
       }
 
       std::string SDecomp_regex_item::to_string(
         const SDecomp_regex_item::SDecomp_regex_item_type &type)
       {
+        std::string rgx_item("INVALID");
         if(type == ID_REGEX){
-          return std::string("ID");
+          rgx_item = "ID";
         }
         else if(type == VAR_REGEX){
-          return std::string("VAR");
+          rgx_item = "VAR";
         }
         else if(type == FILE_REGEX){
-          return std::string("FILE");
+          rgx_item = "FILE";
         }
         else{
           assert(0);
         }
+        return rgx_item;
       }
 
       std::string SDecomp_regex_item::to_string(void ) const
