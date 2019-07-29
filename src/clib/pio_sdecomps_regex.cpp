@@ -410,7 +410,8 @@ namespace PIO_Util{
          */
 
         /* ID string */
-        assert(std::distance(begin, end) >= tok_item_str.size());
+        assert(std::distance(begin, end) >= 0);
+        assert(static_cast<size_t>(std::abs(std::distance(begin, end))) >= tok_item_str.size());
         tok_end += tok_item_str.size();
         str_ltrim(tok_end, end);
 
