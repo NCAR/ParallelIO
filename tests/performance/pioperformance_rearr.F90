@@ -353,7 +353,6 @@ contains
     integer, intent(out) :: ierr
 
     integer, parameter :: MAX_STDIN_ARG_LEN = 8192
-    character(len=MAX_PIO_TYPENAME_LEN) :: pio_typenames(MAX_PIO_TYPES)
     character(len=MAX_STDIN_ARG_LEN) :: argv
     integer :: i, nargs
 

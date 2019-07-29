@@ -227,7 +227,6 @@ PIO_TF_AUTO_TEST_SUB_BEGIN two_iosystems_even_all
   character(len=PIO_TF_MAX_STR_LEN), target :: fname2 = "pio_iosys_test_file2.nc"
   character(len=PIO_TF_MAX_STR_LEN), parameter :: attname = "filename"
   character(len=PIO_TF_MAX_STR_LEN), parameter :: dimname = "filename_dim"
-  character(len=PIO_TF_MAX_STR_LEN), pointer :: fname
   integer, dimension(:), allocatable :: iotypes
   character(len=PIO_TF_MAX_STR_LEN), dimension(:), allocatable :: iotype_descs
   integer :: i, num_iotypes = 0

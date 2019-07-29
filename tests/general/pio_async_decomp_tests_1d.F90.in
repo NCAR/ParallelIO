@@ -78,7 +78,6 @@ PIO_TF_AUTO_TEST_SUB_BEGIN async_2comp_wr_1d
 
   ! file1 is written out by comp1 and file2 is written out by comp2
   character(len=PIO_TF_MAX_STR_LEN) :: fnames(NUM_COMPONENTS) = (/"pio_async_decomp_tests_file_comp1.nc","pio_async_decomp_tests_file_comp2.nc"/)
-  character(len=PIO_TF_MAX_STR_LEN) :: attname = "filename"
   character(len=PIO_TF_MAX_STR_LEN) :: dimname = "PIO_TF_test_dim"
   character(len=PIO_TF_MAX_STR_LEN) :: vname = "PIO_TF_test_var"
 

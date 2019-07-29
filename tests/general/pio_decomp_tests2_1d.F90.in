@@ -113,7 +113,7 @@ PIO_TF_AUTO_TEST_SUB_BEGIN nc_wr_rd_a2a
   PIO_TF_FC_DATA_TYPE, dimension(:), allocatable :: rbuf, wbuf, exp_val
   integer, dimension(1) :: dims
   integer :: pio_dim
-  integer :: i, j, k, ierr, lsz
+  integer :: i, j, k, ierr
   ! iotypes = valid io types
   integer, dimension(:), allocatable :: iotypes
   character(len=PIO_TF_MAX_STR_LEN), dimension(:), allocatable :: iotype_descs
@@ -239,7 +239,7 @@ PIO_TF_AUTO_TEST_SUB_BEGIN nc_wr_rev_rd
   PIO_TF_FC_DATA_TYPE, dimension(:), allocatable :: rbuf, wbuf, exp_val
   integer, dimension(1) :: dims
   integer :: pio_dim
-  integer :: i, ierr, lsz
+  integer :: i, ierr
   ! iotypes = valid io types
   integer, dimension(:), allocatable :: iotypes
   character(len=PIO_TF_MAX_STR_LEN), dimension(:), allocatable :: iotype_descs

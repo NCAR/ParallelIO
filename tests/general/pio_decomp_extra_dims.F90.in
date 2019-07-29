@@ -264,7 +264,7 @@ PIO_TF_AUTO_TEST_SUB_BEGIN decomp_no_extra_dims_rec
   PIO_TF_FC_DATA_TYPE, dimension(:,:), allocatable :: wbuf, rbuf
   integer, dimension(1) :: dims
   integer, dimension(2) :: pio_dims
-  integer :: i, ierr, lsz
+  integer :: i, ierr
   integer(kind=pio_offset_kind) :: f
   ! iotypes = valid io types
   integer, dimension(:), allocatable :: iotypes
@@ -371,7 +371,7 @@ PIO_TF_AUTO_TEST_SUB_BEGIN decomp_1_extra_dim_rec
   PIO_TF_FC_DATA_TYPE, dimension(:,:), allocatable :: wbuf, rbuf
   integer, dimension(2) :: dims
   integer, dimension(2) :: pio_dims
-  integer :: i, ierr, lsz
+  integer :: i, ierr
   integer(kind=pio_offset_kind) :: f
   ! iotypes = valid io types
   integer, dimension(:), allocatable :: iotypes
@@ -479,7 +479,7 @@ PIO_TF_AUTO_TEST_SUB_BEGIN decomp_2_extra_dims_rec
   PIO_TF_FC_DATA_TYPE, dimension(:,:), allocatable :: wbuf, rbuf
   integer, dimension(3) :: dims
   integer, dimension(2) :: pio_dims
-  integer :: i, ierr, lsz
+  integer :: i, ierr
   integer(kind=pio_offset_kind) :: f
   ! iotypes = valid io types
   integer, dimension(:), allocatable :: iotypes
@@ -588,7 +588,7 @@ PIO_TF_AUTO_TEST_SUB_BEGIN decomp_no_extra_dims_lim_rec
   PIO_TF_FC_DATA_TYPE, dimension(:,:), allocatable :: wbuf, rbuf
   integer, dimension(1) :: dims
   integer, dimension(2) :: pio_dims
-  integer :: i, ierr, lsz
+  integer :: i, ierr
   integer(kind=pio_offset_kind) :: f
   ! iotypes = valid io types
   integer, dimension(:), allocatable :: iotypes
@@ -695,7 +695,7 @@ PIO_TF_AUTO_TEST_SUB_BEGIN decomp_1_extra_dim_lim_rec
   PIO_TF_FC_DATA_TYPE, dimension(:,:), allocatable :: wbuf, rbuf
   integer, dimension(2) :: dims
   integer, dimension(2) :: pio_dims
-  integer :: i, ierr, lsz
+  integer :: i, ierr
   integer(kind=pio_offset_kind) :: f
   ! iotypes = valid io types
   integer, dimension(:), allocatable :: iotypes
@@ -803,7 +803,7 @@ PIO_TF_AUTO_TEST_SUB_BEGIN decomp_2_extra_dims_lim_rec
   PIO_TF_FC_DATA_TYPE, dimension(:,:), allocatable :: wbuf, rbuf
   integer, dimension(3) :: dims
   integer, dimension(2) :: pio_dims
-  integer :: i, ierr, lsz
+  integer :: i, ierr
   integer(kind=pio_offset_kind) :: f
   ! iotypes = valid io types
   integer, dimension(:), allocatable :: iotypes

@@ -124,7 +124,7 @@ PIO_TF_AUTO_TEST_SUB_BEGIN nc_mvar_wr_rd_1d_bc
   PIO_TF_FC_DATA_TYPE, dimension(:), allocatable :: rbuf, wbuf, exp_val
   integer, dimension(1) :: dims
   integer :: pio_dim
-  integer :: i, ierr, lsz
+  integer :: i, ierr
   ! iotypes = valid io types
   integer, dimension(:), allocatable :: iotypes
   character(len=PIO_TF_MAX_STR_LEN), dimension(:), allocatable :: iotype_descs
@@ -284,7 +284,7 @@ PIO_TF_AUTO_TEST_SUB_BEGIN nc_mvar_msync_1d_bc
   PIO_TF_FC_DATA_TYPE, dimension(:), allocatable :: rbuf, wbuf, exp_val
   integer, dimension(1) :: dims
   integer :: pio_dim
-  integer :: i, j, k, cur_sync_stride, isync, prev_isync, ierr, lsz
+  integer :: i, j, k, cur_sync_stride, isync, prev_isync, ierr
   ! iotypes = valid io types
   integer, dimension(:), allocatable :: iotypes
   character(len=PIO_TF_MAX_STR_LEN), dimension(:), allocatable :: iotype_descs
@@ -464,7 +464,7 @@ PIO_TF_AUTO_TEST_SUB_BEGIN nc_mvar_mreg_wr_rd_1d_bc
   PIO_TF_FC_DATA_TYPE, dimension(:), allocatable :: rbuf_mreg, wbuf_mreg
   integer, dimension(1) :: dims, dims_mreg
   integer :: pio_dim, pio_dim_mreg
-  integer :: i, j, idx, ierr, lsz
+  integer :: i, j, idx, ierr
   ! iotypes = valid io types
   integer, dimension(:), allocatable :: iotypes
   character(len=PIO_TF_MAX_STR_LEN), dimension(:), allocatable :: iotype_descs
@@ -649,7 +649,7 @@ PIO_TF_AUTO_TEST_SUB_BEGIN nc_rd_while_pend_wr_1d
   PIO_TF_FC_DATA_TYPE, dimension(:), allocatable :: rbuf, wbuf, exp_val
   integer, dimension(1) :: dims
   integer :: pio_dim
-  integer :: i, ierr, lsz
+  integer :: i, ierr
   ! iotypes = valid io types
   integer, dimension(:), allocatable :: iotypes
   character(len=PIO_TF_MAX_STR_LEN), dimension(:), allocatable :: iotype_descs
