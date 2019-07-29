@@ -1,3 +1,4 @@
+#define __PIO_FILE__ "pio_support.F90"
 !>
 !! @file pio_support.F90
 !! @brief internal code for compiler workarounds, aborts and debug functions
@@ -191,7 +192,6 @@ contains
 
     integer :: ioid = -1
     
-
     interface
        integer(c_int) function PIOc_writemap_from_f90(file, ioid, ndims, gdims, maplen, map, f90_comm) &
             bind(C,name="PIOc_writemap_from_f90")
@@ -205,6 +205,12 @@ contains
          integer(C_INT), value, intent(in) :: f90_comm
        end function PIOc_writemap_from_f90
     end interface
+
+    if (present(punit)) then
+        call piodie(__PIO_FILE__, __LINE__,&
+                    "Writing PIO decomposition failed. Specifying a unit number, punit, to write the decomposition is no longer supported")
+    end if
+
     ndims = size(gdims)
     err = PIOc_writemap_from_f90(trim(file)//C_NULL_CHAR, ioid, ndims, gdims, int(size(dof),C_SIZE_T), dof, comm)
 
@@ -260,6 +266,11 @@ contains
          integer(C_INT), value, intent(in) :: f90_comm
        end function PIOc_readmap_from_f90
     end interface
+
+    if (present(punit)) then
+        call piodie(__PIO_FILE__, __LINE__,&
+                    "Reading PIO decomposition failed. Specifying a unit number, punit, to read the decomposition from is no longer supported")
+    end if
 
     ierr = PIOc_readmap_from_f90(trim(file)//C_NULL_CHAR, ndims, tgdims, maplen, tmap, comm);
 
