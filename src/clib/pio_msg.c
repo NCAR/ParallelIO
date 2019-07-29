@@ -1028,7 +1028,6 @@ static int recv_async_msg_hdr(iosystem_desc_t *ios, int msg, int eseq_num, int e
 
 int recv_async_msg(iosystem_desc_t *ios, int msg, ...)
 {
-    int mpierr = MPI_SUCCESS;
     int ret = PIO_NOERR;
     
     assert(ios && (msg > PIO_MSG_INVALID) && (msg < PIO_MAX_MSGS));
@@ -1083,7 +1082,6 @@ int inq_type_handler(iosystem_desc_t *ios)
     char name_present, size_present;
     char *namep = NULL, name[PIO_MAX_NAME + 1];
     PIO_Offset *sizep = NULL, size;
-    int mpierr;
     int ret;
 
     LOG((1, "inq_type_handler"));
@@ -1132,7 +1130,6 @@ int inq_format_handler(iosystem_desc_t *ios)
     int ncid;
     int *formatp = NULL, format;
     char format_present;
-    int mpierr;
     int ret;
 
     LOG((1, "inq_format_handler"));
@@ -1180,7 +1177,6 @@ int set_fill_handler(iosystem_desc_t *ios)
     int fillmode;
     int old_modep_present;
     int old_mode, *old_modep = NULL;
-    int mpierr;
     int ret;
 
     LOG((1, "set_fill_handler"));
@@ -1229,7 +1225,6 @@ int create_file_handler(iosystem_desc_t *ios)
     int len;
     int iotype;
     int mode;
-    int mpierr;
     int ret;
 
     LOG((1, "create_file_handler comproot = %d", ios->comproot));
@@ -1268,7 +1263,6 @@ int create_file_handler(iosystem_desc_t *ios)
 int close_file_handler(iosystem_desc_t *ios)
 {
     int ncid;
-    int mpierr;
     int ret;
 
     LOG((1, "close_file_handler"));
@@ -1312,7 +1306,6 @@ int inq_handler(iosystem_desc_t *ios)
     int ndims, nvars, ngatts, unlimdimid;
     int *ndimsp = NULL, *nvarsp = NULL, *ngattsp = NULL, *unlimdimidp = NULL;
     char ndims_present, nvars_present, ngatts_present, unlimdimid_present;
-    int mpierr;
     int ret;
 
     LOG((1, "inq_handler"));
@@ -1370,7 +1363,6 @@ int inq_unlimdims_handler(iosystem_desc_t *ios)
     int unlimdimids;
     int *nunlimdimsp = NULL, *unlimdimidsp = NULL;
     bool nunlimdimsp_present = false, unlimdimidsp_present = false;
-    int mpierr;
     int ret;
 
     LOG((1, "inq_unlimdims_handler"));
@@ -1426,7 +1418,6 @@ int inq_dim_handler(iosystem_desc_t *ios, int msg)
     char dimname[PIO_MAX_NAME + 1];
     PIO_Offset dimlen;
 
-    int mpierr;
     int ret;
 
     LOG((1, "inq_dim_handler"));
@@ -1472,7 +1463,6 @@ int inq_dimid_handler(iosystem_desc_t *ios)
 {
     int ncid;
     int *dimidp = NULL, dimid;
-    int mpierr;
     int id_present;
     int ret;
     int namelen;
@@ -1520,7 +1510,6 @@ int inq_att_handler(iosystem_desc_t *ios)
 {
     int ncid;
     int varid;
-    int mpierr;
     int ret;
     char name[PIO_MAX_NAME + 1];
     int namelen = PIO_MAX_NAME + 1;
@@ -1574,7 +1563,6 @@ int inq_attname_handler(iosystem_desc_t *ios)
     int attnum;
     char name[PIO_MAX_NAME + 1], *namep = NULL;
     char name_present;
-    int mpierr;
     int ret;
 
     LOG((1, "inq_att_name_handler"));
@@ -1624,7 +1612,6 @@ int inq_attid_handler(iosystem_desc_t *ios)
     int namelen = PIO_MAX_NAME + 1;
     int id, *idp = NULL;
     char id_present;
-    int mpierr;
     int ret;
 
     LOG((1, "inq_attid_handler"));
@@ -1668,7 +1655,6 @@ int att_put_handler(iosystem_desc_t *ios)
 {
     int ncid;
     int varid;
-    int mpierr;
     int ret;
     char name[PIO_MAX_NAME + 1];
     int namelen;
@@ -1726,7 +1712,6 @@ int att_get_handler(iosystem_desc_t *ios)
 {
     int ncid;
     int varid;
-    int mpierr;
     char name[PIO_MAX_NAME + 1];
     int namelen;
     PIO_Offset attlen;
@@ -1801,7 +1786,6 @@ int put_vars_handler(iosystem_desc_t *ios)
     void *buf = NULL;           /* Buffer for data storage. */
     PIO_Offset buf_sz = 0;
     PIO_Offset num_elem; /* Number of data elements in the buffer. */
-    int mpierr;          /* Error code from MPI function calls. */
     int ret = PIO_NOERR;
 
     LOG((1, "put_vars_handler"));
@@ -1912,7 +1896,6 @@ int get_vars_handler(iosystem_desc_t *ios)
 {
     int ncid;
     int varid;
-    int mpierr;
     int ret = PIO_NOERR;
     PIO_Offset typelen; /** Length (in bytes) of this type. */
     nc_type xtype; /** 
@@ -2040,7 +2023,6 @@ int inq_var_handler(iosystem_desc_t *ios)
 {
     int ncid;
     int varid;
-    int mpierr;
     char name_present, xtype_present, ndims_present, dimids_present, natts_present;
     char name[PIO_MAX_NAME + 1], *namep = NULL;
     nc_type xtype, *xtypep = NULL;
@@ -2105,7 +2087,6 @@ int inq_var_chunking_handler(iosystem_desc_t *ios)
     char storage_present, chunksizes_present;
     int storage, *storagep = NULL;
     PIO_Offset chunksizes[PIO_MAX_DIMS], *chunksizesp = NULL;
-    int mpierr;
     int ret;
 
     assert(ios);
@@ -2154,7 +2135,7 @@ int inq_var_fill_handler(iosystem_desc_t *ios)
     PIO_Offset type_size;
     int fill_mode, *fill_modep = NULL;
     PIO_Offset *fill_value, *fill_valuep = NULL;
-    int mpierr, ret = PIO_NOERR;
+    int ret = PIO_NOERR;
 
     assert(ios);
     LOG((1, "inq_var_fill_handler"));
@@ -2214,7 +2195,6 @@ int inq_var_endian_handler(iosystem_desc_t *ios)
     int varid;
     char endian_present;
     int endian = 0, *endianp = NULL;
-    int mpierr;
     int ret;
 
     assert(ios);
@@ -2262,7 +2242,6 @@ int inq_var_deflate_handler(iosystem_desc_t *ios)
     int shuffle, *shufflep;
     int deflate, *deflatep;
     int deflate_level, *deflate_levelp;
-    int mpierr;
     int ret;
 
     assert(ios);
@@ -2314,7 +2293,6 @@ int inq_varid_handler(iosystem_desc_t *ios)
 {
     int ncid;
     int varid;
-    int mpierr;
     int ret;
     int namelen = PIO_MAX_NAME + 1;
     char name[PIO_MAX_NAME + 1];
@@ -2352,7 +2330,6 @@ int inq_varid_handler(iosystem_desc_t *ios)
 int sync_file_handler(iosystem_desc_t *ios)
 {
     int ncid;
-    int mpierr;
     int ret;
 
     LOG((1, "sync_file_handler"));
@@ -2394,7 +2371,6 @@ int setframe_handler(iosystem_desc_t *ios)
     int ncid;
     int varid;
     int frame;
-    int mpierr;
     int ret;
 
     LOG((1, "setframe_handler"));
@@ -2436,7 +2412,6 @@ int advanceframe_handler(iosystem_desc_t *ios)
 {
     int ncid;
     int varid;
-    int mpierr;
     int ret;
 
     LOG((1, "advanceframe_handler"));
@@ -2476,7 +2451,6 @@ int advanceframe_handler(iosystem_desc_t *ios)
 int change_def_file_handler(iosystem_desc_t *ios, int msg)
 {
     int ncid;
-    int mpierr;
     int ret;
 
     LOG((1, "change_def_file_handler"));
@@ -2522,7 +2496,6 @@ int def_var_handler(iosystem_desc_t *ios)
     int ncid;
     int namelen = PIO_MAX_NAME + 1;
     char name[PIO_MAX_NAME + 1];
-    int mpierr;
     int ret;
     int varid;
     nc_type xtype;
@@ -2573,7 +2546,6 @@ int def_var_chunking_handler(iosystem_desc_t *ios)
     char chunksizes_present;
     int chunksizes_sz = 0;
     PIO_Offset chunksizes[PIO_MAX_DIMS], *chunksizesp = NULL;
-    int mpierr;
     int ret;
 
     assert(ios);
@@ -2622,7 +2594,7 @@ int def_var_fill_handler(iosystem_desc_t *ios)
     char fill_value_present;
     PIO_Offset type_size, fill_value_sz;
     PIO_Offset *fill_valuep = NULL;
-    int mpierr, ret = PIO_NOERR;
+    int ret = PIO_NOERR;
 
     assert(ios);
     LOG((1, "def_var_fill_handler comproot = %d", ios->comproot));
@@ -2671,7 +2643,6 @@ int def_var_endian_handler(iosystem_desc_t *ios)
     int ncid;
     int varid;
     int endian;
-    int mpierr;
     int ret;
 
     assert(ios);
@@ -2714,7 +2685,6 @@ int def_var_deflate_handler(iosystem_desc_t *ios)
     int shuffle;
     int deflate;
     int deflate_level;
-    int mpierr;
     int ret;
 
     assert(ios);
@@ -2757,7 +2727,6 @@ int set_var_chunk_cache_handler(iosystem_desc_t *ios)
     PIO_Offset size;
     PIO_Offset nelems;
     float preemption;
-    int mpierr = MPI_SUCCESS;  /* Return code from MPI function codes. */
     int ret; /* Return code. */
 
     assert(ios);
@@ -2802,7 +2771,6 @@ int def_dim_handler(iosystem_desc_t *ios)
     int ncid;
     int len, namelen;
     char name[PIO_MAX_NAME + 1];
-    int mpierr;
     int ret;
     int dimid;
 
@@ -2846,7 +2814,6 @@ int rename_dim_handler(iosystem_desc_t *ios)
     int ncid;
     int namelen;
     char name[PIO_MAX_NAME + 1];
-    int mpierr;
     int ret;
     int dimid;
 
@@ -2891,7 +2858,6 @@ int rename_var_handler(iosystem_desc_t *ios)
     int ncid;
     int namelen;
     char name[PIO_MAX_NAME + 1];
-    int mpierr;
     int ret;
     int varid;
 
@@ -2937,7 +2903,6 @@ int rename_att_handler(iosystem_desc_t *ios)
     int varid;
     int namelen, newnamelen;
     char name[PIO_MAX_NAME + 1], newname[PIO_MAX_NAME + 1];
-    int mpierr;
     int ret;
 
     LOG((1, "rename_att_handler"));
@@ -2982,7 +2947,6 @@ int delete_att_handler(iosystem_desc_t *ios)
     int varid;
     int namelen;
     char name[PIO_MAX_NAME + 1];
-    int mpierr;
     int ret;
 
     LOG((1, "delete_att_handler"));
@@ -3027,7 +2991,6 @@ int open_file_handler(iosystem_desc_t *ios)
     int len;
     int iotype;
     int mode;
-    int mpierr;
     int ret = PIO_NOERR;
 
     LOG((1, "open_file_handler comproot = %d", ios->comproot));
@@ -3071,7 +3034,6 @@ int delete_file_handler(iosystem_desc_t *ios)
 {
     char filename[PIO_MAX_NAME+1];
     int len = 0;
-    int mpierr;
     int ret;
 
     LOG((1, "delete_file_handler comproot = %d", ios->comproot));
@@ -3122,7 +3084,6 @@ int initdecomp_dof_handler(iosystem_desc_t *ios)
     PIO_Offset *iostartp = NULL;
     char iocount_present;
     PIO_Offset *iocountp = NULL;
-    int mpierr = MPI_SUCCESS;  /* Return code from MPI function codes. */
     int ret; /* Return code. */
 
     LOG((1, "initdecomp_dof_handler called"));
@@ -3206,7 +3167,6 @@ int write_darray_multi_handler(iosystem_desc_t *ios)
     void *fillvaluep = NULL;
     void *fillvalue = NULL;
     int flushtodisk;
-    int mpierr;
     int ret;
 
     LOG((1, "write_darray_multi_handler"));
@@ -3300,7 +3260,7 @@ int write_darray_multi_handler(iosystem_desc_t *ios)
 int readdarray_handler(iosystem_desc_t *ios)
 {
     int ncid, varid, ioid;
-    int mpierr, ierr;
+    int ierr;
 
     LOG((1, "read_darray_handler"));
     assert(ios);
@@ -3342,7 +3302,6 @@ int seterrorhandling_handler(iosystem_desc_t *ios)
     bool old_method_present;
     int old_method;
     int *old_methodp = NULL;
-    int mpierr;
     int ret;
 
     LOG((1, "seterrorhandling_handler comproot = %d", ios->comproot));
@@ -3390,7 +3349,6 @@ int set_chunk_cache_handler(iosystem_desc_t *ios)
     PIO_Offset size;
     PIO_Offset nelems;
     float preemption;
-    int mpierr = MPI_SUCCESS;  /* Return code from MPI function codes. */
     int ret; /* Return code. */
 
     LOG((1, "set_chunk_cache_handler called"));
@@ -3436,7 +3394,6 @@ int get_chunk_cache_handler(iosystem_desc_t *ios)
     PIO_Offset size, *sizep;
     PIO_Offset nelems, *nelemsp;
     float preemption, *preemptionp;
-    int mpierr = MPI_SUCCESS;  /* Return code from MPI function codes. */
     int ret; /* Return code. */
 
     LOG((1, "get_chunk_cache_handler called"));
@@ -3491,7 +3448,6 @@ int get_var_chunk_cache_handler(iosystem_desc_t *ios)
     PIO_Offset size, *sizep;
     PIO_Offset nelems, *nelemsp;
     float preemption, *preemptionp;
-    int mpierr = MPI_SUCCESS;  /* Return code from MPI function codes. */
     int ret; /* Return code. */
 
     LOG((1, "get_var_chunk_cache_handler called"));
@@ -3541,7 +3497,6 @@ int freedecomp_handler(iosystem_desc_t *ios)
 {
     int iosysid;
     int ioid;
-    int mpierr = MPI_SUCCESS;  /* Return code from MPI function codes. */
     int ret; /* Return code. */
 
     LOG((1, "freedecomp_handler called"));
@@ -3582,7 +3537,6 @@ int freedecomp_handler(iosystem_desc_t *ios)
 int finalize_handler(iosystem_desc_t *ios, int index)
 {
     int iosysid;
-    int mpierr;
     int ret;
 
     LOG((1, "finalize_handler called index = %d", index));

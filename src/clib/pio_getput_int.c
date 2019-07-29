@@ -36,7 +36,7 @@ int PIOc_put_att_tc(int ncid, int varid, const char *name, nc_type atttype,
     file_desc_t *file;     /* Pointer to file information. */
     PIO_Offset atttype_len = 0;    /* Length (in bytes) of the att type in file. */
     PIO_Offset memtype_len = 0;    /* Length of the att data type in memory. */
-    int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI function codes. */
+    int mpierr = MPI_SUCCESS;  /* Return code from MPI function codes. */
     int ierr = PIO_NOERR;           /* Return code from function calls. */
 
 #ifdef TIMING
@@ -282,7 +282,7 @@ int PIOc_get_att_tc(int ncid, int varid, const char *name, nc_type memtype, void
     PIO_Offset attlen = 0;      /* Number of elements in the attribute array. */
     PIO_Offset atttype_len = 0; /* Length in bytes of one element of the attribute type. */
     PIO_Offset memtype_len = 0; /* Length in bytes of one element of the memory type. */
-    int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI function calls. */
+    int mpierr = MPI_SUCCESS;  /* Return code from MPI function calls. */
     int ierr = PIO_NOERR;               /* Return code from function calls. */
 
 #ifdef TIMING
@@ -526,7 +526,7 @@ int PIOc_get_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
     char start_present = start ? true : false;
     char count_present = count ? true : false;
     char stride_present = stride ? true : false;
-    int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI function codes. */
+    int mpierr = MPI_SUCCESS;  /* Return code from MPI function codes. */
     int ierr = PIO_NOERR;                           /* Return code. */
 
 #ifdef TIMING
@@ -976,7 +976,7 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
     var_desc_t *vdesc;
     int *request;
     nc_type vartype = NC_NAT;   /* The type of the var we are reading from. */
-    int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI function codes. */
+    int mpierr = MPI_SUCCESS;  /* Return code from MPI function codes. */
     int ierr = PIO_NOERR;          /* Return code from function calls. */
 
 #ifdef TIMING

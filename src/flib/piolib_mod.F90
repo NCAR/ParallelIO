@@ -515,7 +515,6 @@ contains
   subroutine initdecomp_2dof_bin_i4(iosystem,basepiotype,dims,lenblocks,compdof,iodofr,iodofw,iodesc)
     type (iosystem_desc_t), intent(in) :: iosystem
     integer(i4), intent(in)           :: basepiotype
-    integer(i4)                       :: basetype
     integer(i4), intent(in)           :: dims(:)
     integer (i4), intent(in)          :: lenblocks
     integer (i4), intent(in)          :: compdof(:)   !> global degrees of freedom for computational decomposition
@@ -626,7 +625,6 @@ contains
     type (io_desc_t), intent(inout)     :: iodesc
 
     integer(PIO_OFFSET_KIND), intent(in) :: start(:), count(:)
-    type (io_desc_t) :: tmp
 
 
     call pio_initdecomp(iosystem, basepiotype,dims,lenblocks,int(compdof,PIO_OFFSET_KIND),int(iodofr,PIO_OFFSET_KIND), &
@@ -681,7 +679,6 @@ contains
     integer (i4), intent(in)          :: compdof(:)   ! global degrees of freedom for computational decomposition
     integer (i4), intent(in)          :: iodof(:)     ! global degrees of freedom for io decomposition
     type (io_desc_t), intent(inout)     :: iodesc
-    integer :: piotype
     integer(PIO_OFFSET_KIND), intent(in) :: start(:), count(:)
 
     call initdecomp_1dof_nf_i8(iosystem, basepiotype,dims,lenblocks,int(compdof,PIO_OFFSET_KIND),int(iodof,PIO_OFFSET_KIND),&
@@ -697,7 +694,6 @@ contains
     integer (PIO_OFFSET_KIND), intent(in)          :: compdof(:)   ! global degrees of freedom for computational decomposition
     integer (PIO_OFFSET_KIND), intent(in)          :: iodof(:)     ! global degrees of freedom for io decomposition
     type (io_desc_t), intent(inout)     :: iodesc
-    integer :: piotype
     integer(PIO_OFFSET_KIND), intent(in) :: start(:), count(:)
 
 
@@ -1149,7 +1145,6 @@ contains
     integer, intent(in) :: iotype
     character(len=*), intent(in)  :: fname
     integer, optional, intent(in) :: mode
-    integer :: iorank
     interface
        integer(C_INT) function PIOc_openfile(iosysid, fh, iotype, fname,mode) &
          bind(C,NAME='PIOc_openfile')

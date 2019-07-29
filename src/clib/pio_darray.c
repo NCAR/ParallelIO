@@ -111,7 +111,7 @@ int PIOc_write_darray_multi(int ncid, const int *varids, int ioid, int nvars,
     int rlen;              /* Total data buffer size. */
     var_desc_t *vdesc0;    /* Array of var_desc structure for each var. */
     int fndims = 0;        /* Number of dims in the var in the file. */
-    int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI function calls. */
+    int mpierr = MPI_SUCCESS;  /* Return code from MPI function calls. */
     int ierr = PIO_NOERR;              /* Return code. */
 
 #ifdef TIMING
@@ -591,6 +591,11 @@ static int PIO_wmb_needs_flush(wmulti_buffer *wmb, int arraylen, io_desc_t *iode
     /* Find out how much free, contiguous space is available. */
     bstats(&curalloc, &totfree, &maxfree, &nget, &nrel);
 
+    LOG((2, "maxfree = %ld wmb->num_arrays = %d (1 + wmb->num_arrays) *"
+         " arraylen * iodesc->mpitype_size = %ld totfree = %ld\n",
+          maxfree, wmb->num_arrays,
+         (1 + wmb->num_arrays) * arraylen * iodesc->mpitype_size, totfree));
+
     /* We have exceeded the set buffer write cache limit, write data to
      * disk
      */
@@ -1015,12 +1020,6 @@ int PIOc_write_darray(int ncid, int varid, int ioid, PIO_Offset arraylen, void *
     wmulti_buffer *wmb;    /* The write multi buffer for one or more vars. */
     int recordvar;         /* Non-zero if this is a record variable. */
     int needsflush = 0;    /* True if we need to flush buffer. */
-#if PIO_USE_MALLOC
-    void *realloc_data = NULL;
-#else
-    bufsize totfree;       /* Amount of free space in the buffer. */
-    bufsize maxfree;       /* Max amount of free space in buffer. */
-#endif
     PIO_Offset decomp_max_regions; /* Max non-contiguous regions in the IO decomposition */
     PIO_Offset io_max_regions; /* Max non-contiguous regions cached in a single IO process */
     int mpierr = MPI_SUCCESS;  /* Return code from MPI functions. */
@@ -1201,9 +1200,6 @@ int PIOc_write_darray(int ncid, int varid, int ioid, PIO_Offset arraylen, void *
 #ifdef PIO_ENABLE_LOGGING
         /* Collect a debug report about buffer. */
         cn_buffer_report(ios, true);
-        LOG((2, "maxfree = %ld wmb->num_arrays = %d (1 + wmb->num_arrays) *"
-             " arraylen * iodesc->mpitype_size = %ld totfree = %ld\n", maxfree, wmb->num_arrays,
-             (1 + wmb->num_arrays) * arraylen * iodesc->mpitype_size, totfree));
 #endif /* PIO_ENABLE_LOGGING */
 #endif /* !PIO_USE_MALLOC */
 

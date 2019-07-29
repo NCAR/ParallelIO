@@ -141,7 +141,6 @@ int PIOc_advanceframe(int ncid, int varid)
 {
     file_desc_t *file;
     iosystem_desc_t *ios;
-    int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI function codes. */
     int ret;
 
     LOG((1, "PIOc_advanceframe ncid = %d varid = %d", ncid, varid));
@@ -196,7 +195,6 @@ int PIOc_setframe(int ncid, int varid, int frame)
 {
     file_desc_t *file;
     iosystem_desc_t *ios;
-    int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI function codes. */
     int ret;
 
     LOG((1, "PIOc_setframe ncid = %d varid = %d frame = %d", ncid,
@@ -343,7 +341,6 @@ int PIOc_Set_IOSystem_Error_Handling(int iosysid, int method)
 int PIOc_set_iosystem_error_handling(int iosysid, int method, int *old_method)
 {
     iosystem_desc_t *ios = NULL;
-    int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI function codes. */
     int ret = PIO_NOERR;
 
     LOG((1, "PIOc_set_iosystem_error_handling iosysid = %d method = %d", iosysid,
@@ -530,7 +527,7 @@ int PIOc_InitDecomp(int iosysid, int pio_type, int ndims, const int *gdimlen, in
 {
     iosystem_desc_t *ios;  /* Pointer to io system information. */
     io_desc_t *iodesc;     /* The IO description. */
-    int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI function calls. */
+    int mpierr = MPI_SUCCESS;  /* Return code from MPI function calls. */
     int ierr;              /* Return code. */
 
 #ifdef TIMING
@@ -1242,7 +1239,6 @@ int PIOc_finalize(int iosysid)
 {
     iosystem_desc_t *ios;
     int niosysid;          /* The number of currently open IO systems. */
-    int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI function codes. */
     int ierr = PIO_NOERR;
 #ifdef TIMING_INTERNAL
     char gptl_iolog_fname[PIO_MAX_NAME];
