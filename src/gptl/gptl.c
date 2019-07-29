@@ -2345,8 +2345,6 @@ int GPTLpr_summary_file (int comm,
 #ifdef HAVE_MPI
   int nproc;                                /* number of procs in MPI communicator */
 
-  char name[MAX_CHARS+1];                   /* timer name requested by master */
-
   if (((int) comm) == 0)
     comm = MPI_COMM_WORLD;
 
@@ -2717,7 +2715,6 @@ static int collect_data(const int iam,
   const int taga =  99;
   const int tagb = 100;
   const int tagc = 101;
-  MPI_Status status;
   MPI_Request rcvreq1;
   MPI_Request rcvreq2;
   MPI_Request rcvreq3;
