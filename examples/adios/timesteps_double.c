@@ -135,13 +135,13 @@ int main(int argc, char **argv)
     int ioproc_stride = 1;
 
     /** Number of the aggregator? Always 0 in this example. */
-    int numAggregator = 0;
+    /* int numAggregator = 0; */
 
     /** Zero based rank of first processor to be used for I/O. */
     int ioproc_start = 0;
 
     /** Specifies the flavor of netCDF output format. */
-    int iotype;
+    /* int iotype; */
 
     /** The dimension IDs. */
     int dimids_foo[NDIM];  /* foo is time x X_DIM_LEN x Y_DIM_LEN */
@@ -179,13 +179,13 @@ int main(int argc, char **argv)
      * vary depending on how many processors are involved in the
      * execution of the example code. It's length will be the same
      * as elements_per_pe.*/
-    float *buffer;
+    /* float *buffer; */
 
     /** A buffer for reading data back from the file. The size of
      * this array will vary depending on how many processors are
      * involved in the execution of the example code. It's length
      * will be the same as elements_per_pe.*/
-    int *read_buffer;
+    /* int *read_buffer; */
 
     /** A 1-D array which holds the decomposition mapping for this
      * example. The size of this array will vary depending on how
