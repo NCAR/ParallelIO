@@ -47,6 +47,15 @@ foreach (SRC_FILE IN LISTS GENERATED_SRCS)
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${SRC_FILE}.in)
 endforeach ()
 
+# The PIO library is written using C, C++ and Fortran languages
+# IBM compilers require Fortran/C/C++ mixed language programs
+# to be linked with the C++ linker. Other compilers require the
+# Fortran linker.
+if ("${CMAKE_Fortran_COMPILER_ID}" STREQUAL "XL")
+  SET(PIO_LINKER_LANGUAGE CXX)
+else ()
+  SET(PIO_LINKER_LANGUAGE Fortran)
+endif ()
 if ("${CMAKE_Fortran_COMPILER_ID}" STREQUAL "GNU")
   add_definitions(-ffree-line-length-none)
 endif()
@@ -141,7 +150,7 @@ target_link_libraries (pio_tutil piof)
 #===== pio_init_finalize =====
 add_executable (pio_init_finalize EXCLUDE_FROM_ALL
   pio_init_finalize.F90)
-set_property(TARGET pio_init_finalize PROPERTY LINKER_LANGUAGE Fortran)
+set_property(TARGET pio_init_finalize PROPERTY LINKER_LANGUAGE ${PIO_LINKER_LANGUAGE})
 target_link_libraries (pio_init_finalize pio_tutil piof)
 add_dependencies (pio_init_finalize pio_tutil)
 add_dependencies (tests pio_init_finalize)
@@ -159,7 +168,7 @@ add_pio_test(init_finalize
 #===== pio_async_init_finalize =====
 add_executable (pio_async_init_finalize EXCLUDE_FROM_ALL
   pio_async_init_finalize.F90)
-set_property(TARGET pio_async_init_finalize PROPERTY LINKER_LANGUAGE Fortran)
+set_property(TARGET pio_async_init_finalize PROPERTY LINKER_LANGUAGE ${PIO_LINKER_LANGUAGE})
 target_link_libraries (pio_async_init_finalize pio_tutil piof)
 add_dependencies (pio_async_init_finalize pio_tutil)
 add_dependencies (tests pio_async_init_finalize)
@@ -178,7 +187,7 @@ add_pio_test(async_init_finalize
 #===== pio_file_simple_tests =====
 add_executable (pio_file_simple_tests EXCLUDE_FROM_ALL
   pio_file_simple_tests.F90)
-set_property(TARGET pio_file_simple_tests PROPERTY LINKER_LANGUAGE Fortran)
+set_property(TARGET pio_file_simple_tests PROPERTY LINKER_LANGUAGE ${PIO_LINKER_LANGUAGE})
 target_link_libraries (pio_file_simple_tests pio_tutil piof)
 add_dependencies (pio_file_simple_tests pio_tutil)
 add_dependencies (tests pio_file_simple_tests)
@@ -199,7 +208,7 @@ if (PIO_ENABLE_LARGE_TESTS)
   add_executable (pio_large_file_tests EXCLUDE_FROM_ALL
     pio_large_file_tests.F90
     ${CMAKE_CURRENT_SOURCE_DIR}/util/pio_tutil.F90)
-  set_property(TARGET pio_large_file_tests PROPERTY LINKER_LANGUAGE Fortran)
+  set_property(TARGET pio_large_file_tests PROPERTY LINKER_LANGUAGE ${PIO_LINKER_LANGUAGE})
   target_link_libraries (pio_large_file_tests pio_tutil piof)
   add_dependencies (tests pio_large_file_tests)
 
@@ -218,7 +227,7 @@ endif ()
 #===== pio_file_fail =====
 add_executable (pio_file_fail EXCLUDE_FROM_ALL
   pio_file_fail.F90)
-set_property(TARGET pio_file_fail PROPERTY LINKER_LANGUAGE Fortran)
+set_property(TARGET pio_file_fail PROPERTY LINKER_LANGUAGE ${PIO_LINKER_LANGUAGE})
 target_link_libraries (pio_file_fail pio_tutil piof)
 if ("${CMAKE_Fortran_COMPILER_ID}" STREQUAL "GNU")
   target_compile_options (pio_init_finalize
@@ -241,7 +250,7 @@ add_pio_test(pio_file_fail
 #===== ncdf_simple_tests =====
 add_executable (ncdf_simple_tests EXCLUDE_FROM_ALL
   ncdf_simple_tests.F90)
-set_property(TARGET ncdf_simple_tests PROPERTY LINKER_LANGUAGE Fortran)
+set_property(TARGET ncdf_simple_tests PROPERTY LINKER_LANGUAGE ${PIO_LINKER_LANGUAGE})
 target_link_libraries (ncdf_simple_tests pio_tutil piof)
 add_dependencies (ncdf_simple_tests pio_tutil)
 add_dependencies (tests ncdf_simple_tests)
@@ -259,7 +268,7 @@ add_pio_test(ncdf_simple_tests
 #===== ncdf_get_put =====
 add_executable (ncdf_get_put EXCLUDE_FROM_ALL
   ncdf_get_put.F90)
-set_property(TARGET ncdf_get_put PROPERTY LINKER_LANGUAGE Fortran)
+set_property(TARGET ncdf_get_put PROPERTY LINKER_LANGUAGE ${PIO_LINKER_LANGUAGE})
 target_link_libraries (ncdf_get_put pio_tutil piof)
 add_dependencies (ncdf_get_put pio_tutil)
 add_dependencies (tests ncdf_get_put)
@@ -277,7 +286,7 @@ add_pio_test(ncdf_get_put
 #===== ncdf_fail =====
 add_executable (ncdf_fail EXCLUDE_FROM_ALL
   ncdf_fail.F90)
-set_property(TARGET ncdf_fail PROPERTY LINKER_LANGUAGE Fortran)
+set_property(TARGET ncdf_fail PROPERTY LINKER_LANGUAGE ${PIO_LINKER_LANGUAGE})
 target_link_libraries (ncdf_fail pio_tutil piof)
 add_dependencies (ncdf_fail pio_tutil)
 add_dependencies (tests ncdf_fail)
@@ -306,7 +315,7 @@ add_pio_test(ncdf_fail_reduce
 #===== ncdf_inq =====
 add_executable (ncdf_inq EXCLUDE_FROM_ALL
   ncdf_inq.F90)
-set_property(TARGET ncdf_inq PROPERTY LINKER_LANGUAGE Fortran)
+set_property(TARGET ncdf_inq PROPERTY LINKER_LANGUAGE ${PIO_LINKER_LANGUAGE})
 target_link_libraries (ncdf_inq pio_tutil piof)
 add_dependencies (ncdf_inq pio_tutil)
 add_dependencies (tests ncdf_inq)
@@ -324,7 +333,7 @@ add_pio_test(ncdf_inq
 #===== pio_rearr =====
 add_executable (pio_rearr EXCLUDE_FROM_ALL
     pio_rearr.F90)
-set_property(TARGET pio_rearr PROPERTY LINKER_LANGUAGE Fortran)
+set_property(TARGET pio_rearr PROPERTY LINKER_LANGUAGE ${PIO_LINKER_LANGUAGE})
 target_link_libraries (pio_rearr pio_tutil piof)
 add_dependencies (pio_rearr pio_tutil)
 add_dependencies (tests pio_rearr)
@@ -343,7 +352,7 @@ add_pio_test(pio_rearr
 #===== pio_async_file_tests =====
 add_executable (pio_async_file_tests EXCLUDE_FROM_ALL
   pio_async_file_tests.F90)
-set_property(TARGET pio_async_file_tests PROPERTY LINKER_LANGUAGE Fortran)
+set_property(TARGET pio_async_file_tests PROPERTY LINKER_LANGUAGE ${PIO_LINKER_LANGUAGE})
 target_link_libraries (pio_async_file_tests pio_tutil piof)
 add_dependencies (pio_async_file_tests pio_tutil)
 add_dependencies (tests pio_async_file_tests)
@@ -362,7 +371,7 @@ add_pio_test(pio_async_file_tests
 #===== pio_rearr_opts =====
 add_executable (pio_rearr_opts EXCLUDE_FROM_ALL
     pio_rearr_opts.F90)
-set_property(TARGET pio_rearr_opts PROPERTY LINKER_LANGUAGE Fortran)
+set_property(TARGET pio_rearr_opts PROPERTY LINKER_LANGUAGE ${PIO_LINKER_LANGUAGE})
 target_link_libraries (pio_rearr_opts pio_tutil piof)
 add_dependencies (pio_rearr_opts pio_tutil)
 add_dependencies (tests pio_rearr_opts)
@@ -381,7 +390,7 @@ add_pio_test(pio_rearr_opts
 #===== pio_rearr_opts2 =====
 add_executable (pio_rearr_opts2 EXCLUDE_FROM_ALL
     pio_rearr_opts2.F90)
-set_property(TARGET pio_rearr_opts2 PROPERTY LINKER_LANGUAGE Fortran)
+set_property(TARGET pio_rearr_opts2 PROPERTY LINKER_LANGUAGE ${PIO_LINKER_LANGUAGE})
 target_link_libraries (pio_rearr_opts2 pio_tutil piof)
 add_dependencies (pio_rearr_opts2 pio_tutil)
 add_dependencies (tests pio_rearr_opts2)
@@ -400,7 +409,7 @@ add_pio_test(pio_rearr_opts2
 #===== pio_decomp_tests =====
 add_executable (pio_decomp_tests EXCLUDE_FROM_ALL
   pio_decomp_tests.F90)
-set_property(TARGET pio_decomp_tests PROPERTY LINKER_LANGUAGE Fortran)
+set_property(TARGET pio_decomp_tests PROPERTY LINKER_LANGUAGE ${PIO_LINKER_LANGUAGE})
 target_link_libraries (pio_decomp_tests pio_tutil piof)
 add_dependencies (pio_decomp_tests pio_tutil)
 add_dependencies (tests pio_decomp_tests)
@@ -418,7 +427,7 @@ add_pio_test(pio_decomp_tests
 #===== pio_async_decomp_tests =====
 add_executable (pio_async_decomp_tests EXCLUDE_FROM_ALL
   pio_async_decomp_tests.F90)
-set_property(TARGET pio_async_decomp_tests PROPERTY LINKER_LANGUAGE Fortran)
+set_property(TARGET pio_async_decomp_tests PROPERTY LINKER_LANGUAGE ${PIO_LINKER_LANGUAGE})
 target_link_libraries (pio_async_decomp_tests pio_tutil piof)
 add_dependencies (pio_async_decomp_tests pio_tutil)
 add_dependencies (tests pio_async_decomp_tests)
@@ -437,7 +446,7 @@ add_pio_test(pio_async_decomp_tests
 #===== pio_decomp_tests_1d =====
 add_executable (pio_decomp_tests_1d EXCLUDE_FROM_ALL
   pio_decomp_tests_1d.F90)
-set_property(TARGET pio_decomp_tests_1d PROPERTY LINKER_LANGUAGE Fortran)
+set_property(TARGET pio_decomp_tests_1d PROPERTY LINKER_LANGUAGE ${PIO_LINKER_LANGUAGE})
 target_link_libraries (pio_decomp_tests_1d pio_tutil piof)
 add_dependencies (pio_decomp_tests_1d pio_tutil)
 add_dependencies (tests pio_decomp_tests_1d)
@@ -456,7 +465,7 @@ add_pio_test(pio_decomp_tests_1d
 #===== pio_decomp_tests2_1d =====
 add_executable (pio_decomp_tests2_1d EXCLUDE_FROM_ALL
   pio_decomp_tests2_1d.F90)
-set_property(TARGET pio_decomp_tests2_1d PROPERTY LINKER_LANGUAGE Fortran)
+set_property(TARGET pio_decomp_tests2_1d PROPERTY LINKER_LANGUAGE ${PIO_LINKER_LANGUAGE})
 target_link_libraries (pio_decomp_tests2_1d pio_tutil piof)
 add_dependencies (pio_decomp_tests2_1d pio_tutil)
 add_dependencies (tests pio_decomp_tests2_1d)
@@ -474,7 +483,7 @@ add_pio_test(pio_decomp_tests2_1d
 #===== pio_async_decomp_tests_1d =====
 add_executable (pio_async_decomp_tests_1d EXCLUDE_FROM_ALL
   pio_async_decomp_tests_1d.F90)
-set_property(TARGET pio_async_decomp_tests_1d PROPERTY LINKER_LANGUAGE Fortran)
+set_property(TARGET pio_async_decomp_tests_1d PROPERTY LINKER_LANGUAGE ${PIO_LINKER_LANGUAGE})
 target_link_libraries (pio_async_decomp_tests_1d pio_tutil piof)
 add_dependencies (pio_async_decomp_tests_1d pio_tutil)
 add_dependencies (tests pio_async_decomp_tests_1d)
@@ -493,7 +502,7 @@ add_pio_test(pio_async_decomp_tests_1d
 #===== pio_decomp_tests_2d =====
 add_executable (pio_decomp_tests_2d EXCLUDE_FROM_ALL
   pio_decomp_tests_2d.F90)
-set_property(TARGET pio_decomp_tests_2d PROPERTY LINKER_LANGUAGE Fortran)
+set_property(TARGET pio_decomp_tests_2d PROPERTY LINKER_LANGUAGE ${PIO_LINKER_LANGUAGE})
 target_link_libraries (pio_decomp_tests_2d pio_tutil piof)
 add_dependencies (pio_decomp_tests_2d pio_tutil)
 add_dependencies (tests pio_decomp_tests_2d)
@@ -511,7 +520,7 @@ add_pio_test(pio_decomp_tests_2d
 #===== pio_decomp_tests_3d =====
 add_executable (pio_decomp_tests_3d EXCLUDE_FROM_ALL
   pio_decomp_tests_3d.F90)
-set_property(TARGET pio_decomp_tests_3d PROPERTY LINKER_LANGUAGE Fortran)
+set_property(TARGET pio_decomp_tests_3d PROPERTY LINKER_LANGUAGE ${PIO_LINKER_LANGUAGE})
 target_link_libraries (pio_decomp_tests_3d pio_tutil piof)
 add_dependencies (pio_decomp_tests_3d pio_tutil)
 add_dependencies (tests pio_decomp_tests_3d)
@@ -529,7 +538,7 @@ add_pio_test(pio_decomp_tests_3d
 #===== pio_sync_tests =====
 add_executable (pio_sync_tests EXCLUDE_FROM_ALL
   pio_sync_tests.F90)
-set_property(TARGET pio_sync_tests PROPERTY LINKER_LANGUAGE Fortran)
+set_property(TARGET pio_sync_tests PROPERTY LINKER_LANGUAGE ${PIO_LINKER_LANGUAGE})
 target_link_libraries (pio_sync_tests pio_tutil piof)
 add_dependencies (pio_sync_tests pio_tutil)
 add_dependencies (tests pio_sync_tests)
@@ -548,7 +557,7 @@ add_pio_test(pio_sync_tests
 #===== pio_buf_lim_tests =====
 add_executable (pio_buf_lim_tests EXCLUDE_FROM_ALL
   pio_buf_lim_tests.F90)
-set_property(TARGET pio_buf_lim_tests PROPERTY LINKER_LANGUAGE Fortran)
+set_property(TARGET pio_buf_lim_tests PROPERTY LINKER_LANGUAGE ${PIO_LINKER_LANGUAGE})
 target_link_libraries (pio_buf_lim_tests pio_tutil piof)
 add_dependencies (pio_buf_lim_tests pio_tutil)
 add_dependencies (tests pio_buf_lim_tests)
@@ -566,7 +575,7 @@ add_pio_test(pio_buf_lim_tests
 #===== pio_iodesc_tests =====
 add_executable (pio_iodesc_tests EXCLUDE_FROM_ALL
   pio_iodesc_tests.F90)
-set_property(TARGET pio_iodesc_tests PROPERTY LINKER_LANGUAGE Fortran)
+set_property(TARGET pio_iodesc_tests PROPERTY LINKER_LANGUAGE ${PIO_LINKER_LANGUAGE})
 target_link_libraries (pio_iodesc_tests pio_tutil piof)
 add_dependencies (pio_iodesc_tests pio_tutil)
 add_dependencies (tests pio_iodesc_tests)
@@ -584,7 +593,7 @@ add_pio_test(pio_iodesc_tests
 #===== pio_decomp_frame_tests =====
 add_executable (pio_decomp_frame_tests EXCLUDE_FROM_ALL
   pio_decomp_frame_tests.F90)
-set_property(TARGET pio_decomp_frame_tests PROPERTY LINKER_LANGUAGE Fortran)
+set_property(TARGET pio_decomp_frame_tests PROPERTY LINKER_LANGUAGE ${PIO_LINKER_LANGUAGE})
 target_link_libraries (pio_decomp_frame_tests pio_tutil piof)
 add_dependencies (pio_decomp_frame_tests pio_tutil)
 add_dependencies (tests pio_decomp_frame_tests)
@@ -602,7 +611,7 @@ add_pio_test(pio_decomp_frame_tests
 #===== pio_decomp_fillval =====
 add_executable (pio_decomp_fillval EXCLUDE_FROM_ALL
   pio_decomp_fillval.F90)
-set_property(TARGET pio_decomp_fillval PROPERTY LINKER_LANGUAGE Fortran)
+set_property(TARGET pio_decomp_fillval PROPERTY LINKER_LANGUAGE ${PIO_LINKER_LANGUAGE})
 target_link_libraries (pio_decomp_fillval pio_tutil piof)
 add_dependencies (pio_decomp_fillval pio_tutil)
 add_dependencies (tests pio_decomp_fillval)
@@ -621,7 +630,7 @@ add_pio_test(pio_decomp_fillval
 #===== pio_decomp_fillval2 =====
 add_executable (pio_decomp_fillval2 EXCLUDE_FROM_ALL
   pio_decomp_fillval2.F90)
-set_property(TARGET pio_decomp_fillval2 PROPERTY LINKER_LANGUAGE Fortran)
+set_property(TARGET pio_decomp_fillval2 PROPERTY LINKER_LANGUAGE ${PIO_LINKER_LANGUAGE})
 target_link_libraries (pio_decomp_fillval2 pio_tutil piof)
 add_dependencies (pio_decomp_fillval2 pio_tutil)
 add_dependencies (tests pio_decomp_fillval2)
@@ -639,7 +648,7 @@ add_pio_test(pio_decomp_fillval2
 #===== pio_decomp_extra_dims =====
 add_executable (pio_decomp_extra_dims EXCLUDE_FROM_ALL
   pio_decomp_extra_dims.F90)
-set_property(TARGET pio_decomp_extra_dims PROPERTY LINKER_LANGUAGE Fortran)
+set_property(TARGET pio_decomp_extra_dims PROPERTY LINKER_LANGUAGE ${PIO_LINKER_LANGUAGE})
 target_link_libraries (pio_decomp_extra_dims pio_tutil piof)
 add_dependencies (pio_decomp_extra_dims pio_tutil)
 add_dependencies (tests pio_decomp_extra_dims)
@@ -658,7 +667,7 @@ add_pio_test(pio_decomp_extra_dims
 #===== pio_iosystems_test =====
 add_executable (pio_iosystem_tests EXCLUDE_FROM_ALL
   pio_iosystem_tests.F90)
-set_property(TARGET pio_iosystem_tests PROPERTY LINKER_LANGUAGE Fortran)
+set_property(TARGET pio_iosystem_tests PROPERTY LINKER_LANGUAGE ${PIO_LINKER_LANGUAGE})
 target_link_libraries (pio_iosystem_tests pio_tutil piof)
 add_dependencies (pio_iosystem_tests pio_tutil)
 add_dependencies (tests pio_iosystem_tests)
@@ -676,7 +685,7 @@ add_pio_test(pio_iosystem_tests
 #===== pio_iosystems_test2 =====
 add_executable (pio_iosystem_tests2 EXCLUDE_FROM_ALL
   pio_iosystem_tests2.F90)
-set_property(TARGET pio_iosystem_tests2 PROPERTY LINKER_LANGUAGE Fortran)
+set_property(TARGET pio_iosystem_tests2 PROPERTY LINKER_LANGUAGE ${PIO_LINKER_LANGUAGE})
 target_link_libraries (pio_iosystem_tests2 pio_tutil piof)
 add_dependencies (pio_iosystem_tests2 pio_tutil)
 add_dependencies (tests pio_iosystem_tests2)
@@ -694,7 +703,7 @@ add_pio_test(pio_iosystem_tests2
 #===== pio_iosystems_test3 =====
 add_executable (pio_iosystem_tests3 EXCLUDE_FROM_ALL
   pio_iosystem_tests3.F90)
-set_property(TARGET pio_iosystem_tests3 PROPERTY LINKER_LANGUAGE Fortran)
+set_property(TARGET pio_iosystem_tests3 PROPERTY LINKER_LANGUAGE ${PIO_LINKER_LANGUAGE})
 target_link_libraries (pio_iosystem_tests3 pio_tutil piof)
 add_dependencies (pio_iosystem_tests3 pio_tutil)
 add_dependencies (tests pio_iosystem_tests3)

@@ -20,8 +20,19 @@ set (SRCS basic_tests.F90
   global_vars.F90
   ncdf_tests.F90)
 
+string (TOUPPER "${CMAKE_Fortran_COMPILER_ID}" CMAKE_FORTRAN_COMPILER_NAME)
+# The PIO library is written using C, C++ and Fortran languages
+# IBM compilers require Fortran/C/C++ mixed language programs
+# to be linked with the C++ linker. Other compilers require the
+# Fortran linker.
+if (CMAKE_FORTRAN_COMPILER_NAME STREQUAL "XL")
+  SET(PIO_LINKER_LANGUAGE CXX)
+else ()
+  SET(PIO_LINKER_LANGUAGE Fortran)
+endif ()
+
 add_executable (pio_unit_test EXCLUDE_FROM_ALL ${SRCS})
-set_property(TARGET pio_unit_test PROPERTY LINKER_LANGUAGE Fortran)
+set_property(TARGET pio_unit_test PROPERTY LINKER_LANGUAGE ${PIO_LINKER_LANGUAGE})
 target_link_libraries (pio_unit_test piof)
 if ("${CMAKE_Fortran_COMPILER_ID}" STREQUAL "GNU")
   target_compile_options (pio_unit_test
