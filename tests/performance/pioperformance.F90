@@ -623,7 +623,7 @@ contains
     
     if (errcode .ne. MPI_SUCCESS) then
        call MPI_Error_String(errcode,errorstring,errorlen,ierr)
-       write(*,*) errorstring(1:errorlen)
+       write(*,*) "ERROR: ", errorstring(1:errorlen), " : at line ", line
     end if
   end subroutine CheckMPIreturn
 

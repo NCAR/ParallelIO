@@ -12,7 +12,7 @@ program pioperformance_rearr
         pio_rearr_opt_t, pio_rearr_comm_p2p, pio_rearr_comm_coll,&
         pio_rearr_comm_fc_2d_disable, pio_rearr_comm_fc_1d_comp2io,&
         pio_rearr_comm_fc_1d_io2comp, pio_rearr_comm_fc_2d_enable,&
-        pio_rearr_comm_unlimited_pend_req
+        pio_rearr_comm_unlimited_pend_req, PIO_NOERR
   implicit none
 #ifdef NO_MPIMOD
 #include <mpif.h>
@@ -144,6 +144,9 @@ contains
     integer :: arr_idx
     integer :: prev_pos, pos, rel_pos, max_arr_sz, totlen, remlen
 
+    if(present(ierr)) then
+      ierr = PIO_NOERR
+    end if
     !print *, "Parsing :", trim(argv)
     max_arr_sz = 0
     if(present(iarr)) then
@@ -398,6 +401,7 @@ contains
           pio_rearr_io2comp_enable_hs, pio_rearr_io2comp_enable_isend, &
           pio_rearr_io2comp_max_pend_req
 
+    ierr = PIO_NOERR
     pio_typenames = ' '
     pio_rearr_comm_type = ' '
     pio_rearr_fcd = ' '
@@ -1080,7 +1084,7 @@ contains
     
     if (errcode .ne. MPI_SUCCESS) then
        call MPI_Error_String(errcode,errorstring,errorlen,ierr)
-       write(*,*) errorstring(1:errorlen)
+       write(*,*) "ERROR: ", errorstring(1:errorlen), " : at line ", line
     end if
   end subroutine CheckMPIreturn
 
