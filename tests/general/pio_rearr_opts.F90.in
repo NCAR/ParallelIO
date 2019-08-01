@@ -202,7 +202,7 @@ SUBROUTINE create_decomp_and_init_buf(iosys, iocomm, iodesc, wbuf, dims, ret)
   allocate(compdof(count(1)))
   do i=1,count(1)
     wbuf(i) = start(1) + i - 1
-    compdof(i) = wbuf(i)
+    compdof(i) = int(wbuf(i))
   end do
 
   call PIO_initdecomp(iosys, PIO_real, dims, compdof, iodesc)

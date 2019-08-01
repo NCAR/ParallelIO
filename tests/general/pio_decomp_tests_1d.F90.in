@@ -456,7 +456,7 @@ PIO_TF_AUTO_TEST_SUB_BEGIN nc_wr_1d_bc_with_holes
   allocate(exp_val(count(1)))
   do i=1,count(1)
     wbuf(i) = start(1) + i - 1
-    compdof(i) = wbuf(i)
+    compdof(i) = int(wbuf(i))
     exp_val(i) = wbuf(i)
   end do
 
@@ -546,7 +546,7 @@ PIO_TF_AUTO_TEST_SUB_BEGIN nc_wr_1d_rev
   allocate(exp_val(count(1)))
   do i=1,count(1)
     wbuf(i) = start(1) + i - 1
-    compdof(i) = wbuf(i)
+    compdof(i) = int(wbuf(i))
     exp_val(i) = wbuf(i)
   end do
 

@@ -185,7 +185,7 @@ PIO_TF_AUTO_TEST_SUB_BEGIN nc_write_read_2d_col_decomp
     do i=1,nrows
       wbuf(i,j) = (start(2) - 1 + j - 1) * nrows + i
       tmp_idx = (j - 1) * nrows + i
-      compdof(tmp_idx) = wbuf(i,j)
+      compdof(tmp_idx) = int(wbuf(i,j))
     end do
   end do
 
@@ -303,7 +303,7 @@ PIO_TF_AUTO_TEST_SUB_BEGIN nc_write_read_2d_row_decomp
     do i=1,nrows
       wbuf(i,j) = (start(2) - 1 + j - 1) * dims(1) + start(1) + i - 1
       tmp_idx = (j - 1) * nrows + i
-      compdof(tmp_idx) = wbuf(i,j)
+      compdof(tmp_idx) = int(wbuf(i,j))
     end do
   end do
 

@@ -284,7 +284,7 @@ PIO_TF_AUTO_TEST_SUB_BEGIN decomp_no_extra_dims_rec
 
   do f=1,NFRAMES
     do i=1,VEC_LOCAL_SZ
-      wbuf(i,f) = compdof(i) + (f-1) * dims(1)
+      wbuf(i,f) = int(compdof(i) + (f-1) * dims(1))
     end do
   end do
 
@@ -392,7 +392,7 @@ PIO_TF_AUTO_TEST_SUB_BEGIN decomp_1_extra_dim_rec
 
   do f=1,NFRAMES
     do i=1,VEC_LOCAL_SZ
-      wbuf(i,f) = compdof(i) + (f-1) * dims(1)
+      wbuf(i,f) = int(compdof(i) + (f-1) * dims(1))
     end do
   end do
 
@@ -501,7 +501,7 @@ PIO_TF_AUTO_TEST_SUB_BEGIN decomp_2_extra_dims_rec
 
   do f=1,NFRAMES
     do i=1,VEC_LOCAL_SZ
-      wbuf(i,f) = compdof(i) + (f-1) * dims(1)
+      wbuf(i,f) = int(compdof(i) + (f-1) * dims(1))
     end do
   end do
 
@@ -608,7 +608,7 @@ PIO_TF_AUTO_TEST_SUB_BEGIN decomp_no_extra_dims_lim_rec
 
   do f=1,NFRAMES
     do i=1,VEC_LOCAL_SZ
-      wbuf(i,f) = compdof(i) + (f-1) * dims(1)
+      wbuf(i,f) = int(compdof(i) + (f-1) * dims(1))
     end do
   end do
 
@@ -716,7 +716,7 @@ PIO_TF_AUTO_TEST_SUB_BEGIN decomp_1_extra_dim_lim_rec
 
   do f=1,NFRAMES
     do i=1,VEC_LOCAL_SZ
-      wbuf(i,f) = compdof(i) + (f-1) * dims(1)
+      wbuf(i,f) = int(compdof(i) + (f-1) * dims(1))
     end do
   end do
 
@@ -825,7 +825,7 @@ PIO_TF_AUTO_TEST_SUB_BEGIN decomp_2_extra_dims_lim_rec
 
   do f=1,NFRAMES
     do i=1,VEC_LOCAL_SZ
-      wbuf(i,f) = compdof(i) + (f-1) * dims(1)
+      wbuf(i,f) = int(compdof(i) + (f-1) * dims(1))
     end do
   end do
 
