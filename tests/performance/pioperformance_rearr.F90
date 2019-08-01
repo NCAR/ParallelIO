@@ -678,7 +678,7 @@ contains
        dfld = PIO_FILL_DOUBLE
        do nv=1,nvars
           do j=1,maplen
-	     if(compmap(j) > 0) then
+             if(compmap(j) > 0) then
                ifld(j,nv) = int(compmap(j))
                dfld(j,nv) = ifld(j,nv)/1000000.0
                rfld(j,nv) = 1.0E5*ifld(j,nv)
@@ -792,7 +792,7 @@ contains
                 call MPI_Reduce(wall(1), wall(2), 1, MPI_DOUBLE_PRECISION, MPI_MAX, 0, comm, ierr)
                 if(mype==0) then
                    ! print out performance in MB/s
-		   nvarmult = 0
+                   nvarmult = 0
 #ifdef VARINT
                    nvarmult = nvarmult+1
 #endif
@@ -930,7 +930,7 @@ contains
                    if(errorcnt > 0) then
                       print *,'ERROR: INPUT/OUTPUT data mismatch ',errorcnt
                    endif
-		   nvarmult = 0
+                   nvarmult = 0
 #ifdef VARINT
                    nvarmult = nvarmult+1
 #endif

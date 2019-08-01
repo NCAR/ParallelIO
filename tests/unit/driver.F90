@@ -209,7 +209,7 @@ Program pio_unit_test_driver
   call MPI_Finalize(ierr)
   if(fail_cnt>0) then
      stop 1
-  else	 
+  else
      stop 0
   endif
 Contains
