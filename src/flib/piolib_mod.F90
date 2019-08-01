@@ -1272,48 +1272,6 @@ contains
 
   end subroutine closefile
 
-
-  !******************************
-  ! read_ascii
-  !
-
-  subroutine read_ascii(rank,iobuf,size)
-
-    integer, intent(in) :: rank
-    real (r8), dimension(:) :: iobuf
-    integer, intent(in) :: size
-
-    character(len=80) filename
-    integer lun
-    integer ios
-    integer i
-
-    lun=10+rank
-    write(filename,"('fort.',i2)" ) lun
-    write(6,*) 'filename is:', filename
-
-    open(lun,file=filename,status='old',iostat=ios)
-    if (ios /= 0) then
-       write(6,*) rank,': could not open ascii file: ',filename
-    endif
-
-    do i=1,size
-       read(unit=lun,fmt=*,iostat=ios) iobuf(i)
-       if (ios /= 0) then
-          write (6,*) rank,': error reading item ',i,' of ',size
-#ifndef CPRNAG
-          call abort
-#else
-          stop
-#endif
-       endif
-
-    end do
-
-    close(lun)
-
-  end subroutine read_ascii
-
 !>
 !! @public
 !! @ingroup PIO_deletefile
