@@ -21,3 +21,5 @@ else ()
     set (CTEST_DROP_LOCATION "/submit.php?project=PIO")
 endif ()
 set (CTEST_DROP_SITE_CDASH TRUE)
+
+set (CTEST_CUSTOM_MAXIMUM_NUMBER_OF_WARNINGS 1000)
