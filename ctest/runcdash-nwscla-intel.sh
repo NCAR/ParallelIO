@@ -13,9 +13,9 @@ module reset
 module unload netcdf
 module swap intel intel/19.0.2
 module switch mpt mpt/2.19
-module load cmake/3.7.2
-module load netcdf-mpi/4.6.1
-module load pnetcdf/1.11.0
+module load cmake/3.14.4
+module load netcdf-mpi/4.6.3
+module load pnetcdf/1.11.1
 echo "MODULE LIST..."
 module list
 
