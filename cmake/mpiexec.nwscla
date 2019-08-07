@@ -8,4 +8,4 @@
 
 NP=$1
 shift
-mpirun -np $NP $@
+mpirun -np $NP --oversubscribe $@
