@@ -57,3 +57,18 @@ endif ()
 if (DEFINED ENV{ENABLE_INTERNAL_TIMING})
     set (CTEST_CONFIGURE_OPTIONS "${CTEST_CONFIGURE_OPTIONS} -DPIO_ENABLE_INTERNAL_TIMING=ON")
 endif ()
+
+# If ENABLE_LOGGING environment variable is set, then enable debug logging (large output possible)
+if (DEFINED ENV{ENABLE_LOGGING})
+    set (CTEST_CONFIGURE_OPTIONS "${CTEST_CONFIGURE_OPTIONS} -DPIO_ENABLE_LOGGING=ON")
+endif ()
+
+# If USE_MPISERIAL environment variable is set, then enable mpi-serial support (instead of MPI)
+if (DEFINED ENV{USE_MPISERIAL})
+    set (CTEST_CONFIGURE_OPTIONS "${CTEST_CONFIGURE_OPTIONS} -DPIO_USE_MPISERIAL=ON")
+endif ()
+
+# If MICRO_TIMING environment variable is set, then enable internal micro timers
+if (DEFINED ENV{MICRO_TIMING})
+    set (CTEST_CONFIGURE_OPTIONS "${CTEST_CONFIGURE_OPTIONS} -DPIO_MICRO_TIMING=ON")
+endif ()
