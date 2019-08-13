@@ -15,7 +15,7 @@ PIO_TF_AUTO_TEST_SUB_BEGIN nc_wr_rd_2d_unlim_dim
   PIO_TF_FC_DATA_TYPE, dimension(:,:), allocatable :: rbuf, wbuf, exp_val
   integer, dimension(NDIMS-1) :: dims
   integer, dimension(NDIMS) :: pio_dims
-  integer :: i, nrows, ierr, lsz
+  integer :: i, nrows, ierr
   integer(kind=pio_offset_kind) :: f
   ! iotypes = valid io types
   integer, dimension(:), allocatable :: iotypes
@@ -42,7 +42,7 @@ PIO_TF_AUTO_TEST_SUB_BEGIN nc_wr_rd_2d_unlim_dim
   end do
   do f=1,NFRAMES
     do i=1,nrows
-      wbuf(i,f) = compdof(i) + (f-1) * dims(1)
+      wbuf(i,f) = int(compdof(i) + (f-1) * dims(1))
       exp_val(i,f) = wbuf(i,f)
     end do
   end do
@@ -227,7 +227,7 @@ PIO_TF_AUTO_TEST_SUB_BEGIN nc_write_read_4d_col_decomp
   PIO_TF_FC_DATA_TYPE, dimension(:,:,:,:), allocatable :: rbuf, wbuf, exp_val
   integer, dimension(NDIMS-1) :: dims
   integer, dimension(NDIMS) :: pio_dims
-  integer :: i, j, k, tmp_idx, ierr, lsz, nrows, ncols, nhgts
+  integer :: i, j, k, tmp_idx, ierr, nrows, ncols, nhgts
   integer(kind=pio_offset_kind) :: f
   ! iotypes = valid io types
   integer, dimension(:), allocatable :: iotypes
@@ -248,9 +248,9 @@ PIO_TF_AUTO_TEST_SUB_BEGIN nc_write_read_4d_col_decomp
         do i=1,nrows
           wbuf(i,j,k,f) = (start(3) - 1 + k - 1) * (dims(1) * dims(2)) +&
                         (start(2) - 1 + j - 1) * dims(1) + i
-          wbuf(i,j,k,f) = wbuf(i,j,k,f) + (f - 1) * (dims(1) * dims(2) * dims(3))
+          wbuf(i,j,k,f) = wbuf(i,j,k,f) + int((f - 1) * (dims(1) * dims(2) * dims(3)))
           tmp_idx = (k - 1) * (ncols * nrows) + (j - 1) * nrows + i
-          compdof(tmp_idx) = wbuf(i,j,k,1)
+          compdof(tmp_idx) = int(wbuf(i,j,k,1))
         end do
       end do
     end do
@@ -276,7 +276,7 @@ PIO_TF_AUTO_TEST_SUB_BEGIN nc_write_read_4d_col_decomp
           tmp_idx = (k - 1) * (ncols * nrows) + (j - 1) * nrows + i
           compdof(tmp_idx) =  (start(3) - 1 + k - 1) * (dims(1) * dims(2)) +&
                               (start(2) - 1 + j - 1) * dims(1) + i
-          exp_val(i,j,k,f) = compdof(tmp_idx) + (f - 1) * (dims(1) * dims(2) * dims(3))
+          exp_val(i,j,k,f) = int(compdof(tmp_idx) + (f - 1) * (dims(1) * dims(2) * dims(3)))
         end do
       end do
     end do
@@ -377,7 +377,7 @@ PIO_TF_AUTO_TEST_SUB_BEGIN nc_reuse_3d_decomp
   PIO_TF_FC_DATA_TYPE, dimension(:,:,:), allocatable :: rbuf3d, wbuf3d, exp_val3d
   integer, dimension(NDIMS-1) :: dims
   integer, dimension(NDIMS) :: pio_dims
-  integer :: i, j, k, tmp_idx, ierr, lsz, nrows, ncols, nhgts
+  integer :: i, j, k, tmp_idx, ierr, nrows, ncols, nhgts
   integer(kind=pio_offset_kind) :: f
   ! iotypes = valid io types
   integer, dimension(:), allocatable :: iotypes
@@ -398,7 +398,7 @@ PIO_TF_AUTO_TEST_SUB_BEGIN nc_reuse_3d_decomp
         do i=1,nrows
           wbuf4d(i,j,k,f) = (start(3) - 1 + k - 1) * (dims(1) * dims(2)) +&
                         (start(2) - 1 + j - 1) * dims(1) + i
-          wbuf4d(i,j,k,f) = wbuf4d(i,j,k,f) + (f - 1) * (dims(1) * dims(2) * dims(3))
+          wbuf4d(i,j,k,f) = wbuf4d(i,j,k,f) + int((f - 1) * (dims(1) * dims(2) * dims(3)))
         end do
       end do
     end do
@@ -408,7 +408,7 @@ PIO_TF_AUTO_TEST_SUB_BEGIN nc_reuse_3d_decomp
     do j=1,ncols
       do i=1,nrows
         tmp_idx = (k - 1) * (ncols * nrows) + (j - 1) * nrows + i
-        compdof(tmp_idx) = wbuf4d(i,j,k,1)
+        compdof(tmp_idx) = int(wbuf4d(i,j,k,1))
       end do
     end do
   end do
@@ -442,7 +442,7 @@ PIO_TF_AUTO_TEST_SUB_BEGIN nc_reuse_3d_decomp
         do i=1,nrows
           exp_val4d(i,j,k,f) =  (start(3) - 1 + k - 1) * (dims(1) * dims(2)) +&
                               (start(2) - 1 + j - 1) * dims(1) + i
-          exp_val4d(i,j,k,f) = exp_val4d(i,j,k,f)+(f - 1) * (dims(1) * dims(2) * dims(3))
+          exp_val4d(i,j,k,f) = exp_val4d(i,j,k,f)+int((f - 1) * (dims(1) * dims(2) * dims(3)))
         end do
       end do
     end do
@@ -452,7 +452,7 @@ PIO_TF_AUTO_TEST_SUB_BEGIN nc_reuse_3d_decomp
     do j=1,ncols
       do i=1,nrows
         tmp_idx = (k - 1) * (ncols * nrows) + (j - 1) * nrows + i
-        compdof(tmp_idx) = exp_val4d(i,j,k,1)
+        compdof(tmp_idx) = int(exp_val4d(i,j,k,1))
       end do
     end do
   end do

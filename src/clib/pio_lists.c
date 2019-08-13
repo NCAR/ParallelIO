@@ -132,7 +132,6 @@ int pio_get_file(int ncid, file_desc_t **cfile1)
 int pio_delete_file_from_list(int ncid)
 {
     file_desc_t *cfile, *pfile = NULL;
-    int ret;
 
     /* Look through list of open files. */
     for (cfile = pio_file_list; cfile; cfile = cfile->next)

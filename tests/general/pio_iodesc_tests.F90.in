@@ -50,7 +50,7 @@ SUBROUTINE get_1d_bc_shift_decomp_info(rank, sz, dims, start, count, nlshift)
   integer, intent(in) :: nlshift
 
   integer, parameter :: VEC_LOCAL_SZ = 7
-  integer :: start_idx, last_idx, i
+  integer :: start_idx, last_idx
   ! Number of regions
   integer :: nregs
   
@@ -201,7 +201,7 @@ PIO_TF_AUTO_TEST_SUB_BEGIN nc_wr_2d_two_iodescs
   PIO_TF_FC_DATA_TYPE, dimension(:,:), allocatable :: wbuf_shifted
   integer, dimension(NDIMS-1) :: dims
   integer, dimension(NDIMS) :: pio_dims
-  integer :: i, j, k, nrows, ierr, lsz
+  integer :: i, j, k, nrows, ierr
   integer(kind=pio_offset_kind) :: f
   logical :: is_even_frame
   ! iotypes = valid io types
@@ -243,7 +243,7 @@ PIO_TF_AUTO_TEST_SUB_BEGIN nc_wr_2d_two_iodescs
 
   do f=1,NFRAMES
     do i=1,nrows
-      wbuf(i,f) = compdof(i) + (f-1) * dims(1)
+      wbuf(i,f) = int(compdof(i) + (f-1) * dims(1))
       exp_val(i,f) = wbuf(i,f)
     end do
   end do
@@ -285,7 +285,7 @@ PIO_TF_AUTO_TEST_SUB_BEGIN nc_wr_2d_two_iodescs
 
   do f=1,NFRAMES
     do i=1,nrows
-      wbuf_shifted(i,f) = compdof(i) + (f-1) * dims(1)
+      wbuf_shifted(i,f) = int(compdof(i) + (f-1) * dims(1))
     end do
   end do
 
@@ -401,7 +401,7 @@ PIO_TF_AUTO_TEST_SUB_BEGIN nc_mureg_wr_rd_1d_bc
   PIO_TF_FC_DATA_TYPE, dimension(:), allocatable :: rbuf_mureg, wbuf_mureg
   integer, dimension(1) :: dims_mureg
   integer :: pio_dim_mureg
-  integer :: i, j, idx, ierr, lsz
+  integer :: i, j, idx, ierr
   ! iotypes = valid io types
   integer, dimension(:), allocatable :: iotypes
   character(len=PIO_TF_MAX_STR_LEN), dimension(:), allocatable :: iotype_descs
@@ -530,7 +530,7 @@ PIO_TF_AUTO_TEST_SUB_BEGIN nc_mnureg_wr_rd_1d_bc
   PIO_TF_FC_DATA_TYPE, dimension(:), allocatable :: rbuf_mnureg, wbuf_mnureg
   integer, dimension(1) :: dims_mnureg
   integer :: pio_dim_mnureg
-  integer :: i, j, idx, ierr, lsz
+  integer :: i, j, idx, ierr
   ! iotypes = valid io types
   integer, dimension(:), allocatable :: iotypes
   character(len=PIO_TF_MAX_STR_LEN), dimension(:), allocatable :: iotype_descs

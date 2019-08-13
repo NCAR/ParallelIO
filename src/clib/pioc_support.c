@@ -945,7 +945,7 @@ int PIOc_freedecomp(int iosysid, int ioid)
 {
     iosystem_desc_t *ios;
     io_desc_t *iodesc;
-    int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI function calls. */
+    int mpierr = MPI_SUCCESS;  /* Return code from MPI function calls. */
     int ret = 0;
 
 #ifdef TIMING
@@ -2183,7 +2183,7 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
 {
     iosystem_desc_t *ios;  /* Pointer to io system information. */
     file_desc_t *file;     /* Pointer to file information. */
-    int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI function codes. */
+    int mpierr = MPI_SUCCESS;  /* Return code from MPI function codes. */
     int ierr = PIO_NOERR;              /* Return code from function calls. */
 
 #ifdef TIMING
@@ -2635,7 +2635,7 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
     iosystem_desc_t *ios;      /* Pointer to io system information. */
     file_desc_t *file;         /* Pointer to file information. */
     int imode;                 /* Internal mode val for netcdf4 file open. */
-    int mpierr = MPI_SUCCESS, mpierr2;  /** Return code from MPI function codes. */
+    int mpierr = MPI_SUCCESS;  /** Return code from MPI function codes. */
     int ierr = PIO_NOERR;      /* Return code from function calls. */
 
     /* Get the IO system info from the iosysid. */
@@ -2916,10 +2916,7 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
 int openfile_int(int iosysid, int *ncidp, int *iotype, const char *filename,
                  int mode, int retry)
 {
-    int nvars;             /* The number of vars in the file. */
-    int nunlimdim;         /* The number of unlimited dimensions. */
     iosystem_desc_t *ios;  /* Pointer to io system information. */
-    file_desc_t *file;     /* Pointer to file information. */
     int ierr = PIO_NOERR;  /* Return code from function calls. */
 
     /* Get the IO system info from the iosysid. */
@@ -3000,7 +2997,6 @@ int pioc_change_def(int ncid, int is_enddef)
     iosystem_desc_t *ios;  /* Pointer to io system information. */
     file_desc_t *file;     /* Pointer to file information. */
     int ierr = PIO_NOERR;  /* Return code from function calls. */
-    int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI functions. */
 
     LOG((2, "pioc_change_def ncid = %d is_enddef = %d", ncid, is_enddef));
 

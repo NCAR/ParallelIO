@@ -348,7 +348,6 @@ int PIOc_closefile(int ncid)
     iosystem_desc_t *ios;  /* Pointer to io system information. */
     file_desc_t *file;     /* Pointer to file information. */
     int ierr = PIO_NOERR;  /* Return code from function calls. */
-    int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI function codes. */
 #ifdef _ADIOS
     char outfilename[PIO_MAX_NAME + 1];
     size_t len = 0;
@@ -531,7 +530,7 @@ int PIOc_deletefile(int iosysid, const char *filename)
 {
     iosystem_desc_t *ios;  /* Pointer to io system information. */
     int ierr = PIO_NOERR;  /* Return code from function calls. */
-    int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI function codes. */
+    int mpierr = MPI_SUCCESS;  /* Return code from MPI function codes. */
      int msg = PIO_MSG_DELETE_FILE;
     size_t len;
 

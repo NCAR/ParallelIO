@@ -12,7 +12,7 @@ program pioperformance_rearr
         pio_rearr_opt_t, pio_rearr_comm_p2p, pio_rearr_comm_coll,&
         pio_rearr_comm_fc_2d_disable, pio_rearr_comm_fc_1d_comp2io,&
         pio_rearr_comm_fc_1d_io2comp, pio_rearr_comm_fc_2d_enable,&
-        pio_rearr_comm_unlimited_pend_req
+        pio_rearr_comm_unlimited_pend_req, PIO_NOERR
   implicit none
 #ifdef NO_MPIMOD
 #include <mpif.h>
@@ -144,6 +144,9 @@ contains
     integer :: arr_idx
     integer :: prev_pos, pos, rel_pos, max_arr_sz, totlen, remlen
 
+    if(present(ierr)) then
+      ierr = PIO_NOERR
+    end if
     !print *, "Parsing :", trim(argv)
     max_arr_sz = 0
     if(present(iarr)) then
@@ -353,7 +356,6 @@ contains
     integer, intent(out) :: ierr
 
     integer, parameter :: MAX_STDIN_ARG_LEN = 8192
-    character(len=MAX_PIO_TYPENAME_LEN) :: pio_typenames(MAX_PIO_TYPES)
     character(len=MAX_STDIN_ARG_LEN) :: argv
     integer :: i, nargs
 
@@ -399,6 +401,7 @@ contains
           pio_rearr_io2comp_enable_hs, pio_rearr_io2comp_enable_isend, &
           pio_rearr_io2comp_max_pend_req
 
+    ierr = PIO_NOERR
     pio_typenames = ' '
     pio_rearr_comm_type = ' '
     pio_rearr_fcd = ' '
@@ -612,7 +615,8 @@ contains
     integer :: ierr
     integer(kind=pio_offset_kind) :: frame=1, recnum
     integer :: iotype, rearr, rearrtype
-    integer :: j, k, errorcnt
+    integer(kind=pio_offset_kind) :: j
+    integer :: k, errorcnt
     character(len=PIO_MAX_NAME) :: varname
     integer, parameter :: MAX_TIMESTAMPS = 2
     double precision :: wall(MAX_TIMESTAMPS), sys(MAX_TIMESTAMPS),&
@@ -652,7 +656,7 @@ contains
     niomax=min(npe,MAX_IO_TASK_ARRAY_SIZE)
     if(niotasks(1)<=0) then
        do j=1,min(MAX_IO_TASK_ARRAY_SIZE, npe)
-          niotasks(j)=npe-j+1
+          niotasks(j)=npe-int(j)+1
        enddo
     endif
 
@@ -678,8 +682,8 @@ contains
        dfld = PIO_FILL_DOUBLE
        do nv=1,nvars
           do j=1,maplen
-	     if(compmap(j) > 0) then
-               ifld(j,nv) = compmap(j)
+             if(compmap(j) > 0) then
+               ifld(j,nv) = int(compmap(j))
                dfld(j,nv) = ifld(j,nv)/1000000.0
                rfld(j,nv) = 1.0E5*ifld(j,nv)
              endif
@@ -792,7 +796,7 @@ contains
                 call MPI_Reduce(wall(1), wall(2), 1, MPI_DOUBLE_PRECISION, MPI_MAX, 0, comm, ierr)
                 if(mype==0) then
                    ! print out performance in MB/s
-		   nvarmult = 0
+                   nvarmult = 0
 #ifdef VARINT
                    nvarmult = nvarmult+1
 #endif
@@ -803,8 +807,9 @@ contains
                    nvarmult = nvarmult+2
 #endif
                    write(*,'(a15,a9,i10,i10,i10,f20.10)') &	
-                   'RESULT: write ',rearr_name(rearr), piotypes(k), ntasks, nvars, &
-                                     nvarmult*nvars*nframes*gmaplen*4.0/(1048576.0*wall(2))
+                   'RESULT: write ',&
+                    rearr_name(rearr), piotypes(k), ntasks, nvars, &
+                    nvarmult*nvars*nframes*gmaplen*4.0D0/(1048576.0*wall(2))
 #ifdef BGQTRY
   call print_memusage()
 #endif
@@ -929,7 +934,7 @@ contains
                    if(errorcnt > 0) then
                       print *,'ERROR: INPUT/OUTPUT data mismatch ',errorcnt
                    endif
-		   nvarmult = 0
+                   nvarmult = 0
 #ifdef VARINT
                    nvarmult = nvarmult+1
 #endif
@@ -940,8 +945,9 @@ contains
                    nvarmult = nvarmult+2
 #endif
                    write(*,'(a15,a9,i10,i10,i10,f20.10)') &
-                        'RESULT: read ',rearr_name(rearr), piotypes(k), ntasks, nvars, &
-			           nvarmult*nvars*nframes*gmaplen*4.0/(1048576.0*wall(2))
+                        'RESULT: read ',&
+                        rearr_name(rearr), piotypes(k), ntasks, nvars, &
+                        nvarmult*nvars*nframes*gmaplen*4.0D0/(1048576.0*wall(2))
 #ifdef BGQTRY 
   call print_memusage()
 #endif
@@ -1078,7 +1084,7 @@ contains
     
     if (errcode .ne. MPI_SUCCESS) then
        call MPI_Error_String(errcode,errorstring,errorlen,ierr)
-       write(*,*) errorstring(1:errorlen)
+       write(*,*) "ERROR: ", errorstring(1:errorlen), " : at line ", line
     end if
   end subroutine CheckMPIreturn
 

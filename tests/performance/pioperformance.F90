@@ -157,7 +157,8 @@ contains
     integer :: ierr
     integer(kind=pio_offset_kind) :: frame=1, recnum
     integer :: iotype, rearr, rearrtype
-    integer :: j, k, errorcnt
+    integer(kind=pio_offset_kind) :: j
+    integer :: k, errorcnt
     character(len=8) :: varname
     double precision :: wall(2), sys(2), usr(2)
     integer :: niomin, niomax
@@ -195,7 +196,7 @@ contains
     niomax=min(npe,max_io_task_array_size)
     if(niotasks(1)<=0) then
        do j=1,min(max_io_task_array_size, npe)
-          niotasks(j)=npe-j+1
+          niotasks(j)=npe-int(j)+1
        enddo
     endif
 
@@ -221,8 +222,8 @@ contains
        dfld = PIO_FILL_DOUBLE
        do nv=1,nvars
           do j=1,maplen
-	     if(compmap(j) > 0) then
-               ifld(j,nv) = compmap(j)
+             if(compmap(j) > 0) then
+               ifld(j,nv) = int(compmap(j))
                dfld(j,nv) = ifld(j,nv)/1000000.0
                rfld(j,nv) = 1.0E5*ifld(j,nv)
              endif
@@ -334,7 +335,7 @@ contains
                 call MPI_Reduce(wall(1), wall(2), 1, MPI_DOUBLE_PRECISION, MPI_MAX, 0, comm, ierr)
                 if(mype==0) then
                    ! print out performance in MB/s
-		   nvarmult = 0
+                   nvarmult = 0
 #ifdef VARINT
                    nvarmult = nvarmult+1
 #endif
@@ -344,9 +345,10 @@ contains
 #ifdef VARDOUBLE
                    nvarmult = nvarmult+2
 #endif
-                   write(*,'(a15,a9,i10,i10,i10,f20.10)') &	
-                   'RESULT: write ',rearr_name(rearr), piotypes(k), ntasks, nvars, &
-                                     nvarmult*nvars*nframes*gmaplen*4.0/(1048576.0*wall(2))
+                   write(*,'(a15,a9,i10,i10,i10,f20.10)') &
+                     'RESULT: write ',&
+                      rearr_name(rearr), piotypes(k), ntasks, nvars, &
+                      nvarmult*nvars*nframes*gmaplen*4.0D0/(1048576.0*wall(2))
 #ifdef BGQTRY
   call print_memusage()
 #endif
@@ -471,7 +473,7 @@ contains
                    if(errorcnt > 0) then
                       print *,'ERROR: INPUT/OUTPUT data mismatch ',errorcnt
                    endif
-		   nvarmult = 0
+                   nvarmult = 0
 #ifdef VARINT
                    nvarmult = nvarmult+1
 #endif
@@ -482,8 +484,9 @@ contains
                    nvarmult = nvarmult+2
 #endif
                    write(*,'(a15,a9,i10,i10,i10,f20.10)') &
-                        'RESULT: read ',rearr_name(rearr), piotypes(k), ntasks, nvars, &
-			           nvarmult*nvars*nframes*gmaplen*4.0/(1048576.0*wall(2))
+                        'RESULT: read ',&
+                        rearr_name(rearr), piotypes(k), ntasks, nvars, &
+                        nvarmult*nvars*nframes*gmaplen*4.0D0/(1048576.0*wall(2))
 #ifdef BGQTRY 
   call print_memusage()
 #endif
@@ -620,7 +623,7 @@ contains
     
     if (errcode .ne. MPI_SUCCESS) then
        call MPI_Error_String(errcode,errorstring,errorlen,ierr)
-       write(*,*) errorstring(1:errorlen)
+       write(*,*) "ERROR: ", errorstring(1:errorlen), " : at line ", line
     end if
   end subroutine CheckMPIreturn
 

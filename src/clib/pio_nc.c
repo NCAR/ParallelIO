@@ -43,7 +43,7 @@ int PIOc_inq(int ncid, int *ndimsp, int *nvarsp, int *ngattsp, int *unlimdimidp)
     iosystem_desc_t *ios;  /* Pointer to io system information. */
     file_desc_t *file;     /* Pointer to file information. */
     int ierr = PIO_NOERR;              /* Return code from function calls. */
-    int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI function calls. */
+    int mpierr = MPI_SUCCESS;  /* Return code from MPI function calls. */
 
     LOG((1, "PIOc_inq ncid = %d", ncid));
 
@@ -257,7 +257,7 @@ int PIOc_inq_unlimdims(int ncid, int *nunlimdimsp, int *unlimdimidsp)
     file_desc_t *file;     /* Pointer to file information. */
     int tmp_nunlimdims;    /* The number of unlimited dims. */
     int ierr = PIO_NOERR;              /* Return code from function calls. */
-    int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI function calls. */
+    int mpierr = MPI_SUCCESS;  /* Return code from MPI function calls. */
 
     LOG((1, "PIOc_inq_unlimdims ncid = %d", ncid));
 
@@ -398,7 +398,7 @@ int PIOc_inq_type(int ncid, nc_type xtype, char *name, PIO_Offset *sizep)
     iosystem_desc_t *ios;  /* Pointer to io system information. */
     file_desc_t *file;     /* Pointer to file information. */
     int ierr = PIO_NOERR;              /* Return code from function calls. */
-    int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI function codes. */
+    int mpierr = MPI_SUCCESS;  /* Return code from MPI function codes. */
 
     LOG((1, "PIOc_inq_type ncid = %d xtype = %d", ncid, xtype));
 
@@ -495,7 +495,7 @@ int PIOc_inq_format(int ncid, int *formatp)
     iosystem_desc_t *ios;  /* Pointer to io system information. */
     file_desc_t *file;     /* Pointer to file information. */
     int ierr = PIO_NOERR;              /* Return code from function calls. */
-    int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI function codes. */
+    int mpierr = MPI_SUCCESS;  /* Return code from MPI function codes. */
 
     LOG((1, "PIOc_inq ncid = %d", ncid));
 
@@ -588,7 +588,7 @@ int PIOc_inq_dim(int ncid, int dimid, char *name, PIO_Offset *lenp)
     iosystem_desc_t *ios;  /* Pointer to io system information. */
     file_desc_t *file;     /* Pointer to file information. */
     int ierr = PIO_NOERR;              /* Return code from function calls. */
-    int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI function codes. */
+    int mpierr = MPI_SUCCESS;  /* Return code from MPI function codes. */
 
     LOG((1, "PIOc_inq_dim ncid = %d dimid = %d", ncid, dimid));
 
@@ -757,7 +757,7 @@ int PIOc_inq_dimid(int ncid, const char *name, int *idp)
     iosystem_desc_t *ios;
     file_desc_t *file;
     int ierr = PIO_NOERR;
-    int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI function codes. */
+    int mpierr = MPI_SUCCESS;  /* Return code from MPI function codes. */
 
     /* Get the file info, based on the ncid. */
     if ((ierr = pio_get_file(ncid, &file)))
@@ -886,7 +886,7 @@ int PIOc_inq_var(int ncid, int varid, char *name, int namelen, nc_type *xtypep, 
 #ifdef PIO_MICRO_TIMING
     char timer_log_fname[PIO_MAX_NAME];
 #endif
-    int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI function codes. */
+    int mpierr = MPI_SUCCESS;  /* Return code from MPI function codes. */
 
     LOG((1, "PIOc_inq_var ncid = %d varid = %d", ncid, varid));
 
@@ -1242,7 +1242,7 @@ int PIOc_inq_varid(int ncid, const char *name, int *varidp)
 #ifdef PIO_MICRO_TIMING
     char timer_log_fname[PIO_MAX_NAME];
 #endif
-    int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI function codes. */
+    int mpierr = MPI_SUCCESS;  /* Return code from MPI function codes. */
 
     /* Get file info based on ncid. */
     if ((ierr = pio_get_file(ncid, &file)))
@@ -1390,7 +1390,7 @@ int PIOc_inq_att(int ncid, int varid, const char *name, nc_type *xtypep,
     int msg = PIO_MSG_INQ_ATT;
     iosystem_desc_t *ios;
     file_desc_t *file;
-    int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI function codes. */
+    int mpierr = MPI_SUCCESS;  /* Return code from MPI function codes. */
     int ierr = PIO_NOERR;
 
     /* Find file based on ncid. */
@@ -1542,7 +1542,7 @@ int PIOc_inq_attname(int ncid, int varid, int attnum, char *name)
     iosystem_desc_t *ios;  /* Pointer to io system information. */
     file_desc_t *file;     /* Pointer to file information. */
     int ierr = PIO_NOERR;              /* Return code from function calls. */
-    int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI function codes. */
+    int mpierr = MPI_SUCCESS;  /* Return code from MPI function codes. */
 
     LOG((1, "PIOc_inq_attname ncid = %d varid = %d attnum = %d", ncid, varid,
          attnum));
@@ -1635,7 +1635,7 @@ int PIOc_inq_attid(int ncid, int varid, const char *name, int *idp)
     iosystem_desc_t *ios;  /* Pointer to io system information. */
     file_desc_t *file;     /* Pointer to file information. */
     int ierr = PIO_NOERR;              /* Return code from function calls. */
-    int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI function codes. */
+    int mpierr = MPI_SUCCESS;  /* Return code from MPI function codes. */
 
     /* Find the info about this file. */
     if ((ierr = pio_get_file(ncid, &file)))
@@ -1735,7 +1735,6 @@ int PIOc_rename_dim(int ncid, int dimid, const char *name)
     iosystem_desc_t *ios;  /* Pointer to io system information. */
     file_desc_t *file;     /* Pointer to file information. */
     int ierr = PIO_NOERR;              /* Return code from function calls. */
-    int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI function codes. */
 
     /* Find the info about this file. */
     if ((ierr = pio_get_file(ncid, &file)))
@@ -1825,7 +1824,6 @@ int PIOc_rename_var(int ncid, int varid, const char *name)
     iosystem_desc_t *ios;  /* Pointer to io system information. */
     file_desc_t *file;     /* Pointer to file information. */
     int ierr = PIO_NOERR;              /* Return code from function calls. */
-    int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI function codes. */
 
     /* Find the info about this file. */
     if ((ierr = pio_get_file(ncid, &file)))
@@ -1917,7 +1915,6 @@ int PIOc_rename_att(int ncid, int varid, const char *name,
     iosystem_desc_t *ios;  /* Pointer to io system information. */
     file_desc_t *file;     /* Pointer to file information. */
     int ierr = PIO_NOERR;              /* Return code from function calls. */
-    int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI functions. */
 
     /* Find the info about this file. */
     if ((ierr = pio_get_file(ncid, &file)))
@@ -2016,7 +2013,6 @@ int PIOc_del_att(int ncid, int varid, const char *name)
     iosystem_desc_t *ios;  /* Pointer to io system information. */
     file_desc_t *file;     /* Pointer to file information. */
     int ierr = PIO_NOERR;              /* Return code from function calls. */
-    int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI functions. */
 
     /* Find the info about this file. */
     if ((ierr = pio_get_file(ncid, &file)))
@@ -2106,7 +2102,7 @@ int PIOc_set_fill(int ncid, int fillmode, int *old_modep)
     iosystem_desc_t *ios;  /* Pointer to io system information. */
     file_desc_t *file;     /* Pointer to file information. */
     int ierr = PIO_NOERR;              /* Return code from function calls. */
-    int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI functions. */
+    int mpierr = MPI_SUCCESS;  /* Return code from MPI functions. */
 
     LOG((1, "PIOc_set_fill ncid = %d fillmode = %d", ncid, fillmode));
 
@@ -2238,7 +2234,7 @@ int PIOc_def_dim(int ncid, const char *name, PIO_Offset len, int *idp)
     iosystem_desc_t *ios;  /* Pointer to io system information. */
     file_desc_t *file;     /* Pointer to file information. */
     int ierr = PIO_NOERR;              /* Return code from function calls. */
-    int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI function codes. */
+    int mpierr = MPI_SUCCESS;  /* Return code from MPI function codes. */
     int tmp_id = -1;
 
     /* Find the info about this file. */
@@ -2369,7 +2365,7 @@ int PIOc_def_var(int ncid, const char *name, nc_type xtype, int ndims,
     iosystem_desc_t *ios;      /* Pointer to io system information. */
     file_desc_t *file;         /* Pointer to file information. */
     int invalid_unlim_dim = 0; /* True invalid dims are used. */
-    int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI function codes. */
+    int mpierr = MPI_SUCCESS;  /* Return code from MPI function codes. */
     int ierr = PIO_NOERR;                  /* Return code from function calls. */
 #ifdef PIO_MICRO_TIMING
     char timer_log_fname[PIO_MAX_NAME];
@@ -2620,7 +2616,7 @@ int PIOc_def_var_fill(int ncid, int varid, int fill_mode, const void *fill_value
     nc_type xtype = NC_NAT;    /* The type of the variable (and fill value att). */
     PIO_Offset type_size = 0;  /* Size in bytes of this variable's type. */
     int ierr = PIO_NOERR;              /* Return code from function calls. */
-    int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI function codes. */
+    int mpierr = MPI_SUCCESS;  /* Return code from MPI function codes. */
 
     LOG((1, "PIOc_def_var_fill ncid = %d varid = %d fill_mode = %d\n", ncid, varid,
          fill_mode));
@@ -2762,7 +2758,7 @@ int PIOc_inq_var_fill(int ncid, int varid, int *no_fill, void *fill_valuep)
     file_desc_t *file;     /* Pointer to file information. */
     nc_type xtype = NC_NAT;  /* Type of variable and its _FillValue attribute. */
     PIO_Offset type_size = 0;  /* Size in bytes of this variable's type. */
-    int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI function codes. */
+    int mpierr = MPI_SUCCESS;  /* Return code from MPI function codes. */
     int ierr = PIO_NOERR;  /* Return code from function calls. */
 
     LOG((1, "PIOc_inq_var_fill ncid = %d varid = %d", ncid, varid));

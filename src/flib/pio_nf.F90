@@ -3,7 +3,7 @@ module pio_nf
   use perf_mod           , only : t_startf, t_stopf      ! _EXTERNAL
 #endif
   use pio_kinds           , only :  pio_offset_kind
-  use pio_types           , only : file_desc_t, var_desc_t, PIO_MAX_VAR_DIMS
+  use pio_types           , only : file_desc_t, var_desc_t, PIO_MAX_VAR_DIMS, PIO_NOERR
   use iso_c_binding
   use pio_support        , only : replace_c_null
   implicit none
@@ -609,6 +609,8 @@ contains
          nAttributes                                        ,  & ! number of global attributes
          unlimitedDimID ! ID of unlimited dimension
 
+    ierr = PIO_NOERR
+
     if(present(nDimensions)) ierr = inq_ndims_id(ncid       ,ndimensions)
     if(present(nvariables)) ierr = inq_nvars_id(ncid        ,nvariables)
     if(present(nattributes)) ierr = inq_natts_id(ncid       ,nattributes)
@@ -859,6 +861,8 @@ contains
     integer                                                 ,               optional, intent(out) :: xtype, ndims
     integer                                                 , dimension(:), optional, intent(out) :: dimids
     integer                                                 ,               optional, intent(out) :: natts
+
+    ierr = PIO_NOERR
 
     if(present(name)) ierr = pio_inq_varname(ncid           , varid, name)
     if(present(ndims)) ierr = pio_inq_varndims(ncid         , varid, ndims)

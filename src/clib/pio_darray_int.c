@@ -196,10 +196,9 @@ int write_darray_multi_par(file_desc_t *file, int nvars, int fndims, const int *
     if (ios->ioproc)
     {
         int rrcnt = 0; /* Number of subarray requests (pnetcdf only). */
-        void *bufptr;
+        void *bufptr = NULL;
         size_t start[fndims];
         size_t count[fndims];
-        int ndims = iodesc->ndims;
         PIO_Offset *startlist[num_regions]; /* Array of start arrays for ncmpi_iput_varn(). */
         PIO_Offset *countlist[num_regions]; /* Array of count  arrays for ncmpi_iput_varn(). */
 

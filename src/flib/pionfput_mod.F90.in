@@ -357,6 +357,7 @@ contains
     integer(C_SIZE_T), allocatable :: cstart(:), ccount(:)
     integer :: i, ndims
 
+    ndims = 0
     do i=1,size(count)
        if(count(i)<=0) then
           ndims=i-1
@@ -420,6 +421,7 @@ contains
     integer :: i
     integer :: ndims
 
+    ndims = 0
     do i=1,size(count)
        if(count(i)<=0) then
           ndims=i-1

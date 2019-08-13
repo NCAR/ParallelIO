@@ -113,7 +113,7 @@ PIO_TF_AUTO_TEST_SUB_BEGIN nc_wr_rd_a2a
   PIO_TF_FC_DATA_TYPE, dimension(:), allocatable :: rbuf, wbuf, exp_val
   integer, dimension(1) :: dims
   integer :: pio_dim
-  integer :: i, j, k, ierr, lsz
+  integer :: i, j, k, ierr
   ! iotypes = valid io types
   integer, dimension(:), allocatable :: iotypes
   character(len=PIO_TF_MAX_STR_LEN), dimension(:), allocatable :: iotype_descs
@@ -134,7 +134,7 @@ PIO_TF_AUTO_TEST_SUB_BEGIN nc_wr_rd_a2a
   do i=1,size(start)
     do j=1,count(i)
       wbuf(k) = start(i) + j - 1
-      compdof(k) = wbuf(k)
+      compdof(k) = int(wbuf(k))
       k = k + 1
     end do
   end do
@@ -157,7 +157,7 @@ PIO_TF_AUTO_TEST_SUB_BEGIN nc_wr_rd_a2a
   do i=1,size(start)
     do j=1,count(i)
       exp_val(k) = start(i) + j - 1
-      compdof(k) = exp_val(k)
+      compdof(k) = int(exp_val(k))
       k = k + 1
     end do
   end do
@@ -239,7 +239,7 @@ PIO_TF_AUTO_TEST_SUB_BEGIN nc_wr_rev_rd
   PIO_TF_FC_DATA_TYPE, dimension(:), allocatable :: rbuf, wbuf, exp_val
   integer, dimension(1) :: dims
   integer :: pio_dim
-  integer :: i, ierr, lsz
+  integer :: i, ierr
   ! iotypes = valid io types
   integer, dimension(:), allocatable :: iotypes
   character(len=PIO_TF_MAX_STR_LEN), dimension(:), allocatable :: iotype_descs
@@ -261,7 +261,7 @@ PIO_TF_AUTO_TEST_SUB_BEGIN nc_wr_rev_rd
   ! Reverse the local decomposition
   do i=1,count(1)
     wbuf(i) = start(1) + count(1) - i
-    compdof(i) = wbuf(i)
+    compdof(i) = int(wbuf(i))
   end do
 
   call PIO_initdecomp(pio_tf_iosystem_, PIO_TF_DATA_TYPE, dims, compdof, wr_iodesc)
@@ -279,10 +279,10 @@ PIO_TF_AUTO_TEST_SUB_BEGIN nc_wr_rev_rd
 
   do i=2,count(1)
     exp_val(i-1) = start(1) + i - 1
-    compdof(i-1) = exp_val(i-1)
+    compdof(i-1) = int(exp_val(i-1))
   end do
   exp_val(count(1)) = start(1)
-  compdof(count(1)) = exp_val(count(1))
+  compdof(count(1)) = int(exp_val(count(1)))
 
   call PIO_initdecomp(pio_tf_iosystem_, PIO_TF_DATA_TYPE, dims, compdof, rd_iodesc)
   deallocate(compdof)
