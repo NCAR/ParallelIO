@@ -12,7 +12,7 @@ source /etc/profile.d/modules.sh
 module reset
 module unload netcdf
 module swap intel intel/19.0.2
-module switch mpt mpt/2.19
+module switch mpt impi
 module load cmake/3.14.4
 module load netcdf-mpi/4.6.3
 module load pnetcdf/1.11.1
@@ -23,7 +23,7 @@ export CC=mpicc
 export FC=mpif90
 export MPI_TYPE_DEPTH=24
 export PIO_DASHBOARD_ROOT=/glade/u/home/jedwards/sandboxes/dashboard/
-export PIO_COMPILER_ID=Intel-`$CC --version | head -n 1 | cut -d' ' -f3`
+export PIO_COMPILER_ID=Intel-`$CC --version | head -n 1 | cut -d' ' -f3`-impi
 
 if [ ! -d "$PIO_DASHBOARD_ROOT" ]; then
   mkdir "$PIO_DASHBOARD_ROOT"
