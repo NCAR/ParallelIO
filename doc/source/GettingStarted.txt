@@ -26,7 +26,7 @@ Basic description of how to optimize IO in a parallel environment...
 
 PIO calls are collective.  A MPI communicator is set in a call to \ref PIO_init and all tasks associated with that communicator must participate in all subsequent calls to PIO.  An application can make multiple calls to \ref PIO_init in order to support multiple MPI communicators.
 
-Begin by checking out a copy from [gitHub](https://github.com/PARALLELIO/ParallelIO) and installing on your system as per the instructions in the [Installation](@ref install) document. Take a look at examples of PIO usage in both complex and simple test programs in the [Examples](@ref examp) document. Finally, read through the [FAQ](@ref faq) to see if any remaining questions can be answered. 
+Begin by checking out a copy from [gitHub](https://github.com/E3SM-Project/ParallelIO) and installing on your system as per the instructions in the [Installation](@ref install) document. Take a look at examples of PIO usage in both complex and simple test programs in the [Examples](@ref examp) document. Finally, read through the [FAQ](@ref faq) to see if any remaining questions can be answered. 
 
 ### Using PIO has three basic steps. ###
 

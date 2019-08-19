@@ -16,7 +16,7 @@
  */ /*! \page install Installing PIO
 
 
-The PIO code is currently stored on github at <https://github.com/PARALLELIO/ParallelIO>. For questions about downloading or developing this code, consult the [CIME Git Wiki](https://github.com/CESM-Development/cime/wiki/CIME-Git-Workflow) or email <mailto:jedwards@ucar.edu>.
+The PIO code is currently stored on github at <https://github.com/E3SM-Project/ParallelIO>. For questions about downloading or developing this code please email <mailto:jayesh@anl.gov>.
 
 ### Dependencies ###
 

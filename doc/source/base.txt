@@ -18,7 +18,10 @@
 
 \mainpage Parallel I/O library (PIO)
 
+\author Jayesh Krishna
+\author Danqing Wu
 \author Jim Edwards
+\author Ed Hartnett
 \author John M. Dennis
 \author Mariana Vertenstein
 
