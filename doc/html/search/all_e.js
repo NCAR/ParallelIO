@@ -1,0 +1,22 @@
+var searchData=
+[
+  ['rcount',['rcount',['../structio__desc__t.html#aff1ad34793e462c3807ebb3c1384dea9',1,'io_desc_t']]],
+  ['readbuffer',['readbuffer',['../structpioexample_1_1pioexampleclass.html#a526361acbf70a77e0afe9d19498bba3b',1,'pioexample::pioexampleclass']]],
+  ['readvar',['readvar',['../structpioexample_1_1pioexampleclass.html#aaf78ac9ebc4084edf35f295f6cf5598a',1,'pioexample::pioexampleclass']]],
+  ['rearr_5fcomm_5ffc_5fopt',['rearr_comm_fc_opt',['../structrearr__comm__fc__opt.html',1,'']]],
+  ['rearr_5fcomm_5ffc_5fopt_5ft',['rearr_comm_fc_opt_t',['../pio_8h.html#a33bec608b2c9dd2e2855f7adcc23c7c2',1,'pio.h']]],
+  ['rearr_5fopt',['rearr_opt',['../structrearr__opt.html',1,'']]],
+  ['rearr_5fopt_5ft',['rearr_opt_t',['../pio_8h.html#af676ea8a0aa46e2f1a2cc2b6dc8c7569',1,'pio.h']]],
+  ['rearr_5fopts',['rearr_opts',['../structio__desc__t.html#afe6b16e1e8f774639b0de1328f8981c9',1,'io_desc_t::rearr_opts()'],['../structiosystem__desc__t.html#a90c06b85112d2cbcef262b8a8c0aea12',1,'iosystem_desc_t::rearr_opts()']]],
+  ['rearranger',['rearranger',['../structio__desc__t.html#a0b342635e05c4858cf057f28298f8213',1,'io_desc_t']]],
+  ['record',['record',['../structvar__desc__t.html#a778c09b345537506feafa4f92705b6f5',1,'var_desc_t']]],
+  ['recordvar',['recordvar',['../structwmulti__buffer.html#a52b790e294ce52e2b364f584abdbf9d8',1,'wmulti_buffer']]],
+  ['redef_5fdesc',['redef_desc',['../group___p_i_o__redef.html#gaf44dad7065b2cbc0f8b0b0308d7f88c5',1,'pio_nf']]],
+  ['redef_5fid',['redef_id',['../group___p_i_o__redef.html#ga1a98648b5347710c172e49d556b2eae8',1,'pio_nf']]],
+  ['replace_5fc_5fnull',['replace_c_null',['../classpio__support.html#abcbf3a9d77e36435f9110d1efe8fb19a',1,'pio_support']]],
+  ['request',['request',['../structvar__desc__t.html#afe58a0dd1a4e439098833e9dfa0e7102',1,'var_desc_t']]],
+  ['resultlen',['resultlen',['../example1_8c.html#aeb75303058f3be9b462de7ba3f6b03a7',1,'resultlen():&#160;example1.c'],['../example2_8c.html#aeb75303058f3be9b462de7ba3f6b03a7',1,'resultlen():&#160;example2.c'],['../put__var_8c.html#aeb75303058f3be9b462de7ba3f6b03a7',1,'resultlen():&#160;put_var.c']]],
+  ['rfrom',['rfrom',['../structio__desc__t.html#aeb38b39c426eb0cce7c8e27d15eb67fd',1,'io_desc_t']]],
+  ['rindex',['rindex',['../structio__desc__t.html#a1c5a340bb797121121f8c17203e5fb3c',1,'io_desc_t']]],
+  ['rtype',['rtype',['../structio__desc__t.html#a2ebce2622d8c52bdaf07e00350acadce',1,'io_desc_t']]]
+];
