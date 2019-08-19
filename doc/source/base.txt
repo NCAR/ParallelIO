@@ -14,7 +14,8 @@
  * input used in their production; they are not affected by this license.
  *
  */ 
-/*! 
+
+/*!
 
 \mainpage Parallel I/O library (PIO)
 
@@ -27,19 +28,26 @@
 
 The Parallel I/O (PIO) library has been developed over several years
 to improve the ability of component models of the Community Earth
-System Model (CESM) to perform I/O.  We believe that the interface is
+System Model (CESM) and Energy Exascale Earth System Model (E3SM)
+to perform I/O. The interface is
 sufficiently general to be useful to a broader spectrum of
-applications.  The focus of development has been on backend tools that
-use the NetCDF file format.  PIO currently supports NetCDF and PnetCDF
-as backend libraries, both can be linked and used with runtime options
-controlling which is used for a given file.
+applications. The focus of development has been on backend tools that
+use the NetCDF file format. PIO currently supports NetCDF, PnetCDF and
+ADIOS as the backend libraries.
 
-PIO2 represents a significant rewrite of the PIO library and includes
-a C API as well as the original F90 API.  A new decomposition strategy
-has been introduced which gives the user more ability to tune io communications.
+PIO2 represents a significant rewrite of the PIO library in C (originally
+implemented in Fortran language) and includes
+a C API as well as the original F90 API. The new version of the library
+also includes improvements in user data caching and aggregation
+algorithms that significantly improve performance. A new decomposition strategy
+has been introduced which gives the user more ability to tune I/O
+communications.
 
-This user's guide provides information about the PIO library and examples on how it can be used. 
-Please review the ChangeLog that is included with the distribution for up-to-date release information.
+This user's guide provides information on how to use the PIO library and
+an overview of the internal algorithms used by the library.
+
+Please review the ChangeLog that is included with the distribution for
+up-to-date release information.
 
  - \ref intro
  - \ref install
@@ -51,4 +59,5 @@ Please review the ChangeLog that is included with the distribution for up-to-dat
  - \ref faq
  - \ref api
  - \ref contributing_code
+
 */
