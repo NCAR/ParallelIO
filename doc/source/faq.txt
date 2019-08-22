@@ -24,8 +24,8 @@
 </ul>
 Note that num_iotasks is the maximum number of IO tasks to use for an IO operation.   The size of the field being read or written along with the tunable blocksize parameter, \ref PIO_set_blocksize, determines the actual number of tasks used for a given IO operation.
 </dd>
-<dt>How do I test if PIO is installed and working correctly? </dt> 
-    <dd>The PIO Library distribution contains a testpio subdirectory with a number of programs to test the PIO library. Please see the \ref examp page for details. </dd>
+<dt>How do I test if SCORPIO is installed and working correctly? </dt> 
+    <dd>The SCORPIO Library distribution contains a testpio subdirectory with a number of programs to test the SCORPIO library. Please see the \ref examp page for details. </dd>
 
 </dl>
 */

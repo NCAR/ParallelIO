@@ -1,4 +1,4 @@
- /*!  \page api PIO user interface
+ /*!  \page api SCORPIO user interface
   This is a list of all user interface routines:
 
   \section api_fileops PIO file Operations

@@ -17,7 +17,7 @@
 
 /*!
 
-\mainpage Parallel I/O library (PIO)
+\mainpage Software for Caching Output and Reads for Parallel I/O (SCORPIO)
 
 \author Jayesh Krishna
 \author Danqing Wu
@@ -26,24 +26,28 @@
 \author John M. Dennis
 \author Mariana Vertenstein
 
-The Parallel I/O (PIO) library has been developed over several years
+The SCORPIO (Software for Caching Output and Reads for Parallel I/O)
+library was developed to improve the ability of component models of 
+the Energy Exascale Earth System Model (E3SM) to perform I/O efficiently
+by leveraging other low-level I/O libraries. The SCORPIO library was
+derived from the Parallel I/O library (PIO) that
+has been developed over several years
 to improve the ability of component models of the Community Earth
 System Model (CESM) and Energy Exascale Earth System Model (E3SM)
 to perform I/O. The interface is
 sufficiently general to be useful to a broader spectrum of
 applications. The focus of development has been on backend tools that
-use the NetCDF file format. PIO currently supports NetCDF, PnetCDF and
+use the NetCDF file format. SCORPIO currently supports NetCDF, PnetCDF and
 ADIOS as the backend libraries.
 
-PIO2 represents a significant rewrite of the PIO library in C (originally
-implemented in Fortran language) and includes
-a C API as well as the original F90 API. The new version of the library
+SCORPIO supports the interfaces supported by the PIO library and includes
+C and F90 APIs compatible with the PIO library. The library
 also includes improvements in user data caching and aggregation
 algorithms that significantly improve performance. A new decomposition strategy
 has been introduced which gives the user more ability to tune I/O
 communications.
 
-This user's guide provides information on how to use the PIO library and
+This user's guide provides information on how to use the SCORPIO library and
 an overview of the internal algorithms used by the library.
 
 Please review the ChangeLog that is included with the distribution for

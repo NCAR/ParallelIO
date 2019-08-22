@@ -15,9 +15,9 @@
  *
  */ /*! \page examp Examples
 
-## Examples Included with PIO Distribution
+## Examples Included with SCORPIO Distribution
 
-The PIO library examples can be found under the examples
+The SCORPIO library examples can be found under the examples
 subdirectory. They are built with the make test or make check build
 target.
 
@@ -43,7 +43,7 @@ The Fortran examples are in the examples/f03 subdirectory.
 
 ### Other Examples
 
-  PIO has been implemented in several geophysical component models, including the 
+  SCORPIO has been implemented in several geophysical component models, including the 
 Community Atmosphere Model (CAM), the Community Land Model (CLM), the Parallel Ocean Program 
 (POP), the Community Ice CodE (CICE), and coupler for used by CCSM4.0 (CPL7).  We also provide 
 several simpler example code as well as a test code that is suitable for regression testing and 

@@ -16,7 +16,7 @@
  */ /*! 
 \page error Error Handling
 
-By default, PIO handles errors internally by printing a string
+By default, SCORPIO handles errors internally by printing a string
 describing the error and then calling mpi_abort.  Application
 developers can change this behaivior with a call to
 \ref PIO_seterrorhandling
