@@ -1,0 +1,11 @@
+<map id="pioexample::pioexampleclass" name="pioexample::pioexampleclass">
+<area shape="rect" id="node2" href="$structio__desc__t.html" title="IO descriptor structure. " alt="" coords="491,229,569,256"/>
+<area shape="rect" id="node3" href="$structrearr__opt.html" title="Rearranger options. " alt="" coords="402,117,475,144"/>
+<area shape="rect" id="node9" href="$structiosystem__desc__t.html" title="IO system descriptor structure. " alt="" coords="293,229,413,256"/>
+<area shape="rect" id="node4" href="$structrearr__comm__fc__opt.html" title="Rearranger comm flow control options. " alt="" coords="371,5,505,32"/>
+<area shape="rect" id="node5" href="$structio__region.html" title="IO region structure. " alt="" coords="544,117,617,144"/>
+<area shape="rect" id="node6" href="$structfile__desc__t.html" title="File descriptor structure. " alt="" coords="144,320,229,347"/>
+<area shape="rect" id="node7" href="$structwmulti__buffer.html" title="The multi buffer holds data from one or more variables. " alt="" coords="115,229,215,256"/>
+<area shape="rect" id="node8" href="$structvar__desc__t.html" title="Variable description structure. " alt="" coords="5,229,91,256"/>
+<area shape="rect" id="node10" href="$structiosystem__desc__t_1_1async__ios__msg__info__.html" title="Async I/O service message info. " alt="" coords="158,110,321,151"/>
+</map>

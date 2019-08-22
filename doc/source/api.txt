@@ -1,4 +1,4 @@
- /*!  \page api PIO user interface
+ /*!  \page api SCORPIO user interface
   This is a list of all user interface routines:
 
   \section api_fileops PIO file Operations
@@ -25,13 +25,13 @@
     - \ref PIO_getnumiotasks
     - \ref PIO_set_blocksize
   \section netcdf NetCDF format specific routines 
-     Also see: http://www.unidata.ucar.edu/software/netcdf/docs/
-     \subsection putget Reading/Writing netcdf metadata  
+     Also see: http://www.unidata.ucar.edu/software/netcdf/docs/ for more information on the NetCDF file format and API.
+     \subsection putget Reading/Writing NetCDF metadata  
          - \ref PIO_get_att
          - \ref PIO_put_att
          - \ref PIO_get_var
          - \ref PIO_put_var
-     \subsection utilnc Netcdf utility routines
+     \subsection utilnc NetCDF utility routines
     - \ref PIO_enddef
     - \ref PIO_redef
     - \ref PIO_def_dim 

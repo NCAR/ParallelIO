@@ -15,32 +15,39 @@
  *
  */ /*! \page decomp Describing decompositions
 
+One of the advantages of using SCORPIO is the ability to describe the way
+data is decomposed across compute processes and reusing it for reading
+and writing any data that uses the same decomposition. Another major
+advantage is the feature in SCORPIO to rearrange data before using low
+level I/O libraries like NetCDF and PnetCDF to write data to disk.
 
-One of the biggest challenges to working with PIO is setting up 
-the call to \ref PIO_initdecomp.  The user must properly describe
-how the data within each MPI tasks memory should be placed or retrieved from 
-disk. PIO provides two methods to rearrange data from compute tasks to IO tasks.  
-The first method, called box rearrangement is the only one provided in PIO1.   
-The second called subset rearrangement is introduced in PIO2.  
+The I/O decompositions can be defined by the user using the 
+\ref PIO_initdecomp API.
+The algorithm used to rearrange data can be specified when initializing
+the SCORPIO I/O system using the \ref PIO_init API. All decompositions
+created on the I/O system, using \ref PIO_initdecomp, use the
+rearrangment method specified while initializing the I/O system.
+SCORPIO provides two methods to rearrange data from compute processes to
+I/O processes,
+  - Box rearrangement
+  - Subset rearrangement
 
 \section BOXREARR Box rearrangement
 
 In this method data is rearranged from compute to IO tasks such that
-the arrangement of data on the IO tasks optimizes the call from the IO
-tasks to the underlying (NetCDF) IO library.  In this case each
-compute task will transfer data to one or more IO tasks.
-
-
-
-
+each I/O task contains a contiguous block of data.
+In this case each compute task will transfer data to one or more IO tasks.
 
 \section SUBSETREARR Subset rearrangement
 
 In this method each IO task is associated with a unique subset of
-compute tasks so that each compute task will transfer data to one and
-only one IO task.  Since this technique does not guarantee that data
-on the IO node represents a contiguous block of data on the file it
-may require multiple calls to the underlying (NetCDF) IO library.
+compute tasks and data is rearranged to each I/O task by
+rearranging data between compute processes belonging to the subset
+associated with the I/O task. Since data rearrangement is confined
+to a subset of tasks, each I/O task is not guaranteed to have a
+single contiguous block of data. Any futher data rearrangment
+required before writing data to disk is delegated to the low level
+I/O libraries like NetCDF and PnetCDF.
 
 As an example suppose we have a global two dimensional grid of size 4x5 decomposed over 5 tasks. We represent the two dimensional grid in terms of offset from the initial element ie
 <pre>
@@ -81,7 +88,7 @@ Also note if every task is an IO task then the box rearranger will need
 to do an alltoall communication, while the subset rearranger does none.
 In fact using the subset rearranger with every compute task an IO task
 provides a measure of what you might expect the performance of the underlying
-IO library to be if it were used without PIO.
+IO library to be if it were used without SCORPIO.
 
 
 */

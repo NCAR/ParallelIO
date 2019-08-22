@@ -18,46 +18,29 @@
 # Introduction #
 
 This document describes the code style to be used when contributing to
-the PIO library.
-
-Consistency of style allows bugs to be spotted more quickly and
-contributes to code quality.
+the SCORPIO library.
 
 # C Code #
 
-## Warnings ##
-
-<p>The C library compiles under GNU gcc without warnings. No code will
-be merged with the C library which causes warnings during compile.
-
 ## Backward Compatibility ##
 
-<p>We cannot remove or change a function in the public C API. We can
-add to it, carefully.
-
-## Brevity ##
-
-<p>Consider: C is a terse language.
-
-<ul>
-<li>Use the fact that NULL == 0, and 0 == false, to shorten code.
-<li>Assign and check return values in the same if statement.
-</ul>
+<p>We cannot remove or change a function in the public C API. Please
+create a github issue if a new API is required.
 
 ## Indentation and Spacing##
 
 <ul>
 <li>Use spaces not tabs.
-<li>4 spaces is the unit of intendation.
-<li>Indentation as defined by the "linux" style in emacs (see below).
-<li>Use spaces around most operators (=+-*/) not pointer or prefix/postfile (*++--)
+<li>4 spaces is the unit of intendation for C sources.
+<li>Indentation as defined by the "Linux" style in emacs (see below).
+<li>Use spaces around most operators not pointer or prefix/postfix
 <li>Spaces after most keywords (if, for, while, etc.)
 <li>No spaces after function name.
 </ul>
 
 ## Braces ##
 
-<p>Put braces on their own line, avoiding their use if possible.
+<p>Put braces on their own line in the C sources.
 
 ## Documentation ##
 
@@ -67,15 +50,7 @@ add to it, carefully.
 can easily build user and development builds of the documentation.
 <li>Use the doxygen \@ingroup to put public functions in the correct
 group.
-<li>Code must be reasonably documented as to intention.
-<li>Documentation quality and quantity are part of code review
-process.
-<li>Document in complete sentences.
 <li>Use C (not C++) comment delimiters.
-<li>Use the author tag to indicate which programmers have worked on
-each function. When adding or changing a function in a non-trivial
-way, programmers should add their name to the end of the list of
-authors for that function.
 </ul>
 
 ## Emacs ##
@@ -96,35 +71,13 @@ correctly. M-x indent-region will indent a selected region of code.
 
 <ul>
 
-<li>All code is subject to review.
+<li>Each pull request should be focused on a single issue.
 
-<li>Pull requests will be focused on one issue.
+<li>Please ensure that all tests pass in the development branch in your development environment before submitting a pull request.
 
-<li>Pull requests may not be submitted until all tests pass.
-
-<li>All non-trivial pull requests are associated with a github
+<li>All non-trivial pull requests need to be associated with a github
 issue. The issue is where discussion of requirements and
 implementation details can be worked out.
-
-<li>Pull requests will be left up on github for about a day. Request
-more time if you need it and are actively reviewing the code. (Note
-that pull request can also be reviewed after they are merged, if you
-miss one).
-
-<li>Jim will identify key stakeholders in changed code and ensure they
-accept code changes.
-
-<li>Reviewers are open-minded and ready to accept improvements to the
-library.
-
-<li>Reviewers will make comments on the pull request. All comments
-must be resolved.
-
-<li>If chages are dictated, they happen on the branch, so code
-reviewers can see the updated code.
-
-<li>The pull request is only merged when all programmers agree that
-all issues have been resolved.
 
 </ul>
 
@@ -133,33 +86,21 @@ all issues have been resolved.
 <ul>
 
 <li>Programmers begin work on a feature or fix by branching from
-develop.
+the master branch
 
 <li>When a branch is ready, it is submitted to code review.
 
 <li>When code review is complete, and the changes are approved, the PR
 is merged into the develop branch.
 
-<li>Mutliple merges into the develop branch may take place between
-test cycles. (???)
-
 <li>The develop branch is tested automatically by Jenkins.
 
-<li>The develop branch is tested periodically by CDash (every ~6
-hours).
-
 <li>After all jenkins and Cdash builds complete successfully, with all
-tests passing, and no warnings, the PR is merged into master by the
-integrator.
+tests passing, the PR is merged into master by the integrator.
 
-<li>Multiple PRs may be merged to master between test cycles. (???)
+<li>Multiple PRs may be merged to master between test cycles.
 
 <li>The branch is then deleted by whomever merged it to master.
-
-<li>The master branch is then tested on Jenkins.
-
-<li>The master branch is tested on CDash. Any test failures and the
-merge to master will be rolled back.
 
 </ul>
 

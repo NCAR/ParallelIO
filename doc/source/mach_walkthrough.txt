@@ -15,7 +15,7 @@
  *
  */ /*! \page mach_walkthrough Install Walk-through
 
-This document provides specific instructions for installing PIO using a variety of compilers on a few commonly used super computers. Click on the link below to go directly to the machine of interest.
+This document provides specific instructions for installing SCORPIO using a variety of compilers on a few commonly used super computers. Click on the link below to go directly to the machine of interest.
 
 -    <a href="#Yellowstone">Yellowstone</a> (NCAR's 1.5-petaflop IBM Supercomputer)
 -    <a href="#Edison">Edison</a> (A NERSC Cray XC30 Supercomputer)
@@ -30,11 +30,11 @@ This document provides specific instructions for installing PIO using a variety 
 <ol>
 <li>Directory setup
 
-Download a copy of the PIO source into a sub-directory of your working directory (refered to here as the PIO_source directory). Create another sub-directory for the build (refered to here as the PIO_build directory) and 'cd' into it. 
+Download a copy of the SCORPIO source into a sub-directory of your working directory (refered to here as the PIO_source directory). Create another sub-directory for the build (refered to here as the PIO_build directory) and 'cd' into it. 
 
 <li>Modules
 
-Modules required for installation depend on your prefered compiler. Issue the commands below to set the module environment for building PIO on Yellowstone. 
+Modules required for installation depend on your prefered compiler. Issue the commands below to set the module environment for building SCORPIO on Yellowstone. 
 
 + Intel
 
@@ -75,7 +75,7 @@ The appropriate compiler wrappers must be chosen for cmake, so the environment v
 
 <li>Build
 
-Building PIO requires running the CMake configure and then make. In the PIO_build directory type<br>
+Building SCORPIO requires running the CMake configure and then make. In the PIO_build directory type<br>
     %> cmake ../PIO_source/<br>
     %> make<br>
 </ol>
@@ -86,11 +86,11 @@ Building PIO requires running the CMake configure and then make. In the PIO_buil
 <ol>
 <li>Directory setup
 
-Download a copy of the PIO source into a sub-directory of your working directory (refered to here as the PIO_source directory). Create another sub-directory for the build (refered to here as the PIO_build directory) and 'cd' into it. 
+Download a copy of the SCORPIO source into a sub-directory of your working directory (refered to here as the PIO_source directory). Create another sub-directory for the build (refered to here as the PIO_build directory) and 'cd' into it. 
 
 <li>Modules
 
-Modules required for installation depend on your prefered compiler. Issue the commands below to set the module environment for building PIO on Edison. 
+Modules required for installation depend on your prefered compiler. Issue the commands below to set the module environment for building SCORPIO on Edison. 
 
 + Intel 
 
@@ -144,7 +144,7 @@ The appropriate compiler wrappers must be chosen for cmake, so the environment v
 
 <li>Build
 
-Building PIO requires running the CMake configure and then make. In the PIO_build directory type<br>
+Building SCORPIO requires running the CMake configure and then make. In the PIO_build directory type<br>
   %> cmake -DCMAKE_VERBOSE_MAKEFILE=TRUE \\<br>
      -DPREFER_STATIC=TRUE \\<br>
      -DNetCDF_PATH=${NETCDF_DIR} \\<br>
@@ -166,11 +166,11 @@ Building PIO requires running the CMake configure and then make. In the PIO_buil
 <ol>
 <li>Directory setup
 
-Download a copy of the PIO source into a sub-directory of your working directory (refered to here as the PIO_source directory). Create another sub-directory for the build (refered to here as the PIO_build directory) and 'cd' into it. 
+Download a copy of the SCORPIO source into a sub-directory of your working directory (refered to here as the PIO_source directory). Create another sub-directory for the build (refered to here as the PIO_build directory) and 'cd' into it. 
 
 <li> Softenv packages and environment variables
 
-It is not necessary to edit your .soft file on Mira inorder to build PIO. Execute the following commands to temporarily load packages into your softenv. These packages use the IBM/XL compiler.<br>
+It is not necessary to edit your .soft file on Mira inorder to build SCORPIO. Execute the following commands to temporarily load packages into your softenv. These packages use the IBM/XL compiler.<br>
   %> soft add +mpiwrapper-xl (or switch from the default in your softenv)<br>
   %> soft add @ibm-compilers-2015-02<br>
   %> soft add +cmake<br>
@@ -186,7 +186,7 @@ And then set the following environment variables to add in the rest of the libra
 
 <li>Build
 
-Building PIO requires running the CMake configure and then make. In the PIO_build directory type<br>
+Building SCORPIO requires running the CMake configure and then make. In the PIO_build directory type<br>
   %> cmake -DPREFER_STATIC=TRUE ../PIO_source/<br>
   %> make
 
@@ -197,11 +197,11 @@ Building PIO requires running the CMake configure and then make. In the PIO_buil
 <ol>
 <li>Directory setup
 
-Download a copy of the PIO source into a sub-directory of your working directory (refered to here as the PIO_source directory). Create another sub-directory for the build (refered to here as the PIO_build directory) and 'cd' into it. 
+Download a copy of the SCORPIO source into a sub-directory of your working directory (refered to here as the PIO_source directory). Create another sub-directory for the build (refered to here as the PIO_build directory) and 'cd' into it. 
 
 <li>Modules
 
-Modules required for installation depend on your prefered compiler. Issue the commands below to set the module environment for building PIO on Hobart. 
+Modules required for installation depend on your prefered compiler. Issue the commands below to set the module environment for building SCORPIO on Hobart. 
 
 + Intel
 
@@ -232,7 +232,7 @@ The appropriate compiler wrappers must be chosen for cmake, so the environment v
 
 <li>Build
 
-Building PIO requires running the CMake configure and then make. In the PIO_build directory type<br>
+Building SCORPIO requires running the CMake configure and then make. In the PIO_build directory type<br>
   %> cmake -DCMAKE_VERBOSE_MAKEFILE=TRUE \\<br>
      -DPREFER_STATIC=TRUE \\<br>
      -DNetCDF_PATH=${NETCDF_DIR} \\<br>
@@ -255,11 +255,11 @@ Building PIO requires running the CMake configure and then make. In the PIO_buil
 <ol>
 <li>Directory setup
 
-Download a copy of the PIO source into a sub-directory of your working directory (refered to here as the PIO_source directory). Create another sub-directory for the build (refered to here as the PIO_build directory) and 'cd' into it. 
+Download a copy of the SCORPIO source into a sub-directory of your working directory (refered to here as the PIO_source directory). Create another sub-directory for the build (refered to here as the PIO_build directory) and 'cd' into it. 
 
 <li>Modules
 
-Modules required for installation depend on your prefered compiler. Issue the commands below to set the module environment for building PIO on Hobart. 
+Modules required for installation depend on your prefered compiler. Issue the commands below to set the module environment for building SCORPIO on Hobart. 
 
 + Intel
 
@@ -288,7 +288,7 @@ The appropriate compiler wrappers must be chosen for cmake, so the environment v
 
 <li>Build
 
-Building PIO requires running the CMake configure and then make. In the PIO_build directory type<br>
+Building SCORPIO requires running the CMake configure and then make. In the PIO_build directory type<br>
   %> cmake -DNETCDF_DIR=$NETCDF_PATH -DPNETCDF_DIR=$PNETCDF_PATH ../PIO_source/<br>
   %> make
 
@@ -395,7 +395,7 @@ sudo make install </pre>
 
 <p>Note that you may not build netCDF with it's built-in
 parallel-netCDF support, if you are also planning to use the
-parallel-netCDF library with PIO. For PIO, parallel-netCDF must be
+parallel-netCDF library with SCORPIO. For SCORPIO, parallel-netCDF must be
 installed independently of netCDF.
 
 <li>Installing NetCDF-4 Fortran Library
