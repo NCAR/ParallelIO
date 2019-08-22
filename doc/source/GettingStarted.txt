@@ -20,9 +20,7 @@
 
 /*! \page intro Introduction 
 
-PIO is a software interface layer designed to encapsolate the complexities of parallel IO and make it easier to replace the lower level software backend.  It currently supports <a href=http://www.unidata.ucar.edu/software/netcdf/docs/html_guide/index.html#user_guide> netcdf </a>  and <a href=http://trac.mcs.anl.gov/projects/parallel-netcdf> pnetcdf </a>.
-
-Basic description of how to optimize IO in a parallel environment...
+PIO is a software interface layer designed to encapsolate the complexities of parallel IO and make it easier to replace the lower level software backend.  It currently supports <a href=http://www.unidata.ucar.edu/software/netcdf/docs/html_guide/index.html#user_guide>NetCDF</a>, <a href=http://trac.mcs.anl.gov/projects/parallel-netcdf>PnetCDF</a> and <a href=https://www.olcf.ornl.gov/center-projects/adios>ADIOS</a>.
 
 PIO calls are collective.  A MPI communicator is set in a call to \ref PIO_init and all tasks associated with that communicator must participate in all subsequent calls to PIO.  An application can make multiple calls to \ref PIO_init in order to support multiple MPI communicators.
 
