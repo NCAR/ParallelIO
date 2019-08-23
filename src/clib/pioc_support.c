@@ -2816,7 +2816,16 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
                 file->iotype = PIO_IOTYPE_NETCDF;
 
                 /* modify the user-specified iotype on all tasks */
-                *iotype = PIO_IOTYPE_NETCDF;
+                /* Modifying the user-specified iotype unfortunately
+                 * causes some E3SM model components to reset the iotype
+                 * to NetCDF for all subsequent reads and writes
+                 * (eventhough only some files read are in the NetCDF4
+                 * format)
+                 * Commenting this out for now, until we introduce
+                 * PIO_IOTYPE_ANY that would allow users to explicitly
+                 * specify that the lib can internally modify iotypes
+                 */
+                /* *iotype = PIO_IOTYPE_NETCDF; */
 
                 /* open netcdf file serially on main task */
                 if (ios->io_rank == 0)
