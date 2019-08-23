@@ -1,6 +1,6 @@
 # Software for Caching Output and Reads for Parallel I/O (SCORPIO)
 
-A high-level Parallel I/O Library for structured grid applications
+A high-level Parallel I/O Library for structured grid applications. This library was derived from the [Parallel I/O library](https://github.com/NCAR/ParallelIO).
 
 ## Website
 
