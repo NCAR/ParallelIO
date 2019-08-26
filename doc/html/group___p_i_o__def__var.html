@@ -4,7 +4,7 @@
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.6"/>
-<title>PIO: PIO_def_var</title>
+<title>SCORPIO: PIO_def_var</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -23,8 +23,8 @@
  <tbody>
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
-   <div id="projectname">PIO
-   &#160;<span id="projectnumber">2.0.28</span>
+   <div id="projectname">SCORPIO
+   &#160;<span id="projectnumber">1.0.0</span>
    </div>
   </td>
  </tr>
@@ -38,7 +38,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </script>
   <div id="navrow1" class="tabs">
     <ul class="tablist">
-      <li><a href="index.html"><span>PIO&#160;User's&#160;Guide</span></a></li>
+      <li><a href="index.html"><span>SCORPIO&#160;User's&#160;Guide</span></a></li>
       <li><a href="annotated.html"><span>Appendix</span></a></li>
       <li><a href="files.html"><span>Files</span></a></li>
       <li>
@@ -98,12 +98,6 @@ integer function&#160;</td><td class="memItemRight" valign="bottom"><a class="el
 integer function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__def__var.html#gac412bec00939a8235886d791a8cb2d1f">pio_nf::def_var_md_id</a> (ncid, name, type, dimids, varid)</td></tr>
 <tr class="memdesc:gac412bec00939a8235886d791a8cb2d1f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Defines a netcdf variable. <br/></td></tr>
 <tr class="separator:gac412bec00939a8235886d791a8cb2d1f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga70d1d5b2f5e828fed653ca87aacef16e"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__def__var.html#ga70d1d5b2f5e828fed653ca87aacef16e">PIOc_def_var</a> (int ncid, const char *name, nc_type xtype, int ndims, const int *dimidsp, int *varidp)</td></tr>
-<tr class="memdesc:ga70d1d5b2f5e828fed653ca87aacef16e"><td class="mdescLeft">&#160;</td><td class="mdescRight">The PIO-C interface for the NetCDF function nc_def_var.  <a href="#ga70d1d5b2f5e828fed653ca87aacef16e">More...</a><br/></td></tr>
-<tr class="separator:ga70d1d5b2f5e828fed653ca87aacef16e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga3eef846624adb5b9a2f0907bfa6eedcf"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__def__var.html#ga3eef846624adb5b9a2f0907bfa6eedcf">PIOc_def_var_fill</a> (int ncid, int varid, int fill_mode, const void *fill_valuep)</td></tr>
-<tr class="memdesc:ga3eef846624adb5b9a2f0907bfa6eedcf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the fill value for a variable.  <a href="#ga3eef846624adb5b9a2f0907bfa6eedcf">More...</a><br/></td></tr>
-<tr class="separator:ga3eef846624adb5b9a2f0907bfa6eedcf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga914f3306b223e1631a8fc63cd603acea"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__def__var.html#ga914f3306b223e1631a8fc63cd603acea">PIOc_def_var_deflate</a> (int ncid, int varid, int shuffle, int deflate, int deflate_level)</td></tr>
 <tr class="memdesc:ga914f3306b223e1631a8fc63cd603acea"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set deflate (zlib) settings for a variable.  <a href="#ga914f3306b223e1631a8fc63cd603acea">More...</a><br/></td></tr>
 <tr class="separator:ga914f3306b223e1631a8fc63cd603acea"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -122,6 +116,12 @@ integer function&#160;</td><td class="memItemRight" valign="bottom"><a class="el
 <tr class="memitem:gafe68b976cb9feaefb3c06a4656f7152a"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__def__var.html#gafe68b976cb9feaefb3c06a4656f7152a">PIOc_set_var_chunk_cache</a> (int ncid, int varid, PIO_Offset size, PIO_Offset nelems, float preemption)</td></tr>
 <tr class="memdesc:gafe68b976cb9feaefb3c06a4656f7152a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set chunksizes for a variable.  <a href="#gafe68b976cb9feaefb3c06a4656f7152a">More...</a><br/></td></tr>
 <tr class="separator:gafe68b976cb9feaefb3c06a4656f7152a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga70d1d5b2f5e828fed653ca87aacef16e"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__def__var.html#ga70d1d5b2f5e828fed653ca87aacef16e">PIOc_def_var</a> (int ncid, const char *name, nc_type xtype, int ndims, const int *dimidsp, int *varidp)</td></tr>
+<tr class="memdesc:ga70d1d5b2f5e828fed653ca87aacef16e"><td class="mdescLeft">&#160;</td><td class="mdescRight">The PIO-C interface for the NetCDF function nc_def_var.  <a href="#ga70d1d5b2f5e828fed653ca87aacef16e">More...</a><br/></td></tr>
+<tr class="separator:ga70d1d5b2f5e828fed653ca87aacef16e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga3eef846624adb5b9a2f0907bfa6eedcf"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__def__var.html#ga3eef846624adb5b9a2f0907bfa6eedcf">PIOc_def_var_fill</a> (int ncid, int varid, int fill_mode, const void *fill_valuep)</td></tr>
+<tr class="memdesc:ga3eef846624adb5b9a2f0907bfa6eedcf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the fill value for a variable.  <a href="#ga3eef846624adb5b9a2f0907bfa6eedcf">More...</a><br/></td></tr>
+<tr class="separator:ga3eef846624adb5b9a2f0907bfa6eedcf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <h2 class="groupheader">Function/Subroutine Documentation</h2>
@@ -705,7 +705,7 @@ integer function&#160;</td><td class="memItemRight" valign="bottom"><a class="el
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Aug 22 2019 11:11:12 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Aug 26 2019 12:39:03 for SCORPIO by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

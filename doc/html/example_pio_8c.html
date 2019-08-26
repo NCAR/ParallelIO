@@ -4,7 +4,7 @@
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.6"/>
-<title>PIO: examplePio.c File Reference</title>
+<title>SCORPIO: examplePio.c File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -23,8 +23,8 @@
  <tbody>
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
-   <div id="projectname">PIO
-   &#160;<span id="projectnumber">2.0.28</span>
+   <div id="projectname">SCORPIO
+   &#160;<span id="projectnumber">1.0.0</span>
    </div>
   </td>
  </tr>
@@ -38,7 +38,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </script>
   <div id="navrow1" class="tabs">
     <ul class="tablist">
-      <li><a href="index.html"><span>PIO&#160;User's&#160;Guide</span></a></li>
+      <li><a href="index.html"><span>SCORPIO&#160;User's&#160;Guide</span></a></li>
       <li><a href="annotated.html"><span>Appendix</span></a></li>
       <li class="current"><a href="files.html"><span>Files</span></a></li>
       <li>
@@ -81,7 +81,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="dir_43d99ce78fde0129422a9159c5186d57.html">ParallelIO</a></li><li class="navelem"><a class="el" href="dir_280fa4ee35d0628b9337928bb1c5dd5d.html">examples</a></li><li class="navelem"><a class="el" href="dir_7579fac33217736591b52f68c0fdef0b.html">c</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_7696f96c4c391437740b3ec44f063793.html">ParallelIO_tmp</a></li><li class="navelem"><a class="el" href="dir_3884dafe2670351907cbc9f54588f85c.html">examples</a></li><li class="navelem"><a class="el" href="dir_f0ccec7a933452e74761bb9801df62ba.html">c</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
@@ -187,7 +187,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Clean up allocated resources. </p>
-<p>This function frees the memory used in this example. It calls the ParallelIO library function <a class="el" href="pio_8h.html#a6416ad3c81a99f31f8f55e857acd697e" title="Free a decomposition map. ">PIOc_freedecomp()</a> to free decomposition resources. Then calles <a class="el" href="group___p_i_o__finalize.html#ga04e150e10a29f037979dc2eaa872bdb5" title="Clean up internal data structures, free MPI resources, and exit the pio library. ">PIOc_finalize()</a> and MPI_finalize() to free library resources.</p>
+<p>This function frees the memory used in this example. It calls the ParallelIO library function PIOc_freedecomp() to free decomposition resources. Then calles <a class="el" href="group___p_i_o__finalize.html#ga04e150e10a29f037979dc2eaa872bdb5" title="Clean up internal data structures, free MPI resources, and exit the pio library. ">PIOc_finalize()</a> and MPI_finalize() to free library resources.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">this</td><td>Pointer to self. </td></tr>
@@ -218,7 +218,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Closes the netCDF file. </p>
-<p>Uses the <a class="el" href="pio_8h.html#aee37be8734afcb8ee94088dc287c341b" title="Close a file previously opened with PIO. ">PIOc_closefile()</a> function to close the netCDF sample file written by this example.</p>
+<p>Uses the <a class="el" href="pio__file_8c.html#aee37be8734afcb8ee94088dc287c341b" title="Close a file previously opened with PIO. ">PIOc_closefile()</a> function to close the netCDF sample file written by this example.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">this</td><td>Pointer to self. </td></tr>
@@ -402,7 +402,7 @@ rank: 3 length: 4 [13, 14, 15, 16]
 </div><div class="memdoc">
 
 <p>Error handling function. </p>
-<p>On error, process with rank zero will print error message, the netCDF file will be closed with <a class="el" href="pio_8h.html#aee37be8734afcb8ee94088dc287c341b" title="Close a file previously opened with PIO. ">PIOc_closefile()</a>, and MPI_Abort is called to end the example execution on all processes.</p>
+<p>On error, process with rank zero will print error message, the netCDF file will be closed with <a class="el" href="pio__file_8c.html#aee37be8734afcb8ee94088dc287c341b" title="Close a file previously opened with PIO. ">PIOc_closefile()</a>, and MPI_Abort is called to end the example execution on all processes.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">this</td><td>Pointer to self. </td></tr>
@@ -509,7 +509,7 @@ rank: 3 length: 4 [13, 14, 15, 16]
 
 <p>Read the example data from the file. </p>
 <p>This function is called as part of the creation of a sample data file for this example.</p>
-<p>This function reads the data that has been written to the sample data file. The data are read with the <a class="el" href="pio_8h.html#aa4eb9375a17ec358a88c8e7e388880db" title="Read a field from a file to the IO library. ">PIOc_read_darray()</a> function.</p>
+<p>This function reads the data that has been written to the sample data file. The data are read with the <a class="el" href="group___p_i_o__read__darray.html#gaa4eb9375a17ec358a88c8e7e388880db" title="Read a field from a file to the IO library. ">PIOc_read_darray()</a> function.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">this</td><td>Pointer to self. </td></tr>
@@ -541,7 +541,7 @@ rank: 3 length: 4 [13, 14, 15, 16]
 
 <p>Write the sample data to the file. </p>
 <p>This function is called as part of the creation of a sample data file for this example.</p>
-<p>The data are written with the <a class="el" href="pio_8h.html#aa40fae759a2a5e39cb7af9b6f024db8f" title="Write a distributed array to the output file. ">PIOc_write_darray()</a> function. After the write is complete, ensure the file is synced for all processes after the write.</p>
+<p>The data are written with the <a class="el" href="group___p_i_o__write__darray.html#gaa40fae759a2a5e39cb7af9b6f024db8f" title="Write a distributed array to the output file. ">PIOc_write_darray()</a> function. After the write is complete, ensure the file is synced for all processes after the write.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">this</td><td>Pointer to self. </td></tr>
@@ -625,7 +625,7 @@ data:</pre><pre>    foo = 42, 42, 42, 42, 43, 43, 43, 43, 44, 44, 44, 44, 45, 45
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Aug 22 2019 11:11:12 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Aug 26 2019 12:39:02 for SCORPIO by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

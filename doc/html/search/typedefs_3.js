@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['mapsort',['mapsort',['../pio__internal_8h.html#a9e56a396114b27586e78c419119a8533',1,'pio_internal.h']]]
+  ['rearr_5fcomm_5ffc_5fopt_5ft',['rearr_comm_fc_opt_t',['../pio_8h.html#a33bec608b2c9dd2e2855f7adcc23c7c2',1,'pio.h']]],
+  ['rearr_5fopt_5ft',['rearr_opt_t',['../pio_8h.html#af676ea8a0aa46e2f1a2cc2b6dc8c7569',1,'pio.h']]]
 ];

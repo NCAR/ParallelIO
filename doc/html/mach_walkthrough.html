@@ -4,7 +4,7 @@
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.6"/>
-<title>PIO: Install Walk-through</title>
+<title>SCORPIO: Install Walk-through</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -23,8 +23,8 @@
  <tbody>
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
-   <div id="projectname">PIO
-   &#160;<span id="projectnumber">2.0.28</span>
+   <div id="projectname">SCORPIO
+   &#160;<span id="projectnumber">1.0.0</span>
    </div>
   </td>
  </tr>
@@ -38,7 +38,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </script>
   <div id="navrow1" class="tabs">
     <ul class="tablist">
-      <li><a href="index.html"><span>PIO&#160;User's&#160;Guide</span></a></li>
+      <li><a href="index.html"><span>SCORPIO&#160;User's&#160;Guide</span></a></li>
       <li class="current"><a href="annotated.html"><span>Appendix</span></a></li>
       <li><a href="files.html"><span>Files</span></a></li>
       <li>
@@ -86,7 +86,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="title">Install Walk-through </div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p>This document provides specific instructions for installing PIO using a variety of compilers on a few commonly used super computers. Click on the link below to go directly to the machine of interest.</p>
+<div class="textblock"><p>This document provides specific instructions for installing SCORPIO using a variety of compilers on a few commonly used super computers. Click on the link below to go directly to the machine of interest.</p>
 <ul>
 <li><a href="#Yellowstone">Yellowstone</a> (NCAR's 1.5-petaflop IBM Supercomputer)</li>
 <li><a href="#Edison">Edison</a> (A NERSC Cray XC30 Supercomputer)</li>
@@ -100,12 +100,12 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <ol>
 <li>
 <p class="startli">Directory setup</p>
-<p>Download a copy of the PIO source into a sub-directory of your working directory (refered to here as the PIO_source directory). Create another sub-directory for the build (refered to here as the PIO_build directory) and 'cd' into it.</p>
+<p>Download a copy of the SCORPIO source into a sub-directory of your working directory (refered to here as the PIO_source directory). Create another sub-directory for the build (refered to here as the PIO_build directory) and 'cd' into it.</p>
 <p class="endli"></p>
 </li>
 <li>
 <p class="startli">Modules</p>
-<p>Modules required for installation depend on your prefered compiler. Issue the commands below to set the module environment for building PIO on Yellowstone.</p>
+<p>Modules required for installation depend on your prefered compiler. Issue the commands below to set the module environment for building SCORPIO on Yellowstone.</p>
 <ul>
 <li><p class="startli">Intel</p>
 <p class="startli">%&gt; module reset<br/>
@@ -151,7 +151,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </li>
 <li>
 <p class="startli">Build</p>
-<p class="endli">Building PIO requires running the CMake configure and then make. In the PIO_build directory type<br/>
+<p class="endli">Building SCORPIO requires running the CMake configure and then make. In the PIO_build directory type<br/>
  %&gt; cmake ../PIO_source/<br/>
  %&gt; make<br/>
  </p>
@@ -162,12 +162,12 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <ol>
 <li>
 <p class="startli">Directory setup</p>
-<p>Download a copy of the PIO source into a sub-directory of your working directory (refered to here as the PIO_source directory). Create another sub-directory for the build (refered to here as the PIO_build directory) and 'cd' into it.</p>
+<p>Download a copy of the SCORPIO source into a sub-directory of your working directory (refered to here as the PIO_source directory). Create another sub-directory for the build (refered to here as the PIO_build directory) and 'cd' into it.</p>
 <p class="endli"></p>
 </li>
 <li>
 <p class="startli">Modules</p>
-<p>Modules required for installation depend on your prefered compiler. Issue the commands below to set the module environment for building PIO on Edison.</p>
+<p>Modules required for installation depend on your prefered compiler. Issue the commands below to set the module environment for building SCORPIO on Edison.</p>
 <ul>
 <li><p class="startli">Intel</p>
 <p class="startli">%&gt; module purge<br/>
@@ -226,7 +226,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </li>
 <li>
 <p class="startli">Build</p>
-<p>Building PIO requires running the CMake configure and then make. In the PIO_build directory type<br/>
+<p>Building SCORPIO requires running the CMake configure and then make. In the PIO_build directory type<br/>
  %&gt; cmake -DCMAKE_VERBOSE_MAKEFILE=TRUE \<br/>
  -DPREFER_STATIC=TRUE \<br/>
  -DNetCDF_PATH=${NETCDF_DIR} \<br/>
@@ -247,12 +247,12 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <ol>
 <li>
 <p class="startli">Directory setup</p>
-<p>Download a copy of the PIO source into a sub-directory of your working directory (refered to here as the PIO_source directory). Create another sub-directory for the build (refered to here as the PIO_build directory) and 'cd' into it.</p>
+<p>Download a copy of the SCORPIO source into a sub-directory of your working directory (refered to here as the PIO_source directory). Create another sub-directory for the build (refered to here as the PIO_build directory) and 'cd' into it.</p>
 <p class="endli"></p>
 </li>
 <li>
 <p class="startli">Softenv packages and environment variables</p>
-<p>It is not necessary to edit your .soft file on Mira inorder to build PIO. Execute the following commands to temporarily load packages into your softenv. These packages use the IBM/XL compiler.<br/>
+<p>It is not necessary to edit your .soft file on Mira inorder to build SCORPIO. Execute the following commands to temporarily load packages into your softenv. These packages use the IBM/XL compiler.<br/>
  %&gt; soft add +mpiwrapper-xl (or switch from the default in your softenv)<br/>
  %&gt; soft add -compilers-2015-02<br/>
  %&gt; soft add +cmake<br/>
@@ -270,7 +270,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </li>
 <li>
 <p class="startli">Build</p>
-<p>Building PIO requires running the CMake configure and then make. In the PIO_build directory type<br/>
+<p>Building SCORPIO requires running the CMake configure and then make. In the PIO_build directory type<br/>
  %&gt; cmake -DPREFER_STATIC=TRUE ../PIO_source/<br/>
  %&gt; make</p>
 <p class="endli"></p>
@@ -281,12 +281,12 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <ol>
 <li>
 <p class="startli">Directory setup</p>
-<p>Download a copy of the PIO source into a sub-directory of your working directory (refered to here as the PIO_source directory). Create another sub-directory for the build (refered to here as the PIO_build directory) and 'cd' into it.</p>
+<p>Download a copy of the SCORPIO source into a sub-directory of your working directory (refered to here as the PIO_source directory). Create another sub-directory for the build (refered to here as the PIO_build directory) and 'cd' into it.</p>
 <p class="endli"></p>
 </li>
 <li>
 <p class="startli">Modules</p>
-<p>Modules required for installation depend on your prefered compiler. Issue the commands below to set the module environment for building PIO on Hobart.</p>
+<p>Modules required for installation depend on your prefered compiler. Issue the commands below to set the module environment for building SCORPIO on Hobart.</p>
 <ul>
 <li><p class="startli">Intel</p>
 <p class="startli">%&gt; module swap PrgEnv-cray PrgEnv-intel<br/>
@@ -322,7 +322,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </li>
 <li>
 <p class="startli">Build</p>
-<p>Building PIO requires running the CMake configure and then make. In the PIO_build directory type<br/>
+<p>Building SCORPIO requires running the CMake configure and then make. In the PIO_build directory type<br/>
  %&gt; cmake -DCMAKE_VERBOSE_MAKEFILE=TRUE \<br/>
  -DPREFER_STATIC=TRUE \<br/>
  -DNetCDF_PATH=${NETCDF_DIR} \<br/>
@@ -343,12 +343,12 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <ol>
 <li>
 <p class="startli">Directory setup</p>
-<p>Download a copy of the PIO source into a sub-directory of your working directory (refered to here as the PIO_source directory). Create another sub-directory for the build (refered to here as the PIO_build directory) and 'cd' into it.</p>
+<p>Download a copy of the SCORPIO source into a sub-directory of your working directory (refered to here as the PIO_source directory). Create another sub-directory for the build (refered to here as the PIO_build directory) and 'cd' into it.</p>
 <p class="endli"></p>
 </li>
 <li>
 <p class="startli">Modules</p>
-<p>Modules required for installation depend on your prefered compiler. Issue the commands below to set the module environment for building PIO on Hobart.</p>
+<p>Modules required for installation depend on your prefered compiler. Issue the commands below to set the module environment for building SCORPIO on Hobart.</p>
 <ul>
 <li><p class="startli">Intel</p>
 <p class="startli">%&gt; module purge<br/>
@@ -382,7 +382,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </li>
 <li>
 <p class="startli">Build</p>
-<p>Building PIO requires running the CMake configure and then make. In the PIO_build directory type<br/>
+<p>Building SCORPIO requires running the CMake configure and then make. In the PIO_build directory type<br/>
  %&gt; cmake -DNETCDF_DIR=$NETCDF_PATH -DPNETCDF_DIR=$PNETCDF_PATH ../PIO_source/<br/>
  %&gt; make</p>
 <p>ParallelIO does not require Parallel netcdf to run, so if you decide to use the GNU compiler on Hobart (not described here) without the parallel-netcdf library, use the cmake configure flags:<br/>
@@ -465,7 +465,7 @@ CPPFLAGS='-I/usr/local/zlib-1.2.11_mpich-3.2 -I/usr/local/szip-2.1_mpich-3.2/inc
 make all check
 sudo make install </pre></pre><pre></pre><pre>Note that you may not build netCDF with it's built-in
 parallel-netCDF support, if you are also planning to use the
-parallel-netCDF library with PIO. For PIO, parallel-netCDF must be
+parallel-netCDF library with SCORPIO. For SCORPIO, parallel-netCDF must be
 installed independently of netCDF.</pre><pre></pre></li>
 <li>
 <pre>Installing NetCDF-4 Fortran Library</pre><pre></pre><pre>Download the netcdf Fortran library from the <a href="http://www.unidata.ucar.edu/downloads/netcdf/index.jsp">NetCDF download
@@ -533,7 +533,7 @@ variables to these tests will increase the time significantly.</pre><pre></pre><
 </pre></div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Aug 22 2019 11:11:12 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Aug 26 2019 12:39:03 for SCORPIO by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

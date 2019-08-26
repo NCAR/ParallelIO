@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['lgcd',['lgcd',['../pio__internal_8h.html#a519df5fcdbcd109624e147ddc35791a9',1,'lgcd(long long a, long long b):&#160;pioc_sc.c'],['../pioc__sc_8c.html#a519df5fcdbcd109624e147ddc35791a9',1,'lgcd(long long a, long long b):&#160;pioc_sc.c']]],
-  ['lgcd_5farray',['lgcd_array',['../pio__internal_8h.html#a9abc09db4545c9581b1b590be7d18c97',1,'lgcd_array(int nain, long long *ain):&#160;pioc_sc.c'],['../pioc__sc_8c.html#a9abc09db4545c9581b1b590be7d18c97',1,'lgcd_array(int nain, long long *ain):&#160;pioc_sc.c']]]
+  ['main',['main',['../example1_8c.html#a0ddf1224851353fc92bfbff6f499fa97',1,'main(int argc, char *argv[]):&#160;example1.c'],['../example2_8c.html#a0ddf1224851353fc92bfbff6f499fa97',1,'main(int argc, char *argv[]):&#160;example2.c'],['../example_pio_8c.html#a0ddf1224851353fc92bfbff6f499fa97',1,'main(int argc, char *argv[]):&#160;examplePio.c'],['../put__var_8c.html#a0ddf1224851353fc92bfbff6f499fa97',1,'main(int argc, char *argv[]):&#160;put_var.c'],['../example_pio_8f90.html#a8ec2266d83cd6c0b762cbcbc92c0af3d',1,'main:&#160;examplePio.f90']]]
 ];

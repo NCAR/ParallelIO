@@ -25,6 +25,5 @@ var searchData=
   ['examplepio_2ec',['examplePio.c',['../example_pio_8c.html',1,'']]],
   ['examplepio_2ef90',['examplePio.f90',['../example_pio_8f90.html',1,'']]],
   ['examplepioclass',['examplePioClass',['../example_pio_8c.html#a979ddb2d426025010ad5160da5c9e9e8',1,'examplePio.c']]],
-  ['expand_5fregion',['expand_region',['../pio__internal_8h.html#a9f33a3fc15f89047573abd9af993eafa',1,'expand_region(int dim, const int *gdims, int maplen, const PIO_Offset *map, int region_size, int region_stride, const int *max_size, PIO_Offset *count):&#160;pio_rearrange.c'],['../pio__rearrange_8c.html#a34894ab4fab60701301c8d3c67219c20',1,'expand_region(int dim, const int *gdimlen, int maplen, const PIO_Offset *map, int region_size, int region_stride, const int *max_size, PIO_Offset *count):&#160;pio_rearrange.c']]],
   ['error_5fmethods',['error_methods',['../group___p_i_o__error__method.html',1,'']]]
 ];

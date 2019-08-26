@@ -1,6 +1,3 @@
 <map id="pio_darray.c" name="pio_darray.c">
-<area shape="rect" id="node3" href="$pio_8h.html" title="Public headers for the PIO C interface. " alt="" coords="191,155,241,181"/>
-<area shape="rect" id="node9" href="$pio__internal_8h.html" title="Private headers and defines for the PIO C interface. " alt="" coords="292,80,391,107"/>
-<area shape="rect" id="node14" href="$pio__sdecomps__regex_8h_source.html" title="pio_sdecomps_regex.h" alt="" coords="415,80,571,107"/>
-<area shape="rect" id="node10" href="$bget_8h_source.html" title="bget.h" alt="" coords="265,155,323,181"/>
+<area shape="rect" id="node3" href="$pio_8h.html" title="Public headers for the PIO C interface. " alt="" coords="191,80,241,107"/>
 </map>

@@ -4,7 +4,7 @@
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.6"/>
-<title>PIO: Describing decompositions</title>
+<title>SCORPIO: Describing decompositions</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -23,8 +23,8 @@
  <tbody>
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
-   <div id="projectname">PIO
-   &#160;<span id="projectnumber">2.0.28</span>
+   <div id="projectname">SCORPIO
+   &#160;<span id="projectnumber">1.0.0</span>
    </div>
   </td>
  </tr>
@@ -38,7 +38,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </script>
   <div id="navrow1" class="tabs">
     <ul class="tablist">
-      <li><a href="index.html"><span>PIO&#160;User's&#160;Guide</span></a></li>
+      <li><a href="index.html"><span>SCORPIO&#160;User's&#160;Guide</span></a></li>
       <li class="current"><a href="annotated.html"><span>Appendix</span></a></li>
       <li><a href="files.html"><span>Files</span></a></li>
       <li>
@@ -86,8 +86,8 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="title">Describing decompositions </div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p>One of the advantages of using PIO is the ability to describe the way data is decomposed across compute processes and reusing it for reading and writing any data that uses the same decomposition. Another major advantage is the feature in PIO to rearrange data before using low level I/O libraries like NetCDF and PnetCDF to write data to disk.</p>
-<p>The I/O decompositions can be defined by the user using the <a class="el" href="group___p_i_o__initdecomp.html">PIO_initdecomp</a> API. The algorithm used to rearrange data can be specified when initializing the PIO I/O system using the <a class="el" href="group___p_i_o__init.html">PIO_init</a> API. All decompositions created on the I/O system, using <a class="el" href="group___p_i_o__initdecomp.html">PIO_initdecomp</a>, use the rearrangment method specified while initializing the I/O system. PIO provides two methods to rearrange data from compute processes to I/O processes,</p>
+<div class="textblock"><p>One of the advantages of using SCORPIO is the ability to describe the way data is decomposed across compute processes and reusing it for reading and writing any data that uses the same decomposition. Another major advantage is the feature in SCORPIO to rearrange data before using low level I/O libraries like NetCDF and PnetCDF to write data to disk.</p>
+<p>The I/O decompositions can be defined by the user using the <a class="el" href="group___p_i_o__initdecomp.html">PIO_initdecomp</a> API. The algorithm used to rearrange data can be specified when initializing the SCORPIO I/O system using the <a class="el" href="group___p_i_o__init.html">PIO_init</a> API. All decompositions created on the I/O system, using <a class="el" href="group___p_i_o__initdecomp.html">PIO_initdecomp</a>, use the rearrangment method specified while initializing the I/O system. SCORPIO provides two methods to rearrange data from compute processes to I/O processes,</p>
 <ul>
 <li>Box rearrangement</li>
 <li>Subset rearrangement</li>
@@ -95,11 +95,9 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <h1><a class="anchor" id="BOXREARR"></a>
 Box rearrangement</h1>
 <p>In this method data is rearranged from compute to IO tasks such that each I/O task contains a contiguous block of data. In this case each compute task will transfer data to one or more IO tasks.</p>
-<p>This method is available in PIO1 and PIO2.</p>
 <h1><a class="anchor" id="SUBSETREARR"></a>
 Subset rearrangement</h1>
 <p>In this method each IO task is associated with a unique subset of compute tasks and data is rearranged to each I/O task by rearranging data between compute processes belonging to the subset associated with the I/O task. Since data rearrangement is confined to a subset of tasks, each I/O task is not guaranteed to have a single contiguous block of data. Any futher data rearrangment required before writing data to disk is delegated to the low level I/O libraries like NetCDF and PnetCDF.</p>
-<p>This method is only available in PIO2.</p>
 <p>As an example suppose we have a global two dimensional grid of size 4x5 decomposed over 5 tasks. We represent the two dimensional grid in terms of offset from the initial element ie </p>
 <pre>
      0  1  2  3 
@@ -123,11 +121,11 @@ Subset rearrangement</h1>
 0: { 0  1  4  5  8  9  12 16 }
 1: { 2  3  6  7  10 11 13 14 17 18 19 }
 </pre><p>Note that while the box rearranger gives a data layout which is well balanced and well suited for the underlying io library, it had to communicate with every compute task to do so. On the other hand the subset rearranger communicated with only a portion of the compute tasks but requires more work on the part of the underlying io library to complete the operation.</p>
-<p>Also note if every task is an IO task then the box rearranger will need to do an alltoall communication, while the subset rearranger does none. In fact using the subset rearranger with every compute task an IO task provides a measure of what you might expect the performance of the underlying IO library to be if it were used without PIO. </p>
+<p>Also note if every task is an IO task then the box rearranger will need to do an alltoall communication, while the subset rearranger does none. In fact using the subset rearranger with every compute task an IO task provides a measure of what you might expect the performance of the underlying IO library to be if it were used without SCORPIO. </p>
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Aug 22 2019 11:11:12 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Aug 26 2019 12:39:03 for SCORPIO by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>
