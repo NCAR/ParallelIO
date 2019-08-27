@@ -4,7 +4,7 @@
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.6"/>
-<title>PIO: PIO_initdecomp</title>
+<title>SCORPIO: PIO_initdecomp</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -23,8 +23,8 @@
  <tbody>
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
-   <div id="projectname">PIO
-   &#160;<span id="projectnumber">2.0.28</span>
+   <div id="projectname">SCORPIO
+   &#160;<span id="projectnumber">1.0.0</span>
    </div>
   </td>
  </tr>
@@ -38,7 +38,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </script>
   <div id="navrow1" class="tabs">
     <ul class="tablist">
-      <li><a href="index.html"><span>PIO&#160;User's&#160;Guide</span></a></li>
+      <li><a href="index.html"><span>SCORPIO&#160;User's&#160;Guide</span></a></li>
       <li><a href="annotated.html"><span>Appendix</span></a></li>
       <li><a href="files.html"><span>Files</span></a></li>
       <li>
@@ -170,7 +170,7 @@ Functions/Subroutines</h2></td></tr>
     <tr><td class="paramname">dims</td><td>An array of the global length of each dimesion of the variable(s) </td></tr>
     <tr><td class="paramname">compstart</td><td>The start index into the block-cyclic computational decomposition </td></tr>
     <tr><td class="paramname">compcount</td><td>The count for the block-cyclic computational decomposition </td></tr>
-    <tr><td class="paramname">iodesc</td><td>The io descriptor structure in defined in this subroutine and subsequently used in PIO_read_darray, PIO_write_darray, PIO_put_var, PIO_get_var calls (see <a class="el" href="classpio__types.html">pio_types</a>).</td></tr>
+    <tr><td class="paramname">iodesc</td><td>The io descriptor structure in defined in this subroutine and subsequently used in <a class="el" href="group___p_i_o__read__darray.html">PIO_read_darray</a>, <a class="el" href="group___p_i_o__write__darray.html">PIO_write_darray</a>, <a class="el" href="group___p_i_o__put__var.html">PIO_put_var</a>, <a class="el" href="group___p_i_o__get__var.html">PIO_get_var</a> calls (see <a class="el" href="classpio__types.html">pio_types</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -251,7 +251,7 @@ Functions/Subroutines</h2></td></tr>
 </td></tr>
     <tr><td class="paramname">dims</td><td>An array of the global length of each dimesion of the variable(s) </td></tr>
     <tr><td class="paramname">compdof</td><td>Mapping of the storage order for the computational decomposition to its memory order </td></tr>
-    <tr><td class="paramname">iodesc</td><td>The io descriptor structure in defined in this subroutine and subsequently used in PIO_read_darray, PIO_write_darray, PIO_put_var, PIO_get_var calls (see <a class="el" href="classpio__types.html">pio_types</a>).</td></tr>
+    <tr><td class="paramname">iodesc</td><td>The io descriptor structure in defined in this subroutine and subsequently used in <a class="el" href="group___p_i_o__read__darray.html">PIO_read_darray</a>, <a class="el" href="group___p_i_o__write__darray.html">PIO_write_darray</a>, <a class="el" href="group___p_i_o__put__var.html">PIO_put_var</a>, <a class="el" href="group___p_i_o__get__var.html">PIO_get_var</a> calls (see <a class="el" href="classpio__types.html">pio_types</a>).</td></tr>
     <tr><td class="paramname">iostart</td><td>The start index for the block-cyclic io decomposition </td></tr>
     <tr><td class="paramname">iocount</td><td>The count for the block-cyclic io decomposition </td></tr>
   </table>
@@ -433,7 +433,7 @@ Functions/Subroutines</h2></td></tr>
 <li>
 Allocate and initialize an iodesc struct for this decomposition. (This also allocates an <a class="el" href="structio__region.html" title="IO region structure. ">io_region</a> struct for the first region.) </li>
 <li>
-(Box rearranger only) If iostart or iocount are NULL, call <a class="el" href="pio__internal_8h.html#a3853ca65f627c30076b4fa2a9f88b0f2" title="Compute start and count values for each io task. ">CalcStartandCount()</a> to determine starts/counts. Then call <a class="el" href="pio__internal_8h.html#a7be19ba8290fabfe5d713784109a13cc" title="Compute the max io buffer size needed for an iodesc. ">compute_maxIObuffersize()</a> to compute the max IO buffer size needed. </li>
+(Box rearranger only) If iostart or iocount are NULL, call <a class="el" href="pioc__sc_8c.html#a3853ca65f627c30076b4fa2a9f88b0f2" title="Compute start and count values for each io task. ">CalcStartandCount()</a> to determine starts/counts. Then call compute_maxIObuffersize() to compute the max IO buffer size needed. </li>
 <li>
 Create the rearranger. </li>
 <li>
@@ -535,7 +535,7 @@ Assign an ioid and add this decomposition to the list of open decompositions. </
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Aug 22 2019 11:11:12 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Aug 26 2019 12:39:03 for SCORPIO by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

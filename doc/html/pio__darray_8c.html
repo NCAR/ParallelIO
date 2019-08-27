@@ -4,7 +4,7 @@
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.6"/>
-<title>PIO: pio_darray.c File Reference</title>
+<title>SCORPIO: pio_darray.c File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -23,8 +23,8 @@
  <tbody>
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
-   <div id="projectname">PIO
-   &#160;<span id="projectnumber">2.0.28</span>
+   <div id="projectname">SCORPIO
+   &#160;<span id="projectnumber">1.0.0</span>
    </div>
   </td>
  </tr>
@@ -38,7 +38,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </script>
   <div id="navrow1" class="tabs">
     <ul class="tablist">
-      <li><a href="index.html"><span>PIO&#160;User's&#160;Guide</span></a></li>
+      <li><a href="index.html"><span>SCORPIO&#160;User's&#160;Guide</span></a></li>
       <li><a href="annotated.html"><span>Appendix</span></a></li>
       <li class="current"><a href="files.html"><span>Files</span></a></li>
       <li>
@@ -81,7 +81,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="dir_43d99ce78fde0129422a9159c5186d57.html">ParallelIO</a></li><li class="navelem"><a class="el" href="dir_141a8219d9000c6e4137175db07b6601.html">src</a></li><li class="navelem"><a class="el" href="dir_f00dc8b6574f3e86f0c5dc7c00a526e4.html">clib</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_7696f96c4c391437740b3ec44f063793.html">ParallelIO_tmp</a></li><li class="navelem"><a class="el" href="dir_a164ee6fba94f501e80667bb89207e1c.html">src</a></li><li class="navelem"><a class="el" href="dir_0904bedaee7fb147d21c0478e218ab02.html">clib</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
@@ -98,14 +98,14 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;config.h&gt;</code><br/>
 <code>#include &lt;<a class="el" href="pio_8h_source.html">pio.h</a>&gt;</code><br/>
-<code>#include &lt;<a class="el" href="pio__internal_8h_source.html">pio_internal.h</a>&gt;</code><br/>
+<code>#include &lt;pio_internal.h&gt;</code><br/>
 <code>#include &quot;pio_sdecomps_regex.h&quot;</code><br/>
 </div><div class="textblock"><div class="dynheader">
 Include dependency graph for pio_darray.c:</div>
 <div class="dyncontent">
 <div class="center"><img src="pio__darray_8c__incl.png" border="0" usemap="#pio__darray_8c" alt=""/></div>
 <map name="pio__darray_8c" id="pio__darray_8c">
-<area shape="rect" id="node3" href="pio_8h.html" title="Public headers for the PIO C interface. " alt="" coords="191,155,241,181"/><area shape="rect" id="node9" href="pio__internal_8h.html" title="Private headers and defines for the PIO C interface. " alt="" coords="292,80,391,107"/><area shape="rect" id="node14" href="pio__sdecomps__regex_8h_source.html" title="pio_sdecomps_regex.h" alt="" coords="415,80,571,107"/><area shape="rect" id="node10" href="bget_8h_source.html" title="bget.h" alt="" coords="265,155,323,181"/></map>
+<area shape="rect" id="node3" href="pio_8h.html" title="Public headers for the PIO C interface. " alt="" coords="191,80,241,107"/></map>
 </div>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="define-members"></a>
@@ -122,18 +122,18 @@ Functions</h2></td></tr>
 <tr class="memitem:a391b1ef1811260306b599b5bcc680a52"><td class="memItemLeft" align="right" valign="top">PIO_Offset&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio__darray_8c.html#a391b1ef1811260306b599b5bcc680a52">PIOc_set_buffer_size_limit</a> (PIO_Offset limit)</td></tr>
 <tr class="memdesc:a391b1ef1811260306b599b5bcc680a52"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the PIO IO node data buffer size limit.  <a href="#a391b1ef1811260306b599b5bcc680a52">More...</a><br/></td></tr>
 <tr class="separator:a391b1ef1811260306b599b5bcc680a52"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8e6611243431101939c4dd4c991a7e0b"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio__darray_8c.html#a8e6611243431101939c4dd4c991a7e0b">PIOc_write_darray_multi</a> (int ncid, const int *varids, int ioid, int nvars, PIO_Offset arraylen, void *array, const int *frame, void **fillvalue, bool flushtodisk)</td></tr>
-<tr class="memdesc:a8e6611243431101939c4dd4c991a7e0b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write one or more arrays with the same IO decomposition to the file.  <a href="#a8e6611243431101939c4dd4c991a7e0b">More...</a><br/></td></tr>
-<tr class="separator:a8e6611243431101939c4dd4c991a7e0b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab3e7daa32e4bcbd54a1afa2508ed5f4f"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio__darray_8c.html#ab3e7daa32e4bcbd54a1afa2508ed5f4f">find_var_fillvalue</a> (<a class="el" href="structfile__desc__t.html">file_desc_t</a> *file, int varid, <a class="el" href="structvar__desc__t.html">var_desc_t</a> *vdesc)</td></tr>
-<tr class="memdesc:ab3e7daa32e4bcbd54a1afa2508ed5f4f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Find the fillvalue that should be used for a variable.  <a href="#ab3e7daa32e4bcbd54a1afa2508ed5f4f">More...</a><br/></td></tr>
-<tr class="separator:ab3e7daa32e4bcbd54a1afa2508ed5f4f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa40fae759a2a5e39cb7af9b6f024db8f"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio__darray_8c.html#aa40fae759a2a5e39cb7af9b6f024db8f">PIOc_write_darray</a> (int ncid, int varid, int ioid, PIO_Offset arraylen, void *array, void *fillvalue)</td></tr>
-<tr class="memdesc:aa40fae759a2a5e39cb7af9b6f024db8f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write a distributed array to the output file.  <a href="#aa40fae759a2a5e39cb7af9b6f024db8f">More...</a><br/></td></tr>
-<tr class="separator:aa40fae759a2a5e39cb7af9b6f024db8f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa4eb9375a17ec358a88c8e7e388880db"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio__darray_8c.html#aa4eb9375a17ec358a88c8e7e388880db">PIOc_read_darray</a> (int ncid, int varid, int ioid, PIO_Offset arraylen, void *array)</td></tr>
-<tr class="memdesc:aa4eb9375a17ec358a88c8e7e388880db"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read a field from a file to the IO library.  <a href="#aa4eb9375a17ec358a88c8e7e388880db">More...</a><br/></td></tr>
-<tr class="separator:aa4eb9375a17ec358a88c8e7e388880db"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga8e6611243431101939c4dd4c991a7e0b"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__write__darray.html#ga8e6611243431101939c4dd4c991a7e0b">PIOc_write_darray_multi</a> (int ncid, const int *varids, int ioid, int nvars, PIO_Offset arraylen, void *array, const int *frame, void **fillvalue, bool flushtodisk)</td></tr>
+<tr class="memdesc:ga8e6611243431101939c4dd4c991a7e0b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write one or more arrays with the same IO decomposition to the file.  <a href="group___p_i_o__write__darray.html#ga8e6611243431101939c4dd4c991a7e0b">More...</a><br/></td></tr>
+<tr class="separator:ga8e6611243431101939c4dd4c991a7e0b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gab3e7daa32e4bcbd54a1afa2508ed5f4f"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__write__darray.html#gab3e7daa32e4bcbd54a1afa2508ed5f4f">find_var_fillvalue</a> (<a class="el" href="structfile__desc__t.html">file_desc_t</a> *file, int varid, <a class="el" href="structvar__desc__t.html">var_desc_t</a> *vdesc)</td></tr>
+<tr class="memdesc:gab3e7daa32e4bcbd54a1afa2508ed5f4f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Find the fillvalue that should be used for a variable.  <a href="group___p_i_o__write__darray.html#gab3e7daa32e4bcbd54a1afa2508ed5f4f">More...</a><br/></td></tr>
+<tr class="separator:gab3e7daa32e4bcbd54a1afa2508ed5f4f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaa40fae759a2a5e39cb7af9b6f024db8f"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__write__darray.html#gaa40fae759a2a5e39cb7af9b6f024db8f">PIOc_write_darray</a> (int ncid, int varid, int ioid, PIO_Offset arraylen, void *array, void *fillvalue)</td></tr>
+<tr class="memdesc:gaa40fae759a2a5e39cb7af9b6f024db8f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write a distributed array to the output file.  <a href="group___p_i_o__write__darray.html#gaa40fae759a2a5e39cb7af9b6f024db8f">More...</a><br/></td></tr>
+<tr class="separator:gaa40fae759a2a5e39cb7af9b6f024db8f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaa4eb9375a17ec358a88c8e7e388880db"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__read__darray.html#gaa4eb9375a17ec358a88c8e7e388880db">PIOc_read_darray</a> (int ncid, int varid, int ioid, PIO_Offset arraylen, void *array)</td></tr>
+<tr class="memdesc:gaa4eb9375a17ec358a88c8e7e388880db"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read a field from a file to the IO library.  <a href="group___p_i_o__read__darray.html#gaa4eb9375a17ec358a88c8e7e388880db">More...</a><br/></td></tr>
+<tr class="separator:gaa4eb9375a17ec358a88c8e7e388880db"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
 Variables</h2></td></tr>
@@ -149,108 +149,6 @@ PIO_Offset&#160;</td><td class="memItemRight" valign="bottom"><b>maxusage</b> = 
 <p>When arrays are distributed, each processor holds some of the array. Only by combining the distributed arrays from all processor can the full array be obtained.</p>
 <dl class="section author"><dt>Author</dt><dd>Jim Edwards </dd></dl>
 </div><h2 class="groupheader">Function Documentation</h2>
-<a class="anchor" id="ab3e7daa32e4bcbd54a1afa2508ed5f4f"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">int find_var_fillvalue </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="structfile__desc__t.html">file_desc_t</a> *&#160;</td>
-          <td class="paramname"><em>file</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>varid</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="structvar__desc__t.html">var_desc_t</a> *&#160;</td>
-          <td class="paramname"><em>vdesc</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Find the fillvalue that should be used for a variable. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">file</td><td>Info about file we are writing to. </td></tr>
-    <tr><td class="paramname">varid</td><td>the variable ID. </td></tr>
-    <tr><td class="paramname">vdesc</td><td>pointer to <a class="el" href="structvar__desc__t.html" title="Variable description structure. ">var_desc_t</a> info for this var. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>0 for success, non-zero error code for failure.</dd></dl>
-<dl class="section author"><dt>Author</dt><dd>Ed Hartnett </dd></dl>
-
-</div>
-</div>
-<a class="anchor" id="aa4eb9375a17ec358a88c8e7e388880db"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">int PIOc_read_darray </td>
-          <td>(</td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>ncid</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>varid</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>ioid</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">PIO_Offset&#160;</td>
-          <td class="paramname"><em>arraylen</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">void *&#160;</td>
-          <td class="paramname"><em>array</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Read a field from a file to the IO library. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">ncid</td><td>identifies the netCDF file </td></tr>
-    <tr><td class="paramname">varid</td><td>the variable ID to be read </td></tr>
-    <tr><td class="paramname">ioid</td><td>the I/O description ID as passed back by <a class="el" href="group___p_i_o__initdecomp.html#ga56c119d47d1082df044968f80acbe265" title="Initialize the decomposition used with distributed arrays. ">PIOc_InitDecomp()</a>. </td></tr>
-    <tr><td class="paramname">arraylen</td><td>the length of the array to be read. This is the length of the distrubited array. That is, the length of the portion of the data that is on the processor. </td></tr>
-    <tr><td class="paramname">array</td><td>pointer to the data to be read. This is a pointer to the distributed portion of the array that is on this processor. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>0 for success, error code otherwise.</dd></dl>
-<dl class="section author"><dt>Author</dt><dd>Jim Edwards, Ed Hartnett </dd></dl>
-
-</div>
-</div>
 <a class="anchor" id="a391b1ef1811260306b599b5bcc680a52"></a>
 <div class="memitem">
 <div class="memproto">
@@ -277,201 +175,10 @@ PIO_Offset&#160;</td><td class="memItemRight" valign="bottom"><b>maxusage</b> = 
 
 </div>
 </div>
-<a class="anchor" id="aa40fae759a2a5e39cb7af9b6f024db8f"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">int PIOc_write_darray </td>
-          <td>(</td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>ncid</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>varid</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>ioid</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">PIO_Offset&#160;</td>
-          <td class="paramname"><em>arraylen</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">void *&#160;</td>
-          <td class="paramname"><em>array</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">void *&#160;</td>
-          <td class="paramname"><em>fillvalue</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Write a distributed array to the output file. </p>
-<p>This routine aggregates output on the compute nodes and only sends it to the IO nodes when the compute buffer is full or when a flush is triggered.</p>
-<p>Internally, this function will: </p>
-<ul>
-<li>
-Locate info about this file, decomposition, and variable. </li>
-<li>
-If we don't have a fillvalue for this variable, determine one and remember it for future calls. </li>
-<li>
-Initialize or find the multi_buffer for this record/var. </li>
-<li>
-Find out how much free space is available in the multi buffer and flush if needed. </li>
-<li>
-Store the new user data in the mutli buffer. </li>
-<li>
-If needed (only for subset rearranger), fill in gaps in data with fillvalue. </li>
-<li>
-Remember the frame value (i.e. record number) of this data if there is one. </li>
-</ul>
-<p>NOTE: The write multi buffer <a class="el" href="structwmulti__buffer.html" title="The multi buffer holds data from one or more variables. ">wmulti_buffer</a> is the cache on compute nodes that will collect and store multiple variables before sending them to the io nodes. Aggregating variables in this way leads to a considerable savings in communication expense. Variables in the wmb array must have the same decomposition and base data size and we also need to keep track of whether each is a recordvar (has an unlimited dimension) or not.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">ncid</td><td>the ncid of the open netCDF file. </td></tr>
-    <tr><td class="paramname">varid</td><td>the ID of the variable that these data will be written to. </td></tr>
-    <tr><td class="paramname">ioid</td><td>the I/O description ID as passed back by <a class="el" href="group___p_i_o__initdecomp.html#ga56c119d47d1082df044968f80acbe265" title="Initialize the decomposition used with distributed arrays. ">PIOc_InitDecomp()</a>. </td></tr>
-    <tr><td class="paramname">arraylen</td><td>the length of the array to be written. This should be at least the length of the local component of the distrubited array. (Any values beyond length of the local component will be ignored.) </td></tr>
-    <tr><td class="paramname">array</td><td>pointer to an array of length arraylen with the data to be written. This is a pointer to the distributed portion of the array that is on this task. </td></tr>
-    <tr><td class="paramname">fillvalue</td><td>pointer to the fill value to be used for missing data. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>0 for success, non-zero error code for failure.</dd></dl>
-<dl class="section author"><dt>Author</dt><dd>Jim Edwards, Ed Hartnett </dd></dl>
-
-</div>
-</div>
-<a class="anchor" id="a8e6611243431101939c4dd4c991a7e0b"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">int PIOc_write_darray_multi </td>
-          <td>(</td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>ncid</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const int *&#160;</td>
-          <td class="paramname"><em>varids</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>ioid</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>nvars</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">PIO_Offset&#160;</td>
-          <td class="paramname"><em>arraylen</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">void *&#160;</td>
-          <td class="paramname"><em>array</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const int *&#160;</td>
-          <td class="paramname"><em>frame</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">void **&#160;</td>
-          <td class="paramname"><em>fillvalue</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>flushtodisk</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Write one or more arrays with the same IO decomposition to the file. </p>
-<p>This funciton is similar to <a class="el" href="pio__darray_8c.html#aa40fae759a2a5e39cb7af9b6f024db8f" title="Write a distributed array to the output file. ">PIOc_write_darray()</a>, but allows the caller to use their own data buffering (instead of using the buffering implemented in <a class="el" href="pio__darray_8c.html#aa40fae759a2a5e39cb7af9b6f024db8f" title="Write a distributed array to the output file. ">PIOc_write_darray()</a>).</p>
-<p>When the user calls <a class="el" href="pio__darray_8c.html#aa40fae759a2a5e39cb7af9b6f024db8f" title="Write a distributed array to the output file. ">PIOc_write_darray()</a> one or more times, then PIO_write_darray_multi() will be called when the buffer is flushed.</p>
-<p>Internally, this function will: </p>
-<ul>
-<li>
-Find info about file, decomposition, and variable. </li>
-<li>
-Do a special flush for pnetcdf if needed. </li>
-<li>
-Allocates a buffer big enough to hold all the data in the multi-buffer, for all tasks. </li>
-<li>
-Calls <a class="el" href="pio__internal_8h.html#a2cf6663a5359e57a8e9afc9b9b25a3f3" title="Moves data from compute tasks to IO tasks. ">rearrange_comp2io()</a> to move data from compute to IO tasks. </li>
-<li>
-For parallel iotypes (pnetcdf and netCDF-4 parallel) call pio_write_darray_multi_nc(). </li>
-<li>
-For serial iotypes (netcdf classic and netCDF-4 serial) call <a class="el" href="pio__darray__int_8c.html#a41c45f0b205bcef5184404ac50567feb" title="Write a set of one or more aggregated arrays to output file in serial mode. ">write_darray_multi_serial()</a>. </li>
-<li>
-For subset rearranger, create holegrid to write missing data. Then call pio_write_darray_multi_nc() or <a class="el" href="pio__darray__int_8c.html#a41c45f0b205bcef5184404ac50567feb" title="Write a set of one or more aggregated arrays to output file in serial mode. ">write_darray_multi_serial()</a> to write the holegrid. </li>
-<li>
-Special buffer flush for pnetcdf. </li>
-</ul>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">ncid</td><td>identifies the netCDF file. </td></tr>
-    <tr><td class="paramname">varids</td><td>an array of length nvars containing the variable ids to be written. </td></tr>
-    <tr><td class="paramname">ioid</td><td>the I/O description ID as passed back by <a class="el" href="group___p_i_o__initdecomp.html#ga56c119d47d1082df044968f80acbe265" title="Initialize the decomposition used with distributed arrays. ">PIOc_InitDecomp()</a>. </td></tr>
-    <tr><td class="paramname">nvars</td><td>the number of variables to be written with this call. </td></tr>
-    <tr><td class="paramname">arraylen</td><td>the length of the array to be written. This is the length of the distrubited array. That is, the length of the portion of the data that is on the processor. The same arraylen is used for all variables in the call. </td></tr>
-    <tr><td class="paramname">array</td><td>pointer to the data to be written. This is a pointer to an array of arrays with the distributed portion of the array that is on this processor. There are nvars arrays of data, and each array of data contains one record worth of data for that variable. </td></tr>
-    <tr><td class="paramname">frame</td><td>an array of length nvars with the frame or record dimension for each of the nvars variables in IOBUF. NULL if this iodesc contains non-record vars. </td></tr>
-    <tr><td class="paramname">fillvalue</td><td>pointer an array (of length nvars) of pointers to the fill value to be used for missing data. </td></tr>
-    <tr><td class="paramname">flushtodisk</td><td>non-zero to cause buffers to be flushed to disk. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>0 for success, error code otherwise.</dd></dl>
-<dl class="section author"><dt>Author</dt><dd>Jim Edwards, Ed Hartnett </dd></dl>
-
-</div>
-</div>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Aug 22 2019 11:11:12 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Aug 26 2019 12:39:02 for SCORPIO by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

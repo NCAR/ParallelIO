@@ -4,7 +4,7 @@
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.6"/>
-<title>PIO: Parallel I/O library (PIO)</title>
+<title>SCORPIO: Software for Caching Output and Reads for Parallel I/O (SCORPIO)</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -23,8 +23,8 @@
  <tbody>
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
-   <div id="projectname">PIO
-   &#160;<span id="projectnumber">2.0.28</span>
+   <div id="projectname">SCORPIO
+   &#160;<span id="projectnumber">1.0.0</span>
    </div>
   </td>
  </tr>
@@ -38,7 +38,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </script>
   <div id="navrow1" class="tabs">
     <ul class="tablist">
-      <li class="current"><a href="index.html"><span>PIO&#160;User's&#160;Guide</span></a></li>
+      <li class="current"><a href="index.html"><span>SCORPIO&#160;User's&#160;Guide</span></a></li>
       <li><a href="annotated.html"><span>Appendix</span></a></li>
       <li><a href="files.html"><span>Files</span></a></li>
       <li>
@@ -76,7 +76,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 <div class="header">
   <div class="headertitle">
-<div class="title">Parallel I/O library (PIO) </div>  </div>
+<div class="title">Software for Caching Output and Reads for Parallel I/O (SCORPIO) </div>  </div>
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><dl class="section author"><dt>Author</dt><dd>Jayesh Krishna </dd>
@@ -90,26 +90,26 @@ Ed Hartnett </dd>
 John M. Dennis </dd>
 <dd>
 Mariana Vertenstein</dd></dl>
-<p>The Parallel I/O (PIO) library has been developed over several years to improve the ability of component models of the Community Earth System Model (CESM) and Energy Exascale Earth System Model (E3SM) to perform I/O. The interface is sufficiently general to be useful to a broader spectrum of applications. The focus of development has been on backend tools that use the NetCDF file format. PIO currently supports NetCDF, PnetCDF and ADIOS as the backend libraries.</p>
-<p>PIO2 represents a significant rewrite of the PIO library in C (originally implemented in Fortran language) and includes a C API as well as the original F90 API. The new version of the library also includes improvements in user data caching and aggregation algorithms that significantly improve performance. A new decomposition strategy has been introduced which gives the user more ability to tune I/O communications.</p>
-<p>This user's guide provides information on how to use the PIO library and an overview of the internal algorithms used by the library.</p>
+<p>The SCORPIO (Software for Caching Output and Reads for Parallel I/O) library was developed to improve the ability of component models of the Energy Exascale Earth System Model (E3SM) to perform I/O efficiently by leveraging other low-level I/O libraries. The SCORPIO library was derived from the Parallel I/O library (PIO) that has been developed over several years to improve the ability of component models of the Community Earth System Model (CESM) and Energy Exascale Earth System Model (E3SM) to perform I/O. The interface is sufficiently general to be useful to a broader spectrum of applications. The focus of development has been on backend tools that use the NetCDF file format. SCORPIO currently supports NetCDF, PnetCDF and ADIOS as the backend libraries.</p>
+<p>SCORPIO supports the interfaces supported by the PIO library and includes C and F90 APIs compatible with the PIO library. The library also includes improvements in user data caching and aggregation algorithms that significantly improve performance. A new decomposition strategy has been introduced which gives the user more ability to tune I/O communications.</p>
+<p>This user's guide provides information on how to use the SCORPIO library and an overview of the internal algorithms used by the library.</p>
 <p>Please review the ChangeLog that is included with the distribution for up-to-date release information.</p>
 <ul>
 <li><a class="el" href="intro.html">Introduction</a></li>
-<li><a class="el" href="install.html">Installing PIO</a></li>
+<li><a class="el" href="install.html">Installing SCORPIO</a></li>
 <li><a class="el" href="mach_walkthrough.html">Install Walk-through</a></li>
 <li><a class="el" href="decomp.html">Describing decompositions</a></li>
 <li><a class="el" href="error.html">Error Handling</a></li>
 <li><a class="el" href="test.html">Testing</a></li>
 <li><a class="el" href="examp.html">Examples</a></li>
 <li><a class="el" href="faq.html">Frequently Asked Questions</a></li>
-<li><a class="el" href="api.html">PIO user interface</a></li>
+<li><a class="el" href="api.html">SCORPIO user interface</a></li>
 <li><a class="el" href="contributing_code.html">Guide for Contributors</a> </li>
 </ul>
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Aug 22 2019 11:11:12 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Aug 26 2019 12:39:03 for SCORPIO by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

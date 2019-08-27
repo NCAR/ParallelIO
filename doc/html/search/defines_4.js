@@ -2,11 +2,8 @@ var searchData=
 [
   ['pio_5fdefault',['PIO_DEFAULT',['../pio_8h.html#a39ae42ff91b54d8e03f741bd3f4b12f4',1,'pio.h']]],
   ['pio_5feindep',['PIO_EINDEP',['../pio_8h.html#ae11d6fdb7de9cfa9e994d42d20c037f5',1,'pio.h']]],
-  ['pio_5ffile_5fstart_5fid',['PIO_FILE_START_ID',['../pio__lists_8c.html#ac6d3bc42355aa05d9fc5f5302f867650',1,'pio_lists.c']]],
   ['pio_5ffirst_5ferror_5fcode',['PIO_FIRST_ERROR_CODE',['../pio_8h.html#a53b0a0ba9de0ba76508fb54fa326cbfd',1,'pio.h']]],
   ['pio_5fiodesc_5fstart_5fid',['PIO_IODESC_START_ID',['../pio_8h.html#a89cef4c8b5749d571678e95d7d81f4d8',1,'pio.h']]],
-  ['pio_5fiosystem_5fstart_5fid',['PIO_IOSYSTEM_START_ID',['../pio__lists_8c.html#a10e5ab99b4027c25852c0a067733f57a',1,'pio_lists.c']]],
-  ['pio_5flong_5finternal',['PIO_LONG_INTERNAL',['../pio__internal_8h.html#a7ebfecc68d05230336f43ebd4a1ea16a',1,'pio_internal.h']]],
   ['pio_5fmax_5fattrs_5fub',['PIO_MAX_ATTRS_UB',['../pio_8h.html#ad860cfb0b9747e046e81dfc5ff8d9983',1,'pio.h']]],
   ['pio_5fmax_5fdims_5fub',['PIO_MAX_DIMS_UB',['../pio_8h.html#abdb966820d74c11fc666dd06874fbfc2',1,'pio.h']]],
   ['pio_5fmax_5fvars_5fub',['PIO_MAX_VARS_UB',['../pio_8h.html#a2e9c5f8777f6f610ce921a8b6c76d528',1,'pio.h']]],
