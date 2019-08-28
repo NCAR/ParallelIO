@@ -250,7 +250,7 @@ module pio_types
    integer, public, parameter :: PIO_NOWRITE = 21
    integer, public, parameter :: PIO_64BIT_OFFSET = 0
    integer, public, parameter :: PIO_64BIT_DATA = 0
-   integer, public, parameter :: PIO_FILL_CHAR = achar(0);
+   integer, public, parameter :: PIO_FILL_CHAR = 0;
    integer, public, parameter :: PIO_FILL_INT = -2147483647;
    real, public, parameter :: PIO_FILL_FLOAT =  9.9692099683868690e+36;
    double precision, public, parameter :: PIO_FILL_DOUBLE = 9.9692099683868690e+36;
