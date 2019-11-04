@@ -480,7 +480,7 @@ contains
     do i=1,ndims
        cdims(i) = dims(ndims-i+1)
        cstart(i)  = compstart(ndims-i+1)-1
-       cstart(i)  = compcount(ndims-i+1)
+       ccount(i)  = compcount(ndims-i+1)
     end do
 
     ierr = PIOc_InitDecomp_bc(iosystem%iosysid, basepiotype, ndims, cdims, &
