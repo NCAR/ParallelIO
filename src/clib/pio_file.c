@@ -315,7 +315,7 @@ static int sync_file(int ncid)
 #endif
 #ifdef _PNETCDF
             case PIO_IOTYPE_PNETCDF:
-                flush_output_buffer(file, true, 0);
+                ierr = flush_output_buffer(file, true, 0);
                 break;
 #endif
             default:

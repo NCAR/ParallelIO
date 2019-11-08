@@ -64,7 +64,10 @@ int PIOc_put_varm (int ncid, int varid, const PIO_Offset start[], const PIO_Offs
                 *request = PIO_REQ_NULL;
             }
             vdesc->nreqs++;
-            flush_output_buffer(file, false, 0);
+            if (ierr == PIO_NOERR)
+            {
+                ierr = flush_output_buffer(file, false, 0);
+            }
             break;
 #endif
         default:
@@ -135,7 +138,10 @@ int PIOc_put_varm_uchar (int ncid, int varid, const PIO_Offset start[], const PI
                 *request = PIO_REQ_NULL;
             }
             vdesc->nreqs++;
-            flush_output_buffer(file, false, 0);
+            if (ierr == PIO_NOERR)
+            {
+                ierr = flush_output_buffer(file, false, 0);
+            }
             break;
 #endif
         default:
@@ -206,7 +212,10 @@ int PIOc_put_varm_short (int ncid, int varid, const PIO_Offset start[], const PI
                 *request = PIO_REQ_NULL;
             }
             vdesc->nreqs++;
-            flush_output_buffer(file, false, 0);
+            if (ierr == PIO_NOERR)
+            {
+                ierr = flush_output_buffer(file, false, 0);
+            }
             break;
 #endif
         default:
@@ -278,7 +287,10 @@ int PIOc_put_varm_text (int ncid, int varid, const PIO_Offset start[], const PIO
                 *request = PIO_REQ_NULL;
             }
             vdesc->nreqs++;
-            flush_output_buffer(file, false, 0);
+            if (ierr == PIO_NOERR)
+            {
+                ierr = flush_output_buffer(file, false, 0);
+            }
             break;
 #endif
         default:
@@ -351,7 +363,10 @@ int PIOc_put_varm_ushort (int ncid, int varid, const PIO_Offset start[], const P
                 *request = PIO_REQ_NULL;
             }
             vdesc->nreqs++;
-            flush_output_buffer(file, false, 0);
+            if (ierr == PIO_NOERR)
+            {
+                ierr = flush_output_buffer(file, false, 0);
+            }
             break;
 #endif
         default:
@@ -424,7 +439,10 @@ int PIOc_put_varm_ulonglong (int ncid, int varid, const PIO_Offset start[], cons
                 *request = PIO_REQ_NULL;
             }
             vdesc->nreqs++;
-            flush_output_buffer(file, false, 0);
+            if (ierr == PIO_NOERR)
+            {
+                ierr = flush_output_buffer(file, false, 0);
+            }
             break;
 #endif
         default:
@@ -496,7 +514,10 @@ int PIOc_put_varm_int (int ncid, int varid, const PIO_Offset start[], const PIO_
                 *request = PIO_REQ_NULL;
             }
             vdesc->nreqs++;
-            flush_output_buffer(file, false, 0);
+            if (ierr == PIO_NOERR)
+            {
+                ierr = flush_output_buffer(file, false, 0);
+            }
             break;
 #endif
         default:
@@ -569,7 +590,10 @@ int PIOc_put_varm_float (int ncid, int varid, const PIO_Offset start[], const PI
                 *request = PIO_REQ_NULL;
             }
             vdesc->nreqs++;
-            flush_output_buffer(file, false, 0);
+            if (ierr == PIO_NOERR)
+            {
+                ierr = flush_output_buffer(file, false, 0);
+            }
             break;
 #endif
         default:
@@ -641,7 +665,10 @@ int PIOc_put_varm_long (int ncid, int varid, const PIO_Offset start[], const PIO
                 *request = PIO_REQ_NULL;
             }
             vdesc->nreqs++;
-            flush_output_buffer(file, false, 0);
+            if (ierr == PIO_NOERR)
+            {
+                ierr = flush_output_buffer(file, false, 0);
+            }
             break;
 #endif
         default:
@@ -715,7 +742,10 @@ int PIOc_put_varm_uint (int ncid, int varid, const PIO_Offset start[], const PIO
                 *request = PIO_REQ_NULL;
             }
             vdesc->nreqs++;
-            flush_output_buffer(file, false, 0);
+            if (ierr == PIO_NOERR)
+            {
+                ierr = flush_output_buffer(file, false, 0);
+            }
             break;
 #endif
         default:
@@ -788,7 +818,10 @@ int PIOc_put_varm_double (int ncid, int varid, const PIO_Offset start[], const P
                 *request = PIO_REQ_NULL;
             }
             vdesc->nreqs++;
-            flush_output_buffer(file, false, 0);
+            if (ierr == PIO_NOERR)
+            {
+                ierr = flush_output_buffer(file, false, 0);
+            }
             break;
 #endif
         default:
@@ -860,7 +893,10 @@ int PIOc_put_varm_schar (int ncid, int varid, const PIO_Offset start[], const PI
                 *request = PIO_REQ_NULL;
             }
             vdesc->nreqs++;
-            flush_output_buffer(file, false, 0);
+            if (ierr == PIO_NOERR)
+            {
+                ierr = flush_output_buffer(file, false, 0);
+            }
             break;
 #endif
         default:
@@ -931,7 +967,10 @@ int PIOc_put_varm_longlong (int ncid, int varid, const PIO_Offset start[], const
                 *request = PIO_REQ_NULL;
             }
             vdesc->nreqs++;
-            flush_output_buffer(file, false, 0);
+            if (ierr == PIO_NOERR)
+            {
+                ierr = flush_output_buffer(file, false, 0);
+            }
             break;
 #endif
         default:
