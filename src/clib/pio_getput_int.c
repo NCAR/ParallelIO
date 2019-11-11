@@ -1320,8 +1320,11 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                     *request = PIO_REQ_NULL;
 
                 vdesc->nreqs++;
-                flush_output_buffer(file, false, 0);
-                LOG((2, "PIOc_put_vars_tc flushed output buffer"));
+                if (ierr == PIO_NOERR)
+                {
+                    ierr = flush_output_buffer(file, false, 0);
+                    LOG((2, "PIOc_put_vars_tc flushed output buffer, ierr=%d", ierr));
+                }
             }
             else
             {
@@ -1378,8 +1381,11 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                     *request = PIO_REQ_NULL;
 
                 vdesc->nreqs++;
-                flush_output_buffer(file, false, 0);
-                LOG((2, "PIOc_put_vars_tc flushed output buffer"));
+                if (ierr == PIO_NOERR)
+                {
+                    ierr = flush_output_buffer(file, false, 0);
+                    LOG((2, "PIOc_put_vars_tc flushed output buffer, ierr=%d", ierr));
+                }
 
                 /* Free malloced resources. */
                 if (!stride_present)
