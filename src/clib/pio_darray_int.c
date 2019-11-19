@@ -1878,6 +1878,13 @@ int flush_output_buffer(file_desc_t *file, bool force, PIO_Offset addsize)
             if (rcnt > 0 && (prev_record != vdesc->record || vdesc->nreqs==0))
             {
                 ierr = ncmpi_wait_all(file->fh, rcnt, request, status);
+                if(ierr != PIO_NOERR)
+                {
+                    return pio_err(file->iosystem, file, ierr,
+                                    __FILE__, __LINE__,
+                                    "Waiting on pending requests on file (%s, ncid=%d) failed (Number of pending requests on file = %d, Number of variables with pending requests = %d, Number of requests currently being waited on = %d).", pio_get_fname_from_file(file), file->pio_ncid, nreqs, nvars_with_reqs, rcnt); 
+                }
+
                 request += rcnt;
                 rcnt = 0;
             }
@@ -1887,6 +1894,12 @@ int flush_output_buffer(file_desc_t *file, bool force, PIO_Offset addsize)
         if (rcnt > 0)
         {
             ierr = ncmpi_wait_all(file->fh, rcnt, request, status);
+            if(ierr != PIO_NOERR)
+            {
+                return pio_err(file->iosystem, file, ierr,
+                                __FILE__, __LINE__,
+                                "Waiting on pending requests on file (%s, ncid=%d) failed (Number of pending requests on file = %d, Number of variables with pending requests = %d, Number of requests currently being waited on = %d).", pio_get_fname_from_file(file), file->pio_ncid, nreqs, nvars_with_reqs, rcnt); 
+            }
         }
 #else /* MPIO_ONESIDED */
         int *request = reqs;
@@ -1901,6 +1914,11 @@ int flush_output_buffer(file_desc_t *file, bool force, PIO_Offset addsize)
 
             LOG((1, "ncmpi_wait_all(file=%s, ncid=%d, request range = [%d, %d], num pending requests = %d)", pio_get_fname_from_file(file), file->pio_ncid, req_block_starts[k], req_block_ends[k], nreqs));
             ierr = ncmpi_wait_all(file->fh, rcnt, request, status);
+            if(ierr != PIO_NOERR)
+            {
+                return pio_err(file->iosystem, file, ierr, __FILE__, __LINE__,
+                                "Waiting on pending requests on file (%s, ncid=%d) failed (Number of pending requests on file = %d, Number of variables with pending requests = %d, Number of request blocks = %d, Current block being waited on = %d, Number of requests in current block = %d).", pio_get_fname_from_file(file), file->pio_ncid, nreqs, nvars_with_reqs, nreq_blocks, k, rcnt); 
+            }
             request += rcnt;
         }
 #endif /* MPIO_ONESIDED */
