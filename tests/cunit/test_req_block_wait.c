@@ -115,13 +115,21 @@ int reinit_file_varlist(file_desc_t *file)
 
 /* Set up iosystem and file structs for a test */
 int test_setup(MPI_Comm comm, int rank, int sz,
-      iosystem_desc_t *ios, file_desc_t *file)
+      iosystem_desc_t **pios, file_desc_t **pfile)
 {
   int ret = PIO_NOERR;
   const int TEST_IOSYSID = 101;
   const int ROOT_RANK = 0;
 
-  assert((comm != MPI_COMM_NULL) && (rank >= 0) && (sz > 0) && ios && file);
+  assert((comm != MPI_COMM_NULL) && (rank >= 0) && (sz > 0) && pios && pfile);
+
+  *pios = calloc(1, sizeof(iosystem_desc_t));
+  *pfile = calloc(1, sizeof(file_desc_t));
+
+  iosystem_desc_t *ios = *pios;
+  file_desc_t *file = *pfile;
+
+  assert(ios && file);
   
   /* Initialize I/O system
    * - All tasks are I/O tasks
@@ -188,12 +196,25 @@ int test_setup(MPI_Comm comm, int rank, int sz,
 }
 
 /* Teardown/finalize iosystem and file structs */
-int test_teardown(iosystem_desc_t *ios, file_desc_t *file)
+int test_teardown(iosystem_desc_t **pios, file_desc_t **pfile)
 {
   int ret = PIO_NOERR;
-  assert(ios && file);
+  assert(pios && pfile);
 
-  free_file_varlist(file);
+  iosystem_desc_t *ios = *pios;
+  file_desc_t *file = *pfile;
+
+  if(ios){
+    free(ios);
+    *pios = NULL;
+  }
+
+  if(file){
+    free_file_varlist(file);
+    free(file);
+    *pfile = NULL;
+  }
+
   return ret;
 }
 
@@ -201,8 +222,8 @@ int test_teardown(iosystem_desc_t *ios, file_desc_t *file)
 int test_simple_file_req_blocks(MPI_Comm comm, int rank, int sz)
 {
   int ret = PIO_NOERR;
-  iosystem_desc_t iosys;
-  file_desc_t file;
+  iosystem_desc_t *iosys = NULL;
+  file_desc_t *file = NULL;
 
   ret = test_setup(comm, rank, sz, &iosys, &file);
   if(ret != PIO_NOERR){
@@ -226,15 +247,17 @@ int test_simple_file_req_blocks(MPI_Comm comm, int rank, int sz)
   /*******************  Test 1 *************************/
   /* A single variable with 1 request within req limit */
   one_req_sz[0] = MAX_REQ_SZ - 1;
-  ret = update_file_varlist(&file, 1, 0, 1, 1, one_req_sz, 1);
+  ret = update_file_varlist(file, 1, 0, 1, 1, one_req_sz, 1);
   if(ret != PIO_NOERR){
     LOG_RANK0(rank, "Updating file varlist failed for test_simple_file_req_blocks, 1 var with 1 req within req limit, ret = %d\n", ret);
+    test_teardown(&iosys, &file);
     return ret;
   }
 
-  ret = set_file_req_block_size_limit(&file, MAX_REQ_SZ);
+  ret = set_file_req_block_size_limit(file, MAX_REQ_SZ);
   if(ret != PIO_NOERR){
     LOG_RANK0(rank, "Setting file request block size limit (to %llu bytes) failed : 1 var with 1 req : test_simple_file_req_blocks, ret = %d\n", (unsigned long long) MAX_REQ_SZ, ret);
+    test_teardown(&iosys, &file);
     return ret;
   }
 
@@ -247,12 +270,13 @@ int test_simple_file_req_blocks(MPI_Comm comm, int rank, int sz)
   enreq_blocks = 1;
   ereq_one_block_ranges[0] = 0;
   ereq_one_block_ranges[1] = 0;
-  ret = get_file_req_blocks(&file,
+  ret = get_file_req_blocks(file,
                             &reqs, &nreqs,
                             &nvars_with_reqs, &last_var_with_req,
                             &req_block_ranges, &nreq_blocks);
   if(ret != PIO_NOERR){
     LOG_RANK0(rank, "Getting file request block ranges failed : 1 var with 1 req : test_simple_file_req_blocks, ret = %d\n", ret);
+    test_teardown(&iosys, &file);
     return ret;
   }
 
@@ -295,15 +319,17 @@ int test_simple_file_req_blocks(MPI_Comm comm, int rank, int sz)
   /* Two variables with 1 request each within req limit */
   one_req_sz[0] = MAX_REQ_SZ / 2;
 
-  ret = update_file_varlist(&file, 2, 0, 1, 1, one_req_sz, 1);
+  ret = update_file_varlist(file, 2, 0, 1, 1, one_req_sz, 1);
   if(ret != PIO_NOERR){
     LOG_RANK0(rank, "Updating file varlist failed for test_simple_file_req_blocks, 2 vars with 1 req within req limit, ret = %d\n", ret);
+    test_teardown(&iosys, &file);
     return ret;
   }
 
-  ret = set_file_req_block_size_limit(&file, MAX_REQ_SZ);
+  ret = set_file_req_block_size_limit(file, MAX_REQ_SZ);
   if(ret != PIO_NOERR){
     LOG_RANK0(rank, "Setting file request block size limit (to %llu bytes) failed : 2 vars with 1 req each : test_simple_file_req_blocks, ret = %d\n", (unsigned long long) MAX_REQ_SZ, ret);
+    test_teardown(&iosys, &file);
     return ret;
   }
 
@@ -316,7 +342,7 @@ int test_simple_file_req_blocks(MPI_Comm comm, int rank, int sz)
   enreq_blocks = 1;
   ereq_one_block_ranges[0] = 0;
   ereq_one_block_ranges[1] = 1;
-  ret = get_file_req_blocks(&file,
+  ret = get_file_req_blocks(file,
                             &reqs, &nreqs,
                             &nvars_with_reqs, &last_var_with_req,
                             &req_block_ranges, &nreq_blocks);
@@ -366,15 +392,17 @@ int test_simple_file_req_blocks(MPI_Comm comm, int rank, int sz)
   three_req_sz[1] = MAX_REQ_SZ / 3;
   three_req_sz[2] = MAX_REQ_SZ / 3;
 
-  ret = update_file_varlist(&file, 2, 0, 1, 3, three_req_sz, 3);
+  ret = update_file_varlist(file, 2, 0, 1, 3, three_req_sz, 3);
   if(ret != PIO_NOERR){
     LOG_RANK0(rank, "Updating file varlist failed for test_simple_file_req_blocks, 2 vars with 3 reqs each, within req limit, ret = %d\n", ret);
+    test_teardown(&iosys, &file);
     return ret;
   }
 
-  ret = set_file_req_block_size_limit(&file, MAX_REQ_SZ);
+  ret = set_file_req_block_size_limit(file, MAX_REQ_SZ);
   if(ret != PIO_NOERR){
     LOG_RANK0(rank, "Setting file request block size limit (to %llu bytes) failed : 2 vars with 3 reqs each : test_simple_file_req_blocks, ret = %d\n", (unsigned long long) MAX_REQ_SZ, ret);
+    test_teardown(&iosys, &file);
     return ret;
   }
 
@@ -390,12 +418,13 @@ int test_simple_file_req_blocks(MPI_Comm comm, int rank, int sz)
   ereq_two_block_ranges[2] = 2;
   ereq_two_block_ranges[1] = 3;
   ereq_two_block_ranges[3] = 5;
-  ret = get_file_req_blocks(&file,
+  ret = get_file_req_blocks(file,
                             &reqs, &nreqs,
                             &nvars_with_reqs, &last_var_with_req,
                             &req_block_ranges, &nreq_blocks);
   if(ret != PIO_NOERR){
     LOG_RANK0(rank, "Getting file request block ranges failed : 2 vars with 3 reqs each : test_simple_file_req_blocks, ret = %d\n", ret);
+    test_teardown(&iosys, &file);
     return ret;
   }
 
@@ -449,8 +478,8 @@ int test_simple_file_req_blocks(MPI_Comm comm, int rank, int sz)
 int test_misc_file_req_blocks(MPI_Comm comm, int rank, int sz)
 {
   int ret = PIO_NOERR;
-  iosystem_desc_t iosys;
-  file_desc_t file;
+  iosystem_desc_t *iosys = NULL;
+  file_desc_t *file = NULL;
 
   ret = test_setup(comm, rank, sz, &iosys, &file);
   if(ret != PIO_NOERR){
@@ -480,15 +509,17 @@ int test_misc_file_req_blocks(MPI_Comm comm, int rank, int sz)
   three_req_sz[1] = MAX_REQ_SZ / 3;
   three_req_sz[2] = MAX_REQ_SZ / 3;
 
-  ret = update_file_varlist(&file, 2, 0, 2, 3, three_req_sz, 3);
+  ret = update_file_varlist(file, 2, 0, 2, 3, three_req_sz, 3);
   if(ret != PIO_NOERR){
     LOG_RANK0(rank, "Updating file varlist failed for test_misc_file_req_blocks, 2 vars stride 2 with 3 reqs each, within req limit, ret = %d\n", ret);
+    test_teardown(&iosys, &file);
     return ret;
   }
 
-  ret = set_file_req_block_size_limit(&file, MAX_REQ_SZ);
+  ret = set_file_req_block_size_limit(file, MAX_REQ_SZ);
   if(ret != PIO_NOERR){
     LOG_RANK0(rank, "Setting file request block size limit (to %llu bytes) failed : 2 vars stride 2 with 3 reqs each : test_misc_file_req_blocks, ret = %d\n", (unsigned long long) MAX_REQ_SZ, ret);
+    test_teardown(&iosys, &file);
     return ret;
   }
 
@@ -504,12 +535,13 @@ int test_misc_file_req_blocks(MPI_Comm comm, int rank, int sz)
   ereq_two_block_ranges[2] = 2;
   ereq_two_block_ranges[1] = 3;
   ereq_two_block_ranges[3] = 5;
-  ret = get_file_req_blocks(&file,
+  ret = get_file_req_blocks(file,
                             &reqs, &nreqs,
                             &nvars_with_reqs, &last_var_with_req,
                             &req_block_ranges, &nreq_blocks);
   if(ret != PIO_NOERR){
     LOG_RANK0(rank, "Getting file request block ranges failed : 2 vars stride 2 with 3 reqs each : test_misc_file_req_blocks, ret = %d\n", ret);
+    test_teardown(&iosys, &file);
     return ret;
   }
 
@@ -556,21 +588,24 @@ int test_misc_file_req_blocks(MPI_Comm comm, int rank, int sz)
   three_req_sz[1] = MAX_REQ_SZ / 3;
   three_req_sz[2] = MAX_REQ_SZ / 3;
 
-  ret = reinit_file_varlist(&file);
+  ret = reinit_file_varlist(file);
   if(ret != PIO_NOERR){
     LOG_RANK0(rank, "Re-initializing file varlist failed for test_misc_file_req_blocks, 2 vars disp 1 stride 2 with 3 reqs each within req limit, ret = %d\n", ret);
+    test_teardown(&iosys, &file);
     return ret;
   }
 
-  ret = update_file_varlist(&file, 3, 1, 2, 3, three_req_sz, 3);
+  ret = update_file_varlist(file, 3, 1, 2, 3, three_req_sz, 3);
   if(ret != PIO_NOERR){
     LOG_RANK0(rank, "Updating file varlist failed for test_misc_file_req_blocks, 3 vars disp 1 stride 2 with 3 reqs each, within req limit, ret = %d\n", ret);
+    test_teardown(&iosys, &file);
     return ret;
   }
 
-  ret = set_file_req_block_size_limit(&file, MAX_REQ_SZ);
+  ret = set_file_req_block_size_limit(file, MAX_REQ_SZ);
   if(ret != PIO_NOERR){
     LOG_RANK0(rank, "Setting file request block size limit (to %llu bytes) failed : 3 vars disp 1 stride 2 with 3 reqs each : test_misc_file_req_blocks, ret = %d\n", (unsigned long long) MAX_REQ_SZ, ret);
+    test_teardown(&iosys, &file);
     return ret;
   }
 
@@ -588,12 +623,13 @@ int test_misc_file_req_blocks(MPI_Comm comm, int rank, int sz)
   ereq_three_block_ranges[4] = 5;
   ereq_three_block_ranges[2] = 6;
   ereq_three_block_ranges[5] = 8;
-  ret = get_file_req_blocks(&file,
+  ret = get_file_req_blocks(file,
                             &reqs, &nreqs,
                             &nvars_with_reqs, &last_var_with_req,
                             &req_block_ranges, &nreq_blocks);
   if(ret != PIO_NOERR){
     LOG_RANK0(rank, "Getting file request block ranges failed : 3 vars disp 1 stride 2 with 3 reqs each : test_misc_file_req_blocks, ret = %d\n", ret);
+    test_teardown(&iosys, &file);
     return ret;
   }
 
@@ -640,9 +676,10 @@ int test_misc_file_req_blocks(MPI_Comm comm, int rank, int sz)
    * MAX_REQ_SZ/8 variables with 2 reqs of size 4 each, stride 4
    * MAX_REQ_SZ/16 variables with 2 reqs of size 8 each, stride 5
    */
-  ret = reinit_file_varlist(&file);
+  ret = reinit_file_varlist(file);
   if(ret != PIO_NOERR){
     LOG_RANK0(rank, "Re-initializing file varlist failed for test_misc_file_req_blocks, 2 vars disp 1 stride 2 with 3 reqs each within req limit, ret = %d\n", ret);
+    test_teardown(&iosys, &file);
     return ret;
   }
 
@@ -655,9 +692,10 @@ int test_misc_file_req_blocks(MPI_Comm comm, int rank, int sz)
     two_req_sz[0] = req_sz;
     two_req_sz[1] = req_sz;
 
-    ret = update_file_varlist(&file, nvars, disp, stride, 2, two_req_sz, 2);
+    ret = update_file_varlist(file, nvars, disp, stride, 2, two_req_sz, 2);
     if(ret != PIO_NOERR){
       LOG_RANK0(rank, "Updating file varlist failed for test_misc_file_req_blocks, exp inc vars with 2 reqs each, within req limit, ret = %d\n", ret);
+      test_teardown(&iosys, &file);
       return ret;
     }
 
@@ -672,9 +710,10 @@ int test_misc_file_req_blocks(MPI_Comm comm, int rank, int sz)
     enreqs += nreqs_in_one_block;
   }
 
-  ret = set_file_req_block_size_limit(&file, MAX_REQ_SZ);
+  ret = set_file_req_block_size_limit(file, MAX_REQ_SZ);
   if(ret != PIO_NOERR){
     LOG_RANK0(rank, "Setting file request block size limit (to %llu bytes) failed : exp inc vars with 2 reqs each : test_misc_file_req_blocks, ret = %d\n", (unsigned long long) MAX_REQ_SZ, ret);
+    test_teardown(&iosys, &file);
     return ret;
   }
 
@@ -684,12 +723,13 @@ int test_misc_file_req_blocks(MPI_Comm comm, int rank, int sz)
   last_var_with_req = 0;
   req_block_ranges = NULL;
   nreq_blocks = 0;
-  ret = get_file_req_blocks(&file,
+  ret = get_file_req_blocks(file,
                             &reqs, &nreqs,
                             &nvars_with_reqs, &last_var_with_req,
                             &req_block_ranges, &nreq_blocks);
   if(ret != PIO_NOERR){
     LOG_RANK0(rank, "Getting file request block ranges failed : exp inc vars with 2 reqs each : test_misc_file_req_blocks, ret = %d\n", ret);
+    test_teardown(&iosys, &file);
     return ret;
   }
 
@@ -736,9 +776,10 @@ int test_misc_file_req_blocks(MPI_Comm comm, int rank, int sz)
    * MAX_REQ_SZ/8 variables with 2 reqs of size rank each, stride 4
    * MAX_REQ_SZ/16 variables with 2 reqs of size rank each, stride 5
    */
-  ret = reinit_file_varlist(&file);
+  ret = reinit_file_varlist(file);
   if(ret != PIO_NOERR){
     LOG_RANK0(rank, "Re-initializing file varlist failed for test_misc_file_req_blocks, 2 vars disp 1 stride 2 with 3 reqs each within req limit, ret = %d\n", ret);
+    test_teardown(&iosys, &file);
     return ret;
   }
 
@@ -766,18 +807,20 @@ int test_misc_file_req_blocks(MPI_Comm comm, int rank, int sz)
       }
     }
 
-    ret = update_file_varlist(&file, nvars, disp, stride, 2, two_req_sz, 2);
+    ret = update_file_varlist(file, nvars, disp, stride, 2, two_req_sz, 2);
     if(ret != PIO_NOERR){
       LOG_RANK0(rank, "Updating file varlist failed for test_misc_file_req_blocks, exp inc vars with 2 reqs with size based on rank, within req limit, ret = %d\n", ret);
+      test_teardown(&iosys, &file);
       return ret;
     }
 
     disp += (nvars * stride);
   }
 
-  ret = set_file_req_block_size_limit(&file, MAX_REQ_SZ);
+  ret = set_file_req_block_size_limit(file, MAX_REQ_SZ);
   if(ret != PIO_NOERR){
     LOG_RANK0(rank, "Setting file request block size limit (to %llu bytes) failed : exp inc vars with 2 reqs with size based on rank : test_misc_file_req_blocks, ret = %d\n", (unsigned long long) MAX_REQ_SZ, ret);
+    test_teardown(&iosys, &file);
     return ret;
   }
 
@@ -787,12 +830,13 @@ int test_misc_file_req_blocks(MPI_Comm comm, int rank, int sz)
   last_var_with_req = 0;
   req_block_ranges = NULL;
   nreq_blocks = 0;
-  ret = get_file_req_blocks(&file,
+  ret = get_file_req_blocks(file,
                             &reqs, &nreqs,
                             &nvars_with_reqs, &last_var_with_req,
                             &req_block_ranges, &nreq_blocks);
   if(ret != PIO_NOERR){
     LOG_RANK0(rank, "Getting file request block ranges failed : exp inc vars with 2 reqs with size based on rank : test_misc_file_req_blocks, ret = %d\n", ret);
+    test_teardown(&iosys, &file);
     return ret;
   }
 
