@@ -974,7 +974,8 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
     char count_present = count ? true : false;    /* Is count non-NULL? */
     char stride_present = stride ? true : false;  /* Is stride non-NULL? */
     var_desc_t *vdesc;
-    int *request;
+    int *request = NULL;
+    PIO_Offset *request_sz = NULL;
     nc_type vartype = NC_NAT;   /* The type of the var we are reading from. */
     int mpierr = MPI_SUCCESS;  /* Return code from MPI function codes. */
     int ierr = PIO_NOERR;          /* Return code from function calls. */
@@ -1266,14 +1267,27 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
             LOG((2, "PIOc_put_vars_tc calling pnetcdf function"));
             vdesc = &file->varlist[varid];
             if (vdesc->nreqs % PIO_REQUEST_ALLOC_CHUNK == 0)
+            {
                 if (!(vdesc->request = realloc(vdesc->request,
                                                sizeof(int) * (vdesc->nreqs + PIO_REQUEST_ALLOC_CHUNK))))
                 {
                     return pio_err(ios, file, PIO_ENOMEM, __FILE__, __LINE__,
                                     "Writing variable (%s, varid=%d) to file (%s, ncid=%d) failed. Out of memory, reallocating memory (%lld bytes) for array to store PnetCDF request handles", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid, (long long int) (sizeof(int) * (vdesc->nreqs + PIO_REQUEST_ALLOC_CHUNK)));
                 }
+            
+                vdesc->request_sz = realloc(vdesc->request_sz,
+                                            sizeof(PIO_Offset) *
+                                            (vdesc->nreqs +
+                                              PIO_REQUEST_ALLOC_CHUNK));
+                if(!(vdesc->request_sz))
+                {
+                    return pio_err(ios, file, PIO_ENOMEM, __FILE__, __LINE__,
+                                    "Writing variable (%s, varid=%d) to file (%s, ncid=%d) failed. Out of memory, reallocating memory (%lld bytes) for array to store PnetCDF request handles", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid, (long long int) (sizeof(int) * (vdesc->nreqs + PIO_REQUEST_ALLOC_CHUNK)));
+                }
+            }
             request = vdesc->request + vdesc->nreqs;
             LOG((2, "PIOc_put_vars_tc request = %d", vdesc->request));
+            request_sz = vdesc->request_sz + vdesc->nreqs;
 
             /* Scalars have to be handled differently. */
             if (ndims == 0)
@@ -1315,9 +1329,13 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                                         "Writing variable (%s, varid=%d) to file (%s, ncid=%d) failed. Unsupported PnetCDF variable type (type=%x)", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid, xtype);
                     }
                     LOG((2, "PIOc_put_vars_tc io_rank 0 done with pnetcdf call, ierr=%d", ierr));
+                    *request_sz = num_elem * typelen;
                 }
                 else
+                {
                     *request = PIO_REQ_NULL;
+                    *request_sz = 0;
+                }
 
                 vdesc->nreqs++;
                 if (ierr == PIO_NOERR)
@@ -1376,9 +1394,13 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                                         "Writing variable (%s, varid=%d) to file (%s, ncid=%d) failed. Unsupported PnetCDF variable type (%x)", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid, xtype);
                     }
                     LOG((2, "PIOc_put_vars_tc io_rank 0 done with pnetcdf call, ierr=%d", ierr));
+                    *request_sz = num_elem * typelen;
                 }
                 else
+                {
                     *request = PIO_REQ_NULL;
+                    *request_sz = 0;
+                }
 
                 vdesc->nreqs++;
                 if (ierr == PIO_NOERR)

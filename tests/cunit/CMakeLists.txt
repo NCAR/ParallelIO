@@ -97,7 +97,11 @@ add_executable (test_spmd EXCLUDE_FROM_ALL test_spmd.c test_common.c)
 target_link_libraries (test_spmd pioc)
 add_executable (test_sdecomp_regex EXCLUDE_FROM_ALL test_sdecomp_regex.cpp test_common.c)
 target_link_libraries (test_sdecomp_regex pioc)
+add_executable(test_req_block_wait EXCLUDE_FROM_ALL test_req_block_wait.c test_common.c)
+target_link_libraries (test_req_block_wait pioc)
+
 add_dependencies (tests test_sdecomp_regex)
+add_dependencies (tests test_req_block_wait)
 add_dependencies (tests test_spmd)
 add_dependencies (tests test_rearr)
 add_dependencies (tests test_pioc)
@@ -138,6 +142,22 @@ if (PIO_USE_MPISERIAL)
   add_test(NAME test_pioc
     COMMAND test_pioc)
 else ()
+  add_mpi_test(test_req_block_wait1
+    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/test_req_block_wait
+    NUMPROCS 1
+    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
+  add_mpi_test(test_req_block_wait2
+    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/test_req_block_wait
+    NUMPROCS 2
+    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
+  add_mpi_test(test_req_block_wait3
+    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/test_req_block_wait
+    NUMPROCS 3
+    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
+  add_mpi_test(test_req_block_wait4
+    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/test_req_block_wait
+    NUMPROCS 4
+    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
   add_mpi_test(test_spmd
     EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/test_spmd
     NUMPROCS ${AT_LEAST_FOUR_TASKS}

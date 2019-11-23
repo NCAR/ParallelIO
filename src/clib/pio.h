@@ -312,8 +312,12 @@ typedef struct var_desc_t
      * unlimited dimension. */
     int record;
 
+    /** FIXME: Combine request related members to a separate struct */
     /** ID of each outstanding pnetcdf request for this variable. */
     int *request;
+
+    /** Size of each outstanding pnetcdf request for this variable */
+    PIO_Offset *request_sz;
 
     /** Number of requests bending with pnetcdf. */
     int nreqs;

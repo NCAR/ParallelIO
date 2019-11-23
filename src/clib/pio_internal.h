@@ -399,6 +399,17 @@ extern "C" {
     /* Create a unique PIO string */
     int pio_create_uniq_str(iosystem_desc_t *ios, io_desc_t *iodesc, char *str, int len, const char *prefix, const char *suffix);
 
+    /* Set the size limit for each block of requests to wait */
+    int set_file_req_block_size_limit(file_desc_t *file, PIO_Offset sz);
+    /* Get request block ranges for pending requests in a file */
+    int get_file_req_blocks(file_desc_t *file,
+          int **preqs,
+          int *nreqs,
+          int *nvars_with_reqs,
+          int *last_var_with_req,
+          int **preq_block_ranges,
+          int *nreq_blocks);
+
 #if defined(__cplusplus)
 }
 #endif

@@ -9,6 +9,7 @@
  * @author Jim Edwards
  */
 
+#include <limits.h>
 #include <config.h>
 #include <pio.h>
 #include <pio_internal.h>
@@ -346,8 +347,22 @@ int write_darray_multi_par(file_desc_t *file, int nvars, int fndims, const int *
                                 return pio_err(ios, file, PIO_ENOMEM, __FILE__, __LINE__,
                                           "Writing variables (number of variables = %d) to file (%s, ncid=%d) using PIO_IOTYPE_PNETCDF iotype failed. Out of memory reallocing buffer (%lld bytes) for array to store pnetcdf request handles", nvars, pio_get_fname_from_file(file), file->pio_ncid, (long long int) (sizeof(int) * (vdesc->nreqs + PIO_REQUEST_ALLOC_CHUNK)));
 
+                            vdesc->request_sz = realloc(vdesc->request_sz,
+                                                  sizeof(PIO_Offset) *
+                                                  (vdesc->nreqs +
+                                                    PIO_REQUEST_ALLOC_CHUNK));
+                            if(vdesc->request_sz == NULL)
+                            {
+                                return pio_err(ios, file, PIO_ENOMEM,
+                                          __FILE__, __LINE__,
+                                          "Writing variables (number of variables = %d) to file (%s, ncid=%d) using PIO_IOTYPE_PNETCDF iotype failed. Out of memory reallocing buffer (%lld bytes) for array to store pending pnetcdf request sizes", nvars, pio_get_fname_from_file(file), file->pio_ncid, (long long int) (sizeof(PIO_Offset) * (vdesc->nreqs + PIO_REQUEST_ALLOC_CHUNK)));
+                            }
+
                             for (int i = vdesc->nreqs; i < vdesc->nreqs + PIO_REQUEST_ALLOC_CHUNK; i++)
+                            {
                                 vdesc->request[i] = NC_REQ_NULL;
+                                vdesc->request_sz[i] = 0;
+                            }
                         }
 
                         /* Write, in non-blocking fashion, a list of subarrays. */
@@ -358,7 +373,13 @@ int write_darray_multi_par(file_desc_t *file, int nvars, int fndims, const int *
 
                         /* keeps wait calls in sync */
                         if (vdesc->request[vdesc->nreqs] == NC_REQ_NULL)
+                        {
                             vdesc->request[vdesc->nreqs] = PIO_REQ_NULL;
+                        }
+                        else
+                        {
+                            vdesc->request_sz[vdesc->nreqs] = llen * iodesc->mpitype_size;
+                        }
 
                         vdesc->nreqs++;
                     }
@@ -1425,6 +1446,309 @@ int pio_read_darray_nc_serial(file_desc_t *file, int fndims, io_desc_t *iodesc, 
     return PIO_NOERR;
 }
 
+/* Max size of cached requests (in bytes) that we wait on
+ * in a single wait call.
+ * This is only valid for PIO_IOTYPE_PNETCDF iotype
+ * PnetCDF has a limitation on the aggregate size of requests
+ * from a single rank (due to inherent limitations in the MPI
+ * I/O libraries) that it cannot exceed INT_MAX
+ */
+PIO_Offset file_req_block_sz_limit = INT_MAX;
+
+/* Set the aggregate size of requests used in a single blocking
+ * wait call
+ * This setting is only used for PIO_IOTYPE_PNETCDF iotype
+ */
+int set_file_req_block_size_limit(file_desc_t *file, PIO_Offset sz)
+{
+  assert(file && (sz > 0));
+  file_req_block_sz_limit = sz;
+
+  return PIO_NOERR;
+}
+
+/**
+ * Convert the pending requests on a file to blocks of size
+ * < file_req_block_sz_limit . The function returns multiple blocks
+ * {[req_block_starts[0], req_block_ends[0]], ...} such
+ * that each block size <= file_req_block_sz_limit. If any single
+ * request is > file_req_block_sz_limit it is allocated an
+ * individual block and a warning is printed out
+ * 
+ * The array *preq_block_ranges contains start and end indices
+ * to the *preqs array indicating multiple blocks of requests.
+ * The first half ( [0, nreq_blocks) ) of the array includes
+ * the start indices and the latter half
+ * ( [nreq_blocks, 2 * nreq_blocks) ) of the array includes
+ * the end indices of each block.
+ * The request block i in the file->varlist array is
+ * determined by the range,
+ * [(*preq_block_ranges)[i],
+ *    (*preq_block_ranges)[i + nreq_blocks]]
+ * (the end index is also part of the block)
+ *
+ * Collective on all I/O processes (in the I/O system associated
+ * with the file)
+ * This function is only used by the PIO_IOTYPE_PNETCDF
+ *
+ * @param file Pointer to file descriptor of the file
+ * @param preqs Pointer to a buffer that will contain
+ *          pending requests on this file
+ * @param nreqs Pointer to integer that will contain the number
+ *          of pending requests on this file
+ * @param nvars_with_reqs Pointer to integer that will contain
+ *          the number of variables that have valid pending
+            requests
+ * @param last_var_with_req Pointer to integer that will contain
+ *          the index of the last variable in file->varlist that
+ *          contains pending requests
+ * @param preq_block_ranges Pointer to buffer that will contain
+ *          the block ranges
+ *          The initial half of the buffer contains start
+ *          indices and the latter half the end indices of
+ *          the block ranges
+ *          i.e., (*preq_block_ranges)[2 * nreq_blocks]
+ * @param nreq_blocks Pointer to integer that will contain the
+ *          number of block ranges
+ *
+ * @author Jayesh Krishna
+ */
+
+int get_file_req_blocks(file_desc_t *file,
+      int **preqs,
+      int *nreqs,
+      int *nvars_with_reqs,
+      int *last_var_with_req,
+      int **preq_block_ranges,
+      int *nreq_blocks)
+{
+    int mpierr = MPI_SUCCESS;
+
+    assert(file &&
+            preqs && nreqs && last_var_with_req &&
+            preq_block_ranges && nreq_blocks);
+    assert(file->iotype == PIO_IOTYPE_PNETCDF);
+    assert(file->iosystem && (file->iosystem->num_iotasks > 0));
+
+    *nreqs = 0;
+    *nvars_with_reqs = 0;
+    *last_var_with_req = 0;
+    *nreq_blocks = 0;
+
+    int file_nreqs = 0;
+    int vdesc_with_reqs_start = 0;
+    int vdesc_with_reqs_end = 0;
+    /* FIXME: Update file->nreqs with vdesc->nreqs to avoid computing
+     * everytime
+     */
+    for(int i = 0; i < PIO_MAX_VARS; i++){
+      var_desc_t *vdesc = file->varlist + i;
+      if(vdesc->nreqs > 0){
+        file_nreqs += vdesc->nreqs;
+        /* Once the range starts, vdesc_with_reqs_end >= 1 */
+        if(vdesc_with_reqs_end == 0){
+          vdesc_with_reqs_start = i;
+        }
+        vdesc_with_reqs_end = i + 1;
+        (*nvars_with_reqs)++;
+        *last_var_with_req = i;
+      }
+    }
+
+#ifdef PIO_ENABLE_SANITY_CHECKS
+    /* Sanity check : All io ranks have the same number of reqs per file */
+    int file_nreqs_root = file_nreqs;
+    mpierr = MPI_Bcast(&file_nreqs_root, 1, MPI_INT,
+              file->iosystem->ioroot, file->iosystem->io_comm);
+    assert(mpierr == MPI_SUCCESS);
+    assert(file_nreqs_root == file_nreqs);
+#endif
+
+    /* No requests pending on this file */
+    if(file_nreqs == 0){
+      *nreqs = 0;
+      *nreq_blocks = 0;
+
+      return PIO_NOERR;
+    }
+
+    /* preqs : pointer to consolidated list of pending requests on this file */
+    *preqs = (int *) calloc(file_nreqs, sizeof(int));
+    if(!(*preqs)){
+      return pio_err(file->iosystem, file, PIO_ENOMEM, __FILE__, __LINE__,
+                      "Unable to allocate memory (%llu bytes) for consolidating pending requests on a file (%s, ncid=%d, num pending requests = %d)", (unsigned long long) (file_nreqs * sizeof(int)), pio_get_fname_from_file(file), file->pio_ncid, file_nreqs);
+    }
+    *nreqs = file_nreqs;
+
+    /* preq_block_ranges : Contains the ranges for the blocks,
+     * each block of size <= file_req_block_sz_limit, which includes
+     * start indices in the first half and end indices in the second half.
+     * The number of block ranges should be less than the number of
+     * pending requests (max number of blocks => 1 request per block)
+     * => 2 * file_nreqs
+     * This buffer is also used to store the size of block ranges at
+     * index 2 * file_nreqs => 1 int (for communicating with non-root procs)
+     * => size of 2 * file_nreqs + 1
+     */
+    *preq_block_ranges = (int *) calloc(2 * file_nreqs + 1, sizeof(int));
+    if(!(*preq_block_ranges)){
+      return pio_err(file->iosystem, file, PIO_ENOMEM, __FILE__, __LINE__,
+                      "Unable to allocate memory (%llu bytes) for storing pending request ranges in a file (%s, ncid=%d, num pending requests = %d)", (unsigned long long) ((2 * file_nreqs + 1)* sizeof(int)), pio_get_fname_from_file(file), file->pio_ncid, file_nreqs);
+    }
+    int *preq_block_ranges_sz = (*preq_block_ranges) + 2 * file_nreqs;
+    *nreq_blocks = 0;
+
+    int *req_block_starts = *preq_block_ranges;
+    int *req_block_ends = *preq_block_ranges + file_nreqs;
+
+    /* One pending request on this file */
+    if(file_nreqs == 1){
+      int req = file->varlist[vdesc_with_reqs_start].request[0];
+      (*preqs)[0] = (req != PIO_REQ_NULL) ? req : NC_REQ_NULL;
+      req_block_starts[0] = 0;
+      req_block_ends[0] = 0;
+      *nreq_blocks = 1;
+
+      return PIO_NOERR;
+    }
+
+    /* local file pending request sizes */
+    int *file_lrequest = *preqs;
+    PIO_Offset file_lrequest_sz[file_nreqs];
+    PIO_Offset file_grequest_sz[file_nreqs * file->iosystem->num_iotasks];
+
+    for(int i = vdesc_with_reqs_start, j = 0;
+          (i < vdesc_with_reqs_end) && (j < file_nreqs); i++){
+      var_desc_t *vdesc = file->varlist + i;
+      for(int k = 0; k < vdesc->nreqs; k++, j++){
+        file_lrequest[j] = (vdesc->request[k] != PIO_REQ_NULL) ?
+                            (vdesc->request[k]) : NC_REQ_NULL;
+        file_lrequest_sz[j] = vdesc->request_sz[k];
+      }
+    }
+
+#ifdef FLUSH_EVERY_VAR
+    /* Its easier to handle this corner case, used infrequently, separately */
+    /* Each request block consists of requests pending on a single variable */
+    *nreq_blocks = 0;
+    for(int i = vdesc_with_reqs_start, j = 0;
+        (i < vdesc_with_reqs_end) && (j < file_nreqs); i++){
+      var_desc_t *vdesc = file->varlist + i;
+      if(vdesc->nreqs > 0){
+        req_block_starts[*nreq_blocks] = j;
+        req_block_ends[*nreq_blocks] = j + vdesc->nreqs - 1;
+        (*nreq_blocks)++;
+        j += vdesc->nreqs;
+      }
+    }
+
+    /* Copy the starts and ends to a contiguous section */
+    if(file_nreqs != *nreq_blocks){
+      for(int i = *nreq_blocks, j = 0;
+          (i < 2 * file_nreqs) && (j < *nreq_blocks); i++, j++){
+        req_block_starts[i] = req_block_ends[j];
+      }
+    }
+
+    return PIO_NOERR;
+#endif /* #ifdef FLUSH_EVERY_VAR */
+
+    /* Gather file pending request sizes from all I/O processes */
+    mpierr = MPI_Gather(file_lrequest_sz, file_nreqs, MPI_OFFSET,
+                        file_grequest_sz, file_nreqs, MPI_OFFSET,
+                        file->iosystem->ioroot, file->iosystem->io_comm);
+    if(mpierr != MPI_SUCCESS){
+      return check_mpi(file->iosystem, file, mpierr, __FILE__, __LINE__);
+    }
+
+    /* Find the request blocks in the root I/O process */
+    bool is_ioroot =
+      (file->iosystem->io_rank == file->iosystem->ioroot) ? true : false;
+    if(is_ioroot){
+      PIO_Offset file_cur_block_grequest_sz[file->iosystem->num_iotasks];
+
+      /* file_grequest_sz[] = {
+       * rank_0_req0_sz, rank_0_req1_sz, ..., rank_0_reqi_sz, ...
+       * rank_1_req0_sz, rank_1_req1_sz, ..., rank_1_reqi_sz, ...
+       * rank_j_req0_sz, rank_j_req1_sz, ..., rank_j_reqi_sz,...}
+       * In the loop below we calculate block size by calculating
+       * partial sums of requests, one request at a time
+       */
+
+      /* Initialize cur block grequest size with size of the first
+       * request for each I/O rank
+       * Note:
+       *  Number of pending requests on this file, file_nreqs > 1
+       */
+      for(int j = 0; j < file->iosystem->num_iotasks; j++){
+        PIO_Offset cur_idx = j * file_nreqs;
+        file_cur_block_grequest_sz[j] = file_grequest_sz[cur_idx];
+      }
+      int k = 0;
+      for(int i = 1; i < file_nreqs; i++){
+        req_block_ends[k] = i;
+        for(int j = 0; j < file->iosystem->num_iotasks; j++){
+          /* Get idx for reqi on rank j */
+          PIO_Offset cur_idx = i + j * file_nreqs;
+          file_cur_block_grequest_sz[j] += file_grequest_sz[cur_idx];
+          if(file_cur_block_grequest_sz[j] > file_req_block_sz_limit){
+            PIO_Offset nreqs_in_cur_block =
+                        req_block_ends[k] - req_block_starts[k] + 1;
+            assert(nreqs_in_cur_block >= 1);
+            if(nreqs_in_cur_block == 1){
+              /* We cannot have 0 requests in a block but the size
+               * of ith request is > file_req_block_sz_limit.
+               * So include this ith request in a single block with
+               * a warning to the user
+               */
+              printf("PIO: WARNING: Found a single user request (size=%lld bytes) that exceeds the maximum limit (%lld bytes) for user request %d on I/O process %d when processing pending requests on file (%s, ncid=%d, number of pending requests=%d). Waiting on this request might fail during a future wait, consider writing out data < %lld bytes from a single process\n", file_cur_block_grequest_sz[j], file_req_block_sz_limit, i, j, pio_get_fname_from_file(file), file->pio_ncid, file_nreqs, file_req_block_sz_limit);
+            }
+            /* Finish the prev block - indicate that the prev
+             * block cannot include this request
+             */
+            req_block_ends[k] = i - 1;
+            /* We need to start a new block */
+            k++;
+            req_block_starts[k] = i;
+            req_block_ends[k] = i;
+            /* Reset the current size of block for all iotasks */
+            for(int l = 0; l < file->iosystem->num_iotasks; l++){
+              /* Get idx for reqi on rank l */
+              PIO_Offset idx = i + l * file_nreqs;
+              file_cur_block_grequest_sz[l] = file_grequest_sz[idx];
+            }
+            break;
+          }
+        }
+      }
+
+      /* Note: We are guarantreed to have at least 1 block here */
+      *nreq_blocks = ++k;
+
+      /* Copy the starts and ends to a contiguous section */
+      if(file_nreqs != *nreq_blocks){
+        for(int i = *nreq_blocks, j = 0;
+            (i < 2 * file_nreqs) && (j < *nreq_blocks); i++, j++){
+          req_block_starts[i] = req_block_ends[j];
+        }
+      }
+    } /* if(is_ioroot) */
+
+    /* Bcast the request blocks
+     * Note that the last int in the buffer is the number of the blocks
+     */
+    *preq_block_ranges_sz = *nreq_blocks;
+    mpierr = MPI_Bcast(*preq_block_ranges, 2 * file_nreqs + 1, MPI_INT,
+              file->iosystem->ioroot, file->iosystem->io_comm);
+    if(mpierr != MPI_SUCCESS){
+      return check_mpi(file->iosystem, file, mpierr, __FILE__, __LINE__);
+    }
+    *nreq_blocks = *preq_block_ranges_sz;
+    assert(*nreq_blocks > 0);
+
+    return PIO_NOERR;
+}
+
 /**
  * Flush the output buffer. This is only relevant for files opened
  * with pnetcdf.
@@ -1435,7 +1759,7 @@ int pio_read_darray_nc_serial(file_desc_t *file, int fndims, io_desc_t *iodesc, 
  * @param addsize additional size to add to buffer (in bytes)
  * @return 0 for success, error code otherwise.
  * @ingroup PIO_write_darray
- * @author Jim Edwards, Ed Hartnett
+ * @author Jim Edwards, Jayesh Krishna, Ed Hartnett
  */
 int flush_output_buffer(file_desc_t *file, bool force, PIO_Offset addsize)
 {
@@ -1481,23 +1805,24 @@ int flush_output_buffer(file_desc_t *file, bool force, PIO_Offset addsize)
     {
         int rcnt;
         int  maxreq; /* Index of the last vdesc with pending requests */
-        int reqcnt;
         int nvars_with_reqs = 0;
         maxreq = -1;
-        reqcnt = 0;
         rcnt = 0;
-        for (int i = 0; i < PIO_MAX_VARS; i++)
+
+        int *reqs = NULL;
+        int nreqs = 0;
+        int *req_block_ranges = NULL;
+        int nreq_blocks = 0;
+
+        ierr = get_file_req_blocks(file, 
+                &reqs, &nreqs, &nvars_with_reqs, &maxreq,
+                &req_block_ranges, &nreq_blocks);
+        if(ierr != PIO_NOERR)
         {
-            vdesc = file->varlist + i;
-            reqcnt += vdesc->nreqs;
-            if (vdesc->nreqs > 0)
-            {
-                maxreq = i;
-                nvars_with_reqs++;
-            }
+            return pio_err(file->iosystem, file, ierr, __FILE__, __LINE__,
+                            "Unable to consolidate pending requests on file (%s, ncid=%d) to blocks (The function returned : Number of pending requests on file = %d, Number of variables with pending requests = %d, Number of request blocks = %d).", pio_get_fname_from_file(file), file->pio_ncid, nreqs, nvars_with_reqs, nreq_blocks); 
         }
-        int request[reqcnt];
-        int status[reqcnt];
+
 #ifdef PIO_MICRO_TIMING
         bool var_has_pend_reqs[maxreq + 1];
         bool var_timer_was_running[maxreq + 1];
@@ -1518,12 +1843,10 @@ int flush_output_buffer(file_desc_t *file, bool force, PIO_Offset addsize)
             LOG((1, "Unable to start the temp wait timer"));
             return ierr;
         }
-#endif
 
         for (int i = 0; i <= maxreq; i++)
         {
             vdesc = file->varlist + i;
-#ifdef PIO_MICRO_TIMING
             /* Pause all timers, the temp wait timer is used to keep
              * track of wait time
              */
@@ -1538,33 +1861,69 @@ int flush_output_buffer(file_desc_t *file, bool force, PIO_Offset addsize)
                     return ierr;
                 }
             }
+        }
 #endif
+
 #ifdef MPIO_ONESIDED
-            /*onesided optimization requires that all of the requests in a wait_all call represent
-              a contiguous block of data in the file */
+        int *request = reqs;
+        int status[nreqs];
+        rcnt = 0;
+        for (int i = 0; i <= maxreq; i++)
+        {
+            vdesc = file->varlist + i;
+            /* Onesided optimization requires that all of the requests
+             * in a wait_all call represent a contiguous block of data
+             * in the file
+             */
             if (rcnt > 0 && (prev_record != vdesc->record || vdesc->nreqs==0))
             {
                 ierr = ncmpi_wait_all(file->fh, rcnt, request, status);
+                if(ierr != PIO_NOERR)
+                {
+                    return pio_err(file->iosystem, file, ierr,
+                                    __FILE__, __LINE__,
+                                    "Waiting on pending requests on file (%s, ncid=%d) failed (Number of pending requests on file = %d, Number of variables with pending requests = %d, Number of requests currently being waited on = %d).", pio_get_fname_from_file(file), file->pio_ncid, nreqs, nvars_with_reqs, rcnt); 
+                }
+
+                request += rcnt;
                 rcnt = 0;
             }
+            rcnt += vdesc->nreqs;
             prev_record = vdesc->record;
-#endif
-            for (reqcnt = 0; reqcnt < vdesc->nreqs; reqcnt++)
-                request[rcnt++] = max(vdesc->request[reqcnt], NC_REQ_NULL);
-
-            if (vdesc->request != NULL)
-                free(vdesc->request);
-            vdesc->request = NULL;
-            vdesc->nreqs = 0;
-
-#ifdef FLUSH_EVERY_VAR
-            ierr = ncmpi_wait_all(file->fh, rcnt, request, status);
-            rcnt = 0;
-#endif
         }
-
         if (rcnt > 0)
+        {
             ierr = ncmpi_wait_all(file->fh, rcnt, request, status);
+            if(ierr != PIO_NOERR)
+            {
+                return pio_err(file->iosystem, file, ierr,
+                                __FILE__, __LINE__,
+                                "Waiting on pending requests on file (%s, ncid=%d) failed (Number of pending requests on file = %d, Number of variables with pending requests = %d, Number of requests currently being waited on = %d).", pio_get_fname_from_file(file), file->pio_ncid, nreqs, nvars_with_reqs, rcnt); 
+            }
+        }
+#else /* MPIO_ONESIDED */
+        int *request = reqs;
+        int status[nreqs];
+        rcnt = 0;
+        int *req_block_starts = req_block_ranges;
+        int *req_block_ends = req_block_ranges + nreq_blocks;
+        for(int k = 0; k < nreq_blocks; k++)
+        {
+            assert(req_block_ends[k] >= req_block_starts[k]);
+            rcnt = req_block_ends[k] - req_block_starts[k] + 1;
+
+            LOG((1, "ncmpi_wait_all(file=%s, ncid=%d, request range = [%d, %d], num pending requests = %d)", pio_get_fname_from_file(file), file->pio_ncid, req_block_starts[k], req_block_ends[k], nreqs));
+            ierr = ncmpi_wait_all(file->fh, rcnt, request, status);
+            if(ierr != PIO_NOERR)
+            {
+                return pio_err(file->iosystem, file, ierr, __FILE__, __LINE__,
+                                "Waiting on pending requests on file (%s, ncid=%d) failed (Number of pending requests on file = %d, Number of variables with pending requests = %d, Number of request blocks = %d, Current block being waited on = %d, Number of requests in current block = %d).", pio_get_fname_from_file(file), file->pio_ncid, nreqs, nvars_with_reqs, nreq_blocks, k, rcnt); 
+            }
+            request += rcnt;
+        }
+#endif /* MPIO_ONESIDED */
+        free(reqs);
+        free(req_block_ranges);
 
 #ifdef PIO_MICRO_TIMING
         ierr = mtimer_pause(tmp_mt, NULL);
@@ -1653,6 +2012,17 @@ int flush_output_buffer(file_desc_t *file, bool force, PIO_Offset addsize)
         {
             vdesc = file->varlist + i;
             vdesc->wb_pend = 0;
+            if (vdesc->nreqs > 0)
+            {
+                assert(vdesc->request && vdesc->request_sz);
+                free(vdesc->request);
+                free(vdesc->request_sz);
+
+                vdesc->request = NULL;
+                vdesc->request_sz = NULL;
+                vdesc->nreqs = 0;
+            }
+  
             if (vdesc->fillbuf)
             {
                 brel(vdesc->fillbuf);
