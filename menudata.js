@@ -41,6 +41,7 @@ var menudata={children:[
 {text:"Macros",url:"globals_defs.html",children:[
 {text:"d",url:"globals_defs.html#index_d"},
 {text:"e",url:"globals_defs.html#index_e"},
+{text:"i",url:"globals_defs.html#index_i"},
 {text:"m",url:"globals_defs.html#index_m"},
 {text:"n",url:"globals_defs.html#index_n"},
 {text:"p",url:"globals_defs.html#index_p"},

@@ -23,7 +23,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">PIO
-   &#160;<span id="projectnumber">2.4.4</span>
+   &#160;<span id="projectnumber">2.5.0</span>
    </div>
   </td>
  </tr>
@@ -84,7 +84,7 @@ Include dependency graph for pioc_support.c:</div>
 <div class="dyncontent">
 <div class="center"><img src="pioc__support_8c__incl.png" border="0" usemap="#pioc__support_8c" alt=""/></div>
 <map name="pioc__support_8c" id="pioc__support_8c">
-<area shape="rect" id="node3" href="pio_8h.html" title="Public headers for the PIO C interface. " alt="" coords="237,80,288,107"/>
+<area shape="rect" id="node3" href="pio_8h.html" title="Public headers for the PIO C interface. " alt="" coords="285,80,336,107"/>
 </map>
 </div>
 </div><table class="memberdecls">
@@ -93,6 +93,9 @@ Macros</h2></td></tr>
 <tr class="memitem:a4350e714ba9665aa0df05b404a320c3f"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pioc__support_8c.html#a4350e714ba9665aa0df05b404a320c3f">VERSNO</a>&#160;&#160;&#160;2001</td></tr>
 <tr class="memdesc:a4350e714ba9665aa0df05b404a320c3f"><td class="mdescLeft">&#160;</td><td class="mdescRight">This is used with text decomposition files.  <a href="#a4350e714ba9665aa0df05b404a320c3f">More...</a><br /></td></tr>
 <tr class="separator:a4350e714ba9665aa0df05b404a320c3f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a133e523294833f2163af1d9c289b755e"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pioc__support_8c.html#a133e523294833f2163af1d9c289b755e">ID_SHIFT</a>&#160;&#160;&#160;16</td></tr>
+<tr class="memdesc:a133e523294833f2163af1d9c289b755e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Used to shift file index to first two bytes of ncid.  <a href="#a133e523294833f2163af1d9c289b755e">More...</a><br /></td></tr>
+<tr class="separator:a133e523294833f2163af1d9c289b755e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0943e0b42523c317b4c867f26e44dec6"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pioc__support_8c.html#a0943e0b42523c317b4c867f26e44dec6">MAX_BACKTRACE</a>&#160;&#160;&#160;10</td></tr>
 <tr class="memdesc:a0943e0b42523c317b4c867f26e44dec6"><td class="mdescLeft">&#160;</td><td class="mdescRight">In decomposition files, backtraces are included.  <a href="#a0943e0b42523c317b4c867f26e44dec6">More...</a><br /></td></tr>
 <tr class="separator:a0943e0b42523c317b4c867f26e44dec6"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -187,9 +190,6 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pioc
 <tr class="memitem:a0f2e99bf3d141d67c06c3b7ea02ffbf1"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pioc__support_8c.html#a0f2e99bf3d141d67c06c3b7ea02ffbf1">check_unlim_use</a> (int ncid)</td></tr>
 <tr class="memdesc:a0f2e99bf3d141d67c06c3b7ea02ffbf1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check that a file meets PIO requirements for use of unlimited dimensions.  <a href="#a0f2e99bf3d141d67c06c3b7ea02ffbf1">More...</a><br /></td></tr>
 <tr class="separator:a0f2e99bf3d141d67c06c3b7ea02ffbf1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af94a8ed54070141e6818d8b4082f92e2"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pioc__support_8c.html#af94a8ed54070141e6818d8b4082f92e2">inq_file_metadata</a> (<a class="el" href="structfile__desc__t.html">file_desc_t</a> *file, int ncid, int iotype, int *nvars, int **rec_var, int **pio_type, int **pio_type_size, MPI_Datatype **mpi_type, int **mpi_type_size)</td></tr>
-<tr class="memdesc:af94a8ed54070141e6818d8b4082f92e2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Internal function used when opening an existing file.  <a href="#af94a8ed54070141e6818d8b4082f92e2">More...</a><br /></td></tr>
-<tr class="separator:af94a8ed54070141e6818d8b4082f92e2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:add7870e8d5daa0f8e2f133cfd849f9ef"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pioc__support_8c.html#add7870e8d5daa0f8e2f133cfd849f9ef">find_iotype_from_omode</a> (int mode, int *iotype)</td></tr>
 <tr class="memdesc:add7870e8d5daa0f8e2f133cfd849f9ef"><td class="mdescLeft">&#160;</td><td class="mdescRight">Find the appropriate IOTYPE from mode flags to nc_open().  <a href="#add7870e8d5daa0f8e2f133cfd849f9ef">More...</a><br /></td></tr>
 <tr class="separator:add7870e8d5daa0f8e2f133cfd849f9ef"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -227,6 +227,22 @@ Variables</h2></td></tr>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Support functions for the PIO library. </p>
 </div><h2 class="groupheader">Macro Definition Documentation</h2>
+<a id="a133e523294833f2163af1d9c289b755e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a133e523294833f2163af1d9c289b755e">&#9670;&nbsp;</a></span>ID_SHIFT</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define ID_SHIFT&#160;&#160;&#160;16</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Used to shift file index to first two bytes of ncid. </p>
+
+</div>
+</div>
 <a id="a0943e0b42523c317b4c867f26e44dec6"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a0943e0b42523c317b4c867f26e44dec6">&#9670;&nbsp;</a></span>MAX_BACKTRACE</h2>
 
@@ -719,95 +735,6 @@ Variables</h2></td></tr>
 
 </div>
 </div>
-<a id="af94a8ed54070141e6818d8b4082f92e2"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af94a8ed54070141e6818d8b4082f92e2">&#9670;&nbsp;</a></span>inq_file_metadata()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">int inq_file_metadata </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="structfile__desc__t.html">file_desc_t</a> *&#160;</td>
-          <td class="paramname"><em>file</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>ncid</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>iotype</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int *&#160;</td>
-          <td class="paramname"><em>nvars</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int **&#160;</td>
-          <td class="paramname"><em>rec_var</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int **&#160;</td>
-          <td class="paramname"><em>pio_type</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int **&#160;</td>
-          <td class="paramname"><em>pio_type_size</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">MPI_Datatype **&#160;</td>
-          <td class="paramname"><em>mpi_type</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int **&#160;</td>
-          <td class="paramname"><em>mpi_type_size</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Internal function used when opening an existing file. </p>
-<p>This function is called by <a class="el" href="pioc__support_8c.html#abf260610341a7dda32c2df466d81c1d6" title="Open an existing file using PIO library. ">PIOc_openfile_retry()</a>. It learns some things about the metadata in that file. The results end up in the <a class="el" href="structfile__desc__t.html" title="File descriptor structure. ">file_desc_t</a>.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">file</td><td>pointer to the <a class="el" href="structfile__desc__t.html" title="File descriptor structure. ">file_desc_t</a> for this file. </td></tr>
-    <tr><td class="paramname">ncid</td><td>the ncid assigned to the file when opened. </td></tr>
-    <tr><td class="paramname">iotype</td><td>the iotype used to open the file. </td></tr>
-    <tr><td class="paramname">nvars</td><td>a pointer that gets the number of vars in the file.</td></tr>
-    <tr><td class="paramname">rec_var</td><td>gets an array (length nvars) of rec_var values for each var in the file. This array must be freed by caller. </td></tr>
-    <tr><td class="paramname">pio_type</td><td>gets an array (length nvars) of pio_type values for each var in the file. This array must be freed by caller. </td></tr>
-    <tr><td class="paramname">pio_type_size</td><td>gets an array (length nvars) of the size of the PIO type for each var in the file. This array must be freed by caller. </td></tr>
-    <tr><td class="paramname">mpi_type</td><td>gets an array (length nvars) of MPI type values for each var in the file. This array must be freed by caller. </td></tr>
-    <tr><td class="paramname">mpi_type_size</td><td>gets an array (length nvars) of the size of the MPI type for each var in the file. This array must be freed by caller.</td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>0 for success, error code otherwise.</dd></dl>
-<dl class="section author"><dt>Author</dt><dd>Ed Hartnett </dd></dl>
-
-</div>
-</div>
 <a id="a0c4b989cc5c8182d64eed8dfd3519fbf"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a0c4b989cc5c8182d64eed8dfd3519fbf">&#9670;&nbsp;</a></span>iotype_is_valid()</h2>
 
@@ -1179,7 +1106,7 @@ Variables</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">iosysid</td><td>A defined pio system ID, obtained from <a class="el" href="group___p_i_o__init__c.html#ga479a1d9fe2edfc7ca321a1b482fe0211" title="Library initialization used when IO tasks are a subset of compute tasks. ">PIOc_Init_Intracomm()</a> or PIOc_InitAsync(). </td></tr>
-    <tr><td class="paramname">ncidp</td><td>A pointer that gets the ncid of the newly created file. For NetCDF integration, this contains the ncid assigned by the netCDF layer, which is used instead of a PIO-generated ncid. </td></tr>
+    <tr><td class="paramname">ncidp</td><td>A pointer that gets the ncid of the newly created file. This is the PIO ncid. Within PIO, the file will have a different ID, the file-&gt;fh. When netCDF integration is used, the PIO ncid is also stored in the netcdf-c internal file list, and the PIO code is called by the netcdf-c dispatch code. In this case, there are two ncids for the file, the PIO ncid, and the file-&gt;fh ncid. </td></tr>
     <tr><td class="paramname">iotype</td><td>A pointer to a pio output format. Must be one of PIO_IOTYPE_PNETCDF, PIO_IOTYPE_NETCDF, PIO_IOTYPE_NETCDF4C, or PIO_IOTYPE_NETCDF4P. </td></tr>
     <tr><td class="paramname">filename</td><td>The filename to create. </td></tr>
     <tr><td class="paramname">mode</td><td>The netcdf mode for the create operation. </td></tr>
@@ -2291,7 +2218,7 @@ Variables</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Aug 16 2019 09:43:56 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Wed Nov 27 2019 15:29:28 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.13
 </small></address>

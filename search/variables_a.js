@@ -1,7 +1,7 @@
 var searchData=
 [
   ['ncid',['ncid',['../structpio__types_1_1var__desc__t.html#a3e627795ff0f730475b7e6e2b30a2670',1,'pio_types::var_desc_t']]],
-  ['ndims',['ndims',['../structio__desc__t.html#a258b4083cf5f5afaf66abdbe3db01a89',1,'io_desc_t']]],
+  ['ndims',['ndims',['../structvar__desc__t.html#a138afb235e357f41f602ebf292dad768',1,'var_desc_t::ndims()'],['../structio__desc__t.html#a258b4083cf5f5afaf66abdbe3db01a89',1,'io_desc_t::ndims()']]],
   ['ndof',['ndof',['../structio__desc__t.html#a66ce0ae69f67e84921bbf85508fd015f',1,'io_desc_t']]],
   ['needsfill',['needsfill',['../structio__desc__t.html#ae091e478cb04d7b108cb1e124c05355d',1,'io_desc_t']]],
   ['needssort',['needssort',['../structio__desc__t.html#ae7bcd6fa7805489017be40db33ce0c59',1,'io_desc_t']]],

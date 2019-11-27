@@ -23,7 +23,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">PIO
-   &#160;<span id="projectnumber">2.4.4</span>
+   &#160;<span id="projectnumber">2.5.0</span>
    </div>
   </td>
  </tr>
@@ -83,10 +83,13 @@ $(function() {
 <code>#include &lt;string.h&gt;</code><br />
 <code>#include &lt;mpi.h&gt;</code><br />
 <code>#include &lt;uthash.h&gt;</code><br />
+<code>#include &lt;netcdf.h&gt;</code><br />
 </div><div class="textblock"><div class="dynheader">
 Include dependency graph for pio.h:</div>
 <div class="dyncontent">
 <div class="center"><img src="pio_8h__incl.png" border="0" usemap="#pio_8h" alt=""/></div>
+<map name="pio_8h" id="pio_8h">
+</map>
 </div>
 </div><div class="textblock"><div class="dynheader">
 This graph shows which files directly or indirectly include this file:</div>
@@ -142,10 +145,7 @@ Classes</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="define-members"></a>
 Macros</h2></td></tr>
-<tr class="memitem:a757768e03c71e1f1720f6718eed964a8"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#a757768e03c71e1f1720f6718eed964a8">MPI_OFFSET</a>&#160;&#160;&#160;MPI_LONG_LONG</td></tr>
-<tr class="memdesc:a757768e03c71e1f1720f6718eed964a8"><td class="mdescLeft">&#160;</td><td class="mdescRight">MPI_OFFSET is an integer type of size sufficient to represent the size (in bytes) of the largest file supported by MPI.  <a href="#a757768e03c71e1f1720f6718eed964a8">More...</a><br /></td></tr>
-<tr class="separator:a757768e03c71e1f1720f6718eed964a8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a14497592730ea1a88cd1dbc53239dd59"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#a14497592730ea1a88cd1dbc53239dd59">PIO_OFFSET</a>&#160;&#160;&#160;<a class="el" href="pio_8h.html#a757768e03c71e1f1720f6718eed964a8">MPI_OFFSET</a></td></tr>
+<tr class="memitem:a14497592730ea1a88cd1dbc53239dd59"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#a14497592730ea1a88cd1dbc53239dd59">PIO_OFFSET</a>&#160;&#160;&#160;MPI_OFFSET</td></tr>
 <tr class="memdesc:a14497592730ea1a88cd1dbc53239dd59"><td class="mdescLeft">&#160;</td><td class="mdescRight">PIO_OFFSET is an integer type of size sufficient to represent the size (in bytes) of the largest file supported by MPI.  <a href="#a14497592730ea1a88cd1dbc53239dd59">More...</a><br /></td></tr>
 <tr class="separator:a14497592730ea1a88cd1dbc53239dd59"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1225edb54e6d6de678bf675485549eb0"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#a1225edb54e6d6de678bf675485549eb0">PIO_Offset</a>&#160;&#160;&#160;MPI_Offset</td></tr>
@@ -208,11 +208,401 @@ Macros</h2></td></tr>
 <tr class="memitem:ab075f76fb6ead6aa6a9e323faa398c78"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#ab075f76fb6ead6aa6a9e323faa398c78">DECOMP_FORTRAN_ORDER_STR</a>&#160;&#160;&#160;&quot;Fortran&quot;</td></tr>
 <tr class="memdesc:ab075f76fb6ead6aa6a9e323faa398c78"><td class="mdescLeft">&#160;</td><td class="mdescRight">String used to indicate a decomposition file is in Fortran array-order.  <a href="#ab075f76fb6ead6aa6a9e323faa398c78">More...</a><br /></td></tr>
 <tr class="separator:ab075f76fb6ead6aa6a9e323faa398c78"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa74b956293ed1430514e598213040894"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#aa74b956293ed1430514e598213040894">NC_PIO</a>&#160;&#160;&#160;NC_UDF0</td></tr>
+<tr class="memdesc:aa74b956293ed1430514e598213040894"><td class="mdescLeft">&#160;</td><td class="mdescRight">A convience macro for netCDF integration code.  <a href="#aa74b956293ed1430514e598213040894">More...</a><br /></td></tr>
+<tr class="separator:aa74b956293ed1430514e598213040894"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6d7754fb8c0e0df7339312e938946478"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#a6d7754fb8c0e0df7339312e938946478">PIO_REARR_COMM_UNLIMITED_PEND_REQ</a>&#160;&#160;&#160;-1</td></tr>
 <tr class="memdesc:a6d7754fb8c0e0df7339312e938946478"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constant to indicate unlimited requests for the rearranger.  <a href="#a6d7754fb8c0e0df7339312e938946478">More...</a><br /></td></tr>
 <tr class="separator:a6d7754fb8c0e0df7339312e938946478"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5bdde31308ba7e2b8d6ffcadfbe2ce4c"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#a5bdde31308ba7e2b8d6ffcadfbe2ce4c">PIO_GLOBAL</a>&#160;&#160;&#160;NC_GLOBAL</td></tr>
+<tr class="memdesc:a5bdde31308ba7e2b8d6ffcadfbe2ce4c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Attribute id to put/get a global attribute.  <a href="#a5bdde31308ba7e2b8d6ffcadfbe2ce4c">More...</a><br /></td></tr>
+<tr class="separator:a5bdde31308ba7e2b8d6ffcadfbe2ce4c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adb7ac51c82f5f2378030aa7f7db62982"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#adb7ac51c82f5f2378030aa7f7db62982">PIO_UNLIMITED</a>&#160;&#160;&#160;NC_UNLIMITED</td></tr>
+<tr class="memdesc:adb7ac51c82f5f2378030aa7f7db62982"><td class="mdescLeft">&#160;</td><td class="mdescRight">Size argument to nc_def_dim() for an unlimited dimension.  <a href="#adb7ac51c82f5f2378030aa7f7db62982">More...</a><br /></td></tr>
+<tr class="separator:adb7ac51c82f5f2378030aa7f7db62982"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0807cde08ca6e8e2edb38655d1388653"><td class="memItemLeft" align="right" valign="top"><a id="a0807cde08ca6e8e2edb38655d1388653"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#a0807cde08ca6e8e2edb38655d1388653">PIO_BYTE</a>&#160;&#160;&#160;NC_BYTE</td></tr>
+<tr class="memdesc:a0807cde08ca6e8e2edb38655d1388653"><td class="mdescLeft">&#160;</td><td class="mdescRight">signed 1 byte integer <br /></td></tr>
+<tr class="separator:a0807cde08ca6e8e2edb38655d1388653"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa5255cc4a3c98964d7cd50783993ae4d"><td class="memItemLeft" align="right" valign="top"><a id="aa5255cc4a3c98964d7cd50783993ae4d"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#aa5255cc4a3c98964d7cd50783993ae4d">PIO_CHAR</a>&#160;&#160;&#160;NC_CHAR</td></tr>
+<tr class="memdesc:aa5255cc4a3c98964d7cd50783993ae4d"><td class="mdescLeft">&#160;</td><td class="mdescRight">ISO/ASCII character. <br /></td></tr>
+<tr class="separator:aa5255cc4a3c98964d7cd50783993ae4d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7e7ea3eb4a7e8f5b4b44d2b87e9d2413"><td class="memItemLeft" align="right" valign="top"><a id="a7e7ea3eb4a7e8f5b4b44d2b87e9d2413"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#a7e7ea3eb4a7e8f5b4b44d2b87e9d2413">PIO_SHORT</a>&#160;&#160;&#160;NC_SHORT</td></tr>
+<tr class="memdesc:a7e7ea3eb4a7e8f5b4b44d2b87e9d2413"><td class="mdescLeft">&#160;</td><td class="mdescRight">signed 2 byte integer <br /></td></tr>
+<tr class="separator:a7e7ea3eb4a7e8f5b4b44d2b87e9d2413"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8a87ab3b37b8b4bed50ec29b699f3bfd"><td class="memItemLeft" align="right" valign="top"><a id="a8a87ab3b37b8b4bed50ec29b699f3bfd"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#a8a87ab3b37b8b4bed50ec29b699f3bfd">PIO_INT</a>&#160;&#160;&#160;NC_INT</td></tr>
+<tr class="memdesc:a8a87ab3b37b8b4bed50ec29b699f3bfd"><td class="mdescLeft">&#160;</td><td class="mdescRight">signed 4 byte integer <br /></td></tr>
+<tr class="separator:a8a87ab3b37b8b4bed50ec29b699f3bfd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a084feae7d4d97692b0b5c9667f6e3c99"><td class="memItemLeft" align="right" valign="top"><a id="a084feae7d4d97692b0b5c9667f6e3c99"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#a084feae7d4d97692b0b5c9667f6e3c99">PIO_FLOAT</a>&#160;&#160;&#160;NC_FLOAT</td></tr>
+<tr class="memdesc:a084feae7d4d97692b0b5c9667f6e3c99"><td class="mdescLeft">&#160;</td><td class="mdescRight">single precision floating point number <br /></td></tr>
+<tr class="separator:a084feae7d4d97692b0b5c9667f6e3c99"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ace8bb0d5a7b4d1f64b003dc6e3c66cd1"><td class="memItemLeft" align="right" valign="top"><a id="ace8bb0d5a7b4d1f64b003dc6e3c66cd1"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#ace8bb0d5a7b4d1f64b003dc6e3c66cd1">PIO_REAL</a>&#160;&#160;&#160;NC_FLOAT</td></tr>
+<tr class="memdesc:ace8bb0d5a7b4d1f64b003dc6e3c66cd1"><td class="mdescLeft">&#160;</td><td class="mdescRight">single precision floating point number <br /></td></tr>
+<tr class="separator:ace8bb0d5a7b4d1f64b003dc6e3c66cd1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a46c6d522efe9437d157ca41eff5d604b"><td class="memItemLeft" align="right" valign="top"><a id="a46c6d522efe9437d157ca41eff5d604b"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#a46c6d522efe9437d157ca41eff5d604b">PIO_DOUBLE</a>&#160;&#160;&#160;NC_DOUBLE</td></tr>
+<tr class="memdesc:a46c6d522efe9437d157ca41eff5d604b"><td class="mdescLeft">&#160;</td><td class="mdescRight">double precision floating point number <br /></td></tr>
+<tr class="separator:a46c6d522efe9437d157ca41eff5d604b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8de265a18e07e14a4375900c34d5979e"><td class="memItemLeft" align="right" valign="top"><a id="a8de265a18e07e14a4375900c34d5979e"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#a8de265a18e07e14a4375900c34d5979e">PIO_UBYTE</a>&#160;&#160;&#160;NC_UBYTE</td></tr>
+<tr class="memdesc:a8de265a18e07e14a4375900c34d5979e"><td class="mdescLeft">&#160;</td><td class="mdescRight">unsigned 1 byte int <br /></td></tr>
+<tr class="separator:a8de265a18e07e14a4375900c34d5979e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a965c474ba39c70bf4eb9624c3e90a71a"><td class="memItemLeft" align="right" valign="top"><a id="a965c474ba39c70bf4eb9624c3e90a71a"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#a965c474ba39c70bf4eb9624c3e90a71a">PIO_USHORT</a>&#160;&#160;&#160;NC_USHORT</td></tr>
+<tr class="memdesc:a965c474ba39c70bf4eb9624c3e90a71a"><td class="mdescLeft">&#160;</td><td class="mdescRight">unsigned 2-byte int <br /></td></tr>
+<tr class="separator:a965c474ba39c70bf4eb9624c3e90a71a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae7d298a198b3c1b01e1ab2b48848cb42"><td class="memItemLeft" align="right" valign="top"><a id="ae7d298a198b3c1b01e1ab2b48848cb42"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#ae7d298a198b3c1b01e1ab2b48848cb42">PIO_UINT</a>&#160;&#160;&#160;NC_UINT</td></tr>
+<tr class="memdesc:ae7d298a198b3c1b01e1ab2b48848cb42"><td class="mdescLeft">&#160;</td><td class="mdescRight">unsigned 4-byte int <br /></td></tr>
+<tr class="separator:ae7d298a198b3c1b01e1ab2b48848cb42"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acef343b67163d2d9b2727376eff0e9f2"><td class="memItemLeft" align="right" valign="top"><a id="acef343b67163d2d9b2727376eff0e9f2"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#acef343b67163d2d9b2727376eff0e9f2">PIO_INT64</a>&#160;&#160;&#160;NC_INT64</td></tr>
+<tr class="memdesc:acef343b67163d2d9b2727376eff0e9f2"><td class="mdescLeft">&#160;</td><td class="mdescRight">signed 8-byte int <br /></td></tr>
+<tr class="separator:acef343b67163d2d9b2727376eff0e9f2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab2c781632bed704852525655130a41c3"><td class="memItemLeft" align="right" valign="top"><a id="ab2c781632bed704852525655130a41c3"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#ab2c781632bed704852525655130a41c3">PIO_UINT64</a>&#160;&#160;&#160;NC_UINT64</td></tr>
+<tr class="memdesc:ab2c781632bed704852525655130a41c3"><td class="mdescLeft">&#160;</td><td class="mdescRight">unsigned 8-byte int <br /></td></tr>
+<tr class="separator:ab2c781632bed704852525655130a41c3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a65bdf1eebea3964feb63065c286aceb9"><td class="memItemLeft" align="right" valign="top"><a id="a65bdf1eebea3964feb63065c286aceb9"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#a65bdf1eebea3964feb63065c286aceb9">PIO_STRING</a>&#160;&#160;&#160;NC_STRING</td></tr>
+<tr class="memdesc:a65bdf1eebea3964feb63065c286aceb9"><td class="mdescLeft">&#160;</td><td class="mdescRight">string <br /></td></tr>
+<tr class="separator:a65bdf1eebea3964feb63065c286aceb9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8e123edc11c28f9c4a282e005970af92"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#a8e123edc11c28f9c4a282e005970af92">PIO_WRITE</a>&#160;&#160;&#160;NC_WRITE</td></tr>
+<tr class="memdesc:a8e123edc11c28f9c4a282e005970af92"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set read-write access for nc_open().  <a href="#a8e123edc11c28f9c4a282e005970af92">More...</a><br /></td></tr>
+<tr class="separator:a8e123edc11c28f9c4a282e005970af92"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a06b8292a1936f6285c3d62b6bec136d1"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#a06b8292a1936f6285c3d62b6bec136d1">PIO_NOWRITE</a>&#160;&#160;&#160;NC_NOWRITE</td></tr>
+<tr class="memdesc:a06b8292a1936f6285c3d62b6bec136d1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set read-only access for nc_open().  <a href="#a06b8292a1936f6285c3d62b6bec136d1">More...</a><br /></td></tr>
+<tr class="separator:a06b8292a1936f6285c3d62b6bec136d1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afd29ea2ece5f4d1eacadb36b0f776a35"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#afd29ea2ece5f4d1eacadb36b0f776a35">PIO_CLOBBER</a>&#160;&#160;&#160;NC_CLOBBER</td></tr>
+<tr class="memdesc:afd29ea2ece5f4d1eacadb36b0f776a35"><td class="mdescLeft">&#160;</td><td class="mdescRight">Destroy existing file.  <a href="#afd29ea2ece5f4d1eacadb36b0f776a35">More...</a><br /></td></tr>
+<tr class="separator:afd29ea2ece5f4d1eacadb36b0f776a35"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af9681d900b4b8e3bd5529513e674d91c"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#af9681d900b4b8e3bd5529513e674d91c">PIO_NOCLOBBER</a>&#160;&#160;&#160;NC_NOCLOBBER</td></tr>
+<tr class="memdesc:af9681d900b4b8e3bd5529513e674d91c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Don't destroy existing file.  <a href="#af9681d900b4b8e3bd5529513e674d91c">More...</a><br /></td></tr>
+<tr class="separator:af9681d900b4b8e3bd5529513e674d91c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acc2ab813cd12be7b9f6dfc0757ebc6d9"><td class="memItemLeft" align="right" valign="top"><a id="acc2ab813cd12be7b9f6dfc0757ebc6d9"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#acc2ab813cd12be7b9f6dfc0757ebc6d9">PIO_FILL</a>&#160;&#160;&#160;NC_FILL</td></tr>
+<tr class="memdesc:acc2ab813cd12be7b9f6dfc0757ebc6d9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Argument to nc_set_fill() to clear NC_NOFILL. <br /></td></tr>
+<tr class="separator:acc2ab813cd12be7b9f6dfc0757ebc6d9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abe1ddd28a2492ade37de3d5b1805f8a1"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#abe1ddd28a2492ade37de3d5b1805f8a1">PIO_NOFILL</a>&#160;&#160;&#160;NC_NOFILL</td></tr>
+<tr class="memdesc:abe1ddd28a2492ade37de3d5b1805f8a1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Argument to nc_set_fill() to turn off filling of data.  <a href="#abe1ddd28a2492ade37de3d5b1805f8a1">More...</a><br /></td></tr>
+<tr class="separator:abe1ddd28a2492ade37de3d5b1805f8a1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa20fd333b6f32f0d29f9fca34e92760e"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#aa20fd333b6f32f0d29f9fca34e92760e">PIO_MAX_NAME</a>&#160;&#160;&#160;NC_MAX_NAME</td></tr>
+<tr class="memdesc:aa20fd333b6f32f0d29f9fca34e92760e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Max name length.  <a href="#aa20fd333b6f32f0d29f9fca34e92760e">More...</a><br /></td></tr>
+<tr class="separator:aa20fd333b6f32f0d29f9fca34e92760e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5535e8994dd297d5b72182641ab6922a"><td class="memItemLeft" align="right" valign="top"><a id="a5535e8994dd297d5b72182641ab6922a"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#a5535e8994dd297d5b72182641ab6922a">PIO_MAX_VAR_DIMS</a>&#160;&#160;&#160;NC_MAX_VAR_DIMS</td></tr>
+<tr class="memdesc:a5535e8994dd297d5b72182641ab6922a"><td class="mdescLeft">&#160;</td><td class="mdescRight">max per variable dimensions <br /></td></tr>
+<tr class="separator:a5535e8994dd297d5b72182641ab6922a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a51cf8bca0b2c096fc876c0df5c178823"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#a51cf8bca0b2c096fc876c0df5c178823">PIO_64BIT_OFFSET</a>&#160;&#160;&#160;NC_64BIT_OFFSET</td></tr>
+<tr class="memdesc:a51cf8bca0b2c096fc876c0df5c178823"><td class="mdescLeft">&#160;</td><td class="mdescRight">Use large (64-bit) file offsets.  <a href="#a51cf8bca0b2c096fc876c0df5c178823">More...</a><br /></td></tr>
+<tr class="separator:a51cf8bca0b2c096fc876c0df5c178823"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9554d8d107c36507941803b1c978307f"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#a9554d8d107c36507941803b1c978307f">PIO_64BIT_DATA</a>&#160;&#160;&#160;0x0010</td></tr>
+<tr class="memdesc:a9554d8d107c36507941803b1c978307f"><td class="mdescLeft">&#160;</td><td class="mdescRight">NC_64BIT_DATA This is a problem - need to define directly instead of using include file.  <a href="#a9554d8d107c36507941803b1c978307f">More...</a><br /></td></tr>
+<tr class="separator:a9554d8d107c36507941803b1c978307f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adce579f6c39b0e792fa48147bf9c20d9"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#adce579f6c39b0e792fa48147bf9c20d9">PIO_NOERR</a>&#160;&#160;&#160;NC_NOERR</td></tr>
+<tr class="memdesc:adce579f6c39b0e792fa48147bf9c20d9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Define the netCDF-based error codes.  <a href="#adce579f6c39b0e792fa48147bf9c20d9">More...</a><br /></td></tr>
+<tr class="separator:adce579f6c39b0e792fa48147bf9c20d9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3d78b3b51056c29c3cc4e3b390f06bce"><td class="memItemLeft" align="right" valign="top"><a id="a3d78b3b51056c29c3cc4e3b390f06bce"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#a3d78b3b51056c29c3cc4e3b390f06bce">PIO_EBADID</a>&#160;&#160;&#160;NC_EBADID</td></tr>
+<tr class="memdesc:a3d78b3b51056c29c3cc4e3b390f06bce"><td class="mdescLeft">&#160;</td><td class="mdescRight">Bad ncid. <br /></td></tr>
+<tr class="separator:a3d78b3b51056c29c3cc4e3b390f06bce"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae9090600853a999f22fe9cc482d19833"><td class="memItemLeft" align="right" valign="top"><a id="ae9090600853a999f22fe9cc482d19833"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#ae9090600853a999f22fe9cc482d19833">PIO_ENFILE</a>&#160;&#160;&#160;NC_ENFILE</td></tr>
+<tr class="memdesc:ae9090600853a999f22fe9cc482d19833"><td class="mdescLeft">&#160;</td><td class="mdescRight">Too many netcdfs open. <br /></td></tr>
+<tr class="separator:ae9090600853a999f22fe9cc482d19833"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a73f4fa5bfc4aeab0105fd9b28baf838e"><td class="memItemLeft" align="right" valign="top"><a id="a73f4fa5bfc4aeab0105fd9b28baf838e"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#a73f4fa5bfc4aeab0105fd9b28baf838e">PIO_EEXIST</a>&#160;&#160;&#160;NC_EEXIST</td></tr>
+<tr class="memdesc:a73f4fa5bfc4aeab0105fd9b28baf838e"><td class="mdescLeft">&#160;</td><td class="mdescRight">netcdf file exists &amp;&amp; NC_NOCLOBBER <br /></td></tr>
+<tr class="separator:a73f4fa5bfc4aeab0105fd9b28baf838e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa0434781943182ceab84aaf9e44c1332"><td class="memItemLeft" align="right" valign="top"><a id="aa0434781943182ceab84aaf9e44c1332"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#aa0434781943182ceab84aaf9e44c1332">PIO_EINVAL</a>&#160;&#160;&#160;NC_EINVAL</td></tr>
+<tr class="memdesc:aa0434781943182ceab84aaf9e44c1332"><td class="mdescLeft">&#160;</td><td class="mdescRight">Invalid Argument. <br /></td></tr>
+<tr class="separator:aa0434781943182ceab84aaf9e44c1332"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7679fb79cb5172fdc7d7953e0cccf85d"><td class="memItemLeft" align="right" valign="top"><a id="a7679fb79cb5172fdc7d7953e0cccf85d"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#a7679fb79cb5172fdc7d7953e0cccf85d">PIO_EPERM</a>&#160;&#160;&#160;NC_EPERM</td></tr>
+<tr class="memdesc:a7679fb79cb5172fdc7d7953e0cccf85d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write to read only. <br /></td></tr>
+<tr class="separator:a7679fb79cb5172fdc7d7953e0cccf85d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a57c7156a81178c83e41b1ce9deaf4a05"><td class="memItemLeft" align="right" valign="top"><a id="a57c7156a81178c83e41b1ce9deaf4a05"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#a57c7156a81178c83e41b1ce9deaf4a05">PIO_ENOTINDEFINE</a>&#160;&#160;&#160;NC_ENOTINDEFINE</td></tr>
+<tr class="memdesc:a57c7156a81178c83e41b1ce9deaf4a05"><td class="mdescLeft">&#160;</td><td class="mdescRight">Not in define mode. <br /></td></tr>
+<tr class="separator:a57c7156a81178c83e41b1ce9deaf4a05"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7e23f69bad68bbc85fdfcdc080f96109"><td class="memItemLeft" align="right" valign="top"><a id="a7e23f69bad68bbc85fdfcdc080f96109"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#a7e23f69bad68bbc85fdfcdc080f96109">PIO_EINDEFINE</a>&#160;&#160;&#160;NC_EINDEFINE</td></tr>
+<tr class="memdesc:a7e23f69bad68bbc85fdfcdc080f96109"><td class="mdescLeft">&#160;</td><td class="mdescRight">Not allowed in define mode. <br /></td></tr>
+<tr class="separator:a7e23f69bad68bbc85fdfcdc080f96109"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2ac519a8033fe8add11a13eeaf60f3dc"><td class="memItemLeft" align="right" valign="top"><a id="a2ac519a8033fe8add11a13eeaf60f3dc"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#a2ac519a8033fe8add11a13eeaf60f3dc">PIO_EINVALCOORDS</a>&#160;&#160;&#160;NC_EINVALCOORDS</td></tr>
+<tr class="memdesc:a2ac519a8033fe8add11a13eeaf60f3dc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Invalid coordinates. <br /></td></tr>
+<tr class="separator:a2ac519a8033fe8add11a13eeaf60f3dc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae6cefc3a7c5fc8610f40cd8e2dda08e5"><td class="memItemLeft" align="right" valign="top"><a id="ae6cefc3a7c5fc8610f40cd8e2dda08e5"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#ae6cefc3a7c5fc8610f40cd8e2dda08e5">PIO_EMAXDIMS</a>&#160;&#160;&#160;NC_EMAXDIMS</td></tr>
+<tr class="memdesc:ae6cefc3a7c5fc8610f40cd8e2dda08e5"><td class="mdescLeft">&#160;</td><td class="mdescRight">not enforced after netcdf-c 4.5.0 <br /></td></tr>
+<tr class="separator:ae6cefc3a7c5fc8610f40cd8e2dda08e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7203a642fc949167990c7d7e5ccee061"><td class="memItemLeft" align="right" valign="top"><a id="a7203a642fc949167990c7d7e5ccee061"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#a7203a642fc949167990c7d7e5ccee061">PIO_ENAMEINUSE</a>&#160;&#160;&#160;NC_ENAMEINUSE</td></tr>
+<tr class="memdesc:a7203a642fc949167990c7d7e5ccee061"><td class="mdescLeft">&#160;</td><td class="mdescRight">String match to name in use. <br /></td></tr>
+<tr class="separator:a7203a642fc949167990c7d7e5ccee061"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5b03a755ccc0c1bd7d296a994a5256b0"><td class="memItemLeft" align="right" valign="top"><a id="a5b03a755ccc0c1bd7d296a994a5256b0"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#a5b03a755ccc0c1bd7d296a994a5256b0">PIO_ENOTATT</a>&#160;&#160;&#160;NC_ENOTATT</td></tr>
+<tr class="memdesc:a5b03a755ccc0c1bd7d296a994a5256b0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Attribute not found. <br /></td></tr>
+<tr class="separator:a5b03a755ccc0c1bd7d296a994a5256b0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a20747c7d40993cba321830051856b093"><td class="memItemLeft" align="right" valign="top"><a id="a20747c7d40993cba321830051856b093"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#a20747c7d40993cba321830051856b093">PIO_EMAXATTS</a>&#160;&#160;&#160;NC_EMAXATTS</td></tr>
+<tr class="memdesc:a20747c7d40993cba321830051856b093"><td class="mdescLeft">&#160;</td><td class="mdescRight">NC_MAX_ATTRS exceeded - not enforced after 4.5.0. <br /></td></tr>
+<tr class="separator:a20747c7d40993cba321830051856b093"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a52c26fa1916dd1cce3bc66a6cefbe1f4"><td class="memItemLeft" align="right" valign="top"><a id="a52c26fa1916dd1cce3bc66a6cefbe1f4"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#a52c26fa1916dd1cce3bc66a6cefbe1f4">PIO_EBADTYPE</a>&#160;&#160;&#160;NC_EBADTYPE</td></tr>
+<tr class="memdesc:a52c26fa1916dd1cce3bc66a6cefbe1f4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Not a netcdf data type. <br /></td></tr>
+<tr class="separator:a52c26fa1916dd1cce3bc66a6cefbe1f4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a51211e03f04cca7547b08dcf254cf140"><td class="memItemLeft" align="right" valign="top"><a id="a51211e03f04cca7547b08dcf254cf140"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#a51211e03f04cca7547b08dcf254cf140">PIO_EBADDIM</a>&#160;&#160;&#160;NC_EBADDIM</td></tr>
+<tr class="memdesc:a51211e03f04cca7547b08dcf254cf140"><td class="mdescLeft">&#160;</td><td class="mdescRight">Invalid dimension id or name. <br /></td></tr>
+<tr class="separator:a51211e03f04cca7547b08dcf254cf140"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1081a72e02c0e763b38dee2b21db731e"><td class="memItemLeft" align="right" valign="top"><a id="a1081a72e02c0e763b38dee2b21db731e"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#a1081a72e02c0e763b38dee2b21db731e">PIO_EUNLIMPOS</a>&#160;&#160;&#160;NC_EUNLIMPOS</td></tr>
+<tr class="memdesc:a1081a72e02c0e763b38dee2b21db731e"><td class="mdescLeft">&#160;</td><td class="mdescRight">NC_UNLIMITED in the wrong index. <br /></td></tr>
+<tr class="separator:a1081a72e02c0e763b38dee2b21db731e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4edb69318fb9798f6d04a6dbf4f6ee31"><td class="memItemLeft" align="right" valign="top"><a id="a4edb69318fb9798f6d04a6dbf4f6ee31"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#a4edb69318fb9798f6d04a6dbf4f6ee31">PIO_EMAXVARS</a>&#160;&#160;&#160;NC_EMAXVARS</td></tr>
+<tr class="memdesc:a4edb69318fb9798f6d04a6dbf4f6ee31"><td class="mdescLeft">&#160;</td><td class="mdescRight">not enforced after 4.5.0 <br /></td></tr>
+<tr class="separator:a4edb69318fb9798f6d04a6dbf4f6ee31"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4d526492bacb191b838d9ec98effbd8e"><td class="memItemLeft" align="right" valign="top"><a id="a4d526492bacb191b838d9ec98effbd8e"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#a4d526492bacb191b838d9ec98effbd8e">PIO_ENOTVAR</a>&#160;&#160;&#160;NC_ENOTVAR</td></tr>
+<tr class="memdesc:a4d526492bacb191b838d9ec98effbd8e"><td class="mdescLeft">&#160;</td><td class="mdescRight">variable not found <br /></td></tr>
+<tr class="separator:a4d526492bacb191b838d9ec98effbd8e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae68e49a53e40b89650361509491a3b13"><td class="memItemLeft" align="right" valign="top"><a id="ae68e49a53e40b89650361509491a3b13"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#ae68e49a53e40b89650361509491a3b13">PIO_EGLOBAL</a>&#160;&#160;&#160;NC_EGLOBAL</td></tr>
+<tr class="memdesc:ae68e49a53e40b89650361509491a3b13"><td class="mdescLeft">&#160;</td><td class="mdescRight">Action prohibited on NC_GLOBAL varid. <br /></td></tr>
+<tr class="separator:ae68e49a53e40b89650361509491a3b13"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a97164103cb4cf5baa77088bf1e976d74"><td class="memItemLeft" align="right" valign="top"><a id="a97164103cb4cf5baa77088bf1e976d74"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#a97164103cb4cf5baa77088bf1e976d74">PIO_ENOTNC</a>&#160;&#160;&#160;NC_ENOTNC</td></tr>
+<tr class="memdesc:a97164103cb4cf5baa77088bf1e976d74"><td class="mdescLeft">&#160;</td><td class="mdescRight">Not a netcdf file. <br /></td></tr>
+<tr class="separator:a97164103cb4cf5baa77088bf1e976d74"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abe4db971d629a32d56bed372c79b6669"><td class="memItemLeft" align="right" valign="top"><a id="abe4db971d629a32d56bed372c79b6669"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#abe4db971d629a32d56bed372c79b6669">PIO_ESTS</a>&#160;&#160;&#160;NC_ESTS</td></tr>
+<tr class="memdesc:abe4db971d629a32d56bed372c79b6669"><td class="mdescLeft">&#160;</td><td class="mdescRight">In Fortran, string too short. <br /></td></tr>
+<tr class="separator:abe4db971d629a32d56bed372c79b6669"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ade56121648b229398b1ad4239006065d"><td class="memItemLeft" align="right" valign="top"><a id="ade56121648b229398b1ad4239006065d"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#ade56121648b229398b1ad4239006065d">PIO_EMAXNAME</a>&#160;&#160;&#160;NC_EMAXNAME</td></tr>
+<tr class="memdesc:ade56121648b229398b1ad4239006065d"><td class="mdescLeft">&#160;</td><td class="mdescRight">NC_MAX_NAME exceeded. <br /></td></tr>
+<tr class="separator:ade56121648b229398b1ad4239006065d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acf0bb312dcb3003f4d19cf95b167947a"><td class="memItemLeft" align="right" valign="top"><a id="acf0bb312dcb3003f4d19cf95b167947a"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#acf0bb312dcb3003f4d19cf95b167947a">PIO_EUNLIMIT</a>&#160;&#160;&#160;NC_EUNLIMIT</td></tr>
+<tr class="memdesc:acf0bb312dcb3003f4d19cf95b167947a"><td class="mdescLeft">&#160;</td><td class="mdescRight">NC_UNLIMITED size already in use. <br /></td></tr>
+<tr class="separator:acf0bb312dcb3003f4d19cf95b167947a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aefaa7111f3848e6e74059436ccca31e0"><td class="memItemLeft" align="right" valign="top"><a id="aefaa7111f3848e6e74059436ccca31e0"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#aefaa7111f3848e6e74059436ccca31e0">PIO_ENORECVARS</a>&#160;&#160;&#160;NC_ENORECVARS</td></tr>
+<tr class="memdesc:aefaa7111f3848e6e74059436ccca31e0"><td class="mdescLeft">&#160;</td><td class="mdescRight">nc_rec op when there are no record vars <br /></td></tr>
+<tr class="separator:aefaa7111f3848e6e74059436ccca31e0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa1d8d7fcbf76f590a314fa63a1f065b5"><td class="memItemLeft" align="right" valign="top"><a id="aa1d8d7fcbf76f590a314fa63a1f065b5"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#aa1d8d7fcbf76f590a314fa63a1f065b5">PIO_ECHAR</a>&#160;&#160;&#160;NC_ECHAR</td></tr>
+<tr class="memdesc:aa1d8d7fcbf76f590a314fa63a1f065b5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Attempt to convert between text &amp; numbers. <br /></td></tr>
+<tr class="separator:aa1d8d7fcbf76f590a314fa63a1f065b5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:accb9c3f902098c1da79d0e9584b4da95"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#accb9c3f902098c1da79d0e9584b4da95">PIO_EEDGE</a>&#160;&#160;&#160;NC_EEDGE</td></tr>
+<tr class="memdesc:accb9c3f902098c1da79d0e9584b4da95"><td class="mdescLeft">&#160;</td><td class="mdescRight">Start+count exceeds dimension bound.  <a href="#accb9c3f902098c1da79d0e9584b4da95">More...</a><br /></td></tr>
+<tr class="separator:accb9c3f902098c1da79d0e9584b4da95"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2fdda56163eae7e3ec06b19f46302879"><td class="memItemLeft" align="right" valign="top"><a id="a2fdda56163eae7e3ec06b19f46302879"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#a2fdda56163eae7e3ec06b19f46302879">PIO_ESTRIDE</a>&#160;&#160;&#160;NC_ESTRIDE</td></tr>
+<tr class="memdesc:a2fdda56163eae7e3ec06b19f46302879"><td class="mdescLeft">&#160;</td><td class="mdescRight">Illegal stride. <br /></td></tr>
+<tr class="separator:a2fdda56163eae7e3ec06b19f46302879"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a551d82c20ddf681693a6355f16ffb70f"><td class="memItemLeft" align="right" valign="top"><a id="a551d82c20ddf681693a6355f16ffb70f"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#a551d82c20ddf681693a6355f16ffb70f">PIO_EBADNAME</a>&#160;&#160;&#160;NC_EBADNAME</td></tr>
+<tr class="memdesc:a551d82c20ddf681693a6355f16ffb70f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Attribute or variable name contains illegal characters. <br /></td></tr>
+<tr class="separator:a551d82c20ddf681693a6355f16ffb70f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a89612aad828f492013afc3e2ea034aea"><td class="memItemLeft" align="right" valign="top"><a id="a89612aad828f492013afc3e2ea034aea"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#a89612aad828f492013afc3e2ea034aea">PIO_ERANGE</a>&#160;&#160;&#160;NC_ERANGE</td></tr>
+<tr class="memdesc:a89612aad828f492013afc3e2ea034aea"><td class="mdescLeft">&#160;</td><td class="mdescRight">Range error. <br /></td></tr>
+<tr class="separator:a89612aad828f492013afc3e2ea034aea"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaa7cffac2a5ddd1e3a95024fcfb13bd3"><td class="memItemLeft" align="right" valign="top"><a id="aaa7cffac2a5ddd1e3a95024fcfb13bd3"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#aaa7cffac2a5ddd1e3a95024fcfb13bd3">PIO_ENOMEM</a>&#160;&#160;&#160;NC_ENOMEM</td></tr>
+<tr class="memdesc:aaa7cffac2a5ddd1e3a95024fcfb13bd3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Memory allocation (malloc) failure. <br /></td></tr>
+<tr class="separator:aaa7cffac2a5ddd1e3a95024fcfb13bd3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a907266c8d38a0c3c4d8e0a4b5dcbb7cf"><td class="memItemLeft" align="right" valign="top"><a id="a907266c8d38a0c3c4d8e0a4b5dcbb7cf"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#a907266c8d38a0c3c4d8e0a4b5dcbb7cf">PIO_EVARSIZE</a>&#160;&#160;&#160;NC_EVARSIZE</td></tr>
+<tr class="memdesc:a907266c8d38a0c3c4d8e0a4b5dcbb7cf"><td class="mdescLeft">&#160;</td><td class="mdescRight">One or more variable sizes violate format constraints. <br /></td></tr>
+<tr class="separator:a907266c8d38a0c3c4d8e0a4b5dcbb7cf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3ac88ca97881def2bff3196c0bd9ae42"><td class="memItemLeft" align="right" valign="top"><a id="a3ac88ca97881def2bff3196c0bd9ae42"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#a3ac88ca97881def2bff3196c0bd9ae42">PIO_EDIMSIZE</a>&#160;&#160;&#160;NC_EDIMSIZE</td></tr>
+<tr class="memdesc:a3ac88ca97881def2bff3196c0bd9ae42"><td class="mdescLeft">&#160;</td><td class="mdescRight">Invalid dimension size. <br /></td></tr>
+<tr class="separator:a3ac88ca97881def2bff3196c0bd9ae42"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a06cb13c9ef8ac9364a74fd9c9f653f8f"><td class="memItemLeft" align="right" valign="top"><a id="a06cb13c9ef8ac9364a74fd9c9f653f8f"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#a06cb13c9ef8ac9364a74fd9c9f653f8f">PIO_ETRUNC</a>&#160;&#160;&#160;NC_ETRUNC</td></tr>
+<tr class="memdesc:a06cb13c9ef8ac9364a74fd9c9f653f8f"><td class="mdescLeft">&#160;</td><td class="mdescRight">File likely truncated or possibly corrupted. <br /></td></tr>
+<tr class="separator:a06cb13c9ef8ac9364a74fd9c9f653f8f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af88ea9e5dd44787f29538892a9e5de7d"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#af88ea9e5dd44787f29538892a9e5de7d">PIO_EAXISTYPE</a>&#160;&#160;&#160;NC_EAXISTYPE</td></tr>
+<tr class="memdesc:af88ea9e5dd44787f29538892a9e5de7d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Unknown axis type.  <a href="#af88ea9e5dd44787f29538892a9e5de7d">More...</a><br /></td></tr>
+<tr class="separator:af88ea9e5dd44787f29538892a9e5de7d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a661ea451395658030fefa92319ae30c3"><td class="memItemLeft" align="right" valign="top"><a id="a661ea451395658030fefa92319ae30c3"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#a661ea451395658030fefa92319ae30c3">PIO_EDAP</a>&#160;&#160;&#160;NC_EDAP</td></tr>
+<tr class="memdesc:a661ea451395658030fefa92319ae30c3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generic DAP error. <br /></td></tr>
+<tr class="separator:a661ea451395658030fefa92319ae30c3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa152c8cb23d7c4adadfaac5c4c915146"><td class="memItemLeft" align="right" valign="top"><a id="aa152c8cb23d7c4adadfaac5c4c915146"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#aa152c8cb23d7c4adadfaac5c4c915146">PIO_ECURL</a>&#160;&#160;&#160;NC_ECURL</td></tr>
+<tr class="memdesc:aa152c8cb23d7c4adadfaac5c4c915146"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generic libcurl error. <br /></td></tr>
+<tr class="separator:aa152c8cb23d7c4adadfaac5c4c915146"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a18108f6eb0820af2effcea33affa3595"><td class="memItemLeft" align="right" valign="top"><a id="a18108f6eb0820af2effcea33affa3595"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#a18108f6eb0820af2effcea33affa3595">PIO_EIO</a>&#160;&#160;&#160;NC_EIO</td></tr>
+<tr class="memdesc:a18108f6eb0820af2effcea33affa3595"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generic IO error. <br /></td></tr>
+<tr class="separator:a18108f6eb0820af2effcea33affa3595"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4cbd446f39fa9495a1ad5be8afecd9c1"><td class="memItemLeft" align="right" valign="top"><a id="a4cbd446f39fa9495a1ad5be8afecd9c1"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#a4cbd446f39fa9495a1ad5be8afecd9c1">PIO_ENODATA</a>&#160;&#160;&#160;NC_ENODATA</td></tr>
+<tr class="memdesc:a4cbd446f39fa9495a1ad5be8afecd9c1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Attempt to access variable with no data. <br /></td></tr>
+<tr class="separator:a4cbd446f39fa9495a1ad5be8afecd9c1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a63061c099dc5232939e5310914d5af08"><td class="memItemLeft" align="right" valign="top"><a id="a63061c099dc5232939e5310914d5af08"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#a63061c099dc5232939e5310914d5af08">PIO_EDAPSVC</a>&#160;&#160;&#160;NC_EDAPSVC</td></tr>
+<tr class="memdesc:a63061c099dc5232939e5310914d5af08"><td class="mdescLeft">&#160;</td><td class="mdescRight">DAP server error. <br /></td></tr>
+<tr class="separator:a63061c099dc5232939e5310914d5af08"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afc41823325d0f5b1c6f4c0f0cfafb40f"><td class="memItemLeft" align="right" valign="top"><a id="afc41823325d0f5b1c6f4c0f0cfafb40f"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#afc41823325d0f5b1c6f4c0f0cfafb40f">PIO_EDAS</a>&#160;&#160;&#160;NC_EDAS</td></tr>
+<tr class="memdesc:afc41823325d0f5b1c6f4c0f0cfafb40f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Malformed or inaccessible DAS. <br /></td></tr>
+<tr class="separator:afc41823325d0f5b1c6f4c0f0cfafb40f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1988bb87a36004be12c347c5450456e4"><td class="memItemLeft" align="right" valign="top"><a id="a1988bb87a36004be12c347c5450456e4"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#a1988bb87a36004be12c347c5450456e4">PIO_EDDS</a>&#160;&#160;&#160;NC_EDDS</td></tr>
+<tr class="memdesc:a1988bb87a36004be12c347c5450456e4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Malformed or inaccessible DDS. <br /></td></tr>
+<tr class="separator:a1988bb87a36004be12c347c5450456e4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acb4c70b8148666f82969d2d8ad058834"><td class="memItemLeft" align="right" valign="top"><a id="acb4c70b8148666f82969d2d8ad058834"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#acb4c70b8148666f82969d2d8ad058834">PIO_EDATADDS</a>&#160;&#160;&#160;NC_EDATADDSDS</td></tr>
+<tr class="memdesc:acb4c70b8148666f82969d2d8ad058834"><td class="mdescLeft">&#160;</td><td class="mdescRight">Dap4 alias. <br /></td></tr>
+<tr class="separator:acb4c70b8148666f82969d2d8ad058834"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4a8856924fb7294454439d6353b0b42c"><td class="memItemLeft" align="right" valign="top"><a id="a4a8856924fb7294454439d6353b0b42c"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#a4a8856924fb7294454439d6353b0b42c">PIO_EDAPURL</a>&#160;&#160;&#160;NC_EDAPURL</td></tr>
+<tr class="memdesc:a4a8856924fb7294454439d6353b0b42c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Malformed DAP URL. <br /></td></tr>
+<tr class="separator:a4a8856924fb7294454439d6353b0b42c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a432e054761572309f61d51040768f6a7"><td class="memItemLeft" align="right" valign="top"><a id="a432e054761572309f61d51040768f6a7"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#a432e054761572309f61d51040768f6a7">PIO_EDAPCONSTRAINT</a>&#160;&#160;&#160;NC_EDAPCONSTRAINT</td></tr>
+<tr class="memdesc:a432e054761572309f61d51040768f6a7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Malformed DAP Constraint. <br /></td></tr>
+<tr class="separator:a432e054761572309f61d51040768f6a7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a501cc5e62b80afd57053f9d8b00cd43a"><td class="memItemLeft" align="right" valign="top"><a id="a501cc5e62b80afd57053f9d8b00cd43a"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#a501cc5e62b80afd57053f9d8b00cd43a">PIO_ETRANSLATION</a>&#160;&#160;&#160;NC_ETRANSLATION</td></tr>
+<tr class="memdesc:a501cc5e62b80afd57053f9d8b00cd43a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Untranslatable construct. <br /></td></tr>
+<tr class="separator:a501cc5e62b80afd57053f9d8b00cd43a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8cad9176c26d654d4f574cdcd76da832"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#a8cad9176c26d654d4f574cdcd76da832">PIO_EHDFERR</a>&#160;&#160;&#160;NC_EHDFERR</td></tr>
+<tr class="memdesc:a8cad9176c26d654d4f574cdcd76da832"><td class="mdescLeft">&#160;</td><td class="mdescRight">Error at HDF5 layer.  <a href="#a8cad9176c26d654d4f574cdcd76da832">More...</a><br /></td></tr>
+<tr class="separator:a8cad9176c26d654d4f574cdcd76da832"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab8a6974ca65885e7473e421e3c4d26a5"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#ab8a6974ca65885e7473e421e3c4d26a5">PIO_ECANTREAD</a>&#160;&#160;&#160;NC_ECANTREAD</td></tr>
+<tr class="memdesc:ab8a6974ca65885e7473e421e3c4d26a5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Can't read.  <a href="#ab8a6974ca65885e7473e421e3c4d26a5">More...</a><br /></td></tr>
+<tr class="separator:ab8a6974ca65885e7473e421e3c4d26a5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a07bfe0a2c53d6ac5c0b1b78a7914e7f3"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#a07bfe0a2c53d6ac5c0b1b78a7914e7f3">PIO_ECANTWRITE</a>&#160;&#160;&#160;NC_ECANTWRITE</td></tr>
+<tr class="memdesc:a07bfe0a2c53d6ac5c0b1b78a7914e7f3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Can't write.  <a href="#a07bfe0a2c53d6ac5c0b1b78a7914e7f3">More...</a><br /></td></tr>
+<tr class="separator:a07bfe0a2c53d6ac5c0b1b78a7914e7f3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acb0191d2b8fb8ece7f393cde94e38f93"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#acb0191d2b8fb8ece7f393cde94e38f93">PIO_ECANTCREATE</a>&#160;&#160;&#160;NC_ECANTCREATE</td></tr>
+<tr class="memdesc:acb0191d2b8fb8ece7f393cde94e38f93"><td class="mdescLeft">&#160;</td><td class="mdescRight">Can't create.  <a href="#acb0191d2b8fb8ece7f393cde94e38f93">More...</a><br /></td></tr>
+<tr class="separator:acb0191d2b8fb8ece7f393cde94e38f93"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae6d96960880b808c6eef46237c7a67e9"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#ae6d96960880b808c6eef46237c7a67e9">PIO_EFILEMETA</a>&#160;&#160;&#160;NC_EFILEMETA</td></tr>
+<tr class="memdesc:ae6d96960880b808c6eef46237c7a67e9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Problem with file metadata.  <a href="#ae6d96960880b808c6eef46237c7a67e9">More...</a><br /></td></tr>
+<tr class="separator:ae6d96960880b808c6eef46237c7a67e9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a24b6eb33e59ab4801019a7a4c657efc7"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#a24b6eb33e59ab4801019a7a4c657efc7">PIO_EDIMMETA</a>&#160;&#160;&#160;NC_EDIMMETA</td></tr>
+<tr class="memdesc:a24b6eb33e59ab4801019a7a4c657efc7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Problem with dimension metadata.  <a href="#a24b6eb33e59ab4801019a7a4c657efc7">More...</a><br /></td></tr>
+<tr class="separator:a24b6eb33e59ab4801019a7a4c657efc7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0714cbbd036738bf6f08b99e1e76fde4"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#a0714cbbd036738bf6f08b99e1e76fde4">PIO_EATTMETA</a>&#160;&#160;&#160;NC_EATTMETA</td></tr>
+<tr class="memdesc:a0714cbbd036738bf6f08b99e1e76fde4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Problem with attribute metadata.  <a href="#a0714cbbd036738bf6f08b99e1e76fde4">More...</a><br /></td></tr>
+<tr class="separator:a0714cbbd036738bf6f08b99e1e76fde4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5652300708b6c6cd4c3bb077f35c289c"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#a5652300708b6c6cd4c3bb077f35c289c">PIO_EVARMETA</a>&#160;&#160;&#160;NC_EVARMETA</td></tr>
+<tr class="memdesc:a5652300708b6c6cd4c3bb077f35c289c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Problem with variable metadata.  <a href="#a5652300708b6c6cd4c3bb077f35c289c">More...</a><br /></td></tr>
+<tr class="separator:a5652300708b6c6cd4c3bb077f35c289c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae4a189bd0b76d6261ac52d4369701464"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#ae4a189bd0b76d6261ac52d4369701464">PIO_ENOCOMPOUND</a>&#160;&#160;&#160;NC_ENOCOMPOUND</td></tr>
+<tr class="memdesc:ae4a189bd0b76d6261ac52d4369701464"><td class="mdescLeft">&#160;</td><td class="mdescRight">Not a compound type.  <a href="#ae4a189bd0b76d6261ac52d4369701464">More...</a><br /></td></tr>
+<tr class="separator:ae4a189bd0b76d6261ac52d4369701464"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a51c9aaaf942dc962640c514628f042bd"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#a51c9aaaf942dc962640c514628f042bd">PIO_EATTEXISTS</a>&#160;&#160;&#160;NC_EATTEXISTS</td></tr>
+<tr class="memdesc:a51c9aaaf942dc962640c514628f042bd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Attribute already exists.  <a href="#a51c9aaaf942dc962640c514628f042bd">More...</a><br /></td></tr>
+<tr class="separator:a51c9aaaf942dc962640c514628f042bd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7b5e1a4fcfb4169c446b2adbcf3698d8"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#a7b5e1a4fcfb4169c446b2adbcf3698d8">PIO_ENOTNC4</a>&#160;&#160;&#160;NC_ENOTNC4</td></tr>
+<tr class="memdesc:a7b5e1a4fcfb4169c446b2adbcf3698d8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Attempting netcdf-4 operation on netcdf-3 file.  <a href="#a7b5e1a4fcfb4169c446b2adbcf3698d8">More...</a><br /></td></tr>
+<tr class="separator:a7b5e1a4fcfb4169c446b2adbcf3698d8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a05468f5dc67c7a15247aedbb7d1f9a1c"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#a05468f5dc67c7a15247aedbb7d1f9a1c">PIO_ESTRICTNC3</a>&#160;&#160;&#160;NC_ESTRICTNC3</td></tr>
+<tr class="memdesc:a05468f5dc67c7a15247aedbb7d1f9a1c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Attempting netcdf-4 operation on strict nc3 netcdf-4 file.  <a href="#a05468f5dc67c7a15247aedbb7d1f9a1c">More...</a><br /></td></tr>
+<tr class="separator:a05468f5dc67c7a15247aedbb7d1f9a1c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a742cfe140afc039802a24ef242130927"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#a742cfe140afc039802a24ef242130927">PIO_ENOTNC3</a>&#160;&#160;&#160;NC_ENOTNC3</td></tr>
+<tr class="memdesc:a742cfe140afc039802a24ef242130927"><td class="mdescLeft">&#160;</td><td class="mdescRight">Attempting netcdf-3 operation on netcdf-4 file.  <a href="#a742cfe140afc039802a24ef242130927">More...</a><br /></td></tr>
+<tr class="separator:a742cfe140afc039802a24ef242130927"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a17e1b85d3f62a84ea44e959c3a7b03fb"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#a17e1b85d3f62a84ea44e959c3a7b03fb">PIO_ENOPAR</a>&#160;&#160;&#160;NC_ENOPAR</td></tr>
+<tr class="memdesc:a17e1b85d3f62a84ea44e959c3a7b03fb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Parallel operation on file opened for non-parallel access.  <a href="#a17e1b85d3f62a84ea44e959c3a7b03fb">More...</a><br /></td></tr>
+<tr class="separator:a17e1b85d3f62a84ea44e959c3a7b03fb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aadc45fd314f6aae01db9903b782593e1"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#aadc45fd314f6aae01db9903b782593e1">PIO_EPARINIT</a>&#160;&#160;&#160;NC_EPARINIT</td></tr>
+<tr class="memdesc:aadc45fd314f6aae01db9903b782593e1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Error initializing for parallel access.  <a href="#aadc45fd314f6aae01db9903b782593e1">More...</a><br /></td></tr>
+<tr class="separator:aadc45fd314f6aae01db9903b782593e1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af934613f49e109e9edaa4893415bf564"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#af934613f49e109e9edaa4893415bf564">PIO_EBADGRPID</a>&#160;&#160;&#160;NC_EBADGRPID</td></tr>
+<tr class="memdesc:af934613f49e109e9edaa4893415bf564"><td class="mdescLeft">&#160;</td><td class="mdescRight">Bad group ID.  <a href="#af934613f49e109e9edaa4893415bf564">More...</a><br /></td></tr>
+<tr class="separator:af934613f49e109e9edaa4893415bf564"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab02cd32988e9528d48d701d592a460d1"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#ab02cd32988e9528d48d701d592a460d1">PIO_EBADTYPID</a>&#160;&#160;&#160;NC_EBADTYPID</td></tr>
+<tr class="memdesc:ab02cd32988e9528d48d701d592a460d1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Bad type ID.  <a href="#ab02cd32988e9528d48d701d592a460d1">More...</a><br /></td></tr>
+<tr class="separator:ab02cd32988e9528d48d701d592a460d1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a765a3071923cf104c1960094784121ee"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#a765a3071923cf104c1960094784121ee">PIO_ETYPDEFINED</a>&#160;&#160;&#160;NC_ETYPDEFINED</td></tr>
+<tr class="memdesc:a765a3071923cf104c1960094784121ee"><td class="mdescLeft">&#160;</td><td class="mdescRight">Type has already been defined and may not be edited.  <a href="#a765a3071923cf104c1960094784121ee">More...</a><br /></td></tr>
+<tr class="separator:a765a3071923cf104c1960094784121ee"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9cd8e9d7ae95b7f773c9abfb102c817f"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#a9cd8e9d7ae95b7f773c9abfb102c817f">PIO_EBADFIELD</a>&#160;&#160;&#160;NC_EBADFIELD</td></tr>
+<tr class="memdesc:a9cd8e9d7ae95b7f773c9abfb102c817f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Bad field ID.  <a href="#a9cd8e9d7ae95b7f773c9abfb102c817f">More...</a><br /></td></tr>
+<tr class="separator:a9cd8e9d7ae95b7f773c9abfb102c817f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a993657418d8eaf4f5cb4e2f642dc869c"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#a993657418d8eaf4f5cb4e2f642dc869c">PIO_EBADCLASS</a>&#160;&#160;&#160;NC_EBADCLASS</td></tr>
+<tr class="memdesc:a993657418d8eaf4f5cb4e2f642dc869c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Bad class.  <a href="#a993657418d8eaf4f5cb4e2f642dc869c">More...</a><br /></td></tr>
+<tr class="separator:a993657418d8eaf4f5cb4e2f642dc869c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaa582116a886fe533c01ecb97c795161"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#aaa582116a886fe533c01ecb97c795161">PIO_EMAPTYPE</a>&#160;&#160;&#160;NC_EMAPTYPE</td></tr>
+<tr class="memdesc:aaa582116a886fe533c01ecb97c795161"><td class="mdescLeft">&#160;</td><td class="mdescRight">Mapped access for atomic types only.  <a href="#aaa582116a886fe533c01ecb97c795161">More...</a><br /></td></tr>
+<tr class="separator:aaa582116a886fe533c01ecb97c795161"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a831292fe4cf23bbd70efc05446c7e2cc"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#a831292fe4cf23bbd70efc05446c7e2cc">PIO_ELATEFILL</a>&#160;&#160;&#160;NC_ELATEFILL</td></tr>
+<tr class="memdesc:a831292fe4cf23bbd70efc05446c7e2cc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Attempt to define fill value when data already exists.  <a href="#a831292fe4cf23bbd70efc05446c7e2cc">More...</a><br /></td></tr>
+<tr class="separator:a831292fe4cf23bbd70efc05446c7e2cc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af10573b9fce20db9659c2f2892ee1ffe"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#af10573b9fce20db9659c2f2892ee1ffe">PIO_ELATEDEF</a>&#160;&#160;&#160;NC_ELATEDEF</td></tr>
+<tr class="memdesc:af10573b9fce20db9659c2f2892ee1ffe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Attempt to define var properties, like deflate, after enddef.  <a href="#af10573b9fce20db9659c2f2892ee1ffe">More...</a><br /></td></tr>
+<tr class="separator:af10573b9fce20db9659c2f2892ee1ffe"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4064b006ef21faf55c76abafa9bf53d2"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#a4064b006ef21faf55c76abafa9bf53d2">PIO_EDIMSCALE</a>&#160;&#160;&#160;NC_EDIMSCALE</td></tr>
+<tr class="memdesc:a4064b006ef21faf55c76abafa9bf53d2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Problem with HDF5 dimscales.  <a href="#a4064b006ef21faf55c76abafa9bf53d2">More...</a><br /></td></tr>
+<tr class="separator:a4064b006ef21faf55c76abafa9bf53d2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a28d730de42c7949af9820fbb6e3b4872"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#a28d730de42c7949af9820fbb6e3b4872">PIO_ENOGRP</a>&#160;&#160;&#160;NC_ENOGRP</td></tr>
+<tr class="memdesc:a28d730de42c7949af9820fbb6e3b4872"><td class="mdescLeft">&#160;</td><td class="mdescRight">No group found.  <a href="#a28d730de42c7949af9820fbb6e3b4872">More...</a><br /></td></tr>
+<tr class="separator:a28d730de42c7949af9820fbb6e3b4872"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8a243fda704b93a8da013bfa140a7622"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#a8a243fda704b93a8da013bfa140a7622">PIO_ESTORAGE</a>&#160;&#160;&#160;NC_ESTORAGE</td></tr>
+<tr class="memdesc:a8a243fda704b93a8da013bfa140a7622"><td class="mdescLeft">&#160;</td><td class="mdescRight">Can't specify both contiguous and chunking.  <a href="#a8a243fda704b93a8da013bfa140a7622">More...</a><br /></td></tr>
+<tr class="separator:a8a243fda704b93a8da013bfa140a7622"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a505de6ab1685dc8ae2b26389da677ed3"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#a505de6ab1685dc8ae2b26389da677ed3">PIO_EBADCHUNK</a>&#160;&#160;&#160;NC_EBADCHUNK</td></tr>
+<tr class="memdesc:a505de6ab1685dc8ae2b26389da677ed3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Bad chunksize.  <a href="#a505de6ab1685dc8ae2b26389da677ed3">More...</a><br /></td></tr>
+<tr class="separator:a505de6ab1685dc8ae2b26389da677ed3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abce9a166534c5a103085c982928e0350"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#abce9a166534c5a103085c982928e0350">PIO_ENOTBUILT</a>&#160;&#160;&#160;NC_ENOTBUILT</td></tr>
+<tr class="memdesc:abce9a166534c5a103085c982928e0350"><td class="mdescLeft">&#160;</td><td class="mdescRight">Attempt to use feature that was not turned on when netCDF was built.  <a href="#abce9a166534c5a103085c982928e0350">More...</a><br /></td></tr>
+<tr class="separator:abce9a166534c5a103085c982928e0350"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa25be1290f37bad3428d983b707b18f6"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#aa25be1290f37bad3428d983b707b18f6">PIO_EDISKLESS</a>&#160;&#160;&#160;NC_EDISKLESS</td></tr>
+<tr class="memdesc:aa25be1290f37bad3428d983b707b18f6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Error in using diskless access.  <a href="#aa25be1290f37bad3428d983b707b18f6">More...</a><br /></td></tr>
+<tr class="separator:aa25be1290f37bad3428d983b707b18f6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adc002a88e34c4ca6e0b17a9f6bd687fb"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#adc002a88e34c4ca6e0b17a9f6bd687fb">PIO_FILL_BYTE</a>&#160;&#160;&#160;NC_FILL_BYTE</td></tr>
+<tr class="memdesc:adc002a88e34c4ca6e0b17a9f6bd687fb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default fill value for this type.  <a href="#adc002a88e34c4ca6e0b17a9f6bd687fb">More...</a><br /></td></tr>
+<tr class="separator:adc002a88e34c4ca6e0b17a9f6bd687fb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a07f1477158f83f29f0f3cf23808d6244"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#a07f1477158f83f29f0f3cf23808d6244">PIO_FILL_CHAR</a>&#160;&#160;&#160;NC_FILL_CHAR</td></tr>
+<tr class="memdesc:a07f1477158f83f29f0f3cf23808d6244"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default fill value for this type.  <a href="#a07f1477158f83f29f0f3cf23808d6244">More...</a><br /></td></tr>
+<tr class="separator:a07f1477158f83f29f0f3cf23808d6244"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adee2e33a588d09b40f80dd297d065e65"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#adee2e33a588d09b40f80dd297d065e65">PIO_FILL_SHORT</a>&#160;&#160;&#160;NC_FILL_SHORT</td></tr>
+<tr class="memdesc:adee2e33a588d09b40f80dd297d065e65"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default fill value for this type.  <a href="#adee2e33a588d09b40f80dd297d065e65">More...</a><br /></td></tr>
+<tr class="separator:adee2e33a588d09b40f80dd297d065e65"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a980ddfe51c9165d967937e75db4e6feb"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#a980ddfe51c9165d967937e75db4e6feb">PIO_FILL_INT</a>&#160;&#160;&#160;NC_FILL_INT</td></tr>
+<tr class="memdesc:a980ddfe51c9165d967937e75db4e6feb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default fill value for this type.  <a href="#a980ddfe51c9165d967937e75db4e6feb">More...</a><br /></td></tr>
+<tr class="separator:a980ddfe51c9165d967937e75db4e6feb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab8bacfa4c294c3c7d7075ad61db21550"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#ab8bacfa4c294c3c7d7075ad61db21550">PIO_FILL_FLOAT</a>&#160;&#160;&#160;NC_FILL_FLOAT</td></tr>
+<tr class="memdesc:ab8bacfa4c294c3c7d7075ad61db21550"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default fill value for this type.  <a href="#ab8bacfa4c294c3c7d7075ad61db21550">More...</a><br /></td></tr>
+<tr class="separator:ab8bacfa4c294c3c7d7075ad61db21550"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acbb3d3a5f1551c8a4be23439d5ea64bd"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#acbb3d3a5f1551c8a4be23439d5ea64bd">PIO_FILL_DOUBLE</a>&#160;&#160;&#160;NC_FILL_DOUBLE</td></tr>
+<tr class="memdesc:acbb3d3a5f1551c8a4be23439d5ea64bd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default fill value for this type.  <a href="#acbb3d3a5f1551c8a4be23439d5ea64bd">More...</a><br /></td></tr>
+<tr class="separator:acbb3d3a5f1551c8a4be23439d5ea64bd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a027ab294de526daf97f0dd6e1f77c367"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#a027ab294de526daf97f0dd6e1f77c367">PIO_FILL_UBYTE</a>&#160;&#160;&#160;NC_FILL_UBYTE</td></tr>
+<tr class="memdesc:a027ab294de526daf97f0dd6e1f77c367"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default fill value for this type.  <a href="#a027ab294de526daf97f0dd6e1f77c367">More...</a><br /></td></tr>
+<tr class="separator:a027ab294de526daf97f0dd6e1f77c367"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7765f106957cee3250ffddb9f8e97126"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#a7765f106957cee3250ffddb9f8e97126">PIO_FILL_USHORT</a>&#160;&#160;&#160;NC_FILL_USHORT</td></tr>
+<tr class="memdesc:a7765f106957cee3250ffddb9f8e97126"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default fill value for this type.  <a href="#a7765f106957cee3250ffddb9f8e97126">More...</a><br /></td></tr>
+<tr class="separator:a7765f106957cee3250ffddb9f8e97126"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3766ee4743920a3eeb967f7b90c5d416"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#a3766ee4743920a3eeb967f7b90c5d416">PIO_FILL_UINT</a>&#160;&#160;&#160;NC_FILL_UINT</td></tr>
+<tr class="memdesc:a3766ee4743920a3eeb967f7b90c5d416"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default fill value for this type.  <a href="#a3766ee4743920a3eeb967f7b90c5d416">More...</a><br /></td></tr>
+<tr class="separator:a3766ee4743920a3eeb967f7b90c5d416"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abb856cb3469cfc27a66d84121ac1bc0b"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#abb856cb3469cfc27a66d84121ac1bc0b">PIO_FILL_INT64</a>&#160;&#160;&#160;NC_FILL_INT64</td></tr>
+<tr class="memdesc:abb856cb3469cfc27a66d84121ac1bc0b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default fill value for this type.  <a href="#abb856cb3469cfc27a66d84121ac1bc0b">More...</a><br /></td></tr>
+<tr class="separator:abb856cb3469cfc27a66d84121ac1bc0b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ace5ffbdca2c71d7a214ff3b3cb40baca"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#ace5ffbdca2c71d7a214ff3b3cb40baca">PIO_FILL_UINT64</a>&#160;&#160;&#160;NC_FILL_UINT64</td></tr>
+<tr class="memdesc:ace5ffbdca2c71d7a214ff3b3cb40baca"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default fill value for this type.  <a href="#ace5ffbdca2c71d7a214ff3b3cb40baca">More...</a><br /></td></tr>
+<tr class="separator:ace5ffbdca2c71d7a214ff3b3cb40baca"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae11d6fdb7de9cfa9e994d42d20c037f5"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#ae11d6fdb7de9cfa9e994d42d20c037f5">PIO_EINDEP</a>&#160;&#160;&#160;(-203)</td></tr>
-<tr class="memdesc:ae11d6fdb7de9cfa9e994d42d20c037f5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Define the extra error codes for the parallel-netcdf library.  <a href="#ae11d6fdb7de9cfa9e994d42d20c037f5">More...</a><br /></td></tr>
+<tr class="memdesc:ae11d6fdb7de9cfa9e994d42d20c037f5"><td class="mdescLeft">&#160;</td><td class="mdescRight">independent access error.  <a href="#ae11d6fdb7de9cfa9e994d42d20c037f5">More...</a><br /></td></tr>
 <tr class="separator:ae11d6fdb7de9cfa9e994d42d20c037f5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a53b0a0ba9de0ba76508fb54fa326cbfd"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#a53b0a0ba9de0ba76508fb54fa326cbfd">PIO_FIRST_ERROR_CODE</a>&#160;&#160;&#160;(-500)</td></tr>
 <tr class="memdesc:a53b0a0ba9de0ba76508fb54fa326cbfd"><td class="mdescLeft">&#160;</td><td class="mdescRight">The first error code for PIO.  <a href="#a53b0a0ba9de0ba76508fb54fa326cbfd">More...</a><br /></td></tr>
@@ -380,7 +770,7 @@ Functions</h2></td></tr>
 <tr class="memdesc:ga8e6611243431101939c4dd4c991a7e0b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write one or more arrays with the same IO decomposition to the file.  <a href="group___p_i_o__write__darray__c.html#ga8e6611243431101939c4dd4c991a7e0b">More...</a><br /></td></tr>
 <tr class="separator:ga8e6611243431101939c4dd4c991a7e0b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gaa4eb9375a17ec358a88c8e7e388880db"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__read__darray__c.html#gaa4eb9375a17ec358a88c8e7e388880db">PIOc_read_darray</a> (int ncid, int varid, int ioid, <a class="el" href="pio_8h.html#a1225edb54e6d6de678bf675485549eb0">PIO_Offset</a> arraylen, void *array)</td></tr>
-<tr class="memdesc:gaa4eb9375a17ec358a88c8e7e388880db"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read a field from a file to the IO library.  <a href="group___p_i_o__read__darray__c.html#gaa4eb9375a17ec358a88c8e7e388880db">More...</a><br /></td></tr>
+<tr class="memdesc:gaa4eb9375a17ec358a88c8e7e388880db"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read a field from a file to the IO library using distributed arrays.  <a href="group___p_i_o__read__darray__c.html#gaa4eb9375a17ec358a88c8e7e388880db">More...</a><br /></td></tr>
 <tr class="separator:gaa4eb9375a17ec358a88c8e7e388880db"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga0f8ff9696a8e06aec913e0bdcb7da2f2"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__get__local__array__size__c.html#ga0f8ff9696a8e06aec913e0bdcb7da2f2">PIOc_get_local_array_size</a> (int ioid)</td></tr>
 <tr class="memdesc:ga0f8ff9696a8e06aec913e0bdcb7da2f2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the local size of the variable.  <a href="group___p_i_o__get__local__array__size__c.html#ga0f8ff9696a8e06aec913e0bdcb7da2f2">More...</a><br /></td></tr>
@@ -1378,20 +1768,70 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a757768e03c71e1f1720f6718eed964a8"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a757768e03c71e1f1720f6718eed964a8">&#9670;&nbsp;</a></span>MPI_OFFSET</h2>
+<a id="aa74b956293ed1430514e598213040894"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa74b956293ed1430514e598213040894">&#9670;&nbsp;</a></span>NC_PIO</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">#define MPI_OFFSET&#160;&#160;&#160;MPI_LONG_LONG</td>
+          <td class="memname">#define NC_PIO&#160;&#160;&#160;NC_UDF0</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>MPI_OFFSET is an integer type of size sufficient to represent the size (in bytes) of the largest file supported by MPI. </p>
-<p>In some MPI implementations MPI_OFFSET is not properly defined. </p>
+<p>A convience macro for netCDF integration code. </p>
+
+</div>
+</div>
+<a id="a9554d8d107c36507941803b1c978307f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9554d8d107c36507941803b1c978307f">&#9670;&nbsp;</a></span>PIO_64BIT_DATA</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define PIO_64BIT_DATA&#160;&#160;&#160;0x0010</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>NC_64BIT_DATA This is a problem - need to define directly instead of using include file. </p>
+<p>CDF5 foemat. </p>
+
+</div>
+</div>
+<a id="a51cf8bca0b2c096fc876c0df5c178823"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a51cf8bca0b2c096fc876c0df5c178823">&#9670;&nbsp;</a></span>PIO_64BIT_OFFSET</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define PIO_64BIT_OFFSET&#160;&#160;&#160;NC_64BIT_OFFSET</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Use large (64-bit) file offsets. </p>
+<p>Mode flag for nc_create(). </p>
+
+</div>
+</div>
+<a id="afd29ea2ece5f4d1eacadb36b0f776a35"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afd29ea2ece5f4d1eacadb36b0f776a35">&#9670;&nbsp;</a></span>PIO_CLOBBER</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define PIO_CLOBBER&#160;&#160;&#160;NC_CLOBBER</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Destroy existing file. </p>
+<p>Mode flag for nc_create(). </p>
 
 </div>
 </div>
@@ -1411,6 +1851,118 @@ Functions</h2></td></tr>
 
 </div>
 </div>
+<a id="a51c9aaaf942dc962640c514628f042bd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a51c9aaaf942dc962640c514628f042bd">&#9670;&nbsp;</a></span>PIO_EATTEXISTS</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define PIO_EATTEXISTS&#160;&#160;&#160;NC_EATTEXISTS</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Attribute already exists. </p>
+
+</div>
+</div>
+<a id="a0714cbbd036738bf6f08b99e1e76fde4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0714cbbd036738bf6f08b99e1e76fde4">&#9670;&nbsp;</a></span>PIO_EATTMETA</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define PIO_EATTMETA&#160;&#160;&#160;NC_EATTMETA</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Problem with attribute metadata. </p>
+
+</div>
+</div>
+<a id="af88ea9e5dd44787f29538892a9e5de7d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af88ea9e5dd44787f29538892a9e5de7d">&#9670;&nbsp;</a></span>PIO_EAXISTYPE</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define PIO_EAXISTYPE&#160;&#160;&#160;NC_EAXISTYPE</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Unknown axis type. </p>
+
+</div>
+</div>
+<a id="a505de6ab1685dc8ae2b26389da677ed3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a505de6ab1685dc8ae2b26389da677ed3">&#9670;&nbsp;</a></span>PIO_EBADCHUNK</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define PIO_EBADCHUNK&#160;&#160;&#160;NC_EBADCHUNK</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Bad chunksize. </p>
+
+</div>
+</div>
+<a id="a993657418d8eaf4f5cb4e2f642dc869c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a993657418d8eaf4f5cb4e2f642dc869c">&#9670;&nbsp;</a></span>PIO_EBADCLASS</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define PIO_EBADCLASS&#160;&#160;&#160;NC_EBADCLASS</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Bad class. </p>
+
+</div>
+</div>
+<a id="a9cd8e9d7ae95b7f773c9abfb102c817f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9cd8e9d7ae95b7f773c9abfb102c817f">&#9670;&nbsp;</a></span>PIO_EBADFIELD</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define PIO_EBADFIELD&#160;&#160;&#160;NC_EBADFIELD</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Bad field ID. </p>
+
+</div>
+</div>
+<a id="af934613f49e109e9edaa4893415bf564"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af934613f49e109e9edaa4893415bf564">&#9670;&nbsp;</a></span>PIO_EBADGRPID</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define PIO_EBADGRPID&#160;&#160;&#160;NC_EBADGRPID</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Bad group ID. </p>
+
+</div>
+</div>
 <a id="a9393d14ad7b5f852d9861db2057b3282"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a9393d14ad7b5f852d9861db2057b3282">&#9670;&nbsp;</a></span>PIO_EBADIOTYPE</h2>
 
@@ -1427,6 +1979,166 @@ Functions</h2></td></tr>
 
 </div>
 </div>
+<a id="ab02cd32988e9528d48d701d592a460d1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab02cd32988e9528d48d701d592a460d1">&#9670;&nbsp;</a></span>PIO_EBADTYPID</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define PIO_EBADTYPID&#160;&#160;&#160;NC_EBADTYPID</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Bad type ID. </p>
+
+</div>
+</div>
+<a id="acb0191d2b8fb8ece7f393cde94e38f93"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acb0191d2b8fb8ece7f393cde94e38f93">&#9670;&nbsp;</a></span>PIO_ECANTCREATE</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define PIO_ECANTCREATE&#160;&#160;&#160;NC_ECANTCREATE</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Can't create. </p>
+
+</div>
+</div>
+<a id="ab8a6974ca65885e7473e421e3c4d26a5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab8a6974ca65885e7473e421e3c4d26a5">&#9670;&nbsp;</a></span>PIO_ECANTREAD</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define PIO_ECANTREAD&#160;&#160;&#160;NC_ECANTREAD</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Can't read. </p>
+
+</div>
+</div>
+<a id="a07bfe0a2c53d6ac5c0b1b78a7914e7f3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a07bfe0a2c53d6ac5c0b1b78a7914e7f3">&#9670;&nbsp;</a></span>PIO_ECANTWRITE</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define PIO_ECANTWRITE&#160;&#160;&#160;NC_ECANTWRITE</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Can't write. </p>
+
+</div>
+</div>
+<a id="a24b6eb33e59ab4801019a7a4c657efc7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a24b6eb33e59ab4801019a7a4c657efc7">&#9670;&nbsp;</a></span>PIO_EDIMMETA</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define PIO_EDIMMETA&#160;&#160;&#160;NC_EDIMMETA</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Problem with dimension metadata. </p>
+
+</div>
+</div>
+<a id="a4064b006ef21faf55c76abafa9bf53d2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4064b006ef21faf55c76abafa9bf53d2">&#9670;&nbsp;</a></span>PIO_EDIMSCALE</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define PIO_EDIMSCALE&#160;&#160;&#160;NC_EDIMSCALE</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Problem with HDF5 dimscales. </p>
+
+</div>
+</div>
+<a id="aa25be1290f37bad3428d983b707b18f6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa25be1290f37bad3428d983b707b18f6">&#9670;&nbsp;</a></span>PIO_EDISKLESS</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define PIO_EDISKLESS&#160;&#160;&#160;NC_EDISKLESS</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Error in using diskless access. </p>
+
+</div>
+</div>
+<a id="accb9c3f902098c1da79d0e9584b4da95"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#accb9c3f902098c1da79d0e9584b4da95">&#9670;&nbsp;</a></span>PIO_EEDGE</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define PIO_EEDGE&#160;&#160;&#160;NC_EEDGE</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Start+count exceeds dimension bound. </p>
+
+</div>
+</div>
+<a id="ae6d96960880b808c6eef46237c7a67e9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae6d96960880b808c6eef46237c7a67e9">&#9670;&nbsp;</a></span>PIO_EFILEMETA</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define PIO_EFILEMETA&#160;&#160;&#160;NC_EFILEMETA</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Problem with file metadata. </p>
+
+</div>
+</div>
+<a id="a8cad9176c26d654d4f574cdcd76da832"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8cad9176c26d654d4f574cdcd76da832">&#9670;&nbsp;</a></span>PIO_EHDFERR</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define PIO_EHDFERR&#160;&#160;&#160;NC_EHDFERR</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Error at HDF5 layer. </p>
+
+</div>
+</div>
 <a id="ae11d6fdb7de9cfa9e994d42d20c037f5"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ae11d6fdb7de9cfa9e994d42d20c037f5">&#9670;&nbsp;</a></span>PIO_EINDEP</h2>
 
@@ -1439,7 +2151,215 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Define the extra error codes for the parallel-netcdf library. </p>
+<p>independent access error. </p>
+
+</div>
+</div>
+<a id="af10573b9fce20db9659c2f2892ee1ffe"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af10573b9fce20db9659c2f2892ee1ffe">&#9670;&nbsp;</a></span>PIO_ELATEDEF</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define PIO_ELATEDEF&#160;&#160;&#160;NC_ELATEDEF</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Attempt to define var properties, like deflate, after enddef. </p>
+
+</div>
+</div>
+<a id="a831292fe4cf23bbd70efc05446c7e2cc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a831292fe4cf23bbd70efc05446c7e2cc">&#9670;&nbsp;</a></span>PIO_ELATEFILL</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define PIO_ELATEFILL&#160;&#160;&#160;NC_ELATEFILL</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Attempt to define fill value when data already exists. </p>
+
+</div>
+</div>
+<a id="aaa582116a886fe533c01ecb97c795161"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aaa582116a886fe533c01ecb97c795161">&#9670;&nbsp;</a></span>PIO_EMAPTYPE</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define PIO_EMAPTYPE&#160;&#160;&#160;NC_EMAPTYPE</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Mapped access for atomic types only. </p>
+
+</div>
+</div>
+<a id="ae4a189bd0b76d6261ac52d4369701464"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae4a189bd0b76d6261ac52d4369701464">&#9670;&nbsp;</a></span>PIO_ENOCOMPOUND</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define PIO_ENOCOMPOUND&#160;&#160;&#160;NC_ENOCOMPOUND</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Not a compound type. </p>
+
+</div>
+</div>
+<a id="a28d730de42c7949af9820fbb6e3b4872"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a28d730de42c7949af9820fbb6e3b4872">&#9670;&nbsp;</a></span>PIO_ENOGRP</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define PIO_ENOGRP&#160;&#160;&#160;NC_ENOGRP</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>No group found. </p>
+
+</div>
+</div>
+<a id="a17e1b85d3f62a84ea44e959c3a7b03fb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a17e1b85d3f62a84ea44e959c3a7b03fb">&#9670;&nbsp;</a></span>PIO_ENOPAR</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define PIO_ENOPAR&#160;&#160;&#160;NC_ENOPAR</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Parallel operation on file opened for non-parallel access. </p>
+
+</div>
+</div>
+<a id="abce9a166534c5a103085c982928e0350"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abce9a166534c5a103085c982928e0350">&#9670;&nbsp;</a></span>PIO_ENOTBUILT</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define PIO_ENOTBUILT&#160;&#160;&#160;NC_ENOTBUILT</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Attempt to use feature that was not turned on when netCDF was built. </p>
+
+</div>
+</div>
+<a id="a742cfe140afc039802a24ef242130927"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a742cfe140afc039802a24ef242130927">&#9670;&nbsp;</a></span>PIO_ENOTNC3</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define PIO_ENOTNC3&#160;&#160;&#160;NC_ENOTNC3</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Attempting netcdf-3 operation on netcdf-4 file. </p>
+
+</div>
+</div>
+<a id="a7b5e1a4fcfb4169c446b2adbcf3698d8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7b5e1a4fcfb4169c446b2adbcf3698d8">&#9670;&nbsp;</a></span>PIO_ENOTNC4</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define PIO_ENOTNC4&#160;&#160;&#160;NC_ENOTNC4</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Attempting netcdf-4 operation on netcdf-3 file. </p>
+
+</div>
+</div>
+<a id="aadc45fd314f6aae01db9903b782593e1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aadc45fd314f6aae01db9903b782593e1">&#9670;&nbsp;</a></span>PIO_EPARINIT</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define PIO_EPARINIT&#160;&#160;&#160;NC_EPARINIT</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Error initializing for parallel access. </p>
+
+</div>
+</div>
+<a id="a8a243fda704b93a8da013bfa140a7622"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8a243fda704b93a8da013bfa140a7622">&#9670;&nbsp;</a></span>PIO_ESTORAGE</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define PIO_ESTORAGE&#160;&#160;&#160;NC_ESTORAGE</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Can't specify both contiguous and chunking. </p>
+
+</div>
+</div>
+<a id="a05468f5dc67c7a15247aedbb7d1f9a1c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a05468f5dc67c7a15247aedbb7d1f9a1c">&#9670;&nbsp;</a></span>PIO_ESTRICTNC3</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define PIO_ESTRICTNC3&#160;&#160;&#160;NC_ESTRICTNC3</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Attempting netcdf-4 operation on strict nc3 netcdf-4 file. </p>
+
+</div>
+</div>
+<a id="a765a3071923cf104c1960094784121ee"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a765a3071923cf104c1960094784121ee">&#9670;&nbsp;</a></span>PIO_ETYPDEFINED</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define PIO_ETYPDEFINED&#160;&#160;&#160;NC_ETYPDEFINED</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Type has already been defined and may not be edited. </p>
 
 </div>
 </div>
@@ -1459,6 +2379,198 @@ Functions</h2></td></tr>
 
 </div>
 </div>
+<a id="a5652300708b6c6cd4c3bb077f35c289c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5652300708b6c6cd4c3bb077f35c289c">&#9670;&nbsp;</a></span>PIO_EVARMETA</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define PIO_EVARMETA&#160;&#160;&#160;NC_EVARMETA</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Problem with variable metadata. </p>
+
+</div>
+</div>
+<a id="adc002a88e34c4ca6e0b17a9f6bd687fb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adc002a88e34c4ca6e0b17a9f6bd687fb">&#9670;&nbsp;</a></span>PIO_FILL_BYTE</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define PIO_FILL_BYTE&#160;&#160;&#160;NC_FILL_BYTE</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Default fill value for this type. </p>
+
+</div>
+</div>
+<a id="a07f1477158f83f29f0f3cf23808d6244"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a07f1477158f83f29f0f3cf23808d6244">&#9670;&nbsp;</a></span>PIO_FILL_CHAR</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define PIO_FILL_CHAR&#160;&#160;&#160;NC_FILL_CHAR</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Default fill value for this type. </p>
+
+</div>
+</div>
+<a id="acbb3d3a5f1551c8a4be23439d5ea64bd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acbb3d3a5f1551c8a4be23439d5ea64bd">&#9670;&nbsp;</a></span>PIO_FILL_DOUBLE</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define PIO_FILL_DOUBLE&#160;&#160;&#160;NC_FILL_DOUBLE</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Default fill value for this type. </p>
+
+</div>
+</div>
+<a id="ab8bacfa4c294c3c7d7075ad61db21550"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab8bacfa4c294c3c7d7075ad61db21550">&#9670;&nbsp;</a></span>PIO_FILL_FLOAT</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define PIO_FILL_FLOAT&#160;&#160;&#160;NC_FILL_FLOAT</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Default fill value for this type. </p>
+
+</div>
+</div>
+<a id="a980ddfe51c9165d967937e75db4e6feb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a980ddfe51c9165d967937e75db4e6feb">&#9670;&nbsp;</a></span>PIO_FILL_INT</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define PIO_FILL_INT&#160;&#160;&#160;NC_FILL_INT</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Default fill value for this type. </p>
+
+</div>
+</div>
+<a id="abb856cb3469cfc27a66d84121ac1bc0b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abb856cb3469cfc27a66d84121ac1bc0b">&#9670;&nbsp;</a></span>PIO_FILL_INT64</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define PIO_FILL_INT64&#160;&#160;&#160;NC_FILL_INT64</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Default fill value for this type. </p>
+
+</div>
+</div>
+<a id="adee2e33a588d09b40f80dd297d065e65"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adee2e33a588d09b40f80dd297d065e65">&#9670;&nbsp;</a></span>PIO_FILL_SHORT</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define PIO_FILL_SHORT&#160;&#160;&#160;NC_FILL_SHORT</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Default fill value for this type. </p>
+
+</div>
+</div>
+<a id="a027ab294de526daf97f0dd6e1f77c367"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a027ab294de526daf97f0dd6e1f77c367">&#9670;&nbsp;</a></span>PIO_FILL_UBYTE</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define PIO_FILL_UBYTE&#160;&#160;&#160;NC_FILL_UBYTE</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Default fill value for this type. </p>
+
+</div>
+</div>
+<a id="a3766ee4743920a3eeb967f7b90c5d416"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3766ee4743920a3eeb967f7b90c5d416">&#9670;&nbsp;</a></span>PIO_FILL_UINT</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define PIO_FILL_UINT&#160;&#160;&#160;NC_FILL_UINT</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Default fill value for this type. </p>
+
+</div>
+</div>
+<a id="ace5ffbdca2c71d7a214ff3b3cb40baca"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ace5ffbdca2c71d7a214ff3b3cb40baca">&#9670;&nbsp;</a></span>PIO_FILL_UINT64</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define PIO_FILL_UINT64&#160;&#160;&#160;NC_FILL_UINT64</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Default fill value for this type. </p>
+
+</div>
+</div>
+<a id="a7765f106957cee3250ffddb9f8e97126"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7765f106957cee3250ffddb9f8e97126">&#9670;&nbsp;</a></span>PIO_FILL_USHORT</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define PIO_FILL_USHORT&#160;&#160;&#160;NC_FILL_USHORT</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Default fill value for this type. </p>
+
+</div>
+</div>
 <a id="a53b0a0ba9de0ba76508fb54fa326cbfd"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a53b0a0ba9de0ba76508fb54fa326cbfd">&#9670;&nbsp;</a></span>PIO_FIRST_ERROR_CODE</h2>
 
@@ -1472,6 +2584,22 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>The first error code for PIO. </p>
+
+</div>
+</div>
+<a id="a5bdde31308ba7e2b8d6ffcadfbe2ce4c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5bdde31308ba7e2b8d6ffcadfbe2ce4c">&#9670;&nbsp;</a></span>PIO_GLOBAL</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define PIO_GLOBAL&#160;&#160;&#160;NC_GLOBAL</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Attribute id to put/get a global attribute. </p>
 
 </div>
 </div>
@@ -1491,6 +2619,22 @@ Functions</h2></td></tr>
 
 </div>
 </div>
+<a id="aa20fd333b6f32f0d29f9fca34e92760e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa20fd333b6f32f0d29f9fca34e92760e">&#9670;&nbsp;</a></span>PIO_MAX_NAME</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define PIO_MAX_NAME&#160;&#160;&#160;NC_MAX_NAME</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Max name length. </p>
+
+</div>
+</div>
 <a id="adbc8561902f84b31e4b10157ea0be817"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#adbc8561902f84b31e4b10157ea0be817">&#9670;&nbsp;</a></span>PIO_MAX_VARS</h2>
 
@@ -1507,6 +2651,72 @@ Functions</h2></td></tr>
 
 </div>
 </div>
+<a id="af9681d900b4b8e3bd5529513e674d91c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af9681d900b4b8e3bd5529513e674d91c">&#9670;&nbsp;</a></span>PIO_NOCLOBBER</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define PIO_NOCLOBBER&#160;&#160;&#160;NC_NOCLOBBER</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Don't destroy existing file. </p>
+<p>Mode flag for nc_create(). </p>
+
+</div>
+</div>
+<a id="adce579f6c39b0e792fa48147bf9c20d9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adce579f6c39b0e792fa48147bf9c20d9">&#9670;&nbsp;</a></span>PIO_NOERR</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define PIO_NOERR&#160;&#160;&#160;NC_NOERR</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Define the netCDF-based error codes. </p>
+<p>No Error </p>
+
+</div>
+</div>
+<a id="abe1ddd28a2492ade37de3d5b1805f8a1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abe1ddd28a2492ade37de3d5b1805f8a1">&#9670;&nbsp;</a></span>PIO_NOFILL</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define PIO_NOFILL&#160;&#160;&#160;NC_NOFILL</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Argument to nc_set_fill() to turn off filling of data. </p>
+
+</div>
+</div>
+<a id="a06b8292a1936f6285c3d62b6bec136d1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a06b8292a1936f6285c3d62b6bec136d1">&#9670;&nbsp;</a></span>PIO_NOWRITE</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define PIO_NOWRITE&#160;&#160;&#160;NC_NOWRITE</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Set read-only access for nc_open(). </p>
+
+</div>
+</div>
 <a id="a14497592730ea1a88cd1dbc53239dd59"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a14497592730ea1a88cd1dbc53239dd59">&#9670;&nbsp;</a></span>PIO_OFFSET</h2>
 
@@ -1514,7 +2724,7 @@ Functions</h2></td></tr>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">#define PIO_OFFSET&#160;&#160;&#160;<a class="el" href="pio_8h.html#a757768e03c71e1f1720f6718eed964a8">MPI_OFFSET</a></td>
+          <td class="memname">#define PIO_OFFSET&#160;&#160;&#160;MPI_OFFSET</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -1570,6 +2780,38 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Request null. </p>
+
+</div>
+</div>
+<a id="adb7ac51c82f5f2378030aa7f7db62982"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adb7ac51c82f5f2378030aa7f7db62982">&#9670;&nbsp;</a></span>PIO_UNLIMITED</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define PIO_UNLIMITED&#160;&#160;&#160;NC_UNLIMITED</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Size argument to nc_def_dim() for an unlimited dimension. </p>
+
+</div>
+</div>
+<a id="a8e123edc11c28f9c4a282e005970af92"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8e123edc11c28f9c4a282e005970af92">&#9670;&nbsp;</a></span>PIO_WRITE</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define PIO_WRITE&#160;&#160;&#160;NC_WRITE</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Set read-write access for nc_open(). </p>
 
 </div>
 </div>
@@ -3157,7 +4399,7 @@ Functions</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Aug 16 2019 09:43:55 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Wed Nov 27 2019 15:29:28 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.13
 </small></address>
