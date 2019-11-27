@@ -360,7 +360,7 @@ int write_darray_multi_par(file_desc_t *file, int nvars, int fndims, const int *
 
                             for (int i = vdesc->nreqs; i < vdesc->nreqs + PIO_REQUEST_ALLOC_CHUNK; i++)
                             {
-                                vdesc->request[i] = NC_REQ_NULL;
+                                vdesc->request[i] = PIO_REQ_NULL;
                                 vdesc->request_sz[i] = 0;
                             }
                         }
@@ -371,16 +371,20 @@ int write_darray_multi_par(file_desc_t *file, int nvars, int fndims, const int *
                         ierr = ncmpi_iput_varn(file->fh, varids[nv], rrcnt, startlist, countlist,
                                                bufptr, llen, iodesc->mpitype, vdesc->request + vdesc->nreqs);
 
-                        /* keeps wait calls in sync */
-                        if (vdesc->request[vdesc->nreqs] == NC_REQ_NULL)
-                        {
-                            vdesc->request[vdesc->nreqs] = PIO_REQ_NULL;
-                        }
-                        else
+                        /* PIO_REQ_NULL == NC_REQ_NULL */
+                        if (vdesc->request[vdesc->nreqs] != PIO_REQ_NULL)
                         {
                             vdesc->request_sz[vdesc->nreqs] = llen * iodesc->mpitype_size;
                         }
 
+                        /* Ensure that we increment the number of requests
+                         * even if vdesc->request[vdesc->nreqs] == PIO_REQ_NULL
+                         * for this process. This ensures that wait calls are
+                         * in sync across multiple processes.
+                         * Note: PnetCDF returns a NC_REQ_NULL for requests
+                         * that are complete, e.g. 0 bytes written from the
+                         * current process, on the current process
+                         */
                         vdesc->nreqs++;
                     }
 
@@ -1604,7 +1608,7 @@ int get_file_req_blocks(file_desc_t *file,
     /* One pending request on this file */
     if(file_nreqs == 1){
       int req = file->varlist[vdesc_with_reqs_start].request[0];
-      (*preqs)[0] = (req != PIO_REQ_NULL) ? req : NC_REQ_NULL;
+      (*preqs)[0] = req;
       req_block_starts[0] = 0;
       req_block_ends[0] = 0;
       *nreq_blocks = 1;
@@ -1621,8 +1625,7 @@ int get_file_req_blocks(file_desc_t *file,
           (i < vdesc_with_reqs_end) && (j < file_nreqs); i++){
       var_desc_t *vdesc = file->varlist + i;
       for(int k = 0; k < vdesc->nreqs; k++, j++){
-        file_lrequest[j] = (vdesc->request[k] != PIO_REQ_NULL) ?
-                            (vdesc->request[k]) : NC_REQ_NULL;
+        file_lrequest[j] = vdesc->request[k];
         file_lrequest_sz[j] = vdesc->request_sz[k];
       }
     }
