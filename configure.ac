@@ -9,7 +9,7 @@ AM_INIT_AUTOMAKE([foreign serial-tests])
 # The PIO version, again.
 AC_DEFINE([PIO_VERSION_MAJOR], [2], [PIO major version])
 AC_DEFINE([PIO_VERSION_MINOR], [5], [PIO minor version])
-AC_DEFINE([PIO_VERSION_PATCH], [0-development], [PIO patch version])
+AC_DEFINE([PIO_VERSION_PATCH], [0], [PIO patch version])
 
 # Once more for the documentation.
 AC_SUBST([VERSION_MAJOR], [2])
