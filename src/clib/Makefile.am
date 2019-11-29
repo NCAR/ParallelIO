@@ -16,7 +16,7 @@ endif # BUILD_NCINT
 libpioc_la_LDFLAGS = -version-info 4:0:3
 
 # The library header file will be installed in include dir.
-include_HEADERS = pio.h uthash.h
+include_HEADERS = pio.h
 
 # The library soure files.
 libpioc_la_SOURCES = bget.c pioc_sc.c pio_darray.c pio_file.c		\
