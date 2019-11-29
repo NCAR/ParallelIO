@@ -50,7 +50,7 @@ endif()
 install (TARGETS pioc DESTINATION lib)
 
 # Include/Header Files
-install (FILES pio.h uthash.h DESTINATION include)
+install (FILES pio.h DESTINATION include)
 
 #==============================================================================
 #  DEFINE THE DEPENDENCIES
