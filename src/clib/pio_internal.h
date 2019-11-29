@@ -30,6 +30,7 @@
 #ifdef USE_MPE
 #include <mpe.h>
 #endif /* USE_MPE */
+#include <uthash.h>
 
 #ifndef MPI_OFFSET
 /** MPI_OFFSET is an integer type of size sufficient to represent the
@@ -236,6 +237,34 @@ typedef struct iosystem_desc_t
     /** Pointer to the next iosystem_desc_t in the list. */
     struct iosystem_desc_t *next;
 } iosystem_desc_t;
+
+/**
+ * IO region structure.
+ *
+ * Each IO region is a unit of data which can be described using start
+ * and count arrays. Each IO task may in general have multiple io
+ * regions per variable.  The box rearranger will have at most one io
+ * region per variable.
+ *
+ * The write from a particular IO task is divided into 1 or more
+ * regions each of which can be described using start and count. The
+ * io_region typedef is a linked list of those regions.
+ */
+typedef struct io_region
+{
+    /** The offset from the beginning of the data buffer to the
+     * beginning of this region.  */
+    int loffset;
+
+    /** Start array for this region. */
+    PIO_Offset *start;
+
+    /** Count array for this region. */
+    PIO_Offset *count;
+
+    /** Pointer to the next io_region in the list. */
+    struct io_region *next;
+} io_region;
 
 /**
  * IO descriptor structure.
