@@ -74,8 +74,8 @@ endif()
 #  DEFINE THE TARGETS AND TESTS
 #==============================================================================
 
-# Test Timeout (8 min = 480 sec)
-set (DEFAULT_TEST_TIMEOUT 480)
+# Test Timeout (16 min = 960 sec)
+set (DEFAULT_TEST_TIMEOUT 960)
 set (DEFAULT_TEST_MAXNUMPROCS 4)
 
 # Use environment variable PIO_TF_MAXNUMPROCS to set the maximum number
