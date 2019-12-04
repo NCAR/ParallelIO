@@ -211,8 +211,9 @@ int write_darray_multi_par(file_desc_t *file, int nvars, int fndims, const int *
             /* Fill the start/count arrays. */
             if ((ierr = find_start_count(iodesc->ndims, iodesc->dimlen, fndims, vdesc, region, start, count)))
             {
-                return pio_err(ios, file, ierr, __FILE__, __LINE__,
+                ierr = pio_err(ios, file, ierr, __FILE__, __LINE__,
                                 "Writing variables (number of variables = %d) to file (%s, ncid=%d) failed. Internal error, finding start/count for the I/O regions written out from the I/O process failed", nvars, pio_get_fname_from_file(file), file->pio_ncid);
+                break;
             }
 
             /* IO tasks will run the netCDF/pnetcdf functions to write the data. */
@@ -233,56 +234,61 @@ int write_darray_multi_par(file_desc_t *file, int nvars, int fndims, const int *
 
                     /* Ensure collective access. */
                     ierr = nc_var_par_access(file->fh, varids[nv], NC_COLLECTIVE);
-
-                    /* Write the data for this variable. */
-                    /*
-                    if (!ierr)
-                        ierr = nc_put_vara(file->fh, varids[nv], (size_t *)start, (size_t *)count, bufptr);
-                    */
-                    if (!ierr)
+                    if(ierr != NC_NOERR)
                     {
-                        switch (iodesc->piotype)
-                        {
-                        case PIO_BYTE:
-                            ierr = nc_put_vara_schar(file->fh, varids[nv], start, count, (signed char*)bufptr);
-                            break;
-                        case PIO_CHAR:
-                            ierr = nc_put_vara_text(file->fh, varids[nv], start, count, (char*)bufptr);
-                            break;
-                        case PIO_SHORT:
-                            ierr = nc_put_vara_short(file->fh, varids[nv], start, count, (short*)bufptr);
-                            break;
-                        case PIO_INT:
-                            ierr = nc_put_vara_int(file->fh, varids[nv], start, count, (int*)bufptr);
-                            break;
-                        case PIO_FLOAT:
-                            ierr = nc_put_vara_float(file->fh, varids[nv], start, count, (float*)bufptr);
-                            break;
-                        case PIO_DOUBLE:
-                            ierr = nc_put_vara_double(file->fh, varids[nv], start, count, (double*)bufptr);
-                            break;
-                        case PIO_UBYTE:
-                            ierr = nc_put_vara_uchar(file->fh, varids[nv], start, count, (unsigned char*)bufptr);
-                            break;
-                        case PIO_USHORT:
-                            ierr = nc_put_vara_ushort(file->fh, varids[nv], start, count, (unsigned short*)bufptr);
-                            break;
-                        case PIO_UINT:
-                            ierr = nc_put_vara_uint(file->fh, varids[nv], start, count, (unsigned int*)bufptr);
-                            break;
-                        case PIO_INT64:
-                            ierr = nc_put_vara_longlong(file->fh, varids[nv], start, count, (long long*)bufptr);
-                            break;
-                        case PIO_UINT64:
-                            ierr = nc_put_vara_ulonglong(file->fh, varids[nv], start, count, (unsigned long long*)bufptr);
-                            break;
-                        case PIO_STRING:
-                            ierr = nc_put_vara_string(file->fh, varids[nv], start, count, (const char**)bufptr);
-                            break;
-                        default:
-                            return pio_err(ios, file, PIO_EBADTYPE, __FILE__, __LINE__,
-                                            "Writing variables (number of variables = %d) to file (%s, ncid=%d) using PIO_IOTYPE_NETCDF4P iotype failed. Unsupported variable data type (type=%d)", nvars, pio_get_fname_from_file(file), file->pio_ncid, iodesc->piotype);
-                        }
+                        ierr = pio_err(ios, file, ierr, __FILE__, __LINE__,
+                                        "Writing variables (number of variables = %d) to file (%s, ncid=%d) using PIO_IOTYPE_NETCDF4P iotype failed. Changing parallel access for variable (%s, varid=%d) to collective failed", nvars, pio_get_fname_from_file(file), file->pio_ncid, pio_get_vname_from_file(file, varids[nv]), varids[nv]);
+                        break;
+                    }
+
+                    switch (iodesc->piotype)
+                    {
+                    case PIO_BYTE:
+                        ierr = nc_put_vara_schar(file->fh, varids[nv], start, count, (signed char*)bufptr);
+                        break;
+                    case PIO_CHAR:
+                        ierr = nc_put_vara_text(file->fh, varids[nv], start, count, (char*)bufptr);
+                        break;
+                    case PIO_SHORT:
+                        ierr = nc_put_vara_short(file->fh, varids[nv], start, count, (short*)bufptr);
+                        break;
+                    case PIO_INT:
+                        ierr = nc_put_vara_int(file->fh, varids[nv], start, count, (int*)bufptr);
+                        break;
+                    case PIO_FLOAT:
+                        ierr = nc_put_vara_float(file->fh, varids[nv], start, count, (float*)bufptr);
+                        break;
+                    case PIO_DOUBLE:
+                        ierr = nc_put_vara_double(file->fh, varids[nv], start, count, (double*)bufptr);
+                        break;
+                    case PIO_UBYTE:
+                        ierr = nc_put_vara_uchar(file->fh, varids[nv], start, count, (unsigned char*)bufptr);
+                        break;
+                    case PIO_USHORT:
+                        ierr = nc_put_vara_ushort(file->fh, varids[nv], start, count, (unsigned short*)bufptr);
+                        break;
+                    case PIO_UINT:
+                        ierr = nc_put_vara_uint(file->fh, varids[nv], start, count, (unsigned int*)bufptr);
+                        break;
+                    case PIO_INT64:
+                        ierr = nc_put_vara_longlong(file->fh, varids[nv], start, count, (long long*)bufptr);
+                        break;
+                    case PIO_UINT64:
+                        ierr = nc_put_vara_ulonglong(file->fh, varids[nv], start, count, (unsigned long long*)bufptr);
+                        break;
+                    case PIO_STRING:
+                        ierr = nc_put_vara_string(file->fh, varids[nv], start, count, (const char**)bufptr);
+                        break;
+                    default:
+                        ierr = pio_err(ios, file, PIO_EBADTYPE, __FILE__, __LINE__,
+                                        "Writing variables (number of variables = %d) to file (%s, ncid=%d) using PIO_IOTYPE_NETCDF4P iotype failed. Unsupported variable data type (type=%d)", nvars, pio_get_fname_from_file(file), file->pio_ncid, iodesc->piotype);
+                        break;
+                    }
+                    if(ierr != NC_NOERR)
+                    {
+                        ierr = pio_err(ios, file, ierr, __FILE__, __LINE__,
+                                        "Writing variables (number of variables = %d) to file (%s, ncid=%d) using PIO_IOTYPE_NETCDF4P iotype failed. Writing variable (%s, varid=%d) failed", nvars, pio_get_fname_from_file(file), file->pio_ncid, pio_get_vname_from_file(file, varids[nv]), varids[nv]);
+                        break;
                     }
                 }
                 break;
@@ -304,12 +310,16 @@ int write_darray_multi_par(file_desc_t *file, int nvars, int fndims, const int *
                      * this region. */
                     if (!(startlist[rrcnt] = calloc(fndims, sizeof(PIO_Offset))))
                     {
-                        return pio_err(ios, file, PIO_ENOMEM, __FILE__, __LINE__,
+                        ierr = pio_err(ios, file, PIO_ENOMEM, __FILE__, __LINE__,
                                           "Writing variables (number of variables = %d) to file (%s, ncid=%d) using PIO_IOTYPE_PNETCDF iotype failed. Out of memory allocating buffer (%lld bytes) for array to store starts of I/O regions written out to file", nvars, pio_get_fname_from_file(file), file->pio_ncid, (long long int) (fndims * sizeof(PIO_Offset)));
+                        break;
                     }
                     if (!(countlist[rrcnt] = calloc(fndims, sizeof(PIO_Offset))))
-                        return pio_err(ios, file, PIO_ENOMEM, __FILE__, __LINE__,
+                    {
+                        ierr = pio_err(ios, file, PIO_ENOMEM, __FILE__, __LINE__,
                                           "Writing variables (number of variables = %d) to file (%s, ncid=%d) using PIO_IOTYPE_PNETCDF iotype failed. Out of memory allocating buffer (%lld bytes) for array to store counts of I/O regions written out to file", nvars, pio_get_fname_from_file(file), file->pio_ncid, (long long int) (fndims * sizeof(PIO_Offset)));
+                        break;
+                    }
 
                     /* Copy the start/count arrays for this region. */
                     for (int i = 0; i < fndims; i++)
@@ -344,8 +354,11 @@ int write_darray_multi_par(file_desc_t *file, int nvars, int fndims, const int *
                         {
                             if (!(vdesc->request = realloc(vdesc->request, sizeof(int) *
                                                            (vdesc->nreqs + PIO_REQUEST_ALLOC_CHUNK))))
-                                return pio_err(ios, file, PIO_ENOMEM, __FILE__, __LINE__,
+                            {
+                                ierr = pio_err(ios, file, PIO_ENOMEM, __FILE__, __LINE__,
                                           "Writing variables (number of variables = %d) to file (%s, ncid=%d) using PIO_IOTYPE_PNETCDF iotype failed. Out of memory reallocing buffer (%lld bytes) for array to store pnetcdf request handles", nvars, pio_get_fname_from_file(file), file->pio_ncid, (long long int) (sizeof(int) * (vdesc->nreqs + PIO_REQUEST_ALLOC_CHUNK)));
+                                break;
+                            }
 
                             vdesc->request_sz = realloc(vdesc->request_sz,
                                                   sizeof(PIO_Offset) *
@@ -353,14 +366,15 @@ int write_darray_multi_par(file_desc_t *file, int nvars, int fndims, const int *
                                                     PIO_REQUEST_ALLOC_CHUNK));
                             if(vdesc->request_sz == NULL)
                             {
-                                return pio_err(ios, file, PIO_ENOMEM,
+                                ierr = pio_err(ios, file, PIO_ENOMEM,
                                           __FILE__, __LINE__,
                                           "Writing variables (number of variables = %d) to file (%s, ncid=%d) using PIO_IOTYPE_PNETCDF iotype failed. Out of memory reallocing buffer (%lld bytes) for array to store pending pnetcdf request sizes", nvars, pio_get_fname_from_file(file), file->pio_ncid, (long long int) (sizeof(PIO_Offset) * (vdesc->nreqs + PIO_REQUEST_ALLOC_CHUNK)));
+                                break;
                             }
 
                             for (int i = vdesc->nreqs; i < vdesc->nreqs + PIO_REQUEST_ALLOC_CHUNK; i++)
                             {
-                                vdesc->request[i] = NC_REQ_NULL;
+                                vdesc->request[i] = PIO_REQ_NULL;
                                 vdesc->request_sz[i] = 0;
                             }
                         }
@@ -370,17 +384,27 @@ int write_darray_multi_par(file_desc_t *file, int nvars, int fndims, const int *
                              nv, varids[nv], rrcnt, llen));
                         ierr = ncmpi_iput_varn(file->fh, varids[nv], rrcnt, startlist, countlist,
                                                bufptr, llen, iodesc->mpitype, vdesc->request + vdesc->nreqs);
-
-                        /* keeps wait calls in sync */
-                        if (vdesc->request[vdesc->nreqs] == NC_REQ_NULL)
+                        if (ierr != PIO_NOERR)
                         {
-                            vdesc->request[vdesc->nreqs] = PIO_REQ_NULL;
+                            ierr = pio_err(ios, file, ierr, __FILE__, __LINE__,
+                                      "Writing variables (number of variables = %d) to file (%s, ncid=%d) using PIO_IOTYPE_PNETCDF iotype failed. Non blocking write for variable (%s, varid=%d) failed (Number of subarray requests/regions=%d, Size of data local to this process = %lld)", nvars, pio_get_fname_from_file(file), file->pio_ncid, pio_get_vname_from_file(file, varids[nv]), varids[nv], rrcnt, (long long int )llen);
+                            break;
                         }
-                        else
+
+                        /* PIO_REQ_NULL == NC_REQ_NULL */
+                        if (vdesc->request[vdesc->nreqs] != PIO_REQ_NULL)
                         {
                             vdesc->request_sz[vdesc->nreqs] = llen * iodesc->mpitype_size;
                         }
 
+                        /* Ensure that we increment the number of requests
+                         * even if vdesc->request[vdesc->nreqs] == PIO_REQ_NULL
+                         * for this process. This ensures that wait calls are
+                         * in sync across multiple processes.
+                         * Note: PnetCDF returns a NC_REQ_NULL for requests
+                         * that are complete, e.g. 0 bytes written from the
+                         * current process, on the current process
+                         */
                         vdesc->nreqs++;
                     }
 
@@ -394,10 +418,17 @@ int write_darray_multi_par(file_desc_t *file, int nvars, int fndims, const int *
                 break;
 #endif
             default:
-                return pio_err(ios, file, PIO_EBADIOTYPE, __FILE__, __LINE__,
+                ierr = pio_err(ios, file, PIO_EBADIOTYPE, __FILE__, __LINE__,
                                 "Writing variables (number of variables = %d) to file (%s, ncid=%d) failed. Invalid iotype (%d) specified", nvars, pio_get_fname_from_file(file), file->pio_ncid, file->iotype);
+                break;
             }
 
+            if (ierr != PIO_NOERR)
+            {
+                ierr = pio_err(ios, file, ierr, __FILE__, __LINE__,
+                                "Writing variables (number of variables = %d) to file (%s, ncid=%d) failed. Writing region of data at offset = %d failed", nvars, pio_get_fname_from_file(file), file->pio_ncid, region->loffset);
+                break;
+            }
             /* Go to next region. */
             if (region)
                 region = region->next;
@@ -1604,7 +1635,7 @@ int get_file_req_blocks(file_desc_t *file,
     /* One pending request on this file */
     if(file_nreqs == 1){
       int req = file->varlist[vdesc_with_reqs_start].request[0];
-      (*preqs)[0] = (req != PIO_REQ_NULL) ? req : NC_REQ_NULL;
+      (*preqs)[0] = req;
       req_block_starts[0] = 0;
       req_block_ends[0] = 0;
       *nreq_blocks = 1;
@@ -1621,8 +1652,7 @@ int get_file_req_blocks(file_desc_t *file,
           (i < vdesc_with_reqs_end) && (j < file_nreqs); i++){
       var_desc_t *vdesc = file->varlist + i;
       for(int k = 0; k < vdesc->nreqs; k++, j++){
-        file_lrequest[j] = (vdesc->request[k] != PIO_REQ_NULL) ?
-                            (vdesc->request[k]) : NC_REQ_NULL;
+        file_lrequest[j] = vdesc->request[k];
         file_lrequest_sz[j] = vdesc->request_sz[k];
       }
     }

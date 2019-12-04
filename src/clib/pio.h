@@ -268,8 +268,10 @@
 /** Define the extra error codes for the parallel-netcdf library. */
 #ifdef _PNETCDF
 #define PIO_EINDEP  NC_EINDEP
+#define PIO_REQ_NULL NC_REQ_NULL
 #else  /* _PNETCDF */
 #define PIO_EINDEP  (-203)
+#define PIO_REQ_NULL (-1)
 #endif /* _PNETCDF */
 
 /** Define error codes for PIO. */
@@ -281,9 +283,6 @@
 /** Define error codes for ADIOS. */
 #define PIO_EADIOSREAD (-300)
 #endif
-
-/** ??? */
-#define PIO_REQ_NULL (NC_REQ_NULL-1)
 
 #ifdef PIO_MICRO_TIMING
 /** Some fwd declarations to avoid including internal headers */
