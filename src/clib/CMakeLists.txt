@@ -156,15 +156,13 @@ else ()
 endif ()
 
 #===== ADIOS-C =====
-if (WITH_ADIOS)
-  find_package (ADIOS ${ADIOS_MIN_VER_REQD})
+if (WITH_ADIOS2)
+  find_package (ADIOS2 ${ADIOS_MIN_VER_REQD})
 endif ()
-if (ADIOS_FOUND)
+if (ADIOS2_FOUND)
   set(PIO_USE_ADIOS 1)
-  target_include_directories (pioc
-    PUBLIC ${ADIOS_INCLUDE_DIRS})
   target_link_libraries (pioc
-    PUBLIC ${ADIOS_LIBRARIES} adios2pio-nm-lib)
+    PUBLIC adios2::adios2 adios2pio-nm-lib)
 else ()
   set(PIO_USE_ADIOS 0)
 endif ()

@@ -50,7 +50,7 @@ endif ()
 
 # If ENABLE_ADIOS environment variable is set, then enable the use of ADIOS type
 if (DEFINED ENV{ENABLE_ADIOS})
-    set (CTEST_CONFIGURE_OPTIONS "${CTEST_CONFIGURE_OPTIONS} -DWITH_ADIOS=ON")
+    set (CTEST_CONFIGURE_OPTIONS "${CTEST_CONFIGURE_OPTIONS} -DWITH_ADIOS2=ON")
 endif ()
 
 # If ENABLE_INTERNAL_TIMING environment variable is set, then gather and print GPTL timing stats
