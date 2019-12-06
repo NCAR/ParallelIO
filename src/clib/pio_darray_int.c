@@ -781,14 +781,16 @@ int recv_and_write_data(file_desc_t *file, const int *varids, const int *frame,
                         break;
 #endif /* _NETCDF4 */
                     default:
-                        return pio_err(ios, file, PIO_EBADTYPE, __FILE__, __LINE__,
+                        ierr = pio_err(ios, file, PIO_EBADTYPE,
+                                        __FILE__, __LINE__,
                                         "Writing multiple variables (number of variables = %d) to file (%s, ncid=%d) using serial I/O failed. Unsupported variable type (type = %d)", nvars, pio_get_fname_from_file(file), file->pio_ncid, iodesc->piotype);
+                        break;
                     }
                     if(ierr != PIO_NOERR){
-                        LOG((1, "nc_put_vara* failed, ierr = %d", ierr));
+                        ierr = pio_err(ios, file, ierr, __FILE__, __LINE__,
+                                        "Writing variable %s, varid=%d, (total number of variables = %d) to file %s (ncid=%d) using serial I/O failed.", pio_get_vname_from_file(file, varids[nv]), varids[nv], nvars, pio_get_fname_from_file(file), file->pio_ncid);
                         return ierr;
                     }
-
                 } /* next var */
 
                 /* Calculate the total size. */
@@ -874,34 +876,38 @@ int write_darray_multi_serial(file_desc_t *file, int nvars, int fndims, const in
         if ((ierr = find_all_start_count(region, num_regions, fndims, iodesc->ndims, iodesc->dimlen, vdesc,
                                          tmp_start, tmp_count)))
         {
-            return pio_err(ios, file, ierr, __FILE__, __LINE__,
+            ierr = pio_err(ios, file, ierr, __FILE__, __LINE__,
                             "Writing multiple variables (number of variables = %d) to file (%s, ncid=%d) using serial I/O failed. Internal error finding start/count of I/O regions to write to file.", nvars, pio_get_fname_from_file(file), file->pio_ncid);
         }
 
-        /* Tasks other than 0 will send their data to task 0. */
-        if (ios->io_rank > 0)
+        if (ierr == PIO_NOERR)
         {
-            /* Send the tmp_start and tmp_count arrays from this IO task
-             * to task 0. */
-            if ((ierr = send_all_start_count(ios, iodesc, llen, num_regions, nvars, fndims,
-                                             tmp_start, tmp_count, iobuf)))
+            /* Tasks other than 0 will send their data to task 0. */
+            if (ios->io_rank > 0)
             {
-                return pio_err(ios, file, ierr, __FILE__, __LINE__,
-                                "Writing multiple variables (number of variables = %d) to file (%s, ncid=%d) using serial I/O failed. Internal error sending start/count of I/O regions to write to file to root process.", nvars, pio_get_fname_from_file(file), file->pio_ncid);
+                /* Send the tmp_start and tmp_count arrays from this IO task
+                 * to task 0. */
+                if ((ierr = send_all_start_count(ios, iodesc, llen, num_regions, nvars, fndims,
+                                                 tmp_start, tmp_count, iobuf)))
+                {
+                    ierr = pio_err(ios, file, ierr, __FILE__, __LINE__,
+                                    "Writing multiple variables (number of variables = %d) to file (%s, ncid=%d) using serial I/O failed. Internal error sending start/count of I/O regions to write to file from root process.", nvars, pio_get_fname_from_file(file), file->pio_ncid);
+                }
             }
-        }
-        else
-        {
-            /* Task 0 will receive data from all other IO tasks. */
+            else
+            {
+                /* Task 0 will receive data from all other IO tasks. */
 
-            if ((ierr = recv_and_write_data(file, varids, frame, iodesc, llen, num_regions, nvars, fndims,
-                                            tmp_start, tmp_count, iobuf)))
-            {
-                return pio_err(ios, file, ierr, __FILE__, __LINE__,
-                                "Writing multiple variables (number of variables = %d) to file (%s, ncid=%d) using serial I/O failed. Internal error receiving start/count of I/O regions to write to file from non-root processes.", nvars, pio_get_fname_from_file(file), file->pio_ncid);
-            }
-        }
-    }
+                if ((ierr = recv_and_write_data(file, varids, frame, iodesc, llen, num_regions, nvars, fndims,
+                                                tmp_start, tmp_count, iobuf)))
+                {
+                    ierr = pio_err(ios, file, ierr, __FILE__, __LINE__,
+                                    "Writing multiple variables (number of variables = %d) to file (%s, ncid=%d) using serial I/O failed. Internal error receiving start/count of I/O regions to write to file from non-root processes.", nvars, pio_get_fname_from_file(file), file->pio_ncid);
+                }
+            } /* if (ios->io_rank > 0) */
+        } /* if (ierr == PIO_NOERR) */
+    } /* if (ios->ioproc) */
+
     ierr = check_netcdf(ios, file, ierr, __FILE__, __LINE__);
     if(ierr != PIO_NOERR){
         LOG((1, "nc_put_vara* or sending data to root failed, ierr = %d", ierr));
@@ -1092,8 +1098,9 @@ int pio_read_darray_nc(file_desc_t *file, int fndims, io_desc_t *iodesc, int vid
                     ierr = nc_get_vara_string(file->fh, vid, start, count, (char**)bufptr);
                     break;
                 default:
-                    return pio_err(ios, file, PIO_EBADTYPE, __FILE__, __LINE__,
+                    ierr = pio_err(ios, file, PIO_EBADTYPE, __FILE__, __LINE__,
                                     "Reading variable (%s, varid=%d) from file (%s, ncid=%d) failed with iotype=PIO_IOTYPE_NETCDF4P. Unsupported variable type (type=%d)", pio_get_vname_from_file(file, vid), vid, pio_get_fname_from_file(file), file->pio_ncid, file->iotype);
+                    break;
                 }
                 break;
 #endif
@@ -1123,6 +1130,12 @@ int pio_read_darray_nc(file_desc_t *file, int fndims, io_desc_t *iodesc, int vid
                     /* Read a list of subarrays. */
                     ierr = ncmpi_get_varn_all(file->fh, vid, rrlen, startlist,
                                               countlist, iobuf, iodesc->llen, iodesc->mpitype);
+                    if(ierr != PIO_NOERR)
+                    {
+                        ierr = pio_err(ios, file, ierr, __FILE__, __LINE__,
+                                "Reading variable (%s, varid=%d) from file (%s, ncid=%d) failed with PIO_IOTYPE_PNETCDF iotype. The low level (PnetCDF) I/O library call failed to read the variable (Number of regions = %d, iodesc id = %d, Bytes to read on this process = %llu)", pio_get_vname_from_file(file, vid), vid, pio_get_fname_from_file(file), file->pio_ncid, rrlen, iodesc->ioid, (unsigned long long int) iodesc->llen);
+                        break;
+                    }
 
                     /* Release the start and count arrays. */
                     for (int i = 0; i < rrlen; i++)
@@ -1135,8 +1148,9 @@ int pio_read_darray_nc(file_desc_t *file, int fndims, io_desc_t *iodesc, int vid
             break;
 #endif
             default:
-                return pio_err(ios, file, PIO_EBADIOTYPE, __FILE__, __LINE__,
+                ierr = pio_err(ios, file, PIO_EBADIOTYPE, __FILE__, __LINE__,
                                 "Reading variable (%s, varid=%d) from file (%s, ncid=%d) failed with iotype=PIO_IOTYPE_PNETCDF. Unsupported variable type (type=%d)", pio_get_vname_from_file(file, vid), vid, pio_get_fname_from_file(file), file->pio_ncid, file->iotype);
+                break;
             }
 
             /* Check return code. */
@@ -1438,8 +1452,9 @@ int pio_read_darray_nc_serial(file_desc_t *file, int fndims, io_desc_t *iodesc, 
                         break;
 #endif /* _NETCDF4 */
                     default:
-                        return pio_err(ios, file, PIO_EBADTYPE, __FILE__, __LINE__,
+                        ierr = pio_err(ios, file, PIO_EBADTYPE, __FILE__, __LINE__,
                                         "Reading variable (%s, varid=%d) from file (%s, ncid=%d) with serial I/O failed. Unsupported variable type (iotype=%d)", pio_get_vname_from_file(file, vid), vid, pio_get_fname_from_file(file), file->pio_ncid, iodesc->piotype);
+                        break;
                     }
 
                     /* Check error code of netCDF call. */
