@@ -26,7 +26,7 @@
   #endif
 #endif
 #if PIO_USE_ADIOS
-  #define _ADIOS 1
+  #define _ADIOS2 1
 #endif
 #if PIO_USE_MICRO_TIMING
   #define PIO_MICRO_TIMING 1
@@ -41,14 +41,15 @@
 #ifdef _PNETCDF
 #include <pnetcdf.h>
 #endif
-#ifdef _ADIOS
+#ifdef _ADIOS2
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <adios.h>
-#include <adios_read.h> /* We only need adios_type_size() at the moment */
+#include <adios2_c.h>
 #define _ADIOS_ALL_PROCS 1 /* ADIOS: assume all procs are also IO tasks */
 #define ADIOS_PIO_MAX_DECOMPS 200 /* Maximum number of decomps */
+adios2_adios *get_adios2_adios();
+unsigned long get_adios2_io_cnt();
 #endif
 
 #ifndef MPI_OFFSET
@@ -296,9 +297,10 @@
 #define PIO_EBADIOTYPE  (-500)
 #define PIO_EINTERNAL  (-501)
 
-#ifdef _ADIOS
+#ifdef _ADIOS2
 /** Define error codes for ADIOS. */
 #define PIO_EADIOSREAD (-300)
+#define PIO_EADIOS2ERR (-301)
 #endif
 
 #ifdef PIO_MICRO_TIMING
@@ -767,7 +769,7 @@ typedef struct wmulti_buffer
     struct wmulti_buffer *next;
 } wmulti_buffer;
 
-#ifdef _ADIOS
+#ifdef _ADIOS2
 /** Variable definition information saved at pioc_def_var,
  * so that ADIOS can define the variable at write time when
  * local dimensions and offsets are known.
@@ -781,7 +783,7 @@ typedef struct adios_var_desc_t
     int nc_type;
 
     /** Type converted from NC type to adios type */
-    enum ADIOS_DATATYPES adios_type;
+    adios2_type adios_type;
 
     /** Number of dimensions */
     int ndims;
@@ -795,12 +797,12 @@ typedef struct adios_var_desc_t
     /** ADIOS varID, if it has already been defined.
      * We avoid defining again when writing multiple records over time
      */
-    int64_t adios_varid; // 0: undefined yet
+    adios2_variable* adios_varid; // 0: undefined yet
 
     /* to handle PIOc_setframe with different decompositions */
-    int64_t decomp_varid;
-    int64_t frame_varid;
-    int64_t fillval_varid;
+    adios2_variable* decomp_varid;
+    adios2_variable* frame_varid;
+    adios2_variable* fillval_varid;
 } adios_var_desc_t;
 
 /* Track attributes */
@@ -822,9 +824,9 @@ typedef struct adios_att_desc_t
     int att_varid;
 
     /** Type converted from NC type to adios type */
-    enum ADIOS_DATATYPES adios_type;
+    adios2_type adios_type;
 } adios_att_desc_t;
-#endif
+#endif /* _ADIOS2 */
 
 /**
  * File descriptor structure.
@@ -840,15 +842,15 @@ typedef struct file_desc_t
      * (netcdf or pnetcdf). */
     int fh;
 
-#ifdef _ADIOS
+#ifdef _ADIOS2
     /** Save the filename, now just for printing it at close */
     char *filename;
 
     /** ADIOS file handler is 64bit integer */
-    int64_t adios_fh;
+    adios2_engine *engineH;
 
     /** Handler for ADIOS group (of variables) */
-    int64_t adios_group;
+    adios2_io *ioH;
 
     /** ADIOS output transport method name, POSIX or MPI_AGGREGATE */
     char transport[PIO_MAX_NAME];
@@ -878,7 +880,7 @@ typedef struct file_desc_t
 
     /* Track attributes */
     /** attribute information. Allow PIO_MAX_VARS for now. */
-    struct adios_att_desc_t adios_attrs[PIO_MAX_VARS];
+    struct adios_att_desc_t adios_attrs[PIO_MAX_ATTRS];
     int num_attrs;
 
     int fillmode;
@@ -886,7 +888,7 @@ typedef struct file_desc_t
     /** Array for decompositions that has been written already (must write only once) */
     int n_written_ioids;
     int written_ioids[ADIOS_PIO_MAX_DECOMPS]; /* written_ioids[N] = ioid if that decomp has been already written, */
-#endif
+#endif /* _ADIOS2 */
 
     /* File name - cached */
     char fname[PIO_MAX_NAME + 1];
@@ -1434,12 +1436,13 @@ extern "C" {
     int PIOc_get_varm_long(int ncid, int varid, const PIO_Offset *start, const PIO_Offset *count,
                            const PIO_Offset *stride, const PIO_Offset *imap, long *buf);
 
-#ifdef _ADIOS
-    enum ADIOS_DATATYPES PIOc_get_adios_type(nc_type xtype);
-    nc_type PIOc_get_nctype_from_adios_type(enum ADIOS_DATATYPES atype);
+#ifdef _ADIOS2
+    adios2_type PIOc_get_adios_type(nc_type xtype);
+    int adios2_type_size(adios2_type type, const void *var);
 #ifndef strdup
     char *strdup(const char *str);
 #endif
+    const char *adios2_error_to_string(adios2_error error);
 #endif
 
 #if defined(__cplusplus)
