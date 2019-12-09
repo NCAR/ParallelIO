@@ -311,7 +311,7 @@ CONTAINS
       ! pnetcdf
       num_iotypes = num_iotypes + 1
 #endif
-#ifdef _ADIOS
+#ifdef _ADIOS2
       ! adios
       num_iotypes = num_iotypes + 1
 #endif
@@ -327,7 +327,7 @@ CONTAINS
       iotype_descs(i) = "PNETCDF"
       i = i + 1
 #endif
-#ifdef _ADIOS
+#ifdef _ADIOS2
       ! adios
       iotypes(i) = PIO_iotype_adios
       iotype_descs(i) = "ADIOS"
@@ -382,7 +382,7 @@ CONTAINS
       ! pnetcdf
       num_iotypes = num_iotypes + 1
 #endif
-#ifndef _ADIOS
+#ifndef _ADIOS2
       ! adios
       num_iotypes = num_iotypes + 1
 #endif
@@ -413,7 +413,7 @@ CONTAINS
       iotype_descs(i) = "PNETCDF"
       i = i + 1
 #endif
-#ifndef _ADIOS
+#ifndef _ADIOS2
       ! adios
       iotypes(i) = PIO_iotype_adios
       iotype_descs(i) = "ADIOS"
@@ -448,7 +448,7 @@ CONTAINS
       ! pnetcdf
       num_iotypes = num_iotypes + 1
 #endif
-#ifdef _ADIOS
+#ifdef _ADIOS2
       ! adios
       num_iotypes = num_iotypes + 1
 #endif
@@ -464,7 +464,7 @@ CONTAINS
       iotype_descs(i) = "PNETCDF"
       i = i + 1
 #endif
-#ifdef _ADIOS
+#ifdef _ADIOS2
       ! adios
       iotypes(i) = PIO_iotype_adios
       iotype_descs(i) = "ADIOS"
@@ -519,7 +519,7 @@ CONTAINS
       ! pnetcdf
       num_iotypes = num_iotypes + 1
 #endif
-#ifndef _ADIOS
+#ifndef _ADIOS2
       ! adios
       num_iotypes = num_iotypes + 1
 #endif
@@ -529,7 +529,7 @@ CONTAINS
     ALLOCATE(iotype_descs(num_iotypes))
 
     i = 1
-#ifndef _ADIOS
+#ifndef _ADIOS2
       ! adios
       iotypes(i) = PIO_iotype_adios
       iotype_descs(i) = "ADIOS"
