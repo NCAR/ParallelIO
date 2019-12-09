@@ -2,6 +2,8 @@
 ### CMakeList.txt for adios2pio 
 ###-------------------------------------------------------------------------###
 
+list (APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
+
 # Adding PIO definitions - defined in the root directory
 ADD_DEFINITIONS(${PIO_DEFINITIONS})
 
@@ -28,7 +30,6 @@ target_include_directories(adios2pio-nm-lib PUBLIC
   ${CMAKE_SOURCE_DIR}/src/clib
   ${CMAKE_BINARY_DIR}/src/clib
   ${CMAKE_SOURCE_DIR}/tools/util
-  ${ADIOS_INCLUDE_DIRS}
   ${NETCDF_C_INCLUDE_DIRS} 
   ${PnetCDF_C_INCLUDE_DIRS} 
   ${PIO_C_EXTRA_INCLUDE_DIRS})
@@ -104,16 +105,14 @@ else ()
 endif ()
 
 #===== ADIOS-C =====
-if (WITH_ADIOS)
-  find_package (ADIOS ${ADIOS_MIN_VER_REQD})
+if ((WITH_ADIOS2) AND (NOT ADIOS2_FOUND))
+  find_package (ADIOS2 ${ADIOS_MIN_VER_REQD})
 endif ()
-if (ADIOS_FOUND)
-  target_include_directories (adios2pio-nm-lib
-    PUBLIC ${ADIOS_INCLUDE_DIRS})
+if (ADIOS2_FOUND)
   target_compile_definitions (adios2pio-nm-lib
-    PUBLIC _ADIOS)
+    PUBLIC _ADIOS2)
   target_link_libraries (adios2pio-nm-lib
-    PUBLIC ${ADIOS_LIBRARIES})
+    PUBLIC adios2::adios2)
 else ()
   target_compile_definitions (adios2pio-nm-lib
     PUBLIC _NOADIOS)

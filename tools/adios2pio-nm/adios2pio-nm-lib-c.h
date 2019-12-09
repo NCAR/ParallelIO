@@ -7,7 +7,7 @@
 extern "C" {
 #endif
 
-extern int C_API_ConvertBPToNC(const char *infilepath, const char *outfilename, const char *piotype, MPI_Comm comm_in);
+extern int C_API_ConvertBPToNC(const char *infilepath, const char *outfilename, const char *piotype, int mem_opt, MPI_Comm comm_in);
 
 #ifdef __cplusplus
 }
