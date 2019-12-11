@@ -36,6 +36,7 @@ var searchData=
   ['redef_5fid',['redef_id',['../group___p_i_o__redef.html#ga1a98648b5347710c172e49d556b2eae8',1,'pio_nf']]],
   ['replace_5fc_5fnull',['replace_c_null',['../classpio__support.html#abcbf3a9d77e36435f9110d1efe8fb19a',1,'pio_support']]],
   ['request',['request',['../structvar__desc__t.html#afe58a0dd1a4e439098833e9dfa0e7102',1,'var_desc_t']]],
+  ['request_5fsz',['request_sz',['../structvar__desc__t.html#a22a4d9b91a0926e90bece8c9db21d6f9',1,'var_desc_t']]],
   ['resultlen',['resultlen',['../example1_8c.html#aeb75303058f3be9b462de7ba3f6b03a7',1,'resultlen():&#160;example1.c'],['../example2_8c.html#aeb75303058f3be9b462de7ba3f6b03a7',1,'resultlen():&#160;example2.c'],['../put__var_8c.html#aeb75303058f3be9b462de7ba3f6b03a7',1,'resultlen():&#160;put_var.c']]],
   ['rfrom',['rfrom',['../structio__desc__t.html#aeb38b39c426eb0cce7c8e27d15eb67fd',1,'io_desc_t']]],
   ['rindex',['rindex',['../structio__desc__t.html#a1c5a340bb797121121f8c17203e5fb3c',1,'io_desc_t']]],

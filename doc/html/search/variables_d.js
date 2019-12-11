@@ -7,6 +7,7 @@ var searchData=
   ['record',['record',['../structvar__desc__t.html#a778c09b345537506feafa4f92705b6f5',1,'var_desc_t']]],
   ['recordvar',['recordvar',['../structwmulti__buffer.html#a52b790e294ce52e2b364f584abdbf9d8',1,'wmulti_buffer']]],
   ['request',['request',['../structvar__desc__t.html#afe58a0dd1a4e439098833e9dfa0e7102',1,'var_desc_t']]],
+  ['request_5fsz',['request_sz',['../structvar__desc__t.html#a22a4d9b91a0926e90bece8c9db21d6f9',1,'var_desc_t']]],
   ['resultlen',['resultlen',['../example1_8c.html#aeb75303058f3be9b462de7ba3f6b03a7',1,'resultlen():&#160;example1.c'],['../example2_8c.html#aeb75303058f3be9b462de7ba3f6b03a7',1,'resultlen():&#160;example2.c'],['../put__var_8c.html#aeb75303058f3be9b462de7ba3f6b03a7',1,'resultlen():&#160;put_var.c']]],
   ['rfrom',['rfrom',['../structio__desc__t.html#aeb38b39c426eb0cce7c8e27d15eb67fd',1,'io_desc_t']]],
   ['rindex',['rindex',['../structio__desc__t.html#a1c5a340bb797121121f8c17203e5fb3c',1,'io_desc_t']]],
