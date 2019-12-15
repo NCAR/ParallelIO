@@ -155,13 +155,6 @@ endif ()
 set (CMAKE_Fortran_COMPILER_DIRECTIVE "CPR${CMAKE_Fortran_COMPILER_NAME}"
   CACHE STRING "Fortran compiler name preprocessor directive")
 
-# configure a header file to pass some of the CMake settings
-# to the source code
-configure_file (
-  "${PROJECT_SOURCE_DIR}/src/clib/config.h.in"
-  "${PROJECT_BINARY_DIR}/src/clib/config.h"
-  )
-
 #==============================================================================
 #  CHECK MIN VERSION OF COMPILERS REQD
 #==============================================================================
