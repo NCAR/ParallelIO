@@ -1,6 +1,6 @@
 /** @file 
  *
- * This is the template for the config.h file, which is created at
+ * This is the template for the pio_config.h file, which is created at
  * build-time by cmake.
  */
 #ifndef _PIO_CONFIG_

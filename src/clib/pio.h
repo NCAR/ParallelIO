@@ -15,7 +15,7 @@
 #include <string.h> /* memcpy */
 #include <mpi.h>
 
-#include "config.h"
+#include "pio_config.h"
 #if PIO_USE_PNETCDF
   #define _PNETCDF 1
 #endif

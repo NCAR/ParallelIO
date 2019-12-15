@@ -5,7 +5,7 @@
  * @author Jim Edwards
  * @date  2014
  */
-#include <config.h>
+#include <pio_config.h>
 #include <pio.h>
 #include <pio_internal.h>
 

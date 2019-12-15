@@ -7,7 +7,7 @@
  * @see http://code.google.com/p/parallelio/
  */
 
-#include <config.h>
+#include <pio_config.h>
 #include <pio.h>
 #include <pio_internal.h>
 

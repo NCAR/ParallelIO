@@ -14,7 +14,7 @@
  * @author Jim Edwards (jedwards@ucar.edu), Ed Hartnett
  * @date     Feburary 2014, April 2016
  */
-#include <config.h>
+#include <pio_config.h>
 #include <pio.h>
 #include <pio_internal.h>
 #ifdef PIO_MICRO_TIMING

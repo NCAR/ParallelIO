@@ -16,7 +16,7 @@
 #endif
 
 extern "C"{
-#include "config.h"
+#include "pio_config.h"
 #include "pio.h"
 #include "pio_internal.h"
 #include "pio_sdecomps_regex.h"

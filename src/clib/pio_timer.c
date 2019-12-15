@@ -1,4 +1,4 @@
-#include "config.h"
+#include "pio_config.h"
 #include "pio_timer.h"
 #include "pio_internal.h"
 

@@ -1,7 +1,7 @@
 #ifndef _PIO_TIMER_H_
 #define _PIO_TIMER_H_
 
-#include "config.h"
+#include "pio_config.h"
 #include <stdbool.h>
 #include "mpi.h"
 #include "pio_internal.h"

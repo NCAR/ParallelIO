@@ -170,12 +170,12 @@ endif ()
 # configure a header file to pass some of the CMake settings
 # to the source code
 configure_file (
-  "${PROJECT_SOURCE_DIR}/config.h.in"
-  "${PROJECT_BINARY_DIR}/config.h"
+  "${PROJECT_SOURCE_DIR}/pio_config.h.in"
+  "${PROJECT_BINARY_DIR}/pio_config.h"
   )
 
 # Install PIO config Include/Header File
-install (FILES ${PROJECT_BINARY_DIR}/config.h DESTINATION include)
+install (FILES ${PROJECT_BINARY_DIR}/pio_config.h DESTINATION include)
 
 if (ADIOS_BP2NC_TEST)
   target_compile_definitions (pioc
