@@ -2,7 +2,7 @@
  * @file
  * PIO File Handling
  */
-#include <config.h>
+#include <pio_config.h>
 #include <pio.h>
 #include <pio_internal.h>
 #include "../../tools/adios2pio-nm/adios2pio-nm-lib-c.h"

@@ -3,7 +3,7 @@
  *
  * @author Jim Edwards
  */
-#include <config.h>
+#include <pio_config.h>
 #include <pio.h>
 #include <pio_internal.h>
 

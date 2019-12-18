@@ -32,14 +32,14 @@ option (WITH_NETCDF          "Require the use of NetCDF"                    ON)
 option (WITH_ADIOS           "Require the use of ADIOS"                     OFF)
 option (ADIOS_BP2NC_TEST     "Enable testing of BP to NetCDF conversion"    OFF)
 
-# Set a variable that appears in the config.h.in file.
+# Set a variable that appears in the pio_config.h.in file.
 if(PIO_USE_MALLOC)
   set(USE_MALLOC 1)
 else()
   set(USE_MALLOC 0)
 endif()
 
-# Set a variable that appears in the config.h.in file.
+# Set a variable that appears in the pio_config.h.in file.
 if(PIO_ENABLE_LOGGING)
   set(ENABLE_LOGGING 1)
 else()
@@ -154,13 +154,6 @@ if (CMAKE_Fortran_COMPILER_NAME STREQUAL "XL")
 endif ()
 set (CMAKE_Fortran_COMPILER_DIRECTIVE "CPR${CMAKE_Fortran_COMPILER_NAME}"
   CACHE STRING "Fortran compiler name preprocessor directive")
-
-# configure a header file to pass some of the CMake settings
-# to the source code
-configure_file (
-  "${PROJECT_SOURCE_DIR}/src/clib/config.h.in"
-  "${PROJECT_BINARY_DIR}/src/clib/config.h"
-  )
 
 #==============================================================================
 #  CHECK MIN VERSION OF COMPILERS REQD

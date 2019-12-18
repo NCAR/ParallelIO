@@ -17,9 +17,11 @@ include_directories(
   "${PROJECT_SOURCE_DIR}"   # to find foo/foo.h
   "${PROJECT_BINARY_DIR}")  # to find foo/config.h
 
-# Include the clib source directory
+# Include the clib source and binary directory
 target_include_directories (pioc
   PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories (pioc
+  PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
 
 # System and compiler CPP directives
 target_compile_definitions (pioc
@@ -96,7 +98,9 @@ endif ()
 
 #====== PIO_MICRO_TIMING ======
 if (PIO_MICRO_TIMING)
-  target_compile_definitions(pioc PUBLIC PIO_MICRO_TIMING)
+  set(USE_MICRO_TIMING 1)
+else ()
+  set(USE_MICRO_TIMING 0)
 endif ()
 
 #===== NetCDF-C =====
@@ -104,15 +108,15 @@ if (WITH_NETCDF)
   find_package (NetCDF ${NETCDF_C_MIN_VER_REQD} COMPONENTS C)
 endif ()
 if (NetCDF_FOUND)
+  set(PIO_USE_NETCDF 1)
   target_include_directories (pioc
     PUBLIC ${NetCDF_C_INCLUDE_DIRS})
-  target_compile_definitions (pioc
-    PUBLIC _NETCDF)
   target_link_libraries (pioc
     PUBLIC ${NetCDF_C_LIBRARIES})
   if (${NetCDF_C_HAS_PARALLEL})
-    target_compile_definitions (pioc
-      PUBLIC _NETCDF4)
+    set(PIO_USE_NETCDF4 1)
+  else ()
+    set(PIO_USE_NETCDF4 0)
   endif ()
   if (${NetCDF_C_LOGGING_ENABLED})
     target_compile_definitions (pioc
@@ -122,8 +126,8 @@ if (NetCDF_FOUND)
       PUBLIC LOGGING)
   endif()
 else ()
-  target_compile_definitions (pioc
-    PUBLIC _NONETCDF)
+  set(PIO_USE_NETCDF 0)
+  set(PIO_USE_NETCDF4 0)
 endif ()
 
 #===== PnetCDF-C =====
@@ -131,10 +135,9 @@ if (WITH_PNETCDF)
   find_package (PnetCDF ${PNETCDF_MIN_VER_REQD} COMPONENTS C)
 endif ()
 if (PnetCDF_FOUND)
+  set(PIO_USE_PNETCDF 1)
   target_include_directories (pioc
     PUBLIC ${PnetCDF_C_INCLUDE_DIRS})
-  target_compile_definitions (pioc
-    PUBLIC _PNETCDF)
   target_link_libraries (pioc
     PUBLIC ${PnetCDF_C_LIBRARIES})
 
@@ -147,8 +150,7 @@ if (PnetCDF_FOUND)
       PUBLIC USE_PNETCDF_VARN_ON_READ)
   endif()
 else ()
-  target_compile_definitions (pioc
-    PUBLIC _NOPNETCDF)
+  set(PIO_USE_PNETCDF 0)
 endif ()
 
 #===== ADIOS-C =====
@@ -156,16 +158,24 @@ if (WITH_ADIOS)
   find_package (ADIOS ${ADIOS_MIN_VER_REQD})
 endif ()
 if (ADIOS_FOUND)
+  set(PIO_USE_ADIOS 1)
   target_include_directories (pioc
     PUBLIC ${ADIOS_INCLUDE_DIRS})
-  target_compile_definitions (pioc
-    PUBLIC _ADIOS)
   target_link_libraries (pioc
     PUBLIC ${ADIOS_LIBRARIES} adios2pio-nm-lib)
 else ()
-  target_compile_definitions (pioc
-    PUBLIC _NOADIOS)
+  set(PIO_USE_ADIOS 0)
 endif ()
+
+# configure a header file to pass some of the CMake settings
+# to the source code
+configure_file (
+  "${PROJECT_SOURCE_DIR}/pio_config.h.in"
+  "${PROJECT_BINARY_DIR}/pio_config.h"
+  )
+
+# Install PIO config Include/Header File
+install (FILES ${PROJECT_BINARY_DIR}/pio_config.h DESTINATION include)
 
 if (ADIOS_BP2NC_TEST)
   target_compile_definitions (pioc

@@ -1,7 +1,7 @@
 /** @file
  * Support functions for the PIO library.
  */
-#include <config.h>
+#include <pio_config.h>
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdarg.h>

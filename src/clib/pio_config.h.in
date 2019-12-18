@@ -1,6 +1,6 @@
 /** @file 
  *
- * This is the template for the config.h file, which is created at
+ * This is the template for the pio_config.h file, which is created at
  * build-time by cmake.
  */
 #ifndef _PIO_CONFIG_
@@ -33,5 +33,25 @@
 
 /** Maximum number of non-contiguous regions cached in a single IO process. */
 #define PIO_MAX_CACHED_IO_REGIONS @PIO_MAX_CACHED_IO_REGIONS@
+
+/** Set to 1 if the library is configured to use the PnetCDF library,
+ *  0 otherwise */
+#define PIO_USE_PNETCDF @PIO_USE_PNETCDF@
+
+/** Set to 1 if the library is configured to use the NetCDF library,
+ *  0 otherwise */
+#define PIO_USE_NETCDF @PIO_USE_NETCDF@
+
+/** Set to 1 if the library is configured to use the NetCDF4 features,
+ *  in the NetCDF library, 0 otherwise */
+#define PIO_USE_NETCDF4 @PIO_USE_NETCDF4@
+
+/** Set to 1 if the library is configured to use the ADIOS library,
+ *  0 otherwise */
+#define PIO_USE_ADIOS @PIO_USE_ADIOS@
+
+/** Set to 1 if the library is configured to use Micro timing,
+ *  0 otherwise */
+#define PIO_USE_MICRO_TIMING @USE_MICRO_TIMING@
 
 #endif /* _PIO_CONFIG_ */

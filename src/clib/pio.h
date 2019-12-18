@@ -15,6 +15,23 @@
 #include <string.h> /* memcpy */
 #include <mpi.h>
 
+#include "pio_config.h"
+#if PIO_USE_PNETCDF
+  #define _PNETCDF 1
+#endif
+#if PIO_USE_NETCDF
+  #define _NETCDF 1
+  #if PIO_USE_NETCDF4
+    #define _NETCDF4 1
+  #endif
+#endif
+#if PIO_USE_ADIOS
+  #define _ADIOS 1
+#endif
+#if PIO_USE_MICRO_TIMING
+  #define PIO_MICRO_TIMING 1
+#endif
+
 #ifdef _NETCDF
 #include <netcdf.h>
 #ifdef _NETCDF4
