@@ -547,6 +547,9 @@ int init_async_msgs_sign(void )
      *  1 int + 2 offsets + 1 int + 1 offset +
      *  1 offset/len + 1 char/byte array(needs malloc)*/
      strncpy(pio_async_msg_sign[ PIO_MSG_PUT_ATT ], "iisciooioMB", PIO_MAX_ASYNC_MSG_ARGS);
+    /*  PIO_MSG_COPY_ATT  sends
+     *  2 ints + 1 int/len + 1 stirng + 2 ints */
+     strncpy(pio_async_msg_sign[ PIO_MSG_COPY_ATT ], "iiscii", PIO_MAX_ASYNC_MSG_ARGS);
     /*  PIO_MSG_INQ_TYPE  sends 2 ints + 2 chars/bytes */
      strncpy(pio_async_msg_sign[ PIO_MSG_INQ_TYPE ], "iibb", PIO_MAX_ASYNC_MSG_ARGS);
     /*  PIO_MSG_INQ_UNLIMDIMS  sends 1 int and 2 chars/bytes */
@@ -1696,6 +1699,48 @@ int att_put_handler(iosystem_desc_t *ios)
     }
 
     LOG((2, "att_put_handler complete!"));
+    return PIO_NOERR;
+}
+
+/** Copy attribute handler. This code only runs on IO tasks.
+ *
+ * @param ios pointer to the iosystem_desc_t.
+ * @param msg the message sent my the comp root task.
+ * @returns 0 for success, PIO_EIO for MPI Bcast errors, or error code
+ * from netCDF base function.
+ * @internal
+ * @author Jayesh Krishna
+ */
+int att_copy_handler(iosystem_desc_t *ios)
+{
+    int incid, oncid;
+    int ivarid, ovarid;
+    int ret = PIO_NOERR;
+    char name[PIO_MAX_NAME + 1];
+    int namelen;
+
+    LOG((1, "Starting att_copy_handler"));
+    assert(ios);
+
+    /* Get the parameters for this function that the the comp master
+     * task is broadcasting. */
+    PIO_RECV_ASYNC_MSG(ios, PIO_MSG_COPY_ATT, &ret, &incid, &ivarid,
+        &namelen, name, &oncid, &ovarid);
+    if(ret != PIO_NOERR){
+      return pio_err(ios, NULL, ret, __FILE__, __LINE__,
+                      "Error receiving asynchronous message, PIO_MSG_COPY_ATT, on iosystem (iosysid=%d)", ios->iosysid);
+    }
+    LOG((1, "att_copy_handler incid = %d ivarid = %d namelen = %d name = %s oncid = %d ovarid = %d",
+         incid, ivarid, namelen, name, oncid, ovarid));
+
+    /* Call the function to write the attribute. */
+    ret = PIOc_copy_att(incid, ivarid, name, oncid, ovarid);
+    if(ret){
+      return pio_err(ios, NULL, ret, __FILE__, __LINE__,
+                      "Error processing asynchronous message, PIO_MSG_COPY_ATT, on iosystem (iosysid=%d). Unable to copy attribute with name=%s of variable %s (varid=%d) from file %s (ncid=%d) to file %s (ncid=%d)", ios->iosysid, name, pio_get_vname_from_file_id(incid, ivarid), ivarid, pio_get_fname_from_file_id(incid), incid, pio_get_fname_from_file_id(oncid), oncid);
+    }
+
+    LOG((2, "Finished att_copy_handler"));
     return PIO_NOERR;
 }
 
@@ -3742,6 +3787,9 @@ int pio_msg_handler2(int io_rank, int component_count, iosystem_desc_t **iosys,
             break;
         case PIO_MSG_PUT_ATT:
             ret = att_put_handler(my_iosys);
+            break;
+        case PIO_MSG_COPY_ATT:
+            ret = att_copy_handler(my_iosys);
             break;
         case PIO_MSG_INQ_VARID:
             ret = inq_varid_handler(my_iosys);

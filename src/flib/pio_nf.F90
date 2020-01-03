@@ -38,8 +38,8 @@ module pio_nf
        pio_get_var_chunk_cache                              , &
        pio_redef                                            , &
        pio_set_log_level                                    , &
-       pio_strerror
-!       pio_copy_att    to be done
+       pio_strerror                                         , &
+       pio_copy_att
 
   interface pio_def_var
      module procedure &
@@ -226,6 +226,11 @@ module pio_nf
      module procedure &
           get_var_chunk_cache_desc                          , &
           get_var_chunk_cache_id
+  end interface
+
+  interface pio_copy_att
+    module procedure &
+          copy_att
   end interface
 
 contains
@@ -1824,4 +1829,36 @@ contains
          chunk_cache_nelems, chunk_cache_preemption)
   end function get_var_chunk_cache_id
 
+!>
+!! @public
+!! @ingroup PIO_copy_att
+!! @brief Copy an attribute from one file to another
+!<
+
+  integer function copy_att(infile, invarid, name, outfile, outvarid) &
+    result(ierr)
+
+    type (File_desc_t), intent(in) :: infile
+    integer, intent(in) :: invarid
+    character(len=*), intent(in) :: name
+    type (File_desc_t), intent(inout) :: outfile
+    integer, intent(in) :: outvarid
+
+    interface
+      integer (C_INT) function PIOc_copy_att(incid, ivarid, name, &
+          oncid, ovarid) &
+          bind(c, name="PIOc_copy_att")
+        use iso_c_binding
+        integer(c_int), value :: incid
+        integer(c_int), value :: ivarid
+        character(c_char)     :: name
+        integer(c_int), value :: oncid
+        integer(c_int), value :: ovarid
+      end function PIOc_copy_att
+    end interface
+
+    ierr = PIOc_copy_att(infile%fh, invarid - 1, trim(name) // C_NULL_CHAR,&
+            outfile%fh, outvarid - 1)
+
+  end function copy_att
 end module pio_nf

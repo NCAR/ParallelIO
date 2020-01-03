@@ -3507,3 +3507,149 @@ int PIOc_put_att_double(int ncid, int varid, const char *name, nc_type xtype,
 {
     return PIOc_put_att_tc(ncid, varid, name, xtype, len, PIO_DOUBLE, op);
 }
+
+/**
+ * @ingroup PIO_copy_att
+ * Copy an attribute from one file to another
+ *
+ * This routine is called collectively by all tasks in the communicator
+ * ios.union_comm.
+ *
+ * @param incid the ncid of the input file, obtained from
+ * PIOc_openfile() or PIOc_createfile().
+ * @param ivarid the ID of the variable with the attribute
+ * in the input file.
+ * @param name the name of the attribute to be copied
+ * @param oncid the ncid of the output file, obtained from
+ * PIOc_openfile() or PIOc_createfile().
+ * @param ovarid the ID of the variable to copy the attribute
+ * to in the output file.
+ * @return PIO_NOERR for success, error code otherwise.
+ * @author Jayesh Krishna
+ */
+int PIOc_copy_att(int incid, int ivarid, const char *name,
+                  int oncid, int ovarid)
+{
+  int msg = PIO_MSG_COPY_ATT;
+  iosystem_desc_t *ios = NULL;
+  file_desc_t *ifile = NULL, *ofile = NULL;
+  int mpierr = MPI_SUCCESS;
+  int ierr = PIO_NOERR;
+
+  /* Find file corresponding to the input file id */
+  if((ierr = pio_get_file(incid, &ifile))){
+    const char *aname = (name) ? name : "UNKNOWN";
+    return pio_err(NULL, NULL, ierr, __FILE__, __LINE__,
+                    "Copying attribute (%s) associated with variable (varid=%d) failed on file (ncid=%d). Unable to query internal structure associated with the input file id", aname, ivarid, incid);
+  }
+  ios = ifile->iosystem;
+  assert(ios);
+
+  /* User must provide name shorter than PIO_MAX_NAME +1. */
+  if(!name || strlen(name) > PIO_MAX_NAME){
+    const char *aname = (name) ? name : "UNKNOWN";
+    const char *err_msg = (!name) ? "The pointer to attribute name is NULL" : "The length of attribute name exceeds PIO_MAX_NAME";
+    return pio_err(ios, ifile, PIO_EINVAL, __FILE__, __LINE__,
+                    "Copying attribute, %s, associated with variable %s (varid=%d) failed on file %s (ncid=%d). %s", aname, pio_get_vname_from_file(ifile, ivarid), ivarid, pio_get_fname_from_file(ifile), incid, err_msg);
+  }
+
+  /* Find file corresponding to the output file id */
+  if((ierr = pio_get_file(oncid, &ofile))){
+    return pio_err(NULL, NULL, ierr, __FILE__, __LINE__,
+                    "Copying attribute (%s) associated with variable (varid=%d) failed on file (ncid=%d). Unable to query internal structure associated with the output file id", name, ovarid, oncid);
+  }
+
+  /* Currently we only support copying attributes between files on
+   * the same iosystem
+   */
+  assert(ofile->iosystem);
+  if(ofile->iosystem->iosysid != ifile->iosystem->iosysid){
+    return pio_err(ios, NULL, PIO_EINVAL, __FILE__, __LINE__,
+                    "Copying attribute, %s, associated with variable %s (varid=%d) from file %s (ncid=%d, iosystem id = %d) to %s (ncid=%d, iosystem id =%d) failed. The two files operate on different iosystems, we currently do not support copying attributes between files operating on two different iosystems", name, pio_get_vname_from_file(ifile, ivarid), ivarid, pio_get_fname_from_file(ifile), incid, ifile->iosystem->iosysid, pio_get_fname_from_file(ofile), oncid, ofile->iosystem->iosysid);
+  }
+  if(ofile->iotype != ifile->iotype){
+    return pio_err(ios, NULL, PIO_EINVAL, __FILE__, __LINE__,
+                    "Copying attribute, %s, associated with variable %s (varid=%d) from file %s (ncid=%d, iosystem id = %d, iotype=%s) to %s (ncid=%d, iosystem id =%d, iotype=%s) failed. The iotypes of the two files are different, we currently do not support copying attributes between files with different iotypes", name, pio_get_vname_from_file(ifile, ivarid), ivarid, pio_get_fname_from_file(ifile), incid, ifile->iosystem->iosysid, pio_iotype_to_string(ifile->iotype), pio_get_fname_from_file(ofile), oncid, ofile->iosystem->iosysid, pio_iotype_to_string(ofile->iotype));
+  }
+  LOG((1, "PIOc_copy_att incid = %d ivarid = %d name = %s, oncid = %d, ovarid = %d", incid, ivarid, name, oncid, ovarid));
+
+  /* If async is in use, and this is not an IO task, bcast the parameters. */
+  if(ios->async){
+    int namelen = strlen(name) + 1;
+    PIO_SEND_ASYNC_MSG(ios, msg, &ierr, incid, ivarid, namelen, name, oncid, ovarid);
+    if(ierr != PIO_NOERR){
+      return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
+                      "Copying attribute, %s, associated with variable %s (varid=%d) from file %s (ncid=%d) to %s (ncid=%d, varid=%d) failed. Unable to send asynchronous message, PIO_MSG_COPY_ATT, on iosystem (iosysid=%d)", name, pio_get_vname_from_file(ifile, ivarid), ivarid, pio_get_fname_from_file(ifile), incid, pio_get_fname_from_file(ofile), oncid, ovarid, ios->iosysid);
+    }
+  }
+
+  switch(ifile->iotype){
+#ifdef _PNETCDF
+    case PIO_IOTYPE_PNETCDF:
+          if(ios->ioproc){
+            ierr = ncmpi_copy_att(ifile->fh, ivarid, name,
+                    ofile->fh, ovarid);
+          }
+          ierr = check_netcdf(ios, ifile, ierr, __FILE__, __LINE__);
+          break;
+#endif
+#ifdef _NETCDF
+    case PIO_IOTYPE_NETCDF:
+    case PIO_IOTYPE_NETCDF4C:
+    case PIO_IOTYPE_NETCDF4P:
+          if(ios->ioproc && ifile->do_io){
+            ierr = nc_copy_att(ifile->fh, ivarid, name,
+                    ofile->fh, ovarid);
+          }
+          ierr = check_netcdf(ios, ifile, ierr, __FILE__, __LINE__);
+          break;
+#endif
+    default:
+          {
+            /* Get the attribute from the input file and put it in the
+             * output file
+             */
+            nc_type att_type;
+            PIO_Offset att_len = 0, type_sz = 0;
+            ierr = PIOc_inq_att(ifile->fh, ivarid, name, &att_type, &att_len);
+            if(ierr != PIO_NOERR){
+              ierr = pio_err(ios, ifile, ierr, __FILE__, __LINE__,
+                      "Copying attribute, %s, associated with variable %s (varid=%d) in file %s (ncid=%d) to file %s (ncid=%d) failed. Inquiring attribute type and length in file %s (ncid=%d) failed", name, pio_get_vname_from_file(ifile, ivarid), ivarid, pio_get_fname_from_file(ifile), incid, pio_get_fname_from_file(ofile), oncid, pio_get_fname_from_file(ifile), incid);
+              break;
+            }
+            ierr = PIOc_inq_type(ifile->fh, att_type, NULL, &type_sz);
+            if(ierr != PIO_NOERR){
+              ierr = pio_err(ios, ifile, ierr, __FILE__, __LINE__,
+                      "Copying attribute, %s, associated with variable %s (varid=%d) in file %s (ncid=%d) to file %s (ncid=%d) failed. Inquiring attribute type size (attribute type = %x) failed", name, pio_get_vname_from_file(ifile, ivarid), ivarid, pio_get_fname_from_file(ifile), incid, pio_get_fname_from_file(ofile), oncid, att_type);
+              break;
+            }
+            void *pbuf = malloc(type_sz * att_len);
+            if(!pbuf){
+              ierr = pio_err(ios, ifile, PIO_ENOMEM, __FILE__, __LINE__,
+                      "Copying attribute, %s, associated with variable %s (varid=%d) in file %s (ncid=%d) to file %s (ncid=%d) failed. Unable to allocate %lld bytes to temporarily cache the attribute for copying", name, pio_get_vname_from_file(ifile, ivarid), ivarid, pio_get_fname_from_file(ifile), incid, pio_get_fname_from_file(ofile), oncid, (long long int) (type_sz * att_len));
+              break;
+            }
+            ierr = PIOc_get_att(ifile->fh, ivarid, name, pbuf);
+            if(ierr != PIO_NOERR){
+              ierr = pio_err(ios, ifile, ierr, __FILE__, __LINE__,
+                      "Copying attribute, %s, associated with variable %s (varid=%d) in file %s (ncid=%d) to file %s (ncid=%d) failed. Getting attribute from file %s (ncid=%d) failed", name, pio_get_vname_from_file(ifile, ivarid), ivarid, pio_get_fname_from_file(ifile), incid, pio_get_fname_from_file(ofile), oncid, pio_get_fname_from_file(ifile), incid);
+              break;
+            }
+            ierr = PIOc_put_att(ofile->fh, ovarid, name, att_type, att_len, pbuf);
+            if(ierr != PIO_NOERR){
+              ierr = pio_err(ios, ifile, ierr, __FILE__, __LINE__,
+                      "Copying attribute, %s, associated with variable %s (varid=%d) in file %s (ncid=%d) to file %s (ncid=%d) failed. Putting/Writing attribute to file %s (ncid=%d, varid=%d) failed", name, pio_get_vname_from_file(ifile, ivarid), ivarid, pio_get_fname_from_file(ifile), incid, pio_get_fname_from_file(ofile), oncid, pio_get_fname_from_file(ofile), oncid, ovarid);
+              break;
+            }
+            free(pbuf);
+            break;
+          }
+  } /* switch(file->iotype) */
+
+  if(ierr != PIO_NOERR){
+    return pio_err(ios, ifile, ierr, __FILE__, __LINE__,
+            "Copying attribute, %s, associated with variable %s (varid=%d) in file %s (ncid=%d) to file %s (ncid=%d) failed with iotype = %s (%d)", name, pio_get_vname_from_file(ifile, ivarid), ivarid, pio_get_fname_from_file(ifile), incid, pio_get_fname_from_file(ofile), oncid, pio_iotype_to_string(ifile->iotype), ifile->iotype);
+  }
+
+  return PIO_NOERR;
+}
