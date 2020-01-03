@@ -35,10 +35,10 @@ target_compile_definitions (gptl
 
 if (CMAKE_SYSTEM_NAME MATCHES "AIX")
   target_compile_definitions (gptl
-    PUBLIC _AIX)
+    PRIVATE _AIX)
 else ()
   target_compile_definitions (gptl
-    PUBLIC ${CMAKE_SYSTEM_DIRECTIVE})
+    PRIVATE ${CMAKE_SYSTEM_DIRECTIVE})
 endif ()
 
 target_compile_definitions (gptl

@@ -44,7 +44,7 @@ target_include_directories (piof
 
 # System and compiler CPP directives
 target_compile_definitions (piof
-  PUBLIC ${CMAKE_SYSTEM_DIRECTIVE})
+  PRIVATE ${CMAKE_SYSTEM_DIRECTIVE})
 target_compile_definitions (piof
   PUBLIC ${CMAKE_Fortran_COMPILER_DIRECTIVE})
 

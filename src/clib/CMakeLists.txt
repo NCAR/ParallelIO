@@ -25,7 +25,7 @@ target_include_directories (pioc
 
 # System and compiler CPP directives
 target_compile_definitions (pioc
-  PUBLIC ${CMAKE_SYSTEM_DIRECTIVE})
+  PRIVATE ${CMAKE_SYSTEM_DIRECTIVE})
 target_compile_definitions (pioc
   PUBLIC ${CMAKE_C_COMPILER_DIRECTIVE})
 target_compile_definitions (pioc
