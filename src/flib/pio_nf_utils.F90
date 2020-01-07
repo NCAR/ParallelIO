@@ -1,5 +1,6 @@
+#define __PIO_FILE__ "pio_nf_utils.F90"
 module pio_nf_utils
-  use pio_types, only : file_desc_t, var_desc_t
+  use pio_types, only : file_desc_t, var_desc_t, pio_noerr
   use pio_nf, only : pio_inq_vartype
   use pionfget_mod, only : pio_get_var=>get_var
   use pionfput_mod, only : pio_put_var=>put_var
@@ -20,6 +21,7 @@ module pio_nf_utils
 
 contains
 
+! FIXME : This function needs to be moved to the C library
 subroutine copy_pio_var01d(ifh, ofh, ivid, ovid, length, strlength)
   type(File_Desc_t) :: Ifh, Ofh
   type(Var_Desc_t) ::  ivid, ovid
@@ -34,8 +36,13 @@ subroutine copy_pio_var01d(ifh, ofh, ivid, ovid, length, strlength)
   integer :: ierr
   
   ierr = pio_inq_vartype(ifh, ivid, itype)
+  if (ierr /= PIO_NOERR) then
+     call piodie(__PIO_FILE__, __LINE__, "Copying variable failed. Inquiring variable type failed")
+  end if
   ierr = pio_inq_vartype(ofh, ovid, otype)
-
+  if (ierr /= PIO_NOERR) then
+     call piodie(__PIO_FILE__, __LINE__, "Copying variable failed. Inquiring variable type failed")
+  end if
   
   if(itype .ne. otype) then
      write(6,*) 'WARNING: copy_pio_var coercing type ', itype, ' to ', otype
@@ -44,17 +51,35 @@ subroutine copy_pio_var01d(ifh, ofh, ivid, ovid, length, strlength)
   case (PIO_int)
      allocate(ival(length))
      ierr = pio_get_var(ifh, ivid%varid, ival)
+     if (ierr /= PIO_NOERR) then
+        call piodie(__PIO_FILE__, __LINE__, "Copying variable failed. Getting variable from input file failed")
+     end if
      ierr = pio_put_var(ofh, ovid%varid, ival)
+     if (ierr /= PIO_NOERR) then
+        call piodie(__PIO_FILE__, __LINE__, "Copying variable failed. Putting variable to output file failed")
+     end if
      deallocate(ival)
   case (PIO_real)
      allocate(rval(length))
      ierr = pio_get_var(ifh, ivid%varid, rval)
+     if (ierr /= PIO_NOERR) then
+        call piodie(__PIO_FILE__, __LINE__, "Copying variable failed. Getting variable from input file failed")
+     end if
      ierr = pio_put_var(ofh, ovid%varid, rval)
+     if (ierr /= PIO_NOERR) then
+        call piodie(__PIO_FILE__, __LINE__, "Copying variable failed. Putting variable to output file failed")
+     end if
      deallocate(rval)
   case (PIO_double)
      allocate(dval(length))
      ierr = pio_get_var(ifh, ivid%varid, dval)
+     if (ierr /= PIO_NOERR) then
+        call piodie(__PIO_FILE__, __LINE__, "Copying variable failed. Getting variable from input file failed")
+     end if
      ierr = pio_put_var(ofh, ovid%varid, dval)
+     if (ierr /= PIO_NOERR) then
+        call piodie(__PIO_FILE__, __LINE__, "Copying variable failed. Putting variable to output file failed")
+     end if
      deallocate(dval)
   case (PIO_char)
      if(present(strlength)) then
@@ -63,7 +88,13 @@ subroutine copy_pio_var01d(ifh, ofh, ivid, ovid, length, strlength)
         allocate(cval(1))
      end if
      ierr = pio_get_var(ifh, ivid%varid, cval)
+     if (ierr /= PIO_NOERR) then
+        call piodie(__PIO_FILE__, __LINE__, "Copying variable failed. Getting variable from input file failed")
+     end if
      ierr = pio_put_var(ofh, ovid%varid, cval)
+     if (ierr /= PIO_NOERR) then
+        call piodie(__PIO_FILE__, __LINE__, "Copying variable failed. Putting variable to output file failed")
+     end if
 
      deallocate(cval)
   end select
@@ -83,9 +114,14 @@ subroutine copy_pio_var2d(ifh, ofh, ivid, ovid, length)
   integer :: ierr
   
   ierr = pio_inq_vartype(ifh, ivid, itype)
+  if (ierr /= PIO_NOERR) then
+     call piodie(__PIO_FILE__, __LINE__, "Copying variable failed. Inquiring variable type failed")
+  end if
   ierr = pio_inq_vartype(ofh, ovid, otype)
+  if (ierr /= PIO_NOERR) then
+     call piodie(__PIO_FILE__, __LINE__, "Copying variable failed. Inquiring variable type failed")
+  end if
 
-  
   if(itype .ne. otype) then
      write(6,*) 'WARNING: copy_pio_var coercing type ', itype, ' to ', otype
   end if
@@ -93,17 +129,35 @@ subroutine copy_pio_var2d(ifh, ofh, ivid, ovid, length)
   case (PIO_int)
      allocate(ival(length(1),length(2)))
      ierr = pio_get_var(ifh, ivid%varid, ival)
+     if (ierr /= PIO_NOERR) then
+        call piodie(__PIO_FILE__, __LINE__, "Copying variable failed. Getting variable from input file failed")
+     end if
      ierr = pio_put_var(ofh, ovid%varid, ival)
+     if (ierr /= PIO_NOERR) then
+        call piodie(__PIO_FILE__, __LINE__, "Copying variable failed. Putting variable to output file failed")
+     end if
      deallocate(ival)
   case (PIO_real)
      allocate(rval(length(1),length(2)))
      ierr = pio_get_var(ifh, ivid%varid, rval)
+     if (ierr /= PIO_NOERR) then
+        call piodie(__PIO_FILE__, __LINE__, "Copying variable failed. Getting variable from input file failed")
+     end if
      ierr = pio_put_var(ofh, ovid%varid, rval)
+     if (ierr /= PIO_NOERR) then
+        call piodie(__PIO_FILE__, __LINE__, "Copying variable failed. Putting variable to output file failed")
+     end if
      deallocate(rval)
   case (PIO_double)
      allocate(dval(length(1),length(2)))
      ierr = pio_get_var(ifh, ivid%varid, dval)
+     if (ierr /= PIO_NOERR) then
+        call piodie(__PIO_FILE__, __LINE__, "Copying variable failed. Getting variable from input file failed")
+     end if
      ierr = pio_put_var(ofh, ovid%varid, dval)
+     if (ierr /= PIO_NOERR) then
+        call piodie(__PIO_FILE__, __LINE__, "Copying variable failed. Putting variable to output file failed")
+     end if
      deallocate(dval)
   case (PIO_char)
      !        if(present(strlength)) then
@@ -114,6 +168,7 @@ subroutine copy_pio_var2d(ifh, ofh, ivid, ovid, length)
      !        ierr = pio_get_var(ifh, ivid%varid, cval)
      !        ierr = pio_put_var(ofh, ovid%varid, cval)
      !        deallocate(cval)
+     call piodie(__PIO_FILE__, __LINE__, "Copy character variables is not supported")
   end select
 end subroutine copy_pio_var2d
 
