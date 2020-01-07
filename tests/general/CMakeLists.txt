@@ -15,6 +15,7 @@ SET(GENERATED_SRCS pio_file_simple_tests.F90
   ncdf_get_put.F90
   ncdf_fail.F90
   ncdf_inq.F90
+  pio_copy.F90
   pio_async_file_tests.F90
   pio_rearr.F90
   pio_rearr_opts.F90
@@ -328,6 +329,24 @@ add_pio_test(ncdf_inq
   MAXNUMIOPROCS ${PIO_TF_C2_MAXNUMIOPROCS}
   MINSTRIDE 1
   MAXSTRIDE ${PIO_TF_C2_MAXSTRIDE}
+  TIMEOUT ${DEFAULT_TEST_TIMEOUT})
+
+#===== pio_copy =====
+add_executable (pio_copy EXCLUDE_FROM_ALL
+  pio_copy.F90)
+set_property(TARGET pio_copy PROPERTY LINKER_LANGUAGE ${PIO_LINKER_LANGUAGE})
+target_link_libraries (pio_copy pio_tutil piof)
+add_dependencies (pio_copy pio_tutil)
+add_dependencies (tests pio_copy)
+
+add_pio_test(pio_copy
+  EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_copy
+  MINNUMPROCS 1
+  MAXNUMPROCS ${PIO_TF_MAXNUMPROCS}
+  MINNUMIOPROCS 1
+  MAXNUMIOPROCS ${PIO_TF_C1_MAXNUMIOPROCS}
+  MINSTRIDE 1
+  MAXSTRIDE ${PIO_TF_C1_MAXSTRIDE}
   TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== pio_rearr =====

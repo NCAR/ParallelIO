@@ -1,0 +1,142 @@
+PIO_TF_TEMPLATE<PIO_TF_PREDEF_TYPENAME PIO_TF_DATA_TYPE, PIO_TF_PREDEF_TYPENAME PIO_TF_FC_DATA_TYPE>
+PIO_TF_AUTO_TEST_SUB_BEGIN test_copy_att
+  Implicit none
+  type(file_desc_t) :: pio_ifile, pio_ofile
+  character(len=PIO_TF_MAX_STR_LEN) :: ifilename, ofilename
+  character(len=PIO_TF_MAX_STR_LEN) :: ivname, ovname
+  character(len=PIO_TF_MAX_STR_LEN) :: dimname, attname, cattname
+  type(var_desc_t)  :: pio_ivar, pio_ovar
+  integer :: pio_ivarid, pio_ovarid
+  integer :: pio_idim, pio_odim
+  integer, parameter :: DIM_LEN = 100
+  PIO_TF_FC_DATA_TYPE, dimension(DIM_LEN) :: pval, gval
+  PIO_TF_FC_DATA_TYPE :: init_val
+  CHARACTER(len=DIM_LEN) :: pcval, gcval
+  integer, dimension(:), allocatable :: iotypes
+  character(len=PIO_TF_MAX_STR_LEN), dimension(:), allocatable :: iotype_descs
+  integer :: num_iotypes
+  integer :: i, ret
+  
+  init_val = pio_tf_world_sz_
+
+  pval = init_val
+  pcval = "DUMMY_STRING"
+  num_iotypes = 0
+  call PIO_TF_Get_nc_iotypes(iotypes, iotype_descs, num_iotypes)
+  ifilename = "test_pio_copy.itestfile"
+  ofilename = "test_pio_copy.otestfile"
+  ivname = "dummy_ival"
+  ovname = "dummy_oval"
+  dimname = "dummy_dim"
+  attname = "dummy_att_val"
+  cattname = "dummy_att_cval"
+
+  do i=1,num_iotypes
+    PIO_TF_LOG(0,*) "Testing type :", iotype_descs(i)
+    
+    ! Create the "input" file that contains the attributes to copy
+    ret = PIO_createfile(pio_tf_iosystem_, pio_ifile, iotypes(i), ifilename, PIO_CLOBBER)
+    PIO_TF_CHECK_ERR(ret, "Failed to open:" // trim(ifilename))
+
+    ! Create the "output" file that the attributes will be copied to
+    ! (from the above "input" file)
+    ret = PIO_createfile(pio_tf_iosystem_, pio_ofile, iotypes(i), ofilename, PIO_CLOBBER)
+    PIO_TF_CHECK_ERR(ret, "Failed to open:" // trim(ofilename))
+
+    ! Define a variable (to attach attributes to) in the files
+    ret = PIO_def_dim(pio_ifile, dimname, DIM_LEN, pio_idim)
+    PIO_TF_CHECK_ERR(ret, "Failed to define dim:" // trim(ifilename))
+
+    ret = PIO_def_var(pio_ifile, ivname, PIO_TF_DATA_TYPE, (/pio_idim/), pio_ivar)
+    PIO_TF_CHECK_ERR(ret, "Failed to define var:" // trim(ifilename))
+
+    ret = PIO_def_dim(pio_ofile, dimname, DIM_LEN, pio_odim)
+    PIO_TF_CHECK_ERR(ret, "Failed to define dim:" // trim(ofilename))
+
+    ret = PIO_def_var(pio_ofile, ovname, PIO_TF_DATA_TYPE, (/pio_odim/), pio_ovar)
+    PIO_TF_CHECK_ERR(ret, "Failed to define var:" // trim(ofilename))
+
+    ! Add global attributes in the "input" file
+    ret = PIO_put_att(pio_ifile, PIO_GLOBAL, attname, pval);
+    PIO_TF_CHECK_ERR(ret, "Failed to put global attribute:" // trim(ifilename))
+
+    ret = PIO_put_att(pio_ifile, PIO_GLOBAL, cattname, pcval);
+    PIO_TF_CHECK_ERR(ret, "Failed to put global char attribute:" // trim(ifilename))
+
+    ! Add variable attributes in the "input" file
+    ret = PIO_put_att(pio_ifile, pio_ivar, attname, pval);
+    PIO_TF_CHECK_ERR(ret, "Failed to put attribute:" // trim(ifilename))
+
+    ret = PIO_put_att(pio_ifile, pio_ivar, cattname, pcval);
+    PIO_TF_CHECK_ERR(ret, "Failed to put char attribute:" // trim(ifilename))
+
+    ! Get the variable ids to copy variable attributes
+    ret = PIO_inq_varid(pio_ifile, ivname, pio_ivarid)
+    PIO_TF_CHECK_ERR(ret, "Could not inq var id :" // trim(ifilename))
+
+    ret = PIO_inq_varid(pio_ofile, ovname, pio_ovarid)
+    PIO_TF_CHECK_ERR(ret, "Could not inq var id :" // trim(ofilename))
+
+    ! Copy global attributes from "input" file to "output" file
+    ret = PIO_copy_att(pio_ifile, PIO_GLOBAL, attname, pio_ofile, PIO_GLOBAL)
+    PIO_TF_CHECK_ERR(ret, "Failed to copy global attribute :" // trim(ifilename))
+
+    ret = PIO_copy_att(pio_ifile, PIO_GLOBAL, cattname, pio_ofile, PIO_GLOBAL)
+    PIO_TF_CHECK_ERR(ret, "Failed to copy global char attribute :" // trim(ifilename))
+
+    ! Copy variable attributes from "input" file to "output" file
+    ret = PIO_copy_att(pio_ifile, pio_ivarid, attname, pio_ofile, pio_ovarid)
+    PIO_TF_CHECK_ERR(ret, "Failed to copy attribute :" // trim(ifilename))
+
+    ret = PIO_copy_att(pio_ifile, pio_ivarid, cattname, pio_ofile, pio_ovarid)
+    PIO_TF_CHECK_ERR(ret, "Failed to copy char attribute :" // trim(ifilename))
+
+    ret = PIO_enddef(pio_ifile)
+    PIO_TF_CHECK_ERR(ret, "Failed to enddef:" // trim(ifilename))
+
+    ret = PIO_enddef(pio_ofile)
+    PIO_TF_CHECK_ERR(ret, "Failed to enddef:" // trim(ofilename))
+
+    call PIO_closefile(pio_ifile)
+    call PIO_closefile(pio_ofile)
+
+    ! Reopen the "output" file and check the contents
+    ret = PIO_openfile(pio_tf_iosystem_, pio_ofile, iotypes(i), ofilename, PIO_nowrite)
+    PIO_TF_CHECK_ERR(ret, "Could not reopen file " // trim(ofilename))
+
+    ret = PIO_inq_varid(pio_ofile, ovname, pio_ovar)
+    PIO_TF_CHECK_ERR(ret, "Could not inq var :" // trim(ofilename))
+
+    ! Check the global attribute values
+    ret = PIO_get_att(pio_ofile, PIO_GLOBAL, attname, gval);
+    PIO_TF_CHECK_ERR(ret, "Failed to get global attribute:" // trim(ofilename))
+
+    PIO_TF_CHECK_VAL((gval, init_val), "Got wrong value")
+
+    ret = PIO_get_att(pio_ofile, PIO_GLOBAL, cattname, gcval);
+    PIO_TF_CHECK_ERR(ret, "Failed to get global char attribute:" // trim(ofilename))
+    PIO_TF_CHECK_VAL((gcval, pcval), "Got wrong value")
+
+    ! Check the variable attribute values
+    ret = PIO_get_att(pio_ofile, pio_ovar, attname, gval);
+    PIO_TF_CHECK_ERR(ret, "Failed to get attribute:" // trim(ofilename))
+
+    PIO_TF_CHECK_VAL((gval, init_val), "Got wrong value")
+
+    ret = PIO_get_att(pio_ofile, pio_ovar, cattname, gcval);
+    PIO_TF_CHECK_ERR(ret, "Failed to get char attribute:" // trim(ofilename))
+
+    PIO_TF_CHECK_VAL((gcval, pcval), "Got wrong value")
+
+    call PIO_closefile(pio_ofile)
+
+    call PIO_deletefile(pio_tf_iosystem_, ifilename);
+    call PIO_deletefile(pio_tf_iosystem_, ofilename);
+  end do
+  if(allocated(iotypes)) then
+    deallocate(iotypes)
+    deallocate(iotype_descs)
+  end if
+
+PIO_TF_AUTO_TEST_SUB_END test_copy_att
+
