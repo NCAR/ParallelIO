@@ -194,7 +194,7 @@ endif ()
 if (WITH_NETCDF)
   find_package (NetCDF ${NETCDF_FORTRAN_MIN_VER_REQD} COMPONENTS Fortran)
 endif ()
-if (NetCDF_FOUND)
+if (NetCDF_Fortran_FOUND)
   target_include_directories (piof
     PUBLIC ${NetCDF_Fortran_INCLUDE_DIRS})
   target_compile_definitions (piof
