@@ -2834,7 +2834,7 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
                     ierr = nc_open(filename, file->mode, &file->fh);
                     if(ierr == NC_NOERR)
                     {
-                        printf("PIO: WARNING: Opening file (%s) with iotype=%d failed. Switching iotype to PIO_IOTYPE_NETCDF\n", filename, *iotype);
+                        printf("PIO: WARNING: Opening file (%s) with iotype=%d (%s) failed. But retrying with iotype PIO_IOTYPE_NETCDF was successful. Switching iotype to PIO_IOTYPE_NETCDF for this file\n", filename, *iotype, pio_iotype_to_string(*iotype));
                     }
                 }
                 else
@@ -2852,7 +2852,7 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
         free(file);
         LOG((1, "PIOc_openfile_retry failed, ierr = %d", ierr));
         return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
-                        "Opening file (%s) failed. The low level I/O library call failed", filename);;
+                        "Opening file (%s) with iotype %d (%s) failed. The low level I/O library call failed", filename, *iotype, pio_iotype_to_string(*iotype));;
     }
 
     /* Broadcast open mode to all tasks. */
