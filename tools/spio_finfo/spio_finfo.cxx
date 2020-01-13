@@ -7,13 +7,13 @@
 #include <string>
 #include <regex>
 #include "argparser.h"
-#include "pio_lib_info.h"
-#include "pio_file_test_utils.h"
+#include "spio_lib_info.h"
+#include "spio_file_test_utils.h"
 
-static void init_user_options(pio_tool_utils::ArgParser &ap)
+static void init_user_options(spio_tool_utils::ArgParser &ap)
 {
-  ap.add_opt("ifile", "Input file to be read with PIO")
-    .add_opt("idir", "Directory containing input files to read with PIO")
+  ap.add_opt("ifile", "Input file to be read with SCORPIO")
+    .add_opt("idir", "Directory containing input files to read with SCORPIO")
     .add_opt("num-iotasks", "Number of I/O tasks to use (default = total number of procs / 2)")
     .add_opt("iostride", "Stride between the I/O tasks (default = 1)")
     .add_opt("ioroot", "Rank of the root I/O process (default = 0)")
@@ -21,7 +21,7 @@ static void init_user_options(pio_tool_utils::ArgParser &ap)
 }
 
 static int get_user_options(
-              pio_tool_utils::ArgParser &ap,
+              spio_tool_utils::ArgParser &ap,
               int argc, char *argv[],
               MPI_Comm comm_in,
               std::string &idir,
@@ -150,16 +150,16 @@ int main(int argc, char *argv[])
     if (rank == 0){
       /* Print out basic information header */
       std::cout << "==================================================\n";
-      std::cout << "PIO File info tool (Version: " +
-                    pio_tool_utils::pio_lib_info::get_lib_version() +
+      std::cout << "SCORPIO File info tool (Version: " +
+                    spio_tool_utils::spio_lib_info::get_lib_version() +
                     ")\n";
       std::cout << "==================================================\n";
-      std::cout << "PIO Library info\n";
+      std::cout << "SCORPIO Library info\n";
       std::cout << "------------------\n";
-      std::cout << pio_tool_utils::pio_lib_info::get_lib_summary() + "\n";
+      std::cout << spio_tool_utils::spio_lib_info::get_lib_summary() + "\n";
     }
 
-    pio_tool_utils::ArgParser ap(comm_in);
+    spio_tool_utils::ArgParser ap(comm_in);
 
     /* Init the standard user options for the tool */
     init_user_options(ap);
@@ -189,11 +189,11 @@ int main(int argc, char *argv[])
     /* Test the file/files using PIO and print info */
     if (idir.length() == 0){
       assert(ifile.length() != 0);
-      ret = pio_finfo_utils::pio_test_file(ifile, comm_in,
+      ret = spio_finfo_utils::spio_test_file(ifile, comm_in,
               num_iotasks, iostride, ioroot, verbose);
     }
     else{
-      ret = pio_finfo_utils::pio_test_files(idir, comm_in,
+      ret = spio_finfo_utils::spio_test_files(idir, comm_in,
               num_iotasks, iostride, ioroot, verbose);
     }
 

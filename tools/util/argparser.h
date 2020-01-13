@@ -7,7 +7,7 @@
 #include <cassert>
 #include <stdexcept>
 
-namespace pio_tool_utils{
+namespace spio_tool_utils{
 
 class ArgParser{
   public:
@@ -56,4 +56,4 @@ inline float ArgParser::get_arg<float>(const std::string &opt) const
     return std::stof(arg_map_.at(opt));
 }
 
-} // namespace pio_tool_utils
+} // namespace spio_tool_utils

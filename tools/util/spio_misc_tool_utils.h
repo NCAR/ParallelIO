@@ -1,5 +1,5 @@
-#ifndef __PIO_MISC_TOOL_UTILS_H__
-#define __PIO_MISC_TOOL_UTILS_H__
+#ifndef __SPIO_MISC_TOOL_UTILS_H__
+#define __SPIO_MISC_TOOL_UTILS_H__
 
 #include <string>
 
@@ -8,7 +8,7 @@ extern "C"{
 #include "pio.h"
 } // extern "C"
 
-namespace pio_tool_utils{
+namespace spio_tool_utils{
   
   /* Convert a PIO iotype to string */
   std::string iotype_to_string(PIO_IOTYPE iotype);
@@ -29,6 +29,6 @@ namespace pio_tool_utils{
     return str;
   }
 
-} // namespace pio_tool_utils
+} // namespace spio_tool_utils
 
-#endif // __PIO_MISC_TOOL_UTILS_H__
+#endif // __SPIO_MISC_TOOL_UTILS_H__

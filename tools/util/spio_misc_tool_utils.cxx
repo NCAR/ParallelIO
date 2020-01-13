@@ -1,6 +1,6 @@
-#include "pio_misc_tool_utils.h"
+#include "spio_misc_tool_utils.h"
 
-namespace pio_tool_utils{
+namespace spio_tool_utils{
 
   std::string iotype_to_string(PIO_IOTYPE iotype)
   {
@@ -20,4 +20,4 @@ namespace pio_tool_utils{
     }
   }
 
-} // namespace pio_tool_utils
+} // namespace spio_tool_utils

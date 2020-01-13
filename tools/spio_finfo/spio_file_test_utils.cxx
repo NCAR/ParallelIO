@@ -1,6 +1,6 @@
-#include "pio_file_test_utils.h"
-#include "pio_lib_info.h"
-#include "pio_misc_tool_utils.h"
+#include "spio_file_test_utils.h"
+#include "spio_lib_info.h"
+#include "spio_misc_tool_utils.h"
 
 #include <iostream>
 #include <string>
@@ -12,10 +12,10 @@ extern "C"{
 #include <dirent.h>
 } // extern "C"
 
-namespace pio_finfo_utils{
+namespace spio_finfo_utils{
 
   /* Test the file, fname, and print info about it */
-  int pio_test_file(const std::string &fname,
+  int spio_test_file(const std::string &fname,
                     MPI_Comm comm_in,
                     int num_iotasks, int iostride, int ioroot,
                     bool verbose)
@@ -47,7 +47,7 @@ namespace pio_finfo_utils{
 
     std::vector<PIO_IOTYPE> valid_iotypes;
     std::vector<PIO_IOTYPE> supported_iotypes;
-    pio_tool_utils::pio_lib_info::get_supported_iotypes(supported_iotypes);
+    spio_tool_utils::spio_lib_info::get_supported_iotypes(supported_iotypes);
 
     for (std::vector<PIO_IOTYPE>::iterator iter = supported_iotypes.begin();
           iter != supported_iotypes.end(); ++iter){
@@ -70,7 +70,7 @@ namespace pio_finfo_utils{
       }
       else{
         std::cout << fname.c_str() << ":\t" << "Supported I/O types = "
-                  << pio_tool_utils::iotypes_to_string(valid_iotypes.begin(),
+                  << spio_tool_utils::iotypes_to_string(valid_iotypes.begin(),
                       valid_iotypes.end()) + "\n";
       }
     }
@@ -87,7 +87,7 @@ namespace pio_finfo_utils{
   }
 
   /* Test files in directory, dname, and print info each file */
-  int pio_test_files(const std::string &dname,
+  int spio_test_files(const std::string &dname,
                     MPI_Comm comm_in,
                     int num_iotasks, int iostride, int ioroot,
                     bool verbose)
@@ -113,7 +113,7 @@ namespace pio_finfo_utils{
         std::string full_path_name = dname +
                                       PATH_SEP +
                                       std::string(pde->d_name);
-        ret = pio_test_file(full_path_name.c_str(), comm_in,
+        ret = spio_test_file(full_path_name.c_str(), comm_in,
                             num_iotasks, iostride, ioroot, verbose);
         if (ret != 0){
           break;
@@ -125,4 +125,4 @@ namespace pio_finfo_utils{
     return ret;
   }
 
-} // namespace pio_finfo_utils
+} // namespace spio_finfo_utils
