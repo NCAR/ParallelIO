@@ -40,15 +40,13 @@ static int get_user_options(
     if (ap.has_arg("verbose")){
       verbose = true;    
     }
-    if (!ap.has_arg("ifile") && !ap.has_arg("idir")){
-      idir = ".";
-    }
-    else if(ap.has_arg("ifile")){
-      ifile = ap.get_arg<std::string>("ifile");
-    }
-    else{
-      assert(ap.has_arg("idir"));
+
+    if(ap.has_arg("idir")){
       idir = ap.get_arg<std::string>("idir");
+    }
+
+    if(ap.has_arg("ifile")){
+      ifile = ap.get_arg<std::string>("ifile");
     }
 
     /* Get I/O root process */
@@ -175,6 +173,13 @@ int main(int argc, char *argv[])
 
     if (ret != 0) {
         return ret;
+    }
+
+    /* If idir and ifile are not set, nothing to do
+     * e.g. --help
+     */
+    if ((idir.length() == 0) && (ifile.length() == 0)){
+      return ret;
     }
 
 #ifdef TIMING
