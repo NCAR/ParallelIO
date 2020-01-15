@@ -52,6 +52,12 @@ namespace spio_finfo_utils{
     for (std::vector<PIO_IOTYPE>::iterator iter = supported_iotypes.begin();
           iter != supported_iotypes.end(); ++iter){
       iotype = *iter;
+      if(verbose){
+        std::cout << "LOG : openfile " << fname.c_str() << ", with iotype = "
+                  << spio_tool_utils::iotype_to_string(*iter).c_str() << "\n"
+                  << std::flush;
+      }
+
       /* PIOc_openfile2() does not retry opening files with serial NetCDF
        * iotype, while PIOc_openfile() retries opening files opened with
        * any iotype with the serial NetCDF iotype on failure
@@ -61,6 +67,12 @@ namespace spio_finfo_utils{
         continue;
       }
 
+      if(verbose){
+        std::cout << "LOG : closefile " << fname.c_str() << ", with iotype = "
+                  << spio_tool_utils::iotype_to_string(*iter).c_str() << "\n"
+                  << std::flush;
+      }
+
       ret = PIOc_closefile(ncid);
       if (!spio_tool_utils::gsuccess(comm_in, ret)){
         continue;
@@ -68,6 +80,10 @@ namespace spio_finfo_utils{
 
       /* Add iotypes that can be used to open/close the file successfully */
       valid_iotypes.push_back(*iter);
+    }
+
+    if(verbose){
+      std::cout << "LOG : Done open/close with all iotypes\n";
     }
 
     if (rank == 0){
