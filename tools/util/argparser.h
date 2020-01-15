@@ -32,28 +32,28 @@ class ArgParser{
 template<typename T>
 T ArgParser::get_arg(const std::string &opt) const
 {
-    throw std::runtime_error("Unsupported argument type");
+  throw std::runtime_error("Unsupported argument type");
 }
 
 template<>
 inline std::string ArgParser::get_arg<std::string>(const std::string &opt) const
 {
-    assert(arg_map_.count(opt) == 1);
-    return arg_map_.at(opt);
+  assert(arg_map_.count(opt) == 1);
+  return arg_map_.at(opt);
 }
 
 template<>
 inline int ArgParser::get_arg<int>(const std::string &opt) const
 {
-    assert(arg_map_.count(opt) == 1);
-    return std::stoi(arg_map_.at(opt));
+  assert(arg_map_.count(opt) == 1);
+  return std::stoi(arg_map_.at(opt));
 }
 
 template<>
 inline float ArgParser::get_arg<float>(const std::string &opt) const
 {
-    assert(arg_map_.count(opt) == 1);
-    return std::stof(arg_map_.at(opt));
+  assert(arg_map_.count(opt) == 1);
+  return std::stof(arg_map_.at(opt));
 }
 
 } // namespace spio_tool_utils
