@@ -52,7 +52,11 @@ namespace spio_finfo_utils{
     for (std::vector<PIO_IOTYPE>::iterator iter = supported_iotypes.begin();
           iter != supported_iotypes.end(); ++iter){
       iotype = *iter;
-      ret = PIOc_openfile(iosysid, &ncid, &iotype, fname.c_str(), PIO_NOWRITE);
+      /* PIOc_openfile2() does not retry opening files with serial NetCDF
+       * iotype, while PIOc_openfile() retries opening files opened with
+       * any iotype with the serial NetCDF iotype on failure
+       */
+      ret = PIOc_openfile2(iosysid, &ncid, &iotype, fname.c_str(), PIO_NOWRITE);
       if (!spio_tool_utils::gsuccess(comm_in, ret)){
         continue;
       }
