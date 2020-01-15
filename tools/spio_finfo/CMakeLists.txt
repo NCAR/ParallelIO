@@ -23,7 +23,7 @@ add_executable(spio_finfo.exe ${SRC})
 #  "${PROJECT_BINARY_DIR}")  # to find foo/config.h
 
 link_directories(${PIO_LIB_DIR})
-target_include_directories(spio_finfo.exe PUBLIC
+target_include_directories(spio_finfo.exe PRIVATE
   ${PIO_INCLUDE_DIRS}
   ${CMAKE_BINARY_DIR}/src/clib
   ${CMAKE_SOURCE_DIR}/src/clib
@@ -33,7 +33,7 @@ target_include_directories(spio_finfo.exe PUBLIC
   ${PIO_C_EXTRA_INCLUDE_DIRS})
 
 target_link_libraries(spio_finfo.exe
-                      PUBLIC pioc)
+                      PRIVATE pioc)
 
 # Binary utilities
 install (TARGETS spio_finfo.exe DESTINATION bin)
@@ -44,18 +44,18 @@ find_package (NetCDF "4.3.3" COMPONENTS C)
 endif ()
 if (NetCDF_C_FOUND)
   target_include_directories (spio_finfo.exe
-    PUBLIC ${NetCDF_C_INCLUDE_DIRS})
+    PRIVATE ${NetCDF_C_INCLUDE_DIRS})
   target_compile_definitions (spio_finfo.exe
-    PUBLIC _NETCDF)
+    PRIVATE _NETCDF)
   target_link_libraries (spio_finfo.exe
-    PUBLIC ${NetCDF_C_LIBRARIES})
+    PRIVATE ${NetCDF_C_LIBRARIES})
   if (${NetCDF_C_HAS_PARALLEL})
     target_compile_definitions (spio_finfo.exe
-      PUBLIC _NETCDF4)
+      PRIVATE _NETCDF4)
   endif ()
 else ()
   target_compile_definitions (spio_finfo.exe
-    PUBLIC _NONETCDF)
+    PRIVATE _NONETCDF)
 endif ()
 
 #===== PnetCDF-C =====
@@ -64,14 +64,14 @@ if (WITH_PNETCDF)
 endif ()
 if (PnetCDF_C_FOUND)
   target_include_directories (spio_finfo.exe
-    PUBLIC ${PnetCDF_C_INCLUDE_DIRS})
+    PRIVATE ${PnetCDF_C_INCLUDE_DIRS})
   target_compile_definitions (spio_finfo.exe
-    PUBLIC _PNETCDF)
+    PRIVATE _PNETCDF)
   target_link_libraries (spio_finfo.exe
-    PUBLIC ${PnetCDF_C_LIBRARIES})
+    PRIVATE ${PnetCDF_C_LIBRARIES})
 else ()
   target_compile_definitions (spio_finfo.exe
-    PUBLIC _NOPNETCDF)
+    PRIVATE _NOPNETCDF)
 endif ()
 
 #===== ADIOS-C =====
@@ -80,25 +80,25 @@ if (WITH_ADIOS)
 endif ()
 if (ADIOS_FOUND)
   target_include_directories (spio_finfo.exe
-    PUBLIC ${ADIOS_INCLUDE_DIRS})
+    PRIVATE ${ADIOS_INCLUDE_DIRS})
   target_compile_definitions (spio_finfo.exe
-    PUBLIC _ADIOS)
+    PRIVATE _ADIOS)
   target_link_libraries (spio_finfo.exe
-    PUBLIC ${ADIOS_LIBRARIES})
+    PRIVATE ${ADIOS_LIBRARIES})
 else ()
   target_compile_definitions (spio_finfo.exe
-    PUBLIC _NOADIOS)
+    PRIVATE _NOADIOS)
 endif ()
 
 #===== Add EXTRAs =====
 target_include_directories (spio_finfo.exe
-  PUBLIC ${PIO_C_EXTRA_INCLUDE_DIRS})
+  PRIVATE ${PIO_C_EXTRA_INCLUDE_DIRS})
 target_link_libraries (spio_finfo.exe
-  PUBLIC ${PIO_C_EXTRA_LIBRARIES})
+  PRIVATE ${PIO_C_EXTRA_LIBRARIES})
 target_compile_options (spio_finfo.exe
   PRIVATE ${PIO_C_EXTRA_COMPILE_OPTIONS})
 target_compile_definitions (spio_finfo.exe
-  PUBLIC ${PIO_C_EXTRA_COMPILE_DEFINITIONS})
+  PRIVATE ${PIO_C_EXTRA_COMPILE_DEFINITIONS})
 if (PIO_C_EXTRA_LINK_FLAGS)
   set_target_properties(spio_finfo.exe PROPERTIES
     LINK_FLAGS ${PIO_C_EXTRA_LINK_FLAGS})
