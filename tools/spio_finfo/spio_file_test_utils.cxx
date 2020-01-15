@@ -53,12 +53,12 @@ namespace spio_finfo_utils{
           iter != supported_iotypes.end(); ++iter){
       iotype = *iter;
       ret = PIOc_openfile(iosysid, &ncid, &iotype, fname.c_str(), PIO_NOWRITE);
-      if (ret != PIO_NOERR){
+      if (!spio_tool_utils::gsuccess(comm_in, ret)){
         continue;
       }
 
       ret = PIOc_closefile(ncid);
-      if (ret != PIO_NOERR){
+      if (!spio_tool_utils::gsuccess(comm_in, ret)){
         continue;
       }
 

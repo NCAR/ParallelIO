@@ -1,4 +1,5 @@
 #include "spio_misc_tool_utils.h"
+#include <stdexcept>
 
 namespace spio_tool_utils{
 
@@ -18,6 +19,20 @@ namespace spio_tool_utils{
       default:
             return "UNKNOWN";
     }
+  }
+
+  bool gsuccess(MPI_Comm comm, int lspio_err)
+  {
+    bool lsucc = (lspio_err == PIO_NOERR) ? true : false;
+    bool gsucc = lsucc;
+    int mpierr = MPI_SUCCESS;
+
+    mpierr = MPI_Allreduce(&lsucc, &gsucc, 1, MPI_C_BOOL, MPI_LAND, comm);
+    if(mpierr != MPI_SUCCESS){
+      throw std::runtime_error("MPI_Allreduce failed while trying to determine when a function was successful or not");
+    }
+
+    return gsucc;
   }
 
 } // namespace spio_tool_utils

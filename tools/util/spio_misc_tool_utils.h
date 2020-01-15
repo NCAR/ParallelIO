@@ -7,6 +7,7 @@ extern "C"{
 #include "pio_config.h"
 #include "pio.h"
 } // extern "C"
+#include "mpi.h"
 
 namespace spio_tool_utils{
   
@@ -28,6 +29,9 @@ namespace spio_tool_utils{
 
     return str;
   }
+
+  /* Global check if a Scorpio function was successful */
+  bool gsuccess(MPI_Comm comm, int lspio_err);
 
 } // namespace spio_tool_utils
 
