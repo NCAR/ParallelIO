@@ -20,6 +20,7 @@ ArgParser::ArgParser(MPI_Comm comm):comm_(comm), is_root_(false),
   }
 }
 
+/* Add a valid command line option to the argument parser */
 ArgParser &ArgParser::add_opt(const std::string &opt,
                     const std::string &help_str)
 {
@@ -27,6 +28,10 @@ ArgParser &ArgParser::add_opt(const std::string &opt,
   return *this;
 }
 
+/* Parse the command line arguments in argv[]
+ * Note: Valid options should already be set using add_opt()
+ * before calling parse()
+ */
 void ArgParser::parse(int argc, char *argv[])
 {
   assert(argv);

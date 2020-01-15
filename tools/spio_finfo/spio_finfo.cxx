@@ -10,6 +10,9 @@
 #include "spio_lib_info.h"
 #include "spio_file_test_utils.h"
 
+/* Initialize the argument parser with the supported
+ * command line options
+ */
 static void init_user_options(spio_tool_utils::ArgParser &ap)
 {
   ap.add_opt("ifile", "Input file to be read with SCORPIO")
@@ -20,6 +23,7 @@ static void init_user_options(spio_tool_utils::ArgParser &ap)
     .add_opt("verbose", "Turn on verbose info messages");
 }
 
+/* Parse the command line options and get it */
 static int get_user_options(
               spio_tool_utils::ArgParser &ap,
               int argc, char *argv[],
@@ -43,10 +47,27 @@ static int get_user_options(
 
   if(ap.has_arg("idir")){
     idir = ap.get_arg<std::string>("idir");
+    if(idir.length() == 0){
+      if(rank == 0){
+        std::cerr << "ERROR: Parsing the \"--idir\" command line option failed. Read an empty string for the directory name\n";
+      }
+      return -1;
+    }
   }
 
   if(ap.has_arg("ifile")){
+    if(ap.has_arg("idir")){
+      if(rank == 0){
+        std::cerr << "WARNING: Both \"--ifile\" and \"--idir\" options were specified. The \"--ifile\" option will be ignored\n";
+      }
+    }
     ifile = ap.get_arg<std::string>("ifile");
+    if(ifile.length() == 0){
+      if(rank == 0){
+        std::cerr << "ERROR: Parsing the \"--ifile\" command line option failed. Read an empty string for the file name\n";
+      }
+      return -1;
+    }
   }
 
   /* Get I/O root process */
@@ -59,9 +80,8 @@ static int get_user_options(
                   << ioroot << ")"
                   << ((ioroot < 0) ? "is less than 0" : "greater than total number of MPI processes")
                   << "\n";
-        std::cerr << "Resetting the I/O root process to 0\n";
       }
-      ioroot = 0;
+      return -1;
     }
   }
   else{
@@ -76,9 +96,8 @@ static int get_user_options(
         std::cerr << "WARNING: Invalid I/O stride ("
                   << iostride
                   << ") provided\n";
-        std::cerr << "Resetting the I/O stride to 1\n";
       }
-      iostride = 1;
+      return -1;
     }
   }
   else{
@@ -98,9 +117,8 @@ static int get_user_options(
         std::cerr << "WARNING: Number of I/O tasks specified by the user("
                   << num_iotasks << ")"
                   << ((num_iotasks <= 0) ? " is <= 0" :  "is greater than the  number of MPI processes") << "\n";
-        std::cerr << "Resetting the number of I/O tasks to 1\n";
       }
-      num_iotasks = 1;
+      return -1;
     }
     else if( (ioroot + (num_iotasks - 1) * iostride) > (sz - 1) ){
       /* Cannot use 1/2 of the MPI processes as I/O processes due to
@@ -172,6 +190,9 @@ int main(int argc, char *argv[])
                           verbose);
 
   if (ret != 0) {
+    if (rank == 0){
+      std::cerr << "Parsing user arguments failed\n";
+    }
     return ret;
   }
 
@@ -185,13 +206,17 @@ int main(int argc, char *argv[])
 #ifdef TIMING
 #ifndef TIMING_INTERNAL
   /* Initialize the GPTL timing library. */
-  if ((ret = GPTLinitialize())){
+  ret = GPTLinitialize();
+  if (ret != 0){
+    if (rank == 0){
+      std::cerr << "Initializing the GPTL timing library failed\n";
+    }
     return ret;
   }
 #endif
 #endif
 
-  /* Test the file/files using PIO and print info */
+  /* Test the file/files using SCORPIO and print info */
   if (idir.length() == 0){
     assert(ifile.length() != 0);
     ret = spio_finfo_utils::spio_test_file(ifile, comm_in,
@@ -203,13 +228,20 @@ int main(int argc, char *argv[])
   }
 
   if (ret != 0) {
+    if (rank == 0){
+      std::cerr << "Testing files using Scorpio failed\n";
+    }
     return ret;
   }
 
 #ifdef TIMING
 #ifndef TIMING_INTERNAL
   /* Finalize the GPTL timing library. */
-  if ((ret = GPTLfinalize())){
+  ret = GPTLfinalize();
+  if (ret != 0){
+    if (rank == 0){
+      std::cerr << "Finalizing the GPTL timing library failed\n";
+    }
     return ret;
   }
 #endif

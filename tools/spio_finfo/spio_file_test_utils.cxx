@@ -30,7 +30,7 @@ namespace spio_finfo_utils{
                               PIO_REARR_BOX, &iosysid);
     if (ret != PIO_NOERR){
       if (rank == 0){
-        std::cerr << "ERROR: Initializing PIO failed\n";
+        std::cerr << "ERROR: Initializing the SCORPIO library failed\n";
       }
       return -1;
     }
@@ -40,7 +40,7 @@ namespace spio_finfo_utils{
             &prev_handler);
     if (ret != PIO_NOERR){
       if (rank == 0){
-        std::cerr << "ERROR: Unable to set error handler\n";
+        std::cerr << "ERROR: Unable to set error handler for the iosystem to PIO_RETURN_ERROR\n";
       }
       return -1;
     }
@@ -61,6 +61,8 @@ namespace spio_finfo_utils{
       if (ret != PIO_NOERR){
         continue;
       }
+
+      /* Add iotypes that can be used to open/close the file successfully */
       valid_iotypes.push_back(*iter);
     }
 
@@ -78,7 +80,7 @@ namespace spio_finfo_utils{
     ret = PIOc_finalize(iosysid);
     if (ret != PIO_NOERR){
       if (rank == 0){
-        std::cerr << "ERROR: Finalizing PIO failed\n";
+        std::cerr << "ERROR: Finalizing the SCORPIO library failed\n";
       }
       return -1;
     }
