@@ -36,11 +36,11 @@ namespace spio_finfo_utils{
     }
 
     int prev_handler;
-    ret = PIOc_set_iosystem_error_handling(iosysid, PIO_RETURN_ERROR,
+    ret = PIOc_set_iosystem_error_handling(iosysid, PIO_REDUCE_ERROR,
             &prev_handler);
     if (ret != PIO_NOERR){
       if (rank == 0){
-        std::cerr << "ERROR: Unable to set error handler for the iosystem to PIO_RETURN_ERROR\n";
+        std::cerr << "ERROR: Unable to set error handler for the iosystem to PIO_REDUCE_ERROR\n";
       }
       return -1;
     }
@@ -63,7 +63,7 @@ namespace spio_finfo_utils{
        * any iotype with the serial NetCDF iotype on failure
        */
       ret = PIOc_openfile2(iosysid, &ncid, &iotype, fname.c_str(), PIO_NOWRITE);
-      if (!spio_tool_utils::gsuccess(comm_in, ret)){
+      if (ret != PIO_NOERR){
         continue;
       }
 
@@ -74,7 +74,7 @@ namespace spio_finfo_utils{
       }
 
       ret = PIOc_closefile(ncid);
-      if (!spio_tool_utils::gsuccess(comm_in, ret)){
+      if (ret != PIO_NOERR){
         continue;
       }
 
