@@ -1,6 +1,7 @@
 #include "spio_file_test_utils.h"
 #include "spio_lib_info.h"
 #include "spio_misc_tool_utils.h"
+#include "spio_finfo.h"
 
 #include <iostream>
 #include <string>
@@ -15,14 +16,16 @@ extern "C"{
 namespace spio_finfo_utils{
 
   /* Test the file, fname, and print info about it */
-  int spio_test_file(const std::string &fname,
-                    MPI_Comm comm_in,
+  int spio_test_file(MPI_Comm comm_in,
                     int num_iotasks, int iostride, int ioroot,
-                    bool verbose)
+                    bool verbose,
+                    spio_finfo &finfo)
   {
     int ret = PIO_NOERR;
     int iosysid, ncid, iotype;
     int rank;
+
+    std::string fname = finfo.get_fname();
 
     MPI_Comm_rank(comm_in, &rank);
 
@@ -45,7 +48,6 @@ namespace spio_finfo_utils{
       return -1;
     }
 
-    std::vector<PIO_IOTYPE> valid_iotypes;
     std::vector<PIO_IOTYPE> supported_iotypes;
     spio_tool_utils::spio_lib_info::get_supported_iotypes(supported_iotypes);
 
@@ -79,7 +81,7 @@ namespace spio_finfo_utils{
       }
 
       /* Add iotypes that can be used to open/close the file successfully */
-      valid_iotypes.push_back(*iter);
+      finfo.add_supported_iotype(*iter);
     }
 
     if(verbose){
@@ -87,6 +89,8 @@ namespace spio_finfo_utils{
     }
 
     if (rank == 0){
+      std::vector<PIO_IOTYPE> valid_iotypes =
+        finfo.get_supported_iotypes();
       if (valid_iotypes.size() == 0){
         std::cout << fname.c_str() << ":\t" << "No supported I/O types\n";
       }
@@ -112,7 +116,8 @@ namespace spio_finfo_utils{
   int spio_test_files(const std::string &dname,
                     MPI_Comm comm_in,
                     int num_iotasks, int iostride, int ioroot,
-                    bool verbose)
+                    bool verbose,
+                    std::vector<spio_finfo> &finfos)
   {
     struct dirent *pde = NULL;
     int ret = 0;
@@ -135,11 +140,17 @@ namespace spio_finfo_utils{
         std::string full_path_name = dname +
                                       PATH_SEP +
                                       std::string(pde->d_name);
-        ret = spio_test_file(full_path_name.c_str(), comm_in,
-                            num_iotasks, iostride, ioroot, verbose);
-        if (ret != 0){
-          break;
+        spio_finfo finfo = spio_finfo_utils::create_spio_finfo(comm_in,
+                            full_path_name);
+
+        if(finfo.is_supported()){
+          ret = spio_test_file(comm_in, num_iotasks, iostride, ioroot,
+                  verbose, finfo);
+          if (ret != 0){
+            break;
+          }
         }
+        finfos.push_back(finfo);
       }
     }
 

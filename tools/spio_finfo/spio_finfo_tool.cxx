@@ -9,6 +9,7 @@
 #include "argparser.h"
 #include "spio_lib_info.h"
 #include "spio_file_test_utils.h"
+#include "spio_finfo.h"
 
 /* Initialize the argument parser with the supported
  * command line options
@@ -219,12 +220,16 @@ int main(int argc, char *argv[])
   /* Test the file/files using SCORPIO and print info */
   if (idir.length() == 0){
     assert(ifile.length() != 0);
-    ret = spio_finfo_utils::spio_test_file(ifile, comm_in,
-            num_iotasks, iostride, ioroot, verbose);
+    spio_finfo finfo = spio_finfo_utils::create_spio_finfo(comm_in, ifile);
+    if(finfo.is_supported()){
+      ret = spio_finfo_utils::spio_test_file(comm_in,
+              num_iotasks, iostride, ioroot, verbose, finfo);
+    }
   }
   else{
+    std::vector<spio_finfo> finfos;
     ret = spio_finfo_utils::spio_test_files(idir, comm_in,
-            num_iotasks, iostride, ioroot, verbose);
+            num_iotasks, iostride, ioroot, verbose, finfos);
   }
 
   if (ret != 0) {

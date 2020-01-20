@@ -16,6 +16,7 @@ set(SRC ${CMAKE_SOURCE_DIR}/tools/util/argparser.cxx
     ${CMAKE_SOURCE_DIR}/tools/util/spio_misc_tool_utils.cxx
     ${CMAKE_SOURCE_DIR}/tools/util/spio_lib_info.cxx
     spio_file_test_utils.cxx
+    spio_finfo.cxx
     spio_finfo_tool.cxx)
 add_executable(spio_finfo.exe ${SRC})
 #include_directories(
