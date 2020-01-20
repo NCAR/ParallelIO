@@ -175,6 +175,7 @@ int main(int argc, char *argv[])
     std::cout << "SCORPIO Library info\n";
     std::cout << "------------------\n";
     std::cout << spio_tool_utils::spio_lib_info::get_lib_summary() + "\n";
+    std::cout << "==================================================\n";
   }
 
   spio_tool_utils::ArgParser ap(comm_in);
@@ -218,6 +219,13 @@ int main(int argc, char *argv[])
 #endif
 #endif
 
+  if (rank == 0){
+    /* Print out basic information header */
+    std::cout << "==================================================\n";
+    std::cout << "Processing files ...\n";
+    std::cout << "==================================================\n";
+  }
+
   /* Test the file/files using SCORPIO and print info */
   std::vector<spio_finfo> finfos;
   if (idir.length() == 0){
@@ -246,15 +254,16 @@ int main(int argc, char *argv[])
     for(std::vector<spio_finfo>::const_iterator citer = finfos.cbegin();
           citer != finfos.cend(); ++citer){
       std::vector<PIO_IOTYPE> supp_iotypes = (*citer).get_supported_iotypes();
+      std::cout << "File :\t" << (*citer).get_fname().c_str() << "\n"
+                << "Type :\t" << (*citer).get_type().c_str() << "\n";
       if (supp_iotypes.size() != 0){
-        std::cout << (*citer).get_fname().c_str() << ":\t"
+        std::cout << "Supported Scorpio I/O types :\t"
                   << spio_tool_utils::iotypes_to_string(
                       supp_iotypes.begin(), supp_iotypes.end())
                   << "\n";
       }
       else{
-        std::cout << (*citer).get_fname().c_str() << ":\t"
-                  << "No supported Scorpio I/O types\n";
+        std::cout << "No supported Scorpio I/O types\n";
       }
       std::cout << "========================================\n";
     }
