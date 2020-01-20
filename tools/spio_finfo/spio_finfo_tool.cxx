@@ -9,6 +9,7 @@
 #include "argparser.h"
 #include "spio_lib_info.h"
 #include "spio_file_test_utils.h"
+#include "spio_misc_tool_utils.h"
 #include "spio_finfo.h"
 
 /* Initialize the argument parser with the supported
@@ -218,6 +219,7 @@ int main(int argc, char *argv[])
 #endif
 
   /* Test the file/files using SCORPIO and print info */
+  std::vector<spio_finfo> finfos;
   if (idir.length() == 0){
     assert(ifile.length() != 0);
     spio_finfo finfo = spio_finfo_utils::create_spio_finfo(comm_in, ifile);
@@ -225,9 +227,9 @@ int main(int argc, char *argv[])
       ret = spio_finfo_utils::spio_test_file(comm_in,
               num_iotasks, iostride, ioroot, verbose, finfo);
     }
+    finfos.push_back(finfo);
   }
   else{
-    std::vector<spio_finfo> finfos;
     ret = spio_finfo_utils::spio_test_files(idir, comm_in,
             num_iotasks, iostride, ioroot, verbose, finfos);
   }
@@ -237,6 +239,26 @@ int main(int argc, char *argv[])
       std::cerr << "Testing files using Scorpio failed\n";
     }
     return ret;
+  }
+
+  if (rank == 0){
+    std::cout << "========================================\n";
+    for(std::vector<spio_finfo>::const_iterator citer = finfos.cbegin();
+          citer != finfos.cend(); ++citer){
+      std::vector<PIO_IOTYPE> supp_iotypes = (*citer).get_supported_iotypes();
+      if (supp_iotypes.size() != 0){
+        std::cout << (*citer).get_fname().c_str() << ":\t"
+                  << spio_tool_utils::iotypes_to_string(
+                      supp_iotypes.begin(), supp_iotypes.end())
+                  << "\n";
+      }
+      else{
+        std::cout << (*citer).get_fname().c_str() << ":\t"
+                  << "No supported Scorpio I/O types\n";
+      }
+      std::cout << "========================================\n";
+    }
+    std::cout << "========================================\n";
   }
 
 #ifdef TIMING

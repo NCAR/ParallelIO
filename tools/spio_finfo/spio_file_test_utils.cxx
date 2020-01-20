@@ -88,19 +88,6 @@ namespace spio_finfo_utils{
       std::cout << "LOG : Done open/close with all iotypes\n";
     }
 
-    if (rank == 0){
-      std::vector<PIO_IOTYPE> valid_iotypes =
-        finfo.get_supported_iotypes();
-      if (valid_iotypes.size() == 0){
-        std::cout << fname.c_str() << ":\t" << "No supported I/O types\n";
-      }
-      else{
-        std::cout << fname.c_str() << ":\t" << "Supported I/O types = "
-                  << spio_tool_utils::iotypes_to_string(valid_iotypes.begin(),
-                      valid_iotypes.end()) + "\n";
-      }
-    }
-
     ret = PIOc_finalize(iosysid);
     if (ret != PIO_NOERR){
       if (rank == 0){
