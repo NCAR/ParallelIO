@@ -77,3 +77,8 @@ endif ()
 if (DEFINED ENV{ENABLE_ADIOS_BP2NC_TEST})
     set (CTEST_CONFIGURE_OPTIONS "${CTEST_CONFIGURE_OPTIONS} -DADIOS_BP2NC_TEST=ON")
 endif ()
+
+# If ENABLE_TESTS environment variable is set, then enable the testing builds
+if (DEFINED ENV{ENABLE_TESTS})
+    set (CTEST_CONFIGURE_OPTIONS "${CTEST_CONFIGURE_OPTIONS} -DPIO_ENABLE_TESTS=ON")
+endif ()
