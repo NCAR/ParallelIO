@@ -7,7 +7,7 @@
 #include "adios2pio-nm-lib.h"
 #include "argparser.h"
 
-static void init_user_options(adios2pio_utils::ArgParser &ap)
+static void init_user_options(spio_tool_utils::ArgParser &ap)
 {
     ap.add_opt("bp-file", "data produced by PIO with ADIOS format")
       .add_opt("idir", "Directory containing data output from PIO (in ADIOS format)")
@@ -17,7 +17,7 @@ static void init_user_options(adios2pio_utils::ArgParser &ap)
 }
 
 static int get_user_options(
-              adios2pio_utils::ArgParser &ap,
+              spio_tool_utils::ArgParser &ap,
               int argc, char *argv[],
               std::string &idir,
               std::string &ifile, std::string &ofile,
@@ -88,7 +88,7 @@ int main(int argc, char *argv[])
 
     MPI_Comm comm_in = MPI_COMM_WORLD;
 
-    adios2pio_utils::ArgParser ap(comm_in);
+    spio_tool_utils::ArgParser ap(comm_in);
 
     /* Init the standard user options for the tool */
     init_user_options(ap);

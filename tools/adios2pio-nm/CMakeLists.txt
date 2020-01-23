@@ -18,14 +18,17 @@ else ()
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 endif ()
 
-SET(SRC argparser.cxx adios2pio-nm.cxx)
+SET(SRC ${CMAKE_SOURCE_DIR}/tools/util/argparser.cxx adios2pio-nm.cxx)
 add_library(adios2pio-nm-lib adios2pio-nm-lib.cxx)
 include_directories(
   "${PROJECT_SOURCE_DIR}"   # to find foo/foo.h
   "${PROJECT_BINARY_DIR}")  # to find foo/config.h
 
 target_include_directories(adios2pio-nm-lib PUBLIC 
-  ${CMAKE_SOURCE_DIR}/src/clib ${CMAKE_BINARY_DIR}/src/clib ${ADIOS_INCLUDE_DIRS} 
+  ${CMAKE_SOURCE_DIR}/src/clib
+  ${CMAKE_BINARY_DIR}/src/clib
+  ${CMAKE_SOURCE_DIR}/tools/util
+  ${ADIOS_INCLUDE_DIRS}
   ${NETCDF_C_INCLUDE_DIRS} 
   ${PnetCDF_C_INCLUDE_DIRS} 
   ${PIO_C_EXTRA_INCLUDE_DIRS})
