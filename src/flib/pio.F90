@@ -66,7 +66,8 @@ module pio
        PIO_get_chunk_cache, &
        PIO_set_var_chunk_cache, &
        PIO_get_var_chunk_cache, &
-       PIO_strerror
+       PIO_strerror, &
+       PIO_copy_att
 
   use pionfatt_mod, only : PIO_put_att   => put_att,        &
        PIO_get_att   => get_att

@@ -35,7 +35,7 @@ target_include_directories(adios2pio-nm-lib PUBLIC
 
 # System and compiler CPP directives
 target_compile_definitions (adios2pio-nm-lib
-  PUBLIC ${CMAKE_SYSTEM_DIRECTIVE})
+  PRIVATE ${CMAKE_SYSTEM_DIRECTIVE})
 target_compile_definitions (adios2pio-nm-lib
   PUBLIC ${CMAKE_C_COMPILER_DIRECTIVE})
 

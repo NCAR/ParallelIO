@@ -1191,6 +1191,8 @@ extern "C" {
     int PIOc_get_att_longlong(int ncid, int varid, const char *name, long long *ip);
     int PIOc_get_att_ulonglong(int ncid, int varid, const char *name, unsigned long long *ip);
 
+    int PIOc_copy_att(int incid, int ivarid, const char *name, int oncid, int ovarid);
+
     /* Data reads - var. */
     int PIOc_get_var(int ncid, int varid, void *buf);
     int PIOc_get_var_text(int ncid, int varid, char *buf);

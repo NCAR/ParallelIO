@@ -13,6 +13,7 @@ set (PIO_Fortran_SRCS pio_nf.F90
   pio_kinds.F90
   pio_types.F90
   piolib_mod.F90
+  pio_nf_utils.F90
   pio_support.F90)
 
 set (PIO_GenF90_SRCS pionfatt_mod.F90
@@ -43,7 +44,7 @@ target_include_directories (piof
 
 # System and compiler CPP directives
 target_compile_definitions (piof
-  PUBLIC ${CMAKE_SYSTEM_DIRECTIVE})
+  PRIVATE ${CMAKE_SYSTEM_DIRECTIVE})
 target_compile_definitions (piof
   PUBLIC ${CMAKE_Fortran_COMPILER_DIRECTIVE})
 

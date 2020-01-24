@@ -1,0 +1,335 @@
+! Split comm world into n disjoint comms
+! The processes are divided evenly across the n comms
+! gcomm_idx is a global index (among the comms) of the new_comm
+! Note: The function assumes that there are atleast ncomms
+! procs
+SUBROUTINE split_world_ncomms(ncomms, new_comm, new_rank, new_size, gcomm_idx)
+  use mpi
+  use pio_tutil
+  implicit none
+  integer, intent(inout) :: ncomms
+  integer, intent(inout) :: new_comm
+  integer, intent(inout) :: new_rank
+  integer, intent(inout) :: new_size
+  integer, intent(inout) :: gcomm_idx
+
+  integer :: nprocs_per_comm
+  logical :: is_last_comm
+  integer :: ierr
+  integer :: color
+
+  new_comm = MPI_COMM_NULL
+  new_rank = 0
+  new_size = 0
+  gcomm_idx = 0
+
+  ! We need at least one proc in each disjoint comm
+  if(pio_tf_world_sz_ < ncomms) then
+    return
+  end if
+
+  nprocs_per_comm = pio_tf_world_sz_/ncomms
+  is_last_comm = .false.
+  if(pio_tf_world_rank_ >= nprocs_per_comm * (ncomms - 1)) then
+    is_last_comm = .true.
+  end if
+
+  color = pio_tf_world_rank_/nprocs_per_comm
+  ! Make sure that every proc in the last set (all remaining procs
+  ! are included in the last set/comm) gets the same color
+  if(is_last_comm) then
+    color = ncomms - 1
+  end if
+  gcomm_idx = color + 1
+
+  call MPI_Comm_split(pio_tf_comm_, color, 0, new_comm, ierr)
+
+  call MPI_Comm_size(new_comm, new_size, ierr)
+  call MPI_Comm_rank(new_comm, new_rank, ierr)
+END SUBROUTINE split_world_ncomms
+
+! Create union comm of all the procs that set join flag true
+SUBROUTINE create_ucomm(gcomm, join_ucomm, ucomm)
+  use mpi
+  use pio_tutil
+  implicit none
+  integer, intent(in) :: gcomm
+  logical, intent(in) :: join_ucomm
+  integer, intent(out) :: ucomm
+
+  integer :: rank, sz, ierr, i
+  integer :: ucomm_sz
+  integer :: gcomm_group, ucomm_group
+  integer, dimension(:), allocatable :: ucomm_ranks
+  logical, dimension(:), allocatable :: gjoin_ucomm
+
+  call MPI_Comm_rank(gcomm, rank, ierr)
+  call MPI_Comm_size(gcomm, sz, ierr)
+
+  ! Get join flags from all processes
+  allocate(gjoin_ucomm(sz))
+  call MPI_Allgather(join_ucomm, 1, MPI_LOGICAL, gjoin_ucomm, 1, MPI_LOGICAL, gcomm, ierr)
+
+  ! Find the ranks that need to join in ucomm
+  allocate(ucomm_ranks(sz))
+  ucomm_sz = 0
+  do i=1,sz
+    if(gjoin_ucomm(i)) then
+      ucomm_sz = ucomm_sz + 1
+      ucomm_ranks(ucomm_sz) = i - 1
+    end if
+  end do
+
+  call MPI_Comm_group(gcomm, gcomm_group, ierr)
+
+  call MPI_Group_incl(gcomm_group, ucomm_sz, ucomm_ranks, ucomm_group, ierr)
+
+  call MPI_Comm_create(gcomm, ucomm_group, ucomm, ierr)
+
+  call MPI_Group_free(gcomm_group, ierr)
+  call MPI_Group_free(ucomm_group, ierr)
+
+END SUBROUTINE create_ucomm
+
+! Async I/O as service test with 2 compute comms and 1 io comm
+! Each compute comm, comp_i, copies attributes from one file to another
+! The result is verified by compute comms in the reverse order,
+! i.e., comp(i) verifies attributes copied by comp(n-i+1)
+PIO_TF_TEMPLATE<PIO_TF_PREDEF_TYPENAME PIO_TF_DATA_TYPE, PIO_TF_PREDEF_TYPENAME PIO_TF_FC_DATA_TYPE>
+PIO_TF_AUTO_TEST_SUB_BEGIN async_copy_att
+  use mpi
+  implicit none
+  ! Number of compute components
+  integer, parameter :: NUM_COMPONENTS = 2
+  ! Total number of comms = comms for each of NUM_COMPONENTS + io comm
+  integer :: ncomms = NUM_COMPONENTS + 1
+  ! We need to have at least one proc in each of comm
+  integer, parameter :: MIN_NUM_PROCS = NUM_COMPONENTS + 1
+  integer :: comp_comms(NUM_COMPONENTS)
+  ! Union comm of all compute comps
+  integer :: comp_ucomm
+  type(iosystem_desc_t) :: iosys(NUM_COMPONENTS)
+  integer :: new_comm, io_comm
+  integer :: new_rank, new_size, i, j
+  ! gcomm_idx => Global index for the MPI comms
+  ! gcomp_idx => Global index for the compute components
+  integer :: gcomm_idx, gcomp_idx
+  ! is_io == .true. if proc is part of the io comp
+  logical :: is_io = .false.
+  integer, parameter :: NUM_REARRANGERS = 2
+  integer :: rearrs(NUM_REARRANGERS) = (/pio_rearr_subset,pio_rearr_box/)
+  character(len=PIO_TF_MAX_STR_LEN) :: rearrs_info(NUM_REARRANGERS) = (/"PIO_REARR_SUBSET","PIO_REARR_BOX   "/)
+
+  ! Attributes are copied by comp_i from ifnames(i) to ofnames(i)
+  character(len=PIO_TF_MAX_STR_LEN) :: ifnames(NUM_COMPONENTS), ofnames(NUM_COMPONENTS)
+  ! File name verified by the current component
+  character(len=PIO_TF_MAX_STR_LEN) :: vfname
+  character(len=PIO_TF_MAX_STR_LEN) :: idimname = "PIO_TF_test_idim"
+  character(len=PIO_TF_MAX_STR_LEN) :: odimname = "PIO_TF_test_odim"
+  character(len=PIO_TF_MAX_STR_LEN) :: ivname = "PIO_TF_test_ivar"
+  character(len=PIO_TF_MAX_STR_LEN) :: ovname = "PIO_TF_test_ovar"
+  character(len=PIO_TF_MAX_STR_LEN) :: attname = "PIO_TF_test_gatt"
+  character(len=PIO_TF_MAX_STR_LEN) :: cattname = "PIO_TF_test_gcatt"
+
+  integer, parameter :: ATT_LEN = 32
+  PIO_TF_FC_DATA_TYPE :: val, rval
+  character(len=ATT_LEN) :: cval, rcval
+
+  ! The size of vec/data written out from each compute proc
+  integer, parameter :: VEC_LOCAL_SZ = 7
+  integer, parameter :: NUM_DIMS = 1
+  integer :: pio_ivarid, pio_ovarid
+  type(var_desc_t) :: pio_ivar, pio_ovar
+  type(file_desc_t) :: pio_ifile, pio_ofile
+  integer :: dims(NUM_DIMS), pio_idim, pio_odim
+
+  integer, dimension(:), allocatable :: iotypes
+  character(len=PIO_TF_MAX_STR_LEN), dimension(:), allocatable :: iotype_descs
+  integer :: num_iotypes = 0
+
+  integer :: ret = PIO_NOERR
+
+  do i=1,NUM_COMPONENTS
+    write(ifnames(i), '(A25,I4.4,A3)') "pio_async_copy_ifile_comp", i, ".nc"
+    write(ofnames(i), '(A25,I4.4,A3)') "pio_async_copy_ofile_comp", i, ".nc"
+  end do
+
+  ! Attribute value buffers (put and get)
+  val = pio_tf_world_sz_
+  rval = 0
+
+  cval = "PIO_TF_test_catt"
+  rcval = ""
+
+  num_iotypes = 0
+  call PIO_TF_Get_nc_iotypes(iotypes, iotype_descs, num_iotypes)
+
+  if(pio_tf_world_sz_ >= MIN_NUM_PROCS) then
+    do i=1,NUM_REARRANGERS
+      PIO_TF_LOG(0,*) "Testing rearr : ", trim(rearrs_info(i))
+      ! Create three disjoint sets of IO procs and compute procs
+      call split_world_ncomms(ncomms, new_comm, new_rank, new_size, gcomm_idx)
+      !print *, "Split new comm, size = ", new_size, ", rank = ", new_rank, ", gcomm_idx = ", gcomm_idx 
+
+      do j=1,NUM_COMPONENTS
+        comp_comms(j) = MPI_COMM_NULL
+      end do
+
+      ! Use first comm as the IO proc
+      is_io = .false.
+      if(gcomm_idx == 1) then
+        is_io = .true.
+      end if
+      gcomp_idx = gcomm_idx - 1
+
+      ! Create a union comm for all compute comms
+      call create_ucomm(pio_tf_comm_, .NOT. is_io, comp_ucomm)
+
+      if(is_io) then
+        ! I/O proc
+        io_comm = new_comm
+        call PIO_init(NUM_COMPONENTS, pio_tf_comm_, comp_comms, io_comm,&
+              iosys, rearrs(i))
+      else
+        ! Compute proc
+        comp_comms(gcomp_idx) = new_comm
+        io_comm = MPI_COMM_NULL
+        call PIO_init(NUM_COMPONENTS, pio_tf_comm_, comp_comms, io_comm,&
+              iosys, rearrs(i))
+        ! The default error handler PIO_INTERNAL_ERROR does not synchronize
+        ! the I/O procs and compute procs in every call
+        ! Since procs in comp_i verify files created by comp_n-i+1 we
+        ! need explicit synchronization between I/O processes and compute
+        ! processes (at least in the last closefile() call)
+        ! Note that the MPI_Barrier below only synchronizes across compute
+        ! components/processes
+        call PIO_seterrorhandling(iosys(gcomp_idx), PIO_BCAST_ERROR)
+
+        ! Only compute procs send data 
+        dims(1) = VEC_LOCAL_SZ * new_size
+
+        ! Only compute procs call PIO function calls, I/O proc
+        ! waits inside PIO_init() waiting for commands from the
+        ! compute processes
+        do j=1,num_iotypes
+          PIO_TF_LOG(0,*) "Testing : PIO_TF_DATA_TYPE : ", iotype_descs(i)
+
+          ! The attributes are copied from pio_ifile to pio_ofile
+          ret = PIO_createfile(iosys(gcomp_idx), pio_ifile, iotypes(j), trim(ifnames(gcomp_idx)), PIO_CLOBBER)
+          PIO_TF_CHECK_ERR(ret, new_comm, "Could not create input file :" // trim(ifnames(gcomp_idx)))
+
+          ret = PIO_createfile(iosys(gcomp_idx), pio_ofile, iotypes(j), trim(ofnames(gcomp_idx)), PIO_CLOBBER)
+          PIO_TF_CHECK_ERR(ret, new_comm, "Could not create output file :" // trim(ofnames(gcomp_idx)))
+
+          ret = PIO_def_dim(pio_ifile, trim(idimname), dims(1), pio_idim)
+          PIO_TF_CHECK_ERR(ret, new_comm, "Could not define dim in input file:" // trim(ifnames(gcomp_idx)))
+
+          ret = PIO_def_dim(pio_ofile, trim(odimname), dims(1), pio_odim)
+          PIO_TF_CHECK_ERR(ret, new_comm, "Could not define dim in output file:" // trim(ofnames(gcomp_idx)))
+
+          ret = PIO_def_var(pio_ifile, trim(ivname), PIO_TF_DATA_TYPE, (/pio_idim/), pio_ivar) 
+          PIO_TF_CHECK_ERR(ret, new_comm, "Could not define var in input file:" // trim(ifnames(gcomp_idx)))
+
+          ret = PIO_def_var(pio_ofile, trim(ovname), PIO_TF_DATA_TYPE, (/pio_odim/), pio_ovar) 
+          PIO_TF_CHECK_ERR(ret, new_comm, "Could not define var in output file:" // trim(ofnames(gcomp_idx)))
+
+          ! Add global attributes to the input file
+          ret = PIO_put_att(pio_ifile, PIO_GLOBAL, attname, val)
+          PIO_TF_CHECK_ERR(ret, new_comm, "Could not put attribute in the input file:" // trim(ifnames(gcomp_idx)))
+
+          ret = PIO_put_att(pio_ifile, PIO_GLOBAL, cattname, cval)
+          PIO_TF_CHECK_ERR(ret, new_comm, "Could not put char attribute in the input file:" // trim(ifnames(gcomp_idx)))
+
+          ! Add variable attributes to the var in the input file
+          ret = PIO_put_att(pio_ifile, pio_ivar, attname, val)
+          PIO_TF_CHECK_ERR(ret, new_comm, "Could not put variable attribute in the input file:" // trim(ifnames(gcomp_idx)))
+
+          ret = PIO_put_att(pio_ifile, pio_ivar, cattname, cval)
+          PIO_TF_CHECK_ERR(ret, new_comm, "Could not put char variable attribute in the input file:" // trim(ifnames(gcomp_idx)))
+
+          ! Inquire variable ids : required for copying attributes
+          ret = PIO_inq_varid(pio_ifile, trim(ivname), pio_ivarid)
+          PIO_TF_CHECK_ERR(ret, new_comm, "Could not inquire variable id of variable in the input file:" // trim(ifnames(gcomp_idx)))
+
+          ret = PIO_inq_varid(pio_ofile, trim(ovname), pio_ovarid)
+          PIO_TF_CHECK_ERR(ret, new_comm, "Could not inquire variable id of variable in the output file:" // trim(ofnames(gcomp_idx)))
+
+          ! Copy global attributes from pio_ifile to pio_ofile
+          ret = PIO_copy_att(pio_ifile, PIO_GLOBAL, attname, pio_ofile, PIO_GLOBAL)
+          PIO_TF_CHECK_ERR(ret, new_comm, "Could not copy global attribute from input file:" // trim(ifnames(gcomp_idx)))
+
+          ret = PIO_copy_att(pio_ifile, PIO_GLOBAL, cattname, pio_ofile, PIO_GLOBAL)
+          PIO_TF_CHECK_ERR(ret, new_comm, "Could not copy global char attribute from input file:" // trim(ifnames(gcomp_idx)))
+
+          ! Copy variable attributes from pio_ifile to pio_ofile
+          ret = PIO_copy_att(pio_ifile, pio_ivarid, attname, pio_ofile, pio_ovarid)
+          PIO_TF_CHECK_ERR(ret, new_comm, "Could not copy variable attribute from input file:" // trim(ifnames(gcomp_idx)))
+
+          ret = PIO_copy_att(pio_ifile, pio_ivarid, cattname, pio_ofile, pio_ovarid)
+          PIO_TF_CHECK_ERR(ret, new_comm, "Could not copy variable char attribute from input file:" // trim(ifnames(gcomp_idx)))
+
+          ret = PIO_enddef(pio_ifile)
+          PIO_TF_CHECK_ERR(ret, new_comm, "Could not enddef in input file :" // trim(ifnames(gcomp_idx)))
+
+          ret = PIO_enddef(pio_ofile)
+          PIO_TF_CHECK_ERR(ret, new_comm, "Could not enddef in output file :" // trim(ofnames(gcomp_idx)))
+
+          call PIO_closefile(pio_ifile)
+          call PIO_closefile(pio_ofile)
+
+          ! Verify the contents of the output file
+          ! Since we verify out of order, ensure that all comp comms are done
+          call MPI_Barrier(comp_ucomm, ret)
+
+          ! comp_i verifies file created by comp_n-i+1
+          vfname = ofnames(NUM_COMPONENTS - gcomp_idx + 1)
+          ret = PIO_openfile(iosys(gcomp_idx), pio_ofile, iotypes(j), trim(vfname), PIO_nowrite)
+          PIO_TF_CHECK_ERR(ret, new_comm, "Could not reopen file :" // trim(vfname))
+
+          ret = PIO_inq_varid(pio_ofile, trim(ovname), pio_ovarid)
+          PIO_TF_CHECK_ERR(ret, new_comm, "Could not inq var:" // trim(vfname))
+
+          ! Get global attributes and verify the contents
+          ret = PIO_get_att(pio_ofile, PIO_GLOBAL, attname, rval)
+          PIO_TF_CHECK_ERR(ret, new_comm, "Could not get global att:" // trim(vfname))
+
+          PIO_TF_ASSERT((rval == val), "Global attribute is not the expected value")
+
+          ret = PIO_get_att(pio_ofile, PIO_GLOBAL, cattname, rcval)
+          PIO_TF_CHECK_ERR(ret, new_comm, "Could not get global char att:" // trim(vfname))
+
+          PIO_TF_ASSERT((trim(rcval) .eq. trim(cval)), "Global char attribute is not the expected value")
+
+          ! Get variable attributes and verify the contents
+          ret = PIO_get_att(pio_ofile, pio_ovarid, attname, rval)
+          PIO_TF_CHECK_ERR(ret, new_comm, "Could not get variable att:" // trim(vfname))
+
+          PIO_TF_ASSERT((rval == val), "Variable attribute is not the expected value")
+
+          ret = PIO_get_att(pio_ofile, pio_ovarid, cattname, rcval)
+          PIO_TF_CHECK_ERR(ret, new_comm, "Could not get variable char att:" // trim(vfname))
+
+          PIO_TF_ASSERT((trim(rcval) .eq. trim(cval)), "Variable char attribute is not the expected value")
+
+          call PIO_closefile(pio_ofile)
+
+          call PIO_deletefile(iosys(gcomp_idx), ifnames(gcomp_idx))
+          call PIO_deletefile(iosys(gcomp_idx), ofnames(gcomp_idx))
+
+          ! Since we verify out of order, ensure that all comp comms are done
+          call MPI_Barrier(comp_ucomm, ret)
+        end do
+
+        do j=1,NUM_COMPONENTS
+          call PIO_finalize(iosys(j), ret)
+        end do
+      end if
+      if(comp_ucomm /= MPI_COMM_NULL) then
+        call MPI_Comm_free(comp_ucomm, ret)
+      end if
+      call MPI_Comm_free(new_comm, ret)
+      PIO_TF_CHECK_ERR(ret, "PIO_init()/Finalize() failed")
+    end do
+  end if
+PIO_TF_AUTO_TEST_SUB_END async_copy_att
+

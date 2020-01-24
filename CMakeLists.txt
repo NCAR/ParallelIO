@@ -108,7 +108,7 @@ SET(CMAKE_EXTRA_INCLUDE_FILES)
 set (PIO_FILESYSTEM_HINTS IGNORE CACHE STRING "Filesystem hints (lustre or gpfs)")
 
 #===== Testing Options =====
-option (PIO_ENABLE_TESTS  "Enable the testing builds"                           ON)
+option (PIO_ENABLE_TESTS  "Enable the testing builds"                           OFF)
 option (PIO_ENABLE_LARGE_TESTS  "Enable large (file, processes) tests"         OFF)
 option (PIO_VALGRIND_CHECK  "Enable memory leak check using valgrind"           OFF)
 include(CMakeDependentOption)
@@ -208,18 +208,18 @@ add_subdirectory (src)
 #  TESTING TARGET
 #==============================================================================
 
-# Custom "piotests" target (builds the test executables)
-add_custom_target (tests)
-
-# Custom "check" target that depends upon "tests"
-add_custom_target (check COMMAND ${CMAKE_CTEST_COMMAND})
-add_dependencies (check tests)
-
 # Tools
 add_subdirectory(tools)
 
 # Tests
 if (PIO_ENABLE_TESTS)
+  # Custom "piotests" target (builds the test executables)
+  add_custom_target (tests)
+
+  # Custom "check" target that depends upon "tests"
+  add_custom_target (check COMMAND ${CMAKE_CTEST_COMMAND})
+  add_dependencies (check tests)
+
   enable_testing()
   include (CTest)
   add_subdirectory (tests)
