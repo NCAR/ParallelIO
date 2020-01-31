@@ -685,6 +685,7 @@ const char *pio_get_vnames_from_file(file_desc_t *file,
               int *varids, int varids_sz, char *buf, size_t buf_sz);
 const char *pio_get_vnames_from_file_id(int pio_file_id,
               int *varids, int varids_sz, char *buf, size_t buf_sz);
+const char *pio_async_msg_to_string(int msg);
 #define PIO_IS_NULL(p) ((p) ? "not NULL" : "NULL")
 
 #endif /* __PIO_INTERNAL__ */

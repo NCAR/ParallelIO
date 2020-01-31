@@ -313,6 +313,9 @@ PIO_TF_AUTO_TEST_SUB_BEGIN async_copy_att
 
           call PIO_closefile(pio_ofile)
 
+          ! Since we verify out of order, ensure that all comp comms are done
+          call MPI_Barrier(comp_ucomm, ret)
+
           call PIO_deletefile(iosys(gcomp_idx), ifnames(gcomp_idx))
           call PIO_deletefile(iosys(gcomp_idx), ofnames(gcomp_idx))
 
