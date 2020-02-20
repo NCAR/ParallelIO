@@ -2134,6 +2134,7 @@ PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filename,
         if ((ierr = nc4_file_change_ncid(*ncidp, file->pio_ncid)))
             return pio_err(NULL, file, ierr, __FILE__, __LINE__);
         file->pio_ncid = file->pio_ncid << ID_SHIFT;
+        file->ncint_file++;
         PLOG((2, "changed ncid to file->pio_ncid = %d", file->pio_ncid));
     }
 #endif /* NETCDF_INTEGRATION */
@@ -2432,7 +2433,11 @@ inq_file_metadata(file_desc_t *file, int ncid, int iotype, int *nvars,
 }
 
 /**
- * Find the appropriate IOTYPE from mode flags to nc_open().
+ * Find the appropriate IOTYPE from mode flags to nc_open(). The
+ * following flags have meaning:
+ * - NC_NETCDF4 - use netCDF-4/HDF5 format
+ * - NC_MPIIO - when used with NC_NETCDF4, use parallel I/O.
+ * - NC_PNETCDF - use classic format with pnetcdf parallel I/O.
  *
  * @param mode the mode flag from nc_open().
  * @param iotype pointer that gets the IOTYPE.
@@ -2807,6 +2812,7 @@ PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filename,
         if ((ierr = nc4_file_change_ncid(*ncidp, file->pio_ncid)))
             return pio_err(NULL, file, ierr, __FILE__, __LINE__);
         file->pio_ncid = file->pio_ncid << ID_SHIFT;
+        file->ncint_file++;
         PLOG((2, "changed ncid to file->pio_ncid = %d", file->pio_ncid));
     }
     else
