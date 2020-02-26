@@ -159,13 +159,17 @@ contains
     call t_startf("PIO:put_var1_{TYPE}")
 #endif
     clen = size(index)
-    allocate(cindex(clen))
-    do i=1,clen
-       cindex(i) = index(clen-i+1)-1
-    enddo
+    if (clen > 0) then
+        allocate(cindex(clen))
+        do i=1,clen
+            cindex(i) = index(clen-i+1)-1
+        enddo
 
-    ierr = PIOc_put_var1_{NCTYPE} (file%fh, varid-1, cindex, ival)
-    deallocate(cindex)
+        ierr = PIOc_put_var1_{NCTYPE} (file%fh, varid-1, cindex, ival)
+        deallocate(cindex)
+    else
+        print *, 'PIO: WARNING: Empty index array passed to PIO_put_var function put_var1_{TYPE}, a collective C API call will be skipped on this process. ', __PIO_FILE__, __LINE__
+    end if
 #ifdef TIMING
     call t_stopf("PIO:put_var1_{TYPE}")
 #endif
@@ -215,15 +219,19 @@ contains
 !   a c character array with all trailing space set to null
 !
     clen = len(ival)
-    allocate(cval(clen))
-    cval = C_NULL_CHAR
-    do i=1,len_trim(ival)
-       cval(i) = ival(i:i)
-    end do
+    if (clen > 0) then
+        allocate(cval(clen))
+        cval = C_NULL_CHAR
+        do i=1,len_trim(ival)
+            cval(i) = ival(i:i)
+        end do
 
-    ierr = PIOc_put_var_text(file%fh, varid-1,  cval)
+        ierr = PIOc_put_var_text(file%fh, varid-1,  cval)
 
-    deallocate(cval)
+        deallocate(cval)
+    else
+        print *, 'PIO: WARNING: Empty character array passed to PIO_put_var function put_var_0d_text, a collective C API call will be skipped on this process. ', __PIO_FILE__, __LINE__
+    end if
   end function put_var_0d_text
 ! DIMS 1,2,3,4,5
 ! TYPE text
@@ -251,11 +259,14 @@ contains
     ierr = PIO_NOERR
     clen = len(ival)
     sd = size(ival)
-    allocate(cval(clen*sd))
-    call Fstring2Cstring_{DIMS}d (ival, cval)
-    ierr = PIOc_put_var_text(file%fh, varid-1,  cval)
-    deallocate(cval)
-
+    if (clen*sd > 0) then
+        allocate(cval(clen*sd))
+        call Fstring2Cstring_{DIMS}d (ival, cval)
+        ierr = PIOc_put_var_text(file%fh, varid-1,  cval)
+        deallocate(cval)
+    else
+        print *, 'PIO: WARNING: Empty {DIMS}d text data passed to PIO_put_var function put_var_{DIMS}d_text, a collective C API call will be skipped on this process. ', __PIO_FILE__, __LINE__
+    end if
 
   end function put_var_{DIMS}d_text
 
@@ -312,10 +323,14 @@ contains
     {VTYPE}, allocatable :: cval(:)
     integer :: clen
     clen = size(ival)
-    allocate(cval(clen))
-    cval = reshape(ival,(/clen/))
-    ierr = put_var_internal_{TYPE} (File%fh, varid, cval)
-    deallocate(cval)
+    if (clen > 0) then
+        allocate(cval(clen))
+        cval = reshape(ival,(/clen/))
+        ierr = put_var_internal_{TYPE} (File%fh, varid, cval)
+        deallocate(cval)
+    else
+        print *, 'PIO: WARNING: Empty {DIMS}d {TYPE} data passed to PIO_put_var function put_var_{DIMS}d_{TYPE}, a collective C API call will be skipped on this process. ', __PIO_FILE__, __LINE__
+    end if
 
   end function put_var_{DIMS}d_{TYPE}
 
@@ -442,12 +457,15 @@ contains
 !
     clen = len(ival)
     sd = size(ival)
-    allocate(cval(clen*sd))
-    call Fstring2Cstring_{DIMS}d (ival, cval)
+    if (clen*sd > 0) then
+        allocate(cval(clen*sd))
+        call Fstring2Cstring_{DIMS}d (ival, cval)
 
-    ierr = PIOc_put_vara_text(file%fh, varid-1,  cstart, ccount, cval)
-    deallocate(cval, cstart, ccount)
-
+        ierr = PIOc_put_vara_text(file%fh, varid-1,  cstart, ccount, cval)
+        deallocate(cval, cstart, ccount)
+    else
+        print *, 'PIO: WARNING: Empty {DIMS}d text data passed to PIO_put_var function put_vara_{DIMS}d_text, a collective C API call will be skipped on this process. ', __PIO_FILE__, __LINE__
+    end if
 
   end function put_vara_{DIMS}d_text
 
