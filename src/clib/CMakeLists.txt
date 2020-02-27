@@ -30,6 +30,8 @@ target_compile_definitions (pioc
   PUBLIC ${CMAKE_C_COMPILER_DIRECTIVE})
 target_compile_definitions (pioc
   PUBLIC MPICH_SKIP_MPICXX)
+target_compile_definitions (pioc
+  PUBLIC OMPI_SKIP_MPICXX)
 
 # Compiler-specific compiler options
 string (TOUPPER "${CMAKE_C_COMPILER_ID}" CMAKE_C_COMPILER_NAME)
