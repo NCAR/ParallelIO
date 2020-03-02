@@ -541,7 +541,7 @@ typedef struct io_desc_t
     PIO_Offset llen;
 
     /** Maximum llen participating. */
-    int maxiobuflen;
+    PIO_Offset maxiobuflen;
 
     /** Array (length nrecvs) of computation tasks received from. */
     int *rfrom;
