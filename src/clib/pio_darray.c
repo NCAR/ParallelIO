@@ -108,7 +108,7 @@ int PIOc_write_darray_multi(int ncid, const int *varids, int ioid, int nvars,
     iosystem_desc_t *ios;  /* Pointer to io system information. */
     file_desc_t *file;     /* Pointer to file information. */
     io_desc_t *iodesc;     /* Pointer to IO description information. */
-    int rlen;              /* Total data buffer size. */
+    size_t rlen;           /* Total data buffer size. */
     var_desc_t *vdesc0;    /* Array of var_desc structure for each var. */
     int fndims = 0;        /* Number of dims in the var in the file. */
     int mpierr = MPI_SUCCESS;  /* Return code from MPI function calls. */
@@ -271,12 +271,12 @@ int PIOc_write_darray_multi(int ncid, const int *varids, int ioid, int nvars,
     if (rlen > 0)
     {
         /* Allocate memory for the buffer for all vars/records. */
-        if (!(file->iobuf[ioid - PIO_IODESC_START_ID] = bget(iodesc->mpitype_size * (size_t)rlen)))
+        if (!(file->iobuf[ioid - PIO_IODESC_START_ID] = bget(iodesc->mpitype_size * rlen)))
         {
             return pio_err(ios, file, PIO_ENOMEM, __FILE__, __LINE__,
-                            "Writing multiple variables to file (%s, ncid=%d) failed. Out of memory (Trying to allocate %lld bytes for rearranged data for multiple variables with the same decomposition)", pio_get_fname_from_file(file), ncid, (unsigned long long)(iodesc->mpitype_size * (size_t )rlen));
+                            "Writing multiple variables to file (%s, ncid=%d) failed. Out of memory (Trying to allocate %lld bytes for rearranged data for multiple variables with the same decomposition)", pio_get_fname_from_file(file), ncid, (unsigned long long)(iodesc->mpitype_size * rlen));
         }
-        LOG((3, "allocated %lld bytes for variable buffer", (size_t)rlen * iodesc->mpitype_size));
+        LOG((3, "allocated %lld bytes for variable buffer", rlen * iodesc->mpitype_size));
 
         /* If fill values are desired, and we're using the BOX
          * rearranger, insert fill values. */
@@ -284,7 +284,7 @@ int PIOc_write_darray_multi(int ncid, const int *varids, int ioid, int nvars,
         {
             LOG((3, "inerting fill values iodesc->maxiobuflen = %d", iodesc->maxiobuflen));
             for (int nv = 0; nv < nvars; nv++)
-                for (int i = 0; i < iodesc->maxiobuflen; i++)
+                for (PIO_Offset i = 0; i < iodesc->maxiobuflen; i++)
                     memcpy(&((char *)file->iobuf[ioid - PIO_IODESC_START_ID])[iodesc->mpitype_size * (i + nv * iodesc->maxiobuflen)],
                            &((char *)fillvalue)[nv * iodesc->mpitype_size], iodesc->mpitype_size);
         }
