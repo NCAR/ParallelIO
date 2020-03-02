@@ -7,6 +7,7 @@ var searchData=
   ['cleanup',['cleanup',['../structpioexample_1_1pioexampleclass.html#a98dc8381c73aa16077022c2601af502a',1,'pioexample::pioexampleclass']]],
   ['closefile',['closefile',['../group___p_i_o__closefile.html#gabd36983797d48236a8d610b58a7c3aa8',1,'piolib_mod::closefile()'],['../structpioexample_1_1pioexampleclass.html#ad8d27e01569f9dfd28876febc5d42638',1,'pioexample::pioexampleclass::closefile()']]],
   ['compute_5fone_5fdim',['compute_one_dim',['../pioc__sc_8c.html#aea4b479a6d54a088387e3948d967b232',1,'pioc_sc.c']]],
+  ['copy_5fatt',['copy_att',['../classpio__nf.html#acea10bfe1fcee941692b2f8a1c110aab',1,'pio_nf']]],
   ['createdecomp',['createdecomp',['../structpioexample_1_1pioexampleclass.html#a6a47fedad0fe0d131fd0305e25b26546',1,'pioexample::pioexampleclass']]],
   ['createfile',['createfile',['../group___p_i_o__createfile.html#ga359c93e9d4f79c37d488f00535122177',1,'piolib_mod::createfile()'],['../structpioexample_1_1pioexampleclass.html#ac1010cbbdf5cd79112bab8e3dbd5dfdf',1,'pioexample::pioexampleclass::createfile()']]]
 ];

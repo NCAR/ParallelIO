@@ -20,6 +20,7 @@ var searchData=
   ['compranks',['compranks',['../structiosystem__desc__t.html#ae9147c3aba3e40bf2d3ad06ba2305512',1,'iosystem_desc_t']]],
   ['comproot',['comproot',['../structiosystem__desc__t.html#aeb4289bb6f3ea243e1a9bae70b45aaf9',1,'iosystem_desc_t']]],
   ['compute_5fone_5fdim',['compute_one_dim',['../pioc__sc_8c.html#aea4b479a6d54a088387e3948d967b232',1,'pioc_sc.c']]],
+  ['copy_5fatt',['copy_att',['../classpio__nf.html#acea10bfe1fcee941692b2f8a1c110aab',1,'pio_nf']]],
   ['count',['count',['../structio__region.html#ae9897b9dc1ae1abb8e6421d55a8e4b20',1,'io_region']]],
   ['createdecomp',['createdecomp',['../structpioexample_1_1pioexampleclass.html#a6a47fedad0fe0d131fd0305e25b26546',1,'pioexample::pioexampleclass']]],
   ['createfile',['createfile',['../group___p_i_o__createfile.html#ga359c93e9d4f79c37d488f00535122177',1,'piolib_mod::createfile()'],['../structpioexample_1_1pioexampleclass.html#ac1010cbbdf5cd79112bab8e3dbd5dfdf',1,'pioexample::pioexampleclass::createfile()']]]
