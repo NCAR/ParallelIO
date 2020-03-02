@@ -24,7 +24,7 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">SCORPIO
-   &#160;<span id="projectnumber">1.0.3</span>
+   &#160;<span id="projectnumber">1.0.4</span>
    </div>
   </td>
  </tr>
@@ -81,7 +81,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="dir_712c0da919ba0b02aace6cff8bdaa1d4.html">ParallelIO_tmp2</a></li><li class="navelem"><a class="el" href="dir_7fd0432aa9be47589adfd0b9dee46960.html">src</a></li><li class="navelem"><a class="el" href="dir_b295c0d265ad51d2a0baf76f9cc909e5.html">clib</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_7696f96c4c391437740b3ec44f063793.html">ParallelIO_tmp</a></li><li class="navelem"><a class="el" href="dir_a164ee6fba94f501e80667bb89207e1c.html">src</a></li><li class="navelem"><a class="el" href="dir_0904bedaee7fb147d21c0478e218ab02.html">clib</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
@@ -94,7 +94,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 <p>PIO interfaces to <a href="http://www.unidata.ucar.edu/software/netcdf/docs/modules.html">NetCDF</a> support functions.  
 <a href="#details">More...</a></p>
-<div class="textblock"><code>#include &lt;config.h&gt;</code><br/>
+<div class="textblock"><code>#include &lt;pio_config.h&gt;</code><br/>
 <code>#include &lt;<a class="el" href="pio_8h_source.html">pio.h</a>&gt;</code><br/>
 <code>#include &lt;pio_internal.h&gt;</code><br/>
 </div><div class="textblock"><div class="dynheader">
@@ -102,7 +102,7 @@ Include dependency graph for pio_nc.c:</div>
 <div class="dyncontent">
 <div class="center"><img src="pio__nc_8c__incl.png" border="0" usemap="#pio__nc_8c" alt=""/></div>
 <map name="pio__nc_8c" id="pio__nc_8c">
-<area shape="rect" id="node3" href="pio_8h.html" title="Public headers for the PIO C interface. " alt="" coords="191,80,241,107"/></map>
+<area shape="rect" id="node3" href="pio_8h.html" title="Public headers for the PIO C interface. " alt="" coords="213,80,264,107"/></map>
 </div>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
@@ -290,6 +290,9 @@ Functions</h2></td></tr>
 <tr class="memitem:gabb380a7233ae58151d254c572baaa08c"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__put__att.html#gabb380a7233ae58151d254c572baaa08c">PIOc_put_att_double</a> (int ncid, int varid, const char *name, nc_type xtype, PIO_Offset len, const double *op)</td></tr>
 <tr class="memdesc:gabb380a7233ae58151d254c572baaa08c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write a netCDF attribute array of 64-bit floating points.  <a href="group___p_i_o__put__att.html#gabb380a7233ae58151d254c572baaa08c">More...</a><br/></td></tr>
 <tr class="separator:gabb380a7233ae58151d254c572baaa08c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af9834839b96662cf3b4464745ae57b12"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio__nc_8c.html#af9834839b96662cf3b4464745ae57b12">PIOc_copy_att</a> (int incid, int ivarid, const char *name, int oncid, int ovarid)</td></tr>
+<tr class="memdesc:af9834839b96662cf3b4464745ae57b12"><td class="mdescLeft">&#160;</td><td class="mdescRight">Copy an attribute from one file to another.  <a href="#af9834839b96662cf3b4464745ae57b12">More...</a><br/></td></tr>
+<tr class="separator:af9834839b96662cf3b4464745ae57b12"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>PIO interfaces to <a href="http://www.unidata.ucar.edu/software/netcdf/docs/modules.html">NetCDF</a> support functions. </p>
@@ -297,6 +300,65 @@ Functions</h2></td></tr>
 <dl class="section author"><dt>Author</dt><dd>Jim Edwards (<a href="#" onclick="location.href='mai'+'lto:'+'jed'+'wa'+'rds'+'@u'+'car'+'.e'+'du'; return false;">jedwa<span style="display: none;">.nosp@m.</span>rds@<span style="display: none;">.nosp@m.</span>ucar.<span style="display: none;">.nosp@m.</span>edu</a>), Ed Hartnett </dd></dl>
 <dl class="section date"><dt>Date</dt><dd>Feburary 2014, April 2016 </dd></dl>
 </div><h2 class="groupheader">Function Documentation</h2>
+<a class="anchor" id="af9834839b96662cf3b4464745ae57b12"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int PIOc_copy_att </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>incid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>ivarid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>name</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>oncid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>ovarid</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Copy an attribute from one file to another. </p>
+<p>This routine is called collectively by all tasks in the communicator ios.union_comm.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">incid</td><td>the ncid of the input file, obtained from <a class="el" href="group___p_i_o__openfile.html#gae8e01fc5492663b46def2be31a95034c" title="Open an existing file using PIO library. ">PIOc_openfile()</a> or <a class="el" href="group___p_i_o__createfile.html#gaed31e065901c964d4224b3db61a30d5e" title="Create a new file using pio. ">PIOc_createfile()</a>. </td></tr>
+    <tr><td class="paramname">ivarid</td><td>the ID of the variable with the attribute in the input file. </td></tr>
+    <tr><td class="paramname">name</td><td>the name of the attribute to be copied </td></tr>
+    <tr><td class="paramname">oncid</td><td>the ncid of the output file, obtained from <a class="el" href="group___p_i_o__openfile.html#gae8e01fc5492663b46def2be31a95034c" title="Open an existing file using PIO library. ">PIOc_openfile()</a> or <a class="el" href="group___p_i_o__createfile.html#gaed31e065901c964d4224b3db61a30d5e" title="Create a new file using pio. ">PIOc_createfile()</a>. </td></tr>
+    <tr><td class="paramname">ovarid</td><td>the ID of the variable to copy the attribute to in the output file. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>PIO_NOERR for success, error code otherwise. </dd></dl>
+<dl class="section author"><dt>Author</dt><dd>Jayesh Krishna </dd></dl>
+
+</div>
+</div>
 <a class="anchor" id="afa0ad58fad5c3c91891bb85a0d0b97f5"></a>
 <div class="memitem">
 <div class="memproto">
@@ -950,7 +1012,7 @@ Functions</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Dec 9 2019 13:28:07 for SCORPIO by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Mar 2 2020 16:24:02 for SCORPIO by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

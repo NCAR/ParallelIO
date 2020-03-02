@@ -24,7 +24,7 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">SCORPIO
-   &#160;<span id="projectnumber">1.0.3</span>
+   &#160;<span id="projectnumber">1.0.4</span>
    </div>
   </td>
  </tr>
@@ -81,7 +81,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="dir_712c0da919ba0b02aace6cff8bdaa1d4.html">ParallelIO_tmp2</a></li><li class="navelem"><a class="el" href="dir_7fd0432aa9be47589adfd0b9dee46960.html">src</a></li><li class="navelem"><a class="el" href="dir_b295c0d265ad51d2a0baf76f9cc909e5.html">clib</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_7696f96c4c391437740b3ec44f063793.html">ParallelIO_tmp</a></li><li class="navelem"><a class="el" href="dir_a164ee6fba94f501e80667bb89207e1c.html">src</a></li><li class="navelem"><a class="el" href="dir_0904bedaee7fb147d21c0478e218ab02.html">clib</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
@@ -103,6 +103,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <code>#include &lt;stdbool.h&gt;</code><br/>
 <code>#include &lt;string.h&gt;</code><br/>
 <code>#include &lt;mpi.h&gt;</code><br/>
+<code>#include &quot;pio_config.h&quot;</code><br/>
 </div><div class="textblock"><div class="dynheader">
 Include dependency graph for pio.h:</div>
 <div class="dyncontent">
@@ -673,6 +674,9 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>PIOc_inq_var_szip</b> 
 <tr class="memitem:ga3cca871639792ab07b4b75a39192d06a"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__get__att.html#ga3cca871639792ab07b4b75a39192d06a">PIOc_get_att_ulonglong</a> (int ncid, int varid, const char *name, unsigned long long *ip)</td></tr>
 <tr class="memdesc:ga3cca871639792ab07b4b75a39192d06a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the value of an 64-bit unsigned integer array attribute.  <a href="group___p_i_o__get__att.html#ga3cca871639792ab07b4b75a39192d06a">More...</a><br/></td></tr>
 <tr class="separator:ga3cca871639792ab07b4b75a39192d06a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af9834839b96662cf3b4464745ae57b12"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#af9834839b96662cf3b4464745ae57b12">PIOc_copy_att</a> (int incid, int ivarid, const char *name, int oncid, int ovarid)</td></tr>
+<tr class="memdesc:af9834839b96662cf3b4464745ae57b12"><td class="mdescLeft">&#160;</td><td class="mdescRight">Copy an attribute from one file to another.  <a href="#af9834839b96662cf3b4464745ae57b12">More...</a><br/></td></tr>
+<tr class="separator:af9834839b96662cf3b4464745ae57b12"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7d40c1af3620a12f166f41ed540aa68b"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio_8h.html#a7d40c1af3620a12f166f41ed540aa68b">PIOc_get_var</a> (int ncid, int varid, void *buf)</td></tr>
 <tr class="memdesc:a7d40c1af3620a12f166f41ed540aa68b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get all data from a variable the same type as the variable in the file.  <a href="#a7d40c1af3620a12f166f41ed540aa68b">More...</a><br/></td></tr>
 <tr class="separator:a7d40c1af3620a12f166f41ed540aa68b"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -1481,6 +1485,65 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>PIOc_get_varm_long</b>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>PIO_NOERR for success, error code otherwise. </dd></dl>
 <dl class="section author"><dt>Author</dt><dd>Jim Edwards, Ed Hartnett </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="af9834839b96662cf3b4464745ae57b12"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int PIOc_copy_att </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>incid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>ivarid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>name</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>oncid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>ovarid</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Copy an attribute from one file to another. </p>
+<p>This routine is called collectively by all tasks in the communicator ios.union_comm.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">incid</td><td>the ncid of the input file, obtained from <a class="el" href="group___p_i_o__openfile.html#gae8e01fc5492663b46def2be31a95034c" title="Open an existing file using PIO library. ">PIOc_openfile()</a> or <a class="el" href="group___p_i_o__createfile.html#gaed31e065901c964d4224b3db61a30d5e" title="Create a new file using pio. ">PIOc_createfile()</a>. </td></tr>
+    <tr><td class="paramname">ivarid</td><td>the ID of the variable with the attribute in the input file. </td></tr>
+    <tr><td class="paramname">name</td><td>the name of the attribute to be copied </td></tr>
+    <tr><td class="paramname">oncid</td><td>the ncid of the output file, obtained from <a class="el" href="group___p_i_o__openfile.html#gae8e01fc5492663b46def2be31a95034c" title="Open an existing file using PIO library. ">PIOc_openfile()</a> or <a class="el" href="group___p_i_o__createfile.html#gaed31e065901c964d4224b3db61a30d5e" title="Create a new file using pio. ">PIOc_createfile()</a>. </td></tr>
+    <tr><td class="paramname">ovarid</td><td>the ID of the variable to copy the attribute to in the output file. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>PIO_NOERR for success, error code otherwise. </dd></dl>
+<dl class="section author"><dt>Author</dt><dd>Jayesh Krishna </dd></dl>
 
 </div>
 </div>
@@ -8566,7 +8629,7 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>PIOc_get_varm_long</b>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Dec 9 2019 13:28:07 for SCORPIO by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Mar 2 2020 16:24:02 for SCORPIO by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>
