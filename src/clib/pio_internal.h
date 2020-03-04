@@ -12,31 +12,13 @@
 
 #include <config.h>
 #include <pio.h>
-#include <pio_error.h>
 #include <bget.h>
 #include <limits.h>
 #include <math.h>
-#include <netcdf.h>
-#ifdef _NETCDF4
-#include <netcdf_par.h>
-#endif
-#ifdef _PNETCDF
-#include <pnetcdf.h>
-#endif
 #ifdef TIMING
 #include <gptl.h>
 #endif
 #include <assert.h>
-#ifdef USE_MPE
-#include <mpe.h>
-#endif /* USE_MPE */
-
-#ifndef MPI_OFFSET
-/** MPI_OFFSET is an integer type of size sufficient to represent the
- * size (in bytes) of the largest file supported by MPI. In some MPI
- * implementations MPI_OFFSET is not properly defined.  */
-#define MPI_OFFSET  MPI_LONG_LONG
-#endif
 
 /* These are the sizes of types in netCDF files. Do not replace these
  * constants with sizeof() calls for C types. They are not the
@@ -74,10 +56,10 @@
 
 #if PIO_ENABLE_LOGGING
 void pio_log(int severity, const char *fmt, ...);
-#define PLOG(e) pio_log e
+#define LOG(e) pio_log e
 #else
 /** Logging macro for debugging. */
-#define PLOG(e)
+#define LOG(e)
 #endif /* PIO_ENABLE_LOGGING */
 
 /** Find maximum. */
@@ -102,31 +84,6 @@ void pio_log(int severity, const char *fmt, ...);
  * a data type when creating attributes or varaibles, it is only used
  * internally. */
 #define PIO_LONG_INTERNAL 13
-
-#ifdef USE_MPE
-/* These are for the event numbers array used to log various events in
- * the program with the MPE library, which produces output for the
- * Jumpshot program. */
-
-/* Each event has start and end. */
-#define START 0
-#define END 1
-
-/* These are the MPE states (events) we keep track of. */
-#define NUM_EVENTS 7
-#define INIT 0
-#define DECOMP 1
-#define CREATE 2
-#define OPEN 3
-#define DARRAY_WRITE 4
-#define DARRAY_READ 6
-#define CLOSE 5
-
-/* The max length of msg added to log with mpe_log_pack(). (NULL
- * terminator is not required by mpe_log_pack(), so need not be
- * counted in this total).*/
-#define MPE_MAX_MSG_LEN 32
-#endif /* USE_MPE */
 
 #if defined(__cplusplus)
 extern "C" {
@@ -196,25 +153,26 @@ extern "C" {
 
     /* List operations for var_desc_t list. */
     int add_to_varlist(int varid, int rec_var, int pio_type, int pio_type_size,
-                       MPI_Datatype mpi_type, int mpi_type_size, int ndim,
-                       var_desc_t **varlist);
+                       MPI_Datatype mpi_type, int mpi_type_size, var_desc_t **varlist);
+    int addname_to_varlist(char* varname, int varid, var_desc_t **varnamelist);
     int get_var_desc(int varid, var_desc_t **varlist, var_desc_t **var_desc);
+    int get_var_id(const char* varname, var_desc_t **varnamelist, int* varidp);
     int delete_var_desc(int varid, var_desc_t **varlist);
 
-    /* Create a file. */
-    int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filename,
-                            int mode, int use_ext_ncid);
+    void dimid_add_to_dim_list(int dimid,char* dimname, int dimval, dim_desc_t** dimlist);
+    int dimid_get_dim(int dimid, dim_desc_t **dimlist, dim_desc_t **dim_desc);
+    int dimname_add_to_dim_list(char* dimname, int dimid, int dimval, dim_desc_t** dimlist);
+    int dimname_inq_dimid(const char* dimname, int *dimid, dim_desc_t **dimlist, dim_desc_t **dim_desc);
+    
+    int dimid_inq_dimname(int dimid, const char* dimname, dim_desc_t **dimlist);
+
+    /* Create a file (internal function). */
+    int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filename, int mode);
 
     /* Open a file with optional retry as netCDF-classic if first
      * iotype does not work. */
     int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filename, int mode,
-                            int retry, int use_ext_ncid);
-
-    /* Give the mode flag from an open, determine the IOTYPE. */
-    int find_iotype_from_omode(int mode, int *iotype);
-
-    /* Give the mode flag from an nc_create call, determine the IOTYPE. */
-    int find_iotype_from_cmode(int cmode, int *iotype);
+                            int retry);
 
     /* Given PIO type, find MPI type and type size. */
     int find_mpi_type(int pio_type, MPI_Datatype *mpi_type, int *type_size);
@@ -259,8 +217,8 @@ extern "C" {
     int alloc_region2(iosystem_desc_t *ios, int ndims, io_region **region);
 
     /* Set start and count so that they describe the first region in map.*/
-    int find_region(int ndims, const int *gdims, int maplen, const PIO_Offset *map,
-                    PIO_Offset *start, PIO_Offset *count, PIO_Offset *regionlen);
+    PIO_Offset find_region(int ndims, const int *gdims, int maplen, const PIO_Offset *map,
+                           PIO_Offset *start, PIO_Offset *count);
 
     /* Calculate start and count regions for the subset rearranger. */
     int get_regions(int ndims, const int *gdimlen, int maplen, const PIO_Offset *map,
@@ -305,6 +263,9 @@ extern "C" {
 
     /* Find greatest commond divisor for long long. */
     long long lgcd (long long a, long long b );
+
+    /* Find greatest commond divisor in an array. */
+    int gcd_array(int nain, int *ain);
 
     /* Convert a global coordinate value into a local array index. */
     PIO_Offset coord_to_lindex(int ndims, const PIO_Offset *lcoord, const PIO_Offset *count);
@@ -372,8 +333,6 @@ extern "C" {
     int PIOc_get_var1_tc(int ncid, int varid, const PIO_Offset *index, nc_type xtype,
                          void *buf);
     int PIOc_get_var_tc(int ncid, int varid, nc_type xtype, void *buf);
-    int PIOc_get_vard_tc(int ncid, int varid, int decompid, const PIO_Offset recnum,
-                         nc_type xtype, void *buf);
 
     /* Generalized put functions. */
     int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Offset *count,
@@ -381,9 +340,8 @@ extern "C" {
     int PIOc_put_var1_tc(int ncid, int varid, const PIO_Offset *index, nc_type xtype,
                          const void *op);
     int PIOc_put_var_tc(int ncid, int varid, nc_type xtype, const void *op);
-    int PIOc_put_vard_tc(int ncid, int varid, int decompid, const PIO_Offset recnum,
-                         nc_type xtype, const void *buf);
 
+    int z5_inq_type(enum z5Datatype z5_type, nc_type *xtype);
     /* An internal replacement for a function pnetcdf does not
      * have. */
     int pioc_pnetcdf_inq_type(int ncid, nc_type xtype, char *name,
@@ -392,15 +350,9 @@ extern "C" {
     /* Handle end and re-defs. */
     int pioc_change_def(int ncid, int is_enddef);
 
-    /* Initialize and finalize logging, use --enable-logging at configure. */
-    int pio_init_logging(void);
+    /* Initialize and finalize logging. */
+    void pio_init_logging(void);
     void pio_finalize_logging(void );
-
-#ifdef USE_MPE
-    /* Logging with the MPE library, use --enable-mpe at configure. */
-    void pio_start_mpe_log(int state);
-    void pio_stop_mpe_log(int state, const char *msg);
-#endif /* USE_MPE */
 
     /* Write a netCDF decomp file. */
     int pioc_write_nc_decomp_int(iosystem_desc_t *ios, const char *filename, int cmode, int ndims,
@@ -420,13 +372,6 @@ extern "C" {
 
     int PIOc_inq_att_eh(int ncid, int varid, const char *name, int eh,
                         nc_type *xtypep, PIO_Offset *lenp);
-
-    /* Start a timer. */
-    int pio_start_timer(const char *name);
-
-    /* Stop a timer. */
-    int pio_stop_timer(const char *name);
-
 #if defined(__cplusplus)
 }
 #endif

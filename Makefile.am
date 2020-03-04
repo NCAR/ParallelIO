@@ -10,6 +10,8 @@ if BUILD_DOCS
 DOC = doc
 endif
 
-SUBDIRS = src tests examples ${DOC} scripts cmake
+SUBDIRS = src tests examples ${DOC} scripts
 
-EXTRA_DIST = CMakeLists.txt set_flags.am COPYRIGHT cmake_config.h.in
+EXTRA_DIST = CMakeLists.txt set_flags.am COPYRIGHT
+
+CLEANFILES = docs/* docs

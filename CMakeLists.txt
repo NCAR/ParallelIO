@@ -1,11 +1,11 @@
 cmake_minimum_required (VERSION 2.8.12)
-project (PIO C Fortran)
+project (PIO C CXX Fortran)
 #cmake_policy(VERSION 3.5.2)
 
 # The project version number.
-set(VERSION_MAJOR   2   CACHE STRING "Project major version number.")
+set(VERSION_MAJOR   3   CACHE STRING "Project major version number.")
 set(VERSION_MINOR   5   CACHE STRING "Project minor version number.")
-set(VERSION_PATCH   0   CACHE STRING "Project patch version number.")
+set(VERSION_PATCH   2   CACHE STRING "Project patch version number.")
 mark_as_advanced(VERSION_MAJOR VERSION_MINOR VERSION_PATCH)
 
 # The size of the data buffer for write/read_darray().
@@ -29,6 +29,7 @@ option (PIO_USE_MPISERIAL    "Enable mpi-serial support (instead of MPI)"   OFF)
 option (PIO_USE_MALLOC       "Use native malloc (instead of bget package)"  ON)
 option (PIO_USE_PNETCDF_VARD       "Use pnetcdf put_vard "  OFF)
 option (WITH_PNETCDF         "Require the use of PnetCDF"                   ON)
+option (WITH_Z5              "Require the use of Z5"                        ON)
 
 # Set a variable that appears in the config.h.in file.
 if(PIO_USE_PNETCDF_VARD)
@@ -108,6 +109,68 @@ set (PIO_FILESYSTEM_HINTS IGNORE CACHE STRING "Filesystem hints (lustre or gpfs)
 #===== Testing Options =====
 option (PIO_ENABLE_TESTS  "Enable the testing builds"                           ON)
 option (PIO_VALGRIND_CHECK  "Enable memory leak check using valgrind"           OFF)
+
+#==============================================================================
+#  Z5 BACKEND
+#==============================================================================
+
+# Z5
+if (DEFINED Z5_DIR)
+  message("Z5_DIR: " ${Z5_DIR})
+  set(Z5_DIR CACHE PATH "z5 location")
+  include_directories(${Z5_DIR})
+  #boost
+  find_package(Boost REQUIRED COMPONENTS system filesystem)
+  message("Boost_FILESYSTEM_LIBRARY:" ${Boost_FILESYSTEM_LIBRARY})
+  message("Boost_SYSTEM_LIBRARY:" ${Boost_SYSTEM_LIBRARY})
+  set(BOOST_LIBRARIES
+          ${Boost_FILESYSTEM_LIBRARY}
+          ${Boost_SYSTEM_LIBRARY})
+  #zlib
+  option(WITH_ZLIB ON)
+  if(WITH_ZLIB)
+    find_package(ZLIB REQUIRED)
+    set(ZLIB_ROOT CACHE PATH "zlib location")
+    include_directories(${ZLIB_INCLUDE_DIRS})
+    message("ZLIB_INCLUDE_DIRS: " ${ZLIB_INCLUDE_DIRS})
+    add_definitions(-DWITH_ZLIB)
+    SET(COMPRESSION_LIBRARIES "${COMPRESSION_LIBRARIES};${ZLIB_LIBRARIES}")
+  endif()
+  message("BLOSC_ROOT:" ${BLOSC_SEARCH_HEADER_PATHS})
+  option(WITH_BLOSC ON)
+  if(WITH_BLOSC)
+    find_package(BLOSC REQUIRED)
+    #set(BLOSC_SEARCH_HEADER_PATHS CACHE PATH "blosc header location")
+    #set(BLOSC_SEARCH_LIB_PATH CACHE PATH "blosc lib location")
+    include_directories(${BLOSC_INCLUDE_DIR})
+    message("BLOSC_INCLUDE_DIRS: " ${BLOSC_INCLUDE_DIR})
+    message("BLOSC_LIBRARY: " ${BLOSC_LIBRARIES})
+    add_definitions(-DWITH_BLOSC)
+    SET(COMPRESSION_LIBRARIES "${COMPRESSION_LIBRARIES};${BLOSC_LIBRARIES}")
+  endif()
+  #lz4
+  option(WITH_LZ4 ON)
+  if(WITH_LZ4)
+    find_package(LZ4 REQUIRED)
+    set(LZ4_ROOT CACHE PATH "lz4 location")
+    include_directories(${LZ4_INCLUDE_DIR})
+    add_definitions(-DWITH_LZ4)
+    SET(COMPRESSION_LIBRARIES "${COMPRESSION_LIBRARIES};${LZ4_LIBRARY}")
+  endif()
+  #CXX 11
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -cxxlib=/glade/u/home/weile/miniconda3/envs/z5-py36/ -pthread /glade/u/home/weile/miniconda3/envs/z5-py36/lib/libstdc++.so")
+  message(${CMAKE_CXX_FLAGS})
+  set(CMAKE_CXX_STANDARD_REQUIRED ON)
+  #MARRAY
+  option(WITH_MARRAY ON)
+  if(WITH_MARRAY)
+    set(MARRAY_INCLUDE_DIR ${CMAKE_PREFIX_PATH} CACHE PATH "marray location")
+    add_definitions(-DWITH_MARRAY)
+    include_directories(${MARRAY_INCLUDE_DIR})
+    message("MARRAY_INCLUDE_DIR:" ${MARRAY_INCLUDE_DIR})
+  endif()
+  set(CMAKE_PREFIX_PATH CACHE PATH "CMAKE_PREFIX_PATH path")
+endif ()
 
 #==============================================================================
 #  BACKWARDS COMPATIBILITY

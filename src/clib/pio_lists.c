@@ -48,8 +48,8 @@ int
 pio_get_file(int ncid, file_desc_t **cfile1)
 {
     file_desc_t *cfile = NULL;
-
-    PLOG((2, "pio_get_file ncid = %d", ncid));
+    //current_file = NULL; //TODO Z5Z5
+    LOG((2, "pio_get_file ncid = %d", ncid));
 
     /* Caller must provide this. */
     if (!cfile1)
@@ -133,11 +133,11 @@ pio_delete_iosystem_from_list(int piosysid)
 {
     iosystem_desc_t *ciosystem, *piosystem = NULL;
 
-    PLOG((1, "pio_delete_iosystem_from_list piosysid = %d", piosysid));
+    LOG((1, "pio_delete_iosystem_from_list piosysid = %d", piosysid));
 
     for (ciosystem = pio_iosystem_list; ciosystem; ciosystem = ciosystem->next)
     {
-        PLOG((3, "ciosystem->iosysid = %d", ciosystem->iosysid));
+        LOG((3, "ciosystem->iosysid = %d", ciosystem->iosysid));
         if (ciosystem->iosysid == piosysid)
         {
             if (piosystem == NULL)
@@ -199,7 +199,7 @@ pio_get_iosystem_from_id(int iosysid)
 {
     iosystem_desc_t *ciosystem;
 
-    PLOG((2, "pio_get_iosystem_from_id iosysid = %d", iosysid));
+    LOG((2, "pio_get_iosystem_from_id iosysid = %d", iosysid));
 
     for (ciosystem = pio_iosystem_list; ciosystem; ciosystem = ciosystem->next)
         if (ciosystem->iosysid == iosysid)
@@ -223,7 +223,7 @@ pio_num_iosystem(int *niosysid)
     /* Count the elements in the list. */
     for (iosystem_desc_t *c = pio_iosystem_list; c; c = c->next)
     {
-        PLOG((3, "pio_num_iosystem c->iosysid %d", c->iosysid));
+        LOG((3, "pio_num_iosystem c->iosysid %d", c->iosysid));
         count++;
     }
 
@@ -303,24 +303,18 @@ pio_delete_iodesc_from_list(int ioid)
  * @param pio_type_size size of the PIO type in bytes
  * @param mpi_type the MPI type.
  * @param mpi_type_size size of the MPI type in bytes.
- * @param ndims the number of dims for this var.
  * @param varlist pointer to list to add to.
  * @returns 0 for success, error code otherwise.
  * @author Ed Hartnett
  */
 int
 add_to_varlist(int varid, int rec_var, int pio_type, int pio_type_size,
-               MPI_Datatype mpi_type, int mpi_type_size, int ndims,
-               var_desc_t **varlist)
+               MPI_Datatype mpi_type, int mpi_type_size, var_desc_t **varlist)
 {
     var_desc_t *var_desc;
 
     /* Check inputs. */
     pioassert(varid >= 0 && varlist, "invalid input", __FILE__, __LINE__);
-
-    PLOG((4, "add_to_varlist varid %d rec_var %d pio_type %d pio_type_size %d "
-          "mpi_type %d mpi_type_size %d ndims %d", varid, rec_var, pio_type,
-          pio_type_size, mpi_type, mpi_type_size, ndims));
 
     /* Allocate storage. */
     if (!(var_desc = calloc(1, sizeof(var_desc_t))))
@@ -333,13 +327,39 @@ add_to_varlist(int varid, int rec_var, int pio_type, int pio_type_size,
     var_desc->pio_type_size = pio_type_size;
     var_desc->mpi_type = mpi_type;
     var_desc->mpi_type_size = mpi_type_size;
-    var_desc->ndims = ndims;
     var_desc->record = -1;
 
     HASH_ADD_INT(*varlist, varid, var_desc);
 
     return PIO_NOERR;
 }
+int
+addname_to_varlist(char* varname,int varid, var_desc_t **varnamelist)
+{
+    var_desc_t *var_desc;
+
+    /* Check inputs. */
+    pioassert(varid >= 0 , "invalid input", __FILE__, __LINE__);
+    //fprintf(stderr,"try to add %s = %d id\n",varname,varid);
+    //if(strcmp(varname ,"lev")==0){
+    //   fprintf(stderr,"varname = %s\n",varname);
+    //}
+
+
+    /* Allocate storage. */
+    if (!(var_desc = calloc(1, sizeof(var_desc_t))))
+        return PIO_ENOMEM;
+    
+    /* Set values. */
+    var_desc->varid = varid;
+    var_desc->varname = malloc((1+strlen(varname)) * sizeof(char));
+    strcpy(var_desc->varname , varname);
+    HASH_ADD_STR(*varnamelist, varname, var_desc);
+    //fprintf(stderr,"added varname = %s id %d\n",varname,varid);
+
+    return PIO_NOERR;
+}
+
 
 /**
  * Get a var_desc_t info for a variable.
@@ -370,6 +390,32 @@ get_var_desc(int varid, var_desc_t **varlist, var_desc_t **var_desc)
     else
         *var_desc = my_var;
 
+    return PIO_NOERR;
+}
+
+int
+get_var_id(const char* varname, var_desc_t **varnamelist, int* varidp)
+{
+    var_desc_t *my_var=NULL;
+
+    //fprintf(stderr,"varid = %s\n",varname);
+    /* Check inputs. */
+    pioassert(varnamelist , "invalid input", __FILE__, __LINE__);
+
+    /* Empty varlist. */
+    if (!*varnamelist)
+        return PIO_ENOTVAR;
+
+    //fprintf(stderr,"try to get varname = %s id\n",varname);
+    HASH_FIND_STR( *varnamelist, varname, my_var);
+
+    /* Did we find it? */
+    if (!my_var){
+        return PIO_ENOTVAR;
+    }
+    else
+        *varidp = my_var->varid;
+    //fprintf(stderr,"3 get %s = %d\n",varname,*varidp);
     return PIO_NOERR;
 }
 

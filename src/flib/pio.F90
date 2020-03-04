@@ -7,7 +7,6 @@
 !>
 !! @defgroup PIO_set_blocksize Box Rearranger Settings
 !! Set the box rearranger blocksize in Fortran.
-#include "config.h"
 
 module pio
 ! Package all exposed variables and functions under one roof
@@ -24,11 +23,6 @@ module pio
        PIO_deletefile, PIO_get_numiotasks, PIO_iotype_available, &
        pio_set_rearr_opts
 
-#ifdef NETCDF_INTEGRATION
-  use ncint_mod, only: nf_def_iosystem, nf_free_iosystem, &
-       nf_def_decomp, nf_free_decomp, nf_put_vard_int
-#endif
-
   use pio_types, only : io_desc_t, file_desc_t, var_desc_t, iosystem_desc_t, &
        pio_rearr_opt_t, pio_rearr_comm_fc_opt_t, pio_rearr_comm_fc_2d_enable,&
        pio_rearr_comm_fc_1d_comp2io, pio_rearr_comm_fc_1d_io2comp,&
@@ -36,7 +30,7 @@ module pio
        pio_rearr_comm_p2p, pio_rearr_comm_coll,&
        pio_int, pio_real, pio_double, pio_noerr, iotype_netcdf, &
        iotype_pnetcdf,  pio_iotype_netcdf4p, pio_iotype_netcdf4c, &
-       pio_iotype_pnetcdf,pio_iotype_netcdf, &
+       pio_iotype_pnetcdf,pio_iotype_netcdf,pio_iotype_z5, &
        pio_global, pio_char, pio_write, pio_nowrite, pio_clobber, pio_noclobber, &
        pio_max_name, pio_max_var_dims, pio_rearr_subset, pio_rearr_box, &
 #if defined(_NETCDF) || defined(_PNETCDF)

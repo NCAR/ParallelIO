@@ -47,6 +47,33 @@ long long lgcd(long long a, long long b)
 }
 
 /**
+ * Return the gcd of elements in an int array.
+ *
+ * @param nain length of the array
+ * @param ain an array of length nain
+ * @returns greatest common divisor.
+ */
+int gcd_array(int nain, int *ain)
+{
+    int i;
+    int bsize = 1;
+
+    for (i = 0; i < nain; i++)
+        if (ain[i] <= 1)
+            return bsize;
+
+    bsize = ain[0];
+    i = 1;
+    while (i < nain && bsize > 1)
+    {
+        bsize = gcd(bsize, ain[i]);
+        i++;
+    }
+
+    return bsize;
+}
+
+/**
  * Return the greatest common devisor of array ain as int_64.
  *
  * @param nain number of elements in ain.
@@ -89,7 +116,7 @@ void compute_one_dim(int gdim, int ioprocs, int rank, PIO_Offset *start,
     int irank;     /* The IO rank for this task. */
     int remainder;
     int adds;
-    PIO_Offset lstart, lcount;
+    PIO_Offset lstart, lcount, lcount2;
 
     /* Check inputs. */
     pioassert(gdim >= 0 && ioprocs > 0 && rank >= 0 && start && count,
@@ -99,25 +126,171 @@ void compute_one_dim(int gdim, int ioprocs, int rank, PIO_Offset *start,
     irank = rank % ioprocs;
 
     /* Each IO task will have its share of the global dim. */
-    lcount = (long int)(gdim / ioprocs);
+    /* added ceil and float for Z5 */
+    //lcount = (long int)(gdim / ioprocs);
+    lcount = (long int)ceil((float)gdim / ioprocs);
+    //lcount2 = (long int)floor((float)gdim / ioprocs);
+ 
+    //if ((lcount * ioprocs) - gdim > lcount)
+    //   lcount = lcount2; 
 
     /* Find the start for this task. */
     lstart = (long int)(lcount * irank);
 
     /* Is there anything left over? */
-    remainder = gdim - lcount * ioprocs;
-
+    //remainder = gdim - lcount * ioprocs;
+    remainder = lcount * ioprocs - gdim;
+    fprintf(stderr, "remainder = %ld \n",remainder);
     /* Distribute left over data to some IO tasks. */
-    if (remainder >= ioprocs - irank)
-    {
-        lcount++;
-        if ((adds = irank + remainder - ioprocs) > 0)
-            lstart += adds;
+    //if (remainder >= ioprocs - irank)
+    if (lstart + lcount > gdim ){
+       if (lstart + lcount < gdim + lcount) {
+        //lcount++;
+         lcount = lcount - remainder;
+       }
+        //if ((adds = irank + remainder - ioprocs) > 0)
+        //    lstart += adds;
+    
+       else{
+        lstart = 0;
+        lcount = 0;
+       }
     }
-
     /* Return results to caller. */
     *start = lstart;
     *count = lcount;
+}
+
+/**
+ * Look for the largest block of data for io which can be expressed in
+ * terms of start and count (account for gaps).
+ *
+ * @param arrlen
+ * @param arr_in
+ * @returns the size of the block
+ */
+PIO_Offset GCDblocksize_gaps(int arrlen, const PIO_Offset *arr_in)
+{
+    int numblks = 0;  /* Number of blocks. */
+    int numtimes = 0; /* Number of times adjacent arr_in elements differ by != 1. */
+    int numgaps = 0;  /* Number of gaps. */
+    int j;  /* Loop counter. */
+    int ii; /* Loop counter. */
+    int n;
+    PIO_Offset bsize;     /* Size of the block. */
+    PIO_Offset bsizeg;    /* Size of gap block. */
+    PIO_Offset blklensum; /* Sum of all block lengths. */
+    PIO_Offset *del_arr = NULL; /* Array of deltas between adjacent elements in arr_in. */
+
+    /* Check inputs. */
+    pioassert(arrlen > 0 && arr_in, "invalid input", __FILE__, __LINE__);
+
+    if (arrlen > 1)
+    {
+        if (!(del_arr = malloc((arrlen - 1) * sizeof(PIO_Offset))))
+            return pio_err(NULL, NULL, PIO_ENOMEM, __FILE__, __LINE__);
+    }
+
+    /* Count the number of contiguous blocks in arr_in. If any if
+       these blocks is of size 1, we are done and can return.
+       Otherwise numtimes is the number of blocks. */
+    for (int i = 0; i < arrlen - 1; i++)
+    {
+        del_arr[i] = arr_in[i + 1] - arr_in[i];
+        if (del_arr[i] != 1)
+        {
+            numtimes++;
+            if ( i > 0 && del_arr[i - 1] > 1)
+            {
+                free(del_arr);
+                del_arr = NULL;
+                return(1);
+            }
+        }
+    }
+
+    /* If numtimes is 0 the all of the data in arr_in is contiguous
+     * and numblks=1. Not sure why I have three different variables
+     * here, seems like n,numblks and numtimes could be combined. */
+    numblks = numtimes + 1;
+    if (numtimes == 0)
+        n = numblks;
+    else
+        n = numtimes;
+
+    /* If numblks==1 then the result is arrlen and you can return. */
+    bsize = (PIO_Offset)arrlen;
+    if (numblks > 1)
+    {
+        PIO_Offset blk_len[numblks];
+        PIO_Offset gaps[numtimes];
+
+        /* If numblks > 1 then numtimes must be > 0 and this if block
+         * isn't needed. */
+        if (numtimes > 0)
+        {
+            ii = 0;
+            for (int i = 0; i < arrlen - 1; i++)
+                if (del_arr[i] > 1)
+                    gaps[ii++] = del_arr[i] - 1;
+            numgaps = ii;
+        }
+
+        /* If numblks > 1 then arrlen must be > 1 */
+        PIO_Offset *loc_arr = calloc(arrlen - 1, sizeof(PIO_Offset));
+        if (!loc_arr)
+            return pio_err(NULL, NULL, PIO_ENOMEM, __FILE__, __LINE__);
+
+        j = 0;
+        /* If numblks > 1 then n must be <= (arrlen - 1) */
+        for (int i = 0; i < n; i++)
+            loc_arr[i] = 1;
+
+        for (int i = 0; i < arrlen - 1; i++)
+            if(del_arr[i] != 1)
+                loc_arr[j++] = i;
+
+        /* This is handled differently from the Fortran version in PIO1,
+         * since array index is 1-based in Fortran and 0-based in C.
+         * Original Fortran code: blk_len(1) = loc_arr(1)
+         * Converted C code (incorrect): blk_len[0] = loc_arr[0];
+         * Converted C code (correct): blk_len[0] = loc_arr[0] + 1;
+         * For example, if loc_arr[0] is 2, the first block actually
+         * has 3 elements with indices 0, 1 and 2. */
+        blk_len[0] = loc_arr[0] + 1;
+        blklensum = blk_len[0];
+        /* If numblks > 1 then numblks must be <= arrlen */
+        for(int i = 1; i < numblks - 1; i++)
+        {
+            blk_len[i] = loc_arr[i] - loc_arr[i - 1];
+            blklensum += blk_len[i];
+        }
+        free(loc_arr);
+        loc_arr = NULL;
+        blk_len[numblks - 1] = arrlen - blklensum;
+
+        /* Get the GCD in blk_len array. */
+        bsize = lgcd_array(numblks, blk_len);
+
+        /* I don't recall why i needed these next two blocks, I
+         * remember struggling to get this right in all cases and I'm
+         * afraid that the end result is that bsize is almost always
+         * 1. */
+        if (numgaps > 0)
+        {
+            bsizeg = lgcd_array(numgaps, gaps);
+            bsize = lgcd(bsize, bsizeg);
+        }
+
+        /* ??? */
+        if (arr_in[0] > 0)
+            bsize = lgcd(bsize, arr_in[0]);
+    }
+
+    free(del_arr);
+    del_arr = NULL;
+
+    return bsize;
 }
 
 /**
@@ -165,7 +338,7 @@ PIO_Offset GCDblocksize(int arrlen, const PIO_Offset *arr_in)
 
             bsize = lgcd(bsize, blk_len);
             if (bsize == 1)
-                return 1;
+              return 1;
 
             /* Continue to find next block. */
             blk_len = 1;
@@ -216,8 +389,8 @@ int CalcStartandCount(int pio_type, int ndims, const int *gdims, int num_io_proc
     /* Check inputs. */
     pioassert(pio_type > 0 && ndims > 0 && gdims && num_io_procs > 0 && start && count,
               "invalid input", __FILE__, __LINE__);
-    PLOG((1, "CalcStartandCount pio_type = %d ndims = %d num_io_procs = %d myiorank = %d",
-          pio_type, ndims, num_io_procs, myiorank));
+    LOG((1, "CalcStartandCount pio_type = %d ndims = %d num_io_procs = %d myiorank = %d",
+         pio_type, ndims, num_io_procs, myiorank));
 
     /* We are trying to find start and count indices for each iotask
      * such that each task has approximately blocksize data to write
@@ -240,8 +413,9 @@ int CalcStartandCount(int pio_type, int ndims, const int *gdims, int num_io_proc
     /* Find the number of ioprocs that are needed so that we have
      * blocksize data on each iotask*/
     use_io_procs = max(1, min((int)((float)pgdims / (float)minblocksize + 0.5), num_io_procs));
-
-    maxbytes = max(blocksize, pgdims * basesize / use_io_procs) + 256;
+    /* removed 256 to get a better decomp for Z5 */
+    //maxbytes = max(blocksize, pgdims * basesize / use_io_procs) + 256;
+    maxbytes = max(blocksize, pgdims * basesize / use_io_procs) ;
 
     /* Initialize to 0. */
     converged = 0;
@@ -270,7 +444,8 @@ int CalcStartandCount(int pio_type, int ndims, const int *gdims, int num_io_proc
             for (i = ndims - 1; i >= 0; i--)
             {
                 p = p * gdims[i];
-                if (p / use_io_procs > maxbytes)
+                /* > is changed to >= for Z5 */
+                if (p / use_io_procs >= maxbytes)
                 {
                     ldims = i;
                     break;
@@ -292,6 +467,7 @@ int CalcStartandCount(int pio_type, int ndims, const int *gdims, int num_io_proc
                 if (gdims[i] >= ioprocs)
                 {
                     compute_one_dim(gdims[i], ioprocs, tiorank, &start[i], &count[i]);
+                    printf("iorank=%d,ioprocs=%d,gdims[i]=%d,start[i]= %lu, count[i]=%lu\n",tiorank,ioprocs,gdims[i],start[i],count[i]);
                     if (start[i] + count[i] > gdims[i] + 1)
                     {
                         piodie("Start plus count exceeds dimension bound",__FILE__,__LINE__);
@@ -302,6 +478,7 @@ int CalcStartandCount(int pio_type, int ndims, const int *gdims, int num_io_proc
                     tioprocs = gdims[i];
                     tiorank = (iorank * tioprocs) / ioprocs;
                     compute_one_dim(gdims[i], tioprocs, tiorank, &start[i], &count[i]);
+                    printf("start[i]= %lu, count[i]=%lu\n",start[i],count[i]);
                     ioprocs = ioprocs / tioprocs;
                     tiorank  = iorank % ioprocs;
                 }
@@ -349,6 +526,7 @@ int CalcStartandCount(int pio_type, int ndims, const int *gdims, int num_io_proc
         {
             start[i] = mystart[i];
             count[i] = mycount[i];
+            printf("iorank=%d,start[i]= %lu, count[i]=%lu\n",iorank,start[i],count[i]);
         }
     }
     else
