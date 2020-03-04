@@ -1,1 +1,0 @@
-/glade/u/apps/ch/opt/ncarcompilers/0.5.0/gnu/8.3.0/mpi/mpicc  -std=c99 -g -O0 -g  -rdynamic CMakeFiles/test_async_mpi.dir/test_async_mpi.c.o  -o test_async_mpi 

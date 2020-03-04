@@ -1,3 +1,0 @@
-repository='https://github.com/PARALLELIO/genf90'
-module=''
-tag=''

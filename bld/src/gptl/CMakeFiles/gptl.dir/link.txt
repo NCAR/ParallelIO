@@ -1,2 +1,0 @@
-/usr/bin/ar qc libgptl.a  CMakeFiles/gptl.dir/perf_mod.F90.o CMakeFiles/gptl.dir/perf_utils.F90.o CMakeFiles/gptl.dir/GPTLget_memusage.c.o CMakeFiles/gptl.dir/GPTLprint_memusage.c.o CMakeFiles/gptl.dir/GPTLutil.c.o CMakeFiles/gptl.dir/f_wrappers.c.o CMakeFiles/gptl.dir/gptl.c.o CMakeFiles/gptl.dir/gptl_papi.c.o CMakeFiles/gptl.dir/threadutil.c.o
-/usr/bin/ranlib libgptl.a

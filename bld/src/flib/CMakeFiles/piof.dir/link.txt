@@ -1,2 +1,0 @@
-/usr/bin/ar qc libpiof.a  CMakeFiles/piof.dir/pio_nf.F90.o CMakeFiles/piof.dir/pio.F90.o CMakeFiles/piof.dir/pio_kinds.F90.o CMakeFiles/piof.dir/pio_types.F90.o CMakeFiles/piof.dir/piolib_mod.F90.o CMakeFiles/piof.dir/pio_support.F90.o CMakeFiles/piof.dir/pionfatt_mod.F90.o CMakeFiles/piof.dir/pionfput_mod.F90.o CMakeFiles/piof.dir/pionfget_mod.F90.o CMakeFiles/piof.dir/piodarray.F90.o
-/usr/bin/ranlib libpiof.a

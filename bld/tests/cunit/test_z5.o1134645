@@ -1,1 +1,0 @@
-/var/spool/pbs/mom_priv/jobs/1134645.chadmin1.ib0.cheyenne.ucar.edu.SC: line 22: 46864 Killed                  mpiexec_mpt -n 4 ./test_z5_create_file &> tmp

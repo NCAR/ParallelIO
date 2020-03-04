@@ -1,2 +1,0 @@
-/usr/bin/ar qc libz5wrapper.a  CMakeFiles/z5wrapper.dir/z5wrapper.cc.o
-/usr/bin/ranlib libz5wrapper.a
