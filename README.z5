@@ -1,0 +1,14 @@
+module load gnu
+module remove netcdf
+module load pnetcdf netcdf-mpi arm-forge cmake
+
+run ./run_cmake.sh to compile the codes
+cd bld/tests/cunit
+copy ../../../exec_makez5test.sh to current directory
+copy ../../../subz5_2.pbs to current directory
+run ./exec_makez5test.sh
+qsub subz5_2.pbs
+
+if modified the src/clib/*.c
+run "make test_darray_3d", it will compile the codes and 
+generate test_darray_3d executable again

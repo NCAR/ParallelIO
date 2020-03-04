@@ -340,6 +340,33 @@ add_to_varlist(int varid, int rec_var, int pio_type, int pio_type_size,
 
     return PIO_NOERR;
 }
+int
+addname_to_varlist(char* varname,int varid, var_desc_t **varnamelist)
+{
+    var_desc_t *var_desc;
+
+    /* Check inputs. */
+    pioassert(varid >= 0 , "invalid input", __FILE__, __LINE__);
+    //fprintf(stderr,"try to add %s = %d id\n",varname,varid);
+    //if(strcmp(varname ,"lev")==0){
+    //   fprintf(stderr,"varname = %s\n",varname);
+    //}
+
+
+    /* Allocate storage. */
+    if (!(var_desc = calloc(1, sizeof(var_desc_t))))
+        return PIO_ENOMEM;
+    
+    /* Set values. */
+    var_desc->varid = varid;
+    var_desc->varname = malloc((1+strlen(varname)) * sizeof(char));
+    strcpy(var_desc->varname , varname);
+    HASH_ADD_STR(*varnamelist, varname, var_desc);
+    //fprintf(stderr,"added varname = %s id %d\n",varname,varid);
+
+    return PIO_NOERR;
+}
+
 
 /**
  * Get a var_desc_t info for a variable.
@@ -370,6 +397,32 @@ get_var_desc(int varid, var_desc_t **varlist, var_desc_t **var_desc)
     else
         *var_desc = my_var;
 
+    return PIO_NOERR;
+}
+
+int
+get_var_id(const char* varname, var_desc_t **varnamelist, int* varidp)
+{
+    var_desc_t *my_var=NULL;
+
+    //fprintf(stderr,"varid = %s\n",varname);
+    /* Check inputs. */
+    pioassert(varnamelist , "invalid input", __FILE__, __LINE__);
+
+    /* Empty varlist. */
+    if (!*varnamelist)
+        return PIO_ENOTVAR;
+
+    //fprintf(stderr,"try to get varname = %s id\n",varname);
+    HASH_FIND_STR( *varnamelist, varname, my_var);
+
+    /* Did we find it? */
+    if (!my_var){
+        return PIO_ENOTVAR;
+    }
+    else
+        *varidp = my_var->varid;
+    //fprintf(stderr,"3 get %s = %d\n",varname,*varidp);
     return PIO_NOERR;
 }
 

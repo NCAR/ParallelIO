@@ -1,0 +1,12 @@
+# The fortran modules provided by this target.
+provides
+ pio.mod
+ pio_kinds.mod
+ pio_nf.mod
+ pio_support.mod
+ pio_types.mod
+ piodarray.mod
+ piolib_mod.mod
+ pionfatt_mod.mod
+ pionfget_mod.mod
+ pionfput_mod.mod

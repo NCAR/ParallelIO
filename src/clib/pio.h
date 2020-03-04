@@ -97,11 +97,39 @@
 /** A convience macro for netCDF integration code. */
 #define NC_PIO NC_UDF0
 
+#define MAX_Z5_FILENAME_LEN_Z5 256
+#define MAX_Z5_DIMNAME_LEN_Z5 256
+
+typedef struct dim_desc_t
+{
+    char* dimname;
+
+    int dimid;
+
+    PIO_Offset dimval;
+
+    /** Hash table entry. */
+    UT_hash_handle hh;
+} dim_desc_t;
+
+#define VARIABLEGROUP "/variables/"
+#define Z5FILEEXTENSION ".z5"
 /**
  * Variable description structure.
  */
 typedef struct var_desc_t
 {
+    char* varname;
+    long int* shape;
+    long int* chunk;
+    struct dim_desc_t *dim_desc_t;
+
+    nc_type xtypep;
+
+    int *dimidsp;
+
+    int natts;
+
     /** Variable ID. */
     int varid;
 
@@ -546,6 +574,10 @@ typedef struct wmulti_buffer
  */
 typedef struct file_desc_t
 {
+    int natts;
+    int unlimitedid;
+    int dimid_curr;
+    int varid_curr;
     /** The IO system ID used to open this file. */
     iosystem_desc_t *iosystem;
 
@@ -556,11 +588,21 @@ typedef struct file_desc_t
     /** The ncid that will be returned to the user. */
     int pio_ncid;
 
+    /** The filename that will be returned to the user. */
+    char filename[MAX_Z5_FILENAME_LEN_Z5];
+
     /** The IOTYPE value that was used to open this file. */
     int iotype;
 
     /** List of variables in this file. */
     struct var_desc_t *varlist;
+    struct var_desc_t *varnamelist;
+
+    /** List of dims in this file*/
+    struct dim_desc_t *dimidlist;
+    
+    /** List of dims in this file*/
+    struct dim_desc_t *dimnamelist;
 
     /** Number of variables. */
     int nvars;
@@ -607,7 +649,10 @@ enum PIO_IOTYPE
     PIO_IOTYPE_NETCDF4C = 3,
 
     /** NetCDF4 (HDF5) parallel */
-    PIO_IOTYPE_NETCDF4P = 4
+    PIO_IOTYPE_NETCDF4P = 4,
+
+    /** Z5 Type */
+    PIO_IOTYPE_Z5 = 5
 };
 
 /**

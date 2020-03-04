@@ -89,7 +89,7 @@ void compute_one_dim(int gdim, int ioprocs, int rank, PIO_Offset *start,
     int irank;     /* The IO rank for this task. */
     int remainder;
     int adds;
-    PIO_Offset lstart, lcount;
+    PIO_Offset lstart, lcount, lcount2;
 
     /* Check inputs. */
     pioassert(gdim >= 0 && ioprocs > 0 && rank >= 0 && start && count,
@@ -99,22 +99,36 @@ void compute_one_dim(int gdim, int ioprocs, int rank, PIO_Offset *start,
     irank = rank % ioprocs;
 
     /* Each IO task will have its share of the global dim. */
-    lcount = (long int)(gdim / ioprocs);
+    /* added ceil and float for Z5 */
+    //lcount = (long int)(gdim / ioprocs);
+    lcount = (long int)ceil((float)gdim / ioprocs);
+    //lcount2 = (long int)floor((float)gdim / ioprocs);
+ 
+    //if ((lcount * ioprocs) - gdim > lcount)
+    //   lcount = lcount2; 
 
     /* Find the start for this task. */
     lstart = (long int)(lcount * irank);
 
     /* Is there anything left over? */
-    remainder = gdim - lcount * ioprocs;
-
+    //remainder = gdim - lcount * ioprocs;
+    remainder = lcount * ioprocs - gdim;
+    fprintf(stderr, "remainder = %ld \n",remainder);
     /* Distribute left over data to some IO tasks. */
-    if (remainder >= ioprocs - irank)
-    {
-        lcount++;
-        if ((adds = irank + remainder - ioprocs) > 0)
-            lstart += adds;
+    //if (remainder >= ioprocs - irank)
+    if (lstart + lcount > gdim ){
+       if (lstart + lcount < gdim + lcount) {
+        //lcount++;
+         lcount = lcount - remainder;
+       }
+        //if ((adds = irank + remainder - ioprocs) > 0)
+        //    lstart += adds;
+    
+       else{
+        lstart = 0;
+        lcount = 0;
+       }
     }
-
     /* Return results to caller. */
     *start = lstart;
     *count = lcount;
@@ -240,8 +254,9 @@ int CalcStartandCount(int pio_type, int ndims, const int *gdims, int num_io_proc
     /* Find the number of ioprocs that are needed so that we have
      * blocksize data on each iotask*/
     use_io_procs = max(1, min((int)((float)pgdims / (float)minblocksize + 0.5), num_io_procs));
-
-    maxbytes = max(blocksize, pgdims * basesize / use_io_procs) + 256;
+    /* removed 256 to get a better decomp for Z5 */
+    //maxbytes = max(blocksize, pgdims * basesize / use_io_procs) + 256;
+    maxbytes = max(blocksize, pgdims * basesize / use_io_procs) ;
 
     /* Initialize to 0. */
     converged = 0;
@@ -270,7 +285,8 @@ int CalcStartandCount(int pio_type, int ndims, const int *gdims, int num_io_proc
             for (i = ndims - 1; i >= 0; i--)
             {
                 p = p * gdims[i];
-                if (p / use_io_procs > maxbytes)
+                /* > is changed to >= for Z5 */
+                if (p / use_io_procs >= maxbytes)
                 {
                     ldims = i;
                     break;
@@ -292,6 +308,7 @@ int CalcStartandCount(int pio_type, int ndims, const int *gdims, int num_io_proc
                 if (gdims[i] >= ioprocs)
                 {
                     compute_one_dim(gdims[i], ioprocs, tiorank, &start[i], &count[i]);
+                    printf("iorank=%d,ioprocs=%d,gdims[i]=%d,start[i]= %lu, count[i]=%lu\n",tiorank,ioprocs,gdims[i],start[i],count[i]);
                     if (start[i] + count[i] > gdims[i] + 1)
                     {
                         piodie("Start plus count exceeds dimension bound",__FILE__,__LINE__);
@@ -302,6 +319,7 @@ int CalcStartandCount(int pio_type, int ndims, const int *gdims, int num_io_proc
                     tioprocs = gdims[i];
                     tiorank = (iorank * tioprocs) / ioprocs;
                     compute_one_dim(gdims[i], tioprocs, tiorank, &start[i], &count[i]);
+                    printf("start[i]= %lu, count[i]=%lu\n",start[i],count[i]);
                     ioprocs = ioprocs / tioprocs;
                     tiorank  = iorank % ioprocs;
                 }
@@ -349,6 +367,7 @@ int CalcStartandCount(int pio_type, int ndims, const int *gdims, int num_io_proc
         {
             start[i] = mystart[i];
             count[i] = mycount[i];
+            printf("iorank=%d,start[i]= %lu, count[i]=%lu\n",iorank,start[i],count[i]);
         }
     }
     else

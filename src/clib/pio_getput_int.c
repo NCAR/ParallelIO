@@ -53,7 +53,7 @@ PIOc_put_att_tc(int ncid, int varid, const char *name, nc_type atttype,
 
     /* Run these on all tasks if async is not in use, but only on
      * non-IO tasks if async is in use. */
-    if (!ios->async || !ios->ioproc)
+    if ((!ios->async || !ios->ioproc) && (file->iotype != PIO_IOTYPE_Z5))
     {
         /* Get the length (in bytes) of the type in file. */
         if ((ierr = PIOc_inq_type(ncid, atttype, NULL, &atttype_len)))
@@ -89,22 +89,28 @@ PIOc_put_att_tc(int ncid, int varid, const char *name, nc_type atttype,
                 mpierr = MPI_Bcast(&namelen, 1, MPI_INT,  ios->compmaster, ios->intercomm);
             if (!mpierr)
                 mpierr = MPI_Bcast((void *)name, namelen + 1, MPI_CHAR, ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&atttype, 1, MPI_INT,  ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&len, 1, MPI_OFFSET,  ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&atttype_len, 1, MPI_OFFSET,  ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&memtype, 1, MPI_INT,  ios->compmaster, ios->intercomm);
-            if (!mpierr)
-                mpierr = MPI_Bcast(&memtype_len, 1, MPI_OFFSET,  ios->compmaster, ios->intercomm);
-            if (!mpierr)
+            if (file->iotype != PIO_IOTYPE_Z5)
+	    {
+	   	 if (!mpierr)
+           	     mpierr = MPI_Bcast(&atttype, 1, MPI_INT,  ios->compmaster, ios->intercomm);
+           	 if (!mpierr)
+           	     mpierr = MPI_Bcast(&len, 1, MPI_OFFSET,  ios->compmaster, ios->intercomm);
+           	 if (!mpierr)
+           	     mpierr = MPI_Bcast(&atttype_len, 1, MPI_OFFSET,  ios->compmaster, ios->intercomm);
+           	 if (!mpierr)
+           	     mpierr = MPI_Bcast(&memtype, 1, MPI_INT,  ios->compmaster, ios->intercomm);
+           	 if (!mpierr)
+           	     mpierr = MPI_Bcast(&memtype_len, 1, MPI_OFFSET,  ios->compmaster, ios->intercomm);
+            }
+	    if (!mpierr)
                 mpierr = MPI_Bcast((void *)op, len * memtype_len, MPI_BYTE, ios->compmaster,
                                    ios->intercomm);
-            PLOG((2, "PIOc_put_att finished bcast ncid = %d varid = %d namelen = %d name = %s "
-                  "len = %d atttype_len = %d memtype = %d memtype_len = %d", ncid, varid, namelen,
-                  name, len, atttype_len, memtype, memtype_len));
+            if (file->iotype != PIO_IOTYPE_Z5)
+	    {	   
+	 	PLOG((2, "PIOc_put_att finished bcast ncid = %d varid = %d namelen = %d name = %s "
+            	     "len = %d atttype_len = %d memtype = %d memtype_len = %d", ncid, varid, namelen,
+            	     name, len, atttype_len, memtype, memtype_len));
+	    }
         }
 
         /* Handle MPI errors. */
@@ -112,14 +118,16 @@ PIOc_put_att_tc(int ncid, int varid, const char *name, nc_type atttype,
             check_mpi(NULL, file, mpierr2, __FILE__, __LINE__);
         if (mpierr)
             return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
-
-        /* Broadcast values currently only known on computation tasks to IO tasks. */
-        if ((mpierr = MPI_Bcast(&atttype_len, 1, MPI_OFFSET, ios->comproot, ios->my_comm)))
-            check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
-        if ((mpierr = MPI_Bcast(&memtype_len, 1, MPI_OFFSET, ios->comproot, ios->my_comm)))
-            check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
-        PLOG((2, "PIOc_put_att bcast from comproot = %d atttype_len = %d", ios->comproot,
-              atttype_len, memtype_len));
+	if (file->iotype != PIO_IOTYPE_Z5)
+	{
+       		 /* Broadcast values currently only known on computation tasks to IO tasks. */
+       		 if ((mpierr = MPI_Bcast(&atttype_len, 1, MPI_OFFSET, ios->comproot, ios->my_comm)))
+       		     check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+       		 if ((mpierr = MPI_Bcast(&memtype_len, 1, MPI_OFFSET, ios->comproot, ios->my_comm)))
+       		     check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+       		 PLOG((2, "PIOc_put_att bcast from comproot = %d atttype_len = %d", ios->comproot,
+       		      atttype_len, memtype_len));
+	}
     }
 
     /* If this is an IO task, then call the netCDF function. */
@@ -157,7 +165,7 @@ PIOc_put_att_tc(int ncid, int varid, const char *name, nc_type atttype,
         }
 #endif /* _PNETCDF */
 
-        if (file->iotype != PIO_IOTYPE_PNETCDF && file->do_io)
+        if (file->iotype != PIO_IOTYPE_PNETCDF && file->iotype != PIO_IOTYPE_Z5 && file->do_io)
         {
             switch(memtype)
             {
@@ -207,9 +215,80 @@ PIOc_put_att_tc(int ncid, int varid, const char *name, nc_type atttype,
                 return pio_err(ios, file, PIO_EBADTYPE, __FILE__, __LINE__);
             }
         }
+#ifdef _Z5 /* _Z5*/
+        //if (file->iotype == PIO_IOTYPE_Z5 && file->do_io && !ios->io_rank)
+        if (file->iotype == PIO_IOTYPE_Z5 && file->do_io )
+        {
+            var_desc_t *vdesc;
+            char* all_name = NULL;
+	    short * sp;
+	    signed char* bp;
+            short sp_char;
+            sp = &sp_char;
+            if (varid == PIO_GLOBAL)
+            {                
+                all_name=file->filename;
+            }
+            else
+            {
+                if ((ierr = get_var_desc(varid, &file->varlist, &vdesc)))
+                    return pio_err(ios, file, ierr, __FILE__, __LINE__);
+                all_name=vdesc->varname;
+            }
+            if( !ios->io_rank){
+            switch(memtype)
+            {
+                case NC_CHAR:
+                    z5writeAttributesString(all_name, name, op);
+                    break;
+                case NC_UINT:
+                    z5writeAttributesuint(all_name, name, op);
+                    break;
+                case NC_INT:
+                    z5writeAttributesint(all_name, name, op);
+                    break;
+                case NC_FLOAT:
+                    z5writeAttributesfloat(all_name, name, op);
+                    break;
+                case NC_DOUBLE:
+                    z5writeAttributesdouble(all_name, name, op);
+                    break;
+                case NC_SHORT:
+                case NC_BYTE:
+		    bp = (signed char *)op;
+		    *sp = *bp;
+                    z5writeAttributesshort(all_name, name, (const short*)op);
+                    break;
+                case NC_USHORT:
+                    z5writeAttributesushort(all_name, name, op);
+                    break;
+                case NC_INT64:
+                    z5writeAttributeslonglong(all_name, name, op);
+                    break;
+                case NC_UINT64:
+                    z5writeAttributesulonglong(all_name, name, op);
+                    break;
+                default:
+                    return pio_err(ios, file, PIO_EBADTYPE, __FILE__, __LINE__);
+            }
+            }
+            if (varid == PIO_GLOBAL)
+            {                
+                file->natts++;
+            }
+            else
+            {
+                vdesc->natts++;
+            }
+            
+            ierr = 0;
+        }
+#endif
     }
 
     /* Broadcast and check the return code. */
+    if ((mpierr = MPI_Barrier(ios->my_comm)))
+        return check_mpi(NULL, NULL, mpierr, __FILE__, __LINE__);
     if ((mpierr = MPI_Bcast(&ierr, 1, MPI_INT, ios->ioroot, ios->my_comm)))
         return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
     if (ierr)
@@ -380,7 +459,56 @@ PIOc_get_att_tc(int ncid, int varid, const char *name, nc_type memtype, void *ip
         }
 #endif /* _PNETCDF */
 
-        if (file->iotype != PIO_IOTYPE_PNETCDF && file->do_io)
+#ifdef _Z5
+        if (file->iotype == PIO_IOTYPE_Z5)
+        {
+            var_desc_t *vdesc;
+            char* all_name = NULL;
+            if (varid == PIO_GLOBAL)
+                all_name = file->filename;
+            else
+            {
+                if ((ierr = get_var_desc(varid, &file->varlist, &vdesc)))
+                    return pio_err(ios, file, ierr, __FILE__, __LINE__);
+                all_name = vdesc->varname;
+            }
+            switch(memtype)
+            {
+		case NC_CHAR:
+		    z5readAttributesString(all_name, name, ip);
+                    //fprintf(stderr,"ip = %s\d",ip);
+		    break;
+		case NC_UINT:
+		    z5readAttributesuint(all_name, name, ip);
+		    break;
+		case NC_INT:
+		    z5readAttributesint(all_name, name, ip);
+		    break;
+		case NC_FLOAT:
+		    z5readAttributesfloat(all_name, name, ip);
+		    break;
+		case NC_DOUBLE:
+		    z5readAttributesdouble(all_name, name, ip);
+		    break;
+                case NC_SHORT:
+		case NC_BYTE:
+                    z5readAttributesshort(all_name, name, ip);
+                    break;
+                case NC_USHORT:
+                    z5readAttributesushort(all_name, name, ip);
+                    break;
+                case NC_INT64:
+                    z5readAttributeslonglong(all_name, name, ip);
+                    break;
+                case NC_UINT64:
+                    z5readAttributesulonglong(all_name, name, ip);
+                    break;
+            default:
+                return pio_err(ios, file, PIO_EBADTYPE, __FILE__, __LINE__);
+            }
+        }
+#endif /* _Z5 */
+        if (file->iotype != PIO_IOTYPE_PNETCDF && file->iotype != PIO_IOTYPE_Z5 && file->do_io)
         {
             switch(memtype)
             {
@@ -682,7 +810,7 @@ PIOc_get_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Offset 
             PLOG((2, "fake_stride[%d]  %d", d, fake_stride[d]));
         }
 
-        if (file->iotype != PIO_IOTYPE_PNETCDF && file->do_io)
+        if (file->iotype != PIO_IOTYPE_PNETCDF && file->iotype != PIO_IOTYPE_Z5 && file->do_io)
         {
             switch(xtype)
             {
@@ -745,7 +873,50 @@ PIOc_get_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Offset 
                 return pio_err(ios, file, PIO_EBADTYPE, __FILE__, __LINE__);
             }
         }
-
+#ifdef _Z5
+        if (file->iotype == PIO_IOTYPE_Z5 && file->do_io)
+        {
+            var_desc_t *vdesc;
+            if ((ierr = get_var_desc(varid, &file->varlist, &vdesc)))
+                return pio_err(ios, file, ierr, __FILE__, __LINE__);
+            switch(xtype)
+            {
+                case NC_INT:
+                    z5ReadInt32Subarray(vdesc->varname, buf, vdesc->ndims, (size_t *)count, (size_t *)start);
+                    break;
+                case NC_BYTE:
+                    z5ReadInt8Subarray(vdesc->varname, buf, vdesc->ndims, (size_t *)count, (size_t *)start);
+                    break;
+                case NC_UBYTE:
+                    z5ReadUInt8Subarray(vdesc->varname, buf, vdesc->ndims, (size_t *)count, (size_t *)start);
+                    break;
+                case NC_SHORT:
+                    z5ReadInt16Subarray(vdesc->varname, buf, vdesc->ndims, (size_t *)count, (size_t *)start);
+                    break;
+                case NC_USHORT:
+                    z5ReadUInt16Subarray(vdesc->varname, buf, vdesc->ndims, (size_t *)count, (size_t *)start);
+                    break;
+                case NC_UINT:
+                    z5ReadUInt32Subarray(vdesc->varname, buf, vdesc->ndims, (size_t *)count, (size_t *)start);
+                    break;
+                case NC_INT64:
+                    z5ReadInt64Subarray(vdesc->varname, buf, vdesc->ndims, (size_t *)count, (size_t *)start);
+                    break;
+                case NC_UINT64:
+                    z5ReadUInt64Subarray(vdesc->varname, buf, vdesc->ndims, (size_t *)count, (size_t *)start);
+                    break;
+                case NC_FLOAT:
+                    z5ReadFloat32Subarray(vdesc->varname, buf, vdesc->ndims, (size_t *)count, (size_t *)start);
+                    break;
+                case NC_DOUBLE:
+                    z5ReadFloat64Subarray(vdesc->varname, buf, vdesc->ndims, (size_t *)count, (size_t *)start);
+                    break;
+                default:
+                    return pio_err(ios, file, PIO_EBADTYPE, __FILE__, __LINE__);
+            }
+        }
+        ierr = 0;
+#endif
     }
 
     PLOG((2, "howdy ndims %d", ndims));
@@ -1187,7 +1358,7 @@ PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Offset 
         }
 #endif /* _PNETCDF */
 
-        if (file->iotype != PIO_IOTYPE_PNETCDF && file->do_io)
+        if (file->iotype != PIO_IOTYPE_PNETCDF && file->iotype != PIO_IOTYPE_Z5  && file->do_io)
         {
             PLOG((2, "PIOc_put_vars_tc calling netcdf function file->iotype = %d",
                   file->iotype));
@@ -1252,6 +1423,110 @@ PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Offset 
             }
             PLOG((2, "PIOc_put_vars_tc io_rank 0 done with netcdf call, ierr=%d", ierr));
         }
+
+#ifdef _Z5
+        if (file->iotype == PIO_IOTYPE_Z5 && file->do_io)
+        {
+            var_desc_t *vdesc;
+            if ((ierr = get_var_desc(varid, &file->varlist, &vdesc)))
+                return pio_err(ios, file, ierr, __FILE__, __LINE__);
+            if (ndims == 0)
+            {
+                if (ios->iomaster == MPI_ROOT)
+                {
+                    //fprintf(stderr,"dim = 0,varname = %s, id =%d, xtype = %d,ndims=%d\n",vdesc->varname,varid,vdesc->xtypep,ndims);
+		    switch(xtype)
+		    {
+			case NC_INT:
+			    z5WriteInt32Subarray(vdesc->varname, buf, vdesc->ndims, (size_t *)count, (size_t *)start);
+			    break;
+			case NC_BYTE:
+			    z5WriteInt8Subarray(vdesc->varname, buf, vdesc->ndims, (size_t *)count, (size_t *)start);
+			    break;
+                        case NC_CHAR:
+			case NC_UBYTE:
+			    z5WriteUInt8Subarray(vdesc->varname, buf, vdesc->ndims, (size_t *)count, (size_t *)start);
+			    break;
+			case NC_SHORT:
+			    z5WriteInt16Subarray(vdesc->varname, buf, vdesc->ndims, (size_t *)count, (size_t *)start);
+			    break;
+			case NC_USHORT:
+			    z5WriteUInt16Subarray(vdesc->varname, buf, vdesc->ndims, (size_t *)count, (size_t *)start);
+			    break;
+			case NC_UINT:
+			    z5WriteUInt32Subarray(vdesc->varname, buf, vdesc->ndims, (size_t *)count, (size_t *)start);
+			    break;
+			case NC_INT64:
+			    z5WriteInt64Subarray(vdesc->varname, buf, vdesc->ndims, (size_t *)count, (size_t *)start);
+			    break;
+			case NC_UINT64:
+			    z5WriteUInt64Subarray(vdesc->varname, buf, vdesc->ndims, (size_t *)count, (size_t *)start);
+			    break;
+			case NC_FLOAT:
+			    z5WriteFloat32Subarray(vdesc->varname, buf, vdesc->ndims, (size_t *)count, (size_t *)start);
+			    break;
+			case NC_DOUBLE:
+			    z5WriteFloat64Subarray(vdesc->varname, buf, vdesc->ndims, (size_t *)count, (size_t *)start);
+			    break;
+			default:
+			    return pio_err(ios, file, PIO_EBADTYPE, __FILE__, __LINE__);
+		    }
+                }
+            }   
+            else
+            {
+                if (ios->iomaster == MPI_ROOT){
+                    size_t *count1=malloc(ndims*sizeof(size_t));
+                    for ( int d = 0; d < ndims; d++){
+                        if (count[d] > vdesc->chunk[d])
+                           count1[d] = vdesc->chunk[d];
+                        else
+                           count1[d] = count[d];
+                        fprintf(stderr,"dim > 0,varname = %s, id =%d, count[%d]=%d,chunk[%d]=%d,count1[%d]=%d\n",vdesc->varname,varid,d,count[d],d,vdesc->chunk[d],d,count1[d]);
+                    } 
+		    switch(xtype)
+		    {
+			case NC_INT:
+			    z5WriteInt32Subarray(vdesc->varname, buf, vdesc->ndims, (size_t *)count1, (size_t *)start);
+			    break;
+			case NC_BYTE:
+			    z5WriteInt8Subarray(vdesc->varname, buf, vdesc->ndims, (size_t *)count1, (size_t *)start);
+			    break;
+			case NC_CHAR:
+			case NC_UBYTE:
+			    z5WriteUInt8Subarray(vdesc->varname, buf, vdesc->ndims, (size_t *)count1, (size_t *)start);
+			    break;
+			case NC_SHORT:
+			    z5WriteInt16Subarray(vdesc->varname, buf, vdesc->ndims, (size_t *)count1, (size_t *)start);
+			    break;
+			case NC_USHORT:
+			    z5WriteUInt16Subarray(vdesc->varname, buf, vdesc->ndims, (size_t *)count1, (size_t *)start);
+			    break;
+			case NC_UINT:
+			    z5WriteUInt32Subarray(vdesc->varname, buf, vdesc->ndims, (size_t *)count1, (size_t *)start);
+			    break;
+			case NC_INT64:
+			    z5WriteInt64Subarray(vdesc->varname, buf, vdesc->ndims, (size_t *)count1, (size_t *)start);
+			    break;
+			case NC_UINT64:
+			    z5WriteUInt64Subarray(vdesc->varname, buf, vdesc->ndims, (size_t *)count1, (size_t *)start);
+			    break;
+			case NC_FLOAT:
+			    z5WriteFloat32Subarray(vdesc->varname, buf, vdesc->ndims, (size_t *)count1, (size_t *)start);
+			    break;
+			case NC_DOUBLE:
+			    z5WriteFloat64Subarray(vdesc->varname, buf, vdesc->ndims, (size_t *)count1, (size_t *)start);
+			    break;
+			default:
+			    return pio_err(ios, file, PIO_EBADTYPE, __FILE__, __LINE__);
+		    }
+                }
+           
+            }
+
+            ierr = 0;
+        }
+#endif
 
         /* Free malloced resources. */
         if (ndims && !stride_present)

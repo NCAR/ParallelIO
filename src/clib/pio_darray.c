@@ -318,6 +318,9 @@ PIOc_write_darray_multi(int ncid, const int *varids, int ioid, int nvars,
     switch (file->iotype)
     {
     case PIO_IOTYPE_NETCDF4P:
+#ifdef _Z5
+    case PIO_IOTYPE_Z5:
+#endif 
     case PIO_IOTYPE_PNETCDF:
         if ((ierr = write_darray_multi_par(file, nvars, fndims, varids, iodesc,
                                            DARRAY_DATA, frame)))
@@ -578,7 +581,7 @@ find_var_fillvalue(file_desc_t *file, int varid, var_desc_t *vdesc)
 
     /* Get the fill value one would expect, if NOFILL were not turned
      * on. */
-    if (!vdesc->use_fill)
+    if (vdesc->use_fill) /*changed if use fill, then get fill value*/
         if ((ierr = pio_inq_var_fill_expected(file->pio_ncid, varid, pio_type, type_size,
                                               vdesc->fillvalue)))
             return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
@@ -965,8 +968,18 @@ PIOc_read_darray(int ncid, int varid, int ioid, PIO_Offset arraylen,
             return pio_err(ios, file, PIO_ENOMEM, __FILE__, __LINE__);
 
     /* Call the correct darray read function based on iotype. */
+    //fprintf(stderr,"iotype----====%d\n",file->iotype);
     switch (file->iotype)
     {
+#ifdef _Z5
+    case PIO_IOTYPE_Z5: /*if the input file is z5, then read by z5 format, otherwise read by netcdf format*/
+            if (strstr(file->filename,Z5FILEEXTENSION) != NULL)
+            {
+		if ((ierr = pio_read_darray_nc(file, iodesc, varid, iobuf))) 
+                   return pio_err(ios, file, ierr, __FILE__, __LINE__);
+                break;
+            }
+#endif
     case PIO_IOTYPE_NETCDF:
     case PIO_IOTYPE_NETCDF4C:
         if ((ierr = pio_read_darray_nc_serial(file, iodesc, varid, iobuf)))
@@ -984,6 +997,7 @@ PIOc_read_darray(int ncid, int varid, int ioid, PIO_Offset arraylen,
     /* If the map is not monotonically increasing we will need to sort
      * it. */
     PLOG((3, "iodesc->needssort %d", iodesc->needssort));
+
     if (iodesc->needssort)
     {
         if (!(tmparray = malloc(iodesc->piotype_size * iodesc->maplen)))
