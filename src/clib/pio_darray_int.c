@@ -510,7 +510,7 @@ write_darray_multi_par(file_desc_t *file, int nvars, int fndims, const int *vari
                 	    /* If there is data for this region, get a pointer to it. */
                 	    if (region)
                 	        bufptr = (void *)((char *)iobuf + iodesc->mpitype_size * (nv * llen + region->loffset));
-                            fprintf(stderr,"region->loffset = %ld, nv =%d, llen =%ld type =%d\n",region->loffset,nv,llen,iodesc->mpitype_size);
+                            PLOG((3,"region->loffset = %ld, nv =%d, llen =%ld type =%d\n",region->loffset,nv,llen,iodesc->mpitype_size));
 			    var_desc_t *vdesc;
                             float *dest_buf;
 			    if ((ierr = get_var_desc(varids[nv], &file->varlist, &vdesc)))
@@ -527,10 +527,7 @@ write_darray_multi_par(file_desc_t *file, int nvars, int fndims, const int *vari
 				   count1[i] = count[i];
                                 */
 				count1[i] = count[i];
-				fprintf(stderr,"%s,%d,%d,region->start = %d, count = %d chunk = %d tmp2=%d,count1= %d\n",vdesc->varname,nv,i,start[i],count[i],vdesc->chunk[i],tmp2,count1[i]);
 			    }
-                            if (nv == 90 && ios->io_rank == 0)
-                               fprintf(stderr,"TS %f %f %f \n",*((double*)bufptr),*( (double*)bufptr+1), *((double*)bufptr+2));
 			    if (tmp2 > 0)
 			    {
 				switch(vdesc->xtypep)

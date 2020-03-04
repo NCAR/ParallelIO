@@ -138,17 +138,6 @@ endif ()
 
 #===== Z5 =====
 project(Z5WRAPPER C CXX)
-#set(Z5_DIR /glade/u/home/weile/miniconda3/envs/z5-py36/include)
-#set(MARRAY_INCLUDE_DIR /glade/u/home/weile/miniconda3/envs/z5-py36/include)
-#set(BOOST_ROOT ~/miniconda3/envs/z5-py36)
-#set(ZLIB_ROOT /glade/u/home/weile/miniconda3/envs/z5-py36/)
-#set(ZLIB_INCLUDE_DIR /glade/u/home/weile/miniconda3/envs/z5-py36/include)
-#set(CMAKE_INSTALL_PREFIX ~/dev/install_pr/ParallelIO/)
-#set(WITH_ZLIB ON)
-#set(WITH_MARRAY ON)
-#set(ZLIB_LIBRARY_RELEASE /glade/u/home/weile/miniconda3/envs/z5-py36/lib/libz.so)
-#set(Z5_DIR /glade/u/home/weile/miniconda3/envs/z5-py36/include)
-#set(CMAKE_INSTALL_PREFIX ~/dev/install_pr/ParallelIO/)
 include_directories(
         "${Z5_DIR}"
         "${Z5_DIR}/z5"

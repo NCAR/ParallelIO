@@ -968,7 +968,6 @@ PIOc_read_darray(int ncid, int varid, int ioid, PIO_Offset arraylen,
             return pio_err(ios, file, PIO_ENOMEM, __FILE__, __LINE__);
 
     /* Call the correct darray read function based on iotype. */
-    //fprintf(stderr,"iotype----====%d\n",file->iotype);
     switch (file->iotype)
     {
 #ifdef _Z5

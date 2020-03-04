@@ -476,7 +476,6 @@ PIOc_get_att_tc(int ncid, int varid, const char *name, nc_type memtype, void *ip
             {
 		case NC_CHAR:
 		    z5readAttributesString(all_name, name, ip);
-                    //fprintf(stderr,"ip = %s\d",ip);
 		    break;
 		case NC_UINT:
 		    z5readAttributesuint(all_name, name, ip);
@@ -1434,7 +1433,6 @@ PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Offset 
             {
                 if (ios->iomaster == MPI_ROOT)
                 {
-                    //fprintf(stderr,"dim = 0,varname = %s, id =%d, xtype = %d,ndims=%d\n",vdesc->varname,varid,vdesc->xtypep,ndims);
 		    switch(xtype)
 		    {
 			case NC_INT:
@@ -1482,7 +1480,7 @@ PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Offset 
                            count1[d] = vdesc->chunk[d];
                         else
                            count1[d] = count[d];
-                        fprintf(stderr,"dim > 0,varname = %s, id =%d, count[%d]=%d,chunk[%d]=%d,count1[%d]=%d\n",vdesc->varname,varid,d,count[d],d,vdesc->chunk[d],d,count1[d]);
+                        PLOG(3,"dim > 0,varname = %s, id =%d, count[%d]=%d,chunk[%d]=%d,count1[%d]=%d\n",vdesc->varname,varid,d,count[d],d,vdesc->chunk[d],d,count1[d]);
                     } 
 		    switch(xtype)
 		    {
