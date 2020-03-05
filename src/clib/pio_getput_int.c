@@ -1480,7 +1480,7 @@ PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Offset 
                            count1[d] = vdesc->chunk[d];
                         else
                            count1[d] = count[d];
-                        PLOG(3,"dim > 0,varname = %s, id =%d, count[%d]=%d,chunk[%d]=%d,count1[%d]=%d\n",vdesc->varname,varid,d,count[d],d,vdesc->chunk[d],d,count1[d]);
+                        PLOG((3,"dim > 0,varname = %s, id =%d, count[%d]=%d,chunk[%d]=%d,count1[%d]=%d\n",vdesc->varname,varid,d,count[d],d,vdesc->chunk[d],d,count1[d]));
                     } 
 		    switch(xtype)
 		    {

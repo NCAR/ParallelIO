@@ -2599,7 +2599,7 @@ PIOc_def_var(int ncid, const char *name, nc_type xtype, int ndims,
                     else
                        chunk[i] = shape[i];
                     
-                    PLOG(3,"1 dim %d,chunk = %d, shape = %d\n",i,chunk[i],shape[i]);
+                    PLOG((3,"1 dim %d,chunk = %d, shape = %d\n",i,chunk[i],shape[i]));
                 }
                 else if (ndims == 2)
                 {
@@ -2614,7 +2614,7 @@ PIOc_def_var(int ncid, const char *name, nc_type xtype, int ndims,
                         chunk[i] = ceil(shape[i] * 1.0 / (niostasks));
                     else if ( i > 0 && (shape[i-1] < niostasks) && (shape[i] < 55296))
                         chunk[i] = shape[i];
-                    PLOG(3,"2 dim %d,chunk = %d, shape = %d\n",i,chunk[i],shape[i]);
+                    PLOG((3,"2 dim %d,chunk = %d, shape = %d\n",i,chunk[i],shape[i]));
                 }
                 else //ndims > 2
                 {   if ( i == 0 && dim->dimval == PIO_UNLIMITED){
@@ -2633,7 +2633,7 @@ PIOc_def_var(int ncid, const char *name, nc_type xtype, int ndims,
                         chunk[i] = shape[i];
                     if ( i > 1) 
                         chunk[i] = shape[i];
-                    PLOG(3,"3 dim %d,chunk = %d, shape = %d\n",i,chunk[i],shape[i]);
+                    PLOG((3,"3 dim %d,chunk = %d, shape = %d\n",i,chunk[i],shape[i]));
                 }//end ndims > 2
 
             }

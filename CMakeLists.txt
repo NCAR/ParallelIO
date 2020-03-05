@@ -67,7 +67,7 @@ endif()
 
 #===== Local modules =====
 list (APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
-list (APPEND CMAKE_MODULE_PATH "/glade/work/haiyingx/miniconda3/envs/z5-py36/share/cmake-3.14/Modules/")
+#list (APPEND CMAKE_MODULE_PATH "/glade/work/haiyingx/miniconda3/envs/z5-py36/share/cmake-3.14/Modules/")
 
 #===== External modules =====
 if (NOT DEFINED USER_CMAKE_MODULE_PATH)
