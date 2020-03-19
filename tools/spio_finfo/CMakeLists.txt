@@ -36,6 +36,11 @@ target_include_directories(spio_finfo.exe PRIVATE
 target_link_libraries(spio_finfo.exe
                       PRIVATE pioc)
 
+target_compile_definitions (spio_finfo.exe
+  PUBLIC MPICH_SKIP_MPICXX)
+target_compile_definitions (spio_finfo.exe
+  PUBLIC OMPI_SKIP_MPICXX)
+
 # Binary utilities
 install (TARGETS spio_finfo.exe DESTINATION bin)
 

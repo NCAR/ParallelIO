@@ -8,13 +8,6 @@
 #include <algorithm>
 #include <stack>
 
-#ifdef _ADIOS2
-/* mpi.h has to be included to compile this code. Some mpi.h header files   */
-/* include mpicxx.h when __cplusplus is defined. It causes "error: template */
-/* with C linkage" errors.                                                  */
-#include <mpi.h>
-#endif
-
 extern "C"{
 #include "pio_config.h"
 #include "pio.h"
