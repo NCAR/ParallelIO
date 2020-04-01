@@ -2328,7 +2328,7 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
             char declare_name[PIO_MAX_NAME];
             snprintf(declare_name, PIO_MAX_NAME, "%s%lu", file->filename, get_adios2_io_cnt());
 
-            file->ioH = adios2_declare_io(get_adios2_adios(), (const char*)(declare_name));
+            file->ioH = adios2_declare_io(ios->adiosH, (const char*)(declare_name));
             if (file->ioH == NULL)
             {
                 return pio_err(ios, NULL, PIO_EADIOS2ERR, __FILE__, __LINE__, "Declaring (ADIOS) IO (name=%s) failed for file (%s)", declare_name, pio_get_fname_from_file(file));

@@ -726,6 +726,11 @@ typedef struct iosystem_desc_t
     /** Rearranger options. */
     rearr_opt_t rearr_opts;
 
+#ifdef _ADIOS2
+    /* ADIOS handle */
+    adios2_adios *adiosH;
+#endif
+
     /** Pointer to the next iosystem_desc_t in the list. */
     struct iosystem_desc_t *next;
 } iosystem_desc_t;
