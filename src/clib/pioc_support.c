@@ -2435,8 +2435,28 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
 
             /* Disable independent file operations. ROMIO will make an effort to
                avoid performing any file operation on non-aggregator processes.
+               When writing, ROMIO selects a subset of processes as "I/O aggregators".
+               These aggregators are the MPI processes that actually write data to the
+               file. The non-aggregator processes never touch the file. Under this
+               deferred open strategy for non-aggregators, not all processes open the
+               file and determine the file distribution parameters.
+
+               For lustre file system, there is a confirmed bug with MPICH 3.2.1:
+               The file striping hints are not sync-ed for all processes, which might
+               cause a division-by-zero SIGFPE inside ROMIO's lustre driver on some
+               non-aggregator processes with a zero stripe count.
+
+               This bug has been fixed in MPICH 3.3 or higher versions, see
+               https://github.com/pmodels/mpich/commit/a33abfa
+
+               We choose not to set this hint for MPICH 3.2.1 or lower versions.
+               Note: OSU MVAPICH2 2.3.3 (01/09/20) is still based on MPICH 3.2.1
              */
-            MPI_Info_set(ios->info, "romio_no_indep_rw", "true"); 
+#if defined(MPICH_NUMVERSION) && (MPICH_NUMVERSION < 30300000)
+            MPI_Info_set(ios->info, "romio_no_indep_rw", "false");
+#else
+            MPI_Info_set(ios->info, "romio_no_indep_rw", "true");
+#endif
 
             /* Set some PnetCDF I/O hints below */
 
