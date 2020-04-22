@@ -29,7 +29,7 @@ option (PIO_MICRO_TIMING     "Enable internal micro timers"                 OFF)
 option (PIO_SAVE_DECOMPS     "Dump the decomposition information"           OFF)
 option (WITH_PNETCDF         "Require the use of PnetCDF"                   ON)
 option (WITH_NETCDF          "Require the use of NetCDF"                    ON)
-option (WITH_ADIOS           "Require the use of ADIOS"                     OFF)
+option (WITH_ADIOS2          "Require the use of ADIOS 2.x"                 OFF)
 option (ADIOS_BP2NC_TEST     "Enable testing of BP to NetCDF conversion"    OFF)
 
 # Set a variable that appears in the pio_config.h.in file.
@@ -112,7 +112,7 @@ option (PIO_ENABLE_TESTS  "Enable the testing builds"                           
 option (PIO_ENABLE_LARGE_TESTS  "Enable large (file, processes) tests"         OFF)
 option (PIO_VALGRIND_CHECK  "Enable memory leak check using valgrind"           OFF)
 include(CMakeDependentOption)
-cmake_dependent_option (PIO_TEST_CLOSE_OPEN_FOR_SYNC  "SCORPIO fortran tests will close+open for sync" ON "WITH_ADIOS" OFF)
+cmake_dependent_option (PIO_TEST_CLOSE_OPEN_FOR_SYNC  "SCORPIO fortran tests will close+open for sync" ON "WITH_ADIOS2" OFF)
 
 #==============================================================================
 #  BACKWARDS COMPATIBILITY
@@ -172,7 +172,7 @@ set (MPE_MIN_VER_REQD "2.4.8")
 set (NETCDF_C_MIN_VER_REQD "4.3.3")
 set (NETCDF_FORTRAN_MIN_VER_REQD "4.3.3")
 set (PNETCDF_MIN_VER_REQD "1.8.1")
-set (ADIOS_MIN_VER_REQD "1.10.0")
+set (ADIOS_MIN_VER_REQD "2.2.0")
 
 #==============================================================================
 #  SET CODE COVERAGE COMPILER FLAGS

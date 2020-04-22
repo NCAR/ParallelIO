@@ -5,7 +5,10 @@
 #include <pio_config.h>
 #include <pio.h>
 #include <pio_internal.h>
+
+#ifdef _ADIOS2
 #include "../../tools/adios2pio-nm/adios2pio-nm-lib-c.h"
+#endif
 
 /**
  * Open an existing file using PIO library.
@@ -131,6 +134,11 @@ int PIOc_createfile(int iosysid, int *ncidp, int *iotype, const char *filename,
 
 #ifdef TIMING
     GPTLstart("PIO:PIOc_createfile");
+
+#ifdef _ADIOS2 /* TAHSIN: timing */
+    if (*iotype == PIO_IOTYPE_ADIOS)
+        GPTLstart("PIO:PIOc_createfile_adios"); /* TAHSIN: start */
+#endif
 #endif
 
     /* Get the IO system info from the id. */
@@ -145,7 +153,13 @@ int PIOc_createfile(int iosysid, int *ncidp, int *iotype, const char *filename,
     {
 #ifdef TIMING
         GPTLstop("PIO:PIOc_createfile");
+
+#ifdef _ADIOS2 /* TAHSIN: timing */
+        if (*iotype == PIO_IOTYPE_ADIOS)
+            GPTLstop("PIO:PIOc_createfile_adios"); /* TAHSIN: stop */
 #endif
+#endif
+
         return pio_err(ios, NULL, ret, __FILE__, __LINE__,
                         "Unable to create file (%s, mode = %d, iotype=%s) on iosystem (iosystem id = %d). Internal error creating the file", (filename) ? filename : "NULL", mode, (!iotype) ? "UNKNOWN" : pio_iotype_to_string(*iotype), iosysid);
     }
@@ -166,7 +180,13 @@ int PIOc_createfile(int iosysid, int *ncidp, int *iotype, const char *filename,
 
 #ifdef TIMING
     GPTLstop("PIO:PIOc_createfile");
+
+#ifdef _ADIOS2 /* TAHSIN: timing */
+    if (*iotype == PIO_IOTYPE_ADIOS)
+        GPTLstop("PIO:PIOc_createfile_adios"); /* TAHSIN: stop */
 #endif
+#endif
+
     return ret;
 }
 
@@ -234,7 +254,7 @@ static int sync_file(int ncid)
                         "Syncing file (ncid=%d) failed. Invalid file id. Unable to find internal structure associated with the file id", ncid);
     }
 
-#ifdef _ADIOS
+#ifdef _ADIOS2
     if (file->iotype == PIO_IOTYPE_ADIOS)
         return PIO_NOERR;
 #endif
@@ -348,7 +368,7 @@ int PIOc_closefile(int ncid)
     iosystem_desc_t *ios;  /* Pointer to io system information. */
     file_desc_t *file;     /* Pointer to file information. */
     int ierr = PIO_NOERR;  /* Return code from function calls. */
-#ifdef _ADIOS
+#ifdef _ADIOS2
     char outfilename[PIO_MAX_NAME + 1];
     size_t len = 0;
 #endif
@@ -367,6 +387,11 @@ int PIOc_closefile(int ncid)
     ios = file->iosystem;
 
 #ifdef TIMING
+#ifdef _ADIOS2 /* TAHSIN: timing */
+    if (file->iotype == PIO_IOTYPE_ADIOS)
+        GPTLstart("PIO:PIOc_closefile_adios"); /* TAHSIN: start */
+#endif
+
     if (file->mode & PIO_WRITE)
         GPTLstart("PIO:PIOc_closefile_write_mode");
 #endif
@@ -394,22 +419,30 @@ int PIOc_closefile(int ncid)
     }
 
     /* ADIOS: assume all procs are also IO tasks */
-#ifdef _ADIOS
+#ifdef _ADIOS2
     if (file->iotype == PIO_IOTYPE_ADIOS)
     {
-        if (file->adios_fh != -1)
+        if (file->engineH != NULL)
         {
             LOG((2, "ADIOS close file %s", file->filename));
-            adios_define_attribute_byvalue(file->adios_group, "/__pio__/fillmode", "",
-                                           adios_integer, 1, &file->fillmode);
-            ierr = adios_close(file->adios_fh);
-            file->adios_fh = -1;
-        }
 
-        if (file->adios_group != -1)
-        {
-            adios_free_group(file->adios_group);
-            file->adios_group = -1;
+            adios2_attribute *attributeH = adios2_inquire_attribute(file->ioH, "/__pio__/fillmode");
+            if (attributeH == NULL)
+            {
+                attributeH = adios2_define_attribute(file->ioH, "/__pio__/fillmode", adios2_type_int32_t, &file->fillmode);
+                if (attributeH == NULL)
+                {
+                    return pio_err(ios, file, PIO_EADIOS2ERR, __FILE__, __LINE__, "Defining (ADIOS) attribute (name=/__pio__/fillmode) failed for file (%s, ncid=%d)", pio_get_fname_from_file(file), file->pio_ncid);
+                }
+            }
+
+            adios2_error adiosErr = adios2_close(file->engineH);
+            if (adiosErr != adios2_error_none)
+            {
+                return pio_err(ios, file, PIO_EADIOS2ERR, __FILE__, __LINE__, "Closing (ADIOS) file (%s, ncid=%d) failed (adios2_error=%s)", pio_get_fname_from_file(file), file->pio_ncid, adios2_error_to_string(adiosErr));
+            }
+
+            file->engineH = NULL;
         }
 
         for (int i = 0; i < file->num_dim_vars; i++)
@@ -426,6 +459,10 @@ int PIOc_closefile(int ncid)
             file->adios_vars[i].name = NULL;
             free(file->adios_vars[i].gdimids);
             file->adios_vars[i].gdimids = NULL;
+            file->adios_vars[i].adios_varid = NULL;
+            file->adios_vars[i].decomp_varid = NULL;
+            file->adios_vars[i].frame_varid = NULL;
+            file->adios_vars[i].fillval_varid = NULL;
         }
 
         file->num_vars = 0;
@@ -452,12 +489,35 @@ int PIOc_closefile(int ncid)
         strncpy(outfilename, file->filename, len - 3);
         outfilename[len - 3] = '\0';
         LOG((1, "CONVERTING: %s", file->filename));
-        C_API_ConvertBPToNC(file->filename, outfilename, conv_iotype, ios->union_comm);
+        MPI_Barrier(ios->union_comm);
+        ierr = C_API_ConvertBPToNC(file->filename, outfilename, conv_iotype, 0, ios->union_comm);
+        MPI_Barrier(ios->union_comm);
         LOG((1, "DONE CONVERTING: %s", file->filename));
+        if (ierr != PIO_NOERR)
+        {
+            return pio_err(ios, file, ierr, __FILE__, __LINE__,
+                            "C_API_ConvertBPToNC(infile = %s, outfile = %s, piotype = %s) failed", file->filename, outfilename, conv_iotype);
+        }
 #endif
 
         free(file->filename);
-        ierr = 0;
+
+#ifdef TIMING
+        if (file->iotype == PIO_IOTYPE_ADIOS)
+            GPTLstop("PIO:PIOc_closefile_adios"); /* TAHSIN: stop */
+
+        if (file->mode & PIO_WRITE)
+            GPTLstop("PIO:PIOc_closefile_write_mode");
+#endif
+
+        /* Delete file from our list of open files. */
+        pio_delete_file_from_list(ncid);
+
+#ifdef TIMING
+        GPTLstop("PIO:PIOc_closefile");
+#endif
+
+        return PIO_NOERR;
     }
 #endif
 
@@ -484,11 +544,6 @@ int PIOc_closefile(int ncid)
                 ierr = ncmpi_buffer_detach(file->fh);
             }
             ierr = ncmpi_close(file->fh);
-            break;
-#endif
-#ifdef _ADIOS
-        case PIO_IOTYPE_ADIOS: /* Needed to avoid default case and error. */
-            ierr = 0;
             break;
 #endif
         default:

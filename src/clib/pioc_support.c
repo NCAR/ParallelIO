@@ -13,7 +13,7 @@
 
 #include <execinfo.h>
 
-#ifdef _ADIOS
+#ifdef _ADIOS2
 #include <dirent.h>
 #endif
 
@@ -43,7 +43,7 @@ extern int default_error_handler;
 
 extern bool fortran_order;
 
-#ifdef _ADIOS
+#ifdef _ADIOS2
 /**
  * Utility function to remove a directory and all its contents.
  */
@@ -144,9 +144,12 @@ int PIOc_strerror(int pioerr, char *errmsg)
         case PIO_EBADIOTYPE:
             strcpy(errmsg, "Bad IO type");
             break;
-#ifdef _ADIOS
+#ifdef _ADIOS2
         case PIO_EADIOSREAD:
             strcpy(errmsg, "ADIOS IO type does not support read operations");
+            break;
+        case PIO_EADIOS2ERR:
+            strcpy(errmsg, "Some error occurs when calling an ADIOS2 API");
             break;
 #endif
         default:
@@ -2151,7 +2154,7 @@ int PIO_get_avail_iotypes(char *buf, size_t sz)
     cbuf = buf + strlen(buf);
 #endif /* _PNETCDF */
 
-#ifdef _ADIOS
+#ifdef _ADIOS2
     assert(sz > 0);
     snprintf(cbuf, sz, ", %s (%d)", pio_iotype_to_string(PIO_IOTYPE_ADIOS), PIO_IOTYPE_ADIOS);
     sz = max_sz - strlen(buf);
@@ -2188,6 +2191,10 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
 
 #ifdef TIMING
     GPTLstart("PIO:PIOc_createfile_int");
+#ifdef _ADIOS2 /* TAHSIN: timing */
+    if (*iotype == PIO_IOTYPE_ADIOS)
+        GPTLstart("PIO:PIOc_createfile_int_adios"); /* TAHSIN: start */
+#endif
 #endif
     /* Get the IO system info from the iosysid. */
     if (!(ios = pio_get_iosystem_from_id(iosysid)))
@@ -2273,44 +2280,40 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
     }
 
     /* ADIOS: assume all procs are also IO tasks */
-#ifdef _ADIOS
+#ifdef _ADIOS2
     if (file->iotype == PIO_IOTYPE_ADIOS)
     {
         LOG((2, "Calling adios_open mode = %d", file->mode));
-        /* 
-         * Create a new ADIOS variable group, names the same as the
-         * filename for lack of better solution here
-         */
+ 
+        /* Append .bp to output file for ADIOS output */
         int len = strlen(filename);
-        file->filename = malloc(len + 3 + 3);
+        file->filename = malloc(len + 4);
         if (file->filename == NULL)
         {
             return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__,
-                            "Creating file (%s) using ADIOS iotype failed. Out of memory allocating %lld bytes for the file name", filename, (unsigned long long) (len + 3 + 3));
+                            "Creating file (%s) using ADIOS iotype failed. Out of memory allocating %lld bytes for the file name", filename, (unsigned long long) (len + 4));
         }
-        sprintf(file->filename, "%s.bp", filename);
+        snprintf(file->filename, len + 4, "%s.bp", filename);
+
+        char filefolder[PIO_MAX_NAME];
+        assert(len + 8 <= PIO_MAX_NAME);
+        snprintf(filefolder, len + 8, "%s.bp.dir", filename);
 
         ierr = PIO_NOERR;
         if (file->mode & PIO_NOCLOBBER) /* Check adios file/folder exists */
         {
             struct stat sf, sd;
-            char *filefolder = malloc(strlen(file->filename) + 6);
-            sprintf(filefolder, "%s.dir", file->filename);
             if (0 == stat(file->filename, &sf) || 0 == stat(filefolder, &sd))
                 ierr = PIO_EEXIST;
-            free(filefolder);
         }
         else
         {
             /* Delete directory filename.bp.dir if it exists */
             if (ios->union_rank == 0)
             {
-                char bpdirname[PIO_MAX_NAME + 1];
-                assert(len + 7 <= PIO_MAX_NAME);
-                sprintf(bpdirname, "%s.bp.dir", filename);
                 struct stat sd;
-                if (0 == stat(bpdirname, &sd))
-                    remove_directory(bpdirname);
+                if (0 == stat(filefolder, &sd))
+                    remove_directory(filefolder);
             }
 
             /* Make sure that no task is trying to operate on the
@@ -2319,29 +2322,54 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
                 return check_mpi(ios, file, mpierr, __FILE__, __LINE__);
         }
 
+        /* Create a new ADIOS group */
         if (PIO_NOERR == ierr)
         {
-            adios_declare_group(&file->adios_group, file->filename, NULL, adios_stat_default);
+            char declare_name[PIO_MAX_NAME];
+            snprintf(declare_name, PIO_MAX_NAME, "%s%lu", file->filename, get_adios2_io_cnt());
 
-            int do_aggregate = (ios->num_comptasks != ios->num_iotasks);
-            if (do_aggregate)
+            file->ioH = adios2_declare_io(ios->adiosH, (const char*)(declare_name));
+            if (file->ioH == NULL)
             {
-                sprintf(file->transport, "%s", "MPI_AGGREGATE");
-                sprintf(file->params, "num_aggregators=%d,threading=1,random_offset=1,striping_count=1,have_metadata_file=0",
-                        ios->num_iotasks);
+                return pio_err(ios, NULL, PIO_EADIOS2ERR, __FILE__, __LINE__, "Declaring (ADIOS) IO (name=%s) failed for file (%s)", declare_name, pio_get_fname_from_file(file));
+            }
+
+            adios2_error adiosErr = adios2_set_engine(file->ioH, "BP3");
+            if (adiosErr != adios2_error_none)
+            {
+                return pio_err(ios, NULL, PIO_EADIOS2ERR, __FILE__, __LINE__, "Setting (ADIOS) engine (type=BP3) failed (adios2_error=%s) for file (%s)", adios2_error_to_string(adiosErr), pio_get_fname_from_file(file));
+            }
+
+            int num_adios_iotasks; // Set MPI Aggregate params
+            if (ios->num_comptasks != ios->num_iotasks)
+            {
+                num_adios_iotasks = ios->num_iotasks;
             }
             else
             {
-                int num_adios_io_tasks = ios->num_comptasks / 16;
-                if (num_adios_io_tasks == 0)
-                    num_adios_io_tasks = ios->num_comptasks;
-                sprintf(file->transport, "%s", "MPI_AGGREGATE");
-                sprintf(file->params, "num_aggregators=%d,threading=1,random_offset=1,striping_count=1,have_metadata_file=0",
-                        num_adios_io_tasks);
+                num_adios_iotasks = ios->num_comptasks / 16;
+                if (num_adios_iotasks == 0)
+                    num_adios_iotasks = ios->num_comptasks;
             }
 
-            adios_select_method(file->adios_group, file->transport, file->params, "");
-            ierr = adios_open(&file->adios_fh, file->filename, file->filename, "w", ios->union_comm);
+            snprintf(file->params, PIO_MAX_NAME, "%d", num_adios_iotasks);
+            adiosErr = adios2_set_parameter(file->ioH, "substreams", file->params);
+            if (adiosErr != adios2_error_none)
+            {
+                return pio_err(ios, NULL, PIO_EADIOS2ERR, __FILE__, __LINE__, "Setting (ADIOS) parameter (substreams=%s) failed (adios2_error=%s) for file (%s)", file->params, adios2_error_to_string(adiosErr), pio_get_fname_from_file(file));
+            }
+
+            adiosErr = adios2_set_parameter(file->ioH, "CollectiveMetadata", "OFF");
+            if (adiosErr != adios2_error_none)
+            {
+                return pio_err(ios, NULL, PIO_EADIOS2ERR, __FILE__, __LINE__, "Setting (ADIOS) parameter (CollectiveMetadata=OFF) failed (adios2_error=%s) for file (%s)", adios2_error_to_string(adiosErr), pio_get_fname_from_file(file));
+            }
+
+            file->engineH = adios2_open(file->ioH, file->filename, adios2_mode_write);
+            if (file->engineH == NULL)
+            {
+                return pio_err(NULL, file, PIO_EADIOS2ERR, __FILE__, __LINE__, "Opening (ADIOS) file (%s) failed", pio_get_fname_from_file(file));
+            }
 
             memset(file->dim_names, 0, sizeof(file->dim_names));
 
@@ -2351,7 +2379,7 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
             file->fillmode = NC_NOFILL;
             file->n_written_ioids = 0;
 
-            if (ios->union_rank==0)
+            if (ios->union_rank == 0)
                 file->adios_iomaster = MPI_ROOT;
             else
                 file->adios_iomaster = MPI_PROC_NULL;
@@ -2359,12 +2387,31 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
             /* Track attributes */
             file->num_attrs = 0;
 
-            int64_t vid = adios_define_var(file->adios_group, "/__pio__/info/nproc", "", adios_integer, "", "", "");
-            adios_write_byid(file->adios_fh, vid, &ios->num_uniontasks);
+            if (MPI_ROOT == file->adios_iomaster)
+            {
+                adios2_variable *variableH = adios2_inquire_variable(file->ioH, "/__pio__/info/nproc");
+                if (variableH == NULL)
+                {
+                    variableH = adios2_define_variable(file->ioH,
+                                                       "/__pio__/info/nproc", adios2_type_int32_t,
+                                                       0, NULL, NULL, NULL, 
+                                                       adios2_constant_dims_true);
+                    if (variableH == NULL)
+                    {
+                        return pio_err(ios, NULL, PIO_EADIOS2ERR, __FILE__, __LINE__, "Defining (ADIOS) variable (name=/__pio__/info/nproc) failed for file (%s)", pio_get_fname_from_file(file));
+                    }
+                }
+
+                adios2_error adiosErr = adios2_put(file->engineH, variableH, &ios->num_uniontasks, adios2_mode_sync);
+                if (adiosErr != adios2_error_none)
+                {
+                    return pio_err(ios, NULL, PIO_EADIOS2ERR, __FILE__, __LINE__, "Putting (ADIOS) variable (name=/__pio__/info/nproc) failed (adios2_error=%s) for file (%s)", adios2_error_to_string(adiosErr), pio_get_fname_from_file(file));
+                }
+            }
         }
     }
 #endif
- 
+
     /* If this task is in the IO component, do the IO. */
     if (ios->ioproc)
     {
@@ -2495,6 +2542,14 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
     ierr = check_netcdf(ios, NULL, ierr, __FILE__, __LINE__);
     /* If there was an error, free the memory we allocated and handle error. */
     if(ierr != PIO_NOERR){
+#ifdef _ADIOS2
+#ifdef TIMING /* TAHSIN: timing */
+        if (file->iotype == PIO_IOTYPE_ADIOS)
+            GPTLstop("PIO:PIOc_createfile_int_adios"); /* TAHSIN: stop */
+#endif
+        free(file->filename);
+#endif
+
         free(file);
 #ifdef TIMING
         GPTLstop("PIO:PIOc_createfile_int");
@@ -2528,7 +2583,12 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
 
 #ifdef TIMING
     GPTLstop("PIO:PIOc_createfile_int");
+#ifdef _ADIOS2 /* TAHSIN: timing */
+    if (file->iotype == PIO_IOTYPE_ADIOS)
+        GPTLstop("PIO:PIOc_createfile_int_adios"); /* TAHSIN: stop */
 #endif
+#endif
+
     return ierr;
 }
 
@@ -2675,7 +2735,7 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
     file->fh = -1;
     strncpy(file->fname, filename, PIO_MAX_NAME);
     file->iotype = *iotype;
-#ifdef _ADIOS
+#ifdef _ADIOS2
     if (file->iotype == PIO_IOTYPE_ADIOS)
     {
 #ifdef _PNETCDF
@@ -3100,7 +3160,7 @@ int iotype_is_valid(int iotype)
         ret++;
 #endif /* _PNETCDF */
 
-#ifdef _ADIOS
+#ifdef _ADIOS2
     if (iotype == PIO_IOTYPE_ADIOS)
         ret++;
 #endif
@@ -3613,96 +3673,50 @@ int __wrap_ADIOI_Type_create_hindexed_x(int count,
 }
 #endif
 
-#ifdef _ADIOS
-enum ADIOS_DATATYPES PIOc_get_adios_type(nc_type xtype)
+#ifdef _ADIOS2
+adios2_type PIOc_get_adios_type(nc_type xtype)
 {
-    enum ADIOS_DATATYPES t;
+    adios2_type t;
     switch (xtype)
     {
     case NC_BYTE:
-        t = adios_byte;
+        t = adios2_type_int8_t;
         break;
     case NC_CHAR:
-        t = adios_byte;
+        t = adios2_type_int8_t;
         break;
     case NC_SHORT:
-        t = adios_short;
+        t = adios2_type_int16_t;
         break;
     case NC_INT:
-        t = adios_integer;
+        t = adios2_type_int32_t;
         break;
     case NC_FLOAT:
-        t = adios_real;
+        t = adios2_type_float;
         break;
     case NC_DOUBLE:
-        t = adios_double;
+        t = adios2_type_double;
         break;
     case NC_UBYTE:
-        t = adios_unsigned_byte;
+        t = adios2_type_uint8_t;
         break;
     case NC_USHORT:
-        t = adios_unsigned_short;
+        t = adios2_type_uint16_t;
         break;
     case NC_UINT:
-        t = adios_unsigned_integer;
+        t = adios2_type_uint32_t;
         break;
     case NC_INT64:
-        t = adios_long;
+        t = adios2_type_int64_t;
         break;
     case NC_UINT64:
-        t = adios_unsigned_long;
+        t = adios2_type_uint64_t;
         break;
     case NC_STRING:
-        t = adios_string;
+        t = adios2_type_string;
         break;
     default:
-        t = adios_byte;
-        break;
-    }
-
-    return t;
-}
-
-nc_type PIOc_get_nctype_from_adios_type(enum ADIOS_DATATYPES atype)
-{
-    nc_type t;
-    switch (atype)
-    {
-    case adios_byte:
-        t = NC_BYTE;
-        break;
-    case adios_short:
-        t = NC_SHORT;
-        break;
-    case adios_integer:
-        t = NC_INT;
-        break;
-    case adios_real:
-        t = NC_FLOAT;
-        break;
-    case adios_double:
-        t = NC_DOUBLE;
-        break;
-    case adios_unsigned_byte:
-        t = NC_UBYTE;
-        break;
-    case adios_unsigned_short:
-        t = NC_USHORT;
-        break;
-    case adios_unsigned_integer:
-        t = NC_UINT;
-        break;
-    case adios_long:
-        t = NC_INT64;
-        break;
-    case adios_unsigned_long:
-        t = NC_UINT64;
-        break;
-    case adios_string:
-        t = NC_CHAR;
-        break;
-    default:
-        t = NC_BYTE;
+        t = adios2_type_int8_t;
         break;
     }
 
@@ -3723,4 +3737,23 @@ char *strdup(const char *str)
 }
 #endif
 
-#endif /* _ADIOS */
+const char *adios2_error_to_string(adios2_error error)
+{
+    switch (error)
+    {
+        case adios2_error_none:
+            return "adios2_error_none (success)";
+        case adios2_error_invalid_argument:
+            return "adios2_error_invalid_argument (user input error)";
+        case adios2_error_system_error:
+            return "adios2_error_system_error (low-level system error, e.g. system IO error)";
+        case adios2_error_runtime_error:
+            return "adios2_error_runtime_error (runtime errors other than system errors, e.g. memory overflow)";
+        case adios2_error_exception:
+            return "adios2_error_exception (any other error exception)";
+        default:
+            return "UNKNOWN adios2_error";
+    }
+}
+
+#endif /* _ADIOS2 */

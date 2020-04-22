@@ -342,7 +342,7 @@ int check_file(int ntasks, char *filename) {
         format[num_flavors++] = PIO_IOTYPE_NETCDF4C;
         format[num_flavors++] = PIO_IOTYPE_NETCDF4P;
 #endif
-#ifdef _ADIOS
+#ifdef _ADIOS2
         format[num_flavors++] = PIO_IOTYPE_ADIOS;
 #endif
 	
