@@ -2664,8 +2664,10 @@ int PIOc_def_var(int ncid, const char *name, nc_type xtype, int ndims,
 #endif /* _NETCDF */
 
 #ifdef _NETCDF4
-        /* For netCDF-4 serial files, turn on compression for this variable. */
-        if (!ierr && file->iotype == PIO_IOTYPE_NETCDF4C && file->do_io)
+        /* For netCDF-4 serial files, turn on compression for this
+           variable (non-scalar). */
+        if (!ierr && file->iotype == PIO_IOTYPE_NETCDF4C
+            && (ndims > 0) && file->do_io)
         {
             ierr = nc_def_var_deflate(file->fh, *varidp, 0, 1, 1);
             if (ierr != PIO_NOERR)
