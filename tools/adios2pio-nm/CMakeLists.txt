@@ -39,6 +39,10 @@ target_compile_definitions (adios2pio-nm-lib
   PRIVATE ${CMAKE_SYSTEM_DIRECTIVE})
 target_compile_definitions (adios2pio-nm-lib
   PUBLIC ${CMAKE_C_COMPILER_DIRECTIVE})
+target_compile_definitions (adios2pio-nm-lib
+  PUBLIC MPICH_SKIP_MPICXX)
+target_compile_definitions (adios2pio-nm-lib
+  PUBLIC OMPI_SKIP_MPICXX)
 
 ADD_EXECUTABLE(adios2pio-nm.exe ${SRC})
 TARGET_LINK_LIBRARIES(adios2pio-nm.exe adios2pio-nm-lib pioc)
