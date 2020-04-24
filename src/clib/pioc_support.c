@@ -2493,13 +2493,24 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
                cause a division-by-zero SIGFPE inside ROMIO's lustre driver on some
                non-aggregator processes with a zero stripe count.
 
+               For some MPI implementations based on MPICH 3.2 (MPICH_VERSION defined),
+               this bug is not reproducible with Cray MPICH and Intel MPI, but it is
+               reproducible with MVAPICH2.
+
+               For Open MPI (MPICH_VERSION not defined) that uses ROMIO 3.2.1, this bug
+               is also not reproducible.
+
                This bug has been fixed in MPICH 3.3 or higher versions, see
                https://github.com/pmodels/mpich/commit/a33abfa
 
-               We choose not to set this hint for MPICH 3.2.1 or lower versions.
+               We choose not to set this hint for MPICH 3.2.1 or lower versions, except
+               for Cray MPICH and Intel MPI.
                Note: OSU MVAPICH2 2.3.3 (01/09/20) is still based on MPICH 3.2.1
+                     Cray MPICH 7.7.12 is still based on MPICH 3.2
+                     Intel MPI 2018.0.3 is still based on MPICH 3.2
+                     Intel MPI 2019.0.3 is based on MPICH 3.3b3
              */
-#if defined(MPICH_NUMVERSION) && (MPICH_NUMVERSION < 30300000)
+#if defined(MPICH_NUMVERSION) && (MPICH_NUMVERSION < 30300000) && !defined(CRAY_MPICH_VERSION) && !defined(I_MPI_VERSION)
             MPI_Info_set(ios->info, "romio_no_indep_rw", "false");
 #else
             MPI_Info_set(ios->info, "romio_no_indep_rw", "true");
