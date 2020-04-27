@@ -2728,6 +2728,7 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
     int imode;                 /* Internal mode val for netcdf4 file open. */
     int mpierr = MPI_SUCCESS;  /** Return code from MPI function codes. */
     int ierr = PIO_NOERR;      /* Return code from function calls. */
+    int ierr2 = PIO_NOERR;      /* Return code from function calls. */
 
     /* Get the IO system info from the iosysid. */
     if (!(ios = pio_get_iosystem_from_id(iosysid)))
@@ -2900,9 +2901,6 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
             }
             if ((ierr != NC_NOERR) && (file->iotype != PIO_IOTYPE_NETCDF))
             {
-                /* reset ierr on all tasks */
-                ierr = PIO_NOERR;
-
                 /* reset file markers for NETCDF on all tasks */
                 file->iotype = PIO_IOTYPE_NETCDF;
 
@@ -2921,7 +2919,10 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
                 /* open netcdf file serially on main task */
                 if (ios->io_rank == 0)
                 {
-                    printf("PIO: WARNING: Opening file (%s) with iotype=%d (%s) failed. Retrying with iotype=PIO_IOTYPE_NETCDF\n", filename, *iotype, pio_iotype_to_string(*iotype));
+                    char errmsg[PIO_MAX_NAME];
+
+                    ierr2 = PIOc_strerror(ierr, errmsg);
+                    printf("PIO: WARNING: Opening file (%s) with iotype=%d (%s) failed (ierr=%d, %s). Retrying with iotype=PIO_IOTYPE_NETCDF\n", filename, *iotype, pio_iotype_to_string(*iotype), ierr, ((ierr2 == PIO_NOERR) ? errmsg : ""));
                     ierr = nc_open(filename, file->mode, &file->fh);
                     if(ierr == NC_NOERR)
                     {
@@ -2929,7 +2930,12 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
                     }
                 }
                 else
+                {
+                    /* reset ierr */
+                    ierr = PIO_NOERR;
+
                     file->do_io = 0;
+                }
             }
             LOG((2, "retry nc_open(%s) : fd = %d, iotype = %d, do_io = %d, ierr = %d",
                  filename, file->fh, file->iotype, file->do_io, ierr));

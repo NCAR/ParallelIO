@@ -2461,6 +2461,7 @@ int PIOc_def_var(int ncid, const char *name, nc_type xtype, int ndims,
     int invalid_unlim_dim = 0; /* True invalid dims are used. */
     int mpierr = MPI_SUCCESS;  /* Return code from MPI function codes. */
     int ierr = PIO_NOERR;                  /* Return code from function calls. */
+    int ierr2 = PIO_NOERR;    /* Return code from function calls. */
 #ifdef PIO_MICRO_TIMING
     char timer_log_fname[PIO_MAX_NAME];
 #endif
@@ -2636,23 +2637,62 @@ int PIOc_def_var(int ncid, const char *name, nc_type xtype, int ndims,
     {
 #ifdef _PNETCDF
         if (file->iotype == PIO_IOTYPE_PNETCDF)
+        {
             ierr = ncmpi_def_var(file->fh, name, xtype, ndims, dimidsp, varidp);
+            if (ierr != PIO_NOERR)
+            {
+                char errmsg[PIO_MAX_NAME];
+                ierr2 = PIOc_strerror(ierr, errmsg);
+                ierr = pio_err(ios, file, ierr, __FILE__, __LINE__,
+                                "Defining variable %s (ndims = %d) in file %s (ncid=%d, iotype=%s) failed. %s", name, ndims, pio_get_fname_from_file(file), ncid, pio_iotype_to_string(file->iotype), ((ierr2 == PIO_NOERR) ? errmsg : ""));
+            }
+        }
 #endif /* _PNETCDF */
 
 #ifdef _NETCDF
         if (file->iotype != PIO_IOTYPE_PNETCDF && file->iotype != PIO_IOTYPE_ADIOS && file->do_io)
+        {
             ierr = nc_def_var(file->fh, name, xtype, ndims, dimidsp, varidp);
+            if (ierr != PIO_NOERR)
+            {
+                char errmsg[PIO_MAX_NAME];
+                ierr2 = PIOc_strerror(ierr, errmsg);
+                ierr = pio_err(ios, file, ierr, __FILE__, __LINE__,
+                                "Defining variable %s (ndims = %d) in file %s (ncid=%d, iotype=%s) failed. %s", name, ndims, pio_get_fname_from_file(file), ncid, pio_iotype_to_string(file->iotype), ((ierr2 == PIO_NOERR) ? errmsg : ""));
+            }
+        }
 #endif /* _NETCDF */
 
 #ifdef _NETCDF4
-        /* For netCDF-4 serial files, turn on compression for this variable. */
-        if (!ierr && file->iotype == PIO_IOTYPE_NETCDF4C && file->do_io)
+        /* For netCDF-4 serial files, turn on compression for this
+           variable (non-scalar). */
+        if (!ierr && file->iotype == PIO_IOTYPE_NETCDF4C
+            && (ndims > 0) && file->do_io)
+        {
             ierr = nc_def_var_deflate(file->fh, *varidp, 0, 1, 1);
+            if (ierr != PIO_NOERR)
+            {
+                char errmsg[PIO_MAX_NAME];
+                ierr2 = PIOc_strerror(ierr, errmsg);
+                ierr = pio_err(ios, file, ierr, __FILE__, __LINE__,
+                                "Defining variable %s (varid = %d, ndims = %d) in file %s (ncid=%d, iotype=%s) failed. Turning on compression on the variable failed. %s", name, *varidp, ndims, pio_get_fname_from_file(file), ncid, pio_iotype_to_string(file->iotype), ((ierr2 == PIO_NOERR) ? errmsg : ""));
+            }
+        }
 
         /* For netCDF-4 parallel files, set parallel access to collective. */
         if (!ierr && file->iotype == PIO_IOTYPE_NETCDF4P && file->do_io)
+        {
             ierr = nc_var_par_access(file->fh, *varidp, NC_COLLECTIVE);
+            if (ierr != PIO_NOERR)
+            {
+                char errmsg[PIO_MAX_NAME];
+                ierr2 = PIOc_strerror(ierr, errmsg);
+                ierr = pio_err(ios, file, ierr, __FILE__, __LINE__,
+                                "Defining variable %s (varid = %d, ndims = %d) in file %s (ncid=%d, iotype=%s) failed. Setting parallel access for the variable failed. %s", name, *varidp, ndims, pio_get_fname_from_file(file), ncid, pio_iotype_to_string(file->iotype), ((ierr2 == PIO_NOERR) ? errmsg : ""));
+            }
+        }
 #endif /* _NETCDF4 */
+
     }
 
     ierr = check_netcdf(NULL, file, ierr, __FILE__, __LINE__);
