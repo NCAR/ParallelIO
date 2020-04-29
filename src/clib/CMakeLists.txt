@@ -33,6 +33,13 @@ target_compile_definitions (pioc
 target_compile_definitions (pioc
   PUBLIC OMPI_SKIP_MPICXX)
 
+# At least on Titan + Cray MPI, MPI_Irsends are buggy
+# causing hangs during I/O
+# Force Scorpio to use MPI_Isends instead of the default
+# MPI_Irsends
+target_compile_definitions (pioc
+  PRIVATE USE_MPI_ISEND_FOR_FC)
+
 # Compiler-specific compiler options
 string (TOUPPER "${CMAKE_C_COMPILER_ID}" CMAKE_C_COMPILER_NAME)
 if (CMAKE_C_COMPILER_NAME STREQUAL "CRAY")
