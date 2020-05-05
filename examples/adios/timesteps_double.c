@@ -209,7 +209,7 @@ int main(int argc, char **argv)
     if ((ret = MPI_Init(&argc, &argv)))
         MPIERR(ret);
 
-    if ((ret = MPI_Errhandler_set(MPI_COMM_WORLD, MPI_ERRORS_RETURN)))
+    if ((ret = MPI_Comm_set_errhandler(MPI_COMM_WORLD, MPI_ERRORS_RETURN)))
         MPIERR(ret);
 
     /* Learn my rank and the total number of processors. */
