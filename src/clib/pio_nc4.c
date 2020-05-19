@@ -72,8 +72,16 @@ int PIOc_def_var_deflate(int ncid, int varid, int shuffle, int deflate,
         if (file->iotype == PIO_IOTYPE_NETCDF4P)
             ierr = NC_EINVAL;
         else
+        {
             if (file->do_io)
-                ierr = nc_def_var_deflate(file->fh, varid, shuffle, deflate, deflate_level);
+            {
+                /* In NetCDF 4.7.4 and later releases, to set a new deflate level, deflation
+                   needs to be turned off first to unset existing deflate level */
+                ierr = nc_def_var_deflate(file->fh, varid, 0, 0, 1);
+                if (ierr == PIO_NOERR)
+                    ierr = nc_def_var_deflate(file->fh, varid, shuffle, deflate, deflate_level);
+            }
+        }
 #endif
     }
 
