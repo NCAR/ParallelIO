@@ -19,6 +19,7 @@ option (PIO_ENABLE_INTERNAL_TIMING    "Gather and print GPTL timing stats"  OFF)
 option (PIO_ENABLE_LOGGING   "Enable debug logging (large output possible)" OFF)
 option (PIO_ENABLE_DOC       "Enable building SCORPIO documentation"            ON)
 option (PIO_ENABLE_COVERAGE  "Enable code coverage"                         OFF)
+option (PIO_ENABLE_TOOLS     "Enable SCORPIO tools"                         ON)
 option (PIO_ENABLE_EXAMPLES  "Enable SCORPIO examples"                          ON)
 option (PIO_INTERNAL_DOC     "Enable SCORPIO developer documentation"           OFF)
 option (PIO_TEST_BIG_ENDIAN  "Enable test to see if machine is big endian"  ON)
@@ -209,7 +210,9 @@ add_subdirectory (src)
 #==============================================================================
 
 # Tools
-add_subdirectory(tools)
+if (PIO_ENABLE_TOOLS)
+  add_subdirectory(tools)
+endif ()
 
 # Tests
 if (PIO_ENABLE_TESTS)
