@@ -2054,10 +2054,38 @@ int default_subset_partition(iosystem_desc_t *ios, io_desc_t *iodesc)
     }
     else
     {
-        int taskratio = ios->num_comptasks / ios->num_iotasks;
-        key = max(1, ios->comp_rank % taskratio + 1);
-        color = min(ios->num_iotasks - 1, ios->comp_rank / taskratio);
+        key = ios->comp_rank + 1; /* Keep the original order of ranking, add 1 to make sure key > 0 */
+
+        int tasks_per_io = ios->num_comptasks / ios->num_iotasks;
+        int extra_tasks = ios->num_comptasks % ios->num_iotasks;
+
+        if (extra_tasks > 0)
+        {
+            /* For load balancing, assign extra_tasks compute tasks evenly to first extra_tasks IO tasks
+             * Perform color assignment for two groups
+             * Group #1: first extra_tasks IO tasks, each task is assigned tasks_per_io + 1 compute tasks
+             * Group #2: other IO tasks, each task is assigned tasks_per_io compute tasks
+             */
+            int total_tasks_group1 = (tasks_per_io + 1) * extra_tasks;
+            if (ios->comp_rank < total_tasks_group1)
+            {
+                /* This compute task is assigned to group #1 */
+                color = ios->comp_rank / (tasks_per_io + 1);
+            }
+            else
+            {
+                /* This compute task is assigned to group #2 */
+                int local_color_group2 = (ios->comp_rank - total_tasks_group1) / tasks_per_io;
+                color = local_color_group2 + extra_tasks; /* Follow extra_tasks colors in group #1 */
+            }
+        }
+        else
+        {
+            /* Only one group, perform color assignment for the only group */
+            color = ios->comp_rank / tasks_per_io;
+        }
     }
+    assert(color <= ios->num_iotasks - 1);
     LOG((3, "key = %d color = %d", key, color));
 
     /* Create new communicators. */
