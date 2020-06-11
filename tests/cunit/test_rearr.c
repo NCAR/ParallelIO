@@ -892,7 +892,11 @@ int test_default_subset_partition(MPI_Comm test_comm, int my_rank)
 
     ios->ioproc = 1;
     ios->io_rank = my_rank;
+    ios->comp_rank = my_rank;
+    ios->num_iotasks = TARGET_NTASKS;
+    ios->num_comptasks = TARGET_NTASKS;
     ios->comp_comm = test_comm;
+    ios->union_comm = test_comm;
 
     /* Run the function to test. */
     if ((ret = default_subset_partition(ios, iodesc)))
