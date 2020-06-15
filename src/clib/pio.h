@@ -66,7 +66,7 @@ unsigned long get_adios2_io_cnt();
 
 /** The start ID and maximum number of IDs for IO decompositions. */
 #define PIO_IODESC_START_ID 512
-#define PIO_IODESC_MAX_IDS 4096
+#define PIO_IODESC_MAX_IDS 65536
 
 /** The maximum number of variables allowed in a netCDF file. */
 #define PIO_MAX_VARS_UB 8192
