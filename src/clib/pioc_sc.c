@@ -465,6 +465,7 @@ int CalcStartandCount(int pio_type, int ndims, const int *gdims, int num_io_proc
                     {
                         piodie(__FILE__, __LINE__, "Start (%lld) plus count (%lld) exceeds dimension bound, (gdims[%d] = %d) + 1", (long long int)start, (long long int) count, i, gdims[i]);
                     }
+                    break; /* Terminate on this dimension */
                 }
                 else if(gdims[i] > 1)
                 {
@@ -507,6 +508,8 @@ int CalcStartandCount(int pio_type, int ndims, const int *gdims, int num_io_proc
         {
             tpsize = 0;
             use_io_procs--;
+            /* maxbytes needs to be updated for a smaller use_io_procs */
+            maxbytes = max(blocksize, pgdims * basesize / use_io_procs) + 256;
         }
     }
 
