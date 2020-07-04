@@ -874,6 +874,98 @@ int test_box_rearrange_create_2(MPI_Comm test_comm, int my_rank)
     return 0;
 }
 
+/* Test for the box_rearrange_create() function.
+ * Test totalrecv > iodesc->llen case in compute_counts(). */
+int test_box_rearrange_create_3(MPI_Comm test_comm, int my_rank)
+{
+#define MAPLEN1 1
+    iosystem_desc_t *ios;
+    io_desc_t *iodesc;
+    io_region *ior1;
+    int maplen = MAPLEN1;
+    PIO_Offset compmap[MAPLEN1] = {0};
+    const int gdimlen[NDIM1] = {1};
+    int ndims = NDIM1;
+    int ret;
+
+    /* Allocate IO system info struct for this test. */
+    if (!(ios = calloc(1, sizeof(iosystem_desc_t))))
+        return PIO_ENOMEM;
+
+    /* Allocate IO desc struct for this test. */
+    if (!(iodesc = calloc(1, sizeof(io_desc_t))))
+        return PIO_ENOMEM;
+
+    /* Default rearranger options. */
+    iodesc->rearr_opts.comm_type = PIO_REARR_COMM_COLL;
+    iodesc->rearr_opts.fcd = PIO_REARR_COMM_FC_2D_DISABLE;
+
+    /* Set up for determine_fill(). */
+    ios->union_comm = test_comm;
+    ios->io_comm = test_comm;
+    iodesc->ndims = NDIM1;
+    iodesc->rearranger = PIO_REARR_BOX;
+
+    /* This is the size of the map in computation tasks. */
+    iodesc->ndof = 1;
+
+    /* Set up the IO task info for the test. */
+    ios->ioproc = 1;
+    ios->compproc = 1;
+    ios->union_rank = my_rank;
+    ios->num_iotasks = TARGET_NTASKS;
+    ios->num_comptasks = TARGET_NTASKS;
+    ios->num_uniontasks = TARGET_NTASKS;
+    if (!(ios->ioranks = calloc(ios->num_iotasks, sizeof(int))))
+        return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__, "Error allocating memory for ioranks");
+    for (int i = 0; i < ios->num_iotasks; i++)
+        ios->ioranks[i] = i;
+    if (!(ios->compranks = calloc(ios->num_comptasks, sizeof(int))))
+        return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__, "Error allocating memory for compranks");
+    for (int i = 0; i < ios->num_comptasks; i++)
+        ios->compranks[i] = i;
+
+    /* This is how we allocate a region. */
+    if ((ret = alloc_region2(NULL, NDIM1, &ior1)))
+        return ret;
+    ior1->next = NULL;
+    if (my_rank == 0)
+        ior1->count[0] = 1;
+
+    iodesc->firstregion = ior1;
+
+    /* Two computation tasks contain duplicate data element to be transfered */
+    if (my_rank == 0 || my_rank == 2)
+        compmap[0] = 1;
+
+    /* We are finally ready to run the code under test. */
+    if ((ret = box_rearrange_create(ios, maplen, compmap, gdimlen, ndims, iodesc)))
+        return ret;
+
+    /* Check some results. */
+    if (iodesc->rearranger != PIO_REARR_BOX || iodesc->ndof != maplen ||
+        (iodesc->llen != my_rank ? 0 : 1) || iodesc->needsfill)
+        return ERR_WRONG;
+
+    /* Free resources allocated in compute_counts(). */
+    free(iodesc->scount);
+    free(iodesc->sindex);
+    free(iodesc->rcount);
+    free(iodesc->rfrom);
+    free(iodesc->rindex);
+
+    /* Free resources from test. */
+    free(ior1->start);
+    free(ior1->count);
+    free(ior1);
+    free(ios->ioranks);
+    free(ios->compranks);
+    free(iodesc);
+    free(ios);
+
+    return 0;
+}
+
 /* Test function default_subset_partition. */
 int test_default_subset_partition(MPI_Comm test_comm, int my_rank)
 {
@@ -1223,6 +1315,9 @@ int run_no_iosys_tests(int my_rank, MPI_Comm test_comm)
 
     printf("%d running more tests for box_rearrange_create\n", my_rank);
     if ((ret = test_box_rearrange_create_2(test_comm, my_rank)))
+        return ret;
+
+    if ((ret = test_box_rearrange_create_3(test_comm, my_rank)))
         return ret;
 
     printf("%d running tests for default_subset_partition\n", my_rank);
