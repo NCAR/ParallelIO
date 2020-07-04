@@ -752,8 +752,23 @@ int PIOc_InitDecomp(int iosysid, int pio_type, int ndims, const int *gdimlen, in
          iodesc->ioid, iodesc->nrecvs, iodesc->ndof, iodesc->ndims, iodesc->num_aiotasks,
          iodesc->rearranger, iodesc->maxregions, iodesc->needsfill, iodesc->llen,
          iodesc->maxiobuflen));
-    for (int j = 0; j < iodesc->llen; j++)
-        LOG((3, "rindex[%d] = %lld", j, iodesc->rindex[j]));
+    if (ios->ioproc)
+    {
+        if (iodesc->rearranger == PIO_REARR_SUBSET)
+        {
+            for (int j = 0; j < iodesc->llen; j++)
+                LOG((3, "rindex[%d] = %lld", j, iodesc->rindex[j]));
+        }
+        else
+        {
+            int totalrecv = 0;
+            for (int j = 0; j < iodesc->nrecvs; j++)
+                totalrecv += iodesc->rcount[j];
+
+            for (int j = 0; j < totalrecv; j++)
+                LOG((3, "rindex[%d] = %lld", j, iodesc->rindex[j]));
+        }
+    }
 #endif /* PIO_ENABLE_LOGGING */            
 
     /* This function only does something if pre-processor macro
