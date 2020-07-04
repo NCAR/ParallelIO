@@ -823,7 +823,6 @@ int compute_counts(iosystem_desc_t *ios, io_desc_t *iodesc,
         LOG((3, "totalrecv = %d", totalrecv));
         if (totalrecv > 0)
         {
-            totalrecv = iodesc->llen;  /* can reduce memory usage here */
             if (!(iodesc->rindex = calloc(totalrecv, sizeof(PIO_Offset))))
             {
                 return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__,
