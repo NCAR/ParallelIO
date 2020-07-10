@@ -10,7 +10,12 @@ add_definitions(${PIO_DEFINITIONS})
 #link_directories(${PIO_LIB_DIR})
 
 # Enable C++11 support
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+string (TOUPPER "${CMAKE_CXX_COMPILER_ID}" CMAKE_CXX_COMPILER_NAME)
+if (CMAKE_CXX_COMPILER_NAME STREQUAL "CRAY")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -h std=c++11")
+else ()
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+endif ()
 
 set(SRC ${CMAKE_SOURCE_DIR}/tools/util/argparser.cxx
     ${CMAKE_SOURCE_DIR}/tools/util/spio_misc_tool_utils.cxx
