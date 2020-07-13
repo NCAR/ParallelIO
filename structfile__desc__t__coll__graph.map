@@ -1,7 +1,8 @@
 <map id="file_desc_t" name="file_desc_t">
-<area shape="rect" id="node2" href="$structwmulti__buffer.html" title="The multi buffer holds data from one or more variables. " alt="" coords="5,199,105,225"/>
-<area shape="rect" id="node3" href="$structvar__desc__t.html" title="Variable description structure. " alt="" coords="129,199,216,225"/>
-<area shape="rect" id="node4" href="$structiosystem__desc__t.html" title="IO system descriptor structure. " alt="" coords="240,199,361,225"/>
-<area shape="rect" id="node5" href="$structrearr__opt.html" title="Rearranger options. " alt="" coords="264,109,337,136"/>
-<area shape="rect" id="node6" href="$structrearr__comm__fc__opt.html" title="Rearranger comm flow control options. " alt="" coords="233,5,368,32"/>
+<area shape="rect" id="node1" title="File descriptor structure." alt="" coords="143,288,233,315"/>
+<area shape="rect" id="node2" href="$structwmulti__buffer.html" title="The multi buffer holds data from one or more variables." alt="" coords="5,199,117,225"/>
+<area shape="rect" id="node3" href="$structvar__desc__t.html" title="Variable description structure." alt="" coords="142,199,234,225"/>
+<area shape="rect" id="node4" href="$structiosystem__desc__t.html" title="IO system descriptor structure." alt="" coords="259,199,389,225"/>
+<area shape="rect" id="node5" href="$structrearr__opt.html" title="Rearranger options." alt="" coords="283,109,365,136"/>
+<area shape="rect" id="node6" href="$structrearr__comm__fc__opt.html" title="Rearranger comm flow control options." alt="" coords="250,5,398,32"/>
 </map>
