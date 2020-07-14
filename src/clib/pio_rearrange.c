@@ -823,7 +823,6 @@ int compute_counts(iosystem_desc_t *ios, io_desc_t *iodesc,
         LOG((3, "totalrecv = %d", totalrecv));
         if (totalrecv > 0)
         {
-            totalrecv = iodesc->llen;  /* can reduce memory usage here */
             if (!(iodesc->rindex = calloc(totalrecv, sizeof(PIO_Offset))))
             {
                 return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__,
@@ -1520,6 +1519,11 @@ int box_rearrange_create(iosystem_desc_t *ios, int maplen, const PIO_Offset *com
                 if (dest_ioproc[k] >= 0)
                     continue;
 
+                /* compmap is a 1 based array of offsets into the global space.
+                 * A 0 in this array indicates a value which should not be transfered. */
+                if (compmap[k] < 1)
+                    continue;
+
                 PIO_Offset lcoord[ndims];
                 bool found = true;
 
@@ -1823,6 +1827,11 @@ int box_rearrange_create_with_holes(iosystem_desc_t *ios, int maplen, const PIO_
             {
                 /* An IO task has already been found for this element */
                 if (dest_ioproc[k] >= 0)
+                    continue;
+
+                /* compmap is a 1 based array of offsets into the global space.
+                 * A 0 in this array indicates a value which should not be transfered. */
+                if (compmap[k] < 1)
                     continue;
 
                 PIO_Offset lcoord[ndims];
