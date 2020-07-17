@@ -17,7 +17,7 @@ AC_DEFINE_UNQUOTED([PIO_VERSION_PATCH], ["$PIO_VERSION_PATCH"], [PIO patch versi
 # Once more for the documentation.
 AC_SUBST([VERSION_MAJOR], [2])
 AC_SUBST([VERSION_MINOR], [5])
-AC_SUBST([VERSION_PATCH], [1-development])
+AC_SUBST([VERSION_PATCH], [1])
 
 # The m4 directory holds macros for autoconf.
 AC_CONFIG_MACRO_DIR([m4])
