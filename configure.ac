@@ -7,9 +7,12 @@ AC_CONFIG_SRCDIR(src/clib/pio_darray.c)
 AM_INIT_AUTOMAKE([foreign serial-tests])
 
 # The PIO version, again.
-AC_DEFINE([PIO_VERSION_MAJOR], [2], [PIO major version])
-AC_DEFINE([PIO_VERSION_MINOR], [5], [PIO minor version])
-AC_DEFINE([PIO_VERSION_PATCH], [1], [PIO patch version])
+AC_SUBST([PIO_VERSION_MAJOR]) PIO_VERSION_MAJOR=2
+AC_SUBST([PIO_VERSION_MINOR]) PIO_VERSION_MINOR=5
+AC_SUBST([PIO_VERSION_PATCH]) PIO_VERSION_PATCH=1
+AC_DEFINE_UNQUOTED([PIO_VERSION_MAJOR], ["$PIO_VERSION_MAJOR"], [PIO major version])
+AC_DEFINE_UNQUOTED([PIO_VERSION_MINOR], ["$PIO_VERSION_MINOR"], [PIO minor version])
+AC_DEFINE_UNQUOTED([PIO_VERSION_PATCH], ["$PIO_VERSION_PATCH"], [PIO patch version])
 
 # Once more for the documentation.
 AC_SUBST([VERSION_MAJOR], [2])
@@ -349,7 +352,7 @@ AC_DEFUN([AX_SET_META],[
 #####
 # Define values used in include/pio_meta.h
 #####
-AX_SET_META([PIO_HAS_SZIP],[$have_szip_write],[yes])
+AX_SET_META([PIO_HAS_SZIP_WRITE],[$have_szip_write],[yes])
 AX_SET_META([PIO_HAS_PNETCDF],[$enable_pnetcdf],[yes])
 AX_SET_META([PIO_HAS_PAR_FILTERS], [$have_par_filters],[yes])
 
