@@ -47,24 +47,6 @@ char dim_name[NDIM3][PIO_MAX_NAME + 1] = {"timestep", "x", "y"};
 /* Length of the dimensions in the sample data. */
 int dim_len[NDIM3] = {NC_UNLIMITED, X_DIM_LEN, Y_DIM_LEN};
 
-/* Create the decomposition to divide the 3-dimensional sample data
- * between the 4 tasks.
- *
- * @param ntasks the number of available tasks
- * @param my_rank rank of this task.
- * @param iosysid the IO system ID.
- * @param dim1_len the length of the dimension.
- * @param ioid a pointer that gets the ID of this decomposition.
- * @returns 0 for success, error code otherwise.
- **/
-int create_decomposition(int ntasks, int my_rank, int iosysid, int dim1_len,
-                         int *ioid)
-{
-    int ret;
-
-    return 0;
-}
-
 /* Tests with deflate. Only netcdf-4 IOTYPES support deflate. */
 int run_deflate_test(int iosysid, int mpi_size, int iotype, int my_rank,
 		     MPI_Comm test_comm)
@@ -84,7 +66,7 @@ int run_deflate_test(int iosysid, int mpi_size, int iotype, int my_rank,
     sprintf(filename, "%s_%d.nc", TEST_NAME, iotype);
 
     /* How many data elements per task? */
-    elements_per_pe = X_DIM_LEN * Y_DIM_LEN / ntasks;
+    elements_per_pe = X_DIM_LEN * Y_DIM_LEN / mpi_size;
 
     /* Allocate space for the decomposition array. */
     if (!(compdof = malloc(elements_per_pe * sizeof(PIO_Offset))))
@@ -96,7 +78,7 @@ int run_deflate_test(int iosysid, int mpi_size, int iotype, int my_rank,
 
     /* Create the PIO decomposition for this test. */
     if ((ret = PIOc_InitDecomp(iosysid, PIO_FLOAT, NDIM3 - 1, &dim_len[1], elements_per_pe,
-                               compdof, ioid, NULL, NULL, NULL)))
+                               compdof, &ioid, NULL, NULL, NULL)))
         ERR(ret);
 
     /* Free the mapping. */
@@ -144,6 +126,10 @@ int run_deflate_test(int iosysid, int mpi_size, int iotype, int my_rank,
 	    return ret;
     }
 
+    /* Free the PIO decomposition. */
+    if ((ret = PIOc_freedecomp(iosysid, ioid)))
+	ERR(ret);
+    
     return PIO_NOERR;
 }
 
@@ -151,12 +137,9 @@ int run_deflate_test(int iosysid, int mpi_size, int iotype, int my_rank,
 int test_all(int iosysid, int num_flavors, int *flavor, int my_rank, MPI_Comm test_comm,
              int async)
 {
-    int ioid;
-    /* int ncid; */
-    /* int varid; */
     int mpi_size;
     char filename[PIO_MAX_NAME + 1];
-    int ret; /* Return code. */
+    int ret;
 
     if ((ret = MPI_Comm_size(test_comm, &mpi_size)))
         MPIERR(ret);
@@ -176,9 +159,6 @@ int test_all(int iosysid, int num_flavors, int *flavor, int my_rank, MPI_Comm te
 		return ret;
         }
 
-        /* Free the PIO decomposition. */
-        if ((ret = PIOc_freedecomp(iosysid, ioid)))
-            ERR(ret);
     }
 
     return PIO_NOERR;
