@@ -36,7 +36,7 @@
 #define NUM_TIMESTEPS 2
 
 /* The name of the variable in the netCDF output files. */
-#define VAR_NAME "var_3D_with_unlim"
+#define VAR_NAME "var_3D"
 
 /* The meaning of life, the universe, and everything. */
 #define START_DATA_VAL 42
@@ -86,51 +86,19 @@ int create_decomposition(int ntasks, int my_rank, int iosysid, int dim1_len,
     return 0;
 }
 
-/* /\* Create the test file. *\/ */
-/* int create_test_file(int iosysid, int ioid, int iotype, int my_rank, int *ncid, int *varid) */
-/* { */
-/*     char filename[PIO_MAX_NAME + 1]; /\* Name for the output files. *\/ */
-/*     int dim_len[NDIM3] = {NC_UNLIMITED, X_DIM_LEN, Y_DIM_LEN}; /\* Length of the dimensions in the sample data. *\/ */
-/*     int dimids[NDIM3];      /\* The dimension IDs. *\/ */
-/*     int ret;       /\* Return code. *\/ */
-
-/*     /\* Create the filename. *\/ */
-/*     sprintf(filename, "%s_iotype_%d.nc", TEST_NAME, iotype); */
-    
-/*     /\* Create the netCDF output file. *\/ */
-/*     if ((ret = PIOc_createfile(iosysid, ncid, &iotype, filename, PIO_CLOBBER))) */
-/*         ERR(ret); */
-    
-/*     /\* Define netCDF dimensions and variable. *\/ */
-/*     for (int d = 0; d < NDIM3; d++) */
-/*         if ((ret = PIOc_def_dim(*ncid, dim_name[d], (PIO_Offset)dim_len[d], &dimids[d]))) */
-/*             ERR(ret); */
-    
-/*     /\* Define a variable. *\/ */
-/*     if ((ret = PIOc_def_var(*ncid, VAR_NAME, PIO_FLOAT, NDIM3, dimids, varid))) */
-/*         ERR(ret); */
-    
-/*     /\* End define mode. *\/ */
-/*     if ((ret = PIOc_enddef(*ncid))) */
-/*         ERR(ret); */
-    
-/*     return PIO_NOERR; */
-/* } */
-
 /* Tests with deflate. Only netcdf-4 IOTYPES support deflate. */
 int run_deflate_test(int iosysid, int ioid, int iotype, int my_rank,
 		     MPI_Comm test_comm)
 {
-#define UDIM1_NAME "unlimited1"
-#define NUM_UNLIM_DIMS 2
     int ncid;
     char filename[PIO_MAX_NAME + 1];
+    int varid;
     int dimid[NDIM3];
     int d;
     int ret;
 
     /* Create filename. */
-    sprintf(filename, "%s_multiple_unlim_dim_%d.nc", TEST_NAME, iotype);
+    sprintf(filename, "%s_%d.nc", TEST_NAME, iotype);
 
     /* Create a test file. */
     if ((ret = PIOc_createfile(iosysid, &ncid, &iotype, filename, PIO_CLOBBER)))
@@ -142,14 +110,33 @@ int run_deflate_test(int iosysid, int ioid, int iotype, int my_rank,
             ERR(ret);
 
     /* Now add a var with deflation. */
-    int varid;
-    #define VAR_NAME2 "some_dumb_variable_name_def_var_will_fail_anyway"
-    if (PIOc_def_var(ncid, VAR_NAME2, PIO_INT, 1, dimid, &varid))
-        ERR(ERR_WRONG);
+    if ((ret = PIOc_def_var(ncid, VAR_NAME, PIO_INT, NDIM3, dimid, &varid)))
+        ERR(ret);
+
+    if ((ret = PIOc_enddef(ncid)))
+	ERR(ret);
     
     /* Close the file. */
     if ((PIOc_closefile(ncid)))
         return ret;
+
+    {
+	int ndims, nvars, ngatts, unlimdimid;
+
+	/* Open the file again. */
+	if ((ret = PIOc_openfile(iosysid, &ncid, &iotype, filename, PIO_NOWRITE)))
+	    ERR(ret);
+	
+	/* Check the file. */
+	if ((ret = PIOc_inq(ncid, &ndims, &nvars, &ngatts, &unlimdimid)))
+	    ERR(ret);
+	if (ndims != NDIM3 || nvars != 1 || ngatts != 0 || unlimdimid != 0)
+	    ERR(ERR_WRONG);
+	
+	/* Close the file. */
+	if ((PIOc_closefile(ncid)))
+	    return ret;
+    }
 
     return PIO_NOERR;
 }
