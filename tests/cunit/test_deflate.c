@@ -130,8 +130,6 @@ int run_deflate_test(int iosysid, int ioid, int iotype, int my_rank,
     int ncid;
     char filename[PIO_MAX_NAME + 1];
     int dimid[NUM_UNLIM_DIMS];
-    int nunlimdims;
-    int unlimdimids[NUM_UNLIM_DIMS];
     int ret;
 
     /* Create filename. */
@@ -145,47 +143,10 @@ int run_deflate_test(int iosysid, int ioid, int iotype, int my_rank,
     if ((ret = PIOc_def_dim(ncid, UDIM1_NAME, NC_UNLIMITED, &dimid[0])))
         ERR(ret);        
 
-    /* Add another unlimited dimension. */
-    if ((ret = PIOc_def_dim(ncid, UDIM2_NAME, NC_UNLIMITED, &dimid[1])))
-        ERR(ret);        
-
-    /* Check for correctness. */
-    if ((ret = PIOc_inq_unlimdims(ncid, &nunlimdims, unlimdimids)))
-        ERR(ret);
-    if (nunlimdims != NUM_UNLIM_DIMS)
-        ERR(ERR_WRONG);
-    for (int d = 0; d < NUM_UNLIM_DIMS; d++)
-    {
-        if (unlimdimids[d] != dimid[d])
-            ERR(ERR_WRONG);
-    }
-
-    /* Check some more stuff. */
-    {
-        int nunlimdims;
-        int unlimdimids[NUM_UNLIM_DIMS];
-        
-        /* These should also work. */
-        if ((ret = PIOc_inq_unlimdims(ncid, NULL, NULL)))
-            ERR(ret);
-        if ((ret = PIOc_inq_unlimdims(ncid, &nunlimdims, NULL)))
-            ERR(ret);
-        if (nunlimdims != NUM_UNLIM_DIMS)
-            ERR(ERR_WRONG);
-        if ((ret = PIOc_inq_unlimdims(ncid, NULL, unlimdimids)))
-            ERR(ret);
-        for (int d = 0; d < NUM_UNLIM_DIMS; d++)
-        {
-            if (unlimdimids[d] != dimid[d])
-                ERR(ERR_WRONG);
-        }
-    }
-
-    /* Now try to add a var with two unlimited dims. It will fail. */
+    /* Now add a var with deflation. */
     int varid;
     #define VAR_NAME2 "some_dumb_variable_name_def_var_will_fail_anyway"
-    if (PIOc_def_var(ncid, VAR_NAME2, PIO_INT, NUM_UNLIM_DIMS, unlimdimids,
-                     &varid) != PIO_EINVAL)
+    if (PIOc_def_var(ncid, VAR_NAME2, PIO_INT, 1, dimid, &varid))
         ERR(ERR_WRONG);
     
     /* Close the file. */
@@ -222,33 +183,10 @@ int test_all(int iosysid, int num_flavors, int *flavor, int my_rank, MPI_Comm te
          * available ways. */
         for (int fmt = 0; fmt < num_flavors; fmt++)
         {
-            /* if ((ret = create_test_file(iosysid, ioid, flavor[fmt], my_rank, &ncid, &varid))) */
-            /*     return ret; */
-            /* if ((ret = PIOc_setframe(ncid, varid, 0))) */
-            /*     return ret; */
-            /* if ((ret = PIOc_advanceframe(ncid, varid))) */
-            /*     return ret; */
-
-            /* /\* Look at the internals to check that the frame commands */
-            /*  * worked. *\/ */
-            /* file_desc_t *file; */
-            /* var_desc_t *vdesc;     /\* Contains info about the variable. *\/ */
-
-            /* if ((ret = pio_get_file(ncid, &file))) */
-            /*     return ret; */
-            /* if ((ret = get_var_desc(varid, &file->varlist, &vdesc))) */
-            /*     return ret; */
-            /* if (vdesc->record != 1) */
-            /*     return ERR_WRONG; */
-            
-            /* if ((PIOc_closefile(ncid))) */
-            /*     return ret; */
-
-            /* Test file with multiple unlimited dims. Only netCDF-4
-             * iotypes can run this test. */
-            if (flavor[fmt] == PIO_IOTYPE_NETCDF4C || flavor[fmt] == PIO_IOTYPE_NETCDF4P)
-                if ((ret = run_deflate_test(iosysid, ioid, flavor[fmt], my_rank, test_comm)))
-                    return ret;
+            /* Test file with deflate. */
+            /* if (flavor[fmt] == PIO_IOTYPE_NETCDF4C || flavor[fmt] == PIO_IOTYPE_NETCDF4P) */
+	    if ((ret = run_deflate_test(iosysid, ioid, flavor[fmt], my_rank, test_comm)))
+		return ret;
         }
 
         /* Free the PIO decomposition. */
