@@ -57,7 +57,7 @@ int run_deflate_test(int iosysid, int mpi_size, int iotype, int my_rank,
     int dimid[NDIM3];
     int ioid;
     int *data;
-    PIO_Offset elements_per_pe;     /* Array elements per processing unit. */
+    PIO_Offset elements_per_pe; /* Array elements per processing unit. */
     PIO_Offset *compdof;  /* The decomposition mapping. */
     int d, i;
     int ret;
@@ -77,8 +77,9 @@ int run_deflate_test(int iosysid, int mpi_size, int iotype, int my_rank,
         compdof[i] = my_rank * elements_per_pe + i + 1;
 
     /* Create the PIO decomposition for this test. */
-    if ((ret = PIOc_InitDecomp(iosysid, PIO_FLOAT, NDIM3 - 1, &dim_len[1], elements_per_pe,
-                               compdof, &ioid, NULL, NULL, NULL)))
+    if ((ret = PIOc_InitDecomp(iosysid, PIO_FLOAT, NDIM3 - 1, &dim_len[1],
+			       elements_per_pe, compdof, &ioid, NULL, NULL,
+			       NULL)))
         ERR(ret);
 
     /* Free the mapping. */
@@ -98,7 +99,8 @@ int run_deflate_test(int iosysid, int mpi_size, int iotype, int my_rank,
 
     /* Define netCDF dimensions. */
     for (d = 0; d < NDIM3; d++)
-        if ((ret = PIOc_def_dim(ncid, dim_name[d], (PIO_Offset)dim_len[d], &dimid[d])))
+        if ((ret = PIOc_def_dim(ncid, dim_name[d], (PIO_Offset)dim_len[d],
+				&dimid[d])))
             ERR(ret);
 
     /* Now add a var with deflation. */
@@ -109,8 +111,12 @@ int run_deflate_test(int iosysid, int mpi_size, int iotype, int my_rank,
     if ((ret = PIOc_enddef(ncid)))
 	ERR(ret);
 
+    if ((ret = PIOc_setframe(ncid, varid, 0)))
+	ERR(ret);
+
     /* Write one record of data. */
-    if ((ret = PIOc_write_darray(ncid, varid, ioid, elements_per_pe, data, NULL)))
+    if ((ret = PIOc_write_darray(ncid, varid, ioid, elements_per_pe, data,
+				 NULL)))
 	ERR(ret);
     
     /* Close the file. */
@@ -121,7 +127,8 @@ int run_deflate_test(int iosysid, int mpi_size, int iotype, int my_rank,
 	int ndims, nvars, ngatts, unlimdimid;
 
 	/* Open the file again. */
-	if ((ret = PIOc_openfile(iosysid, &ncid, &iotype, filename, PIO_NOWRITE)))
+	if ((ret = PIOc_openfile(iosysid, &ncid, &iotype, filename,
+				 PIO_NOWRITE)))
 	    ERR(ret);
 	
 	/* Check the file. */
@@ -144,8 +151,8 @@ int run_deflate_test(int iosysid, int mpi_size, int iotype, int my_rank,
 }
 
 /* Run all the tests. */
-int test_all(int iosysid, int num_flavors, int *flavor, int my_rank, MPI_Comm test_comm,
-             int async)
+int test_all(int iosysid, int num_flavors, int *flavor, int my_rank,
+	     MPI_Comm test_comm, int async)
 {
     int mpi_size;
     char filename[PIO_MAX_NAME + 1];
@@ -164,8 +171,8 @@ int test_all(int iosysid, int num_flavors, int *flavor, int my_rank, MPI_Comm te
         for (int fmt = 0; fmt < num_flavors; fmt++)
         {
             /* Test file with deflate. */
-            /* if (flavor[fmt] == PIO_IOTYPE_NETCDF4C || flavor[fmt] == PIO_IOTYPE_NETCDF4P) */
-	    if ((ret = run_deflate_test(iosysid, mpi_size, flavor[fmt], my_rank, test_comm)))
+	    if ((ret = run_deflate_test(iosysid, mpi_size, flavor[fmt],
+					my_rank, test_comm)))
 		return ret;
         }
 
