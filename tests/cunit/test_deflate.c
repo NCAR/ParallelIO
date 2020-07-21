@@ -26,7 +26,7 @@
 
 /* The number of dimensions in the example data. In this test, we
  * are using three-dimensional data. */
-#define NDIM 3
+#define NDIM3 3
 
 /* The length of our sample data along each dimension. */
 #define X_DIM_LEN 4
@@ -42,13 +42,10 @@
 #define START_DATA_VAL 42
 
 /* The dimension names. */
-char dim_name[NDIM][PIO_MAX_NAME + 1] = {"timestep", "x", "y"};
+char dim_name[NDIM3][PIO_MAX_NAME + 1] = {"timestep", "x", "y"};
 
 /* Length of the dimensions in the sample data. */
-int dim_len[NDIM] = {NC_UNLIMITED, X_DIM_LEN, Y_DIM_LEN};
-
-#define DIM_NAME1 "dim1"
-#define DIM_NAME2 "dim2"
+int dim_len[NDIM3] = {NC_UNLIMITED, X_DIM_LEN, Y_DIM_LEN};
 
 /* Create the decomposition to divide the 3-dimensional sample data
  * between the 4 tasks.
@@ -79,7 +76,7 @@ int create_decomposition(int ntasks, int my_rank, int iosysid, int dim1_len,
         compdof[i] = my_rank * elements_per_pe + i + 1;
 
     /* Create the PIO decomposition for this test. */
-    if ((ret = PIOc_InitDecomp(iosysid, PIO_FLOAT, NDIM - 1, &dim_len[1], elements_per_pe,
+    if ((ret = PIOc_InitDecomp(iosysid, PIO_FLOAT, NDIM3 - 1, &dim_len[1], elements_per_pe,
                                compdof, ioid, NULL, NULL, NULL)))
         ERR(ret);
 
@@ -89,47 +86,47 @@ int create_decomposition(int ntasks, int my_rank, int iosysid, int dim1_len,
     return 0;
 }
 
-/* Create the test file. */
-int create_test_file(int iosysid, int ioid, int iotype, int my_rank, int *ncid, int *varid)
-{
-    char filename[PIO_MAX_NAME + 1]; /* Name for the output files. */
-    int dim_len[NDIM] = {NC_UNLIMITED, X_DIM_LEN, Y_DIM_LEN}; /* Length of the dimensions in the sample data. */
-    int dimids[NDIM];      /* The dimension IDs. */
-    int ret;       /* Return code. */
+/* /\* Create the test file. *\/ */
+/* int create_test_file(int iosysid, int ioid, int iotype, int my_rank, int *ncid, int *varid) */
+/* { */
+/*     char filename[PIO_MAX_NAME + 1]; /\* Name for the output files. *\/ */
+/*     int dim_len[NDIM3] = {NC_UNLIMITED, X_DIM_LEN, Y_DIM_LEN}; /\* Length of the dimensions in the sample data. *\/ */
+/*     int dimids[NDIM3];      /\* The dimension IDs. *\/ */
+/*     int ret;       /\* Return code. *\/ */
 
-    /* Create the filename. */
-    sprintf(filename, "%s_iotype_%d.nc", TEST_NAME, iotype);
+/*     /\* Create the filename. *\/ */
+/*     sprintf(filename, "%s_iotype_%d.nc", TEST_NAME, iotype); */
     
-    /* Create the netCDF output file. */
-    if ((ret = PIOc_createfile(iosysid, ncid, &iotype, filename, PIO_CLOBBER)))
-        ERR(ret);
+/*     /\* Create the netCDF output file. *\/ */
+/*     if ((ret = PIOc_createfile(iosysid, ncid, &iotype, filename, PIO_CLOBBER))) */
+/*         ERR(ret); */
     
-    /* Define netCDF dimensions and variable. */
-    for (int d = 0; d < NDIM; d++)
-        if ((ret = PIOc_def_dim(*ncid, dim_name[d], (PIO_Offset)dim_len[d], &dimids[d])))
-            ERR(ret);
+/*     /\* Define netCDF dimensions and variable. *\/ */
+/*     for (int d = 0; d < NDIM3; d++) */
+/*         if ((ret = PIOc_def_dim(*ncid, dim_name[d], (PIO_Offset)dim_len[d], &dimids[d]))) */
+/*             ERR(ret); */
     
-    /* Define a variable. */
-    if ((ret = PIOc_def_var(*ncid, VAR_NAME, PIO_FLOAT, NDIM, dimids, varid)))
-        ERR(ret);
+/*     /\* Define a variable. *\/ */
+/*     if ((ret = PIOc_def_var(*ncid, VAR_NAME, PIO_FLOAT, NDIM3, dimids, varid))) */
+/*         ERR(ret); */
     
-    /* End define mode. */
-    if ((ret = PIOc_enddef(*ncid)))
-        ERR(ret);
+/*     /\* End define mode. *\/ */
+/*     if ((ret = PIOc_enddef(*ncid))) */
+/*         ERR(ret); */
     
-    return PIO_NOERR;
-}
+/*     return PIO_NOERR; */
+/* } */
 
 /* Tests with deflate. Only netcdf-4 IOTYPES support deflate. */
 int run_deflate_test(int iosysid, int ioid, int iotype, int my_rank,
 		     MPI_Comm test_comm)
 {
 #define UDIM1_NAME "unlimited1"
-#define UDIM2_NAME "unlimited2"
 #define NUM_UNLIM_DIMS 2
     int ncid;
     char filename[PIO_MAX_NAME + 1];
-    int dimid[NUM_UNLIM_DIMS];
+    int dimid[NDIM3];
+    int d;
     int ret;
 
     /* Create filename. */
@@ -139,9 +136,10 @@ int run_deflate_test(int iosysid, int ioid, int iotype, int my_rank,
     if ((ret = PIOc_createfile(iosysid, &ncid, &iotype, filename, PIO_CLOBBER)))
         ERR(ret);
 
-    /* Add unlimited dimension. */
-    if ((ret = PIOc_def_dim(ncid, UDIM1_NAME, NC_UNLIMITED, &dimid[0])))
-        ERR(ret);        
+    /* Define netCDF dimensions. */
+    for (d = 0; d < NDIM3; d++)
+        if ((ret = PIOc_def_dim(ncid, dim_name[d], (PIO_Offset)dim_len[d], &dimid[d])))
+            ERR(ret);
 
     /* Now add a var with deflation. */
     int varid;
