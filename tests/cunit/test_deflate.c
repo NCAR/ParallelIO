@@ -59,7 +59,7 @@ int run_deflate_test(int iosysid, int mpi_size, int iotype, int my_rank,
     int *data;
     PIO_Offset elements_per_pe;     /* Array elements per processing unit. */
     PIO_Offset *compdof;  /* The decomposition mapping. */
-    int d;
+    int d, i;
     int ret;
 
     /* Create filename. */
@@ -73,7 +73,7 @@ int run_deflate_test(int iosysid, int mpi_size, int iotype, int my_rank,
         return PIO_ENOMEM;
 
     /* Describe the decomposition. This is a 1-based array, so add 1! */
-    for (int i = 0; i < elements_per_pe; i++)
+    for (i = 0; i < elements_per_pe; i++)
         compdof[i] = my_rank * elements_per_pe + i + 1;
 
     /* Create the PIO decomposition for this test. */
@@ -85,8 +85,13 @@ int run_deflate_test(int iosysid, int mpi_size, int iotype, int my_rank,
     free(compdof);
 
     /* Allocate space for data for this pe. */
+    if (!(data = malloc(elements_per_pe * sizeof(int))))
+        return PIO_ENOMEM;
     
-
+    /* Create some data. */
+    for (i = 0; i < elements_per_pe; i++)
+        data[i] = my_rank * elements_per_pe + i + 1;
+    
     /* Create a test file. */
     if ((ret = PIOc_createfile(iosysid, &ncid, &iotype, filename, PIO_CLOBBER)))
         ERR(ret);
@@ -100,7 +105,12 @@ int run_deflate_test(int iosysid, int mpi_size, int iotype, int my_rank,
     if ((ret = PIOc_def_var(ncid, VAR_NAME, PIO_INT, NDIM3, dimid, &varid)))
         ERR(ret);
 
+    /* End define mode. */
     if ((ret = PIOc_enddef(ncid)))
+	ERR(ret);
+
+    /* Write one record of data. */
+    if ((ret = PIOc_write_darray(ncid, varid, ioid, elements_per_pe, data, NULL)))
 	ERR(ret);
     
     /* Close the file. */

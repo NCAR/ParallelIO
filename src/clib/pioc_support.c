@@ -23,10 +23,12 @@
 
 /* Some logging constants. */
 #if PIO_ENABLE_LOGGING
+#include <time.h>
 #define MAX_LOG_MSG 1024
 #define MAX_RANK_STR 12
 #define ERROR_PREFIX "ERROR: "
 #define NC_LEVEL_DIFF 3
+#define MAX_TIME_STR 50	
 int pio_log_level = 0;
 int pio_log_ref_cnt = 0;
 int my_rank;
@@ -312,13 +314,20 @@ pio_init_logging(void)
 #if PIO_ENABLE_LOGGING
     if (!LOG_FILE)
     {
-        char log_filename[PIO_MAX_NAME];
+        char log_filename[PIO_MAX_NAME + MAX_TIME_STR + 1];
+	char time_string[MAX_TIME_STR + 1];
         int mpierr;
 
-        /* Create a filename with the rank in it. */
+	/* Get the time. */
+	time_t t = time(NULL);
+	struct tm tm = *localtime(&t);
+	sprintf(time_string, "%d-%02d-%02d_%02d:%02d:%02d", tm.tm_year + 1900,
+		tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
+	
+	/* Create a filename with the time and rank in it. */
         if ((mpierr = MPI_Comm_rank(MPI_COMM_WORLD, &my_rank)))
             return check_mpi(NULL, NULL, mpierr, __FILE__, __LINE__);
-        sprintf(log_filename, "pio_log_%d.log", my_rank);
+        sprintf(log_filename, "pio_log_%s_%d.log", time_string, my_rank);
 
         /* Open a file for this rank to log messages. */
         if (!(LOG_FILE = fopen(log_filename, "w")))
