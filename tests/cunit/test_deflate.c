@@ -60,9 +60,28 @@ int dim_len[NDIM3] = {NC_UNLIMITED, X_DIM_LEN, Y_DIM_LEN};
 int create_decomposition(int ntasks, int my_rank, int iosysid, int dim1_len,
                          int *ioid)
 {
+    int ret;
+
+    return 0;
+}
+
+/* Tests with deflate. Only netcdf-4 IOTYPES support deflate. */
+int run_deflate_test(int iosysid, int mpi_size, int iotype, int my_rank,
+		     MPI_Comm test_comm)
+{
+    int ncid;
+    char filename[PIO_MAX_NAME + 1];
+    int varid;
+    int dimid[NDIM3];
+    int ioid;
+    int *data;
     PIO_Offset elements_per_pe;     /* Array elements per processing unit. */
     PIO_Offset *compdof;  /* The decomposition mapping. */
+    int d;
     int ret;
+
+    /* Create filename. */
+    sprintf(filename, "%s_%d.nc", TEST_NAME, iotype);
 
     /* How many data elements per task? */
     elements_per_pe = X_DIM_LEN * Y_DIM_LEN / ntasks;
@@ -83,22 +102,8 @@ int create_decomposition(int ntasks, int my_rank, int iosysid, int dim1_len,
     /* Free the mapping. */
     free(compdof);
 
-    return 0;
-}
-
-/* Tests with deflate. Only netcdf-4 IOTYPES support deflate. */
-int run_deflate_test(int iosysid, int ioid, int iotype, int my_rank,
-		     MPI_Comm test_comm)
-{
-    int ncid;
-    char filename[PIO_MAX_NAME + 1];
-    int varid;
-    int dimid[NDIM3];
-    int d;
-    int ret;
-
-    /* Create filename. */
-    sprintf(filename, "%s_%d.nc", TEST_NAME, iotype);
+    /* Allocate space for data for this pe. */
+    
 
     /* Create a test file. */
     if ((ret = PIOc_createfile(iosysid, &ncid, &iotype, filename, PIO_CLOBBER)))
@@ -133,6 +138,7 @@ int run_deflate_test(int iosysid, int ioid, int iotype, int my_rank,
 	if (ndims != NDIM3 || nvars != 1 || ngatts != 0 || unlimdimid != 0)
 	    ERR(ERR_WRONG);
 	
+	
 	/* Close the file. */
 	if ((PIOc_closefile(ncid)))
 	    return ret;
@@ -148,11 +154,11 @@ int test_all(int iosysid, int num_flavors, int *flavor, int my_rank, MPI_Comm te
     int ioid;
     /* int ncid; */
     /* int varid; */
-    int my_test_size;
+    int mpi_size;
     char filename[PIO_MAX_NAME + 1];
     int ret; /* Return code. */
 
-    if ((ret = MPI_Comm_size(test_comm, &my_test_size)))
+    if ((ret = MPI_Comm_size(test_comm, &mpi_size)))
         MPIERR(ret);
     
     /* This will be our file name for writing out decompositions. */
@@ -160,17 +166,13 @@ int test_all(int iosysid, int num_flavors, int *flavor, int my_rank, MPI_Comm te
 
     if (!async)
     {
-        /* Decompose the data over the tasks. */
-        if ((ret = create_decomposition(my_test_size, my_rank, iosysid, X_DIM_LEN, &ioid)))
-            return ret;
-
         /* Use PIO to create the example file in each of the four
          * available ways. */
         for (int fmt = 0; fmt < num_flavors; fmt++)
         {
             /* Test file with deflate. */
             /* if (flavor[fmt] == PIO_IOTYPE_NETCDF4C || flavor[fmt] == PIO_IOTYPE_NETCDF4P) */
-	    if ((ret = run_deflate_test(iosysid, ioid, flavor[fmt], my_rank, test_comm)))
+	    if ((ret = run_deflate_test(iosysid, mpi_size, flavor[fmt], my_rank, test_comm)))
 		return ret;
         }
 
