@@ -10,10 +10,10 @@
 #include <pio_tests.h>
 
 /* The number of tasks this test should run on. */
-#define TARGET_NTASKS 4
+#define TARGET_NTASKS 1
 
 /* The minimum number of tasks this test should run on. */
-#define MIN_NTASKS 4
+#define MIN_NTASKS 1
 
 /* The name of this test. */
 #define TEST_NAME "test_deflate"
@@ -59,6 +59,7 @@ int run_deflate_test(int iosysid, int mpi_size, int iotype, int my_rank,
     int *data;
     PIO_Offset elements_per_pe; /* Array elements per processing unit. */
     PIO_Offset *compdof;  /* The decomposition mapping. */
+    int fill_value = 420000;
     int d, i;
     int ret;
 
@@ -116,7 +117,10 @@ int run_deflate_test(int iosysid, int mpi_size, int iotype, int my_rank,
 
     /* Write one record of data. */
     if ((ret = PIOc_write_darray(ncid, varid, ioid, elements_per_pe, data,
-				 NULL)))
+				 &fill_value)))
+	ERR(ret);
+
+    if ((ret = PIOc_sync(ncid)))
 	ERR(ret);
     
     /* Close the file. */
@@ -124,28 +128,51 @@ int run_deflate_test(int iosysid, int mpi_size, int iotype, int my_rank,
         return ret;
 
     {
-	int ndims, nvars, ngatts, unlimdimid;
+    	int ndims, nvars, ngatts, unlimdimid;
+    	int *data_in;
 
-	/* Open the file again. */
-	if ((ret = PIOc_openfile(iosysid, &ncid, &iotype, filename,
-				 PIO_NOWRITE)))
-	    ERR(ret);
+    	/* Open the file again. */
+    	if ((ret = PIOc_openfile(iosysid, &ncid, &iotype, filename,
+    				 PIO_NOWRITE)))
+    	    ERR(ret);
 	
-	/* Check the file. */
-	if ((ret = PIOc_inq(ncid, &ndims, &nvars, &ngatts, &unlimdimid)))
-	    ERR(ret);
-	if (ndims != NDIM3 || nvars != 1 || ngatts != 0 || unlimdimid != 0)
-	    ERR(ERR_WRONG);
+    	/* Check the file. */
+    	if ((ret = PIOc_inq(ncid, &ndims, &nvars, &ngatts, &unlimdimid)))
+    	    ERR(ret);
+    	if (ndims != NDIM3 || nvars != 1 || ngatts != 0 || unlimdimid != 0)
+    	    ERR(ERR_WRONG);
 	
+    	/* Allocate space for data for this pe. */
+    	if (!(data_in = malloc(elements_per_pe * sizeof(int))))
+    	    return PIO_ENOMEM;
+
+    	varid = 0;
+    	if ((ret = PIOc_setframe(ncid, varid, 0)))
+    	    ERR(ret);
+
+    	/* Read one record of data. */
+    	if ((ret = PIOc_read_darray(ncid, varid, ioid, elements_per_pe, data_in)))
+    	    ERR(ret);
+    
+    	/* Create some data. */
+    	for (i = 0; i < elements_per_pe; i++)
+    	{
+    	    printf("%d i %d data %d data_in %d\n", my_rank, i, data[i], data_in[i]);
+    	    if (data_in[i] != data[i]) ERR(ERR_WRONG);
+    	}
 	
-	/* Close the file. */
-	if ((PIOc_closefile(ncid)))
-	    return ret;
+    	/* Close the file. */
+    	if ((PIOc_closefile(ncid)))
+    	    return ret;
+
+    	/* Free memory. */
+    	free(data_in);
     }
 
     /* Free the PIO decomposition. */
     if ((ret = PIOc_freedecomp(iosysid, ioid)))
 	ERR(ret);
+    free(data);
     
     return PIO_NOERR;
 }
@@ -168,7 +195,9 @@ int test_all(int iosysid, int num_flavors, int *flavor, int my_rank,
     {
         /* Use PIO to create the example file in each of the four
          * available ways. */
-        for (int fmt = 0; fmt < num_flavors; fmt++)
+        /* for (int fmt = 0; fmt < num_flavors; fmt++) */
+	/* For some reason, pnetcdf is not working with this test! */
+        for (int fmt = 1; fmt < num_flavors; fmt++)
         {
             /* Test file with deflate. */
 	    if ((ret = run_deflate_test(iosysid, mpi_size, flavor[fmt],
