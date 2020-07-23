@@ -29,6 +29,7 @@ jobs:
 
     - name: pnetcdf build
       run: |
+        gcc --version
         wget https://parallel-netcdf.github.io/Release/parallel-netcdf-1.9.0.tar.gz
         tar -xzvf parallel-netcdf-1.9.0.tar.gz
         ls -l
