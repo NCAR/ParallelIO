@@ -52,7 +52,7 @@ jobs:
         tar -xzvf v4.7.4.tar.gz
         ls -l
         pushd netcdf-c-4.7.4
-        ./configure --prefix=/usr
+        ./configure --prefix=/usr --disable-dap
         make
         sudo make install
         popd
