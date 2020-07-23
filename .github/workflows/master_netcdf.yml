@@ -1,4 +1,4 @@
-name: C/C++ CI
+name: netcdf_master
 
 on:
   push:

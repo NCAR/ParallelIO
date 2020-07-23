@@ -1,4 +1,4 @@
-name: netcdf_master
+name: develop
 
 on:
   push:
