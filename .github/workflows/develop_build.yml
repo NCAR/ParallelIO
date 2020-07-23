@@ -20,6 +20,8 @@ jobs:
       FCFLAGS: "-fsanitize=address -fno-omit-frame-pointer -Werror"
 
     steps:
+    # Use this GitHub Actions at least once in this workflow as soon as possible.
+    - uses: technote-space/auto-cancel-redundant-job@v1
     - uses: actions/checkout@v2
     - name: Installs
       run: |
