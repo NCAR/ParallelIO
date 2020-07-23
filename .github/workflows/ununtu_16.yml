@@ -29,10 +29,10 @@ jobs:
 
     - name: pnetcdf build
       run: |
-        wget https://parallel-netcdf.github.io/Release/pnetcdf-1.10.0.tar.gz 
-        tar -xzvf pnetcdf-1.10.0.tar.gz
+        wget https://parallel-netcdf.github.io/Release/parallel-netcdf-1.9.0.tar.gz
+        tar -xzvf parallel-netcdf-1.9.0.tar.gz
         ls -l
-        pushd pnetcdf-1.10.0
+        pushd pnetcdf-1.9.0
         ./configure --prefix=/usr --enable-shared
         make
         sudo make install
