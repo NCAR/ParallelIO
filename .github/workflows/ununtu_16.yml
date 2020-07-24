@@ -15,9 +15,9 @@ jobs:
       CC: mpicc
       FC: mpifort
       CPPFLAGS: "-I/usr/include -I/usr/local/include"
-      CFLAGS: "-std=c99  -fsanitize=address -fno-omit-frame-pointer -Werror"
-      FFLAGS: "-fsanitize=address -fno-omit-frame-pointer"
-      FCFLAGS: "-fsanitize=address -fno-omit-frame-pointer -Werror"
+#      CFLAGS: "-std=c99  -fsanitize=address -fno-omit-frame-pointer -Werror"
+#      FFLAGS: "-fsanitize=address -fno-omit-frame-pointer"
+#      FCFLAGS: "-fsanitize=address -fno-omit-frame-pointer -Werror"
 
     steps:
     # Use this GitHub Actions at least once in this workflow as soon as possible.
