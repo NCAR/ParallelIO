@@ -34,7 +34,7 @@ jobs:
         tar -xzvf parallel-netcdf-1.9.0.tar.gz
         ls -l
         pushd parallel-netcdf-1.9.0
-        ./configure --prefix=/usr --enable-shared
+        ./configure --prefix=/usr --enable-shared --disable-fortran --disable-cxx
         make
         sudo make install
         popd
