@@ -28,7 +28,7 @@ jobs:
         tar -xzvf pnetcdf-1.11.0.tar.gz
         ls -l
         pushd pnetcdf-1.11.0
-        ./configure --prefix=/usr --enable-shared
+        ./configure --prefix=/usr --enable-shared --disable-fortran --disable-cxx
         make
         sudo make install
         popd
