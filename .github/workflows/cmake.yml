@@ -35,9 +35,10 @@ jobs:
 
     - name: cmake build
       run: |
+        which ncdump
         mkdir build
         cd build
-        cmake -DCMAKE_PREFIX_PATH=/usr -DPIO_HDF5_LOGGING=On -DPIO_USE_MALLOC=On -DPIO_ENABLE_LOGGING=On -DPIO_ENABLE_TIMING=Off ..
+        cmake -Wno-dev -DCMAKE_PREFIX_PATH=/usr -DPIO_HDF5_LOGGING=On -DPIO_USE_MALLOC=On -DPIO_ENABLE_LOGGING=On -DPIO_ENABLE_TIMING=Off ..
         make VERBOSE=1
         make tests VERBOSE=1
         ctest -VV
