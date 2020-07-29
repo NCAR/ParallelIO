@@ -1,4 +1,4 @@
-name: strict_autotools
+name: cmake
 
 on:
   push:
@@ -33,15 +33,11 @@ jobs:
         sudo make install
         popd
 
-    - name: autoreconf
-      run: autoreconf -i
-    - name: configure
+    - name: cmake build
       run: |
-          export CFLAGS="-std=c99  -fsanitize=address -fno-omit-frame-pointer -Werror"
-          export FFLAGS="-fsanitize=address -fno-omit-frame-pointer -Werror"
-          export FCFLAGS="-fsanitize=address -fno-omit-frame-pointer -Werror"
-          ./configure
-    - name: make -j distcheck
-      run: |
-        export DISTCHECK_CONFIGURE_FLAGS="--enable-fortran"
-        make -j distcheck
+        mkdir build
+        cd build
+        cmake -DPIO_HDF5_LOGGING=On -DPIO_USE_MALLOC=On -DPIO_ENABLE_LOGGING=On -DPIO_ENABLE_TIMING=Off ..
+        make VERBOSE=1
+        make tests VERBOSE=1
+        ctest -VV
