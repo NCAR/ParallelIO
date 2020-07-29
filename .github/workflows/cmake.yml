@@ -1,7 +1,43 @@
-Debugger entered--Lisp error: (void-variable DISTCHECK_CONFIGURE_FLAGS=)
-  eval(DISTCHECK_CONFIGURE_FLAGS= nil)
-  elisp--eval-last-sexp(nil)
-  eval-last-sexp(nil)
-  funcall-interactively(eval-last-sexp nil)
-  call-interactively(eval-last-sexp nil nil)
-  command-execute(eval-last-sexp)
+name: cmake
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    env:
+      CC: mpicc
+      FC: mpifort
+      CPPFLAGS: "-I/usr/include -I/usr/local/include"
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Installs
+      run: |
+        sudo apt-get install netcdf-bin libnetcdf-dev doxygen graphviz wget gfortran libjpeg-dev libz-dev openmpi-bin libopenmpi-dev 
+
+    - name: pnetcdf build
+      run: |
+        wget https://parallel-netcdf.github.io/Release/pnetcdf-1.12.1.tar.gz 
+        tar -xzvf pnetcdf-1.12.1.tar.gz
+        ls -l
+        pushd pnetcdf-1.12.1
+        ./configure --prefix=/usr --enable-shared --disable-cxx
+        make
+        sudo make install
+        popd
+
+    - name: cmake build
+      run: |
+        mkdir build
+        cd build
+        cmake -DCMAKE_PREFIX_PATH=/usr -DPIO_HDF5_LOGGING=On -DPIO_USE_MALLOC=On -DPIO_ENABLE_LOGGING=On -DPIO_ENABLE_TIMING=Off ..
+        make VERBOSE=1
+        make tests VERBOSE=1
+        ctest -VV
