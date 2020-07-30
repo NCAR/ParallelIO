@@ -41,7 +41,7 @@ jobs:
     - name: configure
       run: |
         ./configure --enable-docs
+        cat config.log
     - name: make check
       run: |
-        cat config.log
         make check
