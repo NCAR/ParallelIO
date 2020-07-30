@@ -39,6 +39,6 @@ jobs:
     - name: autoreconf
       run: autoreconf -i
     - name: configure
-      run: ./configure
-    - name: make distcheck
-      run: make distcheck
+      run: ./configure --enable-docs
+    - name: make check
+      run: make check
