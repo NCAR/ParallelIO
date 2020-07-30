@@ -39,6 +39,9 @@ jobs:
     - name: autoreconf
       run: autoreconf -i
     - name: configure
-      run: ./configure --enable-docs
+      run: |
+        ./configure --enable-docs
     - name: make check
-      run: make check
+      run: |
+        cat config.log
+        make check
