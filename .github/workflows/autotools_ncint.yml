@@ -1,0 +1,63 @@
+name: autotools with netCDF integration
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    env:
+      CC: mpicc
+      FC: mpifort
+      CPPFLAGS: "-I/usr/include -I/usr/local/include"
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Installs
+      run: |
+        sudo apt-get install doxygen graphviz wget gfortran libjpeg-dev libz-dev openmpi-bin libopenmpi-dev 
+
+    - name: HDF5 build
+      run: |
+        wget https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.10/hdf5-1.10.6/src/hdf5-1.10.6.tar.gz
+        tar -xzvf hdf5-1.10.6.tar.gz
+        ls -l
+        pushd hdf5-1.10.6
+        ./configure --prefix=/usr --enable-parallel
+        make
+        sudo make install
+        popd
+
+    - name: netcdf build
+      run: |
+        wget https://www.unidata.ucar.edu/downloads/netcdf/ftp/netcdf-c-4.7.4.tar.gz
+        tar -xzvf netcdf-c-4.7.4
+        ls -l
+        pushd netcdf-c-4.7.4
+        ./configure --prefix=/usr
+        make
+        sudo make install
+        popd
+
+    - name: pnetcdf build
+      run: |
+        wget https://parallel-netcdf.github.io/Release/pnetcdf-1.11.0.tar.gz 
+        tar -xzvf pnetcdf-1.11.0.tar.gz
+        ls -l
+        pushd pnetcdf-1.11.0
+        ./configure --prefix=/usr --enable-shared --disable-cxx
+        make
+        sudo make install
+        popd
+
+    - name: autoreconf
+      run: autoreconf -i
+    - name: configure
+      run: ./configure --enable-fortran --enable-docs
+    - name: make check
+      run: make -j check
