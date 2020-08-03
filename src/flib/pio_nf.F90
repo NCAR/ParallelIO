@@ -1709,7 +1709,7 @@ contains
     type (var_desc_t), intent(in) :: vardesc
     integer, intent(in) :: storage
     integer, intent(in) :: chunksizes(:)
-    integer(C_INT) :: cchunksizes(PIO_MAX_VAR_DIMS)
+    integer(C_SIZE_T) :: cchunksizes(PIO_MAX_VAR_DIMS)
     integer :: ndims, i
 
     interface
@@ -1719,12 +1719,12 @@ contains
          integer(c_int), value :: ncid
          integer(c_int), value :: varid
          integer(c_int), value :: storage
-         integer(c_int) :: chunksizes(*)
+         integer(c_size_t) :: chunksizes(*)
        end function PIOc_def_var_chunking
     end interface
     ndims = size(chunksizes)
     do i=1,ndims
-       cchunksizes(i) = chunksizes(ndims-i+1)-1
+       cchunksizes(i) = chunksizes(ndims-i+1)
     enddo
 
     ierr = PIOc_def_var_chunking(file%fh, vardesc%varid-1, storage, cchunksizes)
