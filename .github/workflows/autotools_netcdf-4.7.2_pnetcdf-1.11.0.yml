@@ -1,4 +1,4 @@
-name: netcdf-4.7.3_pnetcdf-1.11.0
+name: netcdf-4.7.2_pnetcdf-1.11.0
 
 on:
   push:
@@ -35,10 +35,10 @@ jobs:
 
     - name: netcdf build
       run: |
-        wget https://www.unidata.ucar.edu/downloads/netcdf/ftp/netcdf-c-4.7.3.tar.gz
-        tar -xzvf netcdf-c-4.7.3.tar.gz
+        wget https://www.unidata.ucar.edu/downloads/netcdf/ftp/netcdf-c-4.7.2.tar.gz
+        tar -xzvf netcdf-c-4.7.2.tar.gz
         ls -l
-        pushd netcdf-c-4.7.3
+        pushd netcdf-c-4.7.2
         ./configure --prefix=/usr --disable-dap --disable-utilities
         make
         sudo make install
