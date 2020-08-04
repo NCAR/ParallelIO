@@ -33,13 +33,24 @@ jobs:
         sudo make install
         popd
 
-    - name: netcdf build
+    - name: netcdf-c build
       run: |
         wget https://www.unidata.ucar.edu/downloads/netcdf/ftp/netcdf-c-4.7.4.tar.gz
         tar -xzvf netcdf-c-4.7.4.tar.gz
         ls -l
         pushd netcdf-c-4.7.4
         ./configure --prefix=/usr --disable-dap --disable-utilities
+        make
+        sudo make install
+        popd
+
+    - name: netcdf-fortran build
+      run: |
+        wget https://github.com/Unidata/netcdf-fortran/archive/v4.5.3.tar.gz
+        tar -xzvf v4.5.3.tar.gz
+        ls -l
+        pushd netcdf-fortran-4.5.3
+        ./configure --prefix=/usr 
         make
         sudo make install
         popd
