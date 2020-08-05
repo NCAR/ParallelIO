@@ -1,4 +1,4 @@
-name: netcdf-4.7.4_pnetcdf-12.1
+name: netcdf-4.7.4_pnetcdf-12.1_ncint
 
 on:
   push:
