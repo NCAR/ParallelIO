@@ -70,9 +70,9 @@ jobs:
       run: autoreconf -i
     - name: configure
       run: |
-        export CFLAGS="-g -std=c99  -fsanitize=address -fno-omit-frame-pointer -Werror"
-        export FFLAGS="-g -fsanitize=address -fno-omit-frame-pointer -Werror"
-        export FCFLAGS="-g -fsanitize=address -fno-omit-frame-pointer -Werror"
+#        export CFLAGS="-g -std=c99  -fsanitize=address -fno-omit-frame-pointer -Werror"
+#        export FFLAGS="-g -fsanitize=address -fno-omit-frame-pointer -Werror"
+#        export FCFLAGS="-g -fsanitize=address -fno-omit-frame-pointer -Werror"
         ./configure --enable-fortran --enable-netcdf-integration
     - name: make check
       run: make -j check
