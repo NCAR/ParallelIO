@@ -25,13 +25,20 @@ jobs:
       run: |
         sudo apt-get install netcdf-bin libnetcdf-dev doxygen graphviz wget gfortran libjpeg-dev libz-dev openmpi-bin libopenmpi-dev 
 
+    - name: Cache pnetcdf
+      id: cache-pnetcdf
+      uses: actions/cache@v2
+      with:
+        path: pnetcdf
+        key: ${{ runner.os }}-pnetcdf-1.11.0
     - name: pnetcdf build
+      if: steps.cache-pnetcdf.outputs.cache-hit != 'true'
       run: |
         wget https://parallel-netcdf.github.io/Release/pnetcdf-1.11.0.tar.gz 
         tar -xzvf pnetcdf-1.11.0.tar.gz
         ls -l
         pushd pnetcdf-1.11.0
-        ./configure --prefix=/usr --enable-shared --disable-cxx
+        ./configure --prefix=/usr/pnetcdf --enable-shared --disable-cxx
         make
         sudo make install
         popd
@@ -39,6 +46,9 @@ jobs:
     - name: autoreconf
       run: autoreconf -i
     - name: configure
-      run: ./configure --enable-fortran --enable-docs
+      run: |
+        export CPPFLAGS="-I/usr/include -I/usr/local/include -I/usr/pnetcdf/include"
+        export LDFLAGS=-L/usr/pnetcdf/lib
+        ./configure --enable-fortran --enable-docs
     - name: make check
       run: make -j check
