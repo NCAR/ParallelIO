@@ -26,7 +26,7 @@ jobs:
       id: cache-pnetcdf
       uses: actions/cache@v2
       with:
-        path: /usr/pnetcdf
+        path: pnetcdf
         key: ${{ runner.os }}-pnetcdf-1.11.0
     - name: pnetcdf build
       if: steps.cache-pnetcdf.outputs.cache-hit != 'true'
@@ -35,7 +35,7 @@ jobs:
         tar -xzvf pnetcdf-1.11.0.tar.gz
         ls -l
         pushd pnetcdf-1.11.0
-        ./configure --prefix=/usr/pnetcdf --enable-shared --disable-cxx
+        ./configure --prefix=`pwd`/pnetcdf --enable-shared --disable-cxx
         make
         sudo make install
         popd
@@ -44,10 +44,9 @@ jobs:
       run: autoreconf -i
     - name: configure
       run: |
-        ls -l /usr/pnetcdf
-        ls -l /usr/pnetcdf/lib
-        export CPPFLAGS="-I/usr/include -I/usr/local/include -I/usr/pnetcdf/include"
-        export LDFLAGS="-L/usr/pnetcdf/lib"
+        ls -l `pwd`/pnetcdf
+        export CPPFLAGS="-I/usr/include -I/usr/local/include -I`pwd`/pnetcdf/include"
+        export LDFLAGS="-L`pwd`/pnetcdf/lib"
         echo $LDFLAGS
         ./configure --enable-fortran --enable-docs --enable-logging
     - name: make check
