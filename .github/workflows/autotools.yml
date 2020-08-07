@@ -48,7 +48,10 @@ jobs:
     - name: configure
       run: |
         export CPPFLAGS="-I/usr/include -I/usr/local/include -I/usr/pnetcdf/include"
-        export LDFLAGS=-L/usr/pnetcdf/lib
+        export LDFLAGS="-L/usr/pnetcdf/lib"
+        echo $LDFLAGS
+        ls -l /usr/pnetcdf
+        ls -l /usr/pnetcdf/lib
         ./configure --enable-fortran --enable-docs --enable-logging
     - name: make check
       run: make -j check
