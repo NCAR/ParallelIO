@@ -33,6 +33,18 @@ option (WITH_NETCDF          "Require the use of NetCDF"                    ON)
 option (WITH_ADIOS2          "Require the use of ADIOS 2.x"                 OFF)
 option (ADIOS_BP2NC_TEST     "Enable testing of BP to NetCDF conversion"    OFF)
 
+# The tools and examples do not build with the MPI serial library
+if(PIO_USE_MPISERIAL)
+  if(PIO_ENABLE_TOOLS)
+    message(WARNING "Scorpio tools are not supported by the MPI serial library, disabling tools")
+    set(PIO_ENABLE_TOOLS 0)
+  endif()
+  if(PIO_ENABLE_EXAMPLES)
+    message(WARNING "Scorpio examples are not supported by the MPI serial library, disabling building examples")
+    set(PIO_ENABLE_EXAMPLES 0)
+  endif()
+endif()
+
 # Set a variable that appears in the pio_config.h.in file.
 if(PIO_USE_MALLOC)
   set(USE_MALLOC 1)
