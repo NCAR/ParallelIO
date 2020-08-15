@@ -226,11 +226,13 @@ fi
 
 AC_MSG_NOTICE([setting flags])
 
-# We must have MPI to build PIO.
+# This is only used by the GPTL timing library.
 AC_DEFINE([HAVE_MPI], [1], [defined by CMake build])
 
 # Define to solve intel compiler warning.
 AC_DEFINE([_GNU_SOURCE], [1], [solve strnlen declared implicitly warning on intel compiler])
+
+AC_MSG_NOTICE([finding libraries])
 
 # Check for netCDF library.
 AC_CHECK_LIB([netcdf], [nc_create], [], [AC_MSG_ERROR([Can't find or link to the netcdf library.])])
