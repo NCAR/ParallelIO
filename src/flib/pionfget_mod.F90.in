@@ -302,8 +302,15 @@ CONTAINS
     type (File_desc_t), intent(in) :: File
     integer, intent(in) :: varid, start(:), count(:)
     character(len=*), intent(out) :: ival{DIMSTR}
+
+    character(C_CHAR), allocatable :: cval(:)
+
     ival = ' '
-    ierr = get_vara_text_internal (File%fh, varid, start, count, size(ival), ival)
+    allocate(cval(size(ival) * len(ival)))
+    ierr = get_vara_text_internal (File%fh, varid, start, count, size(cval), cval)
+
+    call Cstring2Fstring_{DIMS}d (cval, len(ival), ival)
+    deallocate(cval)
 
   end function get_vara_{DIMS}d_text
 
@@ -391,24 +398,31 @@ CONTAINS
     type (File_desc_t), intent(in) :: File
     integer, intent(in) :: varid
     character(len=*), intent(out) :: ival{DIMSTR}
+
+    character(C_CHAR), allocatable :: cval(:)
+
     ival = ' '
-    ierr = get_var_text_internal(File%fh, varid, size(ival), ival)
+    allocate(cval(size(ival) * len(ival)))
+!    ierr = get_var_text_internal(File%fh, varid, size(ival), ival)
+    ierr = PIOc_get_var_text(File%fh, varid-1, cval)
+    call Cstring2Fstring_{DIMS}d (cval, len(ival), ival)
+    deallocate(cval)
 
   end function get_var_{DIMS}d_text
 
-  integer function get_var_text_internal (ncid,varid, nstrs, ival) result(ierr)
-    integer, intent(in) :: ncid
-    integer, intent(in) :: varid
-    integer, intent(in) :: nstrs
-    character(len=*), intent(out) :: ival(*)
-    integer :: j
-
-    ierr = PIOc_get_var_text(ncid, varid-1, ival)
-    do j=1,nstrs
-       call replace_c_null(ival(j))
-    end do
-
-  end function get_var_text_internal
+!  integer function get_var_text_internal (ncid,varid, nstrs, ival) result(ierr)
+!    integer, intent(in) :: ncid
+!    integer, intent(in) :: varid
+!    integer, intent(in) :: nstrs
+!    character(len=*), intent(out) :: ival(*)
+!    integer :: j
+!
+!    ierr = PIOc_get_var_text(ncid, varid-1, ival)
+!    do j=1,nstrs
+!       call replace_c_null(ival(j))
+!    end do
+!
+!  end function get_var_text_internal
 
 ! TYPE int,real,double
   integer function get_var_{TYPE}_internal  (ncid,varid, ival) result(ierr)
@@ -443,14 +457,15 @@ CONTAINS
 
   end function get_vara_{TYPE}_internal
 
-  integer function get_vara_text_internal  (ncid,varid, start, count, nstrs, ival) result(ierr)
+  integer function get_vara_text_internal  (ncid,varid, start, count, nstrs, cval) result(ierr)
     use pio_nf, only : pio_inq_varndims
     integer, intent(in) :: ncid
     integer, intent(in) :: varid
     integer, intent(in) :: start(:)
     integer, intent(in) :: count(:)
     integer, intent(in) :: nstrs
-    character(len=*), intent(out) :: ival(*)
+    !character(len=*), intent(out) :: ival(*)
+    character(C_CHAR), intent(out) :: cval(:)
     integer :: j
     integer(C_SIZE_T), allocatable :: cstart(:), ccount(:)
     integer :: i, ndims
@@ -462,10 +477,10 @@ CONTAINS
        ccount(i) = count(ndims-i+1)
     enddo
 
-    ierr = PIOc_get_vara_text (ncid, varid-1, cstart, ccount, ival)
-    do j=1,nstrs
-       call replace_c_null(ival(j),ccount(ndims))
-    end do
+    ierr = PIOc_get_vara_text (ncid, varid-1, cstart, ccount, cval)
+    !do j=1,nstrs
+    !   call replace_c_null(ival(j),ccount(ndims))
+    !end do
     deallocate(ccount, cstart)
   end function get_vara_text_internal
 
@@ -499,4 +514,172 @@ CONTAINS
     ierr = get_var_{DIMS}d_{TYPE} (File, vardesc%varid, ival)
 
   end function get_var_vdesc_{DIMS}d_{TYPE}
+
+! DIMS 1,2,3,4,5
+  subroutine Cstring2Fstring_{DIMS}d(cstr, max_clen, fstr)
+    character(C_CHAR), intent(in) :: cstr(:)
+    integer, intent(in) :: max_clen
+    character(len=*), intent(out) :: fstr{DIMSTR}
+
+    integer :: fstr_dim_sz({DIMS})
+    integer :: max_flen, clen
+    integer :: cstr_idx
+    logical :: cstr_copied
+    integer :: i, j, k, m, n, q
+
+    character, parameter :: F_SPACE_CHAR = ' '
+
+    fstr = F_SPACE_CHAR
+    do i=1,{DIMS}
+      fstr_dim_sz(i) = size(fstr,i)
+    enddo
+    cstr_idx = 0
+#if {DIMS} == 1
+    max_flen= len(fstr(1))
+    do j=1,fstr_dim_sz(1)
+      clen = 0
+      cstr_copied = .false.
+      do i=1,min(max_clen, max_flen)
+        fstr(j)(i:i) = cstr(cstr_idx * max_clen + i)
+        clen = clen + 1
+        if(fstr(j)(i:i) == C_NULL_CHAR) then
+          fstr(j)(i:i) = F_SPACE_CHAR
+          cstr_copied = .true.
+          exit
+        end if
+      end do
+      if(.not. cstr_copied) then
+        ! We have exhausted the Fortran write buffer
+        ! Warn the user of the truncation
+        print *, "WARNING: The user buffer provided had insufficient space (",&
+                  max_flen, " chars to read strings with ", max_clen, " chars).",&
+                  "The contents will be truncated to : ", trim(fstr(j))
+        fstr(j)(max_flen:max_flen) = F_SPACE_CHAR
+      end if
+      cstr_idx = cstr_idx + 1
+    enddo
+#endif
+#if {DIMS} == 2
+    max_flen= len(fstr(1,1))
+    do k=1,fstr_dim_sz(2)
+      do j=1,fstr_dim_sz(1)
+        clen = 0
+        cstr_copied = .false.
+        do i=1,min(max_clen, max_flen)
+          fstr(j,k)(i:i) = cstr(cstr_idx * max_clen + i)
+          clen = clen + 1
+          if(fstr(j,k)(i:i) == C_NULL_CHAR) then
+            fstr(j,k)(i:i) = F_SPACE_CHAR
+            cstr_copied = .true.
+            exit
+          end if
+        end do
+        if(.not. cstr_copied) then
+          ! We have exhausted the Fortran write buffer
+          ! Warn the user of the truncation
+          print *, "WARNING: The user buffer provided had insufficient space (",&
+                    max_flen, " chars to read strings with ", max_clen, " chars).",&
+                    "The contents will be truncated to : ", trim(fstr(j,k))
+          fstr(j,k)(max_flen:max_flen) = F_SPACE_CHAR
+        end if
+        cstr_idx = cstr_idx + 1
+      enddo ! do j=1,fstr_dim_sz(1)
+    enddo ! do k=1,fstr_dim_sz(2)
+#endif
+#if {DIMS} == 3
+    max_flen= len(fstr(1,1,1))
+    do m=1,fstr_dim_sz(3)
+      do k=1,fstr_dim_sz(2)
+        do j=1,fstr_dim_sz(1)
+          clen = 0
+          cstr_copied = .false.
+          do i=1,min(max_clen, max_flen)
+            fstr(j,k,m)(i:i) = cstr(cstr_idx * max_clen + i)
+            clen = clen + 1
+            if(fstr(j,k,m)(i:i) == C_NULL_CHAR) then
+              fstr(j,k,m)(i:i) = F_SPACE_CHAR
+              cstr_copied = .true.
+              exit
+            end if
+          end do
+          if(.not. cstr_copied) then
+            ! We have exhausted the Fortran write buffer
+            ! Warn the user of the truncation
+            print *, "WARNING: The user buffer provided had insufficient space (",&
+                      max_flen, " chars to read strings with ", max_clen, " chars).",&
+                      "The contents will be truncated to : ", trim(fstr(j,k,m))
+            fstr(j,k,m)(max_flen:max_flen) = F_SPACE_CHAR
+          end if
+          cstr_idx = cstr_idx + 1
+        enddo ! do j=1,fstr_dim_sz(1)
+      enddo ! do k=1,fstr_dim_sz(2)
+    enddo ! do m=1,fstr_dim_sz(3)
+#endif
+#if {DIMS} == 4
+    max_flen= len(fstr(1,1,1,1))
+    do n=1,fstr_dim_sz(4)
+      do m=1,fstr_dim_sz(3)
+        do k=1,fstr_dim_sz(2)
+          do j=1,fstr_dim_sz(1)
+            clen = 0
+            cstr_copied = .false.
+            do i=1,min(max_clen, max_flen)
+              fstr(j,k,m,n)(i:i) = cstr(cstr_idx * max_clen + i)
+              clen = clen + 1
+              if(fstr(j,k,m,n)(i:i) == C_NULL_CHAR) then
+                fstr(j,k,m,n)(i:i) = F_SPACE_CHAR
+                cstr_copied = .true.
+                exit
+              end if
+            end do
+            if(.not. cstr_copied) then
+              ! We have exhausted the Fortran write buffer
+              ! Warn the user of the truncation
+              print *, "WARNING: The user buffer provided had insufficient space (",&
+                        max_flen, " chars to read strings with ", max_clen, " chars).",&
+                        "The contents will be truncated to : ", trim(fstr(j,k,m,n))
+              fstr(j,k,m,n)(max_flen:max_flen) = F_SPACE_CHAR
+            end if
+            cstr_idx = cstr_idx + 1
+          enddo ! do j=1,fstr_dim_sz(1)
+        enddo ! do k=1,fstr_dim_sz(2)
+      enddo ! do m=1,fstr_dim_sz(3)
+    enddo ! do n=1,fstr_dim_sz(4)
+#endif
+#if {DIMS} == 5
+    max_flen= len(fstr(1,1,1,1,1))
+    do q=1,fstr_dim_sz(5)
+      do n=1,fstr_dim_sz(4)
+        do m=1,fstr_dim_sz(3)
+          do k=1,fstr_dim_sz(2)
+            do j=1,fstr_dim_sz(1)
+              clen = 0
+              cstr_copied = .false.
+              do i=1,min(max_clen, max_flen)
+                fstr(j,k,m,n,q)(i:i) = cstr(cstr_idx * max_clen + i)
+                clen = clen + 1
+                if(fstr(j,k,m,n,q)(i:i) == C_NULL_CHAR) then
+                  fstr(j,k,m,n,q)(i:i) = F_SPACE_CHAR
+                  cstr_copied = .true.
+                  exit
+                end if
+              end do
+              if(.not. cstr_copied) then
+                ! We have exhausted the Fortran write buffer
+                ! Warn the user of the truncation
+                print *, "WARNING: The user buffer provided had insufficient space (",&
+                          max_flen, " chars to read strings with ", max_clen, " chars).",&
+                          "The contents will be truncated to : ", trim(fstr(j,k,m,n,q))
+                fstr(j,k,m,n,q)(max_flen:max_flen) = F_SPACE_CHAR
+              end if
+              cstr_idx = cstr_idx + 1
+            enddo ! do j=1,fstr_dim_sz(1)
+          enddo ! do k=1,fstr_dim_sz(2)
+        enddo ! do m=1,fstr_dim_sz(3)
+      enddo ! do n=1,fstr_dim_sz(4)
+    enddo ! do q=1,fstr_dim_sz(5)
+#endif
+
+  end subroutine Cstring2Fstring_{DIMS}d
+
 end module pionfget_mod
