@@ -31,6 +31,9 @@
 /** Set the regex to use to save decomps */
 #define PIO_SAVE_DECOMPS_REGEX "@PIO_SAVE_DECOMPS_REGEX@"
 
+/** Set to non-zero to limit the number of non-contiguous regions cached in a single IO process. */
+#define PIO_LIMIT_CACHED_IO_REGIONS @LIMIT_CACHED_IO_REGIONS@
+
 /** Maximum number of non-contiguous regions cached in a single IO process. */
 #define PIO_MAX_CACHED_IO_REGIONS @PIO_MAX_CACHED_IO_REGIONS@
 

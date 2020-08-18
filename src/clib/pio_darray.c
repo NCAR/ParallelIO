@@ -1231,8 +1231,10 @@ int PIOc_write_darray(int ncid, int varid, int ioid, PIO_Offset arraylen, void *
     wmulti_buffer *wmb;    /* The write multi buffer for one or more vars. */
     int recordvar;         /* Non-zero if this is a record variable. */
     int needsflush = 0;    /* True if we need to flush buffer. */
+#if PIO_LIMIT_CACHED_IO_REGIONS
     PIO_Offset decomp_max_regions; /* Max non-contiguous regions in the IO decomposition */
     PIO_Offset io_max_regions; /* Max non-contiguous regions cached in a single IO process */
+#endif
     int mpierr = MPI_SUCCESS;  /* Return code from MPI functions. */
     int ierr = PIO_NOERR;  /* Return code. */
 
@@ -1378,6 +1380,7 @@ int PIOc_write_darray(int ncid, int varid, int ioid, PIO_Offset arraylen, void *
     needsflush = PIO_wmb_needs_flush(wmb, arraylen, iodesc);
     assert(needsflush >= 0);
 
+#if PIO_LIMIT_CACHED_IO_REGIONS
     /* When using PIO with PnetCDF + SUBSET rearranger the number
        of non-contiguous regions cached in a single IO process can
        grow to a large number. PnetCDF is not efficient at handling
@@ -1388,11 +1391,16 @@ int PIOc_write_darray(int ncid, int varid, int ioid, PIO_Offset arraylen, void *
        We need to set a limit on the potential (after rearrangement)
        maximum number of non-contiguous regions in an IO process and
        forcefully flush out user data cached by a compute process
-       when that limit has been reached. */
+       when that limit has been reached.
+
+       Latest PnetCDF (version 1.11.0 and later) is more efficient at
+       handling very large number of regions, so we have turned off
+       PIO_LIMIT_CACHED_IO_REGIONS option by default. */
     decomp_max_regions = (iodesc->maxregions >= iodesc->maxfillregions)? iodesc->maxregions : iodesc->maxfillregions;
     io_max_regions = (1 + wmb->num_arrays) * decomp_max_regions;
     if (io_max_regions > PIO_MAX_CACHED_IO_REGIONS)
         needsflush = 2;
+#endif
 
     /* Tell all tasks on the computation communicator whether we need
      * to flush data. */
