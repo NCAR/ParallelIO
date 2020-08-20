@@ -370,7 +370,11 @@ int putget_read_vara_fill(int ncid, int *varid, PIO_Offset *start, PIO_Offset *c
         for (y = 0; y < Y_DIM_LEN; y++)
         {
             if (byte_array_in[x][y] != (default_fill ? NC_FILL_BYTE : byte_fill_value))
+	    {
+		printf("default_fill %d flavor %d x %d y %d byte_array_in[x][y] %d\n",
+		       default_fill, flavor, x, y, byte_array_in[x][y]);
                 ERR(ERR_WRONG);
+	    }
             if (text_array_in[x][y] != (default_fill ? NC_FILL_CHAR : char_fill_value))
                 ERR(ERR_WRONG);
             if (short_array_in[x][y] != (default_fill ? NC_FILL_SHORT : short_fill_value))
