@@ -19,7 +19,7 @@ printf 'running PIO tests...\n'
 # 'test_darray_3d test_decomp_uneven test_decomps test_darray_async_simple '\
 # 'test_darray_async test_darray_async_many test_darray_2sync test_async_multicomp '\
 # 'test_darray_fill test_darray_vard test_async_1d test_darray_append test_simple'
-PIO_TESTS='test_intercomm2 '
+PIO_TESTS='test_pioc_fill '
 
 success1=true
 success2=true
