@@ -784,9 +784,9 @@ int test_all(int iosysid, int num_flavors, int *flavor, int my_rank, MPI_Comm te
         MPIERR(ret);
 
     /* Test that empty vars get fill values when fill mode is on. */
-    if ((ret = test_fill_mode(iosysid, num_flavors, flavor, my_rank, test_comm,
-                              async)))
-        ERR(ret);
+    /* if ((ret = test_fill_mode(iosysid, num_flavors, flavor, my_rank, test_comm, */
+    /*                           async))) */
+    /*     ERR(ret); */
 
     /* Test read/write stuff. */
     if ((ret = test_fill(iosysid, num_flavors, flavor, my_rank, test_comm)))
