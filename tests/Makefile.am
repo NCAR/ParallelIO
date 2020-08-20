@@ -6,11 +6,11 @@
 # Does the user want to build fortran? If so, there are two additional
 # test directories.
 if BUILD_FORTRAN
-UNIT = unit
-GENERAL = general
+#UNIT = unit
+#GENERAL = general
 # If GPTL us used, also add the performance directory.
 if USE_GPTL
-PERFORMANCE = performance
+#PERFORMANCE = performance
 endif # USE_GPTL
 endif # BUILD_FORTRAN
 
