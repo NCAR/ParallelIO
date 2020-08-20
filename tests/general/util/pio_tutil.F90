@@ -85,6 +85,10 @@ MODULE pio_tutil
   PRIVATE :: PIO_TF_Check_3d_double_arr_arr
   PRIVATE :: PIO_TF_Check_char_str_str
   PRIVATE :: PIO_TF_Get_idx_from_1d_idx
+  PRIVATE :: PIO_TF_Check_str_arr_arr_
+  PRIVATE :: PIO_TF_Check_1d_str_arr_arr
+  PRIVATE :: PIO_TF_Check_2d_str_arr_arr
+  PRIVATE :: PIO_TF_Check_3d_str_arr_arr
 
   ! Note that the tolerance value provided is ignored when comparing two
   ! integer arrays
@@ -105,7 +109,10 @@ MODULE pio_tutil
         PIO_TF_Check_2d_double_arr_arr,&
         PIO_TF_Check_3d_double_arr_arr,&
         PIO_TF_Check_double_arr_arr_tol,&
-        PIO_TF_Check_char_str_str
+        PIO_TF_Check_char_str_str,    &
+        PIO_TF_Check_1d_str_arr_arr,  &
+        PIO_TF_Check_2d_str_arr_arr,  &
+        PIO_TF_Check_3d_str_arr_arr
   END INTERFACE
 
 CONTAINS
@@ -1023,11 +1030,126 @@ CONTAINS
     CHARACTER(LEN=*), INTENT(IN)  :: str1
     CHARACTER(LEN=*), INTENT(IN)  :: str2
 
-    IF (str1 == str2) THEN
+    IF (trim(str1) == trim(str2)) THEN
       PIO_TF_Check_char_str_str = .TRUE.
     ELSE
       PIO_TF_Check_char_str_str = .FALSE.
     END IF
+  END FUNCTION
+
+  LOGICAL FUNCTION PIO_TF_Check_str_arr_arr_(arr, exp_arr, arr_shape)
+#ifndef NO_MPIMOD
+    USE mpi
+#else
+    include 'mpif.h'
+#endif
+    CHARACTER(LEN=*), DIMENSION(:), INTENT(IN) :: arr
+    CHARACTER(LEN=*), DIMENSION(:), INTENT(IN) :: exp_arr
+    INTEGER, DIMENSION(:), INTENT(IN) :: arr_shape
+    CHARACTER(LEN=PIO_TF_MAX_STR_LEN) :: idx_str
+    INTEGER :: arr_sz, i, ierr
+    ! Not equal at id = nequal_idx
+    INTEGER :: nequal_idx
+    ! Local and global equal bools
+    LOGICAL :: lequal, gequal
+    TYPE failed_info
+      SEQUENCE
+      INTEGER :: idx
+      ! FIXME: The size of val/exp_val can be problematic for large strings
+      CHARACTER(LEN=PIO_TF_MAX_STR_LEN) :: val
+      CHARACTER(LEN=PIO_TF_MAX_STR_LEN) :: exp_val
+    END TYPE failed_info
+    TYPE (failed_info) :: lfail_info
+    INTEGER, DIMENSION(:), ALLOCATABLE :: gfail_info_idx
+    CHARACTER(LEN=PIO_TF_MAX_STR_LEN), DIMENSION(:), ALLOCATABLE :: gfail_info_val
+    CHARACTER(LEN=PIO_TF_MAX_STR_LEN), DIMENSION(:), ALLOCATABLE :: gfail_info_exp_val
+
+    arr_sz = SIZE(arr)
+    lequal = .TRUE.;
+    gequal = .TRUE.;
+    nequal_idx = -1;
+    IF (arr_sz /= SIZE(exp_arr)) THEN
+      PRINT *, "PIO_TF: Unable to compare arrays of different sizes", arr_sz, " and", SIZE(exp_arr)
+    END IF
+    DO i=1, arr_sz
+      IF (trim(arr(i)) /= trim(exp_arr(i))) THEN
+        lequal = .FALSE.
+        nequal_idx = i
+      END IF
+    END DO
+    CALL MPI_ALLREDUCE(lequal, gequal, 1, MPI_LOGICAL, MPI_LAND, pio_tf_comm_, ierr)
+    IF (.NOT. gequal) THEN
+      lfail_info % idx = nequal_idx
+      IF (nequal_idx /= -1) THEN
+        lfail_info % val     = trim(arr(nequal_idx))
+        lfail_info % exp_val = trim(exp_arr(nequal_idx))
+      END IF
+      ALLOCATE(gfail_info_idx(pio_tf_world_sz_))
+      ALLOCATE(gfail_info_val(pio_tf_world_sz_))
+      ALLOCATE(gfail_info_exp_val(pio_tf_world_sz_))
+      ! Gather the ranks where assertion failed
+      CALL MPI_GATHER(lfail_info%idx, 1, MPI_INTEGER, gfail_info_idx, 1, MPI_INTEGER, 0, pio_tf_comm_, ierr)
+      CALL MPI_GATHER(lfail_info%val, PIO_TF_MAX_STR_LEN, MPI_CHARACTER, gfail_info_val, PIO_TF_MAX_STR_LEN, MPI_CHARACTER, 0, pio_tf_comm_, ierr)
+      CALL MPI_GATHER(lfail_info%exp_val, PIO_TF_MAX_STR_LEN, MPI_CHARACTER, gfail_info_exp_val, PIO_TF_MAX_STR_LEN, MPI_CHARACTER, 0, pio_tf_comm_, ierr)
+      IF (pio_tf_world_rank_ == 0) THEN
+         DO i=1,pio_tf_world_sz_
+            IF(gfail_info_idx(i) /= -1) THEN
+               CALL PIO_TF_Get_idx_from_1d_idx(gfail_info_idx(i), arr_shape, idx_str)
+               PRINT *, "PIO_TF: Fatal Error: rank =", i, ", Val[",&
+                    trim(idx_str), "]=",&
+                    trim(gfail_info_val(i)), ", Expected = ", trim(gfail_info_exp_val(i))
+            END IF
+         END DO
+      END IF
+      DEALLOCATE(gfail_info_exp_val)
+      DEALLOCATE(gfail_info_val)
+      DEALLOCATE(gfail_info_idx)
+    END IF
+    PIO_TF_Check_str_arr_arr_ = gequal
+  END FUNCTION
+
+  LOGICAL FUNCTION PIO_TF_Check_1d_str_arr_arr(arr, exp_arr)
+    CHARACTER(LEN=*), DIMENSION(:), INTENT(IN) :: arr
+    CHARACTER(LEN=*), DIMENSION(:), INTENT(IN) :: exp_arr
+
+    PIO_TF_Check_1d_str_arr_arr = PIO_TF_Check_str_arr_arr_(arr,&
+                                      exp_arr, SHAPE(arr))
+  END FUNCTION
+
+  LOGICAL FUNCTION PIO_TF_Check_2d_str_arr_arr(arr, exp_arr)
+    CHARACTER(LEN=*), DIMENSION(:,:), INTENT(IN) :: arr
+    CHARACTER(LEN=*), DIMENSION(:,:), INTENT(IN) :: exp_arr
+
+    CHARACTER(LEN=:), DIMENSION(:), ALLOCATABLE :: arr_val
+    CHARACTER(LEN=:), DIMENSION(:), ALLOCATABLE :: exp_arr_val
+
+    ALLOCATE(CHARACTER(len=len(arr)) :: arr_val(SIZE(arr)))
+    ALLOCATE(CHARACTER(len=len(exp_arr)) :: exp_arr_val(SIZE(exp_arr)))
+    arr_val = RESHAPE(arr,(/SIZE(arr)/))
+    exp_arr_val = RESHAPE(exp_arr,(/SIZE(exp_arr)/))
+
+    PIO_TF_Check_2d_str_arr_arr = PIO_TF_Check_str_arr_arr_(arr_val,&
+                                      exp_arr_val, SHAPE(arr))
+    DEALLOCATE(arr_val)
+    DEALLOCATE(exp_arr_val)
+  END FUNCTION
+
+  LOGICAL FUNCTION PIO_TF_Check_3d_str_arr_arr(arr, exp_arr)
+    CHARACTER(LEN=*), DIMENSION(:,:,:), INTENT(IN) :: arr
+    CHARACTER(LEN=*), DIMENSION(:,:,:), INTENT(IN) :: exp_arr
+
+    CHARACTER(LEN=:), DIMENSION(:), ALLOCATABLE :: arr_val
+    CHARACTER(LEN=:), DIMENSION(:), ALLOCATABLE :: exp_arr_val
+
+    ALLOCATE(CHARACTER(len=len(arr)) :: arr_val(SIZE(arr)))
+    ALLOCATE(CHARACTER(len=len(exp_arr)) :: exp_arr_val(SIZE(exp_arr)))
+    arr_val = RESHAPE(arr,(/SIZE(arr)/))
+    exp_arr_val = RESHAPE(exp_arr,(/SIZE(exp_arr)/))
+
+    PIO_TF_Check_3d_str_arr_arr = PIO_TF_Check_str_arr_arr_(arr_val,&
+                                      exp_arr_val, SHAPE(arr))
+    DEALLOCATE(arr_val)
+    DEALLOCATE(exp_arr_val)
   END FUNCTION
 
   ! Convert error handler name/string to error handler type (integer)
