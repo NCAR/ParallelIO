@@ -1,4 +1,4 @@
-name: netcdf-4.7.4_pnetcdf-12.1_ncint
+name: netcdf-4.7.4_pnetcdf-12.1_ncint_2
 
 on:
   push:
@@ -40,39 +40,23 @@ jobs:
         sudo make install
         popd
 
-    - name: cache-netcdf-c
-      id: cache-netcdf-c
-      uses: actions/cache@v2
-      with:
-        path: ~/netcdf-c
-        key: netcdf-c-${{ runner.os }}-4.7.4-test
-
     - name: build-netcdf-c
-      if: steps.cache-netcdf-c.outputs.cache-hit != 'true'
       run: |
         set -x
-        wget https://www.unidata.ucar.edu/downloads/netcdf/ftp/netcdf-c-4.7.4.tar.gz &> /dev/null
-        tar -xzf netcdf-c-4.7.4.tar.gz
-        pushd netcdf-c-4.7.4
+        git clone https://github.com/Unidata/netcdf-c.git
+        pushd netcdf-c
+        autoreconf -i
         ./configure --prefix=/home/runner/netcdf-c --disable-dap --disable-utilities
         make -j check
         sudo make install
         popd
 
-    - name: cache-netcdf-fortran
-      id: cache-netcdf-fortran
-      uses: actions/cache@v2
-      with:
-        path: ~/netcdf-fortran
-        key: netcdf-fortran-${{ runner.os }}-4.5.3
-
     - name: build-netcdf-fortran
-      if: steps.cache-netcdf-fortran.outputs.cache-hit != 'true'
       run: |
         set -x
-        wget https://github.com/Unidata/netcdf-fortran/archive/v4.5.3.tar.gz &> /dev/null
-        tar -xzf v4.5.3.tar.gz
-        pushd netcdf-fortran-4.5.3
+        git clone https://github.com/Unidata/netcdf-fortran.git
+        pushd netcdf-fortran
+        autoreconf -i
         ./configure --prefix=/home/runner/netcdf-fortran
         make -j
         sudo make install
