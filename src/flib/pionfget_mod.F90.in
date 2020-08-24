@@ -304,12 +304,14 @@ CONTAINS
     character(len=*), intent(out) :: ival{DIMSTR}
 
     character(C_CHAR), allocatable :: cval(:)
+    integer :: cval_sz
 
     ival = ' '
-    allocate(cval(size(ival) * len(ival)))
+    cval_sz = size(ival) * len(ival)
+    allocate(cval(cval_sz))
     ierr = get_vara_text_internal (File%fh, varid, start, count, size(cval), cval)
 
-    call Cstring2Fstring_{DIMS}d (cval, len(ival), ival)
+    call Cstring2Fstring_{DIMS}d (cval, cval_sz, len(ival), ival)
     deallocate(cval)
 
   end function get_vara_{DIMS}d_text
@@ -400,7 +402,7 @@ CONTAINS
     character(len=*), intent(out) :: ival{DIMSTR}
 
     character(C_CHAR), allocatable :: cval(:)
-    integer :: clen, nstrs
+    integer :: cval_sz, clen, nstrs
 
     ival = ' '
     ierr = get_text_var_sz(File, varid, clen, var_nstrs=nstrs)
@@ -408,10 +410,11 @@ CONTAINS
       call piodie(__PIO_FILE__, __LINE__, "Unable to query the text variable size")
     end if
 
-    allocate(cval(clen * nstrs))
+    cval_sz = clen * nstrs
+    allocate(cval(cval_sz))
 !    ierr = get_var_text_internal(File%fh, varid, size(ival), ival)
     ierr = PIOc_get_var_text(File%fh, varid-1, cval)
-    call Cstring2Fstring_{DIMS}d (cval, clen, ival)
+    call Cstring2Fstring_{DIMS}d (cval, cval_sz, clen, ival)
     deallocate(cval)
 
   end function get_var_{DIMS}d_text
@@ -522,18 +525,29 @@ CONTAINS
   end function get_var_vdesc_{DIMS}d_{TYPE}
 
 ! DIMS 1,2,3,4,5
-  subroutine Cstring2Fstring_{DIMS}d(cstr, max_clen, fstr)
+  subroutine Cstring2Fstring_{DIMS}d(cstr, cstr_sz, max_clen, fstr)
     character(C_CHAR), intent(in) :: cstr(:)
+    ! The total size of cstr, the total number of chars in cstr
+    integer, intent(in) :: cstr_sz
+    ! The length of each string in cstr
     integer, intent(in) :: max_clen
     character(len=*), intent(out) :: fstr{DIMSTR}
 
     integer :: fstr_dim_sz({DIMS})
-    integer :: max_flen, clen
+    integer :: max_nstrs, max_flen, clen
     integer :: cstr_idx
     logical :: cstr_copied
     integer :: i, j, k, m, n, q
 
     character, parameter :: F_SPACE_CHAR = ' '
+
+    max_nstrs = cstr_sz / max_clen
+    if(max_nstrs > size(fstr)) then
+      print *, "ERROR: The provided user buffer",&
+                  " does not have space for copying ", max_nstrs, "strings",&
+                  " (space available to copy only ", size(fstr), " strings)"
+      call piodie(__PIO_FILE__, __LINE__, "Insufficient user buffer space")
+    end if
 
     fstr = F_SPACE_CHAR
     do i=1,{DIMS}

@@ -262,7 +262,7 @@ contains
     integer, intent(in) :: varid
     character(len=*), intent(in) :: ival{DIMSTR}
     character, allocatable :: cval(:)
-    integer :: clen, nstrs
+    integer :: cval_sz, clen, nstrs
 
 !   This manipulation is required to convert the fortran string to
 !   a c character array with all trailing space set to null
@@ -279,9 +279,10 @@ contains
                 " being written to, ", clen, " chars. The strings",&
                 " may be truncated"
     end if
-    if (clen * nstrs > 0) then
-        allocate(cval(clen * nstrs))
-        call Fstring2Cstring_{DIMS}d (ival, cval, clen)
+    cval_sz = clen * nstrs
+    if (cval_sz > 0) then
+        allocate(cval(cval_sz))
+        call Fstring2Cstring_{DIMS}d (ival, cval, cval_sz, clen)
         ierr = PIOc_put_var_text(file%fh, varid-1,  cval)
         deallocate(cval)
     else
@@ -451,7 +452,7 @@ contains
     integer, intent(in) :: varid, start(:), count(:)
     character(len=*), intent(in) :: ival{DIMSTR}
     character, allocatable :: cval(:)
-    integer :: clen,  sd
+    integer :: cval_sz, clen,  sd
     integer(C_SIZE_T), allocatable :: cstart(:), ccount(:)
     integer :: i
     integer :: ndims
@@ -480,9 +481,10 @@ contains
       call piodie(__PIO_FILE__, __LINE__, "Unable to get text var size")
     end if
     sd = size(ival)
-    if (clen*sd > 0) then
-        allocate(cval(clen*sd))
-        call Fstring2Cstring_{DIMS}d (ival, cval, clen)
+    cval_sz = clen * sd
+    if (cval_sz > 0) then
+        allocate(cval(cval_sz))
+        call Fstring2Cstring_{DIMS}d (ival, cval, cval_sz, clen)
 
         ierr = PIOc_put_vara_text(file%fh, varid-1,  cstart, ccount, cval)
         deallocate(cval)
@@ -494,15 +496,26 @@ contains
   end function put_vara_{DIMS}d_text
 
 ! DIMS 1,2,3,4,5
-  subroutine Fstring2Cstring_{DIMS}d(fstr, cstr, max_clen)
+  subroutine Fstring2Cstring_{DIMS}d(fstr, cstr, cstr_sz, max_clen)
     character(len=*), intent(in) :: fstr{DIMSTR}
     character(C_CHAR), intent(out) :: cstr(:)
+    ! The total size of cstr, the total number  of chars in cstr
+    integer, intent(in) :: cstr_sz
+    ! The max length of each string in cstr
     integer, intent(in) :: max_clen
 
     integer :: fstr_dim_sz({DIMS})
-    integer :: max_flen
+    integer :: max_nstrs, max_flen
     integer :: cstr_idx
     integer :: i, j, k, m, n, q
+
+    max_nstrs = cstr_sz / max_clen
+    if(size(fstr) > max_nstrs) then
+      print *, "ERROR: The provided user buffer",&
+                  " does not have space for copying ", size(fstr), "strings",&
+                  " (space available to copy only ", max_nstrs, " strings)"
+      call piodie(__PIO_FILE__, __LINE__, "Insufficient user buffer space")
+    end if
 
     cstr = C_NULL_CHAR
     do i=1,{DIMS}
