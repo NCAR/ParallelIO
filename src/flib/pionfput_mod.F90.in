@@ -10,6 +10,7 @@ module pionfput_mod
   use iso_c_binding
   use pio_kinds, only: i4,r4,r8
   use pio_types, only : file_desc_t, var_desc_t, pio_noerr
+  use pio_support, only : piodie, get_text_var_sz
 
   implicit none
   private
@@ -218,7 +219,17 @@ contains
 !   This manipulation is required to convert the fortran string to
 !   a c character array with all trailing space set to null
 !
-    clen = len(ival)
+    ierr = get_text_var_sz(File, varid, clen)
+    if(ierr /= PIO_NOERR) then
+      call piodie(__PIO_FILE__, __LINE__, "Getting text variable size failed")
+    end if
+    if(clen < len_trim(ival)) then
+      print *, "WARNING: The length of the string in the user buffer ,",&
+                len_trim(ival),&
+                " chars, is greater than the size of the variable",&
+                " being written to, ", clen, " chars. The string, '",&
+                trim(ival), "', will be truncated"
+    end if
     if (clen > 0) then
         allocate(cval(clen))
         cval = C_NULL_CHAR
@@ -251,17 +262,26 @@ contains
     integer, intent(in) :: varid
     character(len=*), intent(in) :: ival{DIMSTR}
     character, allocatable :: cval(:)
-    integer :: clen,  sd
+    integer :: clen, nstrs
 
 !   This manipulation is required to convert the fortran string to
 !   a c character array with all trailing space set to null
 !
     ierr = PIO_NOERR
-    clen = len(ival)
-    sd = size(ival)
-    if (clen*sd > 0) then
-        allocate(cval(clen*sd))
-        call Fstring2Cstring_{DIMS}d (ival, cval)
+    ierr = get_text_var_sz(File, varid, clen, var_nstrs=nstrs)
+    if(ierr /= PIO_NOERR) then
+      call piodie(__PIO_FILE__, __LINE__, "Getting text variable size failed")
+    end if
+    if(clen < len(ival)) then
+      print *, "WARNING: The length of the string in the user buffer ,",&
+                len(ival),&
+                " chars, is greater than the size of the variable",&
+                " being written to, ", clen, " chars. The strings",&
+                " may be truncated"
+    end if
+    if (clen * nstrs > 0) then
+        allocate(cval(clen * nstrs))
+        call Fstring2Cstring_{DIMS}d (ival, cval, clen)
         ierr = PIOc_put_var_text(file%fh, varid-1,  cval)
         deallocate(cval)
     else
@@ -455,103 +475,152 @@ contains
 !   This manipulation is required to convert the fortran string to
 !   a c character array with all trailing space set to null
 !
-    clen = len(ival)
+    ierr = get_text_var_sz(File, varid, clen)
+    if(ierr /= PIO_NOERR) then
+      call piodie(__PIO_FILE__, __LINE__, "Unable to get text var size")
+    end if
     sd = size(ival)
     if (clen*sd > 0) then
         allocate(cval(clen*sd))
-        call Fstring2Cstring_{DIMS}d (ival, cval)
+        call Fstring2Cstring_{DIMS}d (ival, cval, clen)
 
         ierr = PIOc_put_vara_text(file%fh, varid-1,  cstart, ccount, cval)
-        deallocate(cval, cstart, ccount)
+        deallocate(cval)
     else
         print *, 'PIO: WARNING: Empty {DIMS}d text data passed to PIO_put_var function put_vara_{DIMS}d_text, a collective C API call will be skipped on this process. ', __PIO_FILE__, __LINE__
     end if
+    deallocate(cstart, ccount)
 
   end function put_vara_{DIMS}d_text
 
 ! DIMS 1,2,3,4,5
-  subroutine Fstring2Cstring_{DIMS}d(fstr, cstr)
+  subroutine Fstring2Cstring_{DIMS}d(fstr, cstr, max_clen)
     character(len=*), intent(in) :: fstr{DIMSTR}
     character(C_CHAR), intent(out) :: cstr(:)
-    integer :: clen, sd({DIMS})
-    integer :: cinc
+    integer, intent(in) :: max_clen
+
+    integer :: fstr_dim_sz({DIMS})
+    integer :: max_flen
+    integer :: cstr_idx
     integer :: i, j, k, m, n, q
 
     cstr = C_NULL_CHAR
     do i=1,{DIMS}
-       sd(i) = size(fstr,i)
+      fstr_dim_sz(i) = size(fstr,i)
     enddo
-    cinc = 0
+    cstr_idx = 0
 #if {DIMS} == 1
-    clen= len(fstr(1))
-    do j=1,sd(1)
-       do i=1,max(1,len_trim(fstr(j)))
-          cstr(i+cinc*clen) = fstr(j)(i:i)
-       end do
-       cinc = cinc+1
+    do j=1,fstr_dim_sz(1)
+      max_flen = len_trim(fstr(j))
+      do i=1,min(max_clen, max_flen)
+        cstr(cstr_idx * max_clen + i) = fstr(j)(i:i)
+      end do
+      if(max_clen < max_flen + 1) then
+        ! We have exhausted the C write buffer
+        ! C string = Fortran string chars + C_NULL_CHAR
+        ! Warn the user of the truncation
+        cstr(cstr_idx * max_clen + max_clen) = C_NULL_CHAR
+        print *, "WARNING: The user buffer provided had insufficient space (",&
+                  max_clen, " chars to write strings with ", max_flen, " chars).",&
+                  "The contents will be truncated to : ", trim(fstr(j)(1:max_clen-1))
+      end if
+      cstr_idx = cstr_idx + 1
     enddo
 #endif
 #if {DIMS} == 2
-    clen= len(fstr(1,1))
-    do k=1,sd(2)
-       do j=1,sd(1)
-          do i=1,max(1,len_trim(fstr(j,k)))
-             cstr(i+cinc*clen) = fstr(j,k)(i:i)
-          end do
-          cinc = cinc+1
-       enddo
-    enddo
+    do k=1,fstr_dim_sz(2)
+      do j=1,fstr_dim_sz(1)
+        max_flen = len_trim(fstr(j,k))
+        do i=1,min(max_clen, max_flen)
+          cstr(cstr_idx * max_clen + i) = fstr(j,k)(i:i)
+        end do
+        if(max_clen < max_flen + 1) then
+          ! We have exhausted the C write buffer
+          ! C string = Fortran string chars + C_NULL_CHAR
+          ! Warn the user of the truncation
+          cstr(cstr_idx * max_clen + max_clen) = C_NULL_CHAR
+          print *, "WARNING: The user buffer provided had insufficient space (",&
+                    max_clen, " chars to write strings with ", max_flen, " chars).",&
+                    "The contents will be truncated to : ", trim(fstr(j,k)(1:max_clen-1))
+        end if
+        cstr_idx = cstr_idx + 1
+      enddo ! do j=1,fstr_dim_sz(1)
+    enddo ! do k=1,fstr_dim_sz(2)
 #endif
 #if {DIMS} == 3
-    clen= len(fstr(1,1,1))
-    do m=1,sd(3)
-       do k=1,sd(2)
-          do j=1,sd(1)
-             do i=1,max(1,len_trim(fstr(j,k,m)))
-                cstr(i+cinc*clen) = fstr(j,k,m)(i:i)
-             end do
-             cinc = cinc+1
-          enddo
-       enddo
-    enddo
+    do m=1,fstr_dim_sz(3)
+      do k=1,fstr_dim_sz(2)
+        do j=1,fstr_dim_sz(1)
+          max_flen = len_trim(fstr(j,k,m))
+          do i=1,min(max_clen, max_flen)
+            cstr(cstr_idx * max_clen + i) = fstr(j,k,m)(i:i)
+          end do
+          if(max_clen < max_flen + 1) then
+            ! We have exhausted the C write buffer
+            ! C string = Fortran string chars + C_NULL_CHAR
+            ! Warn the user of the truncation
+            cstr(cstr_idx * max_clen + max_clen) = C_NULL_CHAR
+            print *, "WARNING: The user buffer provided had insufficient space (",&
+                      max_clen, " chars to write strings with ", max_flen, " chars).",&
+                      "The contents will be truncated to : ", trim(fstr(j,k,m)(1:max_clen-1))
+          end if
+          cstr_idx = cstr_idx + 1
+        enddo ! do j=1,fstr_dim_sz(1)
+      enddo ! do k=1,fstr_dim_sz(2)
+    enddo ! do m=1,fstr_dim_sz(3)
 #endif
 #if {DIMS} == 4
-    clen= len(fstr(1,1,1,1))
-    do n=1,sd(4)
-       do m=1,sd(3)
-          do k=1,sd(2)
-             do j=1,sd(1)
-                do i=1,max(1,len_trim(fstr(j,k,m,n)))
-                   cstr(i+cinc*clen) = fstr(j,k,m,n)(i:i)
-                end do
-                cinc = cinc+1
-             enddo
-          enddo
-       enddo
-    enddo
+    do n=1,fstr_dim_sz(4)
+      do m=1,fstr_dim_sz(3)
+        do k=1,fstr_dim_sz(2)
+          do j=1,fstr_dim_sz(1)
+            max_flen = len_trim(fstr(j,k,m,n))
+            do i=1,min(max_clen, max_flen)
+              cstr(cstr_idx * max_clen + i) = fstr(j,k,m,n)(i:i)
+            end do
+            if(max_clen < max_flen + 1) then
+              ! We have exhausted the C write buffer
+              ! C string = Fortran string chars + C_NULL_CHAR
+              ! Warn the user of the truncation
+              cstr(cstr_idx * max_clen + max_clen) = C_NULL_CHAR
+              print *, "WARNING: The user buffer provided had insufficient space (",&
+                        max_clen, " chars to write strings with ", max_flen, " chars).",&
+                        "The contents will be truncated to : ", trim(fstr(j,k,m,n)(1:max_clen-1))
+            end if
+            cstr_idx = cstr_idx + 1
+          enddo ! do j=1,fstr_dim_sz(1)
+        enddo ! do k=1,fstr_dim_sz(2)
+      enddo ! do m=1,fstr_dim_sz(3)
+    enddo ! do n=1,fstr_dim_sz(4)
 #endif
 #if {DIMS} == 5
-    clen= len(fstr(1,1,1,1,1))
-    do q=1,sd(5)
-       do n=1,sd(4)
-          do m=1,sd(3)
-             do k=1,sd(2)
-                do j=1,sd(1)
-                   do i=1,max(1,len_trim(fstr(j,k,m,n,q)))
-                      cstr(i+cinc*clen) = fstr(j,k,m,n,q)(i:i)
-                   end do
-                   cinc = cinc+1
-                enddo
-             enddo
-          enddo
-       enddo
-    enddo
+    do q=1,fstr_dim_sz(5)
+      do n=1,fstr_dim_sz(4)
+        do m=1,fstr_dim_sz(3)
+          do k=1,fstr_dim_sz(2)
+            do j=1,fstr_dim_sz(1)
+              max_flen = len_trim(fstr(j,k,m,n,q))
+              do i=1,min(max_clen, max_flen)
+                cstr(cstr_idx * max_clen + i) = fstr(j,k,m,n,q)(i:i)
+              end do
+              if(max_clen < max_flen + 1) then
+                ! We have exhausted the C write buffer
+                ! C string = Fortran string chars + C_NULL_CHAR
+                ! Warn the user of the truncation
+                cstr(cstr_idx * max_clen + max_clen) = C_NULL_CHAR
+                print *, "WARNING: The user buffer provided had insufficient space (",&
+                          max_clen, " chars to write strings with ", max_flen, " chars).",&
+                          "The contents will be truncated to : ", trim(fstr(j,k,m,n,q)(1:max_clen-1))
+              end if
+              cstr_idx = cstr_idx + 1
+            enddo ! do j=1,fstr_dim_sz(1)
+          enddo ! do k=1,fstr_dim_sz(2)
+        enddo ! do m=1,fstr_dim_sz(3)
+      enddo ! do n=1,fstr_dim_sz(4)
+    enddo ! do q=1,fstr_dim_sz(5)
 #endif
 
-
   end subroutine Fstring2Cstring_{DIMS}d
-
-
 
 ! TYPE int,real,double
 ! DIMS 1,2,3,4,5
