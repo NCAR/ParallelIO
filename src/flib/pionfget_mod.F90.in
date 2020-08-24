@@ -304,14 +304,18 @@ CONTAINS
     character(len=*), intent(out) :: ival{DIMSTR}
 
     character(C_CHAR), allocatable :: cval(:)
-    integer :: cval_sz
+    integer :: cval_sz, clen
 
     ival = ' '
-    cval_sz = size(ival) * len(ival)
+    ierr = get_text_var_sz(File, varid, clen)
+    if(ierr /= PIO_NOERR) then
+      call piodie(__PIO_FILE__, __LINE__, "Unable to query text var size")
+    end if
+    cval_sz = size(ival) * clen
     allocate(cval(cval_sz))
     ierr = get_vara_text_internal (File%fh, varid, start, count, size(cval), cval)
 
-    call Cstring2Fstring_{DIMS}d (cval, cval_sz, len(ival), ival)
+    call Cstring2Fstring_{DIMS}d (cval, cval_sz, clen, ival)
     deallocate(cval)
 
   end function get_vara_{DIMS}d_text
