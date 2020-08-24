@@ -548,7 +548,7 @@ CONTAINS
           exit
         end if
       end do
-      if(.not. cstr_copied) then
+      if((.not. cstr_copied) .and. (max_flen < max_clen)) then
         ! We have exhausted the Fortran write buffer
         ! Warn the user of the truncation
         print *, "WARNING: The user buffer provided had insufficient space (",&
@@ -574,7 +574,7 @@ CONTAINS
             exit
           end if
         end do
-        if(.not. cstr_copied) then
+        if((.not. cstr_copied) .and. (max_flen < max_clen)) then
           ! We have exhausted the Fortran write buffer
           ! Warn the user of the truncation
           print *, "WARNING: The user buffer provided had insufficient space (",&
@@ -602,7 +602,7 @@ CONTAINS
               exit
             end if
           end do
-          if(.not. cstr_copied) then
+          if((.not. cstr_copied) .and. (max_flen < max_clen)) then
             ! We have exhausted the Fortran write buffer
             ! Warn the user of the truncation
             print *, "WARNING: The user buffer provided had insufficient space (",&
@@ -632,7 +632,7 @@ CONTAINS
                 exit
               end if
             end do
-            if(.not. cstr_copied) then
+            if((.not. cstr_copied) .and. (max_flen < max_clen)) then
               ! We have exhausted the Fortran write buffer
               ! Warn the user of the truncation
               print *, "WARNING: The user buffer provided had insufficient space (",&
@@ -664,7 +664,7 @@ CONTAINS
                   exit
                 end if
               end do
-              if(.not. cstr_copied) then
+              if((.not. cstr_copied) .and. (max_flen < max_clen)) then
                 ! We have exhausted the Fortran write buffer
                 ! Warn the user of the truncation
                 print *, "WARNING: The user buffer provided had insufficient space (",&
