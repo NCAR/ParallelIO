@@ -9,8 +9,8 @@ module pionfget_mod
   use perf_mod, only : t_startf, t_stopf      ! _EXTERNAL
 #endif
   use pio_kinds, only: i4,r4,r8
-  use pio_types, only : file_desc_t, var_desc_t
-  use pio_support, only : replace_c_null
+  use pio_types, only : file_desc_t, var_desc_t, pio_noerr
+  use pio_support, only : replace_c_null, get_text_var_sz, piodie
   implicit none
   private
 !>
@@ -400,12 +400,18 @@ CONTAINS
     character(len=*), intent(out) :: ival{DIMSTR}
 
     character(C_CHAR), allocatable :: cval(:)
+    integer :: clen, nstrs
 
     ival = ' '
-    allocate(cval(size(ival) * len(ival)))
+    ierr = get_text_var_sz(File, varid, clen, var_nstrs=nstrs)
+    if(ierr /= PIO_NOERR) then
+      call piodie(__PIO_FILE__, __LINE__, "Unable to query the text variable size")
+    end if
+
+    allocate(cval(clen * nstrs))
 !    ierr = get_var_text_internal(File%fh, varid, size(ival), ival)
     ierr = PIOc_get_var_text(File%fh, varid-1, cval)
-    call Cstring2Fstring_{DIMS}d (cval, len(ival), ival)
+    call Cstring2Fstring_{DIMS}d (cval, clen, ival)
     deallocate(cval)
 
   end function get_var_{DIMS}d_text
