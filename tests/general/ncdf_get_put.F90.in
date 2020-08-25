@@ -1251,3 +1251,194 @@ PIO_TF_AUTO_TEST_SUB_BEGIN test_put_get_misc_str
 
 PIO_TF_AUTO_TEST_SUB_END test_put_get_misc_str
 
+PIO_TF_AUTO_TEST_SUB_BEGIN test_put_get_str_frames
+  Implicit none
+  type(file_desc_t) :: pio_file
+  character(len=*), parameter :: filename = "test_pio_ncdf_get_str_frames.testfile"
+  type(var_desc_t)  :: var1d, var2d, var3d
+  character(len=*), parameter :: var1d_name = "var1d"
+  character(len=*), parameter :: var2d_name = "var2d"
+  character(len=*), parameter :: var3d_name = "var3d"
+
+  integer, parameter :: SHORT_STR_LEN = 32
+  integer, parameter :: LONG_STR_LEN = 128
+  integer, parameter :: STR_LEN = 64
+
+  integer, parameter :: NDIMS = 4
+  integer, dimension(NDIMS) :: pio_dims
+  integer, parameter :: NUM_ROWS = 4
+  integer, parameter :: NUM_COLS = 8
+  integer, parameter :: NUM_STEPS = 6
+  character(len=*), parameter :: dim0_name = "slen"
+  character(len=*), parameter :: dim1_name = "row"
+  character(len=*), parameter :: dim2_name = "col"
+  character(len=*), parameter :: dim3_name = "step"
+
+  character(len=STR_LEN) :: exp_str1d(NUM_ROWS)
+  character(len=STR_LEN) :: exp_str2d(NUM_ROWS, NUM_COLS)
+  character(len=STR_LEN) :: exp_str3d(NUM_ROWS, NUM_COLS, NUM_STEPS)
+  character(len=STR_LEN) :: frame_str1d(1)
+  character(len=STR_LEN) :: frame_str2d(NUM_ROWS, 1)
+  character(len=STR_LEN) :: frame_str3d(NUM_ROWS, NUM_COLS, 1)
+  character(len=STR_LEN) :: gstr1d(NUM_ROWS)
+  character(len=STR_LEN) :: gstr2d(NUM_ROWS, NUM_COLS)
+  character(len=STR_LEN) :: gstr3d(NUM_ROWS, NUM_COLS, NUM_STEPS)
+
+  character(len=SHORT_STR_LEN) :: exp_sstr1d(NUM_ROWS)
+  character(len=SHORT_STR_LEN) :: exp_sstr2d(NUM_ROWS, NUM_COLS)
+  character(len=LONG_STR_LEN) :: glstr1d(NUM_ROWS)
+  character(len=LONG_STR_LEN) :: glstr2d(NUM_ROWS, NUM_COLS)
+
+  integer, dimension(NDIMS) :: strt, cnt
+
+  integer, dimension(:), allocatable :: iotypes
+  character(len=PIO_TF_MAX_STR_LEN), dimension(:), allocatable :: iotype_descs
+  integer :: num_iotypes
+
+  character(len=*), parameter :: VNAME_WITH_1D_IDX_FMT1 = '(A5,"(",I5,")")'
+  character(len=*), parameter :: VNAME_WITH_2D_IDX_FMT1 = '(A5,"(",I5,",",I5,")")'
+  character(len=*), parameter :: VNAME_WITH_3D_IDX_FMT1 = '(A5,"(",I5,",",I5,",",I5,")")'
+  character(len=*), parameter :: VNAME_WITH_1D_IDX_FMT2 = '(A5,"[",I5,"]")'
+  character(len=*), parameter :: VNAME_WITH_2D_IDX_FMT2 = '(A5,"[",I5,",",I5,"]")'
+  character(len=*), parameter :: VNAME_WITH_3D_IDX_FMT2 = '(A5,"[",I5,",",I5,",",I5,"]")'
+
+  integer :: i, row, col, step, ret
+
+  num_iotypes = 0
+  call PIO_TF_Get_nc_iotypes(iotypes, iotype_descs, num_iotypes)
+  do i=1,num_iotypes
+    do row=1,NUM_ROWS
+      write(exp_str1d(row), VNAME_WITH_1D_IDX_FMT1) var2d_name, row
+      write(exp_sstr1d(row), VNAME_WITH_1D_IDX_FMT1) var2d_name, row
+      do col=1,NUM_COLS
+        write(exp_str2d(row,col), VNAME_WITH_2D_IDX_FMT1) var2d_name, row, col
+        write(exp_sstr2d(row,col), VNAME_WITH_2D_IDX_FMT1) var2d_name, row, col
+        do step=1,NUM_STEPS
+          write(exp_str3d(row,col,step), VNAME_WITH_3D_IDX_FMT1) var3d_name, row, col, step
+        end do
+      end do
+    end do
+
+    PIO_TF_LOG(0,*) "Testing type :", iotype_descs(i)
+    ret = PIO_createfile(pio_tf_iosystem_, pio_file, iotypes(i), filename, PIO_CLOBBER)
+    PIO_TF_CHECK_ERR(ret, "Failed to open:" // trim(filename))
+
+    ret = PIO_def_dim(pio_file, dim0_name, STR_LEN, pio_dims(1))
+    PIO_TF_CHECK_ERR(ret, "Failed to define dim 0:" // trim(filename))
+
+    ret = PIO_def_dim(pio_file, dim1_name, NUM_ROWS, pio_dims(2))
+    PIO_TF_CHECK_ERR(ret, "Failed to define dim 1:" // trim(filename))
+
+    ret = PIO_def_dim(pio_file, dim2_name, NUM_COLS, pio_dims(3))
+    PIO_TF_CHECK_ERR(ret, "Failed to define dim 2:" // trim(filename))
+
+    ret = PIO_def_dim(pio_file, dim3_name, NUM_STEPS, pio_dims(4))
+    PIO_TF_CHECK_ERR(ret, "Failed to define dim 3:" // trim(filename))
+
+    ret = PIO_def_var(pio_file, var1d_name, PIO_char, (/pio_dims(1), pio_dims(2)/), var1d)
+    PIO_TF_CHECK_ERR(ret, "Failed to define 1 dim char array or 1d array of strings in file " // trim(filename))
+
+    ret = PIO_def_var(pio_file, var2d_name, PIO_char, (/pio_dims(1), pio_dims(2), pio_dims(3)/), var2d)
+    PIO_TF_CHECK_ERR(ret, "Failed to define 2 dim char array or 2d array of strings in file " // trim(filename))
+
+    ret = PIO_def_var(pio_file, var3d_name, PIO_char, pio_dims, var3d)
+    PIO_TF_CHECK_ERR(ret, "Failed to define 3 dim char array or 3d array of strings in file " // trim(filename))
+
+    ret = PIO_enddef(pio_file)
+    PIO_TF_CHECK_ERR(ret, "Failed to enddef:" // trim(filename))
+
+    do row=1,NUM_ROWS
+      strt = 1
+      cnt = 0
+      strt(1) = 1
+      strt(2) = row
+      cnt(1) = STR_LEN
+      cnt(2) = 1
+
+      frame_str1d(1) = exp_str1d(row)
+      ! This calls put_vara_1d_text()
+      ret = PIO_put_var(pio_file, var1d, strt, cnt, frame_str1d);
+      PIO_TF_CHECK_ERR(ret, "Failed to put 1d array of strings in file " // trim(filename))
+    end do
+
+    do col=1,NUM_COLS
+      strt = 1
+      cnt = 0
+      strt(1) = 1
+      strt(2) = 1
+      strt(3) = col
+      cnt(1) = STR_LEN
+      cnt(2) = NUM_ROWS
+      cnt(3) = 1
+
+      frame_str2d(:,1) = exp_str2d(:,col)
+      ! This calls put_vara_2d_text()
+      ret = PIO_put_var(pio_file, var2d, strt, cnt, frame_str2d);
+      PIO_TF_CHECK_ERR(ret, "Failed to put 2d array of strings in file " // trim(filename))
+    end do
+
+    do step=1,NUM_STEPS
+      strt = 1
+      cnt = 0
+      strt(1) = 1
+      strt(2) = 1
+      strt(3) = 1
+      strt(4) = step
+      cnt(1) = STR_LEN
+      cnt(2) = NUM_ROWS
+      cnt(3) = NUM_COLS
+      cnt(4) = 1
+
+      frame_str3d(:,:,1) = exp_str3d(:,:,step)
+      ! This calls put_vara_3d_text()
+      ret = PIO_put_var(pio_file, var3d, strt, cnt, frame_str3d);
+      PIO_TF_CHECK_ERR(ret, "Failed to put 3d array of strings in file " // trim(filename))
+    end do
+
+    ! Sync data to disk
+#ifdef PIO_TEST_CLOSE_OPEN_FOR_SYNC
+    call PIO_closefile(pio_file)
+
+    ret = PIO_openfile(pio_tf_iosystem_, pio_file, iotypes(i), filename, PIO_nowrite)
+    PIO_TF_CHECK_ERR(ret, "Failed to reopen:" // trim(filename))
+
+    ret = PIO_inq_varid(pio_file, var1d_name, var1d)
+    PIO_TF_CHECK_ERR(ret, "Failed to inquire 1d array of strings var in file " // trim(filename))
+
+    ret = PIO_inq_varid(pio_file, var2d_name, var2d)
+    PIO_TF_CHECK_ERR(ret, "Failed to inquire 2d array of strings var in file " // trim(filename))
+
+    ret = PIO_inq_varid(pio_file, var3d_name, var3d)
+    PIO_TF_CHECK_ERR(ret, "Failed to inquire 3d array of strings var in file " // trim(filename))
+#else
+    call PIO_syncfile(pio_file)
+#endif
+
+    ! This calls get_var_1d_text()
+    ret = PIO_get_var(pio_file, var1d, gstr1d);
+    PIO_TF_CHECK_ERR(ret, "Failed to get 1d char var in file " // trim(filename))
+
+    PIO_TF_CHECK_VAL((gstr1d, exp_str1d), "Got wrong value for 1d char var")
+
+    ! This calls get_var_2d_text()
+    ret = PIO_get_var(pio_file, var2d, gstr2d);
+    PIO_TF_CHECK_ERR(ret, "Failed to get 2d char var in file " // trim(filename))
+
+    PIO_TF_CHECK_VAL((gstr2d, exp_str2d), "Got wrong value for 2d char var")
+
+    ! This calls get_var_3d_text()
+    ret = PIO_get_var(pio_file, var3d, gstr3d);
+    PIO_TF_CHECK_ERR(ret, "Failed to get 3d char var in file " // trim(filename))
+
+    PIO_TF_CHECK_VAL((gstr3d, exp_str3d), "Got wrong value for 3d char var")
+
+    call PIO_closefile(pio_file)
+    call PIO_deletefile(pio_tf_iosystem_, filename);
+  end do
+  if(allocated(iotypes)) then
+    deallocate(iotypes)
+    deallocate(iotype_descs)
+  end if
+
+PIO_TF_AUTO_TEST_SUB_END test_put_get_str_frames
+
