@@ -233,7 +233,7 @@ contains
     if (clen > 0) then
         allocate(cval(clen))
         cval = C_NULL_CHAR
-        do i=1,len_trim(ival)
+        do i=1,min(clen, len_trim(ival))
             cval(i) = ival(i:i)
         end do
 
