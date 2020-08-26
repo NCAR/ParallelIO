@@ -261,7 +261,7 @@ contains
     type (File_desc_t), intent(inout) :: File
     integer, intent(in) :: varid
     character(len=*), intent(in) :: ival{DIMSTR}
-    character, allocatable :: cval(:)
+    character(C_CHAR), allocatable :: cval(:)
     integer :: cval_sz, clen, nstrs
 
 !   This manipulation is required to convert the fortran string to
@@ -466,6 +466,9 @@ contains
           ndims=i
        endif
     enddo
+    if(ndims == 0) then
+      call piodie(__PIO_FILE__, __LINE__, "Invalid count array passed to put_vara_*d_text")
+    end if
     allocate(cstart(ndims),ccount(ndims))
 
     do i=1,ndims
@@ -476,15 +479,26 @@ contains
 !   This manipulation is required to convert the fortran string to
 !   a c character array with all trailing space set to null
 !
-    ierr = get_text_var_sz(File, varid, clen)
-    if(ierr /= PIO_NOERR) then
-      call piodie(__PIO_FILE__, __LINE__, "Unable to get text var size")
-    end if
+    clen = len(ival)
     sd = size(ival)
     cval_sz = clen * sd
     if (cval_sz > 0) then
         allocate(cval(cval_sz))
-        call Fstring2Cstring_{DIMS}d (ival, cval, cval_sz, clen)
+        ! Reshape the fortran array of strings to a contiguous 1d character array.
+        ! The 1d character array does not include string delimiters between the
+        ! different strings in the fortran array. The way the characters in the
+        ! C string is written out is determined by the shape specified in the
+        ! start/count arrays provided by the user.
+        ! character(len=3) :: ival[2] = [ "abc",
+        !                                 "def" ]
+        ! is converted to a single 1d character array
+        ! cval[6] = [   'a',
+        !               'b',
+        !               'c',
+        !               'd',
+        !               'e',
+        !               'f' ]
+        call Fstring2Cstring_{DIMS}d (ival, cval, cval_sz, clen, cstr_add_null = .false.)
 
         ierr = PIOc_put_vara_text(file%fh, varid-1,  cstart, ccount, cval)
         deallocate(cval)
@@ -496,18 +510,24 @@ contains
   end function put_vara_{DIMS}d_text
 
 ! DIMS 1,2,3,4,5
-  subroutine Fstring2Cstring_{DIMS}d(fstr, cstr, cstr_sz, max_clen)
+  subroutine Fstring2Cstring_{DIMS}d(fstr, cstr, cstr_sz, max_clen, cstr_add_null)
     character(len=*), intent(in) :: fstr{DIMSTR}
     character(C_CHAR), intent(out) :: cstr(:)
     ! The total size of cstr, the total number  of chars in cstr
     integer, intent(in) :: cstr_sz
     ! The max length of each string in cstr
     integer, intent(in) :: max_clen
+    logical, intent(in), optional :: cstr_add_null
 
+    logical :: add_c_null = .true.
     integer :: fstr_dim_sz({DIMS})
     integer :: max_nstrs, max_flen
     integer :: cstr_idx
     integer :: i, j, k, m, n, q
+
+    if(present(cstr_add_null)) then
+      add_c_null = cstr_add_null
+    end if
 
     max_nstrs = cstr_sz / max_clen
     if(size(fstr) > max_nstrs) then
@@ -528,7 +548,7 @@ contains
       do i=1,min(max_clen, max_flen)
         cstr(cstr_idx * max_clen + i) = fstr(j)(i:i)
       end do
-      if(max_clen < max_flen + 1) then
+      if(add_c_null .and. (max_clen < max_flen + 1)) then
         ! We have exhausted the C write buffer
         ! C string = Fortran string chars + C_NULL_CHAR
         ! Warn the user of the truncation
@@ -547,7 +567,7 @@ contains
         do i=1,min(max_clen, max_flen)
           cstr(cstr_idx * max_clen + i) = fstr(j,k)(i:i)
         end do
-        if(max_clen < max_flen + 1) then
+        if(add_c_null .and. (max_clen < max_flen + 1)) then
           ! We have exhausted the C write buffer
           ! C string = Fortran string chars + C_NULL_CHAR
           ! Warn the user of the truncation
@@ -568,7 +588,7 @@ contains
           do i=1,min(max_clen, max_flen)
             cstr(cstr_idx * max_clen + i) = fstr(j,k,m)(i:i)
           end do
-          if(max_clen < max_flen + 1) then
+          if(add_c_null .and. (max_clen < max_flen + 1)) then
             ! We have exhausted the C write buffer
             ! C string = Fortran string chars + C_NULL_CHAR
             ! Warn the user of the truncation
@@ -591,7 +611,7 @@ contains
             do i=1,min(max_clen, max_flen)
               cstr(cstr_idx * max_clen + i) = fstr(j,k,m,n)(i:i)
             end do
-            if(max_clen < max_flen + 1) then
+            if(add_c_null .and. (max_clen < max_flen + 1)) then
               ! We have exhausted the C write buffer
               ! C string = Fortran string chars + C_NULL_CHAR
               ! Warn the user of the truncation
@@ -616,7 +636,7 @@ contains
               do i=1,min(max_clen, max_flen)
                 cstr(cstr_idx * max_clen + i) = fstr(j,k,m,n,q)(i:i)
               end do
-              if(max_clen < max_flen + 1) then
+              if(add_c_null .and. (max_clen < max_flen + 1)) then
                 ! We have exhausted the C write buffer
                 ! C string = Fortran string chars + C_NULL_CHAR
                 ! Warn the user of the truncation
