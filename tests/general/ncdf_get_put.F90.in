@@ -1162,13 +1162,13 @@ PIO_TF_AUTO_TEST_SUB_BEGIN test_put_get_misc_str
     ret = PIO_get_var(pio_file, var1d, glstr1d);
     PIO_TF_CHECK_ERR(ret, "Failed to get 1d char var with large buf in file " // trim(filename))
 
-    PIO_TF_CHECK_VAL((glstr1d, exp_sstr1d), "Got wrong value for 1d char var")
+    PIO_TF_CHECK_VAL((glstr1d, exp_sstr1d), "Got wrong value for 1d char var with large buf")
 
     ! This calls get_var_2d_text()
     ret = PIO_get_var(pio_file, var2d, glstr2d);
     PIO_TF_CHECK_ERR(ret, "Failed to get 2d char var with large buf in file " // trim(filename))
 
-    PIO_TF_CHECK_VAL((glstr2d, exp_sstr2d), "Got wrong value for 2d char var")
+    PIO_TF_CHECK_VAL((glstr2d, exp_sstr2d), "Got wrong value for 2d char var with large buf")
 
     ! Re-write the variables in the file to test hyperslab puts
     do row=1,NUM_ROWS
@@ -1190,7 +1190,7 @@ PIO_TF_AUTO_TEST_SUB_BEGIN test_put_get_misc_str
 
     ! This calls put_vara_1d_text()
     ret = PIO_put_var(pio_file, var1d, strt, cnt, exp_str1d);
-    PIO_TF_CHECK_ERR(ret, "Failed to put 1d array of strings in file " // trim(filename))
+    PIO_TF_CHECK_ERR(ret, "Failed to put hslab of 1d array of strings in file " // trim(filename))
 
     strt = 1
     cnt = 0
@@ -1200,7 +1200,7 @@ PIO_TF_AUTO_TEST_SUB_BEGIN test_put_get_misc_str
 
     ! This calls put_vara_2d_text()
     ret = PIO_put_var(pio_file, var2d, strt, cnt, exp_str2d);
-    PIO_TF_CHECK_ERR(ret, "Failed to put 2d array of strings in file " // trim(filename))
+    PIO_TF_CHECK_ERR(ret, "Failed to put hslab of 2d array of strings in file " // trim(filename))
 
     strt = 1
     cnt = 0
@@ -1211,7 +1211,7 @@ PIO_TF_AUTO_TEST_SUB_BEGIN test_put_get_misc_str
 
     ! This calls put_vara_3d_text()
     ret = PIO_put_var(pio_file, var3d, strt, cnt, exp_str3d);
-    PIO_TF_CHECK_ERR(ret, "Failed to put 3d array of strings in file " // trim(filename))
+    PIO_TF_CHECK_ERR(ret, "Failed to put hslab of 3d array of strings in file " // trim(filename))
 
     ! Sync data to disk
 #ifdef PIO_TEST_CLOSE_OPEN_FOR_SYNC
@@ -1236,19 +1236,19 @@ PIO_TF_AUTO_TEST_SUB_BEGIN test_put_get_misc_str
     ret = PIO_get_var(pio_file, var1d, gstr1d);
     PIO_TF_CHECK_ERR(ret, "Failed to get 1d char var in file " // trim(filename))
 
-    PIO_TF_CHECK_VAL((gstr1d, exp_str1d), "Got wrong value for 1d char var")
+    PIO_TF_CHECK_VAL((gstr1d, exp_str1d), "Got wrong value for 1d char var written with hslab put")
 
     ! This calls get_var_2d_text()
     ret = PIO_get_var(pio_file, var2d, gstr2d);
     PIO_TF_CHECK_ERR(ret, "Failed to get 2d char var in file " // trim(filename))
 
-    PIO_TF_CHECK_VAL((gstr2d, exp_str2d), "Got wrong value for 2d char var")
+    PIO_TF_CHECK_VAL((gstr2d, exp_str2d), "Got wrong value for 2d char var written with hslab put")
 
     ! This calls get_var_3d_text()
     ret = PIO_get_var(pio_file, var3d, gstr3d);
     PIO_TF_CHECK_ERR(ret, "Failed to get 3d char var in file " // trim(filename))
 
-    PIO_TF_CHECK_VAL((gstr3d, exp_str3d), "Got wrong value for 3d char var")
+    PIO_TF_CHECK_VAL((gstr3d, exp_str3d), "Got wrong value for 3d char var written with hslab put")
 
     call PIO_closefile(pio_file)
     call PIO_deletefile(pio_tf_iosystem_, filename);
@@ -1374,7 +1374,7 @@ PIO_TF_AUTO_TEST_SUB_BEGIN test_put_get_str_frames
       frame_str1d(1) = exp_str1d(row)
       ! This calls put_vara_1d_text()
       ret = PIO_put_var(pio_file, var1d, strt, cnt, frame_str1d);
-      PIO_TF_CHECK_ERR(ret, "Failed to put 1d array of strings in file " // trim(filename))
+      PIO_TF_CHECK_ERR(ret, "Failed to put 1d array of strings 1 frame at a time in file " // trim(filename))
     end do
 
     ! Write the 2d text variable, 1 array/row of strings at a time
@@ -1391,7 +1391,7 @@ PIO_TF_AUTO_TEST_SUB_BEGIN test_put_get_str_frames
       frame_str2d(:,1) = exp_str2d(:,col)
       ! This calls put_vara_2d_text()
       ret = PIO_put_var(pio_file, var2d, strt, cnt, frame_str2d);
-      PIO_TF_CHECK_ERR(ret, "Failed to put 2d array of strings in file " // trim(filename))
+      PIO_TF_CHECK_ERR(ret, "Failed to put 2d array of strings 1 frame at a time in file " // trim(filename))
     end do
 
     ! Write the 3d text variable, 1 2d array (row x col) of strings at a time
@@ -1410,7 +1410,7 @@ PIO_TF_AUTO_TEST_SUB_BEGIN test_put_get_str_frames
       frame_str3d(:,:,1) = exp_str3d(:,:,step)
       ! This calls put_vara_3d_text()
       ret = PIO_put_var(pio_file, var3d, strt, cnt, frame_str3d);
-      PIO_TF_CHECK_ERR(ret, "Failed to put 3d array of strings in file " // trim(filename))
+      PIO_TF_CHECK_ERR(ret, "Failed to put 3d array of strings 1 frame at a time in file " // trim(filename))
     end do
 
     ! Sync data to disk
@@ -1653,7 +1653,7 @@ PIO_TF_AUTO_TEST_SUB_BEGIN test_put_get_str_hslabs
       end do
 
       ret = PIO_put_var(pio_file, var1d, strt, cnt, tmp_str);
-      PIO_TF_CHECK_ERR(ret, "Failed to put 1d array of strings in file " // trim(filename))
+      PIO_TF_CHECK_ERR(ret, "Failed to put string prefixes in file " // trim(filename))
 
       deallocate(tmp_str)
     end do
@@ -1685,7 +1685,7 @@ PIO_TF_AUTO_TEST_SUB_BEGIN test_put_get_str_hslabs
       end do
 
       ret = PIO_put_var(pio_file, var2d, strt, cnt, tmp_str);
-      PIO_TF_CHECK_ERR(ret, "Failed to put 2d array of strings in file " // trim(filename))
+      PIO_TF_CHECK_ERR(ret, "Failed to put 1d array of string prefixes in file " // trim(filename))
 
       deallocate(tmp_str)
     end do
@@ -1722,7 +1722,7 @@ PIO_TF_AUTO_TEST_SUB_BEGIN test_put_get_str_hslabs
       end do
 
       ret = PIO_put_var(pio_file, var3d, strt, cnt, tmp_str);
-      PIO_TF_CHECK_ERR(ret, "Failed to put 3d array of strings in file " // trim(filename))
+      PIO_TF_CHECK_ERR(ret, "Failed to put 2d array of string prefixes in file " // trim(filename))
 
       deallocate(tmp_str)
     end do
@@ -1805,7 +1805,7 @@ PIO_TF_AUTO_TEST_SUB_BEGIN test_put_get_str_hslabs
       end do
 
       ret = PIO_put_var(pio_file, var1d, strt, cnt, tmp_str);
-      PIO_TF_CHECK_ERR(ret, "Failed to put 1d array of strings in file " // trim(filename))
+      PIO_TF_CHECK_ERR(ret, "Failed to put string suffixes in file " // trim(filename))
 
       deallocate(tmp_str)
     end do
@@ -1838,7 +1838,7 @@ PIO_TF_AUTO_TEST_SUB_BEGIN test_put_get_str_hslabs
       end do
 
       ret = PIO_put_var(pio_file, var2d, strt, cnt, tmp_str);
-      PIO_TF_CHECK_ERR(ret, "Failed to put 2d array of strings in file " // trim(filename))
+      PIO_TF_CHECK_ERR(ret, "Failed to put 1d array of string suffixes in file " // trim(filename))
 
       deallocate(tmp_str)
     end do
@@ -1876,7 +1876,7 @@ PIO_TF_AUTO_TEST_SUB_BEGIN test_put_get_str_hslabs
       end do
 
       ret = PIO_put_var(pio_file, var3d, strt, cnt, tmp_str);
-      PIO_TF_CHECK_ERR(ret, "Failed to put 3d array of strings in file " // trim(filename))
+      PIO_TF_CHECK_ERR(ret, "Failed to put 2d array of string suffixes in file " // trim(filename))
 
       deallocate(tmp_str)
     end do
@@ -1903,17 +1903,17 @@ PIO_TF_AUTO_TEST_SUB_BEGIN test_put_get_str_hslabs
     ret = PIO_get_var(pio_file, var1d, gstr1d);
     PIO_TF_CHECK_ERR(ret, "Failed to get 1d char var in file " // trim(filename))
 
-    PIO_TF_CHECK_VAL((gstr1d, exp_str1d), "Got wrong value for 1d char var")
+    PIO_TF_CHECK_VAL((gstr1d, exp_str1d), "Got wrong value for 1d char var with modified suffixes")
 
     ret = PIO_get_var(pio_file, var2d, gstr2d);
     PIO_TF_CHECK_ERR(ret, "Failed to get 2d char var in file " // trim(filename))
 
-    PIO_TF_CHECK_VAL((gstr2d, exp_str2d), "Got wrong value for 2d char var")
+    PIO_TF_CHECK_VAL((gstr2d, exp_str2d), "Got wrong value for 2d char var with modified suffixes")
 
     ret = PIO_get_var(pio_file, var3d, gstr3d);
     PIO_TF_CHECK_ERR(ret, "Failed to get 3d char var in file " // trim(filename))
 
-    PIO_TF_CHECK_VAL((gstr3d, exp_str3d), "Got wrong value for 3d char var")
+    PIO_TF_CHECK_VAL((gstr3d, exp_str3d), "Got wrong value for 3d char var with modified suffixes")
 
     call PIO_closefile(pio_file)
     call PIO_deletefile(pio_tf_iosystem_, filename);
