@@ -939,6 +939,10 @@ PIO_TF_AUTO_TEST_SUB_BEGIN test_put_get_2d_str_arr
 
 PIO_TF_AUTO_TEST_SUB_END test_put_get_2d_str_arr
 
+! Miscellaneous tests for pio_put/get_var for text variables
+! 1) Test put/get var for [0:3]d text variables
+! 2) Test puts with strings (and hence user buffers) smaller than the variable
+! 3) Test gets with strings (and hence user buffers) larger than the variable
 PIO_TF_AUTO_TEST_SUB_BEGIN test_put_get_misc_str
   Implicit none
   type(file_desc_t) :: pio_file
@@ -981,6 +985,10 @@ PIO_TF_AUTO_TEST_SUB_BEGIN test_put_get_misc_str
   character(len=PIO_TF_MAX_STR_LEN), dimension(:), allocatable :: iotype_descs
   integer :: num_iotypes
 
+  ! Formats for the data written out in the text variable
+  ! Each string in the variable is of the form
+  ! "VAR_NAME(VAR_IDX,...)"
+  ! e.g. For 2D var, var2d, var2d(j,i) = "var2d(j,i)"
   character(len=*), parameter :: VNAME_WITH_1D_IDX_FMT1 = '(A5,"(",I5,")")'
   character(len=*), parameter :: VNAME_WITH_2D_IDX_FMT1 = '(A5,"(",I5,",",I5,")")'
   character(len=*), parameter :: VNAME_WITH_3D_IDX_FMT1 = '(A5,"(",I5,",",I5,",",I5,")")'
@@ -993,6 +1001,7 @@ PIO_TF_AUTO_TEST_SUB_BEGIN test_put_get_misc_str
   num_iotypes = 0
   call PIO_TF_Get_nc_iotypes(iotypes, iotype_descs, num_iotypes)
   do i=1,num_iotypes
+    ! Initialize the buffers written out to the variable
     exp_str0d = var0d_name
     exp_sstr0d = var0d_name
     do row=1,NUM_ROWS
@@ -1251,6 +1260,7 @@ PIO_TF_AUTO_TEST_SUB_BEGIN test_put_get_misc_str
 
 PIO_TF_AUTO_TEST_SUB_END test_put_get_misc_str
 
+! Test puts of a text variables, one frame at a time
 PIO_TF_AUTO_TEST_SUB_BEGIN test_put_get_str_frames
   Implicit none
   type(file_desc_t) :: pio_file
@@ -1295,6 +1305,10 @@ PIO_TF_AUTO_TEST_SUB_BEGIN test_put_get_str_frames
   character(len=PIO_TF_MAX_STR_LEN), dimension(:), allocatable :: iotype_descs
   integer :: num_iotypes
 
+  ! Formats for the data written out in the text variable
+  ! Each string in the variable is of the form
+  ! "VAR_NAME(VAR_IDX,...)"
+  ! e.g. For 2D var, var2d, var2d(j,i) = "var2d(j,i)"
   character(len=*), parameter :: VNAME_WITH_1D_IDX_FMT1 = '(A5,"(",I5,")")'
   character(len=*), parameter :: VNAME_WITH_2D_IDX_FMT1 = '(A5,"(",I5,",",I5,")")'
   character(len=*), parameter :: VNAME_WITH_3D_IDX_FMT1 = '(A5,"(",I5,",",I5,",",I5,")")'
@@ -1306,6 +1320,7 @@ PIO_TF_AUTO_TEST_SUB_BEGIN test_put_get_str_frames
 
   num_iotypes = 0
   call PIO_TF_Get_nc_iotypes(iotypes, iotype_descs, num_iotypes)
+  ! Init buffers to be written out to the variables
   do i=1,num_iotypes
     do row=1,NUM_ROWS
       write(exp_str1d(row), VNAME_WITH_1D_IDX_FMT1) var2d_name, row
@@ -1347,6 +1362,7 @@ PIO_TF_AUTO_TEST_SUB_BEGIN test_put_get_str_frames
     ret = PIO_enddef(pio_file)
     PIO_TF_CHECK_ERR(ret, "Failed to enddef:" // trim(filename))
 
+    ! Write the 1d text variable, 1 string at a time
     do row=1,NUM_ROWS
       strt = 1
       cnt = 0
@@ -1361,6 +1377,7 @@ PIO_TF_AUTO_TEST_SUB_BEGIN test_put_get_str_frames
       PIO_TF_CHECK_ERR(ret, "Failed to put 1d array of strings in file " // trim(filename))
     end do
 
+    ! Write the 2d text variable, 1 array/row of strings at a time
     do col=1,NUM_COLS
       strt = 1
       cnt = 0
@@ -1377,6 +1394,7 @@ PIO_TF_AUTO_TEST_SUB_BEGIN test_put_get_str_frames
       PIO_TF_CHECK_ERR(ret, "Failed to put 2d array of strings in file " // trim(filename))
     end do
 
+    ! Write the 3d text variable, 1 2d array (row x col) of strings at a time
     do step=1,NUM_STEPS
       strt = 1
       cnt = 0
@@ -1442,6 +1460,14 @@ PIO_TF_AUTO_TEST_SUB_BEGIN test_put_get_str_frames
 
 PIO_TF_AUTO_TEST_SUB_END test_put_get_str_frames
 
+! Testing put/get of hyperslabs of a text variable
+! Each string in the text variable is initialized with the variable name and
+! index
+! e.g. The string in the jth col and ith row of a 2d variable, var2d(j, i),
+! is initialized to "var2d(j,i)"
+! The contents of the variable is then modified/rewritten in two parts,
+! 1) var2d(j,i) = "var2d(j,i)" is modified to "v__2d(j,i)"
+! 2) var2d(j,i) = "v__2d(j,i)" is modified to "v__2_(j,i)"
 PIO_TF_AUTO_TEST_SUB_BEGIN test_put_get_str_hslabs
   Implicit none
   type(file_desc_t) :: pio_file
@@ -1489,6 +1515,10 @@ PIO_TF_AUTO_TEST_SUB_BEGIN test_put_get_str_hslabs
   character(len=PIO_TF_MAX_STR_LEN), dimension(:), allocatable :: iotype_descs
   integer :: num_iotypes
 
+  ! Formats for the data written out in the text variable
+  ! Each string in the variable is of the form
+  ! "VAR_NAME(VAR_IDX,...)"
+  ! e.g. For 2D var, var2d, var2d(j,i) = "var2d(j,i)"
   character(len=*), parameter :: VNAME_WITH_1D_IDX_FMT1 = '(A5,"(",I5,")")'
   character(len=*), parameter :: VNAME_WITH_2D_IDX_FMT1 = '(A5,"(",I5,",",I5,")")'
   character(len=*), parameter :: VNAME_WITH_3D_IDX_FMT1 = '(A5,"(",I5,",",I5,",",I5,")")'
@@ -1506,6 +1536,7 @@ PIO_TF_AUTO_TEST_SUB_BEGIN test_put_get_str_hslabs
   write(var3d_name, VAR_NAME_FMT) VAR_NAME_PREFIX1, VAR3D_ID, VAR_NAME_SUFFIX1
 
   do i=1,num_iotypes
+    ! Init bufs used to write data to variables
     var1d_name_tmp_buf = var1d_name
     var2d_name_tmp_buf = var2d_name
     var3d_name_tmp_buf = var3d_name
@@ -1601,6 +1632,8 @@ PIO_TF_AUTO_TEST_SUB_BEGIN test_put_get_str_hslabs
       end do
     end do
 
+    ! Write a hslab of 1d text variable to modify prefix of each string
+    ! in the variable, 1 string at a time
     do row=1,NUM_ROWS
       strt = 1
       cnt = 0
@@ -1611,7 +1644,6 @@ PIO_TF_AUTO_TEST_SUB_BEGIN test_put_get_str_hslabs
 
       ! Pack the data written out into an array of strings, each of length 1
       ! tmp_str(1) = "v", tmp_str(2) = "_", tmp_str(3) = "_"
-      ! tmp_str(4) = "v", tmp_str(5) = "_", tmp_str(6) = "_"
       ! ...
       allocate(tmp_str(cnt(1) * cnt(2)))
       do j=1, cnt(2)
@@ -1626,6 +1658,8 @@ PIO_TF_AUTO_TEST_SUB_BEGIN test_put_get_str_hslabs
       deallocate(tmp_str)
     end do
 
+    ! Write a hslab of 2d text variable to modify prefix of each string
+    ! in the variable, a 1d array/col of strings at a time
     do col=1,NUM_COLS
       strt = 1
       cnt = 0
@@ -1656,6 +1690,8 @@ PIO_TF_AUTO_TEST_SUB_BEGIN test_put_get_str_hslabs
       deallocate(tmp_str)
     end do
 
+    ! Write a hslab of 3d text variable to modify prefix of each string
+    ! in the variable, 1 2d array of strings at a time
     do step=1,NUM_STEPS
       strt = 1
       cnt = 0
@@ -1746,6 +1782,8 @@ PIO_TF_AUTO_TEST_SUB_BEGIN test_put_get_str_hslabs
       end do
     end do
 
+    ! Write hslab of 1d text variable to modify a part of each string in the variable,
+    ! 1 string at a time
     do row=1,NUM_ROWS
       strt = 1
       cnt = 0
@@ -1772,6 +1810,8 @@ PIO_TF_AUTO_TEST_SUB_BEGIN test_put_get_str_hslabs
       deallocate(tmp_str)
     end do
 
+    ! Write an hslab of data to modify part of the variable, 1 1d array of strings
+    ! at a time
     do col=1,NUM_COLS
       strt = 1
       cnt = 0
@@ -1803,6 +1843,8 @@ PIO_TF_AUTO_TEST_SUB_BEGIN test_put_get_str_hslabs
       deallocate(tmp_str)
     end do
 
+    ! Write an hslab of data to modify part of the variable, 1 2d array of strings
+    ! at a time
     do step=1,NUM_STEPS
       strt = 1
       cnt = 0
