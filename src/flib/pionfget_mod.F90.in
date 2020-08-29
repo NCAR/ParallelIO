@@ -361,29 +361,6 @@ CONTAINS
 
   end function get_vara_vdesc_{DIMS}d_{TYPE}
 
-!>
-!! @public
-!! @ingroup PIO_get_var
-!! @brief Writes an netcdf attribute to a file
-!! @details
-!! @param File @ref file_desc_t
-!! @param varid : The netcdf variable identifier
-!! @param ival : The value for the netcdf metadata
-!! @retval ierr @ref error_return
-!<
-  integer function get_var_0d_text (File,varid, ival) result(ierr)
-    type (File_desc_t), intent(in) :: File
-    integer, intent(in) :: varid
-    character(len=*), intent(out) :: ival
-
-
-    ival =C_NULL_CHAR
-    ierr = PIOc_get_var_text(File%fh, varid-1, ival)
-    call replace_c_null(ival)
-!    print *,__FILE__,__LINE__,trim(ival)
-  end function Get_var_0d_text
-
-
 ! TYPE int,real,double
 ! DIMS 0
   integer function get_var_0d_{TYPE} (File,varid, ival) result(ierr)
@@ -399,7 +376,7 @@ CONTAINS
 
   end function Get_var_0d_{TYPE}
 
-! DIMS 1,2,3,4,5
+! DIMS 0,1,2,3,4,5
   integer function get_var_{DIMS}d_text (File,varid, ival) result(ierr)
     type (File_desc_t), intent(in) :: File
     integer, intent(in) :: varid
@@ -414,7 +391,12 @@ CONTAINS
       call piodie(__PIO_FILE__, __LINE__, "Unable to query the text variable size")
     end if
 
-    cval_sz = clen * nstrs
+    if(nstrs > 0) then
+      cval_sz = clen * nstrs
+    else
+      cval_sz = clen
+    end if
+
     allocate(cval(cval_sz))
 !    ierr = get_var_text_internal(File%fh, varid, size(ival), ival)
     ierr = PIOc_get_var_text(File%fh, varid-1, cval)
@@ -528,7 +510,7 @@ CONTAINS
 
   end function get_var_vdesc_{DIMS}d_{TYPE}
 
-! DIMS 1,2,3,4,5
+! DIMS 0,1,2,3,4,5
   subroutine Cstring2Fstring_{DIMS}d(cstr, cstr_sz, max_clen, fstr)
     character(C_CHAR), intent(in) :: cstr(:)
     ! The total size of cstr, the total number of chars in cstr
@@ -537,7 +519,11 @@ CONTAINS
     integer, intent(in) :: max_clen
     character(len=*), intent(out) :: fstr{DIMSTR}
 
+#if {DIMS} != 0
     integer :: fstr_dim_sz({DIMS})
+#else
+    integer :: fstr_dim_sz
+#endif
     integer :: max_nstrs, max_flen, clen
     integer :: cstr_idx
     logical :: cstr_copied
@@ -546,6 +532,7 @@ CONTAINS
     character, parameter :: F_SPACE_CHAR = ' '
 
     max_nstrs = cstr_sz / max_clen
+#if {DIMS} != 0
     if(max_nstrs > size(fstr)) then
       print *, "ERROR: The provided user buffer",&
                   " does not have space for copying ", max_nstrs, "strings",&
@@ -553,11 +540,42 @@ CONTAINS
       call piodie(__PIO_FILE__, __LINE__, "Insufficient user buffer space")
     end if
 
-    fstr = F_SPACE_CHAR
     do i=1,{DIMS}
       fstr_dim_sz(i) = size(fstr,i)
     enddo
+#else
+    if(max_nstrs > 1) then
+      print *, "ERROR: The provided user buffer",&
+                  " does not have space for copying ", max_nstrs, "strings",&
+                  " (space available to copy only 1 string)"
+      call piodie(__PIO_FILE__, __LINE__, "Insufficient user buffer space")
+    end if
+    fstr_dim_sz = len(fstr)
+#endif
+    fstr = F_SPACE_CHAR
     cstr_idx = 0
+#if {DIMS} == 0
+    max_flen= len(fstr)
+    clen = 0
+    cstr_copied = .false.
+    do i=1,min(max_clen, max_flen)
+      fstr(i:i) = cstr(i)
+      clen = clen + 1
+      if(fstr(i:i) == C_NULL_CHAR) then
+        fstr(i:i) = F_SPACE_CHAR
+        cstr_copied = .true.
+        exit
+      end if
+    end do
+    if((.not. cstr_copied) .and. (max_flen < max_clen)) then
+      ! We have exhausted the Fortran write buffer
+      ! Warn the user of the truncation
+      print *, "WARNING: The user buffer provided had insufficient space (",&
+                max_flen, " chars to read string with ", max_clen, " chars).",&
+                "The contents will be truncated to : ", trim(fstr)
+      fstr(max_flen:max_flen) = F_SPACE_CHAR
+    end if
+#endif
 #if {DIMS} == 1
     max_flen= len(fstr(1))
     do j=1,fstr_dim_sz(1)
