@@ -485,8 +485,6 @@ contains
     logical :: add_c_null = .true.
 #if {DIMS} != 0
     integer :: fstr_dim_sz({DIMS})
-#else
-    integer :: fstr_dim_sz
 #endif
     integer :: max_nstrs, max_flen
     integer :: cstr_idx
@@ -515,7 +513,6 @@ contains
                   " (space available to copy only ", max_nstrs, " strings)"
       call piodie(__PIO_FILE__, __LINE__, "Insufficient user buffer space")
     end if
-    fstr_dim_sz = len_trim(fstr)
 #endif
     cstr = C_NULL_CHAR
     cstr_idx = 0

@@ -521,10 +521,8 @@ CONTAINS
 
 #if {DIMS} != 0
     integer :: fstr_dim_sz({DIMS})
-#else
-    integer :: fstr_dim_sz
 #endif
-    integer :: max_nstrs, max_flen, clen
+    integer :: max_nstrs, max_flen
     integer :: cstr_idx
     logical :: cstr_copied
     integer :: i, j, k, m, n, q
@@ -550,17 +548,14 @@ CONTAINS
                   " (space available to copy only 1 string)"
       call piodie(__PIO_FILE__, __LINE__, "Insufficient user buffer space")
     end if
-    fstr_dim_sz = len(fstr)
 #endif
     fstr = F_SPACE_CHAR
     cstr_idx = 0
 #if {DIMS} == 0
     max_flen= len(fstr)
-    clen = 0
     cstr_copied = .false.
     do i=1,min(max_clen, max_flen)
       fstr(i:i) = cstr(i)
-      clen = clen + 1
       if(fstr(i:i) == C_NULL_CHAR) then
         fstr(i:i) = F_SPACE_CHAR
         cstr_copied = .true.
@@ -579,11 +574,9 @@ CONTAINS
 #if {DIMS} == 1
     max_flen= len(fstr(1))
     do j=1,fstr_dim_sz(1)
-      clen = 0
       cstr_copied = .false.
       do i=1,min(max_clen, max_flen)
         fstr(j)(i:i) = cstr(cstr_idx * max_clen + i)
-        clen = clen + 1
         if(fstr(j)(i:i) == C_NULL_CHAR) then
           fstr(j)(i:i) = F_SPACE_CHAR
           cstr_copied = .true.
@@ -605,11 +598,9 @@ CONTAINS
     max_flen= len(fstr(1,1))
     do k=1,fstr_dim_sz(2)
       do j=1,fstr_dim_sz(1)
-        clen = 0
         cstr_copied = .false.
         do i=1,min(max_clen, max_flen)
           fstr(j,k)(i:i) = cstr(cstr_idx * max_clen + i)
-          clen = clen + 1
           if(fstr(j,k)(i:i) == C_NULL_CHAR) then
             fstr(j,k)(i:i) = F_SPACE_CHAR
             cstr_copied = .true.
@@ -633,11 +624,9 @@ CONTAINS
     do m=1,fstr_dim_sz(3)
       do k=1,fstr_dim_sz(2)
         do j=1,fstr_dim_sz(1)
-          clen = 0
           cstr_copied = .false.
           do i=1,min(max_clen, max_flen)
             fstr(j,k,m)(i:i) = cstr(cstr_idx * max_clen + i)
-            clen = clen + 1
             if(fstr(j,k,m)(i:i) == C_NULL_CHAR) then
               fstr(j,k,m)(i:i) = F_SPACE_CHAR
               cstr_copied = .true.
@@ -663,11 +652,9 @@ CONTAINS
       do m=1,fstr_dim_sz(3)
         do k=1,fstr_dim_sz(2)
           do j=1,fstr_dim_sz(1)
-            clen = 0
             cstr_copied = .false.
             do i=1,min(max_clen, max_flen)
               fstr(j,k,m,n)(i:i) = cstr(cstr_idx * max_clen + i)
-              clen = clen + 1
               if(fstr(j,k,m,n)(i:i) == C_NULL_CHAR) then
                 fstr(j,k,m,n)(i:i) = F_SPACE_CHAR
                 cstr_copied = .true.
@@ -695,11 +682,9 @@ CONTAINS
         do m=1,fstr_dim_sz(3)
           do k=1,fstr_dim_sz(2)
             do j=1,fstr_dim_sz(1)
-              clen = 0
               cstr_copied = .false.
               do i=1,min(max_clen, max_flen)
                 fstr(j,k,m,n,q)(i:i) = cstr(cstr_idx * max_clen + i)
-                clen = clen + 1
                 if(fstr(j,k,m,n,q)(i:i) == C_NULL_CHAR) then
                   fstr(j,k,m,n,q)(i:i) = F_SPACE_CHAR
                   cstr_copied = .true.
