@@ -196,55 +196,7 @@ contains
     ierr = put_var1_{TYPE} (File, vardesc%varid, index, ival)
   end function put_var1_vdesc_{TYPE}
 
-!>
-!! @public
-!! @ingroup PIO_put_var
-!! @brief Writes a netCDF scalar variable.
-!! @details
-!! @param File @copydoc file_desc_t
-!! @param File : A file handle returne from \ref PIO_openfile or \ref PIO_createfile.
-!! @param varid : The netcdf variable identifier
-!! @param ival : The value for the netcdf variable
-!! @retval ierr @copydoc error_return
-!<
-  integer function put_var_0d_text (File,varid, ival) result(ierr)
-    type (File_desc_t), intent(inout) :: File
-    integer, intent(in) :: varid
-    character(len=*), intent(in) :: ival
-
-    character, allocatable :: cval(:)
-    integer :: clen, i
-
-
-!   This manipulation is required to convert the fortran string to
-!   a c character array with all trailing space set to null
-!
-    ierr = get_text_var_sz(File, varid, clen)
-    if(ierr /= PIO_NOERR) then
-      call piodie(__PIO_FILE__, __LINE__, "Getting text variable size failed")
-    end if
-    if(clen < len_trim(ival)) then
-      print *, "WARNING: The length of the string in the user buffer ,",&
-                len_trim(ival),&
-                " chars, is greater than the size of the variable",&
-                " being written to, ", clen, " chars. The string, '",&
-                trim(ival), "', will be truncated"
-    end if
-    if (clen > 0) then
-        allocate(cval(clen))
-        cval = C_NULL_CHAR
-        do i=1,min(clen, len_trim(ival))
-            cval(i) = ival(i:i)
-        end do
-
-        ierr = PIOc_put_var_text(file%fh, varid-1,  cval)
-
-        deallocate(cval)
-    else
-        print *, 'PIO: WARNING: Empty character array passed to PIO_put_var function put_var_0d_text, a collective C API call will be skipped on this process. ', __PIO_FILE__, __LINE__
-    end if
-  end function put_var_0d_text
-! DIMS 1,2,3,4,5
+! DIMS 0,1,2,3,4,5
 ! TYPE text
 !>
 !! @public
@@ -268,6 +220,11 @@ contains
 !   a c character array with all trailing space set to null
 !
     ierr = PIO_NOERR
+    if(len(ival) == 0) then
+      print *, "PIO: WARNING: Empty {DIMS}d text data passed to PIO_put_var"&
+                " function put_var_{DIMS}d_text, a collective C API call will"&
+                " be skipped on this process. ", __PIO_FILE__, __LINE__
+    end if
     ierr = get_text_var_sz(File, varid, clen, var_nstrs=nstrs)
     if(ierr /= PIO_NOERR) then
       call piodie(__PIO_FILE__, __LINE__, "Getting text variable size failed")
@@ -279,15 +236,15 @@ contains
                 " being written to, ", clen, " chars. The strings",&
                 " may be truncated"
     end if
-    cval_sz = clen * nstrs
-    if (cval_sz > 0) then
-        allocate(cval(cval_sz))
-        call Fstring2Cstring_{DIMS}d (ival, cval, cval_sz, clen)
-        ierr = PIOc_put_var_text(file%fh, varid-1,  cval)
-        deallocate(cval)
+    if(nstrs > 0) then
+      cval_sz = clen * nstrs
     else
-        print *, 'PIO: WARNING: Empty {DIMS}d text data passed to PIO_put_var function put_var_{DIMS}d_text, a collective C API call will be skipped on this process. ', __PIO_FILE__, __LINE__
+      cval_sz = clen
     end if
+    allocate(cval(cval_sz))
+    call Fstring2Cstring_{DIMS}d (ival, cval, cval_sz, clen, cstr_add_null = .false.)
+    ierr = PIOc_put_var_text(file%fh, varid-1,  cval)
+    deallocate(cval)
 
   end function put_var_{DIMS}d_text
 
@@ -509,7 +466,7 @@ contains
 
   end function put_vara_{DIMS}d_text
 
-! DIMS 1,2,3,4,5
+! DIMS 0,1,2,3,4,5
   subroutine Fstring2Cstring_{DIMS}d(fstr, cstr, cstr_sz, max_clen, cstr_add_null)
     character(len=*), intent(in) :: fstr{DIMSTR}
     character(C_CHAR), intent(out) :: cstr(:)
@@ -520,7 +477,11 @@ contains
     logical, intent(in), optional :: cstr_add_null
 
     logical :: add_c_null = .true.
+#if {DIMS} != 0
     integer :: fstr_dim_sz({DIMS})
+#else
+    integer :: fstr_dim_sz
+#endif
     integer :: max_nstrs, max_flen
     integer :: cstr_idx
     integer :: i, j, k, m, n, q
@@ -530,6 +491,7 @@ contains
     end if
 
     max_nstrs = cstr_sz / max_clen
+#if {DIMS} != 0
     if(size(fstr) > max_nstrs) then
       print *, "ERROR: The provided user buffer",&
                   " does not have space for copying ", size(fstr), "strings",&
@@ -537,11 +499,35 @@ contains
       call piodie(__PIO_FILE__, __LINE__, "Insufficient user buffer space")
     end if
 
-    cstr = C_NULL_CHAR
     do i=1,{DIMS}
       fstr_dim_sz(i) = size(fstr,i)
     enddo
+#else
+    if(max_nstrs < 1) then
+      print *, "ERROR: The provided user buffer",&
+                  " does not have space for copying a string",&
+                  " (space available to copy only ", max_nstrs, " strings)"
+      call piodie(__PIO_FILE__, __LINE__, "Insufficient user buffer space")
+    end if
+    fstr_dim_sz = len_trim(fstr)
+#endif
+    cstr = C_NULL_CHAR
     cstr_idx = 0
+#if {DIMS} == 0
+    max_flen = len_trim(fstr)
+    do i=1,min(max_clen, max_flen)
+      cstr(i) = fstr(i:i)
+    end do
+    if(add_c_null .and. (max_clen < max_flen + 1)) then
+      ! We have exhausted the C write buffer
+      ! C string = Fortran string chars + C_NULL_CHAR
+      ! Warn the user of the truncation
+      cstr(max_clen) = C_NULL_CHAR
+      print *, "WARNING: The user buffer provided had insufficient space (",&
+                max_clen, " chars to write strings with ", max_flen, " chars).",&
+                "The contents will be truncated to : ", trim(fstr)
+    end if
+#endif
 #if {DIMS} == 1
     do j=1,fstr_dim_sz(1)
       max_flen = len_trim(fstr(j))
