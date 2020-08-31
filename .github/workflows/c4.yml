@@ -1,4 +1,4 @@
-name: netcdf-4.7.4_pnetcdf-12.1_ncint_mpich-3.3
+name: cmake_netcdf-4.7.4_pnetcdf-12.1_mpich-3.3
 
 on:
   push:
