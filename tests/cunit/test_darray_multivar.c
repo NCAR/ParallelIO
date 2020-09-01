@@ -259,7 +259,7 @@ int test_multivar_darray(int iosysid, int ioid, int num_flavors, int *flavor,
         /* Use PIO to create the example file in each of the four
          * available ways. */
         /* for (int fmt = 0; fmt < num_flavors; fmt++) */
-        for (int fmt = 0; fmt < 1; fmt++)
+        for (int fmt = 3; fmt < 4; fmt++)
         {
             /* BYTE and CHAR don't work with pnetcdf. Don't know why yet. */
             if (flavor[fmt] == PIO_IOTYPE_PNETCDF && (pio_type == PIO_BYTE || pio_type == PIO_CHAR))
