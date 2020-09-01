@@ -135,6 +135,7 @@ jobs:
         echo 'export PATH=/home/runner/mpich/bin:$PATH' > .bashrc
         source .bashrc
         export CC=mpicc
+        export CFLAGS=-Wall
         mkdir build
         cd build
         export LD_LIBRARY_PATH="/home/runner/netcdf-c/lib:/home/runner/pnetcdf/lib:/home/runner/hdf5/lib:/home/runner/mpich/lib:$LD_LIBRARY_PATH"
