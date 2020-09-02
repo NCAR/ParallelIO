@@ -398,26 +398,11 @@ CONTAINS
     end if
 
     allocate(cval(cval_sz))
-!    ierr = get_var_text_internal(File%fh, varid, size(ival), ival)
     ierr = PIOc_get_var_text(File%fh, varid-1, cval)
     call Cstring2Fstring_{DIMS}d (cval, cval_sz, clen, ival)
     deallocate(cval)
 
   end function get_var_{DIMS}d_text
-
-!  integer function get_var_text_internal (ncid,varid, nstrs, ival) result(ierr)
-!    integer, intent(in) :: ncid
-!    integer, intent(in) :: varid
-!    integer, intent(in) :: nstrs
-!    character(len=*), intent(out) :: ival(*)
-!    integer :: j
-!
-!    ierr = PIOc_get_var_text(ncid, varid-1, ival)
-!    do j=1,nstrs
-!       call replace_c_null(ival(j))
-!    end do
-!
-!  end function get_var_text_internal
 
 ! TYPE int,real,double
   integer function get_var_{TYPE}_internal  (ncid,varid, ival) result(ierr)
@@ -459,7 +444,6 @@ CONTAINS
     integer, intent(in) :: start(:)
     integer, intent(in) :: count(:)
     integer, intent(in) :: nstrs
-    !character(len=*), intent(out) :: ival(*)
     character(C_CHAR), intent(out) :: cval(:)
     integer :: j
     integer(C_SIZE_T), allocatable :: cstart(:), ccount(:)
@@ -473,9 +457,6 @@ CONTAINS
     enddo
 
     ierr = PIOc_get_vara_text (ncid, varid-1, cstart, ccount, cval)
-    !do j=1,nstrs
-    !   call replace_c_null(ival(j),ccount(ndims))
-    !end do
     deallocate(ccount, cstart)
   end function get_vara_text_internal
 
