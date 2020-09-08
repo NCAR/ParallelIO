@@ -1052,3 +1052,101 @@ PIOc_get_var_chunk_cache(int ncid, int varid, PIO_Offset *sizep, PIO_Offset *nel
 
     return PIO_NOERR;
 }
+
+/**
+ * @internal Filter actions.
+ *
+ * This function handles various filter actions.
+ *
+ * @param ncid File ID.
+ * @param varid Variable ID.
+ * @param id Filter ID
+ * @param nparams Number of parameters for filter.
+ * @param parms Filter parameters.
+ * @return PIO_NOERR for success, otherwise an error code.
+ * @ingroup PIO_def_var_c
+ * @author Ed Hartnett
+ */
+int
+PIOc_filter_actions(int ncid, int varid, int op, void *args)
+{
+    iosystem_desc_t *ios;  /* Pointer to io system information. */
+    file_desc_t *file;     /* Pointer to file information. */
+    int ierr;              /* Return code from function calls. */
+    int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI function codes. */
+
+    PLOG((1, "PIOc_get_var_chunk_cache ncid = %d varid = %d"));
+
+    /* Get the file info. */
+    if ((ierr = pio_get_file(ncid, &file)))
+        return pio_err(NULL, NULL, ierr, __FILE__, __LINE__);
+    ios = file->iosystem;
+
+    /* Only netCDF-4 files can use this feature. */
+    if (file->iotype != PIO_IOTYPE_NETCDF4P && file->iotype != PIO_IOTYPE_NETCDF4C)
+        return pio_err(ios, file, PIO_ENOTNC4, __FILE__, __LINE__);
+
+    /* If async is in use, and this is not an IO task, bcast the parameters. */
+    if (ios->async)
+    {
+        /* if (!ios->ioproc) */
+        /* { */
+        /*     int msg = PIO_MSG_GET_VAR_CHUNK_CACHE; /\* Message for async notification. *\/ */
+        /*     char size_present = sizep ? true : false; */
+        /*     char nelems_present = nelemsp ? true : false; */
+        /*     char preemption_present = preemptionp ? true : false; */
+
+        /*     if (ios->compmaster == MPI_ROOT) */
+        /*         mpierr = MPI_Send(&msg, 1, MPI_INT, ios->ioroot, 1, ios->union_comm); */
+
+        /*     if (!mpierr) */
+        /*         mpierr = MPI_Bcast(&ncid, 1, MPI_INT, ios->compmaster, ios->intercomm); */
+        /*     if (!mpierr) */
+        /*         mpierr = MPI_Bcast(&varid, 1, MPI_INT, ios->compmaster, ios->intercomm); */
+        /*     if (!mpierr) */
+        /*         mpierr = MPI_Bcast(&size_present, 1, MPI_CHAR, ios->compmaster, ios->intercomm); */
+        /*     if (!mpierr) */
+        /*         mpierr = MPI_Bcast(&nelems_present, 1, MPI_CHAR, ios->compmaster, ios->intercomm); */
+        /*     if (!mpierr) */
+        /*         mpierr = MPI_Bcast(&preemption_present, 1, MPI_CHAR, ios->compmaster, */
+        /*                            ios->intercomm); */
+        /*     PLOG((2, "PIOc_get_var_chunk_cache size_present = %d nelems_present = %d " */
+        /*           "preemption_present = %d ", size_present, nelems_present, preemption_present)); */
+        /* } */
+
+        /* /\* Handle MPI errors. *\/ */
+        /* if ((mpierr2 = MPI_Bcast(&mpierr, 1, MPI_INT, ios->comproot, ios->my_comm))) */
+        /*     return check_mpi(ios, NULL, mpierr2, __FILE__, __LINE__); */
+        /* if (mpierr) */
+        /*     return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__); */
+    }
+
+    /* If this is an IO task, then call the netCDF function. */
+    if (ios->ioproc)
+    {
+#ifdef _NETCDF4
+        /* if (file->do_io) */
+        /*     ierr = nc_get_var_chunk_cache(file->fh, varid, (size_t *)sizep, (size_t *)nelemsp, */
+        /*                                   preemptionp); */
+#endif
+    }
+
+    /* Broadcast and check the return code. */
+    if ((mpierr = MPI_Bcast(&ierr, 1, MPI_INT, ios->ioroot, ios->my_comm)))
+        return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+    if (ierr)
+        return check_netcdf(file, ierr, __FILE__, __LINE__);
+
+    /* Broadcast results to all tasks. */
+    /* if (sizep && !ierr) */
+    /*     if ((mpierr = MPI_Bcast(sizep, 1, MPI_OFFSET, ios->ioroot, ios->my_comm))) */
+    /*         return check_mpi(NULL, file, mpierr, __FILE__, __LINE__); */
+    /* if (nelemsp && !ierr) */
+    /*     if ((mpierr = MPI_Bcast(nelemsp, 1, MPI_OFFSET, ios->ioroot, ios->my_comm))) */
+    /*         return check_mpi(NULL, file, mpierr, __FILE__, __LINE__); */
+    /* if (preemptionp && !ierr) */
+    /*     if ((mpierr = MPI_Bcast(preemptionp, 1, MPI_FLOAT, ios->ioroot, ios->my_comm))) */
+    /*         return check_mpi(NULL, file, mpierr, __FILE__, __LINE__); */
+
+    return PIO_NOERR;
+}

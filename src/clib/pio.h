@@ -948,6 +948,7 @@ extern "C" {
                                  float preemption);
     int PIOc_get_var_chunk_cache(int ncid, int varid, PIO_Offset *sizep, PIO_Offset *nelemsp,
                                  float *preemptionp);
+    int PIOc_filter_actions(int ncid, int varid, int op, void *args);
 
     /* Attributes - misc. */
     int PIOc_rename_att(int ncid, int varid, const char *name, const char *newname);

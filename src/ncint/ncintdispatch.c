@@ -116,7 +116,7 @@ NC_Dispatch NCINT_dispatcher = {
     NC_NOTNC4_def_var_filter,
     NC_NOTNC4_set_var_chunk_cache,
     NC_NOTNC4_get_var_chunk_cache,
-    NC_NOTNC4_filter_actions
+    PIOc_filter_actions
 };
 
 /**

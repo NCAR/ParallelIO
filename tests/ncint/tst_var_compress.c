@@ -79,7 +79,7 @@ run_var_compress_test(int my_rank, int ntasks, int iosysid)
 	if (nc_open(FILE_NAME, NC_PIO, &ncid)) PERR;
 	
 	/* Check the variable deflate. */
-	if (nc_inq_var_deflate(ncid, 0, &shuffle_in, &deflate_in, &deflate_level_in)) PERR;
+	/* if (nc_inq_var_deflate(ncid, 0, &shuffle_in, &deflate_in, &deflate_level_in)) PERR; */
 	printf("%d %d %d\n", shuffle_in, deflate_in, deflate_level_in);
 	/* if (shuffle_in || !deflate_in || deflate_level_in != DEFLATE_LEVEL) PERR; */
 
