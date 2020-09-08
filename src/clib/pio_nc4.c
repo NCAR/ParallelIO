@@ -7,6 +7,9 @@
 #include <config.h>
 #include <pio.h>
 #include <pio_internal.h>
+#ifdef HAVE_PAR_FILTERS
+#include <netcdf_filter.h>
+#endif
 
 /**
  * Set deflate (zlib) settings for a variable.
@@ -1070,10 +1073,12 @@ PIOc_get_var_chunk_cache(int ncid, int varid, PIO_Offset *sizep, PIO_Offset *nel
 int
 PIOc_filter_actions(int ncid, int varid, int op, void *args)
 {
+#ifdef HAVE_PAR_FILTERS
     iosystem_desc_t *ios;  /* Pointer to io system information. */
     file_desc_t *file;     /* Pointer to file information. */
     int ierr;              /* Return code from function calls. */
-    int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI function codes. */
+    int mpierr = MPI_SUCCESS;  /* Return code from MPI function codes. */
+    /* int mpierr = MPI_SUCCESS, mpierr2;  /\* Return code from MPI function codes. *\/ */
 
     PLOG((1, "PIOc_get_var_chunk_cache ncid = %d varid = %d"));
 
@@ -1149,4 +1154,8 @@ PIOc_filter_actions(int ncid, int varid, int op, void *args)
     /*         return check_mpi(NULL, file, mpierr, __FILE__, __LINE__); */
 
     return PIO_NOERR;
+#else
+    return PIO_ENOTBUILT;
+#endif /* HAVE_PAR_FILTERS */
+    
 }
