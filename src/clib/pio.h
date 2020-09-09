@@ -769,6 +769,14 @@ enum PIO_ERROR_HANDLERS
 #define PIO_EVARDIMMISMATCH (-501)   /**< Variable dimensions do not match in a multivar call. */
 #define PIO_REQ_NULL (NC_REQ_NULL-1) /**< Request null. */
 
+/* I had to copy these from internal netCDF header ncfilter.h. When
+ * they are moved to a public netCDF header, these definitions can be
+ * removed. */
+#define NCFILTER_DEF		1 /**< Define a filter. */
+#define NCFILTER_REMOVE  	2 /**< Remove a filter. */
+#define NCFILTER_FILTERIDS      3 /**< Return filter IDs. */
+#define NCFILTER_INFO		4 /**< Return filter info. */
+
 #if defined(__cplusplus)
 extern "C" {
 #endif

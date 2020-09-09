@@ -112,6 +112,10 @@ int main(int argc, char **argv)
 	    ERR(ret);
 	if ((ret = PIOc_enddef(ncid)))
 	    ERR(ret);
+	if ((ret = PIOc_filter_actions(ncid, varid, NCFILTER_INFO, NULL)))
+	    ERR(ret);
+#ifdef _NETCDF4
+#endif /* _NETCDF4 */
 
 	/* Write a record of data. Each compute task writes its local
 	 * array of data. */

@@ -1057,7 +1057,7 @@ PIOc_get_var_chunk_cache(int ncid, int varid, PIO_Offset *sizep, PIO_Offset *nel
 }
 
 /**
- * @internal Filter actions.
+ * Filter actions.
  *
  * This function handles various filter actions. If netcdf-c was built
  * without parallel filter hanlding, then this function will return
@@ -1066,9 +1066,8 @@ PIOc_get_var_chunk_cache(int ncid, int varid, PIO_Offset *sizep, PIO_Offset *nel
  *
  * @param ncid File ID.
  * @param varid Variable ID.
- * @param id Filter ID
- * @param nparams Number of parameters for filter.
- * @param parms Filter parameters.
+ * @param op Filter operation
+ * @param args Arguments.
  * @return PIO_NOERR for success, otherwise an error code.
  * @ingroup PIO_def_var_c
  * @author Ed Hartnett
