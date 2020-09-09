@@ -115,6 +115,8 @@ if (NOT PIO_USE_MPISERIAL)
     target_link_libraries (test_async_1d pioc)
     add_executable (test_simple EXCLUDE_FROM_ALL test_simple.c test_common.c)
     target_link_libraries (test_simple pioc)
+    add_executable (test_simple_nc4_var EXCLUDE_FROM_ALL test_simple_nc4_var.c test_common.c)
+    target_link_libraries (test_simple_nc4_var pioc)
   endif ()
 endif ()
 add_executable (test_spmd EXCLUDE_FROM_ALL test_spmd.c test_common.c)
@@ -149,6 +151,7 @@ if(PIO_USE_MALLOC)
   add_dependencies (tests test_async_manyproc)
   add_dependencies (tests test_async_1d)
   add_dependencies (tests test_simple)
+  add_dependencies (tests test_simple_nc4_var)
 endif ()
 
 # Test Timeout in seconds.
@@ -323,6 +326,10 @@ else ()
     TIMEOUT ${DEFAULT_TEST_TIMEOUT})
   add_mpi_test(test_simple
     EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/test_simple
+    NUMPROCS ${EXACTLY_FOUR_TASKS}
+    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
+  add_mpi_test(test_simple_nc4_var
+    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/test_simple_nc4_var
     NUMPROCS ${EXACTLY_FOUR_TASKS}
     TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 endif ()
