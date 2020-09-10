@@ -10,6 +10,7 @@ module pio_support
 #ifndef NO_MPIMOD
   use mpi !_EXTERNAL
 #endif
+  use pio_types, only : file_desc_t, pio_noerr
   implicit none
   private
 #ifdef NO_MPIMOD
@@ -20,6 +21,7 @@ module pio_support
   public :: pio_readdof
   public :: pio_writedof
   public :: replace_c_null
+  public :: get_text_var_sz
 
   logical, public :: Debug=.FALSE.
   logical, public :: DebugIO=.FALSE.
@@ -48,6 +50,134 @@ contains
     end do
     istr(i:slen)=''
   end subroutine replace_c_null
+
+!>
+!! @public
+!! @brief Get the size of a text/character variable
+!! (Each element of a text variable is a string)
+!! @details
+!! @param File : File containing the variable
+!! @param varid : Id of the queried variable
+!! @param var_slen : The length of each string in the variable is
+!!                    returned in this arg
+!! @param var_nstrs : The number of strings in the variable is
+!!                    returned in this arg (OPTIONAL)
+!! @param var_dim_sz : The dimension sizes of the variable is
+!!                      returned in this arg (OPTIONAL)
+!! @retval ierr
+!<
+  integer function get_text_var_sz(File, varid, var_slen,&
+      var_nstrs, var_dim_sz)
+    type (File_desc_t), intent(in) :: File
+    integer, intent(in) :: varid
+    integer, intent(out) :: var_slen
+    integer, intent(out), optional :: var_nstrs
+    integer, intent(out), optional :: var_dim_sz(:)
+
+    integer :: ndims = 0
+    integer, allocatable :: dimids(:)
+    integer(C_SIZE_T) :: dim_sz
+    integer :: i, ierr = PIO_NOERR
+
+    interface
+       integer(C_INT) function PIOc_inq_varndims(ncid       ,varid,ndims) &
+            bind(C                                          ,name="PIOc_inq_varndims")
+         use iso_c_binding
+         integer(C_INT)                                     , value :: ncid
+         integer(C_INT)                                     , value :: varid
+         integer(C_INT) :: ndims
+       end function PIOc_inq_varndims
+    end interface
+    interface
+       integer(C_INT) function PIOc_inq_vardimid(ncid       ,varid,dimids) &
+            bind(C                                          ,name="PIOc_inq_vardimid")
+         use iso_c_binding
+         integer(C_INT)                                     , value :: ncid
+         integer(C_INT)                                     , value :: varid
+         integer(C_INT) :: dimids(*)
+       end function PIOc_inq_vardimid
+    end interface
+    interface
+       integer(C_INT) function PIOc_inq_dimlen(ncid         ,dimid,len) &
+            bind(C                                          ,name="PIOc_inq_dimlen")
+         use iso_c_binding
+         integer(C_INT)                                     , value :: ncid
+         integer(c_int)                                     , value :: dimid
+         integer(c_size_t) :: len
+       end function PIOc_inq_dimlen
+    end interface
+
+    if(present(var_nstrs)) then
+      var_nstrs = 0
+    end if
+
+    ! Get the number of dimensions in variable
+    ierr = PIOc_inq_varndims(File%fh, varid-1, ndims)
+    if(ierr /= PIO_NOERR) then
+      call piodie(__PIO_FILE__, __LINE__, "Inquiring number of dims of variable failed")
+    end if
+    if(ndims == 0) then
+      ! A scalar character variable
+      var_slen = 1
+      ! Number of strings = 0
+      get_text_var_sz = PIO_NOERR
+      return
+    end if
+    ! Get the dimension ids for the variable
+    allocate(dimids(ndims))
+    ierr = PIOc_inq_vardimid(File%fh, varid-1, dimids)
+    if(ierr /= PIO_NOERR) then
+      call piodie(__PIO_FILE__, __LINE__, "Inquiring the variable dimension ids for the text variable failed")
+    end if
+
+    ! Get the size of dimension 1
+    ! The dimension 1 of a text variable is the length
+    ! of each string in the variable i.e., var_slen
+    ! Note: The dimension ids used here were retrieved using
+    !   the C interface function, hence does not require
+    !   Fortran to C conversion
+    !   i.e., using dimids(i) instead of dimids(i) - 1
+    !   However the dimids are in the C order, so we
+    !   need to use the reverse array for the Fortran
+    !   dimension
+    !   i.e., using dimids(ndims - i + 1) instead of dimids(i)
+    ierr = PIOc_inq_dimlen(File%fh, dimids(ndims), dim_sz)
+    if(ierr /= PIO_NOERR) then
+      call piodie(__PIO_FILE__, __LINE__, "Inquiring the lengths of 0th dimension for the text variable failed")
+    end if
+
+    var_slen = int(dim_sz)
+    if(present(var_nstrs)) then
+      var_nstrs = 1
+    end if
+
+    if(ndims > 1) then
+      if(present(var_dim_sz)) then
+        if(size(var_dim_sz) < ndims - 1) then
+          call piodie(__PIO_FILE__, __LINE__, "Not enough space to copy back the dimension sizes of the text variable")
+        end if
+      end if
+
+      ! Get the size of the other dimensions
+      ! These dimensions determine the size of the string array
+      do i=2,ndims
+        ierr = PIOc_inq_dimlen(File%fh, dimids(ndims - i + 1), dim_sz)
+        if(ierr /= PIO_NOERR) then
+          call piodie(__PIO_FILE__, __LINE__, "Inquiring the lengths of dimension", i, " for the text variable failed")
+        end if
+
+        if(present(var_dim_sz)) then
+          var_dim_sz(i-1) = int(dim_sz)
+        end if
+        if(present(var_nstrs)) then
+          var_nstrs = var_nstrs * int(dim_sz)
+        end if
+      end do
+    end if
+    deallocate(dimids)
+
+    get_text_var_sz = ierr
+  end function get_text_var_sz
 
 !>
 !! @public
