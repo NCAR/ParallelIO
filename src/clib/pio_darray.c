@@ -1556,7 +1556,7 @@ int PIOc_write_darray(int ncid, int varid, int ioid, PIO_Offset arraylen, void *
 #endif /* _NETCDF4 */
             else
                 return pio_err(ios, file, PIO_EBADTYPE, __FILE__, __LINE__,
-                                "Writing variable (%s, varid=%d) to file (%s, ncid=%d) failed. Unable to find a default fillvalue for variable, unsupported variable type (MPI type = %x)", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), file->pio_ncid, vtype);
+                                "Writing variable (%s, varid=%d) to file (%s, ncid=%d) failed. Unable to find a default fillvalue for variable, unsupported variable type", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), file->pio_ncid);
 
             memcpy((char *)wmb->fillvalue + iodesc->mpitype_size * wmb->num_arrays,
                    fill, iodesc->mpitype_size);
