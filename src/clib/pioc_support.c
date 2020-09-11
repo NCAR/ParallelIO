@@ -661,10 +661,15 @@ int pio_err(iosystem_desc_t *ios, file_desc_t *file,
     if ((ret = PIOc_strerror(err_num, err_msg)))
         return ret;
 
-    char uerr_msg[PIO_MAX_NAME + 1];
+    /* PIO_MAX_NAME may not be enough to store the entire user error
+     * message, especially when long filenames are provided by the
+     * user in the message
+     */
+    const int UERR_MSG_MAX_LEN = 8192;
+    char uerr_msg[UERR_MSG_MAX_LEN + 1];
     va_list argp;
     va_start(argp, uerr_msg_fmt);
-    vsnprintf(uerr_msg, PIO_MAX_NAME, uerr_msg_fmt, argp);
+    vsnprintf(uerr_msg, UERR_MSG_MAX_LEN, uerr_msg_fmt, argp);
     va_end(argp);
 
     /* If logging is in use, log an error message. */
