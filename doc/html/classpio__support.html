@@ -24,7 +24,7 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">SCORPIO
-   &#160;<span id="projectnumber">1.1.2</span>
+   &#160;<span id="projectnumber">1.1.3</span>
    </div>
   </td>
  </tr>
@@ -96,6 +96,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:abcbf3a9d77e36435f9110d1efe8fb19a"><td class="memItemLeft" align="right" valign="top">subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpio__support.html#abcbf3a9d77e36435f9110d1efe8fb19a">replace_c_null</a> (istr, ilen)</td></tr>
 <tr class="memdesc:abcbf3a9d77e36435f9110d1efe8fb19a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Remove null termination (C-style) from strings for Fortran.  <a href="#abcbf3a9d77e36435f9110d1efe8fb19a">More...</a><br/></td></tr>
 <tr class="separator:abcbf3a9d77e36435f9110d1efe8fb19a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1f69cb29f775b014101ae45aadf2e193"><td class="memItemLeft" align="right" valign="top">integer function, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpio__support.html#a1f69cb29f775b014101ae45aadf2e193">get_text_var_sz</a> (File, varid, var_slen, var_nstrs, var_dim_sz)</td></tr>
+<tr class="memdesc:a1f69cb29f775b014101ae45aadf2e193"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the size of a text/character variable (Each element of a text variable is a string)  <a href="#a1f69cb29f775b014101ae45aadf2e193">More...</a><br/></td></tr>
+<tr class="separator:a1f69cb29f775b014101ae45aadf2e193"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a13fac82014192fcf782a95c3be4e9a66"><td class="memItemLeft" align="right" valign="top">subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpio__support.html#a13fac82014192fcf782a95c3be4e9a66">piodie</a> (file, line, msg, ival1, msg2, ival2, msg3, ival3, mpirank)</td></tr>
 <tr class="memdesc:a13fac82014192fcf782a95c3be4e9a66"><td class="mdescLeft">&#160;</td><td class="mdescRight">Abort the model for abnormal termination.  <a href="#a13fac82014192fcf782a95c3be4e9a66">More...</a><br/></td></tr>
 <tr class="separator:a13fac82014192fcf782a95c3be4e9a66"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -165,6 +168,68 @@ logical, public&#160;</td><td class="memItemRight" valign="bottom"><b>debugasync
     <tr><td class="paramname">errcode</td><td>: MPI error code </td></tr>
     <tr><td class="paramname">file</td><td>: The file where the error message originated. </td></tr>
     <tr><td class="paramname">line</td><td>: The line number where the error message originated. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="a1f69cb29f775b014101ae45aadf2e193"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">integer function, public pio_support::get_text_var_sz </td>
+          <td>(</td>
+          <td class="paramtype">type (<a class="el" href="structfile__desc__t.html">file_desc_t</a>), intent(in)&#160;</td>
+          <td class="paramname"><em>File</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer, intent(in)&#160;</td>
+          <td class="paramname"><em>varid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer, intent(out)&#160;</td>
+          <td class="paramname"><em>var_slen</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer, intent(out), optional&#160;</td>
+          <td class="paramname"><em>var_nstrs</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer, dimension(:), intent(out), optional&#160;</td>
+          <td class="paramname"><em>var_dim_sz</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get the size of a text/character variable (Each element of a text variable is a string) </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">File</td><td>: File containing the variable </td></tr>
+    <tr><td class="paramname">varid</td><td>: Id of the queried variable </td></tr>
+    <tr><td class="paramname">var_slen</td><td>: The length of each string in the variable is returned in this arg </td></tr>
+    <tr><td class="paramname">var_nstrs</td><td>: The number of strings in the variable is returned in this arg (OPTIONAL) </td></tr>
+    <tr><td class="paramname">var_dim_sz</td><td>: The dimension sizes of the variable is returned in this arg (OPTIONAL) </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="retval"><dt>Return values</dt><dd>
+  <table class="retval">
+    <tr><td class="paramname">ierr</td><td></td></tr>
   </table>
   </dd>
 </dl>
@@ -402,7 +467,7 @@ logical, public&#160;</td><td class="memItemRight" valign="bottom"><b>debugasync
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Jul 14 2020 19:09:03 for SCORPIO by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Sep 14 2020 08:40:45 for SCORPIO by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>
