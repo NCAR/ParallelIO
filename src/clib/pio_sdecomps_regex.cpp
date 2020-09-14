@@ -245,9 +245,8 @@ namespace PIO_Util{
         else if(type == RIGHT_BRACKET){
           return std::string(")");
         }
-        else{
-          assert(0);
-        }
+        /* FIXME: Use PIO exceptions */
+        throw std::runtime_error("Error converting regex op to string, unsupported regex op type");
       }
 
       std::string SDecomp_regex_op::to_string(void ) const

@@ -837,7 +837,7 @@ int write_darray_multi_serial(file_desc_t *file, int nvars, int fndims, const in
     int ierr = PIO_NOERR;              /* Return code. */
 
     /* Check inputs. */
-    pioassert(file && file->iosystem && file->varlist && varids && varids[0] >= 0 &&
+    pioassert(file && file->iosystem && varids && varids[0] >= 0 &&
               varids[0] <= PIO_MAX_VARS && iodesc, "invalid input", __FILE__, __LINE__);
 
     LOG((1, "write_darray_multi_serial nvars = %d fndims = %d iodesc->ndims = %d "

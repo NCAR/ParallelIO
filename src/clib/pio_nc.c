@@ -3722,7 +3722,6 @@ int PIOc_copy_att(int incid, int ivarid, const char *name,
   int msg = PIO_MSG_COPY_ATT;
   iosystem_desc_t *ios = NULL;
   file_desc_t *ifile = NULL, *ofile = NULL;
-  int mpierr = MPI_SUCCESS;
   int ierr = PIO_NOERR;
 
   /* Find file corresponding to the input file id */
