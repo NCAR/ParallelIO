@@ -113,7 +113,7 @@ int PIOc_write_darray_multi(int ncid, const int *varids, int ioid, int nvars,
     iosystem_desc_t *ios;  /* Pointer to io system information. */
     file_desc_t *file;     /* Pointer to file information. */
     io_desc_t *iodesc;     /* Pointer to IO description information. */
-    size_t rlen;           /* Total data buffer size. */
+    size_t rlen = 0;       /* Total data buffer size. */
     var_desc_t *vdesc0;    /* Array of var_desc structure for each var. */
     int fndims = 0;        /* Number of dims in the var in the file. */
     int mpierr = MPI_SUCCESS;  /* Return code from MPI function calls. */
@@ -238,10 +238,13 @@ int PIOc_write_darray_multi(int ncid, const int *varids, int ioid, int nvars,
     /* Determine total size of aggregated data (all vars/records).
      * For netcdf serial writes we collect the data on io nodes and
      * then move that data one node at a time to the io master node
-     * and write (or read). The buffer size on io task 0 must be as
-     * large as the largest used to accommodate this serial io
-     * method.  */
-    rlen = iodesc->maxiobuflen * nvars;
+     * and write. The buffer size on io task 0 must be as large as
+     * the largest used to accommodate this serial io method (use
+     * iodesc->maxiobuflen to calculate it). */
+   if ((file->iotype == PIO_IOTYPE_NETCDF || file->iotype == PIO_IOTYPE_NETCDF4C) && ios->iomaster == MPI_ROOT)
+       rlen = iodesc->maxiobuflen * nvars;
+   else
+       rlen = iodesc->llen * nvars;
 
 #ifdef PIO_MICRO_TIMING
     bool var_mtimer_was_running[nvars];
@@ -287,10 +290,11 @@ int PIOc_write_darray_multi(int ncid, const int *varids, int ioid, int nvars,
          * rearranger, insert fill values. */
         if (iodesc->needsfill && iodesc->rearranger == PIO_REARR_BOX)
         {
-            LOG((3, "inerting fill values iodesc->maxiobuflen = %d", iodesc->maxiobuflen));
+            PIO_Offset localiobuflen = rlen / nvars;
+            LOG((3, "inserting fill values iodesc->maxiobuflen = %lld, localiobuflen = %lld", iodesc->maxiobuflen, localiobuflen));
             for (int nv = 0; nv < nvars; nv++)
-                for (PIO_Offset i = 0; i < iodesc->maxiobuflen; i++)
-                    memcpy(&((char *)file->iobuf[ioid - PIO_IODESC_START_ID])[iodesc->mpitype_size * (i + nv * iodesc->maxiobuflen)],
+                for (PIO_Offset i = 0; i < localiobuflen; i++)
+                    memcpy(&((char *)file->iobuf[ioid - PIO_IODESC_START_ID])[iodesc->mpitype_size * (i + nv * localiobuflen)],
                            &((char *)fillvalue)[nv * iodesc->mpitype_size], iodesc->mpitype_size);
         }
     }
@@ -1677,11 +1681,15 @@ int PIOc_read_darray(int ncid, int varid, int ioid, PIO_Offset arraylen,
         }
         LOG((3, "called PIOc_inq_varndims varid = %d fndims = %d", varid, fndims));
     }
-    /* ??? */
-    if (ios->iomaster == MPI_ROOT)
-        rlen = iodesc->maxiobuflen;
-    else
-        rlen = iodesc->llen;
+    /* For netcdf serial reads we read some data to the io master
+     * node then send that data to a corresponding io node. The
+     * buffer size on io task 0 must be as large as the largest
+     * used to accommodate this serial io method (use iodesc->
+     * maxiobuflen to set it). */
+   if ((file->iotype == PIO_IOTYPE_NETCDF || file->iotype == PIO_IOTYPE_NETCDF4C) && ios->iomaster == MPI_ROOT)
+       rlen = iodesc->maxiobuflen;
+   else
+       rlen = iodesc->llen;
 
     if(!ios->async || !ios->ioproc)
     {
