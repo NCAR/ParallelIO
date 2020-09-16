@@ -23,7 +23,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">PIO
-   &#160;<span id="projectnumber">2.5.1</span>
+   &#160;<span id="projectnumber">2.5.2</span>
    </div>
   </td>
  </tr>
@@ -74,14 +74,16 @@ $(function() {
 <div class="title">pio_types.F90 File Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><code>#include &lt;netcdf.inc&gt;</code><br />
+<div class="textblock"><code>#include &quot;config.h&quot;</code><br />
+<code>#include &lt;netcdf.inc&gt;</code><br />
 </div><div class="textblock"><div class="dynheader">
 Include dependency graph for pio_types.F90:</div>
 <div class="dyncontent">
 <div class="center"><img src="pio__types_8_f90__incl.png" border="0" usemap="#pio__types_8_f90" alt=""/></div>
 <map name="pio__types_8_f90" id="pio__types_8_f90">
-<area shape="rect" title=" " alt="" coords="5,5,119,32"/>
-<area shape="rect" title=" " alt="" coords="19,80,105,107"/>
+<area shape="rect" title=" " alt="" coords="37,5,151,32"/>
+<area shape="rect" title=" " alt="" coords="5,80,79,107"/>
+<area shape="rect" title=" " alt="" coords="103,80,189,107"/>
 </map>
 </div>
 </div><table class="memberdecls">
@@ -238,11 +240,11 @@ double precision, parameter, public&#160;</td><td class="memItemRight" valign="b
 <tr class="separator:a1330384d1870d7c74e16b8d1f831d172"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abfd826392585fea4aa208cb7baa9b8dd"><td class="memItemLeft" align="right" valign="top"><a id="abfd826392585fea4aa208cb7baa9b8dd"></a>
 @, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio__types_8_f90.html#abfd826392585fea4aa208cb7baa9b8dd">pio_types::pio_rearr_comm_p2p</a> = 0</td></tr>
-<tr class="memdesc:abfd826392585fea4aa208cb7baa9b8dd"><td class="mdescLeft">&#160;</td><td class="mdescRight">rearranger peer to peer <br /></td></tr>
+<tr class="memdesc:abfd826392585fea4aa208cb7baa9b8dd"><td class="mdescLeft">&#160;</td><td class="mdescRight">do point-to-point communications using mpi send and recv calls. <br /></td></tr>
 <tr class="separator:abfd826392585fea4aa208cb7baa9b8dd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a415607909789017d5fa0e93d35f5a2b8"><td class="memItemLeft" align="right" valign="top"><a id="a415607909789017d5fa0e93d35f5a2b8"></a>
 @, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio__types_8_f90.html#a415607909789017d5fa0e93d35f5a2b8">pio_types::pio_rearr_comm_coll</a></td></tr>
-<tr class="memdesc:a415607909789017d5fa0e93d35f5a2b8"><td class="mdescLeft">&#160;</td><td class="mdescRight">rearranger collective <br /></td></tr>
+<tr class="memdesc:a415607909789017d5fa0e93d35f5a2b8"><td class="mdescLeft">&#160;</td><td class="mdescRight">use the MPI_ALLTOALLW function of the mpi library <br /></td></tr>
 <tr class="separator:a415607909789017d5fa0e93d35f5a2b8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a24777e963784ad0e469155244039b2de"><td class="memItemLeft" align="right" valign="top"><a id="a24777e963784ad0e469155244039b2de"></a>
 @, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio__types_8_f90.html#a24777e963784ad0e469155244039b2de">pio_types::pio_rearr_comm_fc_2d_enable</a> = 0</td></tr>
@@ -270,7 +272,7 @@ integer, parameter, public&#160;</td><td class="memItemRight" valign="bottom"><a
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Jul 13 2020 08:30:47 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Wed Sep 16 2020 06:54:38 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

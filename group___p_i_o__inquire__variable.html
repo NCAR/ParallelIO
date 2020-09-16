@@ -23,7 +23,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">PIO
-   &#160;<span id="projectnumber">2.5.1</span>
+   &#160;<span id="projectnumber">2.5.2</span>
    </div>
   </td>
  </tr>
@@ -117,6 +117,13 @@ Functions/Subroutines</h2></td></tr>
 <tr class="separator:gacaf3f950665cd30b440c162969bce37d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gab68fda955e3a5ac6ef0367749483c7f1"><td class="memItemLeft" align="right" valign="top">integer function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__inquire__variable.html#gab68fda955e3a5ac6ef0367749483c7f1">pio_nf::inq_var_deflate_id</a> (ncid, varid, shuffle, deflate, deflate_level)</td></tr>
 <tr class="separator:gab68fda955e3a5ac6ef0367749483c7f1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga159e8013cf13ab3ae8cd6751fc3a913b"><td class="memItemLeft" align="right" valign="top">integer function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__inquire__variable.html#ga159e8013cf13ab3ae8cd6751fc3a913b">pio_nf::inq_var_chunking_desc</a> (File, vardesc, storage, chunksizes)</td></tr>
+<tr class="memdesc:ga159e8013cf13ab3ae8cd6751fc3a913b"><td class="mdescLeft">&#160;</td><td class="mdescRight">File descriptor structure.  <a href="group___p_i_o__inquire__variable.html#ga159e8013cf13ab3ae8cd6751fc3a913b">More...</a><br /></td></tr>
+<tr class="separator:ga159e8013cf13ab3ae8cd6751fc3a913b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gafbbf3f45a78e8e8b6f063ce8c04490f5"><td class="memItemLeft" align="right" valign="top">integer function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__inquire__variable.html#gafbbf3f45a78e8e8b6f063ce8c04490f5">pio_nf::inq_var_chunking_vid</a> (File, varid, storage, chunksizes)</td></tr>
+<tr class="separator:gafbbf3f45a78e8e8b6f063ce8c04490f5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga11de80aa27d27f2bf02c9a9e6a1c3619"><td class="memItemLeft" align="right" valign="top">integer function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__inquire__variable.html#ga11de80aa27d27f2bf02c9a9e6a1c3619">pio_nf::inq_var_chunking_id</a> (ncid, varid, storage, chunksizes)</td></tr>
+<tr class="separator:ga11de80aa27d27f2bf02c9a9e6a1c3619"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga7adeb7df7ab59e49d0e9f4cf7d33040c"><td class="memItemLeft" align="right" valign="top">integer function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__inquire__variable.html#ga7adeb7df7ab59e49d0e9f4cf7d33040c">pio_nf::inq_varname_desc</a> (File, vardesc, name)</td></tr>
 <tr class="memdesc:ga7adeb7df7ab59e49d0e9f4cf7d33040c"><td class="mdescLeft">&#160;</td><td class="mdescRight">File descriptor structure.  <a href="group___p_i_o__inquire__variable.html#ga7adeb7df7ab59e49d0e9f4cf7d33040c">More...</a><br /></td></tr>
 <tr class="separator:ga7adeb7df7ab59e49d0e9f4cf7d33040c"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -134,7 +141,169 @@ Functions/Subroutines</h2></td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <p>Learn variable name, ID, type, dimensions, compression, chunking in Fortran. </p>
+<p>Use the generic functions to call the underlying Fortran functions.</p>
+<table class="markdownTable">
+<tr class="markdownTableHead">
+<th class="markdownTableHeadNone">Generic Function </th><th class="markdownTableHeadNone">Function(s)  </th></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone">pio_inquire_variable() </td><td class="markdownTableBodyNone"><a class="el" href="group___p_i_o__inquire__variable.html#gab1dc4fdd5ff21b81a9c310c24d697626" title="Variable description structure.">inquire_variable_desc()</a>, <a class="el" href="group___p_i_o__inquire__variable.html#ga8a5aaccac99485dae719fbd809e06084">inquire_variable_vid()</a>, <a class="el" href="group___p_i_o__inquire__variable.html#gadf509cd6ed3f3d84a55fa7c6570548b6">inquire_variable_id()</a>  </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone">pio_inq_varid() </td><td class="markdownTableBodyNone"><a class="el" href="group___p_i_o__inquire__variable.html#gaf0a73d06e44223e3055601b3548c661e" title="File descriptor structure.">inq_varid_desc()</a>, <a class="el" href="group___p_i_o__inquire__variable.html#ga7d8fdf24c436c1f95bcf16e45d09d77e">inq_varid_vid()</a>, <a class="el" href="group___p_i_o__inquire__variable.html#gaaec4972b51c09869fadfaf4801d929c3">inq_varid_id()</a>  </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone">pio_inq_vartype() </td><td class="markdownTableBodyNone"><a class="el" href="group___p_i_o__inquire__variable.html#ga7adeb7df7ab59e49d0e9f4cf7d33040c" title="File descriptor structure.">inq_varname_desc()</a>, <a class="el" href="group___p_i_o__inquire__variable.html#gac1e121bb36cd909ce4311b1ff429d756">inq_varname_vid()</a>, <a class="el" href="group___p_i_o__inquire__variable.html#ga5048b665969697dde6615b4a93ef14e1">inq_varname_id()</a>  </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone">pio_inq_varndims() </td><td class="markdownTableBodyNone"><a class="el" href="group___p_i_o__inquire__variable.html#gac9a43be9bd57fa5752e649adebe68205" title="File descriptor structure.">inq_varndims_desc()</a>, <a class="el" href="group___p_i_o__inquire__variable.html#ga8bebb39dc6e52f42a55b4e18bf7c36c8">inq_varndims_vid()</a>, <a class="el" href="group___p_i_o__inquire__variable.html#ga6b9399049bfe13d2585ad69b628d3284">inq_varndims_id()</a>  </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone">pio_inq_vardimid() </td><td class="markdownTableBodyNone"><a class="el" href="group___p_i_o__inquire__variable.html#gae47f2e64960778bf50c4707b5748e5b6" title="File descriptor structure.">inq_vardimid_desc()</a>, <a class="el" href="group___p_i_o__inquire__variable.html#ga0f08c75e267929e30a2abf75b3767940">inq_vardimid_vid()</a>, <a class="el" href="group___p_i_o__inquire__variable.html#ga6403626a7aff422ec4302cf292bd81ea">inq_vardimid_id()</a>  </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone">pio_inq_varnatts() </td><td class="markdownTableBodyNone"><a class="el" href="group___p_i_o__inquire__variable.html#ga26758ad91704698ef0cf7fe5817a9ad6" title="File descriptor structure.">inq_varnatts_desc()</a>, <a class="el" href="group___p_i_o__inquire__variable.html#ga1736ac5577a75edfbcda4974aad6f22b">inq_varnatts_vid()</a>, <a class="el" href="group___p_i_o__inquire__variable.html#ga49d231e0b02a956c32e50b27f2a505be">inq_varnatts_id()</a>  </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone">pio_inq_var_deflate() </td><td class="markdownTableBodyNone"><a class="el" href="group___p_i_o__inquire__variable.html#ga9ef34700d0b2fb30d1443c5424d997d9" title="File descriptor structure.">inq_var_deflate_desc()</a>, <a class="el" href="group___p_i_o__inquire__variable.html#gacaf3f950665cd30b440c162969bce37d">inq_var_deflate_vid()</a>, <a class="el" href="group___p_i_o__inquire__variable.html#gab68fda955e3a5ac6ef0367749483c7f1">inq_var_deflate_id()</a>  </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone">pio_inq_var_chunking() </td><td class="markdownTableBodyNone"><a class="el" href="group___p_i_o__inquire__variable.html#ga159e8013cf13ab3ae8cd6751fc3a913b" title="File descriptor structure.">inq_var_chunking_desc()</a>, <a class="el" href="group___p_i_o__inquire__variable.html#gafbbf3f45a78e8e8b6f063ce8c04490f5">inq_var_chunking_vid()</a>, <a class="el" href="group___p_i_o__inquire__variable.html#ga11de80aa27d27f2bf02c9a9e6a1c3619">inq_var_chunking_id()</a>  </td></tr>
+</table>
 <h2 class="groupheader">Function/Subroutine Documentation</h2>
+<a id="ga159e8013cf13ab3ae8cd6751fc3a913b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga159e8013cf13ab3ae8cd6751fc3a913b">&#9670;&nbsp;</a></span>inq_var_chunking_desc()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">integer function pio_nf::inq_var_chunking_desc </td>
+          <td>(</td>
+          <td class="paramtype">type (<a class="el" href="structpio__types_1_1file__desc__t.html">file_desc_t</a>), intent(in)&#160;</td>
+          <td class="paramname"><em>File</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">type (<a class="el" href="structpio__types_1_1var__desc__t.html">var_desc_t</a>), intent(in)&#160;</td>
+          <td class="paramname"><em>vardesc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer, intent(out)&#160;</td>
+          <td class="paramname"><em>storage</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer (kind=pio_offset_kind), dimension(*), intent(out)&#160;</td>
+          <td class="paramname"><em>chunksizes</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>File descriptor structure. </p>
+<p>Gets metadata information for netcdf file.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">File</td><td>This structure holds information associated with each open file </td></tr>
+    <tr><td class="paramname">vardesc</td><td>Variable description structure.</td></tr>
+    <tr><td class="paramname">storage</td><td>0 for chunked, 1 for contiguous </td></tr>
+    <tr><td class="paramname">chunksizes</td><td>Array of chunk sizes. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="retval"><dt>Return values</dt><dd>
+  <table class="retval">
+    <tr><td class="paramname">ierr</td><td>The error return code (see <a class="el" href="group___p_i_o__seterrorhandling.html">Error Handling for Fortran</a>).</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>Ed Hartnett </dd></dl>
+
+</div>
+</div>
+<a id="ga11de80aa27d27f2bf02c9a9e6a1c3619"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga11de80aa27d27f2bf02c9a9e6a1c3619">&#9670;&nbsp;</a></span>inq_var_chunking_id()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">integer function pio_nf::inq_var_chunking_id </td>
+          <td>(</td>
+          <td class="paramtype">integer, intent(in)&#160;</td>
+          <td class="paramname"><em>ncid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer, intent(in)&#160;</td>
+          <td class="paramname"><em>varid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer, intent(out)&#160;</td>
+          <td class="paramname"><em>storage</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer (kind=pio_offset_kind), dimension(*), intent(out)&#160;</td>
+          <td class="paramname"><em>chunksizes</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Gets metadata information for netcdf file. </p><dl class="section author"><dt>Author</dt><dd>Ed Hartnett </dd></dl>
+
+</div>
+</div>
+<a id="gafbbf3f45a78e8e8b6f063ce8c04490f5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gafbbf3f45a78e8e8b6f063ce8c04490f5">&#9670;&nbsp;</a></span>inq_var_chunking_vid()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">integer function pio_nf::inq_var_chunking_vid </td>
+          <td>(</td>
+          <td class="paramtype">type (<a class="el" href="structpio__types_1_1file__desc__t.html">file_desc_t</a>), intent(in)&#160;</td>
+          <td class="paramname"><em>File</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer, intent(in)&#160;</td>
+          <td class="paramname"><em>varid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer, intent(out)&#160;</td>
+          <td class="paramname"><em>storage</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer (kind=pio_offset_kind), dimension(*), intent(out)&#160;</td>
+          <td class="paramname"><em>chunksizes</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Gets metadata information for netcdf file. </p><dl class="section author"><dt>Author</dt><dd>Ed Hartnett </dd></dl>
+
+</div>
+</div>
 <a id="ga9ef34700d0b2fb30d1443c5424d997d9"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ga9ef34700d0b2fb30d1443c5424d997d9">&#9670;&nbsp;</a></span>inq_var_deflate_desc()</h2>
 
@@ -1228,7 +1397,7 @@ Functions/Subroutines</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Jul 13 2020 08:30:47 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Wed Sep 16 2020 06:54:38 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

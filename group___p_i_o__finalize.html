@@ -23,7 +23,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">PIO
-   &#160;<span id="projectnumber">2.5.1</span>
+   &#160;<span id="projectnumber">2.5.2</span>
    </div>
   </td>
  </tr>
@@ -81,7 +81,10 @@ Functions/Subroutines</h2></td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <p>Free an IO System, releasing all resources in Fortran. </p>
-<h2 class="groupheader">Function/Subroutine Documentation</h2>
+<p>Use the Fortran generic function PIO_finalize() to finalize the IO System, freeing all associated resources. The PIO_finalize() function will call <a class="el" href="group___p_i_o__finalize.html#ga01570706db6f1c5e61087045d558e9df" title="IO descriptor structure.">finalize()</a>.</p>
+<p>This code from <a class="el" href="example_pio_8_f90.html">examples/f03/examplePio.F90</a> demonstrates how to finalize the IO system.</p>
+<div class="fragment"><div class="line"><span class="comment">call PIO_finalize(this%pioIoSystem, ierr)</span></div>
+</div><!-- fragment --> <h2 class="groupheader">Function/Subroutine Documentation</h2>
 <a id="ga01570706db6f1c5e61087045d558e9df"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ga01570706db6f1c5e61087045d558e9df">&#9670;&nbsp;</a></span>finalize()</h2>
 
@@ -124,7 +127,7 @@ Functions/Subroutines</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Jul 13 2020 08:30:47 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Wed Sep 16 2020 06:54:38 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

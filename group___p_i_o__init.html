@@ -23,7 +23,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">PIO
-   &#160;<span id="projectnumber">2.5.1</span>
+   &#160;<span id="projectnumber">2.5.2</span>
    </div>
   </td>
  </tr>
@@ -81,7 +81,17 @@ Functions/Subroutines</h2></td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <p>Create a new IO System, designating numbers of I/O and computation tasks in Fortran. </p>
-<h2 class="groupheader">Function/Subroutine Documentation</h2>
+<p>Use the Fortran generic function PIO_init() to initialize the IO System. The PIO_init() function will call <a class="el" href="group___p_i_o__init.html#ga24013f7eb18aa1552bb0a9ccecc689b3" title="Rearranger methods.">init_intracom()</a>.</p>
+<p>This code from <a class="el" href="example_pio_8_f90.html">examples/f03/examplePio.F90</a> demonstrates how to initialize the IO system for intracom mode.</p>
+<div class="fragment"><div class="line"><span class="comment">call PIO_init(this%myRank,      &amp; ! MPI rank</span></div>
+<div class="line">    mpi_comm_world,             &amp; <span class="comment">! MPI communicator</span></div>
+<div class="line">    this%niotasks,              &amp; <span class="comment">! Number of iotasks (ntasks/stride)</span></div>
+<div class="line">    this%numAggregator,         &amp; <span class="comment">! number of aggregators to use</span></div>
+<div class="line">    this%stride,                &amp; <span class="comment">! stride</span></div>
+<div class="line">    pio_rearr_subset,           &amp; <span class="comment">! do not use any form of rearrangement</span></div>
+<div class="line">    this%pioIoSystem,           &amp; <span class="comment">! iosystem</span></div>
+<div class="line">    base=this%optBase)            ! base(<span class="keywordtype">optional</span> argument)</div>
+</div><!-- fragment --> <h2 class="groupheader">Function/Subroutine Documentation</h2>
 <a id="ga24013f7eb18aa1552bb0a9ccecc689b3"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ga24013f7eb18aa1552bb0a9ccecc689b3">&#9670;&nbsp;</a></span>init_intracom()</h2>
 
@@ -177,7 +187,7 @@ Functions/Subroutines</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Jul 13 2020 08:30:47 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Wed Sep 16 2020 06:54:38 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>
