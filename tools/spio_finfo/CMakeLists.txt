@@ -17,9 +17,9 @@ else ()
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 endif ()
 
-set(SRC ${CMAKE_SOURCE_DIR}/tools/util/argparser.cxx
-    ${CMAKE_SOURCE_DIR}/tools/util/spio_misc_tool_utils.cxx
-    ${CMAKE_SOURCE_DIR}/tools/util/spio_lib_info.cxx
+set(SRC ${SCORPIO_SOURCE_DIR}/tools/util/argparser.cxx
+    ${SCORPIO_SOURCE_DIR}/tools/util/spio_misc_tool_utils.cxx
+    ${SCORPIO_SOURCE_DIR}/tools/util/spio_lib_info.cxx
     spio_file_test_utils.cxx
     spio_finfo.cxx
     spio_finfo_tool.cxx)
@@ -31,9 +31,9 @@ add_executable(spio_finfo.exe ${SRC})
 link_directories(${PIO_LIB_DIR})
 target_include_directories(spio_finfo.exe PRIVATE
   ${PIO_INCLUDE_DIRS}
-  ${CMAKE_BINARY_DIR}/src/clib
-  ${CMAKE_SOURCE_DIR}/src/clib
-  ${CMAKE_SOURCE_DIR}/tools/util
+  ${SCORPIO_BINARY_DIR}/src/clib
+  ${SCORPIO_SOURCE_DIR}/src/clib
+  ${SCORPIO_SOURCE_DIR}/tools/util
   ${NETCDF_C_INCLUDE_DIRS} 
   ${PnetCDF_C_INCLUDE_DIRS} 
   ${PIO_C_EXTRA_INCLUDE_DIRS})

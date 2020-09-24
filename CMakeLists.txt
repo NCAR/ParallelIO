@@ -97,7 +97,7 @@ endif()
 #==============================================================================
 
 #===== Local modules =====
-list (APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
+list (APPEND CMAKE_MODULE_PATH ${SCORPIO_SOURCE_DIR}/cmake)
 
 #===== External modules =====
 if (DEFINED USER_CMAKE_MODULE_PATH)

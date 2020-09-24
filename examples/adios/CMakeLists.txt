@@ -4,7 +4,7 @@
 
 # Include PIO include and lib directories
 INCLUDE_DIRECTORIES(${PIO_INCLUDE_DIRS})
-include_directories("${CMAKE_SOURCE_DIR}/examples/adios")
+include_directories("${SCORPIO_SOURCE_DIR}/examples/adios")
 LINK_DIRECTORIES(${PIO_LIB_DIR})
 
 # Compiler-specific compiler options

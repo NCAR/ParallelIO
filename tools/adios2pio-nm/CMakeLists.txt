@@ -2,7 +2,7 @@
 ### CMakeList.txt for adios2pio 
 ###-------------------------------------------------------------------------###
 
-list (APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
+list (APPEND CMAKE_MODULE_PATH ${SCORPIO_SOURCE_DIR}/cmake)
 
 # Adding PIO definitions - defined in the root directory
 ADD_DEFINITIONS(${PIO_DEFINITIONS})
@@ -20,16 +20,16 @@ else ()
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 endif ()
 
-SET(SRC ${CMAKE_SOURCE_DIR}/tools/util/argparser.cxx adios2pio-nm.cxx)
+SET(SRC ${SCORPIO_SOURCE_DIR}/tools/util/argparser.cxx adios2pio-nm.cxx)
 add_library(adios2pio-nm-lib adios2pio-nm-lib.cxx)
 include_directories(
   "${PROJECT_SOURCE_DIR}"   # to find foo/foo.h
   "${PROJECT_BINARY_DIR}")  # to find foo/config.h
 
 target_include_directories(adios2pio-nm-lib PUBLIC 
-  ${CMAKE_SOURCE_DIR}/src/clib
-  ${CMAKE_BINARY_DIR}/src/clib
-  ${CMAKE_SOURCE_DIR}/tools/util
+  ${SCORPIO_SOURCE_DIR}/src/clib
+  ${SCORPIO_BINARY_DIR}/src/clib
+  ${SCORPIO_SOURCE_DIR}/tools/util
   ${NETCDF_C_INCLUDE_DIRS} 
   ${PnetCDF_C_INCLUDE_DIRS} 
   ${PIO_C_EXTRA_INCLUDE_DIRS})
