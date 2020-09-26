@@ -293,6 +293,10 @@ int InitPIO(MPI_Comm comm, int mpirank, int nproc)
     int ret = PIO_NOERR;
     int iosysid;
 
+    /* For the conversion tool, increase pio_buffer_size_limit to 128MB by default */
+    const PIO_Offset new_buffer_size_limit = 134217728;
+    PIOc_set_buffer_size_limit(new_buffer_size_limit);
+
     ret = PIOc_Init_Intracomm(comm, nproc, 1, 0, PIO_REARR_BOX, &iosysid);
     if (ret != PIO_NOERR)
         return BP2PIO_ERROR;

@@ -26,8 +26,8 @@
 #define BASE 0
 #define REARRANGER 1
 
-/* Ten megabytes. */
-#define TEN_MEG 10485760
+/* Sixty-four megabytes. */
+#define SIXTY_FOUR_MB 67108864
 
 /* Run test. */
 int main(int argc, char **argv)
@@ -56,9 +56,9 @@ int main(int argc, char **argv)
 
         /* Try setting the buffer size limit. */
         oldlimit = PIOc_set_buffer_size_limit(200000);
-        if (oldlimit != TEN_MEG)
+        if (oldlimit != SIXTY_FOUR_MB)
             ERR(ERR_WRONG);
-        oldlimit = PIOc_set_buffer_size_limit(TEN_MEG);
+        oldlimit = PIOc_set_buffer_size_limit(SIXTY_FOUR_MB);
 
         /* Figure out iotypes. */
         if ((ret = get_iotypes(&num_flavors, flavor)))
