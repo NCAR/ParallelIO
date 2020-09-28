@@ -133,7 +133,8 @@ module pio_nf
        pio_get_var_chunk_cache                              , &
        pio_redef                                            , &
        pio_set_log_level                                    , &
-       pio_strerror
+       pio_strerror                                         , &
+       pio_set_fill
   !       pio_copy_att    to be done
 
   interface pio_def_var
@@ -263,6 +264,13 @@ module pio_nf
           inq_dimname_id
   end interface pio_inq_dimname
 
+  interface PIO_set_fill
+     module procedure &
+          set_fill_id ,&
+          set_fill_desc
+  end interface PIO_set_fill
+
+
   interface pio_inq_nvars
      module procedure &
           inq_nvars_id
@@ -350,6 +358,55 @@ contains
     integer                                                 , intent(out)           :: dimid        !dimension ID
     ierr = inq_dimid_id(file%fh                             ,name,dimid)
   end function inq_dimid_desc
+
+  !>
+  !! @public
+  !! @ingroup PIO_set_fill
+  !! Set the netcdf fill mode
+  !!
+  !! @param ncid A netcdf file ID returned by \ref
+  !! PIO_openfile or \ref PIO_createfile.
+  !! @param fillmode Desired fill mode for the dataset, either PIO_NOFILL or PIO_FILL.
+  !! @param old_mode Returned current fill mode of the dataset before this call, either PIO_NOFILL or PIO_FILL.
+  !! @retval ierr @copydoc error_return
+  !! @author Jim Edwards
+  !<
+  integer function set_fill_id(ncid                         ,fillmode, old_mode) result(ierr)
+    integer                                                 , intent(in) :: ncid
+    integer                                                 , intent(in) :: fillmode
+    integer                                                 , intent(out) :: old_mode
+    interface
+       integer(C_INT) function PIOc_set_fill(ncid           ,fillmode, old_mode) &
+            bind(C                                          ,name="PIOc_set_fill")
+         use iso_c_binding
+         integer(c_int)                                     ,value :: ncid
+         integer(c_int)                                            :: fillmode
+         integer(c_int)                                            :: old_mode
+       end function PIOc_set_fill
+    end interface
+
+    ierr = PIOc_set_fill(ncid, fillmode, old_mode)
+
+  end function set_fill_id
+
+  !>
+  !! @public
+  !! @ingroup PIO_set_fill
+  !! Set the netcdf fill mode
+  !!
+  !! @param File @copydoc file_desc_t
+  !! @param fillmode Desired fill mode for the dataset, either PIO_NOFILL or PIO_FILL.
+  !! @param old_mode Returned current fill mode of the dataset before this call, either PIO_NOFILL or PIO_FILL.
+  !! @retval ierr @copydoc error_return
+  !! @author Jim Edwards
+  !<
+  integer function set_fill_desc(File, fillmode, old_mode) result(ierr)
+    type(File_desc_t)                                       ,intent(in) :: File
+    integer                                                 ,intent(in) :: fillmode
+    integer                                                 ,intent(out):: old_mode
+    ierr = set_fill_id(file%fh                              ,fillmode, old_mode)
+  end function set_fill_desc
+
 
   !>
   !! @public
@@ -1374,7 +1431,7 @@ contains
     do i = 1, ndims
        chunksizes(i) = cchunksizes(ndims - i + 1)
     enddo
-    
+
   end function inq_var_chunking_id
 
   !>
