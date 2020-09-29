@@ -343,6 +343,14 @@ int PIOc_get_att_tc(int ncid, int varid, const char *name, nc_type memtype, void
         ierr = PIOc_inq_att(ncid, varid, name, &atttype, &attlen);
         if(ierr != PIO_NOERR){
             LOG((1, "PIOc_inq_att failed, ierr = %d", ierr));
+#ifdef TIMING
+            /* Failure to get an attribute is not considered
+             * as a fatal error by some users/apps (this case is
+             * considered similar to failure to inquire an
+             * attribute)
+             */
+            GPTLstop("PIO:PIOc_get_att_tc");
+#endif
             return ierr;
         }
         LOG((2, "atttype = %d attlen = %d", atttype, attlen));
@@ -491,6 +499,14 @@ int PIOc_get_att_tc(int ncid, int varid, const char *name, nc_type memtype, void
     ierr = check_netcdf(NULL, file, ierr, __FILE__, __LINE__);
     if(ierr != PIO_NOERR){
         LOG((1, "nc*_get_att_* failed, ierr = %d", ierr));
+#ifdef TIMING
+        /* Failure to get an attribute is not considered
+         * as a fatal error by some users/apps (this case is
+         * considered similar to failure to inquire an
+         * attribute)
+         */
+        GPTLstop("PIO:PIOc_get_att_tc");
+#endif
         return pio_err(NULL, file, ierr, __FILE__, __LINE__,
                         "Reading variable (%s, varid=%d) attribute (%s) failed. Internal I/O library (%s) call failed", (varid != PIO_GLOBAL) ? file->varlist[varid].vname : "PIO_GLOBAL", varid, name, pio_iotype_to_string(file->iotype));
     }
