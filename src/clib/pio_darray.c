@@ -222,7 +222,10 @@ int PIOc_write_darray_multi(int ncid, const int *varids, int ioid, int nvars,
 
         /* Share results known only on computation tasks with IO tasks. */
         if ((mpierr = MPI_Bcast(&fndims, 1, MPI_INT, ios->comproot, ios->my_comm)))
-            check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+        {
+            GPTLstop("PIO:PIOc_write_darray_multi");
+            return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+        }
         LOG((3, "shared fndims = %d", fndims));
     }
 
@@ -1783,7 +1786,7 @@ int PIOc_read_darray(int ncid, int varid, int ioid, PIO_Offset arraylen,
         if(mpierr != MPI_SUCCESS)
         {
             GPTLstop("PIO:PIOc_read_darray");
-            check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+            return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
         }
         LOG((3, "shared fndims = %d", fndims));
     }

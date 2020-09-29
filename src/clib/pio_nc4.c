@@ -281,7 +281,7 @@ int PIOc_def_var_chunking(int ncid, int varid, int storage, const PIO_Offset *ch
 
         /* Broadcast values currently only known on computation tasks to IO tasks. */
         if ((mpierr = MPI_Bcast(&ndims, 1, MPI_INT, ios->comproot, ios->my_comm)))
-            check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+            return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
     }
 
     LOG((2, "PIOc_def_var_chunking ndims = %d", ndims));
@@ -395,7 +395,7 @@ int PIOc_inq_var_chunking(int ncid, int varid, int *storagep, PIO_Offset *chunks
 
         /* Broadcast values currently only known on computation tasks to IO tasks. */
         if ((mpierr = MPI_Bcast(&ndims, 1, MPI_INT, ios->comproot, ios->my_comm)))
-            check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+            return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
     }
 
     /* If this is an IO task, then call the netCDF function. */

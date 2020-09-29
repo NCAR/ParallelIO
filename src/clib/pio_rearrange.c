@@ -1249,7 +1249,7 @@ int determine_fill(iosystem_desc_t *ios, io_desc_t *iodesc, const int *gdimlen,
          totalllen, totalgridsize));
     if ((mpierr = MPI_Allreduce(MPI_IN_PLACE, &totalllen, 1, PIO_OFFSET, MPI_SUM,
                                 ios->union_comm)))
-        check_mpi(NULL, NULL, mpierr, __FILE__, __LINE__);
+        return check_mpi(NULL, NULL, mpierr, __FILE__, __LINE__);
     LOG((2, "after allreduce totalllen = %d", totalllen));
 
     /* If the total size of the data provided to be written is < the

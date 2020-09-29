@@ -116,9 +116,19 @@ int PIOc_put_att_tc(int ncid, int varid, const char *name, nc_type atttype,
 
         /* Broadcast values currently only known on computation tasks to IO tasks. */
         if ((mpierr = MPI_Bcast(&atttype_len, 1, MPI_OFFSET, ios->comproot, ios->my_comm)))
-            check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+        {
+            GPTLstop("PIO:PIOc_put_att_tc");
+            if (file->iotype == PIO_IOTYPE_ADIOS)
+                GPTLstop("PIO:PIOc_put_att_tc_adios");
+            return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+        }
         if ((mpierr = MPI_Bcast(&memtype_len, 1, MPI_OFFSET, ios->comproot, ios->my_comm)))
-            check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+        {
+            GPTLstop("PIO:PIOc_put_att_tc");
+            if (file->iotype == PIO_IOTYPE_ADIOS)
+                GPTLstop("PIO:PIOc_put_att_tc_adios");
+            return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+        }
         LOG((2, "PIOc_put_att bcast from comproot = %d atttype_len = %d", ios->comproot,
              atttype_len, memtype_len));
     }
@@ -707,11 +717,20 @@ int PIOc_get_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
 
         /* Broadcast values currently only known on computation tasks to IO tasks. */
         if ((mpierr = MPI_Bcast(&num_elem, 1, MPI_OFFSET, ios->comproot, ios->my_comm)))
-            check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+        {
+            GPTLstop("PIO:PIOc_get_vars_tc");
+            return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+        }
         if ((mpierr = MPI_Bcast(&typelen, 1, MPI_OFFSET, ios->comproot, ios->my_comm)))
-            check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+        {
+            GPTLstop("PIO:PIOc_get_vars_tc");
+            return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+        }
         if ((mpierr = MPI_Bcast(&xtype, 1, MPI_INT, ios->comproot, ios->my_comm)))
-            check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+        {
+            GPTLstop("PIO:PIOc_get_vars_tc");
+            return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+        }
     }
 
     /* If this is an IO task, then call the netCDF function. */
