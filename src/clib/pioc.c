@@ -530,9 +530,7 @@ int PIOc_InitDecomp(int iosysid, int pio_type, int ndims, const int *gdimlen, in
     int mpierr = MPI_SUCCESS;  /* Return code from MPI function calls. */
     int ierr;              /* Return code. */
 
-#ifdef TIMING
     GPTLstart("PIO:PIOc_initdecomp");
-#endif
     LOG((1, "PIOc_InitDecomp iosysid = %d pio_type = %d ndims = %d maplen = %d",
          iosysid, pio_type, ndims, maplen));
 
@@ -775,9 +773,7 @@ int PIOc_InitDecomp(int iosysid, int pio_type, int ndims, const int *gdimlen, in
      * PERFTUNE is set. */
     performance_tune_rearranger(ios, iodesc);
 
-#ifdef TIMING
     GPTLstop("PIO:PIOc_initdecomp");
-#endif
     return PIO_NOERR;
 }
 
@@ -989,8 +985,8 @@ int PIOc_Init_Intracomm(MPI_Comm comp_comm, int num_iotasks, int stride, int bas
 #ifdef TIMING_INTERNAL
     pio_init_gptl();
 #endif
-    GPTLstart("PIO:PIOc_Init_Intracomm");
 #endif
+    GPTLstart("PIO:PIOc_Init_Intracomm");
     /* Turn on the logging system. */
     pio_init_logging();
 
@@ -1152,9 +1148,7 @@ int PIOc_Init_Intracomm(MPI_Comm comp_comm, int num_iotasks, int stride, int bas
 
     LOG((2, "Init_Intracomm complete iosysid = %d", *iosysidp));
 
-#ifdef TIMING
     GPTLstop("PIO:PIOc_Init_Intracomm");
-#endif
     return PIO_NOERR;
 }
 
@@ -1275,9 +1269,7 @@ int PIOc_finalize(int iosysid)
     char gptl_log_fname[PIO_MAX_NAME];
 #endif
 
-#ifdef TIMING
     GPTLstart("PIO:PIOc_finalize");
-#endif
     LOG((1, "PIOc_finalize iosysid = %d MPI_COMM_NULL = %d", iosysid,
          MPI_COMM_NULL));
 
@@ -1372,8 +1364,8 @@ int PIOc_finalize(int iosysid)
     pio_finalize_logging();
 
     LOG((2, "PIOc_finalize completed successfully"));
-#ifdef TIMING
     GPTLstop("PIO:PIOc_finalize");
+#ifdef TIMING
 #ifdef TIMING_INTERNAL
     if(ios->io_comm != MPI_COMM_NULL)
     {
@@ -1582,8 +1574,9 @@ int PIOc_init_async(MPI_Comm world, int num_io_procs, int *io_proc_list,
 #ifdef TIMING_INTERNAL
     pio_init_gptl();
 #endif
-    GPTLstart("PIO:PIOc_init_async");
 #endif
+    GPTLstart("PIO:PIOc_init_async");
+
     /* Check input parameters. */
     if (num_io_procs < 1 || component_count < 1 || !num_procs_per_comp || !iosysidp ||
         (rearranger != PIO_REARR_BOX && rearranger != PIO_REARR_SUBSET))
@@ -2007,9 +2000,7 @@ int PIOc_init_async(MPI_Comm world, int num_io_procs, int *io_proc_list,
         return check_mpi(NULL, NULL, ret, __FILE__, __LINE__);
 
     LOG((2, "successfully done with PIO_Init_Async"));
-#ifdef TIMING
     GPTLstop("PIO:PIOc_init_async");
-#endif
     return PIO_NOERR;
 }
 
@@ -2067,8 +2058,8 @@ int PIOc_init_intercomm(int component_count, const MPI_Comm peer_comm,
 #ifdef TIMING_INTERNAL
     pio_init_gptl();
 #endif
-    GPTLstart("PIO:PIOc_init_intercomm");
 #endif
+    GPTLstart("PIO:PIOc_init_intercomm");
     assert((component_count > 0) && ucomp_comms && iosysidps);
     if((component_count <= 0) || (ucomp_comms == NULL) ||
         ((rearranger != PIO_REARR_BOX) && (rearranger != PIO_REARR_SUBSET)) ||
@@ -2575,9 +2566,7 @@ int PIOc_init_intercomm(int component_count, const MPI_Comm peer_comm,
         LOG((2, "Returned from pio_msg_handler2() ret = %d", ret));
     }
 
-#ifdef TIMING
     GPTLstop("PIO:PIOc_init_intercomm");
-#endif
     return PIO_NOERR;
 }
 

@@ -45,6 +45,8 @@
 #include <math.h>
 #ifdef TIMING
 #include <gptl.h>
+#else
+#include "gptl_skel.h"
 #endif
 #include <assert.h>
 

@@ -956,9 +956,7 @@ int PIOc_freedecomp(int iosysid, int ioid)
     int mpierr = MPI_SUCCESS;  /* Return code from MPI function calls. */
     int ret = 0;
 
-#ifdef TIMING
     GPTLstart("PIO:PIOc_freedecomp");
-#endif
     if (!(ios = pio_get_iosystem_from_id(iosysid)))
     {
         return pio_err(NULL, NULL, PIO_EBADID, __FILE__, __LINE__,
@@ -1042,9 +1040,7 @@ int PIOc_freedecomp(int iosysid, int ioid)
         return pio_err(ios, NULL, ret, __FILE__, __LINE__,
                         "Freeing PIO decomposition failed (iosysid = %d, ioid=%d). Error while trying to delete I/O descriptor from internal list", iosysid, ioid); 
     }
-#ifdef TIMING
     GPTLstop("PIO:PIOc_freedecomp");
-#endif
 
     return ret;
 }
@@ -2194,12 +2190,10 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
     int mpierr = MPI_SUCCESS;  /* Return code from MPI function codes. */
     int ierr = PIO_NOERR;              /* Return code from function calls. */
 
-#ifdef TIMING
     GPTLstart("PIO:PIOc_createfile_int");
 #ifdef _ADIOS2 /* TAHSIN: timing */
     if (*iotype == PIO_IOTYPE_ADIOS)
         GPTLstart("PIO:PIOc_createfile_int_adios"); /* TAHSIN: start */
-#endif
 #endif
     /* Get the IO system info from the iosysid. */
     if (!(ios = pio_get_iosystem_from_id(iosysid)))
@@ -2579,17 +2573,13 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
     /* If there was an error, free the memory we allocated and handle error. */
     if(ierr != PIO_NOERR){
 #ifdef _ADIOS2
-#ifdef TIMING /* TAHSIN: timing */
         if (file->iotype == PIO_IOTYPE_ADIOS)
             GPTLstop("PIO:PIOc_createfile_int_adios"); /* TAHSIN: stop */
-#endif
         free(file->filename);
 #endif
 
         free(file);
-#ifdef TIMING
         GPTLstop("PIO:PIOc_createfile_int");
-#endif
         return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
                         "Creating file (%s) failed. Internal error", filename);
     }
@@ -2617,12 +2607,10 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
     LOG((2, "Created file %s file->fh = %d file->pio_ncid = %d", filename,
          file->fh, file->pio_ncid));
 
-#ifdef TIMING
     GPTLstop("PIO:PIOc_createfile_int");
 #ifdef _ADIOS2 /* TAHSIN: timing */
     if (file->iotype == PIO_IOTYPE_ADIOS)
         GPTLstop("PIO:PIOc_createfile_int_adios"); /* TAHSIN: stop */
-#endif
 #endif
 
     return ierr;

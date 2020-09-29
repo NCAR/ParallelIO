@@ -132,13 +132,11 @@ int PIOc_createfile(int iosysid, int *ncidp, int *iotype, const char *filename,
     iosystem_desc_t *ios;  /* Pointer to io system information. */
     int ret;               /* Return code from function calls. */
 
-#ifdef TIMING
     GPTLstart("PIO:PIOc_createfile");
 
 #ifdef _ADIOS2 /* TAHSIN: timing */
     if (*iotype == PIO_IOTYPE_ADIOS)
         GPTLstart("PIO:PIOc_createfile_adios"); /* TAHSIN: start */
-#endif
 #endif
 
     /* Get the IO system info from the id. */
@@ -151,13 +149,11 @@ int PIOc_createfile(int iosysid, int *ncidp, int *iotype, const char *filename,
     /* Create the file. */
     if ((ret = PIOc_createfile_int(iosysid, ncidp, iotype, filename, mode)))
     {
-#ifdef TIMING
         GPTLstop("PIO:PIOc_createfile");
 
 #ifdef _ADIOS2 /* TAHSIN: timing */
         if (*iotype == PIO_IOTYPE_ADIOS)
             GPTLstop("PIO:PIOc_createfile_adios"); /* TAHSIN: stop */
-#endif
 #endif
 
         return pio_err(ios, NULL, ret, __FILE__, __LINE__,
@@ -178,13 +174,11 @@ int PIOc_createfile(int iosysid, int *ncidp, int *iotype, const char *filename,
         }
     }
 
-#ifdef TIMING
     GPTLstop("PIO:PIOc_createfile");
 
 #ifdef _ADIOS2 /* TAHSIN: timing */
     if (*iotype == PIO_IOTYPE_ADIOS)
         GPTLstop("PIO:PIOc_createfile_adios"); /* TAHSIN: stop */
-#endif
 #endif
 
     return ret;
@@ -373,9 +367,7 @@ int PIOc_closefile(int ncid)
     size_t len = 0;
 #endif
 
-#ifdef TIMING
     GPTLstart("PIO:PIOc_closefile");
-#endif
     LOG((1, "PIOc_closefile ncid = %d", ncid));
 
     /* Find the info about this file. */
@@ -386,7 +378,6 @@ int PIOc_closefile(int ncid)
     }
     ios = file->iosystem;
 
-#ifdef TIMING
 #ifdef _ADIOS2 /* TAHSIN: timing */
     if (file->iotype == PIO_IOTYPE_ADIOS)
         GPTLstart("PIO:PIOc_closefile_adios"); /* TAHSIN: start */
@@ -394,7 +385,6 @@ int PIOc_closefile(int ncid)
 
     if (file->mode & PIO_WRITE)
         GPTLstart("PIO:PIOc_closefile_write_mode");
-#endif
 
     /* Sync changes before closing on all tasks if async is not in
      * use, but only on non-IO tasks if async is in use. */
@@ -502,20 +492,16 @@ int PIOc_closefile(int ncid)
 
         free(file->filename);
 
-#ifdef TIMING
         if (file->iotype == PIO_IOTYPE_ADIOS)
             GPTLstop("PIO:PIOc_closefile_adios"); /* TAHSIN: stop */
 
         if (file->mode & PIO_WRITE)
             GPTLstop("PIO:PIOc_closefile_write_mode");
-#endif
 
         /* Delete file from our list of open files. */
         pio_delete_file_from_list(ncid);
 
-#ifdef TIMING
         GPTLstop("PIO:PIOc_closefile");
-#endif
 
         return PIO_NOERR;
     }
@@ -559,17 +545,13 @@ int PIOc_closefile(int ncid)
                         "Closing file (%s, ncid=%d) failed. Underlying I/O library (iotype=%s) call failed", pio_get_fname_from_file(file), file->pio_ncid, pio_iotype_to_string(file->iotype));
     }
 
-#ifdef TIMING
     if (file->mode & PIO_WRITE)
         GPTLstop("PIO:PIOc_closefile_write_mode");
-#endif
 
     /* Delete file from our list of open files. */
     pio_delete_file_from_list(ncid);
 
-#ifdef TIMING
     GPTLstop("PIO:PIOc_closefile");
-#endif
     return ierr;
 }
 
@@ -589,9 +571,7 @@ int PIOc_deletefile(int iosysid, const char *filename)
      int msg = PIO_MSG_DELETE_FILE;
     size_t len;
 
-#ifdef TIMING
     GPTLstart("PIO:PIOc_deletefile");
-#endif
     LOG((1, "PIOc_deletefile iosysid = %d filename = %s", iosysid, filename));
 
     /* Get the IO system info from the id. */
@@ -640,9 +620,7 @@ int PIOc_deletefile(int iosysid, const char *filename)
                     "Deleting file (%s) failed. Internal I/O library call failed.", (filename) ? filename : "NULL");
     }
 
-#ifdef TIMING
     GPTLstop("PIO:PIOc_deletefile");
-#endif
     return ierr;
 }
 
@@ -662,16 +640,12 @@ int PIOc_sync(int ncid)
 {
     int ierr = PIO_NOERR;  /* Return code from function calls. */
 
-#ifdef TIMING
     GPTLstart("PIO:PIOc_sync");
-#endif
 
     LOG((1, "PIOc_sync ncid = %d", ncid));
 
     ierr = sync_file(ncid);
 
-#ifdef TIMING
     GPTLstop("PIO:PIOc_sync");
-#endif
     return ierr;
 }

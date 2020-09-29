@@ -92,9 +92,7 @@ int pio_swapm(void *sendbuf, int *sendcounts, int *sdispls, MPI_Datatype *sendty
     MPI_Status status; /* Not actually used - replace with MPI_STATUSES_IGNORE. */
     int mpierr;  /* Return code from MPI functions. */
 
-#ifdef TIMING
     GPTLstart("PIO:pio_swapm");
-#endif
     LOG((2, "pio_swapm fc->hs = %d fc->isend = %d fc->max_pend_req = %d", fc->hs,
          fc->isend, fc->max_pend_req));
 
@@ -131,9 +129,7 @@ int pio_swapm(void *sendbuf, int *sendcounts, int *sdispls, MPI_Datatype *sendty
         if ((mpierr = MPI_Alltoallw(sendbuf, sendcounts, sdispls, sendtypes, recvbuf,
                                     recvcounts, rdispls, recvtypes, comm)))
             return check_mpi(NULL, NULL, mpierr, __FILE__, __LINE__);
-#ifdef TIMING
         GPTLstop("PIO:pio_swapm");
-#endif
         return PIO_NOERR;
     }
 
@@ -181,9 +177,7 @@ int pio_swapm(void *sendbuf, int *sendcounts, int *sdispls, MPI_Datatype *sendty
      * ntasks==1. */
     if (ntasks == 1)
     {
-#ifdef TIMING
         GPTLstop("PIO:pio_swapm");
-#endif
         return PIO_NOERR;
     }
 
@@ -213,9 +207,7 @@ int pio_swapm(void *sendbuf, int *sendcounts, int *sdispls, MPI_Datatype *sendty
 
     if (steps == 0)
     {
-#ifdef TIMING
         GPTLstop("PIO:pio_swapm");
-#endif
         return PIO_NOERR;
     }
 
@@ -384,9 +376,7 @@ int pio_swapm(void *sendbuf, int *sendcounts, int *sdispls, MPI_Datatype *sendty
                 return check_mpi(NULL, NULL, mpierr, __FILE__, __LINE__);
     }
 
-#ifdef TIMING
     GPTLstop("PIO:pio_swapm");
-#endif
     return PIO_NOERR;
 }
 

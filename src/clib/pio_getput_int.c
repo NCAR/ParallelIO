@@ -39,9 +39,7 @@ int PIOc_put_att_tc(int ncid, int varid, const char *name, nc_type atttype,
     int mpierr = MPI_SUCCESS;  /* Return code from MPI function codes. */
     int ierr = PIO_NOERR;           /* Return code from function calls. */
 
-#ifdef TIMING
     GPTLstart("PIO:PIOc_put_att_tc");
-#endif
     /* Find the info about this file. */
     if ((ierr = pio_get_file(ncid, &file)))
     {
@@ -50,11 +48,9 @@ int PIOc_put_att_tc(int ncid, int varid, const char *name, nc_type atttype,
     }
     ios = file->iosystem;
 
-#ifdef TIMING
 #ifdef _ADIOS2 /* TAHSIN: timing */
     if (file->iotype == PIO_IOTYPE_ADIOS)
         GPTLstart("PIO:PIOc_put_att_tc_adios"); /* TAHSIN: start */
-#endif
 #endif
 
     /* User must provide some valid parameters. */
@@ -168,13 +164,11 @@ int PIOc_put_att_tc(int ncid, int varid, const char *name, nc_type atttype,
             }
         }
 
-#ifdef TIMING
         GPTLstop("PIO:PIOc_put_att_tc");
 
 #ifdef _ADIOS2 /* TAHSIN: timing */
         if (file->iotype == PIO_IOTYPE_ADIOS)
             GPTLstop("PIO:PIOc_put_att_tc_adios"); /* TAHSIN: stop */
-#endif
 #endif
 
         return PIO_NOERR;
@@ -279,9 +273,7 @@ int PIOc_put_att_tc(int ncid, int varid, const char *name, nc_type atttype,
                         "Writing variable (%s, varid=%d) attribute (%s) to file (%s, ncid=%d) failed. Internal I/O library (%s) call failed", pio_get_vname_from_file(file, varid), varid, name, pio_get_fname_from_file(file), file->pio_ncid, pio_iotype_to_string(file->iotype));
     }
 
-#ifdef TIMING
     GPTLstop("PIO:PIOc_put_att_tc");
-#endif
     return PIO_NOERR;
 }
 
@@ -314,9 +306,7 @@ int PIOc_get_att_tc(int ncid, int varid, const char *name, nc_type memtype, void
     int mpierr = MPI_SUCCESS;  /* Return code from MPI function calls. */
     int ierr = PIO_NOERR;               /* Return code from function calls. */
 
-#ifdef TIMING
     GPTLstart("PIO:PIOc_get_att_tc");
-#endif
     /* Find the info about this file. */
     if ((ierr = pio_get_file(ncid, &file)))
     {
@@ -518,9 +508,7 @@ int PIOc_get_att_tc(int ncid, int varid, const char *name, nc_type memtype, void
         return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
 
     LOG((2, "get_att_tc data bcast complete"));
-#ifdef TIMING
     GPTLstop("PIO:PIOc_get_att_tc");
-#endif
     return PIO_NOERR;
 }
 
@@ -574,9 +562,7 @@ int PIOc_get_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
     int mpierr = MPI_SUCCESS;  /* Return code from MPI function codes. */
     int ierr = PIO_NOERR;                           /* Return code. */
 
-#ifdef TIMING
     GPTLstart("PIO:PIOc_get_vars_tc");
-#endif
     LOG((1, "PIOc_get_vars_tc ncid = %d varid = %d xtype = %d start_present = %d "
          "count_present = %d stride_present = %d", ncid, varid, xtype, start_present,
          count_present, stride_present));
@@ -836,9 +822,7 @@ int PIOc_get_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
         return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
     LOG((2, "PIOc_get_vars_tc bcasting data complete"));
 
-#ifdef TIMING
     GPTLstop("PIO:PIOc_get_vars_tc");
-#endif
     return PIO_NOERR;
 }
 
@@ -1025,9 +1009,7 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
     int mpierr = MPI_SUCCESS;  /* Return code from MPI function codes. */
     int ierr = PIO_NOERR;          /* Return code from function calls. */
 
-#ifdef TIMING
     GPTLstart("PIO:PIOc_put_vars_tc");
-#endif
     LOG((1, "PIOc_put_vars_tc ncid = %d varid = %d start_present = %d "
          "count_present = %d stride_present = %d xtype = %d", ncid, varid,
          start_present, count_present, stride_present, xtype));
@@ -1618,9 +1600,7 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
 
     LOG((2, "PIOc_put_vars_tc bcast netcdf return code %d complete", ierr));
 
-#ifdef TIMING
     GPTLstop("PIO:PIOc_put_vars_tc");
-#endif
     return PIO_NOERR;
 }
 

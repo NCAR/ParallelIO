@@ -119,9 +119,7 @@ int PIOc_write_darray_multi(int ncid, const int *varids, int ioid, int nvars,
     int mpierr = MPI_SUCCESS;  /* Return code from MPI function calls. */
     int ierr = PIO_NOERR;              /* Return code. */
 
-#ifdef TIMING
     GPTLstart("PIO:PIOc_write_darray_multi");
-#endif
     /* Get the file info. */
     if ((ierr = pio_get_file(ncid, &file)))
     {
@@ -520,9 +518,7 @@ int PIOc_write_darray_multi(int ncid, const int *varids, int ioid, int nvars,
         file->wb_pend = 0;
     }
 
-#ifdef TIMING
     GPTLstop("PIO:PIOc_write_darray_multi");
-#endif
     return PIO_NOERR;
 }
 
@@ -1242,9 +1238,7 @@ int PIOc_write_darray(int ncid, int varid, int ioid, PIO_Offset arraylen, void *
     int mpierr = MPI_SUCCESS;  /* Return code from MPI functions. */
     int ierr = PIO_NOERR;  /* Return code. */
 
-#ifdef TIMING
     GPTLstart("PIO:PIOc_write_darray");
-#endif
     LOG((1, "PIOc_write_darray ncid = %d varid = %d ioid = %d arraylen = %d",
          ncid, varid, ioid, arraylen));
 
@@ -1256,11 +1250,9 @@ int PIOc_write_darray(int ncid, int varid, int ioid, PIO_Offset arraylen, void *
     }
     ios = file->iosystem;
 
-#ifdef TIMING
 #ifdef _ADIOS2 /* TAHSIN: timing */
     if (file->iotype == PIO_IOTYPE_ADIOS)
         GPTLstart("PIO:PIOc_write_darray_adios"); /* TAHSIN: start */
-#endif
 #endif
 
     LOG((1, "PIOc_write_darray ncid=%d varid=%d wb_pend=%llu file_wb_pend=%llu",
@@ -1346,10 +1338,8 @@ int PIOc_write_darray(int ncid, int varid, int ioid, PIO_Offset arraylen, void *
     if (file->iotype == PIO_IOTYPE_ADIOS)
     {
         ierr = PIOc_write_darray_adios(file, varid, ioid, iodesc, arraylen, array, fillvalue);
-#ifdef TIMING
         GPTLstop("PIO:PIOc_write_darray_adios"); /* TAHSIN: stop */
         GPTLstop("PIO:PIOc_write_darray");
-#endif
         return ierr;
     }
 #endif
@@ -1600,9 +1590,7 @@ int PIOc_write_darray(int ncid, int varid, int ioid, PIO_Offset arraylen, void *
 #ifdef PIO_MICRO_TIMING
     mtimer_stop(file->varlist[varid].wr_mtimer, get_var_desc_str(ncid, varid, NULL));
 #endif
-#ifdef TIMING
     GPTLstop("PIO:PIOc_write_darray");
-#endif
     return PIO_NOERR;
 }
 
@@ -1634,9 +1622,7 @@ int PIOc_read_darray(int ncid, int varid, int ioid, PIO_Offset arraylen,
     int ierr = PIO_NOERR, mpierr = MPI_SUCCESS;           /* Return code. */
     int fndims = 0;
 
-#ifdef TIMING
     GPTLstart("PIO:PIOc_read_darray");
-#endif
     /* Get the file info. */
     if ((ierr = pio_get_file(ncid, &file)))
     {
@@ -1802,8 +1788,6 @@ int PIOc_read_darray(int ncid, int varid, int ioid, PIO_Offset arraylen,
 #ifdef PIO_MICRO_TIMING
     mtimer_stop(file->varlist[varid].rd_mtimer, get_var_desc_str(ncid, varid, NULL));
 #endif
-#ifdef TIMING
     GPTLstop("PIO:PIOc_read_darray");
-#endif
     return PIO_NOERR;
 }

@@ -856,9 +856,7 @@ int rearrange_comp2io(iosystem_desc_t *ios, io_desc_t *iodesc, void *sbuf,
     int mpierr;       /* Return code from MPI calls. */
     int ret;
 
-#ifdef TIMING
     GPTLstart("PIO:rearrange_comp2io");
-#endif
 
     /* Caller must provide these. */
     pioassert(ios && iodesc && nvars > 0, "invalid input", __FILE__, __LINE__);
@@ -1034,9 +1032,7 @@ int rearrange_comp2io(iosystem_desc_t *ios, io_desc_t *iodesc, void *sbuf,
                 return check_mpi(NULL, NULL, mpierr, __FILE__, __LINE__);
     }
 
-#ifdef TIMING
     GPTLstop("PIO:rearrange_comp2io");
-#endif
 
     return PIO_NOERR;
 }
@@ -1064,9 +1060,7 @@ int rearrange_io2comp(iosystem_desc_t *ios, io_desc_t *iodesc, void *sbuf,
     /* Check inputs. */
     pioassert(ios && iodesc, "invalid input", __FILE__, __LINE__);
 
-#ifdef TIMING
     GPTLstart("PIO:rearrange_io2comp");
-#endif
 
     /* Different rearrangers use different communicators and number of
      * IO tasks. */
@@ -1164,9 +1158,7 @@ int rearrange_io2comp(iosystem_desc_t *ios, io_desc_t *iodesc, void *sbuf,
                         "Rearranging data from I/O to compute processes failed. pio_swapm() call failed to transfer data between the processes");
     }
 
-#ifdef TIMING
     GPTLstop("PIO:rearrange_io2comp");
-#endif
 
     return PIO_NOERR;
 }
@@ -1273,9 +1265,7 @@ int box_rearrange_create(iosystem_desc_t *ios, int maplen, const PIO_Offset *com
 {
     int ret;
 
-#ifdef TIMING
     GPTLstart("PIO:box_rearrange_create");
-#endif
     /* Check inputs. */
     pioassert(ios && maplen >= 0 && compmap && gdimlen && ndims > 0 && iodesc,
               "invalid input", __FILE__, __LINE__);
@@ -1584,9 +1574,7 @@ int box_rearrange_create(iosystem_desc_t *ios, int maplen, const PIO_Offset *com
     }
     LOG((3, "iodesc->maxbytes = %d", iodesc->maxbytes));
 
-#ifdef TIMING
     GPTLstop("PIO:box_rearrange_create");
-#endif
     return PIO_NOERR;
 }
 
@@ -1598,9 +1586,7 @@ int box_rearrange_create_with_holes(iosystem_desc_t *ios, int maplen, const PIO_
 {
     int ret;
 
-#ifdef TIMING
     GPTLstart("PIO:box_rearrange_create_with_holes");
-#endif
     /* Check inputs. */
     pioassert(ios && maplen >= 0 && compmap && gdimlen && ndims > 0 && iodesc,
               "invalid input", __FILE__, __LINE__);
@@ -1893,9 +1879,7 @@ int box_rearrange_create_with_holes(iosystem_desc_t *ios, int maplen, const PIO_
     }
     LOG((3, "iodesc->maxbytes = %d", iodesc->maxbytes));
 
-#ifdef TIMING
     GPTLstop("PIO:box_rearrange_create_with_holes");
-#endif
     return PIO_NOERR;
 }
 
@@ -2164,9 +2148,7 @@ int subset_rearrange_create(iosystem_desc_t *ios, int maplen, PIO_Offset *compma
     int mpierr; /* Return call from MPI function calls. */
     int ret;
 
-#ifdef TIMING
     GPTLstart("PIO:subset_rearrange_create");
-#endif
     /* Check inputs. */
     pioassert(ios && maplen >= 0 && compmap && gdimlen && ndims >= 0 && iodesc,
               "invalid input", __FILE__, __LINE__);
@@ -2618,9 +2600,7 @@ int subset_rearrange_create(iosystem_desc_t *ios, int maplen, PIO_Offset *compma
                             "Creating SUBSET rearranger failed for I/O decomposition (ioid=%d) on iosystem (iosysid=%d). Calculating maximum aggregate bytes for the I/O decomposition failed", iodesc->ioid, ios->iosysid);
     }
 
-#ifdef TIMING
     GPTLstop("PIO:subset_rearrange_create");
-#endif
     return PIO_NOERR;
 }
 

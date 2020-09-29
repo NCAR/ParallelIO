@@ -176,10 +176,8 @@ int write_darray_multi_par(file_desc_t *file, int nvars, int fndims, const int *
          "iodesc->maxregions = %d iodesc->llen = %d", nvars, iodesc->ndims,
          iodesc->mpitype, iodesc->maxregions, iodesc->llen));
 
-#ifdef TIMING
     /* Start timing this function. */
     GPTLstart("PIO:write_darray_multi_par");
-#endif
 
     /* Get pointer to iosystem. */
     ios = file->iosystem;
@@ -438,10 +436,8 @@ int write_darray_multi_par(file_desc_t *file, int nvars, int fndims, const int *
     /* Check the return code from the netCDF/pnetcdf call. */
     ierr = check_netcdf(NULL, file, ierr, __FILE__,__LINE__);
 
-#ifdef TIMING
     /* Stop timing this function. */
     GPTLstop("PIO:write_darray_multi_par");
-#endif
 
     return ierr;
 }
@@ -858,10 +854,8 @@ int write_darray_multi_serial(file_desc_t *file, int nvars, int fndims, const in
     PIO_Offset llen = fill ? iodesc->holegridsize : iodesc->llen;
     void *iobuf = fill ? vdesc->fillbuf : file->iobuf[iodesc->ioid - PIO_IODESC_START_ID];
 
-#ifdef TIMING
     /* Start timing this function. */
     GPTLstart("PIO:write_darray_multi_serial");
-#endif
 
     /* Only IO tasks participate in this code. */
     if (ios->ioproc)
@@ -915,10 +909,8 @@ int write_darray_multi_serial(file_desc_t *file, int nvars, int fndims, const in
                         "Writing multiple variables (number of variables = %d) to file (%s, ncid=%d) using serial I/O failed. Internal error in I/O processes finding/sending/receiving start/count of I/O regions to write to file", nvars, pio_get_fname_from_file(file), file->pio_ncid);
     }
 
-#ifdef TIMING
     /* Stop timing this function. */
     GPTLstop("PIO:write_darray_multi_serial");
-#endif
 
     return PIO_NOERR;
 }
@@ -953,10 +945,8 @@ int pio_read_darray_nc(file_desc_t *file, int fndims, io_desc_t *iodesc, int vid
     pioassert(file && (fndims > 0) && file->iosystem && iodesc && vid <= PIO_MAX_VARS, "invalid input",
               __FILE__, __LINE__);
 
-#ifdef TIMING
     /* Start timing this function. */
     GPTLstart("PIO:read_darray_nc");
-#endif
 
     /* Get the IO system info. */
     ios = file->iosystem;
@@ -1170,10 +1160,8 @@ int pio_read_darray_nc(file_desc_t *file, int fndims, io_desc_t *iodesc, int vid
                         "Reading variable (%s, varid=%d) from file (%s, ncid=%d) failed with iotype=%s. The underlying I/O library (%s) call, nc*_get_var*, failed.", pio_get_vname_from_file(file, vid), vid, pio_get_fname_from_file(file), file->pio_ncid, pio_iotype_to_string(file->iotype), (file->iotype == PIO_IOTYPE_NETCDF4P) ? "NetCDF" : "PnetCDF");
     }
 
-#ifdef TIMING
     /* Stop timing this function. */
     GPTLstop("PIO:read_darray_nc");
-#endif
 
     return PIO_NOERR;
 }
@@ -1213,10 +1201,8 @@ int pio_read_darray_nc_serial(file_desc_t *file, int fndims, io_desc_t *iodesc, 
     pioassert(file && (fndims > 0) && file->iosystem && iodesc && vid >= 0 && vid <= PIO_MAX_VARS,
               "invalid input", __FILE__, __LINE__);
 
-#ifdef TIMING
     /* Start timing this function. */
     GPTLstart("PIO:read_darray_nc_serial");
-#endif
     ios = file->iosystem;
 
     /* Get var info for this var. */
@@ -1484,10 +1470,8 @@ int pio_read_darray_nc_serial(file_desc_t *file, int fndims, io_desc_t *iodesc, 
                         "Reading variable (%s, varid=%d) from file (%s, ncid=%d) with serial I/O failed. The underlying I/O library call to write data failed on root I/O process", pio_get_vname_from_file(file, vid), vid, pio_get_fname_from_file(file), file->pio_ncid);
     }
 
-#ifdef TIMING
     /* Stop timing this function. */
     GPTLstop("PIO:read_darray_nc_serial");
-#endif
 
     return PIO_NOERR;
 }
@@ -1811,9 +1795,7 @@ int flush_output_buffer(file_desc_t *file, bool force, PIO_Offset addsize)
     int mpierr = MPI_SUCCESS;  /* Return code from MPI functions. */
     int ierr = PIO_NOERR;
 
-#ifdef TIMING
     GPTLstart("PIO:flush_output_buffer");
-#endif
 #ifdef _PNETCDF
     var_desc_t *vdesc;
     PIO_Offset usage = 0;
@@ -2078,9 +2060,7 @@ int flush_output_buffer(file_desc_t *file, bool force, PIO_Offset addsize)
     }
 
 #endif /* _PNETCDF */
-#ifdef TIMING
     GPTLstop("PIO:flush_output_buffer");
-#endif
     return ierr;
 }
 
@@ -2146,9 +2126,7 @@ int flush_buffer(int ncid, wmulti_buffer *wmb, bool flushtodisk)
     file_desc_t *file;
     int ret;
 
-#ifdef TIMING
     GPTLstart("PIO:flush_buffer");
-#endif
     /* Check input. */
     pioassert(wmb, "invalid input", __FILE__, __LINE__);
 
@@ -2197,9 +2175,7 @@ int flush_buffer(int ncid, wmulti_buffer *wmb, bool flushtodisk)
         }
     }
 
-#ifdef TIMING
     GPTLstop("PIO:flush_buffer");
-#endif
     return PIO_NOERR;
 }
 
