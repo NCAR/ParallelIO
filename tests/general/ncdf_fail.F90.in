@@ -68,6 +68,101 @@ PIO_TF_AUTO_TEST_SUB_BEGIN test_redef_twice
 
 PIO_TF_AUTO_TEST_SUB_END test_redef_twice
 
+PIO_TF_AUTO_TEST_SUB_BEGIN test_inq_missing
+  use ncdf_fail_tgv
+  Implicit none
+  type(file_desc_t) :: pio_file
+  character(len=PIO_TF_MAX_STR_LEN), parameter :: fname = "ncdf_fail_test_inq_missing.nc"
+  character(len=PIO_TF_MAX_STR_LEN), parameter :: missing_data = "MISSING_VAL"
+  character(len=PIO_TF_MAX_STR_LEN) :: tmp_str
+  ! The file has no variables
+  integer, parameter :: INVALID_ID = 1000
+  integer :: var_id, dim_id, att_id, tmp_val
+  integer(kind=PIO_OFFSET_KIND) :: tmp_val2
+  integer :: ret
+
+  ret = PIO_createfile(pio_tf_iosystem_, pio_file, tgv_iotype, fname, PIO_CLOBBER)
+  PIO_TF_CHECK_ERR(ret, "Failed to create:" // trim(fname))
+
+  ret = PIO_enddef(pio_file)
+  PIO_TF_CHECK_ERR(ret, "Failed to end redef mode" // trim(fname))
+
+  ret = PIO_inq_varid(pio_file, missing_data, var_id)
+  PIO_TF_PASSERT(ret /= PIO_NOERR, "Querying missing var id did not fail as expected")
+
+  var_id = INVALID_ID
+
+  ret = PIO_inq_varname(pio_file, var_id, tmp_str)
+  PIO_TF_PASSERT(ret /= PIO_NOERR, "Querying missing var name did not fail as expected")
+
+  ret = PIO_inq_vartype(pio_file, var_id, tmp_val)
+  PIO_TF_PASSERT(ret /= PIO_NOERR, "Querying missing var type did not fail as expected")
+
+  ret = PIO_inq_varndims(pio_file, var_id, tmp_val)
+  PIO_TF_PASSERT(ret /= PIO_NOERR, "Querying missing var ndims did not fail as expected")
+
+  ret = PIO_inq_varnatts(pio_file, var_id, tmp_val)
+  PIO_TF_PASSERT(ret /= PIO_NOERR, "Querying missing var natts did not fail as expected")
+
+  ret = PIO_inq_dimid(pio_file, missing_data, dim_id)
+  PIO_TF_PASSERT(ret /= PIO_NOERR, "Querying missing dim id did not fail as expected")
+
+  dim_id = INVALID_ID
+
+  ret = PIO_inq_dimname(pio_file, dim_id, tmp_str)
+  PIO_TF_PASSERT(ret /= PIO_NOERR, "Querying missing dim name did not fail as expected")
+
+  ret = PIO_inq_dimlen(pio_file, dim_id, tmp_val)
+  PIO_TF_PASSERT(ret /= PIO_NOERR, "Querying missing dim len did not fail as expected")
+
+  att_id = INVALID_ID
+
+  ret = PIO_inq_attname(pio_file, var_id, att_id, tmp_str)
+  PIO_TF_PASSERT(ret /= PIO_NOERR, "Querying missing att name did not fail as expected")
+
+  ret = PIO_inq_attlen(pio_file, var_id, missing_data, tmp_val2)
+  PIO_TF_PASSERT(ret /= PIO_NOERR, "Querying missing att len did not fail as expected")
+
+  call PIO_closefile(pio_file)
+
+  call PIO_deletefile(pio_tf_iosystem_, fname)
+PIO_TF_AUTO_TEST_SUB_END test_inq_missing
+
+PIO_TF_AUTO_TEST_SUB_BEGIN test_get_missing
+  use ncdf_fail_tgv
+  Implicit none
+  type(file_desc_t) :: pio_file
+  character(len=PIO_TF_MAX_STR_LEN), parameter :: fname = "ncdf_fail_test_get_missing.nc"
+  character(len=PIO_TF_MAX_STR_LEN), parameter :: missing_data = "MISSING_VAL"
+  character(len=PIO_TF_MAX_STR_LEN) :: tmp_str
+  integer :: tmp_val(1)
+  ! The file has no variables
+  integer, parameter :: INVALID_ID = 1000
+  integer :: var_id
+  integer :: ret
+
+  ret = PIO_createfile(pio_tf_iosystem_, pio_file, tgv_iotype, fname, PIO_CLOBBER)
+  PIO_TF_CHECK_ERR(ret, "Failed to create:" // trim(fname))
+
+  ret = PIO_enddef(pio_file)
+  PIO_TF_CHECK_ERR(ret, "Failed to end redef mode" // trim(fname))
+
+  ret = PIO_inq_varid(pio_file, missing_data, var_id)
+  PIO_TF_PASSERT(ret /= PIO_NOERR, "Querying missing var id did not fail as expected")
+
+  var_id = INVALID_ID
+
+  ret = PIO_get_var(pio_file, var_id, tmp_val)
+  PIO_TF_PASSERT(ret /= PIO_NOERR, "Getting missing var did not fail as expected")
+
+  ret = PIO_get_att(pio_file, PIO_GLOBAL, missing_data, tmp_str)
+  PIO_TF_PASSERT(ret /= PIO_NOERR, "Getting missing att did not fail as expected")
+
+  call PIO_closefile(pio_file)
+
+  call PIO_deletefile(pio_tf_iosystem_, fname)
+PIO_TF_AUTO_TEST_SUB_END test_get_missing
+
 PIO_TF_TEST_DRIVER_BEGIN
   use ncdf_fail_tgv
   Implicit none
