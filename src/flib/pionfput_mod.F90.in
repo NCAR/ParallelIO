@@ -169,8 +169,8 @@ contains
         ierr = PIOc_put_var1_{NCTYPE} (file%fh, varid-1, cindex, ival)
         deallocate(cindex)
     else
-        print *, "PIO: WARNING: Empty index array passed to PIO_put_var"&
-                  " function put_var1_{TYPE}, a collective C API call will"&
+        print *, "PIO: WARNING: Empty index array passed to PIO_put_var",&
+                  " function put_var1_{TYPE}, a collective C API call will",&
                   " be skipped on this process. ", __PIO_FILE__, __LINE__
     end if
 #ifdef TIMING
@@ -223,8 +223,8 @@ contains
 !
     ierr = PIO_NOERR
     if(len(ival) == 0) then
-      print *, "PIO: WARNING: Empty {DIMS}d text data passed to PIO_put_var"&
-                " function put_var_{DIMS}d_text, a collective C API call will"&
+      print *, "PIO: WARNING: Empty {DIMS}d text data passed to PIO_put_var",&
+                " function put_var_{DIMS}d_text, a collective C API call will",&
                 " be skipped on this process. ", __PIO_FILE__, __LINE__
     end if
     ierr = get_text_var_sz(File, varid, clen, var_nstrs=nstrs)
@@ -309,8 +309,8 @@ contains
         ierr = put_var_internal_{TYPE} (File%fh, varid, cval)
         deallocate(cval)
     else
-        print *, "PIO: WARNING: Empty {DIMS}d {TYPE} data passed to PIO_put_var"&
-                  " function put_var_{DIMS}d_{TYPE}, a collective C API call will"&
+        print *, "PIO: WARNING: Empty {DIMS}d {TYPE} data passed to PIO_put_var",&
+                  " function put_var_{DIMS}d_{TYPE}, a collective C API call will",&
                   " be skipped on this process. ", __PIO_FILE__, __LINE__
     end if
 
@@ -464,8 +464,8 @@ contains
         ierr = PIOc_put_vara_text(file%fh, varid-1,  cstart, ccount, cval)
         deallocate(cval)
     else
-        print *, "PIO: WARNING: Empty {DIMS}d text data passed to PIO_put_var"&
-                  " function put_vara_{DIMS}d_text, a collective C API call will"&
+        print *, "PIO: WARNING: Empty {DIMS}d text data passed to PIO_put_var",&
+                  " function put_vara_{DIMS}d_text, a collective C API call will",&
                   " be skipped on this process. ", __PIO_FILE__, __LINE__
     end if
     deallocate(cstart, ccount)
