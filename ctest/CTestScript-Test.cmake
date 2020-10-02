@@ -25,7 +25,8 @@ ctest_start("${CTEST_SCRIPT_ARG}" APPEND)
 
 ## -- TEST
 if (DEFINED ENV{ADIOS_CTEST})
-ctest_test(INCLUDE "pio_unit_test|^init|pio_file|ncdf|pio_rearr\
+ctest_test(INCLUDE "pio_unit_test|^init|pio_file\
+|ncdf_get_put|ncdf_inq|ncdf_simple_tests|pio_rearr\
 |pio_decomp|pio_sync_tests|pio_buf_lim_tests|pio_iodesc_tests\
 |pio_iosystem_tests|examplePio|example1|darray_no_async")
 else ()
