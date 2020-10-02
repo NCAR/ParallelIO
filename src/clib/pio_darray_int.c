@@ -176,10 +176,8 @@ int write_darray_multi_par(file_desc_t *file, int nvars, int fndims, const int *
          "iodesc->maxregions = %d iodesc->llen = %d", nvars, iodesc->ndims,
          iodesc->mpitype, iodesc->maxregions, iodesc->llen));
 
-#ifdef TIMING
     /* Start timing this function. */
     GPTLstart("PIO:write_darray_multi_par");
-#endif
 
     /* Get pointer to iosystem. */
     ios = file->iosystem;
@@ -438,10 +436,8 @@ int write_darray_multi_par(file_desc_t *file, int nvars, int fndims, const int *
     /* Check the return code from the netCDF/pnetcdf call. */
     ierr = check_netcdf(NULL, file, ierr, __FILE__,__LINE__);
 
-#ifdef TIMING
     /* Stop timing this function. */
     GPTLstop("PIO:write_darray_multi_par");
-#endif
 
     return ierr;
 }
@@ -858,10 +854,8 @@ int write_darray_multi_serial(file_desc_t *file, int nvars, int fndims, const in
     PIO_Offset llen = fill ? iodesc->holegridsize : iodesc->llen;
     void *iobuf = fill ? vdesc->fillbuf : file->iobuf[iodesc->ioid - PIO_IODESC_START_ID];
 
-#ifdef TIMING
     /* Start timing this function. */
     GPTLstart("PIO:write_darray_multi_serial");
-#endif
 
     /* Only IO tasks participate in this code. */
     if (ios->ioproc)
@@ -911,14 +905,13 @@ int write_darray_multi_serial(file_desc_t *file, int nvars, int fndims, const in
     ierr = check_netcdf(ios, file, ierr, __FILE__, __LINE__);
     if(ierr != PIO_NOERR){
         LOG((1, "nc_put_vara* or sending data to root failed, ierr = %d", ierr));
+        GPTLstop("PIO:write_darray_multi_serial");
         return pio_err(ios, file, ierr, __FILE__, __LINE__,
                         "Writing multiple variables (number of variables = %d) to file (%s, ncid=%d) using serial I/O failed. Internal error in I/O processes finding/sending/receiving start/count of I/O regions to write to file", nvars, pio_get_fname_from_file(file), file->pio_ncid);
     }
 
-#ifdef TIMING
     /* Stop timing this function. */
     GPTLstop("PIO:write_darray_multi_serial");
-#endif
 
     return PIO_NOERR;
 }
@@ -953,10 +946,8 @@ int pio_read_darray_nc(file_desc_t *file, int fndims, io_desc_t *iodesc, int vid
     pioassert(file && (fndims > 0) && file->iosystem && iodesc && vid <= PIO_MAX_VARS, "invalid input",
               __FILE__, __LINE__);
 
-#ifdef TIMING
     /* Start timing this function. */
     GPTLstart("PIO:read_darray_nc");
-#endif
 
     /* Get the IO system info. */
     ios = file->iosystem;
@@ -1166,14 +1157,13 @@ int pio_read_darray_nc(file_desc_t *file, int fndims, io_desc_t *iodesc, int vid
     ierr = check_netcdf(NULL, file, ierr, __FILE__,__LINE__);
     if(ierr != PIO_NOERR){
         LOG((1, "nc*_get_var* failed, ierr = %d", ierr));
+        GPTLstop("PIO:read_darray_nc");
         return pio_err(NULL, file, ierr, __FILE__, __LINE__,
                         "Reading variable (%s, varid=%d) from file (%s, ncid=%d) failed with iotype=%s. The underlying I/O library (%s) call, nc*_get_var*, failed.", pio_get_vname_from_file(file, vid), vid, pio_get_fname_from_file(file), file->pio_ncid, pio_iotype_to_string(file->iotype), (file->iotype == PIO_IOTYPE_NETCDF4P) ? "NetCDF" : "PnetCDF");
     }
 
-#ifdef TIMING
     /* Stop timing this function. */
     GPTLstop("PIO:read_darray_nc");
-#endif
 
     return PIO_NOERR;
 }
@@ -1213,10 +1203,8 @@ int pio_read_darray_nc_serial(file_desc_t *file, int fndims, io_desc_t *iodesc, 
     pioassert(file && (fndims > 0) && file->iosystem && iodesc && vid >= 0 && vid <= PIO_MAX_VARS,
               "invalid input", __FILE__, __LINE__);
 
-#ifdef TIMING
     /* Start timing this function. */
     GPTLstart("PIO:read_darray_nc_serial");
-#endif
     ios = file->iosystem;
 
     /* Get var info for this var. */
@@ -1318,25 +1306,40 @@ int pio_read_darray_nc_serial(file_desc_t *file, int fndims, io_desc_t *iodesc, 
         if (ios->io_rank > 0)
         {
             if ((mpierr = MPI_Send(&iodesc->llen, 1, MPI_OFFSET, 0, ios->io_rank, ios->io_comm)))
+            {
+                GPTLstop("PIO:read_darray_nc_serial");
                 return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+            }
             LOG((3, "sent iodesc->llen = %d", iodesc->llen));
 
             if (iodesc->llen > 0)
             {
                 if ((mpierr = MPI_Send(&(iodesc->maxregions), 1, MPI_INT, 0,
                                        ios->num_iotasks + ios->io_rank, ios->io_comm)))
+                {
+                    GPTLstop("PIO:read_darray_nc_serial");
                     return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+                }
                 if ((mpierr = MPI_Send(tmp_count, iodesc->maxregions * fndims, MPI_OFFSET, 0,
                                        2 * ios->num_iotasks + ios->io_rank, ios->io_comm)))
+                {
+                    GPTLstop("PIO:read_darray_nc_serial");
                     return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+                }
                 if ((mpierr = MPI_Send(tmp_start, iodesc->maxregions * fndims, MPI_OFFSET, 0,
                                        3 * ios->num_iotasks + ios->io_rank, ios->io_comm)))
+                {
+                    GPTLstop("PIO:read_darray_nc_serial");
                     return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+                }
                 LOG((3, "sent iodesc->maxregions = %d tmp_count and tmp_start arrays", iodesc->maxregions));
 
                 if ((mpierr = MPI_Recv(iobuf, iodesc->llen, iodesc->mpitype, 0,
                                        4 * ios->num_iotasks + ios->io_rank, ios->io_comm, &status)))
+                {
+                    GPTLstop("PIO:read_darray_nc_serial");
                     return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+                }
                 LOG((3, "received %d elements of data", iodesc->llen));
             }
         }
@@ -1354,20 +1357,32 @@ int pio_read_darray_nc_serial(file_desc_t *file, int fndims, io_desc_t *iodesc, 
                 if (rtask < ios->num_iotasks)
                 {
                     if ((mpierr = MPI_Recv(&tmp_bufsize, 1, MPI_OFFSET, rtask, rtask, ios->io_comm, &status)))
+                    {
+                        GPTLstop("PIO:read_darray_nc_serial");
                         return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+                    }
                     LOG((3, "received tmp_bufsize = %d", tmp_bufsize));
 
                     if (tmp_bufsize > 0)
                     {
                         if ((mpierr = MPI_Recv(&maxregions, 1, MPI_INT, rtask, ios->num_iotasks + rtask,
                                                ios->io_comm, &status)))
+                        {
+                            GPTLstop("PIO:read_darray_nc_serial");
                             return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+                        }
                         if ((mpierr = MPI_Recv(this_count, maxregions * fndims, MPI_OFFSET, rtask,
                                                2 * ios->num_iotasks + rtask, ios->io_comm, &status)))
+                        {
+                            GPTLstop("PIO:read_darray_nc_serial");
                             return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+                        }
                         if ((mpierr = MPI_Recv(this_start, maxregions * fndims, MPI_OFFSET, rtask,
                                                3 * ios->num_iotasks + rtask, ios->io_comm, &status)))
+                        {
+                            GPTLstop("PIO:read_darray_nc_serial");
                             return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+                        }
                         LOG((3, "received maxregions = %d this_count, this_start arrays ", maxregions));
                     }
                 }
@@ -1473,21 +1488,23 @@ int pio_read_darray_nc_serial(file_desc_t *file, int fndims, io_desc_t *iodesc, 
                 if (rtask < ios->num_iotasks && tmp_bufsize > 0)
                     if ((mpierr = MPI_Send(iobuf, tmp_bufsize, iodesc->mpitype, rtask,
                                            4 * ios->num_iotasks + rtask, ios->io_comm)))
+                    {
+                        GPTLstop("PIO:read_darray_nc_serial");
                         return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+                    }
             }
         }
     }
     ierr = check_netcdf(NULL, file, ierr, __FILE__, __LINE__);
     if(ierr != PIO_NOERR){
         LOG((1, "nc*_get_var* failed, ierr = %d", ierr));
+        GPTLstop("PIO:read_darray_nc_serial");
         return pio_err(ios, file, ierr, __FILE__, __LINE__,
                         "Reading variable (%s, varid=%d) from file (%s, ncid=%d) with serial I/O failed. The underlying I/O library call to write data failed on root I/O process", pio_get_vname_from_file(file, vid), vid, pio_get_fname_from_file(file), file->pio_ncid);
     }
 
-#ifdef TIMING
     /* Stop timing this function. */
     GPTLstop("PIO:read_darray_nc_serial");
-#endif
 
     return PIO_NOERR;
 }
@@ -1811,9 +1828,7 @@ int flush_output_buffer(file_desc_t *file, bool force, PIO_Offset addsize)
     int mpierr = MPI_SUCCESS;  /* Return code from MPI functions. */
     int ierr = PIO_NOERR;
 
-#ifdef TIMING
     GPTLstart("PIO:flush_output_buffer");
-#endif
 #ifdef _PNETCDF
     var_desc_t *vdesc;
     PIO_Offset usage = 0;
@@ -1826,6 +1841,7 @@ int flush_output_buffer(file_desc_t *file, bool force, PIO_Offset addsize)
 	/* allow the buffer to be undefined */
 	if (ierr != NC_ENULLABUF)
         {
+            GPTLstop("PIO:flush_output_buffer");
             return pio_err(NULL, file, PIO_EBADID, __FILE__, __LINE__,
                               "Internal error flushing data written (ensuring/waiting_for all pending data is written to disk) to file (%s, ncid=%d). Unable to query the PnetCDF library buffer usage", file->fname, file->pio_ncid);
         }
@@ -1837,7 +1853,10 @@ int flush_output_buffer(file_desc_t *file, bool force, PIO_Offset addsize)
         usage += addsize;
         if ((mpierr = MPI_Allreduce(MPI_IN_PLACE, &usage, 1,  MPI_OFFSET,  MPI_MAX,
                                     file->iosystem->io_comm)))
+        {
+            GPTLstop("PIO:flush_output_buffer");
             return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+        }
     }
 
     /* Keep track of the maximum usage. */
@@ -1864,6 +1883,7 @@ int flush_output_buffer(file_desc_t *file, bool force, PIO_Offset addsize)
                 &req_block_ranges, &nreq_blocks);
         if(ierr != PIO_NOERR)
         {
+            GPTLstop("PIO:flush_output_buffer");
             return pio_err(file->iosystem, file, ierr, __FILE__, __LINE__,
                             "Unable to consolidate pending requests on file (%s, ncid=%d) to blocks (The function returned : Number of pending requests on file = %d, Number of variables with pending requests = %d, Number of request blocks = %d).", pio_get_fname_from_file(file), file->pio_ncid, nreqs, nvars_with_reqs, nreq_blocks); 
         }
@@ -1878,6 +1898,7 @@ int flush_output_buffer(file_desc_t *file, bool force, PIO_Offset addsize)
         if(!mtimer_is_valid(tmp_mt))
         {
             LOG((1, "Unable to create a temp timer"));
+            GPTLstop("PIO:flush_output_buffer");
             return pio_err(file->iosystem, file, PIO_EINTERNAL, __FILE__, __LINE__,
                               "Internal error flushing data written (ensuring/waiting_for all pending data is written to disk) to file (%s, ncid=%d). Unable to create a micro timer to measure wait/flush time", pio_get_fname_from_file(file), file->pio_ncid);
         }
@@ -1886,6 +1907,7 @@ int flush_output_buffer(file_desc_t *file, bool force, PIO_Offset addsize)
         if(ierr != PIO_NOERR)
         {
             LOG((1, "Unable to start the temp wait timer"));
+            GPTLstop("PIO:flush_output_buffer");
             return ierr;
         }
 
@@ -1903,6 +1925,7 @@ int flush_output_buffer(file_desc_t *file, bool force, PIO_Offset addsize)
                 if(ierr != PIO_NOERR)
                 {
                     LOG((1, "Unable to pause the timer"));
+                    GPTLstop("PIO:flush_output_buffer");
                     return ierr;
                 }
             }
@@ -1925,6 +1948,7 @@ int flush_output_buffer(file_desc_t *file, bool force, PIO_Offset addsize)
                 ierr = ncmpi_wait_all(file->fh, rcnt, request, status);
                 if(ierr != PIO_NOERR)
                 {
+                    GPTLstop("PIO:flush_output_buffer");
                     return pio_err(file->iosystem, file, ierr,
                                     __FILE__, __LINE__,
                                     "Waiting on pending requests on file (%s, ncid=%d) failed (Number of pending requests on file = %d, Number of variables with pending requests = %d, Number of requests currently being waited on = %d).", pio_get_fname_from_file(file), file->pio_ncid, nreqs, nvars_with_reqs, rcnt); 
@@ -1941,6 +1965,7 @@ int flush_output_buffer(file_desc_t *file, bool force, PIO_Offset addsize)
             ierr = ncmpi_wait_all(file->fh, rcnt, request, status);
             if(ierr != PIO_NOERR)
             {
+                GPTLstop("PIO:flush_output_buffer");
                 return pio_err(file->iosystem, file, ierr,
                                 __FILE__, __LINE__,
                                 "Waiting on pending requests on file (%s, ncid=%d) failed (Number of pending requests on file = %d, Number of variables with pending requests = %d, Number of requests currently being waited on = %d).", pio_get_fname_from_file(file), file->pio_ncid, nreqs, nvars_with_reqs, rcnt); 
@@ -1961,6 +1986,7 @@ int flush_output_buffer(file_desc_t *file, bool force, PIO_Offset addsize)
             ierr = ncmpi_wait_all(file->fh, rcnt, request, status);
             if(ierr != PIO_NOERR)
             {
+                GPTLstop("PIO:flush_output_buffer");
                 return pio_err(file->iosystem, file, ierr, __FILE__, __LINE__,
                                 "Waiting on pending requests on file (%s, ncid=%d) failed (Number of pending requests on file = %d, Number of variables with pending requests = %d, Number of request blocks = %d, Current block being waited on = %d, Number of requests in current block = %d).", pio_get_fname_from_file(file), file->pio_ncid, nreqs, nvars_with_reqs, nreq_blocks, k, rcnt); 
             }
@@ -1975,6 +2001,7 @@ int flush_output_buffer(file_desc_t *file, bool force, PIO_Offset addsize)
         if(ierr != PIO_NOERR)
         {
             LOG((1, "Unable to pause temp wait timer"));
+            GPTLstop("PIO:flush_output_buffer");
             return ierr;
         }
 
@@ -1984,6 +2011,7 @@ int flush_output_buffer(file_desc_t *file, bool force, PIO_Offset addsize)
         if(ierr != PIO_NOERR)
         {
             LOG((1, "Error trying to get wallclock time (temp wait timer)"));
+            GPTLstop("PIO:flush_output_buffer");
             return ierr;
         }
 
@@ -2009,6 +2037,7 @@ int flush_output_buffer(file_desc_t *file, bool force, PIO_Offset addsize)
                 if(ierr != PIO_NOERR)
                 {
                     LOG((1, "Unable to update variable write timer"));
+                    GPTLstop("PIO:flush_output_buffer");
                     return ierr;
                 }
 
@@ -2017,6 +2046,7 @@ int flush_output_buffer(file_desc_t *file, bool force, PIO_Offset addsize)
                 if(ierr != PIO_NOERR)
                 {
                     LOG((1, "Unable to disable async events for var"));
+                    GPTLstop("PIO:flush_output_buffer");
                     return ierr;
                 }
                 /* If timer was already running, restart it or else flush it */
@@ -2026,6 +2056,7 @@ int flush_output_buffer(file_desc_t *file, bool force, PIO_Offset addsize)
                     if(ierr != PIO_NOERR)
                     {
                         LOG((1, "Unable to resume variable write timer"));
+                        GPTLstop("PIO:flush_output_buffer");
                         return ierr;
                     }
                 }
@@ -2036,6 +2067,7 @@ int flush_output_buffer(file_desc_t *file, bool force, PIO_Offset addsize)
                     if(ierr != PIO_NOERR)
                     {
                         LOG((1, "Unable to flush timer"));
+                        GPTLstop("PIO:flush_output_buffer");
                         return ierr;
                     }
                 }
@@ -2078,9 +2110,7 @@ int flush_output_buffer(file_desc_t *file, bool force, PIO_Offset addsize)
     }
 
 #endif /* _PNETCDF */
-#ifdef TIMING
     GPTLstop("PIO:flush_output_buffer");
-#endif
     return ierr;
 }
 
@@ -2146,15 +2176,14 @@ int flush_buffer(int ncid, wmulti_buffer *wmb, bool flushtodisk)
     file_desc_t *file;
     int ret;
 
-#ifdef TIMING
     GPTLstart("PIO:flush_buffer");
-#endif
     /* Check input. */
     pioassert(wmb, "invalid input", __FILE__, __LINE__);
 
     /* Get the file info (to get error handler). */
     if ((ret = pio_get_file(ncid, &file)))
     {
+        GPTLstop("PIO:flush_buffer");
         return pio_err(NULL, NULL, ret, __FILE__, __LINE__,
                         "Internal error flushing data cached in a write multi buffer to %s. Invalid file id (ncid=%d) provided", (flushtodisk) ? "disk" : "I/O processes", ncid);
     }
@@ -2192,14 +2221,13 @@ int flush_buffer(int ncid, wmulti_buffer *wmb, bool flushtodisk)
 
         if (ret)
         {
+            GPTLstop("PIO:flush_buffer");
             return pio_err(NULL, file, ret, __FILE__, __LINE__,
                         "Internal error flushing data cached in a write multi buffer to file (%s, ncid=%d). Error while flushing data to %s. Internal error flushing arrays (%d) in the write multi buffer", pio_get_fname_from_file(file), file->pio_ncid, (flushtodisk) ? "disk" : "I/O processes", wmb->num_arrays);
         }
     }
 
-#ifdef TIMING
     GPTLstop("PIO:flush_buffer");
-#endif
     return PIO_NOERR;
 }
 

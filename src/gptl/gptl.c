@@ -627,6 +627,9 @@ int GPTLstart_instr (void *self)
   */
   
   if (ptr && ptr->onflg) {
+#ifdef GPTL_ASSERT_ON_RECURSION
+    assert(0);
+#endif
     ++ptr->recurselvl;
     return 0;
   }
@@ -714,6 +717,9 @@ int GPTLstart (const char *name)               /* timer name */
   */
 
   if (ptr && ptr->onflg) {
+#ifdef GPTL_ASSERT_ON_RECURSION
+    assert(0);
+#endif
     ++ptr->recurselvl;
     return 0;
   }
@@ -803,6 +809,9 @@ int GPTLstart_handle (const char *name,  /* timer name */
   */
 
   if (ptr && ptr->onflg) {
+#ifdef GPTL_ASSERT_ON_RECURSION
+    assert(0);
+#endif
     ++ptr->recurselvl;
     return 0;
   }

@@ -92,17 +92,21 @@ int pio_swapm(void *sendbuf, int *sendcounts, int *sdispls, MPI_Datatype *sendty
     MPI_Status status; /* Not actually used - replace with MPI_STATUSES_IGNORE. */
     int mpierr;  /* Return code from MPI functions. */
 
-#ifdef TIMING
     GPTLstart("PIO:pio_swapm");
-#endif
     LOG((2, "pio_swapm fc->hs = %d fc->isend = %d fc->max_pend_req = %d", fc->hs,
          fc->isend, fc->max_pend_req));
 
     /* Get my rank and size of communicator. */
     if ((mpierr = MPI_Comm_size(comm, &ntasks)))
+    {
+        GPTLstop("PIO:pio_swapm");
         return check_mpi(NULL, NULL, mpierr, __FILE__, __LINE__);
+    }
     if ((mpierr = MPI_Comm_rank(comm, &my_rank)))
+    {
+        GPTLstop("PIO:pio_swapm");
         return check_mpi(NULL, NULL, mpierr, __FILE__, __LINE__);
+    }
 
     LOG((2, "ntasks = %d my_rank = %d", ntasks, my_rank));
 
@@ -130,10 +134,11 @@ int pio_swapm(void *sendbuf, int *sendcounts, int *sdispls, MPI_Datatype *sendty
         LOG((3, "Calling MPI_Alltoallw without flow control."));
         if ((mpierr = MPI_Alltoallw(sendbuf, sendcounts, sdispls, sendtypes, recvbuf,
                                     recvcounts, rdispls, recvtypes, comm)))
+        {
+            GPTLstop("PIO:pio_swapm");
             return check_mpi(NULL, NULL, mpierr, __FILE__, __LINE__);
-#ifdef TIMING
+        }
         GPTLstop("PIO:pio_swapm");
-#endif
         return PIO_NOERR;
     }
 
@@ -161,17 +166,29 @@ int pio_swapm(void *sendbuf, int *sendcounts, int *sdispls, MPI_Datatype *sendty
         if ((mpierr = MPI_Sendrecv(sptr, sendcounts[my_rank],sendtypes[my_rank],
                                    my_rank, tag, rptr, recvcounts[my_rank], recvtypes[my_rank],
                                    my_rank, tag, comm, &status)))
+        {
+            GPTLstop("PIO:pio_swapm");
             return check_mpi(NULL, NULL, mpierr, __FILE__, __LINE__);
+        }
 #else
         if ((mpierr = MPI_Irecv(rptr, recvcounts[my_rank], recvtypes[my_rank],
                                 my_rank, tag, comm, rcvids)))
+        {
+            GPTLstop("PIO:pio_swapm");
             return check_mpi(NULL, NULL, mpierr, __FILE__, __LINE__);
+        }
         if ((mpierr = MPI_Send(sptr, sendcounts[my_rank], sendtypes[my_rank],
                                my_rank, tag, comm)))
+        {
+            GPTLstop("PIO:pio_swapm");
             return check_mpi(NULL, NULL, mpierr, __FILE__, __LINE__);
+        }
 
         if ((mpierr = MPI_Wait(rcvids, &status)))
+        {
+            GPTLstop("PIO:pio_swapm");
             return check_mpi(NULL, NULL, mpierr, __FILE__, __LINE__);
+        }
 #endif
     }
 
@@ -181,9 +198,7 @@ int pio_swapm(void *sendbuf, int *sendcounts, int *sdispls, MPI_Datatype *sendty
      * ntasks==1. */
     if (ntasks == 1)
     {
-#ifdef TIMING
         GPTLstop("PIO:pio_swapm");
-#endif
         return PIO_NOERR;
     }
 
@@ -213,9 +228,7 @@ int pio_swapm(void *sendbuf, int *sendcounts, int *sdispls, MPI_Datatype *sendty
 
     if (steps == 0)
     {
-#ifdef TIMING
         GPTLstop("PIO:pio_swapm");
-#endif
         return PIO_NOERR;
     }
 
@@ -262,7 +275,10 @@ int pio_swapm(void *sendbuf, int *sendcounts, int *sdispls, MPI_Datatype *sendty
             {
                 tag = my_rank + offset_t;
                 if ((mpierr = MPI_Irecv(&hs, 1, MPI_INT, p, tag, comm, hs_rcvids + istep)))
+                {
+                    GPTLstop("PIO:pio_swapm");
                     return check_mpi(NULL, NULL, mpierr, __FILE__, __LINE__);
+                }
             }
         }
     }
@@ -278,11 +294,17 @@ int pio_swapm(void *sendbuf, int *sendcounts, int *sdispls, MPI_Datatype *sendty
 
             if ((mpierr = MPI_Irecv(ptr, recvcounts[p], recvtypes[p], p, tag, comm,
                                     rcvids + istep)))
+            {
+                GPTLstop("PIO:pio_swapm");
                 return check_mpi(NULL, NULL, mpierr, __FILE__, __LINE__);
+            }
 
             if (fc->hs)
                 if ((mpierr = MPI_Send(&hs, 1, MPI_INT, p, tag, comm)))
+                {
+                    GPTLstop("PIO:pio_swapm");
                     return check_mpi(NULL, NULL, mpierr, __FILE__, __LINE__);
+                }
         }
     }
 
@@ -299,7 +321,10 @@ int pio_swapm(void *sendbuf, int *sendcounts, int *sdispls, MPI_Datatype *sendty
             if (fc->hs)
             {
                 if ((mpierr = MPI_Wait(hs_rcvids + istep, &status)))
+                {
+                    GPTLstop("PIO:pio_swapm");
                     return check_mpi(NULL, NULL, mpierr, __FILE__, __LINE__);
+                }
                 hs_rcvids[istep] = MPI_REQUEST_NULL;
             }
             ptr = (char *)sendbuf + sdispls[p];
@@ -316,23 +341,35 @@ int pio_swapm(void *sendbuf, int *sendcounts, int *sdispls, MPI_Datatype *sendty
 #ifndef _USE_MPI_RSEND
                 if ((mpierr = MPI_Isend(ptr, sendcounts[p], sendtypes[p], p, tag, comm,
                                         sndids + istep)))
+                {
+                    GPTLstop("PIO:pio_swapm");
                     return check_mpi(NULL, NULL, mpierr, __FILE__, __LINE__);
+                }
 #else
                 if ((mpierr = MPI_Irsend(ptr, sendcounts[p], sendtypes[p], p, tag, comm,
                                          sndids + istep)))
+                {
+                    GPTLstop("PIO:pio_swapm");
                     return check_mpi(NULL, NULL, mpierr, __FILE__, __LINE__);
+                }
 #endif
             }
             else if (fc->isend)
             {
                 if ((mpierr = MPI_Isend(ptr, sendcounts[p], sendtypes[p], p, tag, comm,
                                          sndids + istep)))
+                {
+                    GPTLstop("PIO:pio_swapm");
                     return check_mpi(NULL, NULL, mpierr, __FILE__, __LINE__);
+                }
             }
             else
             {
                 if ((mpierr = MPI_Send(ptr, sendcounts[p], sendtypes[p], p, tag, comm)))
+                {
+                    GPTLstop("PIO:pio_swapm");
                     return check_mpi(NULL, NULL, mpierr, __FILE__, __LINE__);
+                }
             }
         }
 
@@ -344,7 +381,10 @@ int pio_swapm(void *sendbuf, int *sendcounts, int *sdispls, MPI_Datatype *sendty
             if (rcvids[p] != MPI_REQUEST_NULL)
             {
                 if ((mpierr = MPI_Wait(rcvids + p, &status)))
+                {
+                    GPTLstop("PIO:pio_swapm");
                     return check_mpi(NULL, NULL, mpierr, __FILE__, __LINE__);
+                }
                 rcvids[p] = MPI_REQUEST_NULL;
             }
             if (rstep < steps)
@@ -354,7 +394,10 @@ int pio_swapm(void *sendbuf, int *sendcounts, int *sdispls, MPI_Datatype *sendty
                 {
                     tag = my_rank + offset_t;
                     if ((mpierr = MPI_Irecv(&hs, 1, MPI_INT, p, tag, comm, hs_rcvids+rstep)))
+                    {
+                        GPTLstop("PIO:pio_swapm");
                         return check_mpi(NULL, NULL, mpierr, __FILE__, __LINE__);
+                    }
                 }
                 if (recvcounts[p] > 0)
                 {
@@ -362,10 +405,16 @@ int pio_swapm(void *sendbuf, int *sendcounts, int *sdispls, MPI_Datatype *sendty
 
                     ptr = (char *)recvbuf + rdispls[p];
                     if ((mpierr = MPI_Irecv(ptr, recvcounts[p], recvtypes[p], p, tag, comm, rcvids + rstep)))
+                    {
+                        GPTLstop("PIO:pio_swapm");
                         return check_mpi(NULL, NULL, mpierr, __FILE__, __LINE__);
+                    }
                     if (fc->hs)
                         if ((mpierr = MPI_Send(&hs, 1, MPI_INT, p, tag, comm)))
+                        {
+                            GPTLstop("PIO:pio_swapm");
                             return check_mpi(NULL, NULL, mpierr, __FILE__, __LINE__);
+                        }
                 }
                 rstep++;
             }
@@ -378,15 +427,19 @@ int pio_swapm(void *sendbuf, int *sendcounts, int *sdispls, MPI_Datatype *sendty
     {
         LOG((2, "Waiting for outstanding msgs"));
         if ((mpierr = MPI_Waitall(steps, rcvids, MPI_STATUSES_IGNORE)))
+        {
+            GPTLstop("PIO:pio_swapm");
             return check_mpi(NULL, NULL, mpierr, __FILE__, __LINE__);
+        }
         if (fc->isend)
             if ((mpierr = MPI_Waitall(steps, sndids, MPI_STATUSES_IGNORE)))
+            {
+                GPTLstop("PIO:pio_swapm");
                 return check_mpi(NULL, NULL, mpierr, __FILE__, __LINE__);
+            }
     }
 
-#ifdef TIMING
     GPTLstop("PIO:pio_swapm");
-#endif
     return PIO_NOERR;
 }
 

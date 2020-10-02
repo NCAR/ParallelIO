@@ -33,6 +33,13 @@ target_include_directories (gptl
 target_compile_definitions (gptl
   PUBLIC INCLUDE_CMAKE_FCI)
 
+if (PIO_ENABLE_TIMING)
+  if (PIO_ENABLE_INTERNAL_TIMING)
+    target_compile_definitions (gptl
+      PRIVATE GPTL_ASSERT_ON_RECURSION)
+  endif ()
+endif ()
+
 if (CMAKE_SYSTEM_NAME MATCHES "AIX")
   target_compile_definitions (gptl
     PRIVATE _AIX)
