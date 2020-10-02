@@ -1,6 +1,6 @@
 include (LibMPI)
 
-include_directories("${CMAKE_SOURCE_DIR}/tests/cunit" "${CMAKE_BINARY_DIR}/src/clib")
+include_directories("${SCORPIO_SOURCE_DIR}/tests/cunit" "${SCORPIO_BINARY_DIR}/src/clib")
 
 # Compiler-specific compiler options
 string (TOUPPER "${CMAKE_C_COMPILER_ID}" CMAKE_C_COMPILER_NAME)

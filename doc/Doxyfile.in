@@ -772,7 +772,7 @@ INPUT                  = @CMAKE_CURRENT_SOURCE_DIR@/source \
                          @CMAKE_CURRENT_SOURCE_DIR@/../src/flib \
                          @CMAKE_CURRENT_SOURCE_DIR@/../examples/c \
                          @CMAKE_CURRENT_SOURCE_DIR@/../examples/f03 \
-                         @CMAKE_BINARY_DIR@/src/flib \
+                         @SCORPIO_BINARY_DIR@/src/flib \
 			 @C_SRC_FILES@
 
 # Uncomment this after the async code is fully merged into PIO.
@@ -818,8 +818,8 @@ RECURSIVE              = YES
 # run.
 
 EXCLUDE                = gptl \
-		         @CMAKE_BINARY_DIR@/src/flib/*.dir \
-		         @CMAKE_BINARY_DIR@/src/flib/genf90 \
+		         @SCORPIO_BINARY_DIR@/src/flib/*.dir \
+		         @SCORPIO_BINARY_DIR@/src/flib/genf90 \
                          _UNUSED_
 
 # The EXCLUDE_SYMLINKS tag can be used to select whether or not files or

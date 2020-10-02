@@ -128,7 +128,7 @@ function (add_mpi_test TESTNAME)
     else ()
                         
         # Run tests from the platform-specific executable
-        set (EXE_CMD ${CMAKE_SOURCE_DIR}/cmake/mpiexec.${PLATFORM} 
+        set (EXE_CMD ${SCORPIO_SOURCE_DIR}/cmake/mpiexec.${PLATFORM} 
                      ${num_procs} ${VALGRIND_COMMAND} ${VALGRIND_COMMAND_OPTIONS} ${exec_file} ${exec_args})
                      
     endif ()

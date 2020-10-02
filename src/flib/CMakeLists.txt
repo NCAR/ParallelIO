@@ -99,7 +99,7 @@ install (FILES ${PIO_Fortran_MODS} DESTINATION include)
 
 #===== genf90 =====
 if (NOT DEFINED GENF90_PATH)
-  set (GENF90_PATH ${CMAKE_SOURCE_DIR}/src/genf90)
+  set (GENF90_PATH ${SCORPIO_SOURCE_DIR}/src/genf90)
 endif ()
 add_custom_target(genf90
   DEPENDS ${GENF90_PATH}/genf90.pl)

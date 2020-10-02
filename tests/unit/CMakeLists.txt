@@ -1,6 +1,6 @@
 include (LibMPI)
 
-include_directories("${CMAKE_SOURCE_DIR}/tests/unit")
+include_directories("${SCORPIO_SOURCE_DIR}/tests/unit")
 
 #==============================================================================
 #  PREPARE FOR TESTING
