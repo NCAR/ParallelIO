@@ -30,7 +30,11 @@ static int get_user_options(
     mem_opt = 0;
     debug_lvl = 0;
 
+#ifdef SPIO_NO_CXX_REGEX
+    ap.no_regex_parse(argc, argv);
+#else
     ap.parse(argc, argv);
+#endif
     if (!ap.has_arg("bp-file") && !ap.has_arg("idir"))
     {
         ap.print_usage(std::cerr);
