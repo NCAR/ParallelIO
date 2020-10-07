@@ -119,9 +119,11 @@ int main(int argc, char *argv[])
     }
 
 #ifdef TIMING
+#ifndef TIMING_INTERNAL
     /* Initialize the GPTL timing library. */
     if ((ret = GPTLinitialize()))
         return ret;
+#endif
 #endif
 
     SetDebugOutput(debug_lvl);
@@ -137,9 +139,11 @@ int main(int argc, char *argv[])
     MPI_Barrier(comm_in);
 
 #ifdef TIMING
+#ifndef TIMING_INTERNAL
     /* Finalize the GPTL timing library. */
     if ((ret = GPTLfinalize()))
         return ret;
+#endif
 #endif
 
     MPI_Finalize();
