@@ -30,8 +30,8 @@ target_include_directories(adios2pio-nm-lib PUBLIC
   ${SCORPIO_SOURCE_DIR}/src/clib
   ${SCORPIO_BINARY_DIR}/src/clib
   ${SCORPIO_SOURCE_DIR}/tools/util
-  ${NETCDF_C_INCLUDE_DIRS} 
-  ${PnetCDF_C_INCLUDE_DIRS} 
+  ${PnetCDF_C_INCLUDE_DIRS}
+  ${NETCDF_C_INCLUDE_DIRS}
   ${PIO_C_EXTRA_INCLUDE_DIRS})
 
 # System and compiler CPP directives
@@ -55,6 +55,31 @@ install (FILES ${CMAKE_CURRENT_SOURCE_DIR}/adios2pio-nm-lib.h DESTINATION includ
 
 # Binary utilities
 install (TARGETS adios2pio-nm.exe DESTINATION bin)
+
+#===== PnetCDF-C =====
+if (WITH_PNETCDF)
+  find_package (PnetCDF ${PNETCDF_MIN_VER_REQD} COMPONENTS C)
+endif ()
+if (PnetCDF_C_FOUND)
+  target_include_directories (adios2pio-nm-lib
+    PUBLIC ${PnetCDF_C_INCLUDE_DIRS})
+  target_compile_definitions (adios2pio-nm-lib
+    PUBLIC _PNETCDF)
+  target_link_libraries (adios2pio-nm-lib
+    PUBLIC ${PnetCDF_C_LIBRARIES})
+
+  # Check library for varn functions
+  set (CMAKE_REQUIRED_LIBRARIES ${PnetCDF_C_LIBRARY})
+  check_function_exists (ncmpi_get_varn PnetCDF_C_HAS_VARN)
+  if (PnetCDF_C_HAS_VARN)
+    target_compile_definitions(adios2pio-nm-lib
+      PUBLIC USE_PNETCDF_VARN
+      PUBLIC USE_PNETCDF_VARN_ON_READ)
+  endif()
+else ()
+  target_compile_definitions (adios2pio-nm-lib
+    PUBLIC _NOPNETCDF)
+endif ()
 
 #===== NetCDF-C =====
 if (WITH_NETCDF)
@@ -81,31 +106,6 @@ if (NetCDF_C_FOUND)
 else ()
   target_compile_definitions (adios2pio-nm-lib
     PUBLIC _NONETCDF)
-endif ()
-
-#===== PnetCDF-C =====
-if (WITH_PNETCDF)
-  find_package (PnetCDF ${PNETCDF_MIN_VER_REQD} COMPONENTS C)
-endif ()
-if (PnetCDF_C_FOUND)
-  target_include_directories (adios2pio-nm-lib
-    PUBLIC ${PnetCDF_C_INCLUDE_DIRS})
-  target_compile_definitions (adios2pio-nm-lib
-    PUBLIC _PNETCDF)
-  target_link_libraries (adios2pio-nm-lib
-    PUBLIC ${PnetCDF_C_LIBRARIES})
-
-  # Check library for varn functions
-  set (CMAKE_REQUIRED_LIBRARIES ${PnetCDF_C_LIBRARY})
-  check_function_exists (ncmpi_get_varn PnetCDF_C_HAS_VARN)
-  if (PnetCDF_C_HAS_VARN)
-    target_compile_definitions(adios2pio-nm-lib
-      PUBLIC USE_PNETCDF_VARN
-      PUBLIC USE_PNETCDF_VARN_ON_READ)
-  endif()
-else ()
-  target_compile_definitions (adios2pio-nm-lib
-    PUBLIC _NOPNETCDF)
 endif ()
 
 #===== ADIOS-C =====
