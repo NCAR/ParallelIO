@@ -17,6 +17,52 @@ static void init_user_options(spio_tool_utils::ArgParser &ap)
       .add_opt("verbose", "Turn on verbose info messages");
 }
 
+/* Convert BP dir name (that contains the ADIOS BP data)
+ * to the corresponding NetCDF file name by stripping
+ * off the file type extensions at the end of the BP dir name.
+ *
+ * BP dir names are of the form "^.*([.]nc)?[.]bp$"
+ * The returned string is the BP dir name stripped off the
+ * ".nc" and ".bp" extensions
+ */
+static std::string strip_ftype_ext(const std::string &bp_dname)
+{
+#ifdef SPIO_NO_CXX_REGEX
+    const std::string bp_ext(".bp");
+    const std::string nc_opt_ext(".nc");
+    std::size_t ext_sz = bp_ext.size();
+    if (bp_dname.size() > ext_sz)
+    {
+        std::size_t chars_to_trim = 0;
+        if (bp_dname.substr(bp_dname.size() - ext_sz, ext_sz) ==  bp_ext)
+        {
+            chars_to_trim += ext_sz;
+            ext_sz = nc_opt_ext.size();
+            if (bp_dname.size() > chars_to_trim + ext_sz)
+            {
+                if (bp_dname.substr(bp_dname.size() - chars_to_trim - ext_sz, ext_sz)
+                      == nc_opt_ext)
+                {
+                    chars_to_trim += ext_sz;
+                }
+            }
+
+            return bp_dname.substr(0, bp_dname.size() - chars_to_trim);
+        }
+    }
+#else
+    const std::string BP_DIR_RGX_STR("(.*)([.]nc)?[.]bp");
+    std::regex bp_dir_rgx(BP_DIR_RGX_STR.c_str());
+    std::smatch match;
+    if (std::regex_search(bp_dname, match, bp_dir_rgx) &&
+        match.size() >= 2)
+    {
+        return match.str(1);
+    }
+#endif
+    return std::string();
+}
+
 static int get_user_options(
               spio_tool_utils::ArgParser &ap,
               int argc, char *argv[],
@@ -49,19 +95,12 @@ static int get_user_options(
         }
         else
         {
-            const std::string BP_DIR_RGX_STR("(.*)([.]nc)?[.]bp");
-            std::regex bp_dir_rgx(BP_DIR_RGX_STR.c_str());
-            std::smatch match;
-            if (std::regex_search(ifile, match, bp_dir_rgx) &&
-                match.size() >= 2)
-            {
-                ofile = match.str(1);
-            }
-            else
-            {
-                ap.print_usage(std::cerr);
-                return 1;
-            }
+            ofile = strip_ftype_ext(ifile);
+        }
+        if (ofile.size() == 0)
+        {
+            ap.print_usage(std::cerr);
+            return 1;
         }
     }
     else
