@@ -14,6 +14,13 @@ if (FQDN_SITENAME MATCHES "^.*summit[.]olcf")
   endif()
 endif()
 
+# GNU implemented a working version of C++11 regex
+# in version >= 4.9
+if ((CMAKE_CXX_COMPILER_NAME STREQUAL "GNU") AND
+    (CMAKE_CXX_COMPILER_VERSION VERSION_LESS "4.9"))
+  add_definitions(-DSPIO_NO_CXX_REGEX)
+endif()
+
 if (WITH_ADIOS2)
   find_package (ADIOS2 ${ADIOS_MIN_VER_REQD})
   if (ADIOS2_FOUND)
