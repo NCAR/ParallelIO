@@ -611,6 +611,14 @@ namespace PIO_Util{
   }
 } // namespace PIO_Util
 
+#ifdef SPIO_NO_CXX_REGEX
+bool pio_save_decomps_regex_match(int ioid, const char *fname, const char *vname)
+{
+  LOG((1, "WARNING: Since C++11 regex support is not available all decomps are matched/saved"));
+  /* Match everything */
+  return true;
+}
+#else /* SPIO_NO_CXX_REGEX */
 static PIO_Util::PIO_save_decomp_regex pio_sdecomp_regex(PIO_SAVE_DECOMPS_REGEX);
 
 bool pio_save_decomps_regex_match(int ioid, const char *fname, const char *vname)
@@ -623,3 +631,4 @@ bool pio_save_decomps_regex_match(int ioid, const char *fname, const char *vname
   std::string vname_str((vname) ? vname : "");
   return pio_sdecomp_regex.matches(ioid, fname_str, vname_str);
 }
+#endif /* SPIO_NO_CXX_REGEX */
