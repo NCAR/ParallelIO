@@ -185,17 +185,15 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
   endif()
 endif ()
 
-# Disable C++11 regex usage for IBM XL and PGI compilers on Summit
-# The IBM XL compiler (16.1.1-8) and the PGI compiler (20.1) on Summit
-# have a buggy support for C++11 regex
+# Disable C++11 regex usage for IBM XL and PGI compilers
+# The IBM XL compiler (16.1.1-8) and the PGI compiler (20.1) on Summit,
+# and the PGI compiler (19.10) on compy have a buggy support for
+# C++11 regex
 string (TOUPPER "${CMAKE_CXX_COMPILER_ID}" CMAKE_CXX_COMPILER_NAME)
-cmake_host_system_information (RESULT FQDN_SITENAME QUERY FQDN)
-if (FQDN_SITENAME MATCHES "^.*summit[.]olcf")
-  if ((CMAKE_CXX_COMPILER_NAME STREQUAL "XL") OR
-      (CMAKE_CXX_COMPILER_NAME STREQUAL "PGI"))
-    message (WARNING "C++11 regex support is disabled since the compiler does not support it")
-    add_definitions(-DSPIO_NO_CXX_REGEX)
-  endif()
+if ((CMAKE_CXX_COMPILER_NAME STREQUAL "XL") OR
+    (CMAKE_CXX_COMPILER_NAME STREQUAL "PGI"))
+  message (WARNING "C++11 regex support is disabled since the compiler does not support it")
+  add_definitions(-DSPIO_NO_CXX_REGEX)
 endif()
 
 #==============================================================================
