@@ -2396,6 +2396,44 @@ int ConvertBPToNC(const string &infilepath, const string &outfilename,
     return BP2PIO_NOERR;
 }
 
+/* Checks if bp_dname is a BP directory name
+ * All BP dirs that we need to process are
+ * named: "^.*[.]nc[.]bp[.]dir$"
+ * If the directory name follows the convention
+ * the directory name without the file type
+ * extensions, ".nc.bp.dir", is returned in
+ * string bp_dname_no_fext
+ */
+static bool IsBPDir(const std::string &bp_dname,
+                      std::string &bp_dname_no_fext)
+{
+#ifdef SPIO_NO_CXX_REGEX
+    const std::string BPDIR_NAME_EXT(".nc.bp.dir");
+    std::size_t ext_sz = BPDIR_NAME_EXT.size();
+    if (bp_dname.size() > ext_sz)
+    {
+        if(bp_dname.substr(bp_dname.size() - ext_sz, ext_sz) ==
+            BPDIR_NAME_EXT)
+        {
+            bp_dname_no_fext = bp_dname.substr(0, bp_dname.size() - ext_sz);
+            return true;
+        }
+    }
+#else
+    const string BPDIR_NAME_RGX_STR("(.*)[.]nc[.]bp[.]dir");
+    regex bpdir_name_rgx(BPDIR_NAME_RGX_STR.c_str());
+    smatch match;
+
+    if (regex_search(bp_dname, match, bpdir_name_rgx) &&
+            (match.size() == 2))
+    {
+        bp_dname_no_fext = match.str(1);
+        return true;
+    }
+#endif
+    return false;
+}
+
 /* Find BP directories, named "*.bp.dir", in bppdir and the
  * corresponding file name prefixes to be used for converted
  * files
@@ -2411,23 +2449,20 @@ static int FindBPDirs(const string &bppdir,
         return BP2PIO_ERROR;
     }
 
-    const string BPDIR_NAME_RGX_STR("(.*)([.]nc)[.]bp[.]dir");
-    regex bpdir_name_rgx(BPDIR_NAME_RGX_STR.c_str());
     struct dirent *pde = NULL;
     while ((pde = readdir(pdir)) != NULL)
     {
-        smatch match;
-        string dname(pde->d_name);
         assert(pde);
+        string dname(pde->d_name);
         /* Add dirs named "*.bp.dir" to bpdirs */
+        string dname_prefix;
         if ((pde->d_type == DT_DIR) &&
-            regex_search(dname, match, bpdir_name_rgx) &&
-            (match.size() == 3))
+            IsBPDir(dname, dname_prefix))
         {
-            conv_fname_prefixes.push_back(match.str(1));
+            conv_fname_prefixes.push_back(dname_prefix);
             const std::string NC_SUFFIX(".nc");
             const std::string BP_SUFFIX(".bp");
-            bpdirs.push_back(match.str(1) + match.str(2) + BP_SUFFIX);
+            bpdirs.push_back(dname_prefix + NC_SUFFIX + BP_SUFFIX);
         }
     }
 

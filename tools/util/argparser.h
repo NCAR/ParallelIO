@@ -19,6 +19,12 @@ class ArgParser{
                         const std::string &help_str);
     /* Parse the command line arguments in argv[] */
     void parse(int argc, char *argv[]);
+    /* Parse the command line arguments in argv[]
+     * without using regex
+     * This func supports compilers that do not have
+     * adequate support for regex
+     */
+    void no_regex_parse(int argc, char *argv[]);
     /* Returns true if option, opt, specified via command
      * line arguments and is parsed by the parser
      */
@@ -39,6 +45,7 @@ class ArgParser{
      * line via parse()
      */
     std::map<std::string, std::string> arg_map_;
+    const std::string NOVAL_OPT_STR;
     /* Executable name */
     std::string prog_name_;
     MPI_Comm comm_;
@@ -46,6 +53,10 @@ class ArgParser{
     bool is_root_;
     /* To prevent printing usage/help multiple times */ 
     mutable bool printed_usage_;
+
+    /* Tokenize user command line args */
+    void tokenize_cmd_line_args(const std::string &arg,
+      std::vector<std::string> &tokens) const;
 };
 
 template<typename T>

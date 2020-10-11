@@ -41,7 +41,11 @@ static int get_user_options(
   MPI_Comm_size(comm_in, &sz);
   verbose = false;
 
+#ifdef SPIO_NO_CXX_REGEX
+  ap.no_regex_parse(argc, argv);
+#else
   ap.parse(argc, argv);
+#endif
 
   if (ap.has_arg("verbose")){
     verbose = true;    

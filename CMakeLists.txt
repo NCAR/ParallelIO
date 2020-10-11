@@ -177,12 +177,24 @@ set (CMAKE_Fortran_COMPILER_DIRECTIVE "CPR${CMAKE_Fortran_COMPILER_NAME}"
 #==============================================================================
 #  CHECK MIN VERSION OF COMPILERS REQD
 #==============================================================================
-# Regex is only available in GCC 4.9+ (> 4.8)
+# Regex is only available in GCC 4.9+ (>= 4.9)
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-  if (NOT CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 4.8)
-    message (FATAL_ERROR "SCORPIO requires GCC 4.9+ to build correctly")
+  if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS "4.9")
+    message (WARNING "C++11 regex support is disabled since the compiler does not support it")
+    add_definitions(-DSPIO_NO_CXX_REGEX)
   endif()
 endif ()
+
+# Disable C++11 regex usage for IBM XL and PGI compilers
+# The IBM XL compiler (16.1.1-8) and the PGI compiler (20.1) on Summit,
+# and the PGI compiler (19.10) on compy have a buggy support for
+# C++11 regex
+string (TOUPPER "${CMAKE_CXX_COMPILER_ID}" CMAKE_CXX_COMPILER_NAME)
+if ((CMAKE_CXX_COMPILER_NAME STREQUAL "XL") OR
+    (CMAKE_CXX_COMPILER_NAME STREQUAL "PGI"))
+  message (WARNING "C++11 regex support is disabled since the compiler does not support it")
+  add_definitions(-DSPIO_NO_CXX_REGEX)
+endif()
 
 #==============================================================================
 #  MIN VERSION OF LIBRARIES REQD

@@ -17,6 +17,39 @@ static void init_user_options(spio_tool_utils::ArgParser &ap)
       .add_opt("verbose", "Turn on verbose info messages");
 }
 
+/* Convert BP file name (<BP_FILE_NAME>.dir contains the ADIOS BP data)
+ * to the corresponding NetCDF file name by stripping off the BP
+ * file type extension at the end of the BP file name.
+ *
+ * BP file names are of the form "^.*([.]nc)?[.]bp$"
+ * The returned string is the BP file name stripped off the
+ * ".bp" extension
+ */
+static std::string strip_bp_ext(const std::string &bp_fname)
+{
+#ifdef SPIO_NO_CXX_REGEX
+    const std::string bp_ext(".bp");
+    std::size_t ext_sz = bp_ext.size();
+    if (bp_fname.size() > ext_sz)
+    {
+        if (bp_fname.substr(bp_fname.size() - ext_sz, ext_sz) ==  bp_ext)
+        {
+            return bp_fname.substr(0, bp_fname.size() - ext_sz);
+        }
+    }
+#else
+    const std::string BP_FILE_RGX_STR("(.*)[.]bp");
+    std::regex bp_file_rgx(BP_FILE_RGX_STR.c_str());
+    std::smatch match;
+    if (std::regex_search(bp_fname, match, bp_file_rgx) &&
+        match.size() == 2)
+    {
+        return match.str(1);
+    }
+#endif
+    return std::string();
+}
+
 static int get_user_options(
               spio_tool_utils::ArgParser &ap,
               int argc, char *argv[],
@@ -30,7 +63,11 @@ static int get_user_options(
     mem_opt = 0;
     debug_lvl = 0;
 
+#ifdef SPIO_NO_CXX_REGEX
+    ap.no_regex_parse(argc, argv);
+#else
     ap.parse(argc, argv);
+#endif
     if (!ap.has_arg("bp-file") && !ap.has_arg("idir"))
     {
         ap.print_usage(std::cerr);
@@ -45,19 +82,12 @@ static int get_user_options(
         }
         else
         {
-            const std::string BP_DIR_RGX_STR("(.*)([.]nc)?[.]bp");
-            std::regex bp_dir_rgx(BP_DIR_RGX_STR.c_str());
-            std::smatch match;
-            if (std::regex_search(ifile, match, bp_dir_rgx) &&
-                match.size() >= 2)
-            {
-                ofile = match.str(1);
-            }
-            else
-            {
-                ap.print_usage(std::cerr);
-                return 1;
-            }
+            ofile = strip_bp_ext(ifile);
+        }
+        if (ofile.size() == 0)
+        {
+            ap.print_usage(std::cerr);
+            return 1;
         }
     }
     else
@@ -115,9 +145,11 @@ int main(int argc, char *argv[])
     }
 
 #ifdef TIMING
+#ifndef TIMING_INTERNAL
     /* Initialize the GPTL timing library. */
     if ((ret = GPTLinitialize()))
         return ret;
+#endif
 #endif
 
     SetDebugOutput(debug_lvl);
@@ -133,9 +165,11 @@ int main(int argc, char *argv[])
     MPI_Barrier(comm_in);
 
 #ifdef TIMING
+#ifndef TIMING_INTERNAL
     /* Finalize the GPTL timing library. */
     if ((ret = GPTLfinalize()))
         return ret;
+#endif
 #endif
 
     MPI_Finalize();
