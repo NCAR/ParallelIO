@@ -94,8 +94,7 @@ if (NOT PIO_USE_MPISERIAL)
   target_link_libraries (test_darray_fill pioc)
   add_executable (test_decomp_frame EXCLUDE_FROM_ALL test_decomp_frame.c test_common.c)
   target_link_libraries (test_decomp_frame pioc)
-  if (PIO_USE_MALLOC)
-    add_executable (test_perf2 EXCLUDE_FROM_ALL test_perf2.c test_common.c)
+  add_executable (test_perf2 EXCLUDE_FROM_ALL test_perf2.c test_common.c)
     target_link_libraries (test_perf2)
     add_executable (test_darray_async_simple EXCLUDE_FROM_ALL test_darray_async_simple.c test_common.c)
     target_link_libraries (test_darray_async_simple pioc)
@@ -115,7 +114,6 @@ if (NOT PIO_USE_MPISERIAL)
     target_link_libraries (test_async_1d pioc)
     add_executable (test_simple EXCLUDE_FROM_ALL test_simple.c test_common.c)
     target_link_libraries (test_simple pioc)
-  endif ()
 endif ()
 add_executable (test_spmd EXCLUDE_FROM_ALL test_spmd.c test_common.c)
 target_link_libraries (test_spmd pioc)
@@ -138,18 +136,16 @@ add_dependencies (tests test_decomp_uneven)
 add_dependencies (tests test_decomps)
 add_dependencies (tests test_darray_fill)
 add_dependencies (tests test_decomp_frame)
-if(PIO_USE_MALLOC)
 #  add_dependencies (tests test_perf2)
-  add_dependencies (tests test_darray_async_simple)
-  add_dependencies (tests test_darray_async)
-  add_dependencies (tests test_darray_async_many)
-  add_dependencies (tests test_darray_2sync)
-  add_dependencies (tests test_async_multicomp)
-  add_dependencies (tests test_async_multi2)
-  add_dependencies (tests test_async_manyproc)
-  add_dependencies (tests test_async_1d)
-  add_dependencies (tests test_simple)
-endif ()
+add_dependencies (tests test_darray_async_simple)
+add_dependencies (tests test_darray_async)
+add_dependencies (tests test_darray_async_many)
+add_dependencies (tests test_darray_2sync)
+add_dependencies (tests test_async_multicomp)
+add_dependencies (tests test_async_multi2)
+add_dependencies (tests test_async_manyproc)
+add_dependencies (tests test_async_1d)
+add_dependencies (tests test_simple)
 
 # Test Timeout in seconds.
 if (PIO_VALGRIND_CHECK)
@@ -279,40 +275,38 @@ else ()
     EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/test_darray_fill
     NUMPROCS ${AT_LEAST_FOUR_TASKS}
     TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-  if(PIO_USE_MALLOC)
-    add_mpi_test(test_darray_2sync
-      EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/test_darray_2sync
-      NUMPROCS ${AT_LEAST_FOUR_TASKS}
-      TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-    add_mpi_test(test_darray_async_simple
-      EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/test_darray_async_simple
-      NUMPROCS ${AT_LEAST_FOUR_TASKS}
-      TIMEOUT ${DEFAULT_TEST_TIMEOUT})
+  add_mpi_test(test_darray_2sync
+    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/test_darray_2sync
+    NUMPROCS ${AT_LEAST_FOUR_TASKS}
+    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
+  add_mpi_test(test_darray_async_simple
+    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/test_darray_async_simple
+    NUMPROCS ${AT_LEAST_FOUR_TASKS}
+    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
     # add_mpi_test(test_perf2
     #   EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/test_perf2
     #   NUMPROCS ${AT_LEAST_FOUR_TASKS}
     #   TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-    add_mpi_test(test_darray_async
-      EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/test_darray_async
-      NUMPROCS ${AT_LEAST_FOUR_TASKS}
-      TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-    add_mpi_test(test_darray_async_many
-      EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/test_darray_async_many
-      NUMPROCS ${AT_LEAST_FOUR_TASKS}
-      TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-    add_mpi_test(test_async_multicomp
-      EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/test_async_multicomp
-      NUMPROCS ${AT_LEAST_FOUR_TASKS}
-      TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-    add_mpi_test(test_async_multi2
-      EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/test_async_multi2
-      NUMPROCS ${AT_LEAST_FOUR_TASKS}
-      TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-    add_mpi_test(test_async_manyproc
-      EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/test_async_manyproc
-      NUMPROCS ${AT_LEAST_EIGHT_TASKS}
-      TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-  endif ()
+  add_mpi_test(test_darray_async
+    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/test_darray_async
+    NUMPROCS ${AT_LEAST_FOUR_TASKS}
+    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
+  add_mpi_test(test_darray_async_many
+    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/test_darray_async_many
+    NUMPROCS ${AT_LEAST_FOUR_TASKS}
+    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
+  add_mpi_test(test_async_multicomp
+    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/test_async_multicomp
+    NUMPROCS ${AT_LEAST_FOUR_TASKS}
+    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
+  add_mpi_test(test_async_multi2
+    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/test_async_multi2
+    NUMPROCS ${AT_LEAST_FOUR_TASKS}
+    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
+  add_mpi_test(test_async_manyproc
+    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/test_async_manyproc
+    NUMPROCS ${AT_LEAST_EIGHT_TASKS}
+    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
   add_mpi_test(test_decomp_uneven
     EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/test_decomp_uneven
     NUMPROCS ${AT_LEAST_FOUR_TASKS}

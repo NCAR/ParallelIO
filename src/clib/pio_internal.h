@@ -82,14 +82,14 @@ void pio_log(int severity, const char *fmt, ...);
 /** Find maximum. */
 #define max(a,b)                                \
     ({ __typeof__ (a) _a = (a);                 \
-        __typeof__ (b) _b = (b);                \
-        _a > _b ? _a : _b; })
+	__typeof__ (b) _b = (b);                \
+	_a > _b ? _a : _b; })
 
 /** Find minimum. */
 #define min(a,b)                                \
     ({ __typeof__ (a) _a = (a);                 \
-        __typeof__ (b) _b = (b);                \
-        _a < _b ? _a : _b; })
+	__typeof__ (b) _b = (b);                \
+	_a < _b ? _a : _b; })
 
 /** Block size of gathers. */
 #define MAX_GATHER_BLOCK_SIZE 0
@@ -136,22 +136,22 @@ extern "C" {
     /** Used to sort map points in the subset rearranger. */
     typedef struct mapsort
     {
-        int rfrom; /**< from */
-        PIO_Offset soffset; /**< ??? */
-        PIO_Offset iomap; /**< ??? */
+	int rfrom; /**< from */
+	PIO_Offset soffset; /**< ??? */
+	PIO_Offset iomap; /**< ??? */
     } mapsort;
 
     /** swapm defaults. */
     typedef struct pio_swapm_defaults
     {
-        int nreqs; /**< number of requests */
-        bool handshake; /**< handshake */
-        bool isend; /**< is end? */
+	int nreqs; /**< number of requests */
+	bool handshake; /**< handshake */
+	bool isend; /**< is end? */
     } pio_swapm_defaults;
 
     /* Handle an error in the PIO library. */
     int pio_err(iosystem_desc_t *ios, file_desc_t *file, int err_num, const char *fname,
-                int line);
+		int line);
 
     /* Print error message and abort. */
     void piodie(const char *msg, const char *fname, int line);
@@ -161,18 +161,18 @@ extern "C" {
 
     /* Check the return code from an MPI function call. */
     int check_mpi(iosystem_desc_t *ios, file_desc_t *file, int mpierr, const char *filename,
-                  int line);
+		  int line);
 
     /* Check the return code from a netCDF call. */
     int check_netcdf(file_desc_t *file, int status, const char *fname, int line);
 
     /* Check the return code from a netCDF call, with ios pointer. */
     int check_netcdf2(iosystem_desc_t *ios, file_desc_t *file, int status,
-                      const char *fname, int line);
+		      const char *fname, int line);
 
     /* For async cases, this runs on IO tasks and listens for messages. */
     int pio_msg_handler2(int io_rank, int component_count, iosystem_desc_t **iosys,
-                         MPI_Comm io_comm);
+			 MPI_Comm io_comm);
 
     /* List operations for iosystem list. */
     int pio_add_to_iosystem_list(iosystem_desc_t *ios);
@@ -195,19 +195,19 @@ extern "C" {
 
     /* List operations for var_desc_t list. */
     int add_to_varlist(int varid, int rec_var, int pio_type, int pio_type_size,
-                       MPI_Datatype mpi_type, int mpi_type_size, int ndim,
-                       var_desc_t **varlist);
+		       MPI_Datatype mpi_type, int mpi_type_size, int ndim,
+		       var_desc_t **varlist);
     int get_var_desc(int varid, var_desc_t **varlist, var_desc_t **var_desc);
     int delete_var_desc(int varid, var_desc_t **varlist);
 
     /* Create a file. */
     int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filename,
-                            int mode, int use_ext_ncid);
+			    int mode, int use_ext_ncid);
 
     /* Open a file with optional retry as netCDF-classic if first
      * iotype does not work. */
     int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filename, int mode,
-                            int retry, int use_ext_ncid);
+			    int retry, int use_ext_ncid);
 
     /* Give the mode flag from an open, determine the IOTYPE. */
     int find_iotype_from_omode(int mode, int *iotype);
@@ -223,19 +223,19 @@ extern "C" {
 
     /* Compute start and count values for each io task for a decomposition. */
     int CalcStartandCount(int pio_type, int ndims, const int *gdims, int num_io_procs,
-                          int myiorank, PIO_Offset *start, PIO_Offset *count, int *num_aiotasks);
+			  int myiorank, PIO_Offset *start, PIO_Offset *count, int *num_aiotasks);
 
     /* Completes the mapping for the box rearranger. */
     int compute_counts(iosystem_desc_t *ios, io_desc_t *iodesc, const int *dest_ioproc,
-                       const PIO_Offset *dest_ioindex);
+		       const PIO_Offset *dest_ioindex);
 
     /* Create the MPI communicators needed by the subset rearranger. */
     int default_subset_partition(iosystem_desc_t *ios, io_desc_t *iodesc);
 
     /* Like MPI_Alltoallw(), but with flow control. */
     int pio_swapm(void *sendbuf, int *sendcounts, int *sdispls, MPI_Datatype *sendtypes,
-                  void *recvbuf, int *recvcounts, int *rdispls, MPI_Datatype *recvtypes,
-                  MPI_Comm comm, rearr_comm_fc_opt_t *fc);
+		  void *recvbuf, int *recvcounts, int *rdispls, MPI_Datatype *recvtypes,
+		  MPI_Comm comm, rearr_comm_fc_opt_t *fc);
 
     /* Return the greatest common devisor of array ain as int_64. */
     long long lgcd_array(int nain, long long* ain);
@@ -252,42 +252,42 @@ extern "C" {
 
     /* Determine whether fill values are needed. */
     int determine_fill(iosystem_desc_t *ios, io_desc_t *iodesc, const int *gsize,
-                       const PIO_Offset *compmap);
+		       const PIO_Offset *compmap);
 
     /* Allocation memory for a data region. */
     int alloc_region2(iosystem_desc_t *ios, int ndims, io_region **region);
 
     /* Set start and count so that they describe the first region in map.*/
     int find_region(int ndims, const int *gdims, int maplen, const PIO_Offset *map,
-                    PIO_Offset *start, PIO_Offset *count, PIO_Offset *regionlen);
+		    PIO_Offset *start, PIO_Offset *count, PIO_Offset *regionlen);
 
     /* Calculate start and count regions for the subset rearranger. */
     int get_regions(int ndims, const int *gdimlen, int maplen, const PIO_Offset *map,
-                    int *maxregions, io_region *firstregion);
+		    int *maxregions, io_region *firstregion);
 
     /* Expand a region along dimension dim, by incrementing count[i] as
      * much as possible, consistent with the map. */
     void expand_region(int dim, const int *gdims, int maplen, const PIO_Offset *map,
-                       int region_size, int region_stride, const int *max_size,
-                       PIO_Offset *count);
+		       int region_size, int region_stride, const int *max_size,
+		       PIO_Offset *count);
 
     /* Free a region list. */
     void free_region_list(io_region *top);
 
     /* Create a subset rearranger. */
     int subset_rearrange_create(iosystem_desc_t *ios, int maplen, PIO_Offset *compmap, const int *gsize,
-                                int ndim, io_desc_t *iodesc);
+				int ndim, io_desc_t *iodesc);
 
     /* Create a box rearranger. */
     int box_rearrange_create(iosystem_desc_t *ios, int maplen, const PIO_Offset *compmap, const int *gsize,
-                             int ndim, io_desc_t *iodesc);
+			     int ndim, io_desc_t *iodesc);
 
     /* Move data from IO tasks to compute tasks. */
     int rearrange_io2comp(iosystem_desc_t *ios, io_desc_t *iodesc, void *sbuf, void *rbuf);
 
     /* Move data from compute tasks to IO tasks. */
     int rearrange_comp2io(iosystem_desc_t *ios, io_desc_t *iodesc, void *sbuf, void *rbuf,
-                          int nvars);
+			  int nvars);
 
     void performance_tune_rearranger(iosystem_desc_t *ios, io_desc_t *iodesc);
 
@@ -320,7 +320,7 @@ extern "C" {
     /* Create the derived MPI datatypes used for comp2io and io2comp
      * transfers. */
     int create_mpi_datatypes(MPI_Datatype basetype, int msgcnt, const PIO_Offset *mindex,
-                             const int *mcount, int *mfrom, MPI_Datatype *mtype);
+			     const int *mcount, int *mfrom, MPI_Datatype *mtype);
 
     /* Used by subset rearranger to sort map. */
     int compare_offsets(const void *a, const void *b) ;
@@ -328,31 +328,22 @@ extern "C" {
     /* Print a trace statement, for debugging. */
     void print_trace (FILE *fp);
 
-    /* Print diagonstic info to stdout. */
-    void cn_buffer_report(iosystem_desc_t *ios, bool collective);
-
-    /* Initialize the compute buffer. */
-    int compute_buffer_init(iosystem_desc_t *ios);
-
-    /* Free the buffer pool. */
-    void free_cn_buffer_pool(iosystem_desc_t *ios);
-
     /* Flush PIO's data buffer. */
     int flush_buffer(int ncid, wmulti_buffer *wmb, bool flushtodisk);
 
     /* Compute an element of start/count arrays. */
     void compute_one_dim(int gdim, int ioprocs, int rank, PIO_Offset *start,
-                         PIO_Offset *count);
+			 PIO_Offset *count);
 
     /* Darray support functions. */
 
     /* Write aggregated arrays to file using parallel I/O (netCDF-4 parallel/pnetcdf) */
     int write_darray_multi_par(file_desc_t *file, int nvars, int fndims, const int *vid,
-                               io_desc_t *iodesc, int fill, const int *frame);
+			       io_desc_t *iodesc, int fill, const int *frame);
 
     /* Write aggregated arrays to file using serial I/O (netCDF-3/netCDF-4 serial) */
     int write_darray_multi_serial(file_desc_t *file, int nvars, int fndims, const int *vid,
-                                  io_desc_t *iodesc, int fill, const int *frame);
+				  io_desc_t *iodesc, int fill, const int *frame);
 
     int pio_read_darray_nc(file_desc_t *file, io_desc_t *iodesc, int vid, void *iobuf);
     int pio_read_darray_nc_serial(file_desc_t *file, io_desc_t *iodesc, int vid, void *iobuf);
@@ -363,30 +354,30 @@ extern "C" {
 
     /* Write atts with type conversion. */
     int PIOc_put_att_tc(int ncid, int varid, const char *name, nc_type atttype,
-                        PIO_Offset len, nc_type memtype, const void *op);
+			PIO_Offset len, nc_type memtype, const void *op);
 
     /* Generalized get functions. */
     int PIOc_get_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Offset *count,
-                         const PIO_Offset *stride, nc_type xtype, void *buf);
+			 const PIO_Offset *stride, nc_type xtype, void *buf);
     int PIOc_get_var1_tc(int ncid, int varid, const PIO_Offset *index, nc_type xtype,
-                         void *buf);
+			 void *buf);
     int PIOc_get_var_tc(int ncid, int varid, nc_type xtype, void *buf);
     int PIOc_get_vard_tc(int ncid, int varid, int decompid, const PIO_Offset recnum,
-                         nc_type xtype, void *buf);
+			 nc_type xtype, void *buf);
 
     /* Generalized put functions. */
     int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Offset *count,
-                         const PIO_Offset *stride, nc_type xtype, const void *buf);
+			 const PIO_Offset *stride, nc_type xtype, const void *buf);
     int PIOc_put_var1_tc(int ncid, int varid, const PIO_Offset *index, nc_type xtype,
-                         const void *op);
+			 const void *op);
     int PIOc_put_var_tc(int ncid, int varid, nc_type xtype, const void *op);
     int PIOc_put_vard_tc(int ncid, int varid, int decompid, const PIO_Offset recnum,
-                         nc_type xtype, const void *buf);
+			 nc_type xtype, const void *buf);
 
     /* An internal replacement for a function pnetcdf does not
      * have. */
     int pioc_pnetcdf_inq_type(int ncid, nc_type xtype, char *name,
-                              PIO_Offset *sizep);
+			      PIO_Offset *sizep);
 
     /* Handle end and re-defs. */
     int pioc_change_def(int ncid, int is_enddef);
@@ -403,22 +394,22 @@ extern "C" {
 
     /* Write a netCDF decomp file. */
     int pioc_write_nc_decomp_int(iosystem_desc_t *ios, const char *filename, int cmode, int ndims,
-                                 int *global_dimlen, int num_tasks, int *task_maplen, int *map,
-                                 const char *title, const char *history, int fortran_order);
+				 int *global_dimlen, int num_tasks, int *task_maplen, int *map,
+				 const char *title, const char *history, int fortran_order);
 
     /* Read a netCDF decomp file. */
     int pioc_read_nc_decomp_int(int iosysid, const char *filename, int *ndims, int **global_dimlen,
-                                int *num_tasks, int **task_maplen, int *max_maplen, int **map, char *title,
-                                char *history, char *source, char *version, int *fortran_order);
+				int *num_tasks, int **task_maplen, int *max_maplen, int **map, char *title,
+				char *history, char *source, char *version, int *fortran_order);
 
     /* Determine what tasks to use for each computational component. */
     int determine_procs(int num_io_procs, int component_count, int *num_procs_per_comp,
-                        int **proc_list, int **my_proc_list);
+			int **proc_list, int **my_proc_list);
 
     int pio_sorted_copy(const void *array, void *tmparray, io_desc_t *iodesc, int nvars, int direction);
 
     int PIOc_inq_att_eh(int ncid, int varid, const char *name, int eh,
-                        nc_type *xtypep, PIO_Offset *lenp);
+			nc_type *xtypep, PIO_Offset *lenp);
 
     /* Start a timer. */
     int pio_start_timer(const char *name);
