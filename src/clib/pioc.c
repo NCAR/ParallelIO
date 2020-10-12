@@ -913,6 +913,7 @@ PIOc_InitDecomp_bc(int iosysid, int pio_type, int ndims, const int *gdimlen,
  * <li>On IO tasks, create an IO communicator (ios->io_comm).
  * <li>Assign an iosystemid, and put this iosystem_desc_t into the
  * list of open iosystems.
+ * </ul>
  *
  * When complete, there are three MPI communicators (ios->comp_comm,
  * ios->union_comm, and ios->io_comm) that must be freed by MPI.
