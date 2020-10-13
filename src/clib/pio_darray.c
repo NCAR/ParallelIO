@@ -645,12 +645,7 @@ PIOc_write_darray(int ncid, int varid, int ioid, PIO_Offset arraylen, void *arra
     void *bufptr;          /* A data buffer. */
     wmulti_buffer *wmb;    /* The write multi buffer for one or more vars. */
     int needsflush = 0;    /* True if we need to flush buffer. */
-#if PIO_USE_MALLOC
     void *realloc_data = NULL;
-#else
-    bufsize totfree;       /* Amount of free space in the buffer. */
-    bufsize maxfree;       /* Max amount of free space in buffer. */
-#endif
     int hashid;
     int mpierr = MPI_SUCCESS;  /* Return code from MPI functions. */
     int ierr = PIO_NOERR;      /* Return code. */
@@ -735,7 +730,7 @@ PIOc_write_darray(int ncid, int varid, int ioid, PIO_Offset arraylen, void *arra
     }
     PLOG((2, "wmb->num_arrays = %d arraylen = %d iodesc->mpitype_size = %d\n",
           wmb->num_arrays, arraylen, iodesc->mpitype_size));
-#if PIO_USE_MALLOC
+
     /* Try realloc first and call flush if realloc fails. */
     if (arraylen > 0)
     {
@@ -753,15 +748,7 @@ PIOc_write_darray(int ncid, int varid, int ioid, PIO_Offset arraylen, void *arra
         PLOG((2, "realloc attempted to get %ld bytes for data, needsflush %d", data_size,
               needsflush));
     }
-#else
-    /* Find out how much free, contiguous space is available. */
-    bfreespace(&totfree, &maxfree);
 
-    /* maxfree is the available memory. If that is < 10% greater than
-     * the size of the current request needsflush is true. */
-    if (needsflush == 0)
-        needsflush = (maxfree <= 1.1 * (1 + wmb->num_arrays) * arraylen * iodesc->mpitype_size);
-#endif
     /* the limit of data_size < INT_MAX is due to a bug in ROMIO which limits
        the size of contiguous data to INT_MAX, a fix has been proposed in
        https://github.com/pmodels/mpich/pull/2888 */
@@ -779,16 +766,6 @@ PIOc_write_darray(int ncid, int varid, int ioid, PIO_Offset arraylen, void *arra
     /* Flush data if needed. */
     if (needsflush > 0)
     {
-#if !PIO_USE_MALLOC
-#ifdef PIO_ENABLE_LOGGING
-        /* Collect a debug report about buffer. */
-        cn_buffer_report(ios, true);
-        PLOG((2, "maxfree = %ld wmb->num_arrays = %d (1 + wmb->num_arrays) *"
-              " arraylen * iodesc->mpitype_size = %ld totfree = %ld\n", maxfree, wmb->num_arrays,
-              (1 + wmb->num_arrays) * arraylen * iodesc->mpitype_size, totfree));
-#endif /* PIO_ENABLE_LOGGING */
-#endif /* !PIO_USE_MALLOC */
-
         /* If needsflush == 2 flush to disk otherwise just flush to io
          * node. This will cause PIOc_write_darray_multi() to be
          * called. */
@@ -796,7 +773,6 @@ PIOc_write_darray(int ncid, int varid, int ioid, PIO_Offset arraylen, void *arra
             return pio_err(ios, file, ierr, __FILE__, __LINE__);
     }
 
-#if PIO_USE_MALLOC
     /* Try realloc again if there is a flush. */
     if (arraylen > 0 && needsflush > 0)
     {
@@ -804,15 +780,6 @@ PIOc_write_darray(int ncid, int varid, int ioid, PIO_Offset arraylen, void *arra
             return pio_err(ios, file, PIO_ENOMEM, __FILE__, __LINE__);
         PLOG((2, "after a flush, realloc got %ld bytes for data", (1 + wmb->num_arrays) * arraylen * iodesc->mpitype_size));
     }
-#else
-    /* Get memory for data. */
-    if (arraylen > 0)
-    {
-        if (!(wmb->data = realloc(wmb->data, (1 + wmb->num_arrays) * arraylen * iodesc->mpitype_size)))
-            return pio_err(ios, file, PIO_ENOMEM, __FILE__, __LINE__);
-        PLOG((2, "got %ld bytes for data", (1 + wmb->num_arrays) * arraylen * iodesc->mpitype_size));
-    }
-#endif
 
     /* vid is an array of variable ids in the wmb list, grow the list
      * and add the new entry. */
@@ -988,19 +955,19 @@ PIOc_read_darray(int ncid, int varid, int ioid, PIO_Offset arraylen,
     {
         if (!(tmparray = malloc(iodesc->piotype_size * iodesc->maplen)))
             return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__);
-	if(iodesc->piotype_size == 1){
-	  for (int m = 0; m < iodesc->maplen; m++)
+        if(iodesc->piotype_size == 1){
+          for (int m = 0; m < iodesc->maplen; m++)
             ((signed char *)array)[m] = -1;
-	}else if(iodesc->piotype_size == 2){
-	  for (int m = 0; m < iodesc->maplen; m++)
+        }else if(iodesc->piotype_size == 2){
+          for (int m = 0; m < iodesc->maplen; m++)
             ((short *)array)[m] = -1;
-	}else if(iodesc->piotype_size == 4){
-	  for (int m = 0; m < iodesc->maplen; m++)
+        }else if(iodesc->piotype_size == 4){
+          for (int m = 0; m < iodesc->maplen; m++)
             ((int *)array)[m] = -1;
-	}else if(iodesc->piotype_size == 8){
-	  for (int m = 0; m < iodesc->maplen; m++)
+        }else if(iodesc->piotype_size == 8){
+          for (int m = 0; m < iodesc->maplen; m++)
             ((double *)array)[m] = -1;
-	}
+        }
     }
     else
         tmparray = array;

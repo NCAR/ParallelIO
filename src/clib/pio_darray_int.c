@@ -46,40 +46,6 @@ bpool_free(void *p)
     }
 }
 
-/**
- * Initialize the compute buffer to size pio_cnbuffer_limit.
- *
- * This routine initializes the compute buffer pool if the bget memory
- * management is used. If malloc is used (that is, PIO_USE_MALLOC is
- * non zero), this function does nothing.
- *
- * @param ios pointer to the iosystem descriptor which will use the
- * new buffer.
- * @returns 0 for success, error code otherwise.
- * @author Jim Edwards
- */
-int
-compute_buffer_init(iosystem_desc_t *ios)
-{
-#if !PIO_USE_MALLOC
-
-    if (!CN_bpool)
-    {
-        if (!(CN_bpool = malloc(pio_cnbuffer_limit)))
-            return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__);
-
-        bpool(CN_bpool, pio_cnbuffer_limit);
-        if (!CN_bpool)
-            return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__);
-
-        bectl(NULL, malloc, bpool_free, pio_cnbuffer_limit);
-    }
-#endif
-    PLOG((2, "compute_buffer_init complete"));
-
-    return PIO_NOERR;
-}
-
 #if USE_VARD
 /**
  * Get the length of dimension 0.
