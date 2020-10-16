@@ -160,8 +160,7 @@ int PIOc_put_att_tc(int ncid, int varid, const char *name, nc_type atttype,
         {
             fprintf(stderr, "ERROR: Num of attributes exceeds maximum (%d).\n", PIO_MAX_VARS);
             GPTLstop("PIO:PIOc_put_att_tc");
-            if (file->iotype == PIO_IOTYPE_ADIOS)
-                GPTLstop("PIO:PIOc_put_att_tc_adios");
+            GPTLstop("PIO:PIOc_put_att_tc_adios");
             return PIO_EMAXATTS;
         }
         file->adios_attrs[num_attrs].att_name = strdup(name);
@@ -185,16 +184,13 @@ int PIOc_put_att_tc(int ncid, int varid, const char *name, nc_type atttype,
             if (attributeH == NULL)
             {
                 GPTLstop("PIO:PIOc_put_att_tc");
-                if (file->iotype == PIO_IOTYPE_ADIOS)
-                    GPTLstop("PIO:PIOc_put_att_tc_adios");
+                GPTLstop("PIO:PIOc_put_att_tc_adios");
                 return pio_err(ios, file, PIO_EADIOS2ERR, __FILE__, __LINE__, "Defining (ADIOS) attribute (name=%s) failed for file (%s, ncid=%d)", att_name, pio_get_fname_from_file(file), file->pio_ncid);
             }
         }
 
         GPTLstop("PIO:PIOc_put_att_tc");
-
-        if (file->iotype == PIO_IOTYPE_ADIOS)
-            GPTLstop("PIO:PIOc_put_att_tc_adios");
+        GPTLstop("PIO:PIOc_put_att_tc_adios");
 
         return PIO_NOERR;
     }
@@ -1079,10 +1075,15 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
     }
     ios = file->iosystem;
 
+    if (file->iotype == PIO_IOTYPE_ADIOS)
+        GPTLstart("PIO:PIOc_put_vars_tc_adios");
+
     /* User must provide a place to put some data. */
     if (!buf)
     {
         GPTLstop("PIO:PIOc_put_vars_tc");
+        if (file->iotype == PIO_IOTYPE_ADIOS)
+            GPTLstop("PIO:PIOc_put_vars_tc_adios");
         return pio_err(ios, file, PIO_EINVAL, __FILE__, __LINE__,
                         "Writing variable (%s, varid=%d) to file (%s, ncid=%d) failed. Invalid/NULL user buffer provided", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid);
     }
@@ -1095,6 +1096,8 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
         ierr = PIOc_inq_vartype(ncid, varid, &vartype);
         if(ierr != PIO_NOERR){
             GPTLstop("PIO:PIOc_put_vars_tc");
+            if (file->iotype == PIO_IOTYPE_ADIOS)
+                GPTLstop("PIO:PIOc_put_vars_tc_adios");
             return pio_err(NULL, NULL, ierr, __FILE__, __LINE__,
                             "Writing variable (%s, varid=%d) to file (%s, ncid=%d) failed. Inquiring variable type failed", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid);
         }
@@ -1107,6 +1110,8 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
         ierr = PIOc_inq_varndims(ncid, varid, &ndims);
         if(ierr != PIO_NOERR){
             GPTLstop("PIO:PIOc_put_vars_tc");
+            if (file->iotype == PIO_IOTYPE_ADIOS)
+                GPTLstop("PIO:PIOc_put_vars_tc_adios");
             return pio_err(NULL, NULL, ierr, __FILE__, __LINE__,
                             "Writing variable (%s, varid=%d) to file (%s, ncid=%d) failed. Inquiring number of dimensions of the variable failed", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid);
         }
@@ -1119,6 +1124,8 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
             ierr = PIOc_inq_type(ncid, xtype, NULL, &typelen);
             if(ierr != PIO_NOERR){
                 GPTLstop("PIO:PIOc_put_vars_tc");
+                if (file->iotype == PIO_IOTYPE_ADIOS)
+                    GPTLstop("PIO:PIOc_put_vars_tc_adios");
                 return pio_err(NULL, NULL, ierr, __FILE__, __LINE__,
                                 "Writing variable (%s, varid=%d) to file (%s, ncid=%d) failed. Inquiring variable type length failed", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid);
             }
@@ -1167,6 +1174,8 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
         if(ierr != PIO_NOERR)
         {
             GPTLstop("PIO:PIOc_put_vars_tc");
+            if (file->iotype == PIO_IOTYPE_ADIOS)
+                GPTLstop("PIO:PIOc_put_vars_tc_adios");
             return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
                             "Writing variable (%s, varid=%d) to file (%s, ncid=%d) failed. Error sending asynchronous message, PIO_MSG_PUT_VARS", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid);
         }
@@ -1189,11 +1198,15 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
         if ((mpierr = MPI_Bcast(&ndims, 1, MPI_INT, ios->comproot, ios->my_comm)))
         {
             GPTLstop("PIO:PIOc_put_vars_tc");
+            if (file->iotype == PIO_IOTYPE_ADIOS)
+                GPTLstop("PIO:PIOc_put_vars_tc_adios");
             return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
         }
         if ((mpierr = MPI_Bcast(&xtype, 1, MPI_INT, ios->comproot, ios->my_comm)))
         {
             GPTLstop("PIO:PIOc_put_vars_tc");
+            if (file->iotype == PIO_IOTYPE_ADIOS)
+                GPTLstop("PIO:PIOc_put_vars_tc_adios");
             return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
         }
         LOG((2, "PIOc_put_vars_tc complete bcast from comproot ndims = %d", ndims));
@@ -1206,6 +1219,7 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
         if (varid < 0 || varid >= file->num_vars)
         {
             GPTLstop("PIO:PIOc_put_vars_tc");
+            GPTLstop("PIO:PIOc_put_vars_tc_adios");
             return pio_err(ios, file, PIO_EBADID, __FILE__, __LINE__,
                             "Writing variable to file (%s, ncid=%d) failed. Invalid variable id (varid=%d, expected >=0 and < number of variables in the file, %d) provided", pio_get_fname_from_file(file), ncid, varid, file->num_vars);
         }
@@ -1252,6 +1266,7 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                     if (av->adios_varid == NULL)
                     {
                         GPTLstop("PIO:PIOc_put_vars_tc");
+                        GPTLstop("PIO:PIOc_put_vars_tc_adios");
                         return pio_err(NULL, file, PIO_EADIOS2ERR, __FILE__, __LINE__, "Defining (ADIOS) variable (name=%s) failed for file (%s, ncid=%d)", av->name, pio_get_fname_from_file(file), file->pio_ncid);
                     }
                 }
@@ -1260,6 +1275,7 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                 if (adiosErr != adios2_error_none)
                 {
                     GPTLstop("PIO:PIOc_put_vars_tc");
+                    GPTLstop("PIO:PIOc_put_vars_tc_adios");
                     return pio_err(ios, file, PIO_EADIOS2ERR, __FILE__, __LINE__, "Putting (ADIOS) variable (name=%s) failed (adios2_error=%s) for file (%s, ncid=%d)", av->name, adios2_error_to_string(adiosErr), pio_get_fname_from_file(file), file->pio_ncid);
                 }
             }
@@ -1281,6 +1297,7 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                     if (av->adios_varid == NULL)
                     {
                         GPTLstop("PIO:PIOc_put_vars_tc");
+                        GPTLstop("PIO:PIOc_put_vars_tc_adios");
                         return pio_err(ios, file, PIO_EADIOS2ERR, __FILE__, __LINE__, "Defining (ADIOS) variable (name=%s) failed for file (%s, ncid=%d)", av->name, pio_get_fname_from_file(file), file->pio_ncid);
                     }
                 }
@@ -1289,6 +1306,7 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                 if (adiosErr != adios2_error_none)
                 {
                     GPTLstop("PIO:PIOc_put_vars_tc");
+                    GPTLstop("PIO:PIOc_put_vars_tc_adios");
                     return pio_err(ios, file, PIO_EADIOS2ERR, __FILE__, __LINE__, "Putting (ADIOS) variable (name=%s) failed (adios2_error=%s) for file (%s, ncid=%d)", av->name, adios2_error_to_string(adiosErr), pio_get_fname_from_file(file), file->pio_ncid);
                 }
 
@@ -1308,6 +1326,7 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                     if (attributeH == NULL)
                     {
                         GPTLstop("PIO:PIOc_put_vars_tc");
+                        GPTLstop("PIO:PIOc_put_vars_tc_adios");
                         return pio_err(ios, file, PIO_EADIOS2ERR, __FILE__, __LINE__, "Defining (ADIOS) attribute array (name=%s, size=%d) failed for file (%s, ncid=%d)", att_name, av->ndims, pio_get_fname_from_file(file), file->pio_ncid);
                     }
                 }
@@ -1358,6 +1377,7 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                 if (av->adios_varid == NULL)
                 {
                     GPTLstop("PIO:PIOc_put_vars_tc");
+                    GPTLstop("PIO:PIOc_put_vars_tc_adios");
                     return pio_err(ios, file, PIO_EADIOS2ERR, __FILE__, __LINE__, "Defining (ADIOS) variable (name=%s) failed for file (%s, ncid=%d)", av->name, pio_get_fname_from_file(file), file->pio_ncid);
                 }
             }
@@ -1367,6 +1387,7 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                 if (adiosErr != adios2_error_none)
                 {
                     GPTLstop("PIO:PIOc_put_vars_tc");
+                    GPTLstop("PIO:PIOc_put_vars_tc_adios");
                     return pio_err(ios, file, PIO_EADIOS2ERR, __FILE__, __LINE__, "Setting (ADIOS) selection to variable (name=%s) failed (adios2_error=%s) for file (%s, ncid=%d)", av->name, adios2_error_to_string(adiosErr), pio_get_fname_from_file(file), file->pio_ncid);
                 }
             }
@@ -1375,6 +1396,7 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
             if (adiosErr != adios2_error_none)
             {
                 GPTLstop("PIO:PIOc_put_vars_tc");
+                GPTLstop("PIO:PIOc_put_vars_tc_adios");
                 return pio_err(ios, file, PIO_EADIOS2ERR, __FILE__, __LINE__, "Putting (ADIOS) variable (name=%s) failed (adios2_error=%s) for file (%s, ncid=%d)", av->name, adios2_error_to_string(adiosErr), pio_get_fname_from_file(file), file->pio_ncid);
             }
 
@@ -1396,6 +1418,7 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                 if (attributeH == NULL)
                 {
                     GPTLstop("PIO:PIOc_put_vars_tc");
+                    GPTLstop("PIO:PIOc_put_vars_tc_adios");
                     return pio_err(ios, file, PIO_EADIOS2ERR, __FILE__, __LINE__, "Defining (ADIOS) attribute array (name=%s, size=%d) failed for file (%s, ncid=%d)", att_name, av->ndims, pio_get_fname_from_file(file), file->pio_ncid);
                 }
             }
@@ -1412,6 +1435,7 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                 if (attributeH == NULL)
                 {
                     GPTLstop("PIO:PIOc_put_vars_tc");
+                    GPTLstop("PIO:PIOc_put_vars_tc_adios");
                     return pio_err(ios, file, PIO_EADIOS2ERR, __FILE__, __LINE__, "Defining (ADIOS) attribute (name=%s) failed for file (%s, ncid=%d)", att_name, pio_get_fname_from_file(file), file->pio_ncid);
                 }
             }
@@ -1424,6 +1448,7 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                 if (attributeH == NULL)
                 {
                     GPTLstop("PIO:PIOc_put_vars_tc");
+                    GPTLstop("PIO:PIOc_put_vars_tc_adios");
                     return pio_err(ios, file, PIO_EADIOS2ERR, __FILE__, __LINE__, "Defining (ADIOS) attribute (name=%s) failed for file (%s, ncid=%d)", att_name, pio_get_fname_from_file(file), file->pio_ncid);
                 }
             }
@@ -1436,10 +1461,16 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                 if (attributeH == NULL)
                 {
                     GPTLstop("PIO:PIOc_put_vars_tc");
+                    GPTLstop("PIO:PIOc_put_vars_tc_adios");
                     return pio_err(ios, file, PIO_EADIOS2ERR, __FILE__, __LINE__, "Defining (ADIOS) attribute (name=%s) failed for file (%s, ncid=%d)", att_name, pio_get_fname_from_file(file), file->pio_ncid);
                 }
             }
         }
+
+        GPTLstop("PIO:PIOc_put_vars_tc");
+        GPTLstop("PIO:PIOc_put_vars_tc_adios");
+
+        return PIO_NOERR;
     }
 #endif
 
