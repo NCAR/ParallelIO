@@ -808,6 +808,10 @@ typedef struct adios_var_desc_t
     adios2_variable* decomp_varid;
     adios2_variable* frame_varid;
     adios2_variable* fillval_varid;
+
+    /* to handle multi-dimensional temporal variables */
+    adios2_variable* start_varid;
+    adios2_variable* count_varid;
 } adios_var_desc_t;
 
 /* Track attributes */

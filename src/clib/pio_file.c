@@ -477,6 +477,10 @@ int PIOc_closefile(int ncid)
             file->adios_vars[i].decomp_varid = NULL;
             file->adios_vars[i].frame_varid = NULL;
             file->adios_vars[i].fillval_varid = NULL;
+
+            /* to handle multi-dimensional temporal variables */
+            file->adios_vars[i].start_varid = NULL;
+            file->adios_vars[i].count_varid = NULL;
         }
 
         file->num_vars = 0;
