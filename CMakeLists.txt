@@ -203,7 +203,7 @@ set (MPE_MIN_VER_REQD "2.4.8")
 set (NETCDF_C_MIN_VER_REQD "4.3.3")
 set (NETCDF_FORTRAN_MIN_VER_REQD "4.3.3")
 set (PNETCDF_MIN_VER_REQD "1.8.1")
-set (ADIOS_MIN_VER_REQD "2.2.0")
+set (ADIOS_MIN_VER_REQD "2.6.0")
 
 #==============================================================================
 #  SET CODE COVERAGE COMPILER FLAGS

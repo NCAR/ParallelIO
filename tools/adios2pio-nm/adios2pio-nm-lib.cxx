@@ -766,7 +766,7 @@ Decomposition GetNewDecomposition(DecompositionMap& decompmap,
                                   int mpirank, int nproc, MPI_Comm comm)
 {
     char ss[PIO_MAX_NAME];
-    sprintf(ss, "%s_%d", decompname.c_str(), nctype);
+    snprintf(ss, PIO_MAX_NAME, "%s_%d", decompname.c_str(), nctype);
     string key(ss);
 
     auto it = decompmap.find(key);
@@ -880,7 +880,9 @@ VariableMap ProcessVariableDefinitions(IOVector &bpIO, EngineVector &bpReader, i
 
             if (v.find("decomp_id/") == string::npos &&
                 v.find("frame_id/") == string::npos &&
-                v.find("fillval_id/") == string::npos)
+                v.find("fillval_id/") == string::npos &&
+                v.find("start_id/") == string::npos &&
+                v.find("count_id/") == string::npos)
             {
                 TimerStart(read);
 
@@ -1159,8 +1161,14 @@ int adios2_ConvertVariablePutVar(adios2::Variable<T> *v_base,
 
     *v_base = bpIO[0].InquireVariable<T>(varname);
 
-    adios2::Dims v_dims = v_base->Shape(0);
-    if (v_dims.size() == 0)
+    string attname = varname + "/__pio__/ndims";
+    std::string atype;
+    AttributeVector adata;
+    int ierr = adios_get_attr_a2(bpIO[0], (char*)attname.c_str(), atype, adata);
+    ERROR_CHECK_SINGLE_THROW(ierr, "adios_get_attr_a2 failed.")
+    int var_ndims = (int) *((int*)adata[0].data());
+
+    if (var_ndims == 0)
     {
         /* Scalar variable */
         TimerStart(write);
@@ -1202,59 +1210,93 @@ int adios2_ConvertVariablePutVar(adios2::Variable<T> *v_base,
         if (v_base)
         {
             const auto v_blocks = bpReader[0].BlocksInfo(*v_base, (const size_t)0);
-            if (mpirank == 0)
+
+            char start_varname[PIO_MAX_NAME];
+            char count_varname[PIO_MAX_NAME];
+            snprintf(start_varname, PIO_MAX_NAME, "start_id/%s", varname.c_str());
+            snprintf(count_varname, PIO_MAX_NAME, "count_id/%s", varname.c_str());
+            int64_t pio_var_start[PIO_MAX_DIMS], pio_var_count[PIO_MAX_DIMS];
+
+            int elemsize = adios2_type_size_a2(v_base->Type());
+            assert(elemsize > 0);
+
+            for (size_t ii = 0; ii < v_blocks.size(); ii++)
             {
-                for (size_t ii = 0; ii < v_blocks.size(); ii++)
+                try
                 {
-                    try
-                    {
-                        v_base->SetBlockSelection(ii);
-                        v_base->SetSelection({v_blocks[ii].Start, v_blocks[ii].Count});
-                        std::vector<T> v_value;
-                        bpReader[0].Get(*v_base, v_value, adios2::Mode::Sync);
+                    std::vector<int64_t> v_tmp;
+                    adios2::Variable<int64_t> v_var;
+                    v_var = bpIO[0].InquireVariable<int64_t>(start_varname);
+                    v_var.SetBlockSelection(ii);
+                    bpReader[0].Get(v_var, v_tmp, adios2::Mode::Sync);
+                    memcpy(pio_var_start, v_tmp.data(), sizeof(int64_t)*var_ndims);
 
-                        for (size_t d = 0; d < v_dims.size(); d++)
+                    v_var = bpIO[0].InquireVariable<int64_t>(count_varname);
+                    v_var.SetBlockSelection(ii);
+                    bpReader[0].Get(v_var, v_tmp, adios2::Mode::Sync);
+                    memcpy(pio_var_count, v_tmp.data(), sizeof(int64_t)*var_ndims);
+
+                    PIO_Offset start[var_ndims], count[var_ndims];
+                    PIO_Offset *start_ptr, *count_ptr;
+
+                    /* Check if start was NULL */
+                    if (pio_var_start[0] < 0) /* NULL start */
+                    {
+                        start_ptr = NULL;
+                    }
+                    else
+                    {
+                        for (size_t d = 0; d < var_ndims; d++)
                         {
-                            start[d] = (PIO_Offset) v_blocks[ii].Start[d];
-                            count[d] = (PIO_Offset) v_blocks[ii].Count[d];
+                            start[d] = (PIO_Offset) pio_var_start[d];
                         }
+                        start_ptr = start;
+                    }
 
-                        ret = put_vara_nm(ncid, var.nc_varid, var.nctype, v_base->Type(), start, count, v_value.data());
-                        if (ret != PIO_NOERR)
+                    /* Check if count was NULL */
+                    if (pio_var_count[0] < 0) /* NULL count */
+                    {
+                        count_ptr = NULL;
+                        for (size_t d = 0; d < var_ndims; d++)
                         {
-                            cout << "rank " << mpirank << ":ERROR in PIOc_put_vara(), code = " << ret
-                                 << " at " << __func__ << ":" << __LINE__ << endl;
-                            return BP2PIO_ERROR;
+                            pio_var_count[d] = -1 * (pio_var_count[d] + 1);
                         }
                     }
-                    catch (const std::exception &e)
+                    else
                     {
-                        return BP2PIO_ERROR;
-                    }
-                    catch (...)
-                    {
-                        return BP2PIO_ERROR;
-                    }
-                }
-            }
-            else
-            {
-                char temp_buf;
-                for (size_t ii = 0; ii < v_blocks.size(); ii++)
-                {
-                    for (size_t d = 0; d < v_dims.size(); d++)
-                    {
-                        start[d] = (PIO_Offset) 0;
-                        count[d] = (PIO_Offset) 0;
+                        for (size_t d = 0; d < var_ndims; d++)
+                        {
+                            count[d] = (PIO_Offset) pio_var_count[d];
+                        }
+                        count_ptr = count;
                     }
 
-                    ret = put_vara_nm(ncid, var.nc_varid, var.nctype, v_base->Type(), start, count, &temp_buf);
+                    int64_t nelems = 1;
+                    for (size_t d = 0; d < var_ndims; d++)
+                    {
+                        nelems *= pio_var_count[d];
+                    }
+                    std::vector<char> d(nelems * elemsize);
+                    v_base->SetBlockSelection(ii);
+                    std::vector<T> v_data;
+                    bpReader[0].Get(*v_base, v_data, adios2::Mode::Sync);
+                    memcpy(d.data(), v_data.data(), nelems * elemsize);
+
+                    ret = put_vara_nm(ncid, var.nc_varid, var.nctype, v_base->Type(), start_ptr, count_ptr, d.data());
                     if (ret != PIO_NOERR)
                     {
                         cout << "rank " << mpirank << ":ERROR in PIOc_put_vara(), code = " << ret
                              << " at " << __func__ << ":" << __LINE__ << endl;
                         return BP2PIO_ERROR;
                     }
+                }
+                catch (const std::exception &e)
+                {
+                    return BP2PIO_ERROR;
+                }
+                catch (...)
+                {
+                    return BP2PIO_ERROR;
                 }
             }
         }
@@ -1303,8 +1345,14 @@ int adios2_ConvertVariableTimedPutVar(adios2::Variable<T> *v_base, std::vector<T
 
     *v_base = bpIO[0].InquireVariable<T>(varname.c_str());
 
-    adios2::Dims v_dims = v_base->Shape(0);
-    if (v_dims.size() == 0)
+    string attname = varname + "/__pio__/ndims";
+    std::string atype;
+    AttributeVector adata;
+    int ierr = adios_get_attr_a2(bpIO[0], (char*)attname.c_str(), atype, adata);
+    ERROR_CHECK_SINGLE_THROW(ierr, "adios_get_attr_a2 failed.")
+    int var_ndims = (int) *((int*)adata[0].data());
+
+    if (var_ndims == 0)
     {
         try
         {
@@ -1328,7 +1376,7 @@ int adios2_ConvertVariableTimedPutVar(adios2::Variable<T> *v_base, std::vector<T
 
                 start[0] = ts;
                 count[0] = 1;
-                ret = PIOc_put_vara(ncid, var.nc_varid, start, count, v_mins.data());
+                ret = put_vara_nm(ncid, var.nc_varid, var.nctype, v_base->Type(), start, count, v_mins.data());
                 if (ret != PIO_NOERR)
                 {
                     cout << "ERROR in PIOc_put_vara(), code = " << ret
@@ -1379,7 +1427,6 @@ int adios2_ConvertVariableTimedPutVar(adios2::Variable<T> *v_base, std::vector<T
                      << endl;
         }
 
-        /* Is this a local array written by each process, or a truly distributed global array */
         TimerStart(read);
 
         *v_base = bpIO[0].InquireVariable<T>(varname.c_str());
@@ -1387,193 +1434,100 @@ int adios2_ConvertVariableTimedPutVar(adios2::Variable<T> *v_base, std::vector<T
 
         TimerStop(read);
 
-        bool local_array = true;
-        typename adios2::Variable<T>::Info v_info = v_blocks[0];
-        adios2::Dims b_dims = v_info.Count;
-        for (size_t d = 0; d < v_dims.size(); d++)
-        {
-            if (b_dims[d] != v_dims[d])
-            {
-                local_array = false;
-                break;
-            }
-        }
-        if (var.nctype == PIO_CHAR && v_dims.size() == 1)
-        {
-            /* Character array over time may have longer dimension declaration than the actual content */
-            local_array = true;
-        }
+        char start_varname[PIO_MAX_NAME];
+        char count_varname[PIO_MAX_NAME];
+        snprintf(start_varname, PIO_MAX_NAME, "start_id/%s", varname.c_str());
+        snprintf(count_varname, PIO_MAX_NAME, "count_id/%s", varname.c_str());
+        int64_t pio_var_start[PIO_MAX_DIMS], pio_var_count[PIO_MAX_DIMS];
 
-        if (local_array)
+        /* Just read the arrays written by rank 0 (on every process here) and
+         * write it collectively.
+        */
+        for (int ts = 0; ts < nsteps; ++ts)
         {
-            /* Just read the arrays written by rank 0 (on every process here) and
-             * write it collectively.
-             */
-            for (int ts = 0; ts < nsteps; ++ts)
-            {
-                TimerStart(read);
+            TimerStart(read);
 
-                try
+            try
+            {
+                int elemsize = adios2_type_size_a2(v_base->Type());
+                assert(elemsize > 0);
+
+                std::vector<int64_t> v_tmp;
+                adios2::Variable<int64_t> v_var;
+                v_var = bpIO[0].InquireVariable<int64_t>(start_varname);
+                v_var.SetBlockSelection(ts);
+                bpReader[0].Get(v_var, v_tmp, adios2::Mode::Sync);
+                memcpy(pio_var_start, v_tmp.data(), sizeof(int64_t)*var_ndims);
+
+                v_var = bpIO[0].InquireVariable<int64_t>(count_varname);
+                v_var.SetBlockSelection(ts);
+                bpReader[0].Get(v_var, v_tmp, adios2::Mode::Sync);
+                memcpy(pio_var_count, v_tmp.data(), sizeof(int64_t)*var_ndims);
+
+                PIO_Offset start[var_ndims], count[var_ndims];
+                PIO_Offset *start_ptr, *count_ptr;
+                if (pio_var_start[0] < 0) /* NULL start */
                 {
-                    int elemsize = adios2_type_size_a2(v_base->Type());
-                    assert(elemsize > 0);
-                    uint64_t nelems = 1;
-                    for (size_t d = 0; d < v_dims.size(); d++)
-                    {
-                        nelems *= v_dims[d];
-                    }
-                    std::vector<char> d(nelems * elemsize);
-                    v_base->SetBlockSelection(ts);
-                    adios2::Dims vd_start(v_dims.size());
-                    adios2::Dims vd_count(v_dims.size());
-                    for (size_t d = 0; d < v_dims.size(); d++)
-                    {
-                        vd_start[d] = 0;
-                        vd_count[d] = v_dims[d];
-                    }
-                    v_base->SetSelection({vd_start, vd_count});
-                    std::vector<T> v_data;
-                    bpReader[0].Get(*v_base, v_data, adios2::Mode::Sync);
-                    memcpy(d.data(), v_data.data(), nelems * elemsize);
-
-                    TimerStop(read);
-
-                    TimerStart(write);
-
-                    PIO_Offset start[v_dims.size() + 1], count[v_dims.size() + 1];
-                    start[0] = ts;
-                    count[0] = 1;
-                    for (size_t d = 0; d < v_dims.size(); d++)
-                    {
-                        start[d + 1] = 0;
-                        count[d + 1] = v_dims[d];
-                    }
-
-                    ret = PIOc_put_vara(ncid, var.nc_varid, start, count, d.data());
-                    if (ret != PIO_NOERR)
-                    {
-                        cout << "ERROR in PIOc_put_vara(), code = " << ret
-                             << " at " << __func__ << ":" << __LINE__ << endl;
-                        return BP2PIO_ERROR;
-                    }
-
-                    TimerStop(write);
+                    start_ptr = NULL;
                 }
-                catch (const std::exception &e)
+                else
                 {
+                    for (size_t d = 0; d < var_ndims; d++)
+                    {
+                        start[d] = (PIO_Offset) pio_var_start[d];
+                    }
+                    start_ptr = start;
+                }
+
+                if (pio_var_count[0] < 0) /* NULL count */
+                {
+                    count_ptr = NULL;
+                    for (size_t d = 0; d < var_ndims; d++)
+                    {
+                        pio_var_count[d] = -1 * (pio_var_count[d] + 1);
+                    }
+                }
+                else
+                {
+                    for (size_t d = 0; d < var_ndims; d++)
+                    {
+                        count[d] = (PIO_Offset) pio_var_count[d];
+                    }
+                    count_ptr = count;
+                }
+
+                int64_t nelems = 1;
+                for (size_t d = 1; d < var_ndims; d++)
+                {
+                    nelems *= pio_var_count[d];
+                }
+                std::vector<char> d(nelems * elemsize);
+                v_base->SetBlockSelection(ts);
+                std::vector<T> v_data;
+                bpReader[0].Get(*v_base, v_data, adios2::Mode::Sync);
+                memcpy(d.data(), v_data.data(), nelems * elemsize);
+
+                TimerStop(read);
+
+                TimerStart(write);
+
+                ret = put_vara_nm(ncid, var.nc_varid, var.nctype, v_base->Type(), start_ptr, count_ptr, d.data());
+                if (ret != PIO_NOERR)
+                {
+                    cout << "ERROR in PIOc_put_vara(), code = " << ret
+                         << " at " << __func__ << ":" << __LINE__ << endl;
                     return BP2PIO_ERROR;
                 }
-                catch (...)
-                {
-                    return BP2PIO_ERROR;
-                }
+
+                TimerStop(write);
             }
-        }
-        else
-        {
-            /* PIOc_put_vara_ writes out from processor 0       */
-            /* Read in infile[0] and output using PIOc_put_vara */
-            if (mpirank == 0)
+            catch (const std::exception &e)
             {
-                for (int ts = 0; ts < nsteps; ++ts)
-                {
-                    try
-                    {
-                        TimerStart(read);
-
-                        int elemsize = adios2_type_size_a2(v_base->Type());
-                        assert(elemsize > 0);
-                        uint64_t nelems = 1;
-                        for (size_t d = 0; d < v_dims.size(); d++)
-                        {
-                            nelems *= v_dims[d];
-                        }
-                        std::vector<char> d(nelems * elemsize);
-                        v_base->SetBlockSelection(ts);
-                        adios2::Dims vd_start(v_dims.size());
-                        adios2::Dims vd_count(v_dims.size());
-                        for (size_t d = 0; d < v_dims.size(); d++)
-                        {
-                            vd_start[d] = 0;
-                            vd_count[d] = v_dims[d];
-                        }
-                        v_base->SetSelection({vd_start, vd_count});
-                        std::vector<T> v_data;
-                        bpReader[0].Get(*v_base, v_data, adios2::Mode::Sync);
-                        memcpy(d.data(), v_data.data(), nelems * elemsize);
-
-                        TimerStop(read);
-
-                        TimerStart(write);
-
-                        PIO_Offset start[v_dims.size() + 1], count[v_dims.size() + 1];
-                        start[0] = ts;
-                        count[0] = 1;
-                        for (size_t d = 0; d < v_dims.size(); d++)
-                        {
-                            start[d + 1] = 0;
-                            count[d + 1] = v_dims[d];
-                        }
-
-                        ret = PIOc_put_vara(ncid, var.nc_varid, start, count, d.data());
-                        if (ret != PIO_NOERR)
-                        {
-                            cout << "ERROR in PIOc_put_vara(), code = " << ret
-                                 << " at " << __func__ << ":" << __LINE__ << endl;
-                            return BP2PIO_ERROR;
-                        }
-                        TimerStop(write);
-                    }
-                    catch (const std::exception &e)
-                    {
-                        return BP2PIO_ERROR;
-                    }
-                    catch (...)
-                    {
-                        return BP2PIO_ERROR;
-                    }
-                }
+                return BP2PIO_ERROR;
             }
-            else
+            catch (...)
             {
-                for (int ts = 0; ts < nsteps; ++ts)
-                {
-                    try
-                    {
-                        TimerStart(write);
-
-                        int elemsize = adios2_type_size_a2(v_base->Type());
-                        assert(elemsize > 0);
-                        uint64_t nelems = 1;
-                        std::vector<char> d(nelems * elemsize);
-
-                        PIO_Offset start[v_dims.size() + 1], count[v_dims.size() + 1];
-                        start[0] = 0;
-                        count[0] = 0;
-                        for (size_t d = 0; d < v_dims.size(); d++)
-                        {
-                            start[d + 1] = 0;
-                            count[d + 1] = 0;
-                        }
-
-                        ret = PIOc_put_vara(ncid, var.nc_varid, start, count, d.data());
-                        if (ret != PIO_NOERR)
-                        {
-                            cout << "ERROR in PIOc_put_vara(), code = " << ret
-                                 << " at " << __func__ << ":" << __LINE__ << endl;
-                            return BP2PIO_ERROR;
-                        }
-                        TimerStop(write);
-                    }
-                    catch (const std::exception &e)
-                    {
-                        return BP2PIO_ERROR;
-                    }
-                    catch (...)
-                    {
-                        return BP2PIO_ERROR;
-                    }
-                }
+                return BP2PIO_ERROR;
             }
         }
     }
@@ -1668,9 +1622,9 @@ int adios2_ConvertVariableDarray(adios2::Variable<T> *v_base, std::vector<T> v_v
     char frame_varname[PIO_MAX_NAME];
     char fillval_varname[PIO_MAX_NAME];
     char decompname[PIO_MAX_NAME];
-    sprintf(decomp_varname, "decomp_id/%s", varname.c_str());
-    sprintf(frame_varname, "frame_id/%s", varname.c_str());
-    sprintf(fillval_varname, "fillval_id/%s", varname.c_str());
+    snprintf(decomp_varname, PIO_MAX_NAME, "decomp_id/%s", varname.c_str());
+    snprintf(frame_varname, PIO_MAX_NAME, "frame_id/%s", varname.c_str());
+    snprintf(fillval_varname, PIO_MAX_NAME, "fillval_id/%s", varname.c_str());
     int decomp_id, frame_id, fillval_exist;
     char fillval_id[PIO_MAX_NAME];
 
@@ -1762,13 +1716,13 @@ int adios2_ConvertVariableDarray(adios2::Variable<T> *v_base, std::vector<T> v_v
             Decomposition decomp;
             if (mem_opt)
             {
-                sprintf(decompname, "/__pio__/decomp/%d", decomp_id);
+                snprintf(decompname, PIO_MAX_NAME, "/__pio__/decomp/%d", decomp_id);
                 decomp = ProcessOneDecomposition(bpIO, bpReader, ncid, decompname, wfiles,
                                                  iosysid, mpirank, nproc, comm);
             }
             else
             {
-                sprintf(decompname, "%d", decomp_id);
+                snprintf(decompname, PIO_MAX_NAME, "%d", decomp_id);
                 decomp = decomp_map[decompname];
             }
 
@@ -2084,7 +2038,7 @@ int ConvertBPFile(const string &infilepath, const string &outfilename,
         for (size_t i = 1; i <= wfiles.size(); i++)
         {
             char ss[PIO_MAX_NAME];
-            sprintf(ss, "%d", wfiles[i - 1]);
+            snprintf(ss, PIO_MAX_NAME, "%d", wfiles[i - 1]);
             string fileid_str(ss);
 
             string filei = infilepath + ".dir/" + basefilename + "." + fileid_str;
@@ -2164,7 +2118,9 @@ int ConvertBPFile(const string &infilepath, const string &outfilename,
 
                 if (v.find("decomp_id/") == string::npos &&
                     v.find("frame_id/") == string::npos &&
-                    v.find("fillval_id/") == string::npos)
+                    v.find("fillval_id/") == string::npos &&
+                    v.find("start_id/") == string::npos &&
+                    v.find("count_id/") == string::npos)
                 {
                     Variable& var = vars_map[v];
 

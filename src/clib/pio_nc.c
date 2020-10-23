@@ -2550,6 +2550,11 @@ int PIOc_def_var(int ncid, const char *name, nc_type xtype, int ndims,
         file->adios_vars[file->num_vars].decomp_varid = 0;
         file->adios_vars[file->num_vars].frame_varid = 0;
         file->adios_vars[file->num_vars].fillval_varid = 0;
+
+        /* to handle multi-dimensional temporal variables */
+        file->adios_vars[file->num_vars].start_varid = 0;
+        file->adios_vars[file->num_vars].count_varid = 0;
+
         file->adios_vars[file->num_vars].gdimids = (int*) malloc(ndims * sizeof(int));
         if (file->adios_vars[file->num_vars].gdimids == NULL)
         {
