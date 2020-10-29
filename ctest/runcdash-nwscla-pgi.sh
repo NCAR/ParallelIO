@@ -2,9 +2,9 @@
 
 # Get/Generate the Dashboard Model
 if [ $# -eq 0 ]; then
-	model=Experimental
+        model=Experimental
 else
-	model=$1
+        model=$1
 fi
 
 module reset
@@ -12,7 +12,7 @@ module unload netcdf
 module swap intel pgi/20.4
 module swap mpt mpt/2.22
 module load git/2.22.0
-module load cmake/3.16.4
+module load cmake/3.18.2
 module load netcdf-mpi/4.7.3
 module load pnetcdf/1.12.1
 
