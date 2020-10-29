@@ -326,7 +326,6 @@ contains
     integer(C_SIZE_T) :: tlen
 
     tlen = size(array)
-    array = 0
     call read_darray_internal_{TYPE} (File%fh, vardesc%varid, iodesc%ioid, tlen, array, iostat)
 
   end subroutine read_darray_{DIMS}d_{TYPE}
@@ -338,13 +337,13 @@ contains
     integer, intent(in) :: ncid, varid, ioid
     integer(C_SIZE_T), intent(in) :: alen
 
-    {VTYPE}, target ::  array(*)                 ! array to be read
-
+    {VTYPE}, target, intent(inout)::  array(*)                 ! array to be read
     integer(i4), intent(out) :: iostat
     type(C_PTR) :: cptr
     character(len=*), parameter :: subName=modName//'::read_darray_{TYPE}'
 
     cptr = C_LOC(array)
+
     iostat = PIOc_read_darray(ncid, varid-1, ioid, alen, cptr)
 
   end subroutine read_darray_internal_{TYPE}
