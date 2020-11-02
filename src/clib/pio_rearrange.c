@@ -799,7 +799,8 @@ compute_counts(iosystem_desc_t *ios, io_desc_t *iodesc,
                           &iodesc->rearr_opts.comp2io)))
         return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
 
-    free(s2rindex);
+    if(s2rindex)
+      free(s2rindex);
 
     return PIO_NOERR;
 }

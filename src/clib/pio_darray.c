@@ -869,7 +869,7 @@ PIOc_read_darray(int ncid, int varid, int ioid, PIO_Offset arraylen,
     void *tmparray;        /* unsorted copy of array buf if required */
     int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI function calls. */
     int ierr;              /* Return code. */
-    var_desc_t *vdesc;
+    void *fillvalue;
 
 #ifdef USE_MPE
     pio_start_mpe_log(DARRAY_READ);
@@ -960,26 +960,26 @@ PIOc_read_darray(int ncid, int varid, int ioid, PIO_Offset arraylen,
     else
         tmparray = array;
 
-    if ((ierr = get_var_desc(varid, &file->varlist, &vdesc)))
-        return pio_err(ios, file, ierr, __FILE__, __LINE__);
-    if ((ierr = find_var_fillvalue(file, varid, vdesc)))
-        return pio_err(ios, file, PIO_EBADID, __FILE__, __LINE__);
-
+    if (!(fillvalue = malloc(iodesc->piotype_size)))
+      return pio_err(ios, file, PIO_ENOMEM, __FILE__, __LINE__);
+    
+    if ((ierr = PIOc_inq_var_fill(file->pio_ncid, varid, NULL, &fillvalue)))
+        return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
 
     if(iodesc->piotype_size == 1){
         for (int m = 0; m < iodesc->maplen; m++)
-            ((signed char *)array)[m] = ((signed char *) vdesc->fillvalue)[0];
+	  ((signed char *)array)[m] = *((signed char *) fillvalue) ;
     }else if(iodesc->piotype_size == 2){
         for (int m = 0; m < iodesc->maplen; m++)
-            ((short *)array)[m] = ((short *) vdesc->fillvalue)[0];
+	  ((short *)array)[m] = *((short *) fillvalue);
     }else if(iodesc->piotype_size == 4){
         for (int m = 0; m < iodesc->maplen; m++)
-            ((int *)array)[m] = ((int *) vdesc->fillvalue)[0];
+	  ((int *)array)[m] = *((int *) fillvalue);
     }else if(iodesc->piotype_size == 8){
         for (int m = 0; m < iodesc->maplen; m++)
-            ((double *)array)[m] = ((double *) vdesc->fillvalue)[0];
+	  ((double *)array)[m] = *((double *) fillvalue);
     }
-
+    free(fillvalue);
 
     /* Rearrange the data. */
     if ((ierr = rearrange_io2comp(ios, iodesc, iobuf, tmparray)))
