@@ -192,8 +192,6 @@ CONTAINS
        i=i+1
     enddo
    deallocate(cval)
-!   print *,__FILE__,__LINE__,trim(ival)
-
 
   end function get_var1_id_text
 
