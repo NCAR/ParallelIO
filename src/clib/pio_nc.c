@@ -2465,6 +2465,27 @@ PIOc_def_var_fill(int ncid, int varid, int fill_mode, const void *fill_valuep)
  * @author Jim Edwards, Ed Hartnett
  */
 int
+PIOc_inq_var_fill_double(int ncid, int varid, int *no_fill, double *fill_valuep)
+{
+  return PIOc_inq_var_fill(ncid, varid, no_fill, (void *)fill_valuep);
+}
+int
+PIOc_inq_var_fill_float(int ncid, int varid, int *no_fill, float *fill_valuep)
+{
+  return PIOc_inq_var_fill(ncid, varid, no_fill, (void *)fill_valuep);
+}
+int
+PIOc_inq_var_fill_int(int ncid, int varid, int *no_fill, int *fill_valuep)
+{
+  return PIOc_inq_var_fill(ncid, varid, no_fill, (void *)fill_valuep);
+}
+int
+PIOc_inq_var_fill_short(int ncid, int varid, int *no_fill, short *fill_valuep)
+{
+  return PIOc_inq_var_fill(ncid, varid, no_fill, (void *)fill_valuep);
+}
+
+int
 PIOc_inq_var_fill(int ncid, int varid, int *no_fill, void *fill_valuep)
 {
     iosystem_desc_t *ios;  /* Pointer to io system information. */

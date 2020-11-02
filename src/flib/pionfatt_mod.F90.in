@@ -35,7 +35,6 @@ module pionfatt_mod
      module procedure put_att_1d_vid_{TYPE}
   end interface
 
-
   !>
   !! @private
   !<
@@ -46,6 +45,15 @@ module pionfatt_mod
      module procedure get_att_1d_{TYPE}, get_att_desc_1d_{TYPE}, get_att_1d_id_{TYPE}
   end interface
 
+  !>
+  !! @private
+  !<
+  public :: inq_var_fill
+  interface inq_var_fill
+     ! TYPE double
+     module procedure inq_var_fill_{TYPE}
+  end interface inq_var_fill
+  
   !> @cond doxygen_cant_handle_so_exclude
   private :: modName
   character(len=*), parameter :: modName='pionfatt_mod'
@@ -108,8 +116,7 @@ module pionfatt_mod
      end function PIOc_put_att_float
   end interface
   interface
-     ! TYPE int,double,short
-     integer(C_INT) function PIOc_get_att_float (ncid, varid, name, op) &
+      integer(C_INT) function PIOc_get_att_float (ncid, varid, name, op) &
           bind(C,name="PIOc_get_att_float")
        use iso_c_binding
        integer(C_INT), value         :: ncid
@@ -118,10 +125,39 @@ module pionfatt_mod
        real(C_FLOAT),        intent(out)   :: op
      end function PIOc_get_att_float
   end interface
+  interface
+     ! TYPE int,double,short
+     integer(C_INT) function PIOc_inq_var_fill_{TYPE} (ncid, varid, no_fill, fillvalue) &
+          bind(C, name="PIOc_inq_var_fill_{TYPE}")
+       use iso_c_binding
+       integer(C_INT), value       :: ncid
+       integer(C_INT), value       :: varid
+       integer(C_INT), intent(out) :: no_fill
+       {CTYPE}                 :: fillvalue
+     end function PIOc_inq_var_fill_{TYPE}
+     integer(C_INT) function PIOc_inq_var_fill_real (ncid, varid, no_fill, fillvalue) &
+          bind(C, name="PIOc_inq_var_fill_float")
+       use iso_c_binding
+       integer(C_INT), value       :: ncid
+       integer(C_INT), value       :: varid
+       integer(C_INT), intent(out) :: no_fill
+       real(C_FLOAT)               :: fillvalue
+     end function PIOc_inq_var_fill_real
+  end interface
   !> @endcond
 
 contains
+  ! TYPE real,int,double,short
+  integer function inq_var_fill_{TYPE} (File, vdesc, no_fill, fillvalue) result(ierr)
+    type (File_desc_t), intent(in) :: File
+    type(var_desc_t), intent(in)  :: vdesc
+    ! fillvalue needs to not be optional to avoid ambiguity
+    integer, intent(out) :: no_fill
+    {VTYPE}, target, intent(out) :: fillvalue
 
+    ierr = PIOc_inq_var_fill_{TYPE} (File%fh, vdesc%varid-1, no_fill, fillvalue)
+
+  end function inq_var_fill_{TYPE}
   !>
   !! @public
   !! @ingroup PIO_put_att
