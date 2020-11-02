@@ -8,15 +8,15 @@ module global_vars
 
   use pio
   use mpi
+
   Implicit None
   public
 
-
   integer, parameter :: str_len = pio_max_name, ntest=4
-   integer, parameter ::NETCDF =1, &
-                        NETCDF4P=2, &
-                        NETCDF4C=3, &
-                        PNETCDF=4
+  integer, parameter ::NETCDF =1, &
+                       NETCDF4P=2, &
+                       NETCDF4C=3, &
+                       PNETCDF=4
 
   ! MPI Variables
   integer :: my_rank, ntasks
