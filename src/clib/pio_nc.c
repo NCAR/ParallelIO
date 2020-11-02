@@ -2443,27 +2443,9 @@ PIOc_def_var_fill(int ncid, int varid, int fill_mode, const void *fill_valuep)
 
     return PIO_NOERR;
 }
-
-/**
- * The PIO-C interface for the NetCDF function nc_inq_var_fill.
- *
- * This routine is called collectively by all tasks in the communicator
- * ios.union_comm. For more information on the underlying NetCDF commmand
- * please read about this function in the NetCDF documentation at:
- * http://www.unidata.ucar.edu/software/netcdf/docs/group__variables.html
- *
- * @param ncid the ncid of the open file, obtained from
- * PIOc_openfile() or PIOc_createfile().
- * @param varid the variable ID.
- * @param no_fill a pointer to int that will get the fill
- * mode. Ignored if NULL (except with pnetcdf, which seg-faults with
- * NULL.)
- * @param fill_valuep pointer to space that gets the fill value for
- * this variable. Ignored if NULL.
- * @return PIO_NOERR for success, error code otherwise.
- * @ingroup PIO_inq_var_c
- * @author Jim Edwards, Ed Hartnett
- */
+/** 
+ * Helper routines for fortran interface
+ **/
 int
 PIOc_inq_var_fill_double(int ncid, int varid, int *no_fill, double *fill_valuep)
 {
@@ -2485,6 +2467,27 @@ PIOc_inq_var_fill_short(int ncid, int varid, int *no_fill, short *fill_valuep)
   return PIOc_inq_var_fill(ncid, varid, no_fill, (void *)fill_valuep);
 }
 
+
+/**
+ * The PIO-C interface for the NetCDF function nc_inq_var_fill.
+ *
+ * This routine is called collectively by all tasks in the communicator
+ * ios.union_comm. For more information on the underlying NetCDF commmand
+ * please read about this function in the NetCDF documentation at:
+ * http://www.unidata.ucar.edu/software/netcdf/docs/group__variables.html
+ *
+ * @param ncid the ncid of the open file, obtained from
+ * PIOc_openfile() or PIOc_createfile().
+ * @param varid the variable ID.
+ * @param no_fill a pointer to int that will get the fill
+ * mode. Ignored if NULL (except with pnetcdf, which seg-faults with
+ * NULL.)
+ * @param fill_valuep pointer to space that gets the fill value for
+ * this variable. Ignored if NULL.
+ * @return PIO_NOERR for success, error code otherwise.
+ * @ingroup PIO_inq_var_c
+ * @author Jim Edwards, Ed Hartnett
+ */
 int
 PIOc_inq_var_fill(int ncid, int varid, int *no_fill, void *fill_valuep)
 {

@@ -147,6 +147,17 @@ module pionfatt_mod
   !> @endcond
 
 contains
+  !>
+  !! @public
+  !! @ingroup PIO_inq_var_fill
+  !! @brief Inquires about var fill value
+  !! @details
+  !! @param File @copydoc file_desc_t
+  !! @param vdesc : The netcdf variable descriptor
+  !! @param no_fill : whether this variable has no_fill enabled
+  !! @param fillvalue : the fillvalue used for this variable, returns default if not set.
+  !! @retval ierr @copydoc error_return
+  !<
   ! TYPE real,int,double,short
   integer function inq_var_fill_{TYPE} (File, vdesc, no_fill, fillvalue) result(ierr)
     type (File_desc_t), intent(in) :: File
@@ -158,6 +169,7 @@ contains
     ierr = PIOc_inq_var_fill_{TYPE} (File%fh, vdesc%varid-1, no_fill, fillvalue)
 
   end function inq_var_fill_{TYPE}
+
   !>
   !! @public
   !! @ingroup PIO_put_att
