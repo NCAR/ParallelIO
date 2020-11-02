@@ -337,7 +337,7 @@ contains
     integer, intent(in) :: ncid, varid, ioid
     integer(C_SIZE_T), intent(in) :: alen
 
-    {VTYPE}, target, intent(inout)::  array(*)                 ! array to be read
+    {VTYPE}, target, intent(out)::  array(*)                 ! array to be read
     integer(i4), intent(out) :: iostat
     type(C_PTR) :: cptr
     character(len=*), parameter :: subName=modName//'::read_darray_{TYPE}'

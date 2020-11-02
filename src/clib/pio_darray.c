@@ -869,7 +869,7 @@ PIOc_read_darray(int ncid, int varid, int ioid, PIO_Offset arraylen,
     void *tmparray;        /* unsorted copy of array buf if required */
     int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI function calls. */
     int ierr;              /* Return code. */
-    var_desc_t vdesc;
+    var_desc_t *vdesc;
 
 #ifdef USE_MPE
     pio_start_mpe_log(DARRAY_READ);
