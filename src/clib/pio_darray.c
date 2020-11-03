@@ -963,7 +963,7 @@ PIOc_read_darray(int ncid, int varid, int ioid, PIO_Offset arraylen,
     if (!(fillvalue = malloc(iodesc->piotype_size)))
       return pio_err(ios, file, PIO_ENOMEM, __FILE__, __LINE__);
     
-    if ((ierr = PIOc_inq_var_fill(file->pio_ncid, varid, NULL, &fillvalue)))
+    if ((ierr = PIOc_inq_var_fill(file->pio_ncid, varid, NULL, fillvalue)))
         return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
 
     if(iodesc->piotype_size == 1){
