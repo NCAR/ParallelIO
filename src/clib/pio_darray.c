@@ -869,6 +869,7 @@ PIOc_read_darray(int ncid, int varid, int ioid, PIO_Offset arraylen,
     void *tmparray;        /* unsorted copy of array buf if required */
     int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI function calls. */
     int ierr;              /* Return code. */
+    void *fillvalue;
 
 #ifdef USE_MPE
     pio_start_mpe_log(DARRAY_READ);
@@ -955,22 +956,30 @@ PIOc_read_darray(int ncid, int varid, int ioid, PIO_Offset arraylen,
     {
         if (!(tmparray = malloc(iodesc->piotype_size * iodesc->maplen)))
             return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__);
-        if(iodesc->piotype_size == 1){
-          for (int m = 0; m < iodesc->maplen; m++)
-            ((signed char *)array)[m] = -1;
-        }else if(iodesc->piotype_size == 2){
-          for (int m = 0; m < iodesc->maplen; m++)
-            ((short *)array)[m] = -1;
-        }else if(iodesc->piotype_size == 4){
-          for (int m = 0; m < iodesc->maplen; m++)
-            ((int *)array)[m] = -1;
-        }else if(iodesc->piotype_size == 8){
-          for (int m = 0; m < iodesc->maplen; m++)
-            ((double *)array)[m] = -1;
-        }
     }
     else
         tmparray = array;
+
+    if (!(fillvalue = malloc(iodesc->piotype_size)))
+      return pio_err(ios, file, PIO_ENOMEM, __FILE__, __LINE__);
+    
+    if ((ierr = PIOc_inq_var_fill(file->pio_ncid, varid, NULL, fillvalue)))
+        return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
+
+    if(iodesc->piotype_size == 1){
+        for (int m = 0; m < iodesc->maplen; m++)
+	  ((signed char *)array)[m] = *((signed char *) fillvalue) ;
+    }else if(iodesc->piotype_size == 2){
+        for (int m = 0; m < iodesc->maplen; m++)
+	  ((short *)array)[m] = *((short *) fillvalue);
+    }else if(iodesc->piotype_size == 4){
+        for (int m = 0; m < iodesc->maplen; m++)
+	  ((int *)array)[m] = *((int *) fillvalue);
+    }else if(iodesc->piotype_size == 8){
+        for (int m = 0; m < iodesc->maplen; m++)
+	  ((double *)array)[m] = *((double *) fillvalue);
+    }
+    free(fillvalue);
 
     /* Rearrange the data. */
     if ((ierr = rearrange_io2comp(ios, iodesc, iobuf, tmparray)))
