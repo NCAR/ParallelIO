@@ -53,7 +53,7 @@ module pionfatt_mod
      ! TYPE double
      module procedure inq_var_fill_{TYPE}
   end interface inq_var_fill
-  
+
   !> @cond doxygen_cant_handle_so_exclude
   private :: modName
   character(len=*), parameter :: modName='pionfatt_mod'
@@ -147,6 +147,8 @@ module pionfatt_mod
   !> @endcond
 
 contains
+  !pl The next line is needed by genf90.pl, do not remove it.
+  ! TYPE real,double,int,short
   !>
   !! @public
   !! @ingroup PIO_inq_var_fill
@@ -158,7 +160,6 @@ contains
   !! @param fillvalue : the fillvalue used for this variable, returns default if not set.
   !! @retval ierr @copydoc error_return
   !<
-  ! TYPE real,int,double,short
   integer function inq_var_fill_{TYPE} (File, vdesc, no_fill, fillvalue) result(ierr)
     type (File_desc_t), intent(in) :: File
     type(var_desc_t), intent(in)  :: vdesc
