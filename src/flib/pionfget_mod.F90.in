@@ -380,7 +380,8 @@ CONTAINS
 
   end function get_var_text_internal
 
-! TYPE int,real,double,short
+  !> @cond doxygen_cant_handle_so_exclude
+  ! TYPE int,real,double,short
   integer function get_var_{TYPE}_internal  (ncid,varid, ival) result(ierr)
     integer, intent(in) :: ncid
     integer, intent(in) :: varid
@@ -441,7 +442,8 @@ CONTAINS
     end do
     deallocate(ccount, cstart)
   end function get_vara_text_internal
-
+  !> @endcond
+  
 ! TYPE int,real,double,short
 ! DIMS 1,2,3,4,5
   integer function get_var_{DIMS}d_{TYPE} (File,varid, ival) result(ierr)
