@@ -983,7 +983,7 @@ contains
     integer(i4), intent(in) :: rearr
     type (iosystem_desc_t), intent(out)  :: iosystem  ! io descriptor to initalize
     integer(i4), intent(in),optional :: base
-    type (pio_rearr_opt_t), intent(in), optional :: rearr_opts
+    type (pio_rearr_opt_t), intent(in), optional, target :: rearr_opts
 
     integer :: lbase
     integer :: ierr
