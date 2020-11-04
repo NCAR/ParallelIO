@@ -953,7 +953,8 @@ PIOc_read_darray(int ncid, int varid, int ioid, PIO_Offset arraylen,
     /* If the map is not monotonically increasing we will need to sort
      * it. */
     PLOG((3, "iodesc->needssort %d", iodesc->needssort));
-    if (iodesc->needssort){
+    if (iodesc->needssort)
+    {
 	if (!(tmparray = malloc(iodesc->piotype_size * iodesc->maplen)))
 	    return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__);
     }
