@@ -961,21 +961,29 @@ PIOc_read_darray(int ncid, int varid, int ioid, PIO_Offset arraylen,
     else
         tmparray = array;
 
-    /* prefill the output array with fill value then overwrite from iobuf */
-
-    if (!(fillvalue = malloc(iodesc->piotype_size)))
-        return pio_err(ios, file, PIO_ENOMEM, __FILE__, __LINE__);
-
-    if ((ierr = PIOc_inq_vartype(file->pio_ncid, varid, &pio_type)))
-        return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
-
-    if ((ierr = pio_inq_var_fill_expected(file->pio_ncid, varid, pio_type, iodesc->piotype_size, fillvalue)))
-        return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
-
-    for(int i=0; i<iodesc->maplen; i++)
-        memcpy(&((char *) array)[i*iodesc->piotype_size],fillvalue, iodesc->piotype_size);
-
-    free(fillvalue);
+    /* prefill the output array with 0 then overwrite from iobuf */
+    /*    switch(iodesc->piotype)
+      {
+      case PIO_SHORT:
+	for(int i=0; i<iodesc->maplen; i++)
+	  ((short *) array)[i] = (short) 0;
+	break;
+      case PIO_INT:
+	for(int i=0; i<iodesc->maplen; i++)
+	  ((int *) array)[i] = (int) 0;
+	break;
+      case PIO_FLOAT:
+	for(int i=0; i<iodesc->maplen; i++)
+	  ((float *) array)[i] = (float) 0;
+	break;
+      case PIO_DOUBLE:
+	for(int i=0; i<iodesc->maplen; i++)
+	  ((double *) array)[i] = (double) 0;
+	break;
+      default:
+	return PIO_EBADTYPE;
+      }
+    */
 
     /* Rearrange the data. */
     if ((ierr = rearrange_io2comp(ios, iodesc, iobuf, tmparray)))

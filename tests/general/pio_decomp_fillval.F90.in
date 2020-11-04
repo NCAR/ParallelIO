@@ -241,7 +241,7 @@ PIO_TF_AUTO_TEST_SUB_BEGIN nc_read_1d_explicit_fval
   ! We don't want to read even indices (BUF_FILLVAL == -2)
   do i=1,VEC_LOCAL_SZ,2
     rcompdof(i) = PIO_COMPDOF_FILLVAL
-    exp_val(i) = BUF_FILLVAL
+    exp_val(i) = PIO_COMPDOF_FILLVAL
   end do
 
   call PIO_initdecomp(pio_tf_iosystem_, PIO_TF_DATA_TYPE, dims, wcompdof, wiodesc)
