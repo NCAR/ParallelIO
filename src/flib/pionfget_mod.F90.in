@@ -178,22 +178,30 @@ CONTAINS
     integer, intent(in) :: varid, index(:)
     character(len=*), intent(out) :: ival
     character, allocatable :: cval(:)
-    integer :: clen, i
-
-    clen = len(ival)
-    allocate(cval(clen))
-    cval=C_NULL_CHAR
-    ival=''
-    ierr = get_var1_id_text_internal(ncid,varid,index,clen,cval)
-    i=1
-    do while(i<=clen )
-       if(cval(i) == C_NULL_CHAR ) exit
-       ival(i:i) = cval(i)
-       i=i+1
+    integer :: i, ndims
+    integer(kind=C_SIZE_T), allocatable :: lindex(:), count(:)
+!    clen = len(ival)
+!    allocate(cval(clen))
+!    cval=C_NULL_CHAR
+!    ival=''
+!    ierr = get_var1_id_text_internal(ncid,varid,index,clen,cval)
+!    i=1
+!    do while(i<=clen )
+!       if(cval(i) == C_NULL_CHAR ) exit
+!       ival(i:i) = cval(i)
+!       i=i+1
+!    enddo
+!   deallocate(cval)
+    ndims = size(index) + 1
+    allocate(lindex(ndims), count(ndims))
+    lindex(ndims) = 0
+    do i=1,ndims-1
+       lindex(ndims-i) = index(i) - 1
     enddo
-   deallocate(cval)
-!   print *,__FILE__,__LINE__,trim(ival)
+    count = 1
+    count(ndims) = len(ival)
 
+    ierr = PIOc_get_vara_text(ncid, varid-1, lindex, count, ival)
 
   end function get_var1_id_text
 
