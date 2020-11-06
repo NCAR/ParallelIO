@@ -81,24 +81,23 @@ contains
   integer function put_var1_text (File,varid, index, ival) result(ierr)
     type (File_desc_t), intent(inout) :: File
     integer, intent(in) :: varid, index(:)
-    character(len=*), intent(in) :: ival
-    character, allocatable :: cval(:)
-    integer :: i
-    integer, allocatable :: count(:)
+    character(len=*), target, intent(in) :: ival
+    integer, allocatable :: count(:), lindex(:)
     integer :: ndims
+    character(len=:), pointer :: cval
 
-    ndims = size(index)
-    allocate(count(ndims))
+    ndims = size(index)+1
+    allocate(count(ndims), lindex(ndims))
     count = 1
     count(1) = len(ival)
-    allocate(cval(count(1)+1))
-    cval = C_NULL_CHAR
-    do i=1,len_trim(ival)
-       cval(i) = ival(i:i)
-    end do
+    lindex(1) = 1
+    lindex(2:ndims) = index
+    cval => ival
 
-!print *,__FILE__,__LINE__,index,count,ival
-     ierr = put_vara_1d_text(File,varid, index, count, cval)
+!    print *,__FILE__,__LINE__,index,count,ival
+
+    ierr = put_vara_internal_text(File%fh, varid, lindex, count, ival//C_NULL_CHAR)
+!    print *, __FILE__,__LINE__,ierr, lindex, count
     deallocate(count)
   end function put_var1_text
 ! TYPE int,real,double,short
@@ -318,7 +317,7 @@ contains
   end function put_var_0d_{TYPE}
 
 
-! TYPE int,real,double,short
+!! TYPE int,real,double,short
   integer function put_vara_internal_{TYPE} (ncid,varid,start,count, ival) result(ierr)
     integer, intent(in) :: ncid
     integer, intent(in) :: varid

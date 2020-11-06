@@ -1322,6 +1322,8 @@ PIOc_put_var1_tc(int ncid, int varid, const PIO_Offset *index, nc_type xtype,
     PIO_Offset count[ndims];
     for (int c = 0; c < ndims; c++)
         count[c] = 1;
+    for (int c = 0; c < ndims; c++)
+        printf("here strt %d count %d buf %s\n",index[c], count[c],(char *) op);
 
     return PIOc_put_vars_tc(ncid, varid, index, count, NULL, xtype, op);
 }
