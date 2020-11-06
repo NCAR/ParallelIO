@@ -94,11 +94,8 @@ contains
     lindex(2:ndims) = index
     cval => ival
 
-!    print *,__FILE__,__LINE__,index,count,ival
-
     ierr = put_vara_internal_text(File%fh, varid, lindex, count, ival//C_NULL_CHAR)
-!    print *, __FILE__,__LINE__,ierr, lindex, count
-    deallocate(count)
+    deallocate(count, lindex)
   end function put_var1_text
 ! TYPE int,real,double,short
 !>
