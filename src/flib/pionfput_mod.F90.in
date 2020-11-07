@@ -81,22 +81,18 @@ contains
   integer function put_var1_text (File,varid, index, ival) result(ierr)
     type (File_desc_t), intent(inout) :: File
     integer, intent(in) :: varid, index(:)
-    character(len=*), target, intent(in) :: ival
-    integer, allocatable :: count(:), lindex(:)
+    character(len=*), intent(in) :: ival
+    integer, allocatable :: count(:)
     integer :: ndims
-    character(len=:), pointer :: cval
 
-    ndims = size(index)+1
-    allocate(count(ndims), lindex(ndims))
+    ndims = size(index)
+    allocate(count(ndims))
     count = 1
     count(1) = len(ival)
-    lindex(1) = 1
-    lindex(2:ndims) = index
-    cval => ival
 
-    ierr = put_vara_internal_text(File%fh, varid, lindex, count, trim(ival)//C_NULL_CHAR)
+    ierr = put_vara_internal_text(File%fh, varid, index, count, ival//C_NULL_CHAR)
 
-    deallocate(count, lindex)
+    deallocate(count)
   end function put_var1_text
 ! TYPE int,real,double,short
 !>

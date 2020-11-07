@@ -142,11 +142,10 @@ CONTAINS
 #ifdef TIMING
     call t_startf("PIO:get_var1_text")
 #endif
-    ndims = size(index) + 1
+    ndims = size(index)
     allocate(lindex(ndims), count(ndims))
-    lindex(ndims) = 0
-    do i=1,ndims-1
-       lindex(ndims-i) = index(i) - 1
+    do i=1,ndims
+       lindex(ndims-i+1) = index(i) - 1
     enddo
     count = 1
     count(ndims) = len(ival)
