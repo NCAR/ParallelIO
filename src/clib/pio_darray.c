@@ -868,6 +868,8 @@ PIOc_read_darray(int ncid, int varid, int ioid, PIO_Offset arraylen,
     size_t rlen = 0;       /* the length of data in iobuf. */
     void *tmparray;        /* unsorted copy of array buf if required */
     int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI function calls. */
+    void *fillvalue = NULL;
+    int pio_type;
     int ierr;              /* Return code. */
 
 #ifdef USE_MPE
@@ -955,22 +957,33 @@ PIOc_read_darray(int ncid, int varid, int ioid, PIO_Offset arraylen,
     {
         if (!(tmparray = malloc(iodesc->piotype_size * iodesc->maplen)))
             return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__);
-        if(iodesc->piotype_size == 1){
-          for (int m = 0; m < iodesc->maplen; m++)
-            ((signed char *)array)[m] = -1;
-        }else if(iodesc->piotype_size == 2){
-          for (int m = 0; m < iodesc->maplen; m++)
-            ((short *)array)[m] = -1;
-        }else if(iodesc->piotype_size == 4){
-          for (int m = 0; m < iodesc->maplen; m++)
-            ((int *)array)[m] = -1;
-        }else if(iodesc->piotype_size == 8){
-          for (int m = 0; m < iodesc->maplen; m++)
-            ((double *)array)[m] = -1;
-        }
     }
     else
         tmparray = array;
+
+    /* prefill the output array with 0 then overwrite from iobuf */
+    /*    switch(iodesc->piotype)
+      {
+      case PIO_SHORT:
+	for(int i=0; i<iodesc->maplen; i++)
+	  ((short *) array)[i] = (short) 0;
+	break;
+      case PIO_INT:
+	for(int i=0; i<iodesc->maplen; i++)
+	  ((int *) array)[i] = (int) 0;
+	break;
+      case PIO_FLOAT:
+	for(int i=0; i<iodesc->maplen; i++)
+	  ((float *) array)[i] = (float) 0;
+	break;
+      case PIO_DOUBLE:
+	for(int i=0; i<iodesc->maplen; i++)
+	  ((double *) array)[i] = (double) 0;
+	break;
+      default:
+	return PIO_EBADTYPE;
+      }
+    */
 
     /* Rearrange the data. */
     if ((ierr = rearrange_io2comp(ios, iodesc, iobuf, tmparray)))

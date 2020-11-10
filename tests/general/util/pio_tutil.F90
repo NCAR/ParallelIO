@@ -35,6 +35,7 @@ MODULE pio_tutil
 
   ! integer types
   INTEGER, PARAMETER, PUBLIC :: fc_short   = selected_int_kind(4)
+  INTEGER, PARAMETER, PUBLIC :: fc_int     = selected_int_kind(6)
 
   ! Misc constants
   INTEGER, PARAMETER :: PIO_TF_MAX_STR_LEN=100
@@ -91,6 +92,10 @@ MODULE pio_tutil
   ! integer arrays
   INTERFACE PIO_TF_Check_val_
     MODULE PROCEDURE                  &
+        PIO_TF_Check_int_val_val,     &
+        PIO_TF_Check_short_val_val,     &
+        PIO_TF_Check_real_val_val,     &
+        PIO_TF_Check_double_val_val,     &
         PIO_TF_Check_int_arr_val,     &
         PIO_TF_Check_int_arr_arr,     &
         PIO_TF_Check_int_arr_arr_tol, &
@@ -604,6 +609,27 @@ CONTAINS
     if (tol /= 0) continue ! to suppress warning
 
     PIO_TF_Check_int_arr_arr_tol = PIO_TF_Check_int_arr_arr(arr, exp_arr)
+  END FUNCTION
+
+  LOGICAL FUNCTION PIO_TF_Check_int_val_val(val1, val2)
+    INTEGER, INTENT(IN) :: val1, val2
+
+    PIO_TF_Check_int_val_val = val1 == val2
+  END FUNCTION
+  LOGICAL FUNCTION PIO_TF_Check_short_val_val(val1, val2)
+    INTEGER(kind=fc_short), INTENT(IN) :: val1, val2
+
+    PIO_TF_Check_short_val_val = val1 == val2
+  END FUNCTION
+  LOGICAL FUNCTION PIO_TF_Check_real_val_val(val1, val2)
+    real(kind=fc_real), INTENT(IN) :: val1, val2
+
+    PIO_TF_Check_real_val_val = val1 == val2
+  END FUNCTION
+  LOGICAL FUNCTION PIO_TF_Check_double_val_val(val1, val2)
+    real(kind=fc_double), INTENT(IN) :: val1, val2
+
+    PIO_TF_Check_double_val_val = val1 == val2
   END FUNCTION
 
   LOGICAL FUNCTION PIO_TF_Check_int_arr_val(arr, val)
