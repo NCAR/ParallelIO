@@ -47,11 +47,9 @@ foreach (PNCDFcomp IN LISTS PnetCDF_FIND_VALID_COMPONENTS)
             initialize_paths (PnetCDF_${PNCDFcomp}_PATHS
                               INCLUDE_DIRECTORIES ${MPI_${PNCDFcomp}_INCLUDE_PATH}
                               LIBRARIES ${MPI_${PNCDFcomp}_LIBRARIES})
-            find_package_component(PnetCDF COMPONENT ${PNCDFcomp}
-                                   PATHS ${PnetCDF_${PNCDFcomp}_PATHS})
-        else ()
-            find_package_component(PnetCDF COMPONENT ${PNCDFcomp})
         endif ()
+        find_package_component(PnetCDF COMPONENT ${PNCDFcomp}
+                               PATHS ${PnetCDF_${PNCDFcomp}_PATHS})
 
         # Continue only if component found
         if (PnetCDF_${PNCDFcomp}_FOUND)
