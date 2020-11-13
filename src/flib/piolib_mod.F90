@@ -1041,6 +1041,29 @@ contains
   !! pio operations (defined in PIO_types).
   !! @author Jim Edwards
   !<
+  subroutine init_intercomm()
+    interface
+       integer(C_INT) function PIOc_init_async(comm_world, num_io_procs, io_proc_list, component_count, &
+            procs_per_component, proc_list, io_comm, comp_comm, rearranger, iosysid) &
+            bind(C,name="PIOc_init_async")
+         use iso_c_binding
+         use pio_types
+         type(C_PTR), intent(in) :: comm_world
+         integer(C_INT), intent(in), value :: num_io_procs
+         integer(C_INT), intent(in) :: io_proc_list(:)
+         integer(C_INT), intent(in), value :: component_count
+         integer(C_INT), intent(in) :: procs_per_component(:)
+         integer(C_INT), intent(in) :: proc_list(:)
+         type(C_PTR), intent(inout) :: io_comm
+         type(C_PTR), intent(inout) :: comp_comm
+         integer(C_INT), intent(in), value :: rearranger
+         integer(C_INT), intent(out) :: iosysid
+       end function PIOc_init_async
+    end interface
+
+
+
+
 !   subroutine init_intercom(component_count, peer_comm, comp_comms, io_comm, iosystem)
 !     use pio_types, only : pio_internal_error, pio_rearr_box
 !     integer, intent(in) :: component_count
