@@ -207,8 +207,7 @@ module piolib_mod
   !<
   interface PIO_init
      module procedure init_intracom
-!     module procedure init_intercom
-
+     module procedure init_intercom
   end interface PIO_init
 
   !>
@@ -1041,27 +1040,45 @@ contains
   !! pio operations (defined in PIO_types).
   !! @author Jim Edwards
   !<
-  subroutine init_intercomm()
+  subroutine init_intercom(iosystem, incomm, procs_per_component, comp_proc_list, io_proc_list, rearranger, comp_comm, io_comm )
+
     interface
-       integer(C_INT) function PIOc_init_async(comm_world, num_io_procs, io_proc_list, component_count, &
-            procs_per_component, proc_list, io_comm, comp_comm, rearranger, iosysid) &
-            bind(C,name="PIOc_init_async")
+       integer(C_INT) function PIOc_init_async_from_F90(f90_comm_world, num_io_procs, io_proc_list, component_count, &
+            procs_per_component, flat_proc_list, io_comm, comp_comm, rearranger, iosysid) &
+            bind(C,name="PIOc_init_async_from_F90")
          use iso_c_binding
          use pio_types
-         type(C_PTR), intent(in) :: comm_world
+         integer(C_INT), intent(in), value :: f90_comm_world
          integer(C_INT), intent(in), value :: num_io_procs
-         integer(C_INT), intent(in) :: io_proc_list(:)
+         integer(C_INT), intent(in)        :: io_proc_list(*)
          integer(C_INT), intent(in), value :: component_count
-         integer(C_INT), intent(in) :: procs_per_component(:)
-         integer(C_INT), intent(in) :: proc_list(:)
-         type(C_PTR), intent(inout) :: io_comm
-         type(C_PTR), intent(inout) :: comp_comm
+         integer(C_INT), intent(in)        :: procs_per_component(*)
+         integer(C_INT), intent(in)        :: flat_proc_list(*)
+         integer(C_INT), intent(out)       :: io_comm
+         integer(C_INT), intent(out)       :: comp_comm
          integer(C_INT), intent(in), value :: rearranger
-         integer(C_INT), intent(out) :: iosysid
-       end function PIOc_init_async
+         integer(C_INT), intent(out)       :: iosysid
+       end function PIOc_init_async_from_F90
     end interface
 
+    type(iosystem_desc_t), intent(out) :: iosystem
+    integer, intent(in) :: incomm
+    integer, intent(in) :: procs_per_component(:)
+    integer, intent(in) :: comp_proc_list(:,:)
+    integer, intent(in) :: io_proc_list(:)
+    integer, intent(in) :: rearranger
+    integer, intent(out) :: comp_comm
+    integer, intent(out) :: io_comm
+    integer :: numcomps
+    integer :: i
+    integer :: ierr
 
+    print *,__FILE__,__LINE__,reshape(comp_proc_list, (/size(comp_proc_list)/))
+    ierr = PIOc_init_async_from_F90(incomm, size(io_proc_list), io_proc_list, size(procs_per_component), &
+         procs_per_component, reshape(comp_proc_list,(/size(comp_proc_list)/)), io_comm, comp_comm, rearranger, iosystem%iosysid)
+
+
+  end subroutine init_intercom
 
 
 !   subroutine init_intercom(component_count, peer_comm, comp_comms, io_comm, iosystem)

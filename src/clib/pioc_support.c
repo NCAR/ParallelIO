@@ -2406,8 +2406,8 @@ inq_file_metadata(file_desc_t *file, int ncid, int iotype, int *nvars,
                 {
                     if (d == 0){
                         (*rec_var)[v] = 1;
-			break;
-		    }
+                        break;
+                    }
                     else
                         return pio_err(NULL, file, PIO_EINVAL, __FILE__, __LINE__);
 
@@ -3159,4 +3159,18 @@ determine_procs(int num_io_procs, int component_count, int *num_procs_per_comp,
         }
     }
     return PIO_NOERR;
+}
+
+// These functions are callable from Fortran. MPI_Comm_c2f itself may be just a macro.
+
+MPI_Fint f_MPI_Comm_c2f(MPI_Comm *comm) {
+    return MPI_Comm_c2f(*comm);
+}
+
+MPI_Comm* f_MPI_Comm_f2c(MPI_Fint Fcomm)
+{
+    MPI_Comm* Ccomm;
+    Ccomm = malloc(sizeof(MPI_Comm));
+    *Ccomm = MPI_Comm_f2c(Fcomm);
+    return Ccomm;
 }

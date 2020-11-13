@@ -1042,6 +1042,8 @@ PIOc_Init_Intracomm(MPI_Comm comp_comm, int num_iotasks, int stride, int base,
         return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
 
     /* Create a group for the IO tasks. */
+    for(int i=0; i < ios->num_iotasks; i++)
+        printf("iorank[%d] = %d\n",i,ios->ioranks[i]);
     if ((mpierr = MPI_Group_incl(compgroup, ios->num_iotasks, ios->ioranks,
                                  &iogroup)))
         return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
@@ -1125,6 +1127,79 @@ PIOc_Init_Intracomm_from_F90(int f90_comp_comm,
                                    rearr_opts->io2comp.isend,
                                    rearr_opts->io2comp.max_pend_req);
     }
+    return ret;
+}
+
+/**
+ * Interface to call from pio_init from fortran.
+ *
+ * @param f90_comp_comm
+ * @param num_iotasks the number of IO tasks
+ * @param stride the stride to use assigning tasks
+ * @param base the starting point when assigning tasks
+ * @param rearr the rearranger
+ * @param rearr_opts the rearranger options
+ * @param iosysidp a pointer that gets the IO system ID
+ * @returns 0 for success, error code otherwise
+ * @ingroup PIO_init_c
+ * @author Jim Edwards
+ */
+int
+PIOc_init_async_from_F90(int f90_world_comm,
+                             int num_io_procs,
+                             int *io_proc_list,
+                             int component_count,
+                             int *procs_per_component,
+                             int *flat_proc_list,
+                             int f90_io_comm,
+                             int f90_comp_comm,
+                             int rearranger,
+                             int iosysid)
+
+{
+    int ret = PIO_NOERR;
+    MPI_Comm io_comm, comp_comm;
+    int maxprocs_per_component=0;
+
+   for(int i=0; i< component_count; i++)
+        maxprocs_per_component = (procs_per_component[i] > maxprocs_per_component) ? procs_per_component[i] : maxprocs_per_component;
+
+    printf("io_procs %d %d\n",num_io_procs, io_proc_list[0]);
+
+    int **proc_list = (int **) malloc(sizeof(int *) *component_count);
+
+    for(int i=0; i< component_count; i++){
+        proc_list[i] = (int *) malloc(sizeof(int) * maxprocs_per_component);
+        for(int j=0;j<procs_per_component[i]; j++)
+            proc_list[i][j] = flat_proc_list[j+i*maxprocs_per_component];
+    }
+    printf("at top flat_proc_list[0] %d proc_list[0][0] %d\n",flat_proc_list[0],proc_list[0][0]);
+
+    ret = PIOc_init_async(MPI_Comm_f2c(f90_world_comm), num_io_procs, io_proc_list,
+                          component_count, procs_per_component, proc_list, &io_comm, &comp_comm, rearranger, &iosysid);
+
+    f90_comp_comm = MPI_Comm_c2f(comp_comm);
+    f90_io_comm = MPI_Comm_c2f(io_comm);
+
+    if (ret != PIO_NOERR)
+    {
+        PLOG((1, "PIOc_Init_Intercomm failed"));
+        return ret;
+    }
+
+/*    if (rearr_opts)
+    {
+        PLOG((1, "Setting rearranger options, iosys=%d", *iosysidp));
+        return PIOc_set_rearr_opts(*iosysidp, rearr_opts->comm_type,
+                                   rearr_opts->fcd,
+                                   rearr_opts->comp2io.hs,
+                                   rearr_opts->comp2io.isend,
+                                   rearr_opts->comp2io.max_pend_req,
+                                   rearr_opts->io2comp.hs,
+                                   rearr_opts->io2comp.isend,
+                                   rearr_opts->io2comp.max_pend_req);
+    }
+*/
     return ret;
 }
 
@@ -1442,6 +1517,9 @@ PIOc_init_async(MPI_Comm world, int num_io_procs, int *io_proc_list,
     int mpierr;           /* Return code from MPI functions. */
     int ret;              /* Return code. */
 
+    for(int i=0;i<num_procs_per_comp[0]; i++)
+        printf("proc_list[0][%d] = %d\n",i, proc_list[0][i]);
+
     /* Check input parameters. Only allow box rearranger for now. */
     if (num_io_procs < 1 || component_count < 1 || !num_procs_per_comp || !iosysidp ||
         (rearranger != PIO_REARR_BOX))
@@ -1462,6 +1540,8 @@ PIOc_init_async(MPI_Comm world, int num_io_procs, int *io_proc_list,
     /* Determine which tasks to use for IO. */
     for (int p = 0; p < num_io_procs; p++)
         my_io_proc_list[p] = io_proc_list ? io_proc_list[p] : p;
+
+    printf("num_io_procs %d my_io_proc_list %d io_proc_list %d\n",num_io_procs, my_io_proc_list[0], io_proc_list[0]);
 
     /* Determine which tasks to use for each computational component. */
     if ((ret = determine_procs(num_io_procs, component_count, num_procs_per_comp,
@@ -1505,6 +1585,8 @@ PIOc_init_async(MPI_Comm world, int num_io_procs, int *io_proc_list,
      * processes. */
     int iomaster;
 
+    printf("num_io_procs %d my_io_proc_list %d io_proc_list %d\n",num_io_procs, my_io_proc_list[0], io_proc_list[0]);
+    PIOc_set_log_level(4);
     /* Create a group for the IO component. */
     if ((ret = MPI_Group_incl(world_group, num_io_procs, my_io_proc_list, &io_group)))
         return check_mpi(NULL, NULL, ret, __FILE__, __LINE__);
@@ -1575,7 +1657,7 @@ PIOc_init_async(MPI_Comm world, int num_io_procs, int *io_proc_list,
 
         /* We are not providing an info object. */
         my_iosys->info = MPI_INFO_NULL;
-
+        printf("num_procs_per_comp[%d] = %d %d\n",cmp,num_procs_per_comp[cmp], my_proc_list[0]);
         /* Create a group for this component. */
         if ((ret = MPI_Group_incl(world_group, num_procs_per_comp[cmp], my_proc_list[cmp],
                                   &group[cmp])))
