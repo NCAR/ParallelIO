@@ -65,7 +65,7 @@
 /** Handle MPI errors. This should only be used with MPI library
  * function calls. */
 #define MPIERR(e) do {                                                  \
-        MPI_Error_string(e, exerr_buffer, &resultlen);			\
+        MPI_Error_string(e, exerr_buffer, &exresultlen);			\
         fprintf(stderr, "MPI error, line %d, file %s: %s\n", __LINE__, __FILE__, exerr_buffer); \
         MPI_Finalize();							\
         return 2;							\
@@ -86,7 +86,7 @@ char exerr_buffer[MPI_MAX_ERROR_STRING];
 
 /** This is the length of the most recent MPI error message, stored
  * int the global error string. */
-int resultlen;
+int exresultlen;
 
 /** The dimension names. */
 char dim_name[NDIM][PIO_MAX_NAME + 1] = {"timestep", "x", "y"};
