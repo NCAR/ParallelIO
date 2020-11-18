@@ -457,22 +457,6 @@ compare( const void* a, const void* b)
 }
 
 /**
- * compare_ints.
- *
- * @param a pointer to a
- * @param b pointer to b
- * @return -1 if p < q, 1 if p > q, 0 if equal
- * @author Jim Edwards
- */
-/*
-int compare_ints(const void *p, const void *q) {
-    int x = *(const int *)p;
-    int y = *(const int *)q;
-
-    return (x > y) - (x < y);
-}
-*/
-/**
  * Initialize the decomposition used with distributed arrays. The
  * decomposition describes how the data will be distributed between
  * tasks.
@@ -1174,7 +1158,7 @@ PIOc_init_async_from_F90(int f90_world_comm,
                              int *f90_io_comm,
                              int *f90_comp_comm,
                              int rearranger,
-                             int *iosysid)
+                             int *iosysidp)
 
 {
     int ret = PIO_NOERR;
@@ -1194,7 +1178,7 @@ PIOc_init_async_from_F90(int f90_world_comm,
 
     ret = PIOc_init_async(MPI_Comm_f2c(f90_world_comm), num_io_procs, io_proc_list,
                           component_count, procs_per_component, proc_list, &io_comm,
-                          &comp_comm, rearranger, iosysid);
+                          &comp_comm, rearranger, iosysidp);
     if(comp_comm)
         *f90_comp_comm = MPI_Comm_c2f(comp_comm);
     else
