@@ -1147,13 +1147,19 @@ PIOc_Init_Intracomm_from_F90(int f90_comp_comm,
 /**
  * Interface to call from pio_init from fortran.
  *
- * @param f90_comp_comm
- * @param num_iotasks the number of IO tasks
- * @param stride the stride to use assigning tasks
- * @param base the starting point when assigning tasks
- * @param rearr the rearranger
- * @param rearr_opts the rearranger options
- * @param iosysidp a pointer that gets the IO system ID
+ * @param f90_world_comm the incoming communicator which includes all tasks
+ * @param num_io_procs the number of IO tasks
+ * @param io_proc_list the rank of io tasks in f90_world_comm
+ * @param component_count the number of computational components
+ * used an iosysid will be generated for each
+ * @param procs_per_component the number of procs in each computational component
+ * @param flat_proc_list a 1D array of size
+ * component_count*maxprocs_per_component with rank in f90_world_comm
+ * @param f90_io_comm the io_comm handle to be returned to fortran
+ * @param f90_comp_comm the comp_comm handle to be returned to fortran
+ * @param rearranger currently only PIO_REARRANGE_BOX is supported
+ * @param iosysidp pointer to array of length component_count that
+ * gets the iosysid for each component.
  * @returns 0 for success, error code otherwise
  * @ingroup PIO_init_c
  * @author Jim Edwards
