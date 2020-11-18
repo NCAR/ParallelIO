@@ -178,17 +178,17 @@ contains
 
         this%niotasks = 1 ! keep things simple - 1 iotask
 
-        io_proc_list(1) = 0
-!        io_proc_list(1) = this%ntasks-1
+!        io_proc_list(1) = 0
+        io_proc_list(1) = this%ntasks-1
         this%ntasks = this%ntasks - this%niotasks
 
         procs_per_component(1) = this%ntasks
         allocate(comp_proc_list(this%ntasks,1))
         do i=1,this%ntasks
-!           comp_proc_list(i,1) = i - 1
-           comp_proc_list(i,1) = i
+           comp_proc_list(i,1) = i - 1
+!           comp_proc_list(i,1) = i
         enddo
-
+        ierr =  pio_set_log_level(4)
         call PIO_init(this%pioIOSystem,      & ! iosystem
              MPI_COMM_WORLD,             & ! MPI communicator
              procs_per_component,        & ! number of tasks per component model

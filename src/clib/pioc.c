@@ -464,14 +464,14 @@ compare( const void* a, const void* b)
  * @return -1 if p < q, 1 if p > q, 0 if equal
  * @author Jim Edwards
  */
-
+/*
 int compare_ints(const void *p, const void *q) {
     int x = *(const int *)p;
     int y = *(const int *)q;
 
     return (x > y) - (x < y);
 }
-
+*/
 /**
  * Initialize the decomposition used with distributed arrays. The
  * decomposition describes how the data will be distributed between
@@ -1533,7 +1533,7 @@ PIOc_init_async(MPI_Comm world, int num_io_procs, int *io_proc_list,
     int my_io_proc_list[num_io_procs]; /* List of processors in IO component. */
     int mpierr;           /* Return code from MPI functions. */
     int ret;              /* Return code. */
-    int world_size;
+//    int world_size;
 
     /* Check input parameters. Only allow box rearranger for now. */
     if (num_io_procs < 1 || component_count < 1 || !num_procs_per_comp || !iosysidp ||
@@ -1566,8 +1566,8 @@ PIOc_init_async(MPI_Comm world, int num_io_procs, int *io_proc_list,
         return check_mpi(NULL, NULL, ret, __FILE__, __LINE__);
 
     /* Get size of world. */
-    if ((ret = MPI_Comm_size(world, &world_size)))
-        return check_mpi(NULL, NULL, ret, __FILE__, __LINE__);
+//    if ((ret = MPI_Comm_size(world, &world_size)))
+//        return check_mpi(NULL, NULL, ret, __FILE__, __LINE__);
 
     /* Is this process in the IO component? */
     int pidx;
@@ -1649,6 +1649,9 @@ PIOc_init_async(MPI_Comm world, int num_io_procs, int *io_proc_list,
         /* Get pointer to current iosys. */
         my_iosys = iosys[cmp];
 
+        /* The rank of the computation leader in the union comm. */
+        my_iosys->comproot = num_io_procs;
+
         /* Initialize some values. */
         my_iosys->io_comm = MPI_COMM_NULL;
         my_iosys->comp_comm = MPI_COMM_NULL;
@@ -1694,12 +1697,14 @@ PIOc_init_async(MPI_Comm world, int num_io_procs, int *io_proc_list,
         for (int p = 0; p < num_procs_per_comp[cmp]; p++)
             proc_list_union[p + num_io_procs] = my_proc_list[cmp][p];
 
-        qsort(proc_list_union, num_procs_per_comp[cmp] + num_io_procs, sizeof(int), compare_ints);
+//        qsort(proc_list_union, num_procs_per_comp[cmp] + num_io_procs, sizeof(int), compare_ints);
         for (int p = 0; p < num_procs_per_comp[cmp] + num_io_procs; p++)
             PLOG((3, "p %d num_io_procs %d proc_list_union[p + num_io_procs] %d ",
                   p, num_io_procs, proc_list_union[p]));
 
         /* The rank of the computation leader in the union comm. First task which is not an io task */
+        my_iosys->ioroot = 0;
+/*
         my_iosys->comproot = -1;
         my_iosys->ioroot = -1;
         for (int p = 0; p < num_procs_per_comp[cmp] + num_io_procs; p++)
@@ -1719,7 +1724,7 @@ PIOc_init_async(MPI_Comm world, int num_io_procs, int *io_proc_list,
                 my_iosys->comproot = proc_list_union[p];
             }
         }
-
+*/
 
         PLOG((3, "my_iosys->comproot = %d ioroot = %d", my_iosys->comproot, my_iosys->ioroot));
 
@@ -1803,8 +1808,7 @@ PIOc_init_async(MPI_Comm world, int num_io_procs, int *io_proc_list,
         if (!(my_iosys->ioranks = calloc(my_iosys->num_iotasks, sizeof(int))))
             return pio_err(NULL, NULL, PIO_ENOMEM, __FILE__, __LINE__);
         for (int i = 0; i < my_iosys->num_iotasks; i++)
-            my_iosys->ioranks[i] = my_io_proc_list[i];
-        my_iosys->ioroot = my_iosys->ioranks[0];
+            my_iosys->ioranks[i] = i;
 
         /* All the processes in this component, and the IO component,
          * are part of the union_comm. */
@@ -1830,7 +1834,7 @@ PIOc_init_async(MPI_Comm world, int num_io_procs, int *io_proc_list,
                 PLOG((3, "my_iosys->io_comm = %d", my_iosys->io_comm));
                 /* Create the intercomm from IO to computation component. */
                 PLOG((3, "about to create intercomm for IO component to cmp = %d "
-                      "my_iosys->io_comm = %d", cmp, my_iosys->io_comm));
+                      "my_iosys->io_comm = %d comproot %d", cmp, my_iosys->io_comm, my_iosys->comproot));
                 if ((ret = MPI_Intercomm_create(my_iosys->io_comm, 0, my_iosys->union_comm,
                                                 my_iosys->comproot, cmp, &my_iosys->intercomm)))
                     return check_mpi(NULL, NULL, ret, __FILE__, __LINE__);
@@ -1838,8 +1842,8 @@ PIOc_init_async(MPI_Comm world, int num_io_procs, int *io_proc_list,
             else
             {
                 /* Create the intercomm from computation component to IO component. */
-                PLOG((3, "about to create intercomm for cmp = %d my_iosys->comp_comm = %d", cmp,
-                      my_iosys->comp_comm));
+                PLOG((3, "about to create intercomm for cmp = %d my_iosys->comp_comm = %d ioroot %d", cmp,
+                      my_iosys->comp_comm, my_iosys->ioroot));
                 if ((ret = MPI_Intercomm_create(my_iosys->comp_comm, 0, my_iosys->union_comm,
                                                 my_iosys->ioroot, cmp, &my_iosys->intercomm)))
                     return check_mpi(NULL, NULL, ret, __FILE__, __LINE__);
