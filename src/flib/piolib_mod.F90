@@ -1067,16 +1067,15 @@ contains
     integer, intent(in) :: comp_proc_list(:,:)
     integer, intent(in) :: io_proc_list(:)
     integer, intent(in) :: rearranger
-    integer, intent(out) :: comp_comm
-    integer, intent(out) :: io_comm
+    integer, target     :: comp_comm
+    integer, target     :: io_comm
     integer :: numcomps
     integer :: i
     integer :: ierr
 
-    print *,__FILE__,__LINE__,reshape(comp_proc_list, (/size(comp_proc_list)/))
     ierr = PIOc_init_async_from_F90(incomm, size(io_proc_list), io_proc_list, size(procs_per_component), &
-         procs_per_component, reshape(comp_proc_list,(/size(comp_proc_list)/)), io_comm, comp_comm, rearranger, iosystem%iosysid)
-
+         procs_per_component, reshape(comp_proc_list,(/size(comp_proc_list)/)), io_comm, &
+         comp_comm, rearranger, iosystem%iosysid)
 
   end subroutine init_intercom
 

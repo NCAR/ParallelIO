@@ -457,6 +457,22 @@ compare( const void* a, const void* b)
 }
 
 /**
+ * compare_ints.
+ *
+ * @param a pointer to a
+ * @param b pointer to b
+ * @return -1 if p < q, 1 if p > q, 0 if equal
+ * @author Jim Edwards
+ */
+
+int compare_ints(const void *p, const void *q) {
+    int x = *(const int *)p;
+    int y = *(const int *)q;
+
+    return (x > y) - (x < y);
+}
+
+/**
  * Initialize the decomposition used with distributed arrays. The
  * decomposition describes how the data will be distributed between
  * tasks.
@@ -539,10 +555,10 @@ PIOc_InitDecomp(int iosysid, int pio_type, int ndims, const int *gdimlen, int ma
             char rearranger_present = rearranger ? true : false;
             char iostart_present = iostart ? true : false;
             char iocount_present = iocount ? true : false;
-
-            if (ios->compmaster == MPI_ROOT)
+            if (ios->compmaster == MPI_ROOT){
+                PLOG((1, "about to sent msg %d union_comm %d",msg,ios->union_comm));
                 mpierr = MPI_Send(&msg, 1, MPI_INT, ios->ioroot, 1, ios->union_comm);
-
+            }
             if (!mpierr)
                 mpierr = MPI_Bcast(&iosysid, 1, MPI_INT, ios->compmaster, ios->intercomm);
             if (!mpierr)
@@ -1042,8 +1058,6 @@ PIOc_Init_Intracomm(MPI_Comm comp_comm, int num_iotasks, int stride, int base,
         return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
 
     /* Create a group for the IO tasks. */
-    for(int i=0; i < ios->num_iotasks; i++)
-        printf("iorank[%d] = %d\n",i,ios->ioranks[i]);
     if ((mpierr = MPI_Group_incl(compgroup, ios->num_iotasks, ios->ioranks,
                                  &iogroup)))
         return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
@@ -1151,10 +1165,10 @@ PIOc_init_async_from_F90(int f90_world_comm,
                              int component_count,
                              int *procs_per_component,
                              int *flat_proc_list,
-                             int f90_io_comm,
-                             int f90_comp_comm,
+                             int *f90_io_comm,
+                             int *f90_comp_comm,
                              int rearranger,
-                             int iosysid)
+                             int *iosysid)
 
 {
     int ret = PIO_NOERR;
@@ -1164,8 +1178,6 @@ PIOc_init_async_from_F90(int f90_world_comm,
    for(int i=0; i< component_count; i++)
         maxprocs_per_component = (procs_per_component[i] > maxprocs_per_component) ? procs_per_component[i] : maxprocs_per_component;
 
-    printf("io_procs %d %d\n",num_io_procs, io_proc_list[0]);
-
     int **proc_list = (int **) malloc(sizeof(int *) *component_count);
 
     for(int i=0; i< component_count; i++){
@@ -1173,21 +1185,26 @@ PIOc_init_async_from_F90(int f90_world_comm,
         for(int j=0;j<procs_per_component[i]; j++)
             proc_list[i][j] = flat_proc_list[j+i*maxprocs_per_component];
     }
-    printf("at top flat_proc_list[0] %d proc_list[0][0] %d\n",flat_proc_list[0],proc_list[0][0]);
 
     ret = PIOc_init_async(MPI_Comm_f2c(f90_world_comm), num_io_procs, io_proc_list,
-                          component_count, procs_per_component, proc_list, &io_comm, &comp_comm, rearranger, &iosysid);
-
-    f90_comp_comm = MPI_Comm_c2f(comp_comm);
-    f90_io_comm = MPI_Comm_c2f(io_comm);
+                          component_count, procs_per_component, proc_list, &io_comm,
+                          &comp_comm, rearranger, iosysid);
+    if(comp_comm)
+        *f90_comp_comm = MPI_Comm_c2f(comp_comm);
+    else
+        *f90_comp_comm = 0;
+    if(io_comm)
+        *f90_io_comm = MPI_Comm_c2f(io_comm);
+    else
+        *f90_io_comm = 0;
 
     if (ret != PIO_NOERR)
     {
         PLOG((1, "PIOc_Init_Intercomm failed"));
         return ret;
     }
-
-/*    if (rearr_opts)
+/*
+    if (rearr_opts)
     {
         PLOG((1, "Setting rearranger options, iosys=%d", *iosysidp));
         return PIOc_set_rearr_opts(*iosysidp, rearr_opts->comm_type,
@@ -1516,9 +1533,7 @@ PIOc_init_async(MPI_Comm world, int num_io_procs, int *io_proc_list,
     int my_io_proc_list[num_io_procs]; /* List of processors in IO component. */
     int mpierr;           /* Return code from MPI functions. */
     int ret;              /* Return code. */
-
-    for(int i=0;i<num_procs_per_comp[0]; i++)
-        printf("proc_list[0][%d] = %d\n",i, proc_list[0][i]);
+    int world_size;
 
     /* Check input parameters. Only allow box rearranger for now. */
     if (num_io_procs < 1 || component_count < 1 || !num_procs_per_comp || !iosysidp ||
@@ -1541,8 +1556,6 @@ PIOc_init_async(MPI_Comm world, int num_io_procs, int *io_proc_list,
     for (int p = 0; p < num_io_procs; p++)
         my_io_proc_list[p] = io_proc_list ? io_proc_list[p] : p;
 
-    printf("num_io_procs %d my_io_proc_list %d io_proc_list %d\n",num_io_procs, my_io_proc_list[0], io_proc_list[0]);
-
     /* Determine which tasks to use for each computational component. */
     if ((ret = determine_procs(num_io_procs, component_count, num_procs_per_comp,
                                proc_list, my_proc_list)))
@@ -1550,6 +1563,10 @@ PIOc_init_async(MPI_Comm world, int num_io_procs, int *io_proc_list,
 
     /* Get rank of this task in world. */
     if ((ret = MPI_Comm_rank(world, &my_rank)))
+        return check_mpi(NULL, NULL, ret, __FILE__, __LINE__);
+
+    /* Get size of world. */
+    if ((ret = MPI_Comm_size(world, &world_size)))
         return check_mpi(NULL, NULL, ret, __FILE__, __LINE__);
 
     /* Is this process in the IO component? */
@@ -1585,8 +1602,6 @@ PIOc_init_async(MPI_Comm world, int num_io_procs, int *io_proc_list,
      * processes. */
     int iomaster;
 
-    printf("num_io_procs %d my_io_proc_list %d io_proc_list %d\n",num_io_procs, my_io_proc_list[0], io_proc_list[0]);
-    PIOc_set_log_level(4);
     /* Create a group for the IO component. */
     if ((ret = MPI_Group_incl(world_group, num_io_procs, my_io_proc_list, &io_group)))
         return check_mpi(NULL, NULL, ret, __FILE__, __LINE__);
@@ -1651,13 +1666,9 @@ PIOc_init_async(MPI_Comm world, int num_io_procs, int *io_proc_list,
         my_iosys->rearr_opts.comm_type = PIO_REARR_COMM_COLL;
         my_iosys->rearr_opts.fcd = PIO_REARR_COMM_FC_2D_DISABLE;
 
-        /* The rank of the computation leader in the union comm. */
-        my_iosys->comproot = num_io_procs;
-        PLOG((3, "my_iosys->comproot = %d", my_iosys->comproot));
-
         /* We are not providing an info object. */
         my_iosys->info = MPI_INFO_NULL;
-        printf("num_procs_per_comp[%d] = %d %d\n",cmp,num_procs_per_comp[cmp], my_proc_list[0]);
+
         /* Create a group for this component. */
         if ((ret = MPI_Group_incl(world_group, num_procs_per_comp[cmp], my_proc_list[cmp],
                                   &group[cmp])))
@@ -1681,11 +1692,38 @@ PIOc_init_async(MPI_Comm world, int num_io_procs, int *io_proc_list,
 
         /* Add proc numbers from computation component. */
         for (int p = 0; p < num_procs_per_comp[cmp]; p++)
-        {
             proc_list_union[p + num_io_procs] = my_proc_list[cmp][p];
+
+        qsort(proc_list_union, num_procs_per_comp[cmp] + num_io_procs, sizeof(int), compare_ints);
+        for (int p = 0; p < num_procs_per_comp[cmp] + num_io_procs; p++)
             PLOG((3, "p %d num_io_procs %d proc_list_union[p + num_io_procs] %d ",
-                  p, num_io_procs, proc_list_union[p + num_io_procs]));
+                  p, num_io_procs, proc_list_union[p]));
+
+        /* The rank of the computation leader in the union comm. First task which is not an io task */
+        my_iosys->comproot = -1;
+        my_iosys->ioroot = -1;
+        for (int p = 0; p < num_procs_per_comp[cmp] + num_io_procs; p++)
+        {
+            bool ioproc = false;
+            for (int q = 0; q < num_io_procs; q++)
+            {
+                if (proc_list_union[p] == my_io_proc_list[q])
+                {
+                    ioproc = true;
+                    my_iosys->ioroot = proc_list_union[p];
+                    break;
+                }
+            }
+            if ( !ioproc && my_iosys->comproot < 0)
+            {
+                my_iosys->comproot = proc_list_union[p];
+            }
         }
+
+
+        PLOG((3, "my_iosys->comproot = %d ioroot = %d", my_iosys->comproot, my_iosys->ioroot));
+
+
 
         /* Allocate space for computation task ranks. */
         if (!(my_iosys->compranks = calloc(my_iosys->num_comptasks, sizeof(int))))
@@ -1775,6 +1813,7 @@ PIOc_init_async(MPI_Comm world, int num_io_procs, int *io_proc_list,
             return check_mpi(NULL, NULL, ret, __FILE__, __LINE__);
         PLOG((3, "created union comm for cmp %d my_iosys->union_comm %d", cmp, my_iosys->union_comm));
 
+
         if (in_io || in_cmp)
         {
             if ((ret = MPI_Comm_rank(my_iosys->union_comm, &my_iosys->union_rank)))
@@ -1793,7 +1832,7 @@ PIOc_init_async(MPI_Comm world, int num_io_procs, int *io_proc_list,
                 PLOG((3, "about to create intercomm for IO component to cmp = %d "
                       "my_iosys->io_comm = %d", cmp, my_iosys->io_comm));
                 if ((ret = MPI_Intercomm_create(my_iosys->io_comm, 0, my_iosys->union_comm,
-                                                my_iosys->num_iotasks, cmp, &my_iosys->intercomm)))
+                                                my_iosys->comproot, cmp, &my_iosys->intercomm)))
                     return check_mpi(NULL, NULL, ret, __FILE__, __LINE__);
             }
             else
@@ -1802,7 +1841,7 @@ PIOc_init_async(MPI_Comm world, int num_io_procs, int *io_proc_list,
                 PLOG((3, "about to create intercomm for cmp = %d my_iosys->comp_comm = %d", cmp,
                       my_iosys->comp_comm));
                 if ((ret = MPI_Intercomm_create(my_iosys->comp_comm, 0, my_iosys->union_comm,
-                                                0, cmp, &my_iosys->intercomm)))
+                                                my_iosys->ioroot, cmp, &my_iosys->intercomm)))
                     return check_mpi(NULL, NULL, ret, __FILE__, __LINE__);
             }
             PLOG((3, "intercomm created for cmp = %d", cmp));

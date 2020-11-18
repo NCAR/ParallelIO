@@ -8,7 +8,7 @@ module pioAsyncExample
     use pio, only : PIO_int,var_desc_t, PIO_redef, PIO_def_dim, PIO_def_var, PIO_enddef
     use pio, only : PIO_closefile, io_desc_t, PIO_initdecomp, PIO_write_darray
     use pio, only : PIO_freedecomp, PIO_clobber, PIO_read_darray, PIO_syncfile, PIO_OFFSET_KIND
-    use pio, only : PIO_nowrite, PIO_openfile
+    use pio, only : PIO_nowrite, PIO_openfile, pio_set_log_level
     use mpi
     implicit none
 
@@ -31,6 +31,9 @@ module pioAsyncExample
 
         !> @brief Compute task comm
         integer :: comm
+
+        !> @brief true if this is an iotask
+        logical :: iotask
 
         !> @brief Rank of processor running the code.
         integer :: myRank
@@ -174,12 +177,16 @@ contains
         this%dimLen(1)     = LEN
 
         this%niotasks = 1 ! keep things simple - 1 iotask
-        io_proc_list(1) = this%ntasks-1
+
+        io_proc_list(1) = 0
+!        io_proc_list(1) = this%ntasks-1
         this%ntasks = this%ntasks - this%niotasks
+
         procs_per_component(1) = this%ntasks
         allocate(comp_proc_list(this%ntasks,1))
         do i=1,this%ntasks
-           comp_proc_list(i,1) = i - 1
+!           comp_proc_list(i,1) = i - 1
+           comp_proc_list(i,1) = i
         enddo
 
         call PIO_init(this%pioIOSystem,      & ! iosystem
@@ -190,6 +197,11 @@ contains
              PIO_REARR_BOX,                 & ! rearranger to use (currently only BOX is supported)
              this%comm,                  &                   ! comp_comm to be returned
              io_comm)
+        if (io_comm /= MPI_COMM_NULL) then
+           this%iotask = .true.
+           return
+        endif
+        this%iotask = .false.
         call MPI_Comm_rank(this%comm, this%myRank, ierr)
         call MPI_Comm_size(this%comm, this%ntasks , ierr)
 
@@ -221,12 +233,7 @@ contains
         implicit none
 
         class(pioExampleClass), intent(inout) :: this
-
-        integer(PIO_OFFSET_KIND) :: start(1)
-        integer(PIO_OFFSET_KIND) :: count(1)
-
-        start(1) = this%ista
-        count(1) = this%arrIdxPerPe
+        integer :: ierr
 
         call PIO_initdecomp(this%pioIoSystem, PIO_int, this%dimLen, this%compdof(this%ista:this%isto), &
             this%iodescNCells)
@@ -242,6 +249,7 @@ contains
         integer :: retVal
 
         retVal = PIO_createfile(this%pioIoSystem, this%pioFileDesc, this%iotype, trim(this%fileName), PIO_clobber)
+
         call this%errorHandle("Could not create "//trim(this%fileName), retVal)
 
     end subroutine createFile
@@ -316,7 +324,6 @@ contains
 
         call PIO_freedecomp(this%pioIoSystem, this%iodescNCells)
         call PIO_finalize(this%pioIoSystem, ierr)
-        call MPI_Finalize(ierr)
 
     end subroutine cleanUp
 
@@ -372,6 +379,7 @@ end module pioAsyncExample
 program main
 
     use pioAsyncExample, only : pioExampleClass
+    use pio, only : pio_set_log_level
 #ifdef TIMING
     use perf_mod, only : t_initf, t_finalizef, t_prf
 #endif
@@ -379,20 +387,25 @@ program main
     implicit none
 
     type(pioExampleClass) :: pioExInst
+    integer :: ierr
 #ifdef TIMING
     call t_initf('timing.nl')
 #endif
     call pioExInst%init()
-    call pioExInst%createDecomp()
-    call pioExInst%createFile()
-    call pioExInst%defineVar()
-    call pioExInst%writeVar()
-    call pioExInst%readVar()
-    call pioExInst%closeFile()
-    call pioExInst%cleanUp()
+    if (.not. pioExInst%iotask) then
+       call pioExInst%createDecomp()
+       call pioExInst%createFile()
+       call pioExInst%defineVar()
+       call pioExInst%writeVar()
+       call pioExInst%readVar()
+       call pioExInst%closeFile()
+       call pioExInst%cleanUp()
+    endif
 #ifdef TIMING
     call t_prf()
     call t_finalizef()
 #endif
+    call MPI_Finalize(ierr)
+
 
 end program main
