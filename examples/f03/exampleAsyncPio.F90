@@ -30,7 +30,7 @@ module pioAsyncExample
     type, public :: pioExampleClass
 
         !> @brief Compute task comm
-        integer :: comm
+        integer, allocatable :: comm(:)
 
         !> @brief true if this is an iotask
         logical :: iotask
@@ -51,7 +51,7 @@ module pioAsyncExample
         integer :: optBase
 
         !> @brief The ParallelIO system set up by @ref PIO_init.
-        type(iosystem_desc_t) :: pioIoSystem
+        type(iosystem_desc_t), allocatable :: pioIoSystem(:)
 
         !> @brief Contains data identifying the file.
         type(file_desc_t)     :: pioFileDesc
@@ -188,22 +188,24 @@ contains
            comp_proc_list(i,1) = i - 1
 !           comp_proc_list(i,1) = i
         enddo
-        ierr =  pio_set_log_level(4)
+
+        allocate(this%pioIOSystem(1), this%comm(1))
+
         call PIO_init(this%pioIOSystem,      & ! iosystem
              MPI_COMM_WORLD,             & ! MPI communicator
              procs_per_component,        & ! number of tasks per component model
              comp_proc_list,             & ! list of procs per component
              io_proc_list,               & ! list of io procs
-             PIO_REARR_BOX,                 & ! rearranger to use (currently only BOX is supported)
-             this%comm,                  &                   ! comp_comm to be returned
-             io_comm)
+             PIO_REARR_BOX,              & ! rearranger to use (currently only BOX is supported)
+             this%comm,                  & ! comp_comm to be returned
+             io_comm)                      ! io_comm to be returned
         if (io_comm /= MPI_COMM_NULL) then
            this%iotask = .true.
            return
         endif
         this%iotask = .false.
-        call MPI_Comm_rank(this%comm, this%myRank, ierr)
-        call MPI_Comm_size(this%comm, this%ntasks , ierr)
+        call MPI_Comm_rank(this%comm(1), this%myRank, ierr)
+        call MPI_Comm_size(this%comm(1), this%ntasks , ierr)
 
         !
         ! set up some data that we will write to a netcdf file
@@ -235,7 +237,7 @@ contains
         class(pioExampleClass), intent(inout) :: this
         integer :: ierr
 
-        call PIO_initdecomp(this%pioIoSystem, PIO_int, this%dimLen, this%compdof(this%ista:this%isto), &
+        call PIO_initdecomp(this%pioIoSystem(1), PIO_int, this%dimLen, this%compdof(this%ista:this%isto), &
             this%iodescNCells)
 
     end subroutine createDecomp
@@ -248,7 +250,7 @@ contains
 
         integer :: retVal
 
-        retVal = PIO_createfile(this%pioIoSystem, this%pioFileDesc, this%iotype, trim(this%fileName), PIO_clobber)
+        retVal = PIO_createfile(this%pioIoSystem(1), this%pioFileDesc, this%iotype, trim(this%fileName), PIO_clobber)
 
         call this%errorHandle("Could not create "//trim(this%fileName), retVal)
 
@@ -322,8 +324,8 @@ contains
         deallocate(this%dataBuffer)
         deallocate(this%readBuffer)
 
-        call PIO_freedecomp(this%pioIoSystem, this%iodescNCells)
-        call PIO_finalize(this%pioIoSystem, ierr)
+        call PIO_freedecomp(this%pioIoSystem(1), this%iodescNCells)
+        call PIO_finalize(this%pioIoSystem(1), ierr)
 
     end subroutine cleanUp
 
@@ -338,7 +340,7 @@ contains
         if (retVal .ne. PIO_NOERR) then
             write(*,*) retVal,errMsg
             call PIO_closefile(this%pioFileDesc)
-            call mpi_abort(this%comm,retVal, lretval)
+            call mpi_abort(this%comm(1),retVal, lretval)
         end if
 
     end subroutine errorHandle
