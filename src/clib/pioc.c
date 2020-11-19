@@ -539,10 +539,10 @@ PIOc_InitDecomp(int iosysid, int pio_type, int ndims, const int *gdimlen, int ma
             char rearranger_present = rearranger ? true : false;
             char iostart_present = iostart ? true : false;
             char iocount_present = iocount ? true : false;
-
-            if (ios->compmaster == MPI_ROOT)
+            if (ios->compmaster == MPI_ROOT){
+                PLOG((1, "about to sent msg %d union_comm %d",msg,ios->union_comm));
                 mpierr = MPI_Send(&msg, 1, MPI_INT, ios->ioroot, 1, ios->union_comm);
-
+            }
             if (!mpierr)
                 mpierr = MPI_Bcast(&iosysid, 1, MPI_INT, ios->compmaster, ios->intercomm);
             if (!mpierr)
@@ -1129,6 +1129,88 @@ PIOc_Init_Intracomm_from_F90(int f90_comp_comm,
 }
 
 /**
+ * Interface to call from pio_init from fortran.
+ *
+ * @param f90_world_comm the incoming communicator which includes all tasks
+ * @param num_io_procs the number of IO tasks
+ * @param io_proc_list the rank of io tasks in f90_world_comm
+ * @param component_count the number of computational components
+ * used an iosysid will be generated for each
+ * @param procs_per_component the number of procs in each computational component
+ * @param flat_proc_list a 1D array of size
+ * component_count*maxprocs_per_component with rank in f90_world_comm
+ * @param f90_io_comm the io_comm handle to be returned to fortran
+ * @param f90_comp_comm the comp_comm handle to be returned to fortran
+ * @param rearranger currently only PIO_REARRANGE_BOX is supported
+ * @param iosysidp pointer to array of length component_count that
+ * gets the iosysid for each component.
+ * @returns 0 for success, error code otherwise
+ * @ingroup PIO_init_c
+ * @author Jim Edwards
+ */
+int
+PIOc_init_async_from_F90(int f90_world_comm,
+                             int num_io_procs,
+                             int *io_proc_list,
+                             int component_count,
+                             int *procs_per_component,
+                             int *flat_proc_list,
+                             int *f90_io_comm,
+                             int *f90_comp_comm,
+                             int rearranger,
+                             int *iosysidp)
+
+{
+    int ret = PIO_NOERR;
+    MPI_Comm io_comm, comp_comm;
+    int maxprocs_per_component=0;
+
+   for(int i=0; i< component_count; i++)
+        maxprocs_per_component = (procs_per_component[i] > maxprocs_per_component) ? procs_per_component[i] : maxprocs_per_component;
+
+    int **proc_list = (int **) malloc(sizeof(int *) *component_count);
+
+    for(int i=0; i< component_count; i++){
+        proc_list[i] = (int *) malloc(sizeof(int) * maxprocs_per_component);
+        for(int j=0;j<procs_per_component[i]; j++)
+            proc_list[i][j] = flat_proc_list[j+i*maxprocs_per_component];
+    }
+
+    ret = PIOc_init_async(MPI_Comm_f2c(f90_world_comm), num_io_procs, io_proc_list,
+                          component_count, procs_per_component, proc_list, &io_comm,
+                          &comp_comm, rearranger, iosysidp);
+    if(comp_comm)
+        *f90_comp_comm = MPI_Comm_c2f(comp_comm);
+    else
+        *f90_comp_comm = 0;
+    if(io_comm)
+        *f90_io_comm = MPI_Comm_c2f(io_comm);
+    else
+        *f90_io_comm = 0;
+
+    if (ret != PIO_NOERR)
+    {
+        PLOG((1, "PIOc_Init_Intercomm failed"));
+        return ret;
+    }
+/*
+    if (rearr_opts)
+    {
+        PLOG((1, "Setting rearranger options, iosys=%d", *iosysidp));
+        return PIOc_set_rearr_opts(*iosysidp, rearr_opts->comm_type,
+                                   rearr_opts->fcd,
+                                   rearr_opts->comp2io.hs,
+                                   rearr_opts->comp2io.isend,
+                                   rearr_opts->comp2io.max_pend_req,
+                                   rearr_opts->io2comp.hs,
+                                   rearr_opts->io2comp.isend,
+                                   rearr_opts->io2comp.max_pend_req);
+    }
+*/
+    return ret;
+}
+
+/**
  * Send a hint to the MPI-IO library.
  *
  * @param iosysid the IO system ID
@@ -1441,6 +1523,7 @@ PIOc_init_async(MPI_Comm world, int num_io_procs, int *io_proc_list,
     int my_io_proc_list[num_io_procs]; /* List of processors in IO component. */
     int mpierr;           /* Return code from MPI functions. */
     int ret;              /* Return code. */
+//    int world_size;
 
     /* Check input parameters. Only allow box rearranger for now. */
     if (num_io_procs < 1 || component_count < 1 || !num_procs_per_comp || !iosysidp ||
@@ -1471,6 +1554,10 @@ PIOc_init_async(MPI_Comm world, int num_io_procs, int *io_proc_list,
     /* Get rank of this task in world. */
     if ((ret = MPI_Comm_rank(world, &my_rank)))
         return check_mpi(NULL, NULL, ret, __FILE__, __LINE__);
+
+    /* Get size of world. */
+//    if ((ret = MPI_Comm_size(world, &world_size)))
+//        return check_mpi(NULL, NULL, ret, __FILE__, __LINE__);
 
     /* Is this process in the IO component? */
     int pidx;
@@ -1552,6 +1639,9 @@ PIOc_init_async(MPI_Comm world, int num_io_procs, int *io_proc_list,
         /* Get pointer to current iosys. */
         my_iosys = iosys[cmp];
 
+        /* The rank of the computation leader in the union comm. */
+        my_iosys->comproot = num_io_procs;
+
         /* Initialize some values. */
         my_iosys->io_comm = MPI_COMM_NULL;
         my_iosys->comp_comm = MPI_COMM_NULL;
@@ -1568,10 +1658,6 @@ PIOc_init_async(MPI_Comm world, int num_io_procs, int *io_proc_list,
         /* Initialize the rearranger options. */
         my_iosys->rearr_opts.comm_type = PIO_REARR_COMM_COLL;
         my_iosys->rearr_opts.fcd = PIO_REARR_COMM_FC_2D_DISABLE;
-
-        /* The rank of the computation leader in the union comm. */
-        my_iosys->comproot = num_io_procs;
-        PLOG((3, "my_iosys->comproot = %d", my_iosys->comproot));
 
         /* We are not providing an info object. */
         my_iosys->info = MPI_INFO_NULL;
@@ -1599,11 +1685,40 @@ PIOc_init_async(MPI_Comm world, int num_io_procs, int *io_proc_list,
 
         /* Add proc numbers from computation component. */
         for (int p = 0; p < num_procs_per_comp[cmp]; p++)
-        {
             proc_list_union[p + num_io_procs] = my_proc_list[cmp][p];
+
+//        qsort(proc_list_union, num_procs_per_comp[cmp] + num_io_procs, sizeof(int), compare_ints);
+        for (int p = 0; p < num_procs_per_comp[cmp] + num_io_procs; p++)
             PLOG((3, "p %d num_io_procs %d proc_list_union[p + num_io_procs] %d ",
-                  p, num_io_procs, proc_list_union[p + num_io_procs]));
+                  p, num_io_procs, proc_list_union[p]));
+
+        /* The rank of the computation leader in the union comm. First task which is not an io task */
+        my_iosys->ioroot = 0;
+/*
+        my_iosys->comproot = -1;
+        my_iosys->ioroot = -1;
+        for (int p = 0; p < num_procs_per_comp[cmp] + num_io_procs; p++)
+        {
+            bool ioproc = false;
+            for (int q = 0; q < num_io_procs; q++)
+            {
+                if (proc_list_union[p] == my_io_proc_list[q])
+                {
+                    ioproc = true;
+                    my_iosys->ioroot = proc_list_union[p];
+                    break;
+                }
+            }
+            if ( !ioproc && my_iosys->comproot < 0)
+            {
+                my_iosys->comproot = proc_list_union[p];
+            }
         }
+*/
+
+        PLOG((3, "my_iosys->comproot = %d ioroot = %d", my_iosys->comproot, my_iosys->ioroot));
+
+
 
         /* Allocate space for computation task ranks. */
         if (!(my_iosys->compranks = calloc(my_iosys->num_comptasks, sizeof(int))))
@@ -1683,8 +1798,7 @@ PIOc_init_async(MPI_Comm world, int num_io_procs, int *io_proc_list,
         if (!(my_iosys->ioranks = calloc(my_iosys->num_iotasks, sizeof(int))))
             return pio_err(NULL, NULL, PIO_ENOMEM, __FILE__, __LINE__);
         for (int i = 0; i < my_iosys->num_iotasks; i++)
-            my_iosys->ioranks[i] = my_io_proc_list[i];
-        my_iosys->ioroot = my_iosys->ioranks[0];
+            my_iosys->ioranks[i] = i;
 
         /* All the processes in this component, and the IO component,
          * are part of the union_comm. */
@@ -1692,6 +1806,7 @@ PIOc_init_async(MPI_Comm world, int num_io_procs, int *io_proc_list,
         if ((ret = MPI_Comm_create(world, union_group[cmp], &my_iosys->union_comm)))
             return check_mpi(NULL, NULL, ret, __FILE__, __LINE__);
         PLOG((3, "created union comm for cmp %d my_iosys->union_comm %d", cmp, my_iosys->union_comm));
+
 
         if (in_io || in_cmp)
         {
@@ -1709,18 +1824,18 @@ PIOc_init_async(MPI_Comm world, int num_io_procs, int *io_proc_list,
                 PLOG((3, "my_iosys->io_comm = %d", my_iosys->io_comm));
                 /* Create the intercomm from IO to computation component. */
                 PLOG((3, "about to create intercomm for IO component to cmp = %d "
-                      "my_iosys->io_comm = %d", cmp, my_iosys->io_comm));
+                      "my_iosys->io_comm = %d comproot %d", cmp, my_iosys->io_comm, my_iosys->comproot));
                 if ((ret = MPI_Intercomm_create(my_iosys->io_comm, 0, my_iosys->union_comm,
-                                                my_iosys->num_iotasks, cmp, &my_iosys->intercomm)))
+                                                my_iosys->comproot, cmp, &my_iosys->intercomm)))
                     return check_mpi(NULL, NULL, ret, __FILE__, __LINE__);
             }
             else
             {
                 /* Create the intercomm from computation component to IO component. */
-                PLOG((3, "about to create intercomm for cmp = %d my_iosys->comp_comm = %d", cmp,
-                      my_iosys->comp_comm));
+                PLOG((3, "about to create intercomm for cmp = %d my_iosys->comp_comm = %d ioroot %d", cmp,
+                      my_iosys->comp_comm, my_iosys->ioroot));
                 if ((ret = MPI_Intercomm_create(my_iosys->comp_comm, 0, my_iosys->union_comm,
-                                                0, cmp, &my_iosys->intercomm)))
+                                                my_iosys->ioroot, cmp, &my_iosys->intercomm)))
                     return check_mpi(NULL, NULL, ret, __FILE__, __LINE__);
             }
             PLOG((3, "intercomm created for cmp = %d", cmp));
