@@ -551,7 +551,6 @@ int main(int argc, char **argv)
             io_comm = MPI_COMM_NULL;
         }
 
-        ret = PIOc_set_log_level(3);
         /* Run the test for each data type. */
         for (int t = 0; t < NUM_TYPES_TO_TEST; t++)
         {
