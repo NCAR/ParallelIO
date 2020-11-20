@@ -817,6 +817,10 @@ extern "C" {
                         int *num_procs_per_comp, int **proc_list, MPI_Comm *io_comm, MPI_Comm *comp_comm,
                         int rearranger, int *iosysidp);
 
+    /* Initializing IO system for async - alternative interface. */
+    int PIOc_init_async_from_comms(MPI_Comm world, int component_count, MPI_Comm *comp_comm,
+                                   MPI_Comm io_comm, int rearranger, int *iosysidp);
+
     /* How many IO tasks in this iosysid? */
     int PIOc_get_numiotasks(int iosysid, int *numiotasks);
 
