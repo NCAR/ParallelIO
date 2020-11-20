@@ -1211,6 +1211,76 @@ PIOc_init_async_from_F90(int f90_world_comm,
 }
 
 /**
+ * Interface to call from pio_init from fortran.
+ *
+ * @param f90_world_comm the incoming communicator which includes all tasks
+ * @param num_io_procs the number of IO tasks
+ * @param io_proc_list the rank of io tasks in f90_world_comm
+ * @param component_count the number of computational components
+ * used an iosysid will be generated for each
+ * @param procs_per_component the number of procs in each computational component
+ * @param flat_proc_list a 1D array of size
+ * component_count*maxprocs_per_component with rank in f90_world_comm
+ * @param f90_io_comm the io_comm handle to be returned to fortran
+ * @param f90_comp_comm the comp_comm handle to be returned to fortran
+ * @param rearranger currently only PIO_REARRANGE_BOX is supported
+ * @param iosysidp pointer to array of length component_count that
+ * gets the iosysid for each component.
+ * @returns 0 for success, error code otherwise
+ * @ingroup PIO_init_c
+ * @author Jim Edwards
+ */
+int
+PIOc_init_async_comms_from_F90(int f90_world_comm,
+                               int component_count,
+                               int *f90_comp_comms,
+                               int f90_io_comm,
+                               int rearranger,
+                               int *iosysidp)
+
+{
+    int ret = PIO_NOERR;
+    MPI_Comm comp_comm[component_count];
+    MPI_Comm io_comm;
+
+    for(int i=0; i<component_count; i++)
+    {
+        if(f90_comp_comms[i])
+            comp_comm[i] = MPI_Comm_f2c(f90_comp_comms[i]);
+        else
+            comp_comm[i] = MPI_COMM_NULL;
+    }
+    if(f90_io_comm)
+        io_comm = MPI_Comm_f2c(f90_io_comm);
+    else
+        io_comm = MPI_COMM_NULL;
+
+    ret = PIOc_init_async_from_comms(MPI_Comm_f2c(f90_world_comm), component_count, comp_comm, io_comm,
+                          rearranger, iosysidp);
+
+    if (ret != PIO_NOERR)
+    {
+        PLOG((1, "PIOc_Init_async_from_comms failed"));
+        return ret;
+    }
+/*
+    if (rearr_opts)
+    {
+        PLOG((1, "Setting rearranger options, iosys=%d", *iosysidp));
+        return PIOc_set_rearr_opts(*iosysidp, rearr_opts->comm_type,
+                                   rearr_opts->fcd,
+                                   rearr_opts->comp2io.hs,
+                                   rearr_opts->comp2io.isend,
+                                   rearr_opts->comp2io.max_pend_req,
+                                   rearr_opts->io2comp.hs,
+                                   rearr_opts->io2comp.isend,
+                                   rearr_opts->io2comp.max_pend_req);
+    }
+*/
+    return ret;
+}
+
+/**
  * Send a hint to the MPI-IO library.
  *
  * @param iosysid the IO system ID
