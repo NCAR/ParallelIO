@@ -1107,8 +1107,8 @@ contains
   subroutine init_intercom_from_comms(iosystem, world_comm, comp_comms, io_comm, rearranger)
 
     interface
-       integer(C_INT) function PIOc_init_async_comms_from_F90(f90_comm_world, component_count, f90_comp_comms, f90_io_comm, rearranger, iosysidp) &
-            bind(C,name="PIOc_init_async_comms_from_F90")
+       integer(C_INT) function PIOc_init_async_comms_from_F90(f90_comm_world, component_count, f90_comp_comms, f90_io_comm, &
+            rearranger, iosysidp) bind(C,name="PIOc_init_async_comms_from_F90")
          use iso_c_binding
          use pio_types
          integer(C_INT), intent(in), value :: f90_comm_world
