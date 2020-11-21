@@ -171,9 +171,7 @@ ctest_configure ()
 
 ## -- BUILD
 message (" -- Build - ${CTEST_BUILD_NAME} --")
-set (CTEST_BUILD_COMMAND "${MAKE}")
-ctest_build ()
-set (CTEST_BUILD_COMMAND "${MAKE} tests")
+set (CTEST_BUILD_COMMAND "${MAKE} all tests")
 ctest_build ()
 
 ## -- TEST
