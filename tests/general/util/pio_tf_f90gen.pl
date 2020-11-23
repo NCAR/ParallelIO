@@ -871,7 +871,7 @@ sub process_template_file
     $orig_line = "";
     $ifline_num += 1;
   }
-  if(index($ifname, "async")){
+  if(index($ifname, "async") >= 0){
       $footer = &get_footer("async", \@auto_funcs_list);
   }else{
       $footer = &get_footer("sync", \@auto_funcs_list);
