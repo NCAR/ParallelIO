@@ -2085,7 +2085,7 @@ PIOc_init_async_from_comms(MPI_Comm world, int component_count, MPI_Comm *comp_c
         return check_mpi(NULL, NULL, ret, __FILE__, __LINE__);
 
     /* Get num_procs_per_comp for each comp and share with world */
-    num_procs_per_comp = (int *) calloc(component_count, sizeof(int));
+    num_procs_per_comp = (int *) malloc(component_count * sizeof(int));
     for(int cmp=0; cmp < component_count; cmp++)
     {
         num_procs_per_comp[cmp] = 0;
@@ -2102,8 +2102,10 @@ PIOc_init_async_from_comms(MPI_Comm world, int component_count, MPI_Comm *comp_c
 
     for(int cmp=0; cmp < component_count; cmp++)
     {
-        if (!(my_proc_list[cmp] = calloc(num_procs_per_comp[cmp] , sizeof(int))))
+        if (!(my_proc_list[cmp] = (int *) malloc(num_procs_per_comp[cmp] * sizeof(int))))
             return pio_err(NULL, NULL, PIO_ENOMEM, __FILE__, __LINE__);
+        for(int i = 0; i < num_procs_per_comp[cmp]; i++)
+            my_proc_list[cmp][i] = 0;
         if(comp_comm[cmp] != MPI_COMM_NULL){
             int my_comp_rank;
             if ((ret = MPI_Comm_rank(comp_comm[cmp], &my_comp_rank)))

@@ -1,12 +1,13 @@
 #include "config.h"
 ! Split comm world into three comms two comp_comms and an io_comm
-SUBROUTINE split_world_odd_even_io(world, comp_comm, io_comm, ierr)
+SUBROUTINE split_world_odd_even_io(world, all_comp_comm, comp_comm, io_comm, ierr)
   use mpi
   use pio_tutil
   implicit none
   integer, intent(in) :: world
   integer, intent(out) :: comp_comm(2)
   integer, intent(out) :: io_comm
+  integer, intent(out) :: all_comp_comm
   integer, intent(out) :: ierr
 
   integer :: key
@@ -18,6 +19,7 @@ SUBROUTINE split_world_odd_even_io(world, comp_comm, io_comm, ierr)
   comp_comm(:) = MPI_COMM_NULL
   io_comm = MPI_COMM_NULL
   new_comm = MPI_COMM_NULL
+  all_comp_comm = MPI_COMM_NULL
   call MPI_comm_size(world, world_size, ierr)
   call MPI_Comm_rank(world, world_rank, ierr)
   if(world_size < 3) then
@@ -29,21 +31,32 @@ SUBROUTINE split_world_odd_even_io(world, comp_comm, io_comm, ierr)
   if(world_rank == world_size - 1) then
      key = 0
      color = 0
-  else if(mod(world_rank, 2) == 0) then
-    color = 1
-    key = (world_rank/2)
   else
-    color = 2
-    key = (world_rank/2)
+    color = 1
+    key = world_rank
   end if
 
   call MPI_Comm_split(world, color, key, new_comm, ierr)
 
   if (color > 0) then
-     comp_comm(color) = new_comm
+     all_comp_comm = new_comm
+     key = (world_rank/2)
+     if(mod(world_rank,2)==0) then
+        color = 0
+     else
+        color = 1
+     endif
+     call MPI_Comm_split(all_comp_comm, color, key, new_comm, ierr)
+     if(color == 0) then
+        comp_comm(1) = new_comm
+     else
+        comp_comm(2) = new_comm
+     endif
   else
      io_comm = new_comm
   endif
+
+
 
 END SUBROUTINE split_world_odd_even_io
 
@@ -66,17 +79,18 @@ SUBROUTINE create_file(comm, iosys, iotype, fname, attname, dimname, ret)
 
     ret = PIO_createfile(iosys, pio_file, iotype, fname, PIO_CLOBBER)
     PIO_TF_CHECK_ERR(ret, comm, "Failed to create dummy file :" // trim(fname))
-
+!    print *,__FILE__,__LINE__,'create file'
     ret = PIO_def_dim(pio_file, dimname, PIO_TF_MAX_STR_LEN, pio_dim)
     PIO_TF_CHECK_ERR(ret, comm, "Failed to define dim "// trim(dimname) // "in file :" // trim(fname))
-
+!    print *,__FILE__,__LINE__,'def_dim'
     ret = PIO_def_var(pio_file, attname, PIO_char, (/pio_dim/), pio_var)
     PIO_TF_CHECK_ERR(ret, comm, "Failed to define var " // trim(attname) // " in file :" // trim(fname))
-
+!    print *,__FILE__,__LINE__,'def_var ',trim(fname)
     ret = PIO_put_att(pio_file, pio_var, attname, fname)
     PIO_TF_CHECK_ERR(ret, comm, "Failed to put att " // trim(attname) // " in file :" // trim(fname))
-
+!    print *,__FILE__,__LINE__,'put_att'
     call PIO_closefile(pio_file)
+!    print *,__FILE__,__LINE__,'closefile'
 END SUBROUTINE create_file
 
 ! Check the contents of file : Check the
@@ -145,8 +159,8 @@ PIO_TF_AUTO_TEST_SUB_BEGIN two_comps_odd_even_async
   use mpi
   implicit none
 
-  character(len=PIO_TF_MAX_STR_LEN), target :: fname1 = "pio_iosys_test_file1.nc"
-  character(len=PIO_TF_MAX_STR_LEN), target :: fname2 = "pio_iosys_test_file2.nc"
+  character(len=PIO_TF_MAX_STR_LEN), target :: fname1 = "pio_iosys_async_test_file1.nc"
+  character(len=PIO_TF_MAX_STR_LEN), target :: fname2 = "pio_iosys_async_test_file2.nc"
   character(len=PIO_TF_MAX_STR_LEN), parameter :: attname = "filename"
   character(len=PIO_TF_MAX_STR_LEN), parameter :: dimname = "filename_dim"
   character(len=PIO_TF_MAX_STR_LEN), pointer :: fname
@@ -159,10 +173,12 @@ PIO_TF_AUTO_TEST_SUB_BEGIN two_comps_odd_even_async
 
   logical :: is_even
   integer :: comp_comm(2), io_comm
+  integer :: all_comp_comm  ! comm common to all components
   integer :: ret
 
   ! Split world to odd even and io procs
-  call split_world_odd_even_io(pio_tf_comm_, comp_comm, io_comm, ret)
+  call split_world_odd_even_io(pio_tf_comm_, all_comp_comm, comp_comm, io_comm, ret)
+!  ret = pio_set_log_level(3)
   call PIO_init(iosys, pio_tf_comm_, comp_comm, io_comm, PIO_REARR_BOX)
   if(io_comm == MPI_COMM_NULL) then
      if(comp_comm(1) /= MPI_COMM_NULL) then
@@ -178,15 +194,20 @@ PIO_TF_AUTO_TEST_SUB_BEGIN two_comps_odd_even_async
         ! Create two files to be opened later
         if(comp_comm(1) /= MPI_COMM_NULL) then
            is_even = .false.
+!           print *,__FILE__,__LINE__,'create_file', is_even
            call create_file(comp_comm(1), iosys(1), iotypes(i), &
                 fname1, attname, dimname, ret)
            PIO_TF_CHECK_ERR(ret, comp_comm(1), "Failed to create file :" // fname1)
         else
            is_even = .true.
+!           print *,__FILE__,__LINE__,'create_file', is_even
            call create_file(comp_comm(2), iosys(2), iotypes(i), &
                 fname2, attname, dimname, ret)
            PIO_TF_CHECK_ERR(ret, comp_comm(2), "Failed to create file :" // fname2)
         endif
+!        print *,__FILE__,__LINE__,'at barrier', is_even
+        call mpi_barrier(all_comp_comm, ret)
+
         ! Open file1 from odd processes and file2 from even processes
         if(is_even) then
            call open_and_check_file(comp_comm(2), iosys(2), iotypes(i), &
