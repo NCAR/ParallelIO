@@ -208,6 +208,7 @@ module piolib_mod
   interface PIO_init
      module procedure init_intracom
      module procedure init_intercom
+     module procedure init_intercom_from_comms
   end interface PIO_init
 
   !>
@@ -1084,6 +1085,60 @@ contains
     enddo
     deallocate(iosysid)
   end subroutine init_intercom
+
+  !>
+  !! @public
+  !! @ingroup PIO_init
+  !! Initialize the pio subsystem. This is a collective call. Input
+  !! parameters are read on comp_ranks=0 and io_rank=0 values on other tasks are
+  !! ignored. This variation of PIO_init uses tasks in io_comm to  handle IO,
+  !! these tasks do not return from this
+  !! call. Instead they go to an internal loop and wait to receive
+  !! further instructions from the computational tasks.
+  !!
+  !! @param iosystem An array of type iosystem_desc_t and size component_count
+  !! @param world_comm   A MPI communicator which includes all tasks in the call
+  !! @param comp_comms  On input the MPI comm for each computational component (MPI_COMM_NULL on tasks not in this component)
+  !! @param io_comm   On input the MPI comm for the IO component (MPI_COMM_NULL on tasks not in io component)
+  !! @param rearranger The rearranger to use (currently only PIO_BOX_REARR)
+  !!
+  !! @author Jim Edwards
+  !<
+  subroutine init_intercom_from_comms(iosystem, world_comm, comp_comms, io_comm, rearranger)
+
+    interface
+       integer(C_INT) function PIOc_init_async_comms_from_F90(f90_comm_world, component_count, f90_comp_comms, f90_io_comm, &
+            rearranger, iosysidp) bind(C,name="PIOc_init_async_comms_from_F90")
+         use iso_c_binding
+         use pio_types
+         integer(C_INT), intent(in), value :: f90_comm_world
+         integer(C_INT), intent(in), value :: component_count
+         integer(C_INT), intent(in)        :: f90_comp_comms(*)
+         integer(C_INT), intent(in), value :: f90_io_comm
+         integer(C_INT), intent(in), value :: rearranger
+         integer(C_INT), intent(out)       :: iosysidp(*)
+       end function PIOc_init_async_comms_from_F90
+    end interface
+
+    type(iosystem_desc_t), intent(out) :: iosystem(:)
+    integer, intent(in) :: world_comm
+    integer, intent(in) :: comp_comms(:)
+    integer, intent(in) :: io_comm
+    integer, intent(in) :: rearranger
+
+    integer :: numcomps
+    integer :: i
+    integer :: ierr
+    integer, allocatable :: iosysid(:)
+
+    numcomps = size(iosystem)
+    allocate(iosysid(numcomps))
+    ierr = PIOc_init_async_comms_from_F90(world_comm, numcomps, comp_comms, io_comm, rearranger, iosysid)
+    do i=1,numcomps
+       iosystem(i)%iosysid = iosysid(i)
+    enddo
+    deallocate(iosysid)
+  end subroutine init_intercom_from_comms
 
 
   !>
