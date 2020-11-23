@@ -722,7 +722,7 @@ sub get_header
 sub get_footer
 {
   my($test_type, $ref_auto_funcs_list) = @_;
-  my($out_line);
+  my($out_line) = "";
   if($template_has_test_driver == 0){
     # Add default test driver
     $out_line = &get_default_test_driver($ref_auto_funcs_list);

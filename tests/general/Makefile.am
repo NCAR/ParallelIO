@@ -67,7 +67,7 @@ TESTS = run_tests.sh
 endif # RUN_TESTS
 
 %.F90: %.F90.in
-	util/pio_tf_f90gen.pl --annotate-source --out=$@ $<
+        util/pio_tf_f90gen.pl --annotate-source --out=$@ $<
 
 ncdf_fail.F90: ncdf_fail.F90.in
 ncdf_get_put.F90: ncdf_get_put.F90.in
