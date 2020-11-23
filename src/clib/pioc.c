@@ -2092,7 +2092,7 @@ PIOc_init_async_from_comms(MPI_Comm world, int component_count, MPI_Comm *comp_c
         if(comp_comm[cmp] != MPI_COMM_NULL)
             if ((ret = MPI_Comm_size(comp_comm[cmp], &(num_procs_per_comp[cmp]))))
                 return check_mpi(NULL, NULL, ret, __FILE__, __LINE__);
-        if ((ret = MPI_Allreduce(MPI_IN_PLACE, &(num_procs_per_comp[cmp]), component_count, MPI_INT, MPI_MAX, world)))
+        if ((ret = MPI_Allreduce(MPI_IN_PLACE, &(num_procs_per_comp[cmp]), 1, MPI_INT, MPI_MAX, world)))
             return check_mpi(NULL, NULL, ret, __FILE__, __LINE__);
 
     }
