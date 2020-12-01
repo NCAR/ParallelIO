@@ -451,12 +451,11 @@ typedef struct iosystem_desc_t
     int compmaster;
 
     /** Rank of IO root task (which is rank 0 in io_comm) in the union
-     * communicator. Will always be 0 for async situations. */
+     * communicator. */
     int ioroot;
 
     /** Rank of computation root task (which is rank 0 in
-     * comm_comms[cmp]) in the union communicator. Will always = number
-     * of IO tasks in async situations. */
+     * comm_comms[cmp]) in the union communicator. */
     int comproot;
 
     /** An array of the ranks of all IO tasks within the union
@@ -817,6 +816,10 @@ extern "C" {
     int PIOc_init_async(MPI_Comm world, int num_io_procs, int *io_proc_list, int component_count,
                         int *num_procs_per_comp, int **proc_list, MPI_Comm *io_comm, MPI_Comm *comp_comm,
                         int rearranger, int *iosysidp);
+
+    /* Initializing IO system for async - alternative interface. */
+    int PIOc_init_async_from_comms(MPI_Comm world, int component_count, MPI_Comm *comp_comm,
+                                   MPI_Comm io_comm, int rearranger, int *iosysidp);
 
     /* How many IO tasks in this iosysid? */
     int PIOc_get_numiotasks(int iosysid, int *numiotasks);
