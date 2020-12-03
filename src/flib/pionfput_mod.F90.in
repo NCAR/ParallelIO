@@ -517,7 +517,7 @@ contains
     cstr = C_NULL_CHAR
     cstr_idx = 0
 #if {DIMS} == 0
-    max_flen = len_trim(fstr)
+    max_flen = len(fstr)
     do i=1,min(max_clen, max_flen)
       cstr(i) = fstr(i:i)
     end do
@@ -533,7 +533,7 @@ contains
 #endif
 #if {DIMS} == 1
     do j=1,fstr_dim_sz(1)
-      max_flen = len_trim(fstr(j))
+      max_flen = len(fstr(j))
       do i=1,min(max_clen, max_flen)
         cstr(cstr_idx * max_clen + i) = fstr(j)(i:i)
       end do
@@ -552,7 +552,7 @@ contains
 #if {DIMS} == 2
     do k=1,fstr_dim_sz(2)
       do j=1,fstr_dim_sz(1)
-        max_flen = len_trim(fstr(j,k))
+        max_flen = len(fstr(j,k))
         do i=1,min(max_clen, max_flen)
           cstr(cstr_idx * max_clen + i) = fstr(j,k)(i:i)
         end do
@@ -573,7 +573,7 @@ contains
     do m=1,fstr_dim_sz(3)
       do k=1,fstr_dim_sz(2)
         do j=1,fstr_dim_sz(1)
-          max_flen = len_trim(fstr(j,k,m))
+          max_flen = len(fstr(j,k,m))
           do i=1,min(max_clen, max_flen)
             cstr(cstr_idx * max_clen + i) = fstr(j,k,m)(i:i)
           end do
@@ -596,7 +596,7 @@ contains
       do m=1,fstr_dim_sz(3)
         do k=1,fstr_dim_sz(2)
           do j=1,fstr_dim_sz(1)
-            max_flen = len_trim(fstr(j,k,m,n))
+            max_flen = len(fstr(j,k,m,n))
             do i=1,min(max_clen, max_flen)
               cstr(cstr_idx * max_clen + i) = fstr(j,k,m,n)(i:i)
             end do
@@ -621,7 +621,7 @@ contains
         do m=1,fstr_dim_sz(3)
           do k=1,fstr_dim_sz(2)
             do j=1,fstr_dim_sz(1)
-              max_flen = len_trim(fstr(j,k,m,n,q))
+              max_flen = len(fstr(j,k,m,n,q))
               do i=1,min(max_clen, max_flen)
                 cstr(cstr_idx * max_clen + i) = fstr(j,k,m,n,q)(i:i)
               end do
