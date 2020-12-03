@@ -1805,6 +1805,108 @@ PIO_TF_AUTO_TEST_SUB_BEGIN test_put_get_str_frames
 
 PIO_TF_AUTO_TEST_SUB_END test_put_get_str_frames
 
+! Test puts of text variables, varying the index of the output var written out.
+! Although index/starts of the output variable is specified the counts are
+! not provided.
+PIO_TF_AUTO_TEST_SUB_BEGIN test_put_get_str_idx
+  Implicit none
+  type(file_desc_t) :: pio_file
+  character(len=*), parameter :: filename = "test_pio_ncdf_get_str_idx.testfile"
+  type(var_desc_t)  :: var1d
+  character(len=*), parameter :: var1d_name = "var1d"
+
+  integer, parameter :: STR_LEN = 64
+
+  integer, parameter :: NDIMS = 2
+  integer, dimension(NDIMS) :: pio_dims
+  integer, parameter :: NUM_ROWS = 10
+
+  character(len=*), parameter :: dim0_name = "slen"
+  character(len=*), parameter :: dim1_name = "row"
+
+  character(len=STR_LEN) :: exp_str1d(NUM_ROWS)
+  character(len=STR_LEN) :: frame_str1d
+  character(len=STR_LEN) :: gstr1d(NUM_ROWS)
+
+  integer, dimension(NDIMS) :: strt
+
+  integer, dimension(:), allocatable :: iotypes
+  character(len=PIO_TF_MAX_STR_LEN), dimension(:), allocatable :: iotype_descs
+  integer :: num_iotypes
+
+  ! Formats for the data written out in the text variable
+  ! Each string in the variable is of the form
+  ! "Index is: VAR_NAME(VAR_IDX)"
+  ! e.g. var1d(i) = "Index is: var1d(i)"
+  character(len=*), parameter :: VNAME_WITH_1D_IDX_FMT1 = '("Index is: ",A5,"(",I5,")")'
+
+  integer :: i, row, ret
+
+  num_iotypes = 0
+  call PIO_TF_Get_nc_iotypes(iotypes, iotype_descs, num_iotypes)
+  do i=1,num_iotypes
+    ! Init buffers to be written out to the variables
+    do row=1,NUM_ROWS
+      write(exp_str1d(row), VNAME_WITH_1D_IDX_FMT1) var1d_name, row
+    end do
+
+    PIO_TF_LOG(0,*) "Testing type :", iotype_descs(i)
+    ret = PIO_createfile(pio_tf_iosystem_, pio_file, iotypes(i), filename, PIO_CLOBBER)
+    PIO_TF_CHECK_ERR(ret, "Failed to open:" // trim(filename))
+
+    ret = PIO_def_dim(pio_file, dim0_name, STR_LEN, pio_dims(1))
+    PIO_TF_CHECK_ERR(ret, "Failed to define dim 0:" // trim(filename))
+
+    ret = PIO_def_dim(pio_file, dim1_name, NUM_ROWS, pio_dims(2))
+    PIO_TF_CHECK_ERR(ret, "Failed to define dim 1:" // trim(filename))
+
+    ret = PIO_def_var(pio_file, var1d_name, PIO_char, (/pio_dims(1), pio_dims(2)/), var1d)
+    PIO_TF_CHECK_ERR(ret, "Failed to define 1 dim char array or 1d array of strings in file " // trim(filename))
+
+    ret = PIO_enddef(pio_file)
+    PIO_TF_CHECK_ERR(ret, "Failed to enddef:" // trim(filename))
+
+    ! Write the 1d text variable, 1 string at a time
+    do row=1,NUM_ROWS
+      strt = 1
+      strt(1) = 1
+      strt(2) = row
+
+      frame_str1d = exp_str1d(row)
+      ! This calls put_vara_1d_text()
+      ret = PIO_put_var(pio_file, var1d, strt, frame_str1d);
+      PIO_TF_CHECK_ERR(ret, "Failed to put 1d array of strings 1 string at a time to file " // trim(filename))
+    end do
+
+    ! Sync data to disk
+#ifdef PIO_TEST_CLOSE_OPEN_FOR_SYNC
+    call PIO_closefile(pio_file)
+
+    ret = PIO_openfile(pio_tf_iosystem_, pio_file, iotypes(i), filename, PIO_nowrite)
+    PIO_TF_CHECK_ERR(ret, "Failed to reopen:" // trim(filename))
+
+    ret = PIO_inq_varid(pio_file, var1d_name, var1d)
+    PIO_TF_CHECK_ERR(ret, "Failed to inquire 1d array of strings var in file " // trim(filename))
+#else
+    call PIO_syncfile(pio_file)
+#endif
+
+    ! This calls get_var_1d_text()
+    ret = PIO_get_var(pio_file, var1d, gstr1d);
+    PIO_TF_CHECK_ERR(ret, "Failed to get 1d char var in file " // trim(filename))
+
+    PIO_TF_CHECK_VAL((gstr1d, exp_str1d), "Got wrong value for 1d char var")
+
+    call PIO_closefile(pio_file)
+    call PIO_deletefile(pio_tf_iosystem_, filename);
+  end do
+  if(allocated(iotypes)) then
+    deallocate(iotypes)
+    deallocate(iotype_descs)
+  end if
+
+PIO_TF_AUTO_TEST_SUB_END test_put_get_str_idx
+
 ! Testing put/get of hyperslabs of a text variable
 ! Each string in the text variable is initialized with the variable name and
 ! index
