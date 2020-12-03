@@ -1332,14 +1332,14 @@ PIO_TF_AUTO_TEST_SUB_BEGIN test_put_get_misc_str
 
   ! Formats for the data written out in the text variable
   ! Each string in the variable is of the form
-  ! "VAR_NAME(VAR_IDX,...)"
-  ! e.g. For 2D var, var2d, var2d(j,i) = "var2d(j,i)"
-  character(len=*), parameter :: VNAME_WITH_1D_IDX_FMT1 = '(A5,"(",I5,")")'
-  character(len=*), parameter :: VNAME_WITH_2D_IDX_FMT1 = '(A5,"(",I5,",",I5,")")'
-  character(len=*), parameter :: VNAME_WITH_3D_IDX_FMT1 = '(A5,"(",I5,",",I5,",",I5,")")'
-  character(len=*), parameter :: VNAME_WITH_1D_IDX_FMT2 = '(A5,"[",I5,"]")'
-  character(len=*), parameter :: VNAME_WITH_2D_IDX_FMT2 = '(A5,"[",I5,",",I5,"]")'
-  character(len=*), parameter :: VNAME_WITH_3D_IDX_FMT2 = '(A5,"[",I5,",",I5,",",I5,"]")'
+  ! "Index is: VAR_NAME(VAR_IDX,...)"
+  ! e.g. For 2D var, var2d, var2d(j,i) = "Index is: var2d(j,i)"
+  character(len=*), parameter :: VNAME_WITH_1D_IDX_FMT1 = '("Index is: ",A5,"(",I5,")")'
+  character(len=*), parameter :: VNAME_WITH_2D_IDX_FMT1 = '("Index is: ",A5,"(",I5,",",I5,")")'
+  character(len=*), parameter :: VNAME_WITH_3D_IDX_FMT1 = '("Index is: ",A5,"(",I5,",",I5,",",I5,")")'
+  character(len=*), parameter :: VNAME_WITH_1D_IDX_FMT2 = '("Index is: ",A5,"[",I5,"]")'
+  character(len=*), parameter :: VNAME_WITH_2D_IDX_FMT2 = '("Index is: ",A5,"[",I5,",",I5,"]")'
+  character(len=*), parameter :: VNAME_WITH_3D_IDX_FMT2 = '("Index is: ",A5,"[",I5,",",I5,",",I5,"]")'
 
   integer :: i, row, col, step, ret
 
@@ -1652,14 +1652,14 @@ PIO_TF_AUTO_TEST_SUB_BEGIN test_put_get_str_frames
 
   ! Formats for the data written out in the text variable
   ! Each string in the variable is of the form
-  ! "VAR_NAME(VAR_IDX,...)"
-  ! e.g. For 2D var, var2d, var2d(j,i) = "var2d(j,i)"
-  character(len=*), parameter :: VNAME_WITH_1D_IDX_FMT1 = '(A5,"(",I5,")")'
-  character(len=*), parameter :: VNAME_WITH_2D_IDX_FMT1 = '(A5,"(",I5,",",I5,")")'
-  character(len=*), parameter :: VNAME_WITH_3D_IDX_FMT1 = '(A5,"(",I5,",",I5,",",I5,")")'
-  character(len=*), parameter :: VNAME_WITH_1D_IDX_FMT2 = '(A5,"[",I5,"]")'
-  character(len=*), parameter :: VNAME_WITH_2D_IDX_FMT2 = '(A5,"[",I5,",",I5,"]")'
-  character(len=*), parameter :: VNAME_WITH_3D_IDX_FMT2 = '(A5,"[",I5,",",I5,",",I5,"]")'
+  ! "Index is: VAR_NAME(VAR_IDX,...)"
+  ! e.g. For 2D var, var2d, var2d(j,i) = "Index is: var2d(j,i)"
+  character(len=*), parameter :: VNAME_WITH_1D_IDX_FMT1 = '("Index is: ",A5,"(",I5,")")'
+  character(len=*), parameter :: VNAME_WITH_2D_IDX_FMT1 = '("Index is: ",A5,"(",I5,",",I5,")")'
+  character(len=*), parameter :: VNAME_WITH_3D_IDX_FMT1 = '("Index is: ",A5,"(",I5,",",I5,",",I5,")")'
+  character(len=*), parameter :: VNAME_WITH_1D_IDX_FMT2 = '("Index is: ",A5,"[",I5,"]")'
+  character(len=*), parameter :: VNAME_WITH_2D_IDX_FMT2 = '("Index is: ",A5,"[",I5,",",I5,"]")'
+  character(len=*), parameter :: VNAME_WITH_3D_IDX_FMT2 = '("Index is: ",A5,"[",I5,",",I5,",",I5,"]")'
 
   integer :: i, row, col, step, ret
 
