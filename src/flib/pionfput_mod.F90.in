@@ -136,13 +136,16 @@ contains
     allocate(count(ndims))
     count = 1
     ! Write the entire string starting from [index(1), clen]
-    count(1) = clen - index(1) + 1
+    count(1) = min(clen - index(1) + 1, len(ival))
 
     ! Convert string to a 1d character array
-    allocate(cval(count(1)))
+    allocate(cval(count(1) + 1))
     cval = ''
     do i=1,min(count(1),len_trim(ival))
        cval(i) = ival(i:i)
+    end do
+    do i=min(count(1),len_trim(ival))+1,size(cval)
+      cval(i) = C_NULL_CHAR
     end do
 
     ierr = put_vara_1d_text(File,varid, index, count, cval)
