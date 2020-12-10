@@ -13,7 +13,9 @@ cdash site at [http://my.cdash.org/index.php?project=ACME_PIO](http://my.cdash.o
 
 ## Dependencies
 
-SCORPIO can use NetCDF (version 4.3.3+) and/or PnetCDF (version 1.6.0+) for I/O.
+SCORPIO can use NetCDF (version 4.3.3+), PnetCDF (version 1.6.0+) or
+ADIOS (version 2.6.0+) for I/O.
+
 Ideally, the NetCDF version should be built with MPI, which requires that it
 be linked with an MPI-enabled version of HDF5.  Optionally, NetCDF can be 
 built with DAP support, which introduces a dependency on CURL.  Additionally,
@@ -72,6 +74,11 @@ system and disable the use of PnetCDF from within SCORPIO.
 NetCDF is optional if PnetCDF is used, and the user can disable its use by
 setting `-DWITH_NETCDF=OFF`.  This will disable the search for NetCDF on the
 system and disable the use of NetCDF from within SCORPIO.
+
+ADIOS is another I/O library supported by SCORPIO, and the user can enable
+it by setting `-DWITH_ADIOS2=ON`. The path to the ADIOS install location
+needs to be specified by setting the `ADIOS2_DIR` environment variable to
+the install path.
 
 If the user wishes to disable the SCORPIO tests, then the user can set the
 variable `-DPIO_ENABLE_TESTS=OFF`.  This will entirely disable the CTest 
