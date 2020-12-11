@@ -1641,8 +1641,6 @@ PIO_TF_AUTO_TEST_SUB_BEGIN test_put_get_str_frames
 
   character(len=SHORT_STR_LEN) :: exp_sstr1d(NUM_ROWS)
   character(len=SHORT_STR_LEN) :: exp_sstr2d(NUM_ROWS, NUM_COLS)
-  character(len=LONG_STR_LEN) :: glstr1d(NUM_ROWS)
-  character(len=LONG_STR_LEN) :: glstr2d(NUM_ROWS, NUM_COLS)
 
   integer, dimension(NDIMS) :: strt, cnt
 
@@ -1946,7 +1944,7 @@ PIO_TF_AUTO_TEST_SUB_BEGIN test_put_get_str_idx
       strt(1) = 1
       strt(2) = row
 
-      frame_shrt_str1d = exp_shrt_str1d(row)
+      frame_shrt_str1d = exp_shrt_str1d(row)(1:len(frame_shrt_str1d))
       ! This calls put_vara_1d_text()
       ret = PIO_put_var(pio_file, var1d_shrt, strt, frame_shrt_str1d);
       PIO_TF_CHECK_ERR(ret, "Failed to put 1d array of short strings 1 string at a time to file " // trim(filename))
