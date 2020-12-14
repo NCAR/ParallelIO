@@ -16,6 +16,9 @@
 #ifdef PIO_MICRO_TIMING
 #include "pio_timer.h"
 #endif
+#ifdef TIMING
+#include "spio_io_summary.h"
+#endif
 
 /* 10MB default limit. */
 extern PIO_Offset pio_buffer_size_limit;
@@ -86,8 +89,13 @@ int compute_buffer_init(iosystem_desc_t *ios)
  * @author Ed Hartnett
  */
 int find_start_count(int ndims, const int *dimlen, int fndims, var_desc_t *vdesc,
-                     io_region *region, size_t *start, size_t *count)
+                     io_region *region, size_t *start, size_t *count, size_t *tot_count)
 {
+    assert((ndims > 0) && dimlen && (fndims > 0) && vdesc &&
+            start && count && tot_count);
+
+    *tot_count = 0;
+
     /* Init start/count arrays to zero. */
     for (int i = 0; i < fndims; i++)
     {
@@ -107,6 +115,7 @@ int find_start_count(int ndims, const int *dimlen, int fndims, var_desc_t *vdesc
                           __FILE__, __LINE__);
         }
 
+        *tot_count = 1;
         if (vdesc->record >= 0 && fndims > 1)
         {
             /* This is a record based multidimensional
@@ -116,6 +125,7 @@ int find_start_count(int ndims, const int *dimlen, int fndims, var_desc_t *vdesc
             {
                 start[i] = region->start[num_extra_dims + (i - 1)];
                 count[i] = region->count[num_extra_dims + (i - 1)];
+                *tot_count *= count[i];
             }
 
             /* Set count for record dimension (start cannot be determined so far). */
@@ -129,6 +139,7 @@ int find_start_count(int ndims, const int *dimlen, int fndims, var_desc_t *vdesc
             {
                 start[i] = region->start[num_extra_dims + i];
                 count[i] = region->count[num_extra_dims + i];
+                *tot_count *= count[i];
             }
         }
 
@@ -136,6 +147,8 @@ int find_start_count(int ndims, const int *dimlen, int fndims, var_desc_t *vdesc
         /* Log arrays for debug purposes. */
         for (int i = 0; i < fndims; i++)
             LOG((3, "start[%d] = %d count[%d] = %d", i, start[i], i, count[i]));
+
+        LOG((3, "tot_count = %lld", (long long int)(*tot_count)));
 #endif /* PIO_ENABLE_LOGGING */
     }
     
@@ -198,6 +211,7 @@ int write_darray_multi_par(file_desc_t *file, int nvars, int fndims, const int *
         void *bufptr = NULL;
         size_t start[fndims];
         size_t count[fndims];
+        size_t tot_count;
         PIO_Offset *startlist[num_regions]; /* Array of start arrays for ncmpi_iput_varn(). */
         PIO_Offset *countlist[num_regions]; /* Array of count  arrays for ncmpi_iput_varn(). */
 
@@ -206,13 +220,19 @@ int write_darray_multi_par(file_desc_t *file, int nvars, int fndims, const int *
         /* Process each region of data to be written. */
         for (int regioncnt = 0; regioncnt < num_regions; regioncnt++)
         {
+            tot_count = 0;
             /* Fill the start/count arrays. */
-            if ((ierr = find_start_count(iodesc->ndims, iodesc->dimlen, fndims, vdesc, region, start, count)))
+            if ((ierr = find_start_count(iodesc->ndims, iodesc->dimlen, fndims, vdesc, region, start, count, &tot_count)))
             {
                 ierr = pio_err(ios, file, ierr, __FILE__, __LINE__,
                                 "Writing variables (number of variables = %d) to file (%s, ncid=%d) failed. Internal error, finding start/count for the I/O regions written out from the I/O process failed", nvars, pio_get_fname_from_file(file), file->pio_ncid);
                 break;
             }
+
+#ifdef TIMING
+            assert(ios && (ios->io_fstats));
+            ios->io_fstats->wb += (PIO_Offset ) (iodesc->mpitype_size * tot_count * nvars);
+#endif /* TIMING */
 
             /* IO tasks will run the netCDF/pnetcdf functions to write the data. */
             switch (file->iotype)
@@ -700,13 +720,21 @@ int recv_and_write_data(file_desc_t *file, const int *varids, const int *frame,
             {
                 LOG((3, "writing data for region with regioncnt = %d", regioncnt));
 
+                size_t tot_count = 1;
+                assert(fndims > 0);
                 /* Get the start/count arrays for this region. */
                 for (int i = 0; i < fndims; i++)
                 {
                     start[i] = tmp_start[i + regioncnt * fndims];
                     count[i] = tmp_count[i + regioncnt * fndims];
+                    tot_count *= count[i];
                     LOG((3, "start[%d] = %d count[%d] = %d", i, start[i], i, count[i]));
                 }
+
+#ifdef TIMING
+                assert(ios && (ios->io_fstats));
+                ios->io_fstats->wb += (PIO_Offset ) (iodesc->mpitype_size * tot_count * nvars);
+#endif /* TIMING */
 
                 /* Process each variable in the buffer. */
                 for (int nv = 0; nv < nvars; nv++)
@@ -987,6 +1015,7 @@ int pio_read_darray_nc(file_desc_t *file, int fndims, io_desc_t *iodesc, int vid
         for (int regioncnt = 0; regioncnt < iodesc->maxregions; regioncnt++)
         {
             tmp_bufsize = 1;
+            size_t tot_count = 0;
             if (region == NULL || iodesc->llen == 0)
             {
                 /* No data for this region. */
@@ -1017,6 +1046,8 @@ int pio_read_darray_nc(file_desc_t *file, int fndims, io_desc_t *iodesc, int vid
                                   __FILE__, __LINE__);
                 }
 
+                assert(fndims > 0);
+                tot_count = 1;
                 /* Get the start/count arrays. */
                 if (vdesc->record >= 0 && fndims > 1)
                 {
@@ -1027,6 +1058,7 @@ int pio_read_darray_nc(file_desc_t *file, int fndims, io_desc_t *iodesc, int vid
                     {
                         start[i] = region->start[num_extra_dims + (i - 1)];
                         count[i] = region->count[num_extra_dims + (i - 1)];
+                        tot_count *= count[i];
                     }
 
                     /* Read one record. */
@@ -1040,9 +1072,15 @@ int pio_read_darray_nc(file_desc_t *file, int fndims, io_desc_t *iodesc, int vid
                     {
                         start[i] = region->start[num_extra_dims + i];
                         count[i] = region->count[num_extra_dims + i];
+                        tot_count *= count[i];
                     }
                 }
             }
+
+#ifdef TIMING
+            assert(ios && (ios->io_fstats));
+            ios->io_fstats->rb += (PIO_Offset ) (iodesc->mpitype_size * tot_count);
+#endif /* TIMING */
 
             /* Do the read. */
             switch (file->iotype)
@@ -1421,6 +1459,11 @@ int pio_read_darray_nc_serial(file_desc_t *file, int fndims, io_desc_t *iodesc, 
                         }
                     }
                     loffset += regionsize;
+
+#ifdef TIMING
+                    assert(ios && (ios->io_fstats));
+                    ios->io_fstats->rb += (PIO_Offset ) (iodesc->mpitype_size * regionsize);
+#endif /* TIMING */
 
                     /* Read the data. */
                     /* ierr = nc_get_vara(file->fh, vid, start, count, bufptr); */

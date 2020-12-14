@@ -14,6 +14,7 @@
 #include "pio_timer.h"
 #endif
 #include "pio_sdecomps_regex.h"
+#include "spio_io_summary.h"
 
 bool fortran_order = false;
 
@@ -1047,6 +1048,15 @@ int PIOc_Init_Intracomm(MPI_Comm comp_comm, int num_iotasks, int stride, int bas
                         "PIO Init failed. Out of memory allocating %lld bytes for I/O system descriptor", (unsigned long long) sizeof(iosystem_desc_t));
     }
 
+#ifdef TIMING
+    ios->io_fstats = calloc(1, sizeof(spio_io_fstats_summary_t));
+    if(!(ios->io_fstats))
+    {
+        return pio_err(NULL, NULL, PIO_ENOMEM, __FILE__, __LINE__,
+                        "PIO Init failed. Out of memory allocating %lld bytes for I/O statistics in the I/O system descriptor", (unsigned long long) sizeof(spio_io_fstats_summary_t));
+    }
+#endif
+
     ios->io_comm = MPI_COMM_NULL;
     ios->intercomm = MPI_COMM_NULL;
     ios->error_handler = default_error_handler;
@@ -1417,6 +1427,13 @@ int PIOc_finalize(int iosysid)
     LOG((2, "PIOc_finalize completed successfully"));
     GPTLstop("PIO:PIOc_finalize");
 #ifdef TIMING
+    ierr = spio_write_io_summary(ios);
+    if(ierr != PIO_NOERR)
+    {
+        return pio_err(ios, NULL, PIO_EINTERNAL, __FILE__, __LINE__,
+                        "PIO Finalize failed on iosytem (%d). Unable to write I/O summary for the iosystem", iosysid);
+    }
+    free(ios->io_fstats);
 #ifdef TIMING_INTERNAL
     if(ios->io_comm != MPI_COMM_NULL)
     {
@@ -2241,6 +2258,14 @@ int PIOc_init_intercomm(int component_count, const MPI_Comm peer_comm,
             return pio_err(NULL, NULL, PIO_ENOMEM, __FILE__, __LINE__,
                             "PIO init (async) failed. Out of memory allocating %lld bytes for storing I/O system descriptor for component %d", (unsigned long long) sizeof(iosystem_desc_t), i);
         }
+#ifdef TIMING
+        iosys[i]->io_fstats = calloc(1, sizeof(spio_io_fstats_summary_t));
+        if(!(iosys[i]->io_fstats))
+        {
+            return pio_err(NULL, NULL, PIO_ENOMEM, __FILE__, __LINE__,
+                            "PIO init (async) failed. Out of memory allocating %lld bytes for storing I/O statistics in the I/O system descriptor for component %d", (unsigned long long) sizeof(spio_io_fstats_summary_t), i);
+        }
+#endif
 
         /* Initialize the iosystem */
         iosys[i]->iosysid = -1;

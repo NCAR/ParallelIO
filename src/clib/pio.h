@@ -608,6 +608,9 @@ typedef struct io_desc_t
     struct io_desc_t *next;
 } io_desc_t;
 
+/* Forward decl for I/O file summary stats info */
+struct spio_io_fstats_summary;
+
 /**
  * IO system descriptor structure.
  *
@@ -730,6 +733,8 @@ typedef struct iosystem_desc_t
     /* ADIOS handle */
     adios2_adios *adiosH;
 #endif
+
+    struct spio_io_fstats_summary *io_fstats;
 
     /** Pointer to the next iosystem_desc_t in the list. */
     struct iosystem_desc_t *next;
