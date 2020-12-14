@@ -111,22 +111,48 @@ contains
     character, allocatable :: cval(:)
     integer :: i
     integer, allocatable :: count(:)
-    integer :: ndims
+    integer :: ndims, clen
+
+    if(len(ival) == 0) then
+      print *, "PIO: WARNING: Empty string passed to PIO_put_var,",&
+                " function put_var1_text, a collective C API call will",&
+                " be skipped on this process. ", __PIO_FILE__, __LINE__
+    end if
+
+    ierr = get_text_var_sz(File, varid, clen)
+    if(ierr /= PIO_NOERR) then
+      call piodie(__PIO_FILE__, __LINE__, "Getting text variable size failed")
+    end if
+
+    if(clen < len_trim(ival)) then
+      print *, "PIO: WARNING: The length of the string in the user buffer,",&
+                len_trim(ival),&
+                " chars, is greater than the size of the variable",&
+                " being written to, ", clen, " chars. The string",&
+                " may be truncated. ", __PIO_FILE__, __LINE__
+    end if
 
     ndims = size(index)
     allocate(count(ndims))
     count = 1
-    count(1) = len(ival)
-    allocate(cval(count(1)+1))
-    cval = C_NULL_CHAR
-    do i=1,len_trim(ival)
+    ! Write the entire string starting from [index(1), clen]
+    count(1) = min(clen - index(1) + 1, len(ival))
+
+    ! Convert string to a 1d character array
+    allocate(cval(count(1) + 1))
+    cval = ''
+    do i=1,min(count(1),len_trim(ival))
        cval(i) = ival(i:i)
     end do
+    do i=min(count(1),len_trim(ival))+1,size(cval)
+      cval(i) = C_NULL_CHAR
+    end do
 
-!print *,__FILE__,__LINE__,index,count,ival
-     ierr = put_vara_1d_text(File,varid, index, count, cval)
-    deallocate(count)
+    ierr = put_vara_1d_text(File,varid, index, count, cval)
+
+    deallocate(count, cval)
   end function put_var1_text
+
 ! TYPE int,real,double
 !>
 !! @public
@@ -517,7 +543,7 @@ contains
     cstr = C_NULL_CHAR
     cstr_idx = 0
 #if {DIMS} == 0
-    max_flen = len_trim(fstr)
+    max_flen = len(fstr)
     do i=1,min(max_clen, max_flen)
       cstr(i) = fstr(i:i)
     end do
@@ -533,7 +559,7 @@ contains
 #endif
 #if {DIMS} == 1
     do j=1,fstr_dim_sz(1)
-      max_flen = len_trim(fstr(j))
+      max_flen = len(fstr(j))
       do i=1,min(max_clen, max_flen)
         cstr(cstr_idx * max_clen + i) = fstr(j)(i:i)
       end do
@@ -552,7 +578,7 @@ contains
 #if {DIMS} == 2
     do k=1,fstr_dim_sz(2)
       do j=1,fstr_dim_sz(1)
-        max_flen = len_trim(fstr(j,k))
+        max_flen = len(fstr(j,k))
         do i=1,min(max_clen, max_flen)
           cstr(cstr_idx * max_clen + i) = fstr(j,k)(i:i)
         end do
@@ -573,7 +599,7 @@ contains
     do m=1,fstr_dim_sz(3)
       do k=1,fstr_dim_sz(2)
         do j=1,fstr_dim_sz(1)
-          max_flen = len_trim(fstr(j,k,m))
+          max_flen = len(fstr(j,k,m))
           do i=1,min(max_clen, max_flen)
             cstr(cstr_idx * max_clen + i) = fstr(j,k,m)(i:i)
           end do
@@ -596,7 +622,7 @@ contains
       do m=1,fstr_dim_sz(3)
         do k=1,fstr_dim_sz(2)
           do j=1,fstr_dim_sz(1)
-            max_flen = len_trim(fstr(j,k,m,n))
+            max_flen = len(fstr(j,k,m,n))
             do i=1,min(max_clen, max_flen)
               cstr(cstr_idx * max_clen + i) = fstr(j,k,m,n)(i:i)
             end do
@@ -621,7 +647,7 @@ contains
         do m=1,fstr_dim_sz(3)
           do k=1,fstr_dim_sz(2)
             do j=1,fstr_dim_sz(1)
-              max_flen = len_trim(fstr(j,k,m,n,q))
+              max_flen = len(fstr(j,k,m,n,q))
               do i=1,min(max_clen, max_flen)
                 cstr(cstr_idx * max_clen + i) = fstr(j,k,m,n,q)(i:i)
               end do

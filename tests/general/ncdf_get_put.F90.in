@@ -1332,14 +1332,14 @@ PIO_TF_AUTO_TEST_SUB_BEGIN test_put_get_misc_str
 
   ! Formats for the data written out in the text variable
   ! Each string in the variable is of the form
-  ! "VAR_NAME(VAR_IDX,...)"
-  ! e.g. For 2D var, var2d, var2d(j,i) = "var2d(j,i)"
-  character(len=*), parameter :: VNAME_WITH_1D_IDX_FMT1 = '(A5,"(",I5,")")'
-  character(len=*), parameter :: VNAME_WITH_2D_IDX_FMT1 = '(A5,"(",I5,",",I5,")")'
-  character(len=*), parameter :: VNAME_WITH_3D_IDX_FMT1 = '(A5,"(",I5,",",I5,",",I5,")")'
-  character(len=*), parameter :: VNAME_WITH_1D_IDX_FMT2 = '(A5,"[",I5,"]")'
-  character(len=*), parameter :: VNAME_WITH_2D_IDX_FMT2 = '(A5,"[",I5,",",I5,"]")'
-  character(len=*), parameter :: VNAME_WITH_3D_IDX_FMT2 = '(A5,"[",I5,",",I5,",",I5,"]")'
+  ! "Index is: VAR_NAME(VAR_IDX,...)"
+  ! e.g. For 2D var, var2d, var2d(j,i) = "Index is: var2d(j,i)"
+  character(len=*), parameter :: VNAME_WITH_1D_IDX_FMT1 = '("Index is: ",A5,"(",I5,")")'
+  character(len=*), parameter :: VNAME_WITH_2D_IDX_FMT1 = '("Index is: ",A5,"(",I5,",",I5,")")'
+  character(len=*), parameter :: VNAME_WITH_3D_IDX_FMT1 = '("Index is: ",A5,"(",I5,",",I5,",",I5,")")'
+  character(len=*), parameter :: VNAME_WITH_1D_IDX_FMT2 = '("Index is: ",A5,"[",I5,"]")'
+  character(len=*), parameter :: VNAME_WITH_2D_IDX_FMT2 = '("Index is: ",A5,"[",I5,",",I5,"]")'
+  character(len=*), parameter :: VNAME_WITH_3D_IDX_FMT2 = '("Index is: ",A5,"[",I5,",",I5,",",I5,"]")'
 
   integer :: i, row, col, step, ret
 
@@ -1641,8 +1641,6 @@ PIO_TF_AUTO_TEST_SUB_BEGIN test_put_get_str_frames
 
   character(len=SHORT_STR_LEN) :: exp_sstr1d(NUM_ROWS)
   character(len=SHORT_STR_LEN) :: exp_sstr2d(NUM_ROWS, NUM_COLS)
-  character(len=LONG_STR_LEN) :: glstr1d(NUM_ROWS)
-  character(len=LONG_STR_LEN) :: glstr2d(NUM_ROWS, NUM_COLS)
 
   integer, dimension(NDIMS) :: strt, cnt
 
@@ -1652,14 +1650,14 @@ PIO_TF_AUTO_TEST_SUB_BEGIN test_put_get_str_frames
 
   ! Formats for the data written out in the text variable
   ! Each string in the variable is of the form
-  ! "VAR_NAME(VAR_IDX,...)"
-  ! e.g. For 2D var, var2d, var2d(j,i) = "var2d(j,i)"
-  character(len=*), parameter :: VNAME_WITH_1D_IDX_FMT1 = '(A5,"(",I5,")")'
-  character(len=*), parameter :: VNAME_WITH_2D_IDX_FMT1 = '(A5,"(",I5,",",I5,")")'
-  character(len=*), parameter :: VNAME_WITH_3D_IDX_FMT1 = '(A5,"(",I5,",",I5,",",I5,")")'
-  character(len=*), parameter :: VNAME_WITH_1D_IDX_FMT2 = '(A5,"[",I5,"]")'
-  character(len=*), parameter :: VNAME_WITH_2D_IDX_FMT2 = '(A5,"[",I5,",",I5,"]")'
-  character(len=*), parameter :: VNAME_WITH_3D_IDX_FMT2 = '(A5,"[",I5,",",I5,",",I5,"]")'
+  ! "Index is: VAR_NAME(VAR_IDX,...)"
+  ! e.g. For 2D var, var2d, var2d(j,i) = "Index is: var2d(j,i)"
+  character(len=*), parameter :: VNAME_WITH_1D_IDX_FMT1 = '("Index is: ",A5,"(",I5,")")'
+  character(len=*), parameter :: VNAME_WITH_2D_IDX_FMT1 = '("Index is: ",A5,"(",I5,",",I5,")")'
+  character(len=*), parameter :: VNAME_WITH_3D_IDX_FMT1 = '("Index is: ",A5,"(",I5,",",I5,",",I5,")")'
+  character(len=*), parameter :: VNAME_WITH_1D_IDX_FMT2 = '("Index is: ",A5,"[",I5,"]")'
+  character(len=*), parameter :: VNAME_WITH_2D_IDX_FMT2 = '("Index is: ",A5,"[",I5,",",I5,"]")'
+  character(len=*), parameter :: VNAME_WITH_3D_IDX_FMT2 = '("Index is: ",A5,"[",I5,",",I5,",",I5,"]")'
 
   integer :: i, row, col, step, ret
 
@@ -1804,6 +1802,285 @@ PIO_TF_AUTO_TEST_SUB_BEGIN test_put_get_str_frames
   end if
 
 PIO_TF_AUTO_TEST_SUB_END test_put_get_str_frames
+
+! Test puts of text variables, varying the index of the output var written out.
+! Although index/starts of the output variable is specified the counts are
+! not provided.
+PIO_TF_AUTO_TEST_SUB_BEGIN test_put_get_str_idx
+  Implicit none
+  type(file_desc_t) :: pio_file
+  character(len=*), parameter :: filename = "test_pio_ncdf_get_str_idx.testfile"
+  type(var_desc_t)  :: var1d, var1d_long, var1d_shrt, var1d_trnc, var1d_midx
+  ! Variable names of length 5 chars
+  character(len=*), parameter :: var1d_name = "var1d"
+  ! Variable names of length 10 chars
+  character(len=*), parameter :: var1d_long_name = "var1d_long"
+  character(len=*), parameter :: var1d_shrt_name = "var1d_shrt"
+  character(len=*), parameter :: var1d_trnc_name = "var1d_trnc"
+  character(len=*), parameter :: var1d_midx_name = "var1d_midx"
+
+  character(len=*), parameter :: var1d_tmpl_name = "var1d_____"
+
+  integer, parameter :: SHORT_STR_LEN = 32
+  integer, parameter :: STR_LEN = 64
+  integer, parameter :: LONG_STR_LEN = 128
+
+  integer, parameter :: NDIMS = 2
+  integer, dimension(NDIMS) :: pio_dims
+  integer, parameter :: NUM_ROWS = 10
+
+  character(len=*), parameter :: dim0_name = "slen"
+  character(len=*), parameter :: dim1_name = "row"
+
+  character(len=STR_LEN) :: exp_str1d(NUM_ROWS)
+  character(len=STR_LEN) :: frame_str1d
+  character(len=STR_LEN) :: gstr1d(NUM_ROWS)
+
+  character(len=STR_LEN) :: exp_shrt_str1d(NUM_ROWS)
+  character(len=SHORT_STR_LEN) :: frame_shrt_str1d
+
+  character(len=STR_LEN) :: exp_long_str1d(NUM_ROWS)
+  character(len=LONG_STR_LEN) :: frame_long_str1d
+
+  character(len=LONG_STR_LEN) :: exp_trnc_str1d(NUM_ROWS)
+  character(len=LONG_STR_LEN) :: frame_trnc_str1d(NUM_ROWS)
+
+  character(len=STR_LEN) :: exp_midx_str1d(NUM_ROWS)
+  character(len=LONG_STR_LEN) :: frame1_midx_str1d(NUM_ROWS)
+
+  integer, dimension(NDIMS) :: strt
+
+  integer, dimension(:), allocatable :: iotypes
+  character(len=PIO_TF_MAX_STR_LEN), dimension(:), allocatable :: iotype_descs
+  integer :: num_iotypes
+
+  ! Formats for the data written out in the text variable
+  ! Each string in the variable is of the form
+  ! "Index is: VAR_NAME(VAR_IDX)"
+  ! e.g. var1d(i) = "Index is: var1d(i)"
+  character(len=*), parameter :: VNAME_WITH_1D_IDX_FMT1 = '("Index is: ",A5,"(",I5,")")'
+  character(len=*), parameter :: VNAME_WITH_1D_IDX_FMT2 = '("Index is: ",A10,"(",I5,")")'
+
+  integer, parameter :: VNAME_IDX_IN_VNAME_WITH_1D_IDX_FMT2 = 11
+
+  integer :: strt_idx, end_idx
+  integer :: i, j, row, ret
+
+  num_iotypes = 0
+  call PIO_TF_Get_nc_iotypes(iotypes, iotype_descs, num_iotypes)
+  do i=1,num_iotypes
+    ! Init buffers to be written out to the variables
+    do row=1,NUM_ROWS
+      write(exp_str1d(row), VNAME_WITH_1D_IDX_FMT1) var1d_name, row
+      write(exp_shrt_str1d(row), VNAME_WITH_1D_IDX_FMT2) var1d_shrt_name, row
+      write(exp_long_str1d(row), VNAME_WITH_1D_IDX_FMT2) var1d_long_name, row
+      write(exp_trnc_str1d(row), VNAME_WITH_1D_IDX_FMT2) var1d_trnc_name, row
+      write(frame_trnc_str1d(row), VNAME_WITH_1D_IDX_FMT2) var1d_trnc_name, row
+      ! The expected string, exp_trnc_str1d(row), is the same length as the
+      ! variable, STR_LEN
+      ! exp_trnc_str1d(i) = "Index is: var1d_trnc(i)8901234567890..."
+      ! The frames written out, frame_trnc_str1d(row), is larger and contains
+      ! non-space characters that will be truncated while written out
+      ! frame_trnc_str1d(i) = "Index is: var1d_trnc(i)8901234567890..."
+      strt_idx = len_trim(exp_trnc_str1d(row)) + 1
+      end_idx = min(STR_LEN,len(exp_trnc_str1d(row)))
+      do j=strt_idx,end_idx
+        write(exp_trnc_str1d(row)(j:j), '(I1)') mod(j,10)
+      end do
+      strt_idx = len_trim(frame_trnc_str1d(row)) + 1
+      end_idx = len(frame_trnc_str1d(row))
+      do j=strt_idx,end_idx
+        write(frame_trnc_str1d(row)(j:j), '(I1)') mod(j,10)
+      end do
+
+      write(exp_midx_str1d(row), VNAME_WITH_1D_IDX_FMT2) var1d_midx_name, row
+      write(frame1_midx_str1d(row), VNAME_WITH_1D_IDX_FMT2) var1d_tmpl_name, row
+    end do
+
+    PIO_TF_LOG(0,*) "Testing type :", iotype_descs(i)
+    ret = PIO_createfile(pio_tf_iosystem_, pio_file, iotypes(i), filename, PIO_CLOBBER)
+    PIO_TF_CHECK_ERR(ret, "Failed to open:" // trim(filename))
+
+    ret = PIO_def_dim(pio_file, dim0_name, STR_LEN, pio_dims(1))
+    PIO_TF_CHECK_ERR(ret, "Failed to define dim 0:" // trim(filename))
+
+    ret = PIO_def_dim(pio_file, dim1_name, NUM_ROWS, pio_dims(2))
+    PIO_TF_CHECK_ERR(ret, "Failed to define dim 1:" // trim(filename))
+
+    ret = PIO_def_var(pio_file, var1d_name, PIO_char, (/pio_dims(1), pio_dims(2)/), var1d)
+    PIO_TF_CHECK_ERR(ret, "Failed to define 1 dim char array or 1d array of strings in file " // trim(filename))
+
+    ret = PIO_def_var(pio_file, var1d_shrt_name, PIO_char, (/pio_dims(1), pio_dims(2)/), var1d_shrt)
+    PIO_TF_CHECK_ERR(ret, "Failed to define 1 dim char array or 1d array of short strings in file " // trim(filename))
+
+    ret = PIO_def_var(pio_file, var1d_long_name, PIO_char, (/pio_dims(1), pio_dims(2)/), var1d_long)
+    PIO_TF_CHECK_ERR(ret, "Failed to define 1 dim char array or 1d array of long strings in file " // trim(filename))
+
+    ret = PIO_def_var(pio_file, var1d_trnc_name, PIO_char, (/pio_dims(1), pio_dims(2)/), var1d_trnc)
+    PIO_TF_CHECK_ERR(ret, "Failed to define 1 dim char array or 1d array of truncatable strings in file " // trim(filename))
+
+    ret = PIO_def_var(pio_file, var1d_midx_name, PIO_char, (/pio_dims(1), pio_dims(2)/), var1d_midx)
+    PIO_TF_CHECK_ERR(ret, "Failed to define 1 dim char array or 1d array of truncatable strings in file " // trim(filename))
+
+    ret = PIO_enddef(pio_file)
+    PIO_TF_CHECK_ERR(ret, "Failed to enddef:" // trim(filename))
+
+    ! Write the 1d text variable, 1 string at a time
+    do row=1,NUM_ROWS
+      strt = 1
+      strt(1) = 1
+      strt(2) = row
+
+      frame_str1d = exp_str1d(row)
+      ! This calls put_vara_1d_text()
+      ret = PIO_put_var(pio_file, var1d, strt, frame_str1d);
+      PIO_TF_CHECK_ERR(ret, "Failed to put 1d array of strings 1 string at a time to file " // trim(filename))
+    end do
+
+    ! Write the 1d text variable, 1 string at a time
+    ! The string written out is shorter than the size of the 1 dim, string length, of the variable
+    do row=1,NUM_ROWS
+      strt = 1
+      strt(1) = 1
+      strt(2) = row
+
+      frame_shrt_str1d = exp_shrt_str1d(row)(1:len(frame_shrt_str1d))
+      ! This calls put_vara_1d_text()
+      ret = PIO_put_var(pio_file, var1d_shrt, strt, frame_shrt_str1d);
+      PIO_TF_CHECK_ERR(ret, "Failed to put 1d array of short strings 1 string at a time to file " // trim(filename))
+    end do
+
+    ! Write the 1d text variable, 1 string at a time
+    ! The string written out is longer than the size of the 1 dim, string length, of the variable
+    do row=1,NUM_ROWS
+      strt = 1
+      strt(1) = 1
+      strt(2) = row
+
+      frame_long_str1d = exp_long_str1d(row)
+      ! This calls put_vara_1d_text()
+      ret = PIO_put_var(pio_file, var1d_long, strt, frame_long_str1d);
+      PIO_TF_CHECK_ERR(ret, "Failed to put 1d array of long strings 1 string at a time to file " // trim(filename))
+    end do
+
+    ! Write the 1d text variable, 1 string at a time
+    ! The string written out is longer than the size of the 1 dim, string length, of the variable
+    ! (and the contents of the string will be truncated)
+    do row=1,NUM_ROWS
+      strt = 1
+      strt(1) = 1
+      strt(2) = row
+
+      ! This calls put_vara_1d_text()
+      ret = PIO_put_var(pio_file, var1d_trnc, strt, frame_trnc_str1d(row));
+      PIO_TF_CHECK_ERR(ret, "Failed to put 1d array of truncatable strings 1 string at a time to file " // trim(filename))
+    end do
+
+    ! Write the 1d text variable, 1 string at a time
+    ! The string written out is longer than the size of the 1 dim, string length, of the variable
+    ! However the trim length of the string is <= the size of the 1st dim
+    ! The string is modified again by writing out contents at an index
+    do row=1,NUM_ROWS
+      ! Write out the string with variable template name
+      ! vname_midx(i) = "Index is: vname_____(i)"
+      strt = 1
+      strt(1) = 1
+      strt(2) = row
+
+      ! This calls put_vara_1d_text()
+      ret = PIO_put_var(pio_file, var1d_midx, strt, frame1_midx_str1d(row));
+      PIO_TF_CHECK_ERR(ret, "Failed to put 1d array of long strings 1 string at a time to file " // trim(filename))
+    end do
+
+    ! Sync data to disk
+#ifdef PIO_TEST_CLOSE_OPEN_FOR_SYNC
+    call PIO_closefile(pio_file)
+
+    ret = PIO_openfile(pio_tf_iosystem_, pio_file, iotypes(i), filename, PIO_write)
+    PIO_TF_CHECK_ERR(ret, "Failed to reopen:" // trim(filename))
+
+    ret = PIO_inq_varid(pio_file, var1d_name, var1d)
+    PIO_TF_CHECK_ERR(ret, "Failed to inquire 1d array of strings var in file " // trim(filename))
+
+    ret = PIO_inq_varid(pio_file, var1d_shrt_name, var1d_shrt)
+    PIO_TF_CHECK_ERR(ret, "Failed to inquire 1d array of strings var in file " // trim(filename))
+
+    ret = PIO_inq_varid(pio_file, var1d_long_name, var1d_long)
+    PIO_TF_CHECK_ERR(ret, "Failed to inquire 1d array of strings var in file " // trim(filename))
+
+    ret = PIO_inq_varid(pio_file, var1d_trnc_name, var1d_trnc)
+    PIO_TF_CHECK_ERR(ret, "Failed to inquire 1d array of strings var in file " // trim(filename))
+
+    ret = PIO_inq_varid(pio_file, var1d_midx_name, var1d_midx)
+    PIO_TF_CHECK_ERR(ret, "Failed to inquire 1d array of strings var in file " // trim(filename))
+#else
+    call PIO_syncfile(pio_file)
+#endif
+
+    do row=1,NUM_ROWS
+      ! Change the variable name to "vname_mdix" by writing at the index for the variable name
+      ! vname_midx(i) = "Index is: vname_midx(i)"
+      strt = 1
+      strt(1) = VNAME_IDX_IN_VNAME_WITH_1D_IDX_FMT2
+      strt(2) = row
+
+      ! This calls put_vara_1d_text()
+      ret = PIO_put_var(pio_file, var1d_midx, strt, var1d_midx_name);
+      PIO_TF_CHECK_ERR(ret, "Failed to put 1d array of long strings 1 string at a time to file " // trim(filename))
+    end do
+
+    ! Sync data to disk
+#ifdef PIO_TEST_CLOSE_OPEN_FOR_SYNC
+    call PIO_closefile(pio_file)
+
+    ret = PIO_openfile(pio_tf_iosystem_, pio_file, iotypes(i), filename, PIO_nowrite)
+    PIO_TF_CHECK_ERR(ret, "Failed to reopen:" // trim(filename))
+
+    ret = PIO_inq_varid(pio_file, var1d_name, var1d)
+    PIO_TF_CHECK_ERR(ret, "Failed to inquire 1d array of strings var in file " // trim(filename))
+#else
+    call PIO_syncfile(pio_file)
+#endif
+
+    ! This calls get_var_1d_text()
+    ret = PIO_get_var(pio_file, var1d, gstr1d);
+    PIO_TF_CHECK_ERR(ret, "Failed to get 1d char var in file " // trim(filename))
+
+    PIO_TF_CHECK_VAL((gstr1d, exp_str1d), "Got wrong value for 1d char var")
+
+    gstr1d = ''
+    ret = PIO_get_var(pio_file, var1d_shrt, gstr1d);
+    PIO_TF_CHECK_ERR(ret, "Failed to get 1d char var in file " // trim(filename))
+
+    PIO_TF_CHECK_VAL((gstr1d, exp_shrt_str1d), "Got wrong value for short 1d char var")
+
+    gstr1d = ''
+    ret = PIO_get_var(pio_file, var1d_long, gstr1d);
+    PIO_TF_CHECK_ERR(ret, "Failed to get 1d char var in file " // trim(filename))
+
+    PIO_TF_CHECK_VAL((gstr1d, exp_long_str1d), "Got wrong value for long 1d char var")
+
+    gstr1d = ''
+    ret = PIO_get_var(pio_file, var1d_trnc, gstr1d);
+    PIO_TF_CHECK_ERR(ret, "Failed to get 1d char var in file " // trim(filename))
+
+    PIO_TF_CHECK_VAL((gstr1d, exp_trnc_str1d), "Got wrong value for truncatable 1d char var")
+
+    gstr1d = ''
+    ret = PIO_get_var(pio_file, var1d_midx, gstr1d);
+    PIO_TF_CHECK_ERR(ret, "Failed to get 1d char var in file " // trim(filename))
+
+    PIO_TF_CHECK_VAL((gstr1d, exp_midx_str1d), "Got wrong value for index write of 1d char var")
+
+    call PIO_closefile(pio_file)
+    call PIO_deletefile(pio_tf_iosystem_, filename);
+  end do
+  if(allocated(iotypes)) then
+    deallocate(iotypes)
+    deallocate(iotype_descs)
+  end if
+
+PIO_TF_AUTO_TEST_SUB_END test_put_get_str_idx
 
 ! Testing put/get of hyperslabs of a text variable
 ! Each string in the text variable is initialized with the variable name and
