@@ -1349,7 +1349,6 @@ int ConvertVariablePutVar(IOVector &bpIO, EngineVector &bpReader,
     else if (v_type == adios2::GetType<T>()) \
     { \
         adios2::Variable<T> v_base; \
-        std::vector<T> v_value; \
         return adios2_ConvertVariablePutVar(&v_base, bpIO, bpReader, wfiles, \
                                             varname, ncid, var, mpirank, nproc, num_bp_writers); \
     }
@@ -1362,7 +1361,7 @@ int ConvertVariablePutVar(IOVector &bpIO, EngineVector &bpReader,
 }
 
 template <class T>
-int adios2_ConvertVariableTimedPutVar(adios2::Variable<T> *v_base, std::vector<T> v_value,
+int adios2_ConvertVariableTimedPutVar(adios2::Variable<T> *v_base,
                                       IOVector &bpIO, EngineVector &bpReader, const std::vector<int> &wfiles,
                                       const std::string &varname,
                                       int ncid, Variable& var, int nblocks_per_step,
@@ -1561,8 +1560,7 @@ int ConvertVariableTimedPutVar(IOVector &bpIO, EngineVector &bpReader,
     else if (v_type == adios2::GetType<T>()) \
     { \
         adios2::Variable<T> v_base; \
-        std::vector<T> v_value; \
-        return adios2_ConvertVariableTimedPutVar(&v_base, v_value, bpIO, bpReader, wfiles, \
+        return adios2_ConvertVariableTimedPutVar(&v_base, bpIO, bpReader, wfiles, \
                                                  varname, ncid, var, nblocks_per_step, \
                                                  comm, mpirank, nproc); \
     }
@@ -1575,7 +1573,7 @@ int ConvertVariableTimedPutVar(IOVector &bpIO, EngineVector &bpReader,
 }
 
 template <class T>
-int adios2_ConvertVariableDarray(adios2::Variable<T> *v_base, std::vector<T> v_value,
+int adios2_ConvertVariableDarray(adios2::Variable<T> *v_base, std::vector<T> &v_value,
                                  IOVector &bpIO, EngineVector &bpReader, std::string varname,
                                  int ncid, Variable& var,
                                  const std::vector<int>& wfiles,
