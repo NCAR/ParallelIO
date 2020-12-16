@@ -1250,8 +1250,34 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
         /* Scalars have to be handled differently. */
         if (av->ndims == 0)
         {
-            /* This is a scalar var. */
-            pioassert(!start && !count && !stride, "expected NULLs", __FILE__, __LINE__);
+            /* This is a scalar var. Although starts/counts/indices don't make
+             * sense for scalar vars, other libraries like NetCDF silently
+             * ignore them
+             */
+            if (start)
+            {
+                /* Ignore if user specifies start[0] == 0 */
+                if (start[0] != 0)
+                {
+                    printf("PIO: WARNING: Ignoring user-specified start indices while writing the scalar variable (%s) to file (%s, ncid=%d). An invalid start index (start[0] = %lld) provided (%s:%d)\n", av->name, pio_get_fname_from_file(file), file->pio_ncid, (long long int)start[0], __FILE__, __LINE__);
+                }
+            }
+            if (count)
+            {
+                /* Ignore if user specifies count[0] == 1 */
+                if (count[0] != 1)
+                {
+                    printf("PIO: WARNING: Ignoring user-specified counts while writing the scalar variable (%s) to file (%s, ncid=%d). An invalid count (count[0] = %lld) provided (%s:%d)\n", av->name, pio_get_fname_from_file(file), file->pio_ncid, (long long int)count[0], __FILE__, __LINE__);
+                }
+            }
+            if (stride)
+            {
+                /* Ignore if user specifies stride[0] == 1 */
+                if (stride[0] != 1)
+                {
+                    printf("PIO: WARNING: Ignoring user-specified strides while writing the scalar variable (%s) to file (%s, ncid=%d). An invalid stride (stride[0] = %lld) provided (%s:%d)\n", av->name, pio_get_fname_from_file(file), file->pio_ncid, (long long int)stride[0], __FILE__, __LINE__);
+                }
+            }
 
             /* Only the IO master does the IO, so we are not really
              * getting parallel IO here. */
@@ -1535,12 +1561,35 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                 /* This is a scalar var. */
                 LOG((2, "pnetcdf writing scalar with ncmpi_put_vars_*() file->fh = %d varid = %d",
                      file->fh, varid));
-                pioassert(!start && !count && !stride, "expected NULLs", __FILE__, __LINE__);
 
                 /* Only the IO master does the IO, so we are not really
                  * getting parallel IO here. */
                 if (ios->iomaster == MPI_ROOT)
                 {
+                    if (start)
+                    {
+                        /* Ignore if user specifies start[0] == 0 */
+                        if (start[0] != 0)
+                        {
+                            printf("PIO: WARNING: Ignoring user-specified start indices while writing the scalar variable (%s, varid=%d) to file (%s, ncid=%d). An invalid start index (start[0] = %lld) provided (%s:%d)\n", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid, (long long int)start[0], __FILE__, __LINE__);
+                        }
+                    }
+                    if (count)
+                    {
+                        /* Ignore if user specifies count[0] == 1 */
+                        if (count[0] != 1)
+                        {
+                            printf("PIO: WARNING: Ignoring user-specified counts while writing the scalar variable (%s, varid=%d) to file (%s, ncid=%d). An invalid count (count[0] = %lld) provided (%s:%d)\n", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid, (long long int)count[0], __FILE__, __LINE__);
+                        }
+                    }
+                    if (stride)
+                    {
+                        /* Ignore if user specifies stride[0] == 1 */
+                        if (stride[0] != 1)
+                        {
+                            printf("PIO: WARNING: Ignoring user-specified strides while writing the scalar variable (%s, varid=%d) to file (%s, ncid=%d). An invalid stride (stride[0] = %lld) provided (%s:%d)\n", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid, (long long int)stride[0], __FILE__, __LINE__);
+                        }
+                    }
                     switch(xtype)
                     {
                     case NC_BYTE:
