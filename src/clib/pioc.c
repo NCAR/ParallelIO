@@ -2086,9 +2086,10 @@ PIOc_init_async_from_comms(MPI_Comm world, int component_count, MPI_Comm *comp_c
         return check_mpi(NULL, NULL, ret, __FILE__, __LINE__);
 
     /* Get num_procs_per_comp for each comp and share with world */
-    num_procs_per_comp = (int *) malloc(component_count * sizeof(int));
     if ((ret = MPI_Allreduce(MPI_IN_PLACE, &(component_count), 1, MPI_INT, MPI_MAX, world)))
         return check_mpi(NULL, NULL, ret, __FILE__, __LINE__);
+
+    num_procs_per_comp = (int *) malloc(component_count * sizeof(int));
 
     for(int cmp=0; cmp < component_count; cmp++)
     {
