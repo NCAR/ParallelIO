@@ -2080,12 +2080,17 @@ PIOc_init_async_from_comms(MPI_Comm world, int component_count, MPI_Comm *comp_c
         if ((ret = MPI_Comm_rank(world, &my_rank)))
             return check_mpi(NULL, NULL, ret, __FILE__, __LINE__);
         io_proc_list[my_io_rank] = my_rank;
+        component_count = 0;
     }
     if ((ret = MPI_Allreduce(MPI_IN_PLACE, io_proc_list, num_io_procs, MPI_INT, MPI_MAX, world)))
         return check_mpi(NULL, NULL, ret, __FILE__, __LINE__);
 
     /* Get num_procs_per_comp for each comp and share with world */
+    if ((ret = MPI_Allreduce(MPI_IN_PLACE, &(component_count), 1, MPI_INT, MPI_MAX, world)))
+        return check_mpi(NULL, NULL, ret, __FILE__, __LINE__);
+
     num_procs_per_comp = (int *) malloc(component_count * sizeof(int));
+
     for(int cmp=0; cmp < component_count; cmp++)
     {
         num_procs_per_comp[cmp] = 0;
@@ -2119,11 +2124,11 @@ PIOc_init_async_from_comms(MPI_Comm world, int component_count, MPI_Comm *comp_c
             return check_mpi(NULL, NULL, ret, __FILE__, __LINE__);
     }
 
-
     if((ret = PIOc_init_async(world, num_io_procs, io_proc_list, component_count,
                            num_procs_per_comp, my_proc_list, NULL, NULL, rearranger,
                               iosysidp)))
         return pio_err(NULL, NULL, ret, __FILE__, __LINE__);
+
     for(int cmp=0; cmp < component_count; cmp++)
         free(my_proc_list[cmp]);
     free(my_proc_list);
