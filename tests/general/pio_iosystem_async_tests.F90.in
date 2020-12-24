@@ -106,8 +106,8 @@ SUBROUTINE check_file(comm, pio_file, fname, attname, dimname, ret)
     character(len=*), intent(in) :: attname
     character(len=*), intent(in) :: dimname
     integer, intent(inout) :: ret
-
-    integer :: pio_dim
+    integer, parameter :: PIO_ENOTATT=-43
+    integer :: pio_dim, old_eh
     type(var_desc_t) :: pio_var
     character(len=PIO_TF_MAX_STR_LEN) :: val
 
@@ -120,6 +120,10 @@ SUBROUTINE check_file(comm, pio_file, fname, attname, dimname, ret)
     ret = PIO_get_att(pio_file, pio_var, attname, val)
     PIO_TF_CHECK_ERR(ret, comm, "Failed to get att " // trim(attname) // " in file :" // trim(fname))
 
+    call PIO_SetErrorHandling(pio_file, PIO_BCAST_ERROR, old_eh)
+    ret = PIO_get_att(pio_file, pio_var, "wrongname", val)
+    PIO_TF_CHECK_ERR(ret==PIO_ENOTATT, comm, "Got wrong error on getatt in file :" // trim(fname))
+    call PIO_SetErrorHandling(pio_file, old_eh)
     PRINT *, "val = ", trim(val), ", fname =", trim(fname)
     PIO_TF_PASSERT(val .eq. fname, comm, "Attribute value is not the expected value")
 END SUBROUTINE check_file
