@@ -865,7 +865,7 @@ contains
   !! Sets the logging level globally from comp root. Only takes effect if PIO was built with
   !! PIO_ENABLE_LOGGING=On
   !!
-  !! @param iosystem a defined pio system descriptor, see PIO_types
+  !! @param iosys a defined pio system descriptor, see PIO_types
   !! @param log_level the logging level.
   !! @retval ierr @copydoc error_return
   !! @author Jim Edwards
