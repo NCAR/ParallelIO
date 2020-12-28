@@ -2582,6 +2582,26 @@ int finalize_handler(iosystem_desc_t *ios, int index)
     return PIO_NOERR;
 }
 
+
+int set_loglevel_handler(iosystem_desc_t *ios)
+{
+    int iosysid;
+    int level;
+    int mpierr;
+
+    PLOG((0, "set_loglevel_handler called"));
+    assert(ios);
+#if PIO_ENABLE_LOGGING
+    if ((mpierr = MPI_Bcast(&iosysid, 1, MPI_INT, 0, ios->intercomm)))
+        return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
+
+    PIOc_set_global_log_level(iosysid, level);
+
+#endif
+    return PIO_NOERR;
+}
+
+
 /**
  * This function is called by the IO tasks.  This function will not
  * return, unless there is an error.
@@ -2808,6 +2828,9 @@ int pio_msg_handler2(int io_rank, int component_count, iosystem_desc_t **iosys,
             break;
         case PIO_MSG_SET_FILL:
             ret = set_fill_handler(my_iosys);
+            break;
+        case PIO_MSG_SETLOGLEVEL:
+            ret = set_loglevel_handler(my_iosys);
             break;
         case PIO_MSG_EXIT:
             finalize++;
