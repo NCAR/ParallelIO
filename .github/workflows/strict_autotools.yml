@@ -16,6 +16,7 @@ jobs:
       FC: mpifort
       CPPFLAGS: "-I/usr/include -I/usr/local/include -I/home/runner/pnetcdf/include"
       LDFLAGS: "-L/home/runner/pnetcdf/lib"
+      NETCDF_FORTRAN_VERSION: v4.5.2
 
     steps:
     - uses: actions/checkout@v2
@@ -27,7 +28,7 @@ jobs:
         sudo apt-spy2 fix --commit
         # after selecting a specific mirror, we need to run 'apt-get update'
         sudo apt-get update
-        sudo apt-get install netcdf-bin libnetcdf-dev doxygen graphviz wget gfortran libjpeg-dev libz-dev openmpi-bin libopenmpi-dev 
+        sudo apt-get install netcdf-bin libnetcdf-dev doxygen graphviz wget gfortran libjpeg-dev libz-dev openmpi-bin libopenmpi-dev
 
     - name: cache-pnetcdf
       id: cache-pnetcdf
@@ -48,15 +49,31 @@ jobs:
         sudo make install
         popd
 
-    - name: autoreconf
+    - name: Cache netcdf-fortran
+      id: cache-netcdf-fortran
+      uses: actions/cache@v2
+      with:
+        path: ~/netcdf-fortran
+        key: ${{ runner.os }}-${{ env.NETCDF_FORTRAN_VERSION }}-netcdf-fortran
+
+    - name: netcdf fortran build
+      if: steps.cache-netcdf-fortran.outputs.cache-hit != 'true'
+      run: |
+        wget https://github.com/Unidata/netcdf-fortran/archive/${{ env.NETCDF_FORTRAN_VERSION }}.tar.gz
+        tar -xzvf ${{ env.NETCDF_FORTRAN_VERSION }}.tar.gz
+        ls -l
+        pushd netcdf-fortran-*
+        ./configure --prefix=$HOME/netcdf-fortran
+        make
+        make install- name: autoreconf
+
       run: autoreconf -i
     - name: build
       run: |
         set -x
         export CFLAGS="-std=c99 -Wall"
-        export FFLAGS="-Wall"
+        export FFLAGS="-Wall -I$HOME/netcdf-fortran/include"
         export FCFLAGS="-Wall"
         export DISTCHECK_CONFIGURE_FLAGS="--enable-fortran"
         ./configure
         make -j distcheck
-        
