@@ -40,8 +40,8 @@
 /* #define Y_DIM_LEN 128 */
 /* #define Z_DIM_LEN 32 */
 
-#define X_DIM_LEN 1024
-#define Y_DIM_LEN 1024
+#define X_DIM_LEN 512
+#define Y_DIM_LEN 512
 #define Z_DIM_LEN 124
 /* #define Z_DIM_LEN 256 */
 
