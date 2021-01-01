@@ -2314,10 +2314,10 @@ subset_rearrange_create(iosystem_desc_t *ios, int maplen, PIO_Offset *compmap,
 
         /* Allocate and initialize a grid to fill in missing values. ??? */
         PLOG((2, "thisgridsize[ios->io_rank] %d", thisgridsize[ios->io_rank]));
-	PIO_Offset *grid = malloc(sizeof(PIO_Offset) * thisgridsize[ios->io_rank]);
-        PLOG((2, "thisgridsize[ios->io_rank] %d", thisgridsize[ios->io_rank]));
-        for (i = 0; i < thisgridsize[ios->io_rank]; i++)
-            grid[i] = 0;
+        PIO_Offset *grid;
+        if (!(grid = calloc(thisgridsize[ios->io_rank], sizeof(PIO_Offset))))
+            return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__);
+
 
         int cnt = 0;
         for (i = 0; i < thisgridsize[ios->io_rank]; i++)
@@ -2360,7 +2360,7 @@ subset_rearrange_create(iosystem_desc_t *ios, int maplen, PIO_Offset *compmap,
                     return pio_err(ios, NULL, PIO_EINVAL, __FILE__, __LINE__);
             }
         }
-	free(grid);
+        free(grid);
 
         maxregions = 0;
         iodesc->maxfillregions = 0;
