@@ -313,7 +313,8 @@ int main(int argc, char **argv)
     {
         num_computation_procs = ntasks - num_io_procs[niotest];
 
-        for (r = 0; r < NUM_REARRANGERS_TO_TEST; r++)
+        /* for (r = 0; r < NUM_REARRANGERS_TO_TEST; r++) */
+        for (r = 0; r < 1; r++)
 	{
 	    for (fmt = 0; fmt < num_flavors; fmt++)
 	    {
