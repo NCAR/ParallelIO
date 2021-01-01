@@ -114,10 +114,8 @@ PIOc_strerror(int pioerr, char *errmsg)
     }
     else if (pioerr == PIO_NOERR)
         strcpy(errmsg, "No error");
-#if defined(_NETCDF)
     else if (pioerr <= NC2_ERR && pioerr >= NC4_LAST_ERROR)     /* NetCDF error? */
         strncpy(errmsg, nc_strerror(pioerr), PIO_MAX_NAME);
-#endif /* endif defined(_NETCDF) */
 #if defined(_PNETCDF)
     else if (pioerr > PIO_FIRST_ERROR_CODE)     /* pNetCDF error? */
         strncpy(errmsg, ncmpi_strerror(pioerr), PIO_MAX_NAME);
@@ -131,6 +129,9 @@ PIOc_strerror(int pioerr, char *errmsg)
             break;
         case PIO_EVARDIMMISMATCH:
             strcpy(errmsg, "Variable dim mismatch in multivar call");
+            break;
+	case PIO_EBADREARR:
+            strcpy(errmsg, "Rearranger mismatch in async mode");
             break;
         default:
             strcpy(errmsg, "Unknown Error: Unrecognized error code");

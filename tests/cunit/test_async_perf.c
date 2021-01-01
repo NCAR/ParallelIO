@@ -113,6 +113,7 @@ create_decomposition_3d(int ntasks, int my_rank, int rearr, int iosysid, int *io
     for (int i = 0; i < my_elem_per_pe; i++)
         compdof[i] = my_proc_rank * my_elem_per_pe + i;
 
+    if(rearr==PIO_REARR_SUBSET) PIOc_set_global_log_level(iosysid, 2);
     /* Create the PIO decomposition for this test. */
     if ((ret = PIOc_init_decomp(iosysid, PIO_INT, NDIM3, dim_len_3d, my_elem_per_pe,
                                 compdof, ioid, rearr, NULL, NULL)))
