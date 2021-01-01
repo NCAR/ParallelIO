@@ -1593,7 +1593,7 @@ PIOc_init_async(MPI_Comm world, int num_io_procs, int *io_proc_list,
 
     /* Check input parameters. Only allow box rearranger for now. */
     if (num_io_procs < 1 || component_count < 1 || !num_procs_per_comp || !iosysidp ||
-        (rearranger != PIO_REARR_BOX))
+        (rearranger != PIO_REARR_BOX && rearranger != PIO_REARR_SUBSET))
         return pio_err(NULL, NULL, PIO_EINVAL, __FILE__, __LINE__);
 
     my_proc_list = (int**) malloc(component_count * sizeof(int*));
@@ -2052,7 +2052,7 @@ PIOc_init_async_from_comms(MPI_Comm world, int component_count, MPI_Comm *comp_c
 
     /* Check input parameters. Only allow box rearranger for now. */
     if (component_count < 1 || !comp_comm || !iosysidp ||
-        (rearranger != PIO_REARR_BOX))
+        (rearranger != PIO_REARR_BOX && rearranger != PIO_REARR_SUBSET))
         return pio_err(NULL, NULL, PIO_EINVAL, __FILE__, __LINE__);
 
     /* Turn on the logging system for PIO. */
