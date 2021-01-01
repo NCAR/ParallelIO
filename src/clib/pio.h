@@ -774,6 +774,7 @@ extern "C" {
     /* Error handling. */
     int PIOc_strerror(int pioerr, char *errstr);
     int PIOc_set_log_level(int level);
+    int PIOc_set_global_log_level(int iosysid, int level);
 
     /* Decomposition. */
 
