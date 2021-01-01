@@ -254,7 +254,7 @@ test_darray(int iosysid, int ioid, int num_flavors, int *flavor,
         delta_in_sec = (float)delta / 1000000;
         mb_per_sec = num_megabytes / delta_in_sec;
         if (!my_rank)
-            printf("%d\t%d\t%d\t%d\t%d\t%8.3f\t%8.1f\t%8.3f\n", ntasks, num_io_procs,
+            printf("%d,\t%d,\t%d,\t%d,\t%d,\t%8.3f,\t%8.1f,\t%8.3f\n", ntasks, num_io_procs,
                    rearranger, provide_fill, fmt, delta_in_sec, num_megabytes, mb_per_sec);
     }
 
@@ -456,7 +456,7 @@ main(int argc, char **argv)
         ERR(ret);
 
     if (!my_rank)
-        printf("ntasks\tnio\trearr\tfill\tformat\ttime(s)\tdata size (MB)\t"
+        printf("ntasks,\tnio,\trearr,\tfill,\tIOTYPE,\ttime(s),\tdata size(MB),\t"
                "performance(MB/s)\n");
 
     /* How many processors for IO? */
