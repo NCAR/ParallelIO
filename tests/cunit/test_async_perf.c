@@ -87,7 +87,7 @@ int test_event[2][TEST_NUM_EVENTS];
  * @returns 0 for success, error code otherwise.
  **/
 int
-create_decomposition_3d(int ntasks, int my_rank, int iosysid, int *ioid,
+create_decomposition_3d(int ntasks, int my_rank, int rearr, int iosysid, int *ioid,
                         PIO_Offset *elements_per_pe)
 {
     PIO_Offset my_elem_per_pe;     /* Array elements per processing unit. */
@@ -115,7 +115,7 @@ create_decomposition_3d(int ntasks, int my_rank, int iosysid, int *ioid,
 
     /* Create the PIO decomposition for this test. */
     if ((ret = PIOc_init_decomp(iosysid, PIO_INT, NDIM3, dim_len_3d, my_elem_per_pe,
-                                compdof, ioid, 0, NULL, NULL)))
+                                compdof, ioid, rearr, NULL, NULL)))
         ERR(ret);
 
     /* Free the mapping. */
@@ -135,7 +135,7 @@ create_decomposition_3d(int ntasks, int my_rank, int iosysid, int *ioid,
 /* Run a simple test using darrays with async. */
 int
 run_darray_async_test(int iosysid, int fmt, int my_rank, int ntasks, int niotasks,
-                      MPI_Comm test_comm, MPI_Comm comp_comm, int *flavor, int piotype)
+                      MPI_Comm test_comm, MPI_Comm comp_comm, int *flavor, int piotype, int rearr)
 {
     int ioid3;
     int dim_len[NDIM4] = {NC_UNLIMITED, X_DIM_LEN, Y_DIM_LEN, Z_DIM_LEN};
@@ -143,10 +143,10 @@ run_darray_async_test(int iosysid, int fmt, int my_rank, int ntasks, int niotask
     char decomp_filename[PIO_MAX_NAME + 1];
     int ret;
 
-    sprintf(decomp_filename, "decomp_rdat_%s_.nc", TEST_NAME);
+    sprintf(decomp_filename, "decomp_rdat_%s_%d.nc", TEST_NAME, rearr);
 
     /* Decompose the data over the tasks. */
-    if ((ret = create_decomposition_3d(ntasks - niotasks, my_rank, iosysid, &ioid3,
+    if ((ret = create_decomposition_3d(ntasks - niotasks, my_rank, rearr, iosysid, &ioid3,
                                        &elements_per_pe2)))
         return ret;
 
@@ -176,6 +176,7 @@ run_darray_async_test(int iosysid, int fmt, int my_rank, int ntasks, int niotask
         if ((ret = PIOc_createfile(iosysid, &ncid, &flavor[fmt], data_filename,
                                    NC_CLOBBER)))
             PBAIL(ret);
+
 
 #ifdef USE_MPE
         {
@@ -211,6 +212,7 @@ run_darray_async_test(int iosysid, int fmt, int my_rank, int ntasks, int niotask
             /* Set the record number for the record vars. */
             if ((ret = PIOc_setframe(ncid, varid, t)))
                 PBAIL(ret);
+
 
             /* Write some data to the record vars. */
             if ((ret = PIOc_write_darray(ncid, varid, ioid3, elements_per_pe2,
@@ -279,7 +281,6 @@ int main(int argc, char **argv)
     /* Initialize test. */
     if ((ret = pio_test_init2(argc, argv, &my_rank, &ntasks, 1, 0, -1, &test_comm)))
         ERR(ERR_INIT);
-
 #ifdef USE_MPE
     /* If --enable-mpe was specified at configure, start MPE
      * logging. */
@@ -339,7 +340,6 @@ int main(int argc, char **argv)
                     gettimeofday(&starttime, NULL);
                     startt = (1000000 * starttime.tv_sec) + starttime.tv_usec;
                 }
-
                 if ((ret = PIOc_init_async(test_comm, num_io_procs[niotest], NULL, COMPONENT_COUNT,
                                            &num_computation_procs, NULL, &io_comm, comp_comm,
                                            rearranger[r], &iosysid)))
@@ -358,7 +358,7 @@ int main(int argc, char **argv)
                 {
                     /* Run the simple darray async test. */
                     if ((ret = run_darray_async_test(iosysid, fmt, my_rank, ntasks, num_io_procs[niotest],
-                                                     test_comm, comp_comm[0], flavor, PIO_INT)))
+                                                     test_comm, comp_comm[0], flavor, PIO_INT, r)))
                         return ret;
 
                     /* Finalize PIO system. */
