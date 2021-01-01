@@ -472,8 +472,8 @@ main(int argc, char **argv)
 
     for (i = 0; i < num_io_tests; i++)
     {
-        /* for (r = 0; r < NUM_REARRANGERS_TO_TEST; r++) */
-        for (r = 0; r < 1; r++)
+        for (r = 0; r < NUM_REARRANGERS_TO_TEST; r++)
+        /* for (r = 0; r < 1; r++) */
         {
 #ifdef USE_MPE
             test_start_mpe_log(TEST_INIT);
