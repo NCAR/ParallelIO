@@ -306,7 +306,7 @@ int main(int argc, char **argv)
         num_io_tests = 5;
 
     if (!my_rank)
-        printf("ntasks,\tnio,\trearr,\tfill,\tformat,\ttime(s),\tdata size(MB),\t"
+        printf("ntasks,\tnio,\trearr,\tfill,\tIOTYPE,\ttime(s),\tdata size(MB),\t"
                "performance(MB/s)\n");
 
     for (niotest = 0; niotest < num_io_tests; niotest++)
@@ -323,10 +323,15 @@ int main(int argc, char **argv)
 		float num_megabytes;
 		float delta_in_sec;
 		float mb_per_sec;
+		char flavorname[PIO_MAX_NAME + 1];	
 
 #ifdef USE_MPE
 		test_start_mpe_log(TEST_INIT);
 #endif /* USE_MPE */
+
+		/* Get name of this IOTYPE. */
+		if ((ret = get_iotype_name(flavor[fmt], flavorname)))
+		    ERR(ret);
 
 		/* Start the clock. */
 		if (!my_rank)
@@ -383,8 +388,9 @@ int main(int argc, char **argv)
 		    num_megabytes = (X_DIM_LEN * Y_DIM_LEN * Z_DIM_LEN * (long long int)  NUM_TIMESTEPS *
 				     sizeof(int))/(1024*1024);
 		    mb_per_sec = num_megabytes / delta_in_sec;
-		    printf("%d,\t%d,\t%d,\t%d,\t%d,\t%8.3f,\t%8.1f,\t%8.3f\n", ntasks, num_io_procs[niotest],
-			   1, 0, fmt, delta_in_sec, num_megabytes, mb_per_sec);
+		    printf("%d,\t%d,\t%s,\t%s,\t%s,\t%8.3f,\t%8.1f,\t%8.3f\n", ntasks, num_io_procs[niotest],
+			   (rearranger[r] == 1 ? "box" : "subset"), (0 ? "fill" : "nofill"),
+			   flavorname, delta_in_sec, num_megabytes, mb_per_sec);
 		}
 
 	    } /* next fmt */
