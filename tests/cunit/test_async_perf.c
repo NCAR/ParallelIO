@@ -358,7 +358,7 @@ int main(int argc, char **argv)
                 {
                     /* Run the simple darray async test. */
                     if ((ret = run_darray_async_test(iosysid, fmt, my_rank, ntasks, num_io_procs[niotest],
-                                                     test_comm, comp_comm[0], flavor, PIO_INT, r)))
+                                                     test_comm, comp_comm[0], flavor, PIO_INT, rearranger[r])))
                         return ret;
 
                     /* Finalize PIO system. */
