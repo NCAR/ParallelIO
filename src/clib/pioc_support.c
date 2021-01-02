@@ -3001,15 +3001,17 @@ pioc_change_def(int ncid, int is_enddef)
         {
             int msg = is_enddef ? PIO_MSG_ENDDEF : PIO_MSG_REDEF;
             if (ios->compmaster == MPI_ROOT)
+	      {
+		PLOG((2, "pioc_change_def request sent"));
                 mpierr = MPI_Send(&msg, 1, MPI_INT, ios->ioroot, 1, ios->union_comm);
-
+	      }
             if (!mpierr)
                 mpierr = MPI_Bcast(&ncid, 1, MPI_INT, ios->compmaster, ios->intercomm);
             PLOG((3, "pioc_change_def ncid = %d mpierr = %d", ncid, mpierr));
         }
 
         /* Handle MPI errors. */
-        PLOG((3, "pioc_change_def handling MPI errors"));
+        PLOG((3, "pioc_change_def handling MPI errors my_comm=%d", ios->my_comm));
         if ((mpierr2 = MPI_Bcast(&mpierr, 1, MPI_INT, ios->comproot, ios->my_comm)))
             check_mpi(NULL, file, mpierr2, __FILE__, __LINE__);
         if (mpierr)
