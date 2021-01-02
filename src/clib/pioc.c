@@ -579,6 +579,10 @@ PIOc_InitDecomp(int iosysid, int pio_type, int ndims, const int *gdimlen, int ma
             return check_mpi(ios, NULL, mpierr2, __FILE__, __LINE__);
         if (mpierr)
             return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
+
+        if(rearranger && (*rearranger != ios->default_rearranger))
+            return pio_err(ios, NULL, PIO_EBADREARR, __FILE__,__LINE__);
+
     }
 
     /* Allocate space for the iodesc info. This also allocates the

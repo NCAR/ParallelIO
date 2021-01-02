@@ -40,8 +40,8 @@
 /* #define Y_DIM_LEN 128 */
 /* #define Z_DIM_LEN 32 */
 
-#define X_DIM_LEN 1024
-#define Y_DIM_LEN 1024
+#define X_DIM_LEN 512
+#define Y_DIM_LEN 512
 #define Z_DIM_LEN 124
 /* #define Z_DIM_LEN 256 */
 
@@ -87,7 +87,7 @@ int test_event[2][TEST_NUM_EVENTS];
  * @returns 0 for success, error code otherwise.
  **/
 int
-create_decomposition_3d(int ntasks, int my_rank, int iosysid, int *ioid,
+create_decomposition_3d(int ntasks, int my_rank, int rearr, int iosysid, int *ioid,
                         PIO_Offset *elements_per_pe)
 {
     PIO_Offset my_elem_per_pe;     /* Array elements per processing unit. */
@@ -113,9 +113,10 @@ create_decomposition_3d(int ntasks, int my_rank, int iosysid, int *ioid,
     for (int i = 0; i < my_elem_per_pe; i++)
         compdof[i] = my_proc_rank * my_elem_per_pe + i;
 
+    if(rearr==PIO_REARR_SUBSET) PIOc_set_global_log_level(iosysid, 2);
     /* Create the PIO decomposition for this test. */
     if ((ret = PIOc_init_decomp(iosysid, PIO_INT, NDIM3, dim_len_3d, my_elem_per_pe,
-                                compdof, ioid, 0, NULL, NULL)))
+                                compdof, ioid, rearr, NULL, NULL)))
         ERR(ret);
 
     /* Free the mapping. */
@@ -135,7 +136,7 @@ create_decomposition_3d(int ntasks, int my_rank, int iosysid, int *ioid,
 /* Run a simple test using darrays with async. */
 int
 run_darray_async_test(int iosysid, int fmt, int my_rank, int ntasks, int niotasks,
-                      MPI_Comm test_comm, MPI_Comm comp_comm, int *flavor, int piotype)
+                      MPI_Comm test_comm, MPI_Comm comp_comm, int *flavor, int piotype, int rearr)
 {
     int ioid3;
     int dim_len[NDIM4] = {NC_UNLIMITED, X_DIM_LEN, Y_DIM_LEN, Z_DIM_LEN};
@@ -143,10 +144,10 @@ run_darray_async_test(int iosysid, int fmt, int my_rank, int ntasks, int niotask
     char decomp_filename[PIO_MAX_NAME + 1];
     int ret;
 
-    sprintf(decomp_filename, "decomp_rdat_%s_.nc", TEST_NAME);
+    sprintf(decomp_filename, "decomp_rdat_%s_%d.nc", TEST_NAME, rearr);
 
     /* Decompose the data over the tasks. */
-    if ((ret = create_decomposition_3d(ntasks - niotasks, my_rank, iosysid, &ioid3,
+    if ((ret = create_decomposition_3d(ntasks - niotasks, my_rank, rearr, iosysid, &ioid3,
                                        &elements_per_pe2)))
         return ret;
 
@@ -176,6 +177,7 @@ run_darray_async_test(int iosysid, int fmt, int my_rank, int ntasks, int niotask
         if ((ret = PIOc_createfile(iosysid, &ncid, &flavor[fmt], data_filename,
                                    NC_CLOBBER)))
             PBAIL(ret);
+
 
 #ifdef USE_MPE
         {
@@ -211,6 +213,7 @@ run_darray_async_test(int iosysid, int fmt, int my_rank, int ntasks, int niotask
             /* Set the record number for the record vars. */
             if ((ret = PIOc_setframe(ncid, varid, t)))
                 PBAIL(ret);
+
 
             /* Write some data to the record vars. */
             if ((ret = PIOc_write_darray(ncid, varid, ioid3, elements_per_pe2,
@@ -270,7 +273,7 @@ int main(int argc, char **argv)
     MPI_Comm comp_comm[COMPONENT_COUNT]; /* Will get duplicates of computation communicators. */
     int num_io_procs[MAX_IO_TESTS] = {1, 4, 16, 64, 128}; /* Number of processors that will do IO. */
     int num_io_tests; /* How many different num IO procs to try? */
-    int rearranger[NUM_REARRANGERS_TO_TEST] = {PIO_REARR_BOX, PIO_REARR_SUBSET};    
+    int rearranger[NUM_REARRANGERS_TO_TEST] = {PIO_REARR_BOX, PIO_REARR_SUBSET};
     int mpierr;
     int fmt, niotest;
     int r;
@@ -279,7 +282,6 @@ int main(int argc, char **argv)
     /* Initialize test. */
     if ((ret = pio_test_init2(argc, argv, &my_rank, &ntasks, 1, 0, -1, &test_comm)))
         ERR(ERR_INIT);
-
 #ifdef USE_MPE
     /* If --enable-mpe was specified at configure, start MPE
      * logging. */
@@ -306,96 +308,94 @@ int main(int argc, char **argv)
         num_io_tests = 5;
 
     if (!my_rank)
-        printf("ntasks,\tnio,\trearr,\tfill,\tIOTYPE,\ttime(s),\tdata size(MB),\t"
+        printf("ntasks, nio,\trearr,\tfill,\tIOTYPE,\ttime(s),\tdata size(MB),\t"
                "performance(MB/s)\n");
 
     for (niotest = 0; niotest < num_io_tests; niotest++)
     {
         num_computation_procs = ntasks - num_io_procs[niotest];
 
-        /* for (r = 0; r < NUM_REARRANGERS_TO_TEST; r++) */
-        for (r = 0; r < 1; r++)
-	{
-	    for (fmt = 0; fmt < num_flavors; fmt++)
-	    {
-		struct timeval starttime, endtime;
-		long long startt, endt;
-		long long delta;
-		float num_megabytes;
-		float delta_in_sec;
-		float mb_per_sec;
-		char flavorname[PIO_MAX_NAME + 1];	
+        for (r = 0; r < NUM_REARRANGERS_TO_TEST; r++)
+        {
+            for (fmt = 0; fmt < num_flavors; fmt++)
+            {
+                struct timeval starttime, endtime;
+                long long startt, endt;
+                long long delta;
+                float num_megabytes;
+                float delta_in_sec;
+                float mb_per_sec;
+                char flavorname[PIO_MAX_NAME + 1];
 
 #ifdef USE_MPE
-		test_start_mpe_log(TEST_INIT);
+                test_start_mpe_log(TEST_INIT);
 #endif /* USE_MPE */
 
-		/* Get name of this IOTYPE. */
-		if ((ret = get_iotype_name(flavor[fmt], flavorname)))
-		    ERR(ret);
+                /* Get name of this IOTYPE. */
+                if ((ret = get_iotype_name(flavor[fmt], flavorname)))
+                    ERR(ret);
 
-		/* Start the clock. */
-		if (!my_rank)
-		{
-		    gettimeofday(&starttime, NULL);
-		    startt = (1000000 * starttime.tv_sec) + starttime.tv_usec;
-		}
-
-		if ((ret = PIOc_init_async(test_comm, num_io_procs[niotest], NULL, COMPONENT_COUNT,
-					   &num_computation_procs, NULL, &io_comm, comp_comm,
-					   rearranger[r], &iosysid)))
-		    ERR(ERR_INIT);
+                /* Start the clock. */
+                if (!my_rank)
+                {
+                    gettimeofday(&starttime, NULL);
+                    startt = (1000000 * starttime.tv_sec) + starttime.tv_usec;
+                }
+                if ((ret = PIOc_init_async(test_comm, num_io_procs[niotest], NULL, COMPONENT_COUNT,
+                                           &num_computation_procs, NULL, &io_comm, comp_comm,
+                                           rearranger[r], &iosysid)))
+                    ERR(ERR_INIT);
 
 #ifdef USE_MPE
-		{
-		    char msg[MPE_MAX_MSG_LEN + 1];
-		    sprintf(msg, "num IO procs %d", num_io_procs[niotest]);
-		    test_stop_mpe_log(TEST_INIT, msg);
-		}
+                {
+                    char msg[MPE_MAX_MSG_LEN + 1];
+                    sprintf(msg, "num IO procs %d", num_io_procs[niotest]);
+                    test_stop_mpe_log(TEST_INIT, msg);
+                }
 #endif /* USE_MPE */
 
-		/* This code runs only on computation components. */
-		if (my_rank >= num_io_procs[niotest])
-		{
-		    /* Run the simple darray async test. */
-		    if ((ret = run_darray_async_test(iosysid, fmt, my_rank, ntasks, num_io_procs[niotest],
-						     test_comm, comp_comm[0], flavor, PIO_INT)))
-			return ret;
+                /* This code runs only on computation components. */
+                if (my_rank >= num_io_procs[niotest])
+                {
+                    /* Run the simple darray async test. */
+                    if ((ret = run_darray_async_test(iosysid, fmt, my_rank, ntasks, num_io_procs[niotest],
+                                                     test_comm, comp_comm[0], flavor, PIO_INT, rearranger[r])))
+                        return ret;
 
-		    /* Finalize PIO system. */
-		    if ((ret = PIOc_free_iosystem(iosysid)))
-			return ret;
+                    /* Finalize PIO system. */
+                    if ((ret = PIOc_free_iosystem(iosysid)))
+                        return ret;
 
-		    /* Free the computation conomponent communicator. */
-		    if ((mpierr = MPI_Comm_free(comp_comm)))
-			MPIERR(mpierr);
-		}
-		else
-		{
-		    /* Free the IO communicator. */
-		    if ((mpierr = MPI_Comm_free(&io_comm)))
-			MPIERR(mpierr);
-		}
+                    /* Free the computation conomponent communicator. */
+                    if ((mpierr = MPI_Comm_free(comp_comm)))
+                        MPIERR(mpierr);
+                }
+                else
+                {
+                    /* Free the IO communicator. */
+                    if ((mpierr = MPI_Comm_free(&io_comm)))
+                        MPIERR(mpierr);
+                }
 
-		if (!my_rank)
-		{
-		    /* Stop the clock. */
-		    gettimeofday(&endtime, NULL);
+                if (!my_rank)
+                {
+                    /* Stop the clock. */
+                    gettimeofday(&endtime, NULL);
 
-		    /* Compute the time delta */
-		    endt = (1000000 * endtime.tv_sec) + endtime.tv_usec;
-		    delta = (endt - startt)/NUM_TIMESTEPS;
-		    delta_in_sec = (float)delta / 1000000;
-		    num_megabytes = (X_DIM_LEN * Y_DIM_LEN * Z_DIM_LEN * (long long int)  NUM_TIMESTEPS *
-				     sizeof(int))/(1024*1024);
-		    mb_per_sec = num_megabytes / delta_in_sec;
-		    printf("%d,\t%d,\t%s,\t%s,\t%s,\t%8.3f,\t%8.1f,\t%8.3f\n", ntasks, num_io_procs[niotest],
-			   (rearranger[r] == 1 ? "box" : "subset"), (0 ? "fill" : "nofill"),
-			   flavorname, delta_in_sec, num_megabytes, mb_per_sec);
-		}
+                    /* Compute the time delta */
+                    endt = (1000000 * endtime.tv_sec) + endtime.tv_usec;
+                    delta = (endt - startt)/NUM_TIMESTEPS;
+                    delta_in_sec = (float)delta / 1000000;
+                    num_megabytes = (X_DIM_LEN * Y_DIM_LEN * Z_DIM_LEN * (long long int)  NUM_TIMESTEPS *
+                                     sizeof(int))/(1024*1024);
+                    mb_per_sec = num_megabytes / delta_in_sec;
+                    printf("%d,       %d,\t%s,\t%s,\t%s,\t%8.3f,\t%8.1f,\t%8.3f\n", ntasks, num_io_procs[niotest],
+                           (rearranger[r] == 1 ? "box" : "subset"), (0 ? "fill" : "nofill"),
+                           flavorname, delta_in_sec, num_megabytes, mb_per_sec);
+                }
 
-	    } /* next fmt */
-	} /* next rearranger */
+            } /* next fmt */
+        } /* next rearranger */
     } /* next niotest */
 
     /* printf("%d %s SUCCESS!!\n", my_rank, TEST_NAME); */

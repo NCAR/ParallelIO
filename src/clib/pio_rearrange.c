@@ -2115,6 +2115,7 @@ subset_rearrange_create(iosystem_desc_t *ios, int maplen, PIO_Offset *compmap,
                              MPI_INT, 0, iodesc->subset_comm)))
         return check_mpi(NULL, NULL, mpierr, __FILE__, __LINE__);
 
+
     iodesc->llen = 0;
 
     int rdispls[ntasks];
@@ -2259,6 +2260,7 @@ subset_rearrange_create(iosystem_desc_t *ios, int maplen, PIO_Offset *compmap,
         thisgridsize[0] =  totalgridsize / ios->num_iotasks;
         thisgridmax[0] = thisgridsize[0];
         int xtra = totalgridsize - thisgridsize[0] * ios->num_iotasks;
+
         PLOG((4, "xtra %d", xtra));
 
         for (nio = 0; nio < ios->num_iotasks; nio++)
@@ -2311,10 +2313,11 @@ subset_rearrange_create(iosystem_desc_t *ios, int maplen, PIO_Offset *compmap,
         }
 
         /* Allocate and initialize a grid to fill in missing values. ??? */
-        PIO_Offset grid[thisgridsize[ios->io_rank]];
-        PLOG((4, "thisgridsize[ios->io_rank] %d", thisgridsize[ios->io_rank]));
-        for (i = 0; i < thisgridsize[ios->io_rank]; i++)
-            grid[i] = 0;
+        PLOG((2, "thisgridsize[ios->io_rank] %d", thisgridsize[ios->io_rank]));
+        PIO_Offset *grid;
+        if (!(grid = calloc(thisgridsize[ios->io_rank], sizeof(PIO_Offset))))
+            return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__);
+
 
         int cnt = 0;
         for (i = 0; i < thisgridsize[ios->io_rank]; i++)
@@ -2357,6 +2360,8 @@ subset_rearrange_create(iosystem_desc_t *ios, int maplen, PIO_Offset *compmap,
                     return pio_err(ios, NULL, PIO_EINVAL, __FILE__, __LINE__);
             }
         }
+        free(grid);
+
         maxregions = 0;
         iodesc->maxfillregions = 0;
         if (myfillgrid)
