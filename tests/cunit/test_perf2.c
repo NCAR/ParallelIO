@@ -1,5 +1,8 @@
 /*
- * Tests for PIO distributed arrays.
+ * This program tests performance in intracomm mode. It writes out
+ * NUM_TIMESTEPS records of a single NC_INT variable. The number of
+ * I/O tasks, IOTYPE, fill mode, and rearranger are varied and write
+ * performance is measured.
  *
  * @author Ed Hartnett
  * @date 2/21/17
@@ -10,17 +13,8 @@
 #include <pio_tests.h>
 #include <sys/time.h>
 
-/* The number of tasks this test should run on. */
-#define TARGET_NTASKS 16
-
-/* The minimum number of tasks this test should run on. */
-#define MIN_NTASKS TARGET_NTASKS
-
 /* The name of this test. */
 #define TEST_NAME "test_perf2"
-
-/* Number of computational components to create. */
-#define COMPONENT_COUNT 1
 
 /* The number of dimensions in the example data. In this test, we
  * are using three-dimensional data. */
