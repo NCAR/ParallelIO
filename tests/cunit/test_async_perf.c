@@ -1,5 +1,8 @@
 /*
- * This program tests performance of darray writes with async.
+ * This program tests performance in async mode. It writes out
+ * NUM_TIMESTEPS records of a single NC_INT variable. The number of
+ * I/O tasks, IOTYPE, fill mode, and rearranger are varied and write
+ * performance is measured.
  *
  * @author Ed Hartnett
  * @date 5/4/17
@@ -9,12 +12,6 @@
 #include <pio_tests.h>
 #include <pio_internal.h>
 #include <sys/time.h>
-
-/* The number of tasks this test should run on. */
-#define TARGET_NTASKS 4
-
-/* The minimum number of tasks this test should run on. */
-#define MIN_NTASKS 1
 
 /* The name of this test. */
 #define TEST_NAME "test_async_perf"
@@ -46,7 +43,7 @@
 /* #define Z_DIM_LEN 256 */
 
 /* The number of timesteps of data to write. */
-#define NUM_TIMESTEPS 3
+#define NUM_TIMESTEPS 10
 
 /* Run test for each of the rearrangers. */
 #define NUM_REARRANGERS_TO_TEST 2
