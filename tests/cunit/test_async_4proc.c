@@ -90,18 +90,18 @@ int main(int argc, char **argv)
 
                             /* Create sample file. */
                             if ((ret = create_nc_sample(sample, iosysid[my_comp_idx], flavor[flv], filename, my_rank, NULL)))
-                                ERR(ret);
+                                AERR2(ret, iosysid[my_comp_idx]);
 
                             /* Check the file for correctness. */
                             if ((ret = check_nc_sample(sample, iosysid[my_comp_idx], flavor[flv], filename, my_rank, NULL)))
-                                ERR(ret);
+                                AERR2(ret, iosysid[my_comp_idx]);
                         }
                     } /* next netcdf flavor */
 
                     /* Finalize the IO system. Only call this from the computation tasks. */
                     for (int c = 0; c < COMPONENT_COUNT; c++)
                         if ((ret = PIOc_free_iosystem(iosysid[c])))
-                            ERR(ret);
+			    AERR2(ret, iosysid[c]);
                 } /* endif comp_task */
 
                 /* Wait for everyone to catch up. */
