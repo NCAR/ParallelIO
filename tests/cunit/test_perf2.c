@@ -523,13 +523,9 @@ main(int argc, char **argv)
     /* How many processors for IO? */
     num_io_tests = 1;
     if (ntasks >= 32)
-    {
         num_io_tests = 2;
-    }
     if (ntasks >= 64)
-    {
         num_io_tests = 3;
-    }
     if (ntasks >= 128)
     {
         num_io_tests = 4;
