@@ -309,7 +309,7 @@ int check_darray_file(int iosysid, char *data_filename, int iotype, int my_rank,
 
     /* Close the file. */
     if ((ret = PIOc_closefile(ncid)))
-        ERR(ret);
+        AERR(ret);
 
 exit:
     if (data_in)
@@ -381,47 +381,47 @@ int run_darray_async_test(int iosysid, int my_rank, MPI_Comm test_comm,
     /* Create the PIO decompositions for this test. */
     if ((ret = PIOc_init_decomp(iosysid, PIO_BYTE, NDIM2, &dim_len[2], elements_per_pe,
                                 compdof, &ioid_byte, rearr, NULL, NULL)))
-        ERR(ret);
+        AERR(ret);
     if ((ret = PIOc_init_decomp(iosysid, PIO_CHAR, NDIM2, &dim_len[2], elements_per_pe,
                                 compdof, &ioid_char, rearr, NULL, NULL)))
-        ERR(ret);
+        AERR(ret);
     if ((ret = PIOc_init_decomp(iosysid, PIO_SHORT, NDIM2, &dim_len[2], elements_per_pe,
                                 compdof, &ioid_short, rearr, NULL, NULL)))
-        ERR(ret);
+        AERR(ret);
     if ((ret = PIOc_init_decomp(iosysid, PIO_INT, NDIM2, &dim_len[2], elements_per_pe,
                                 compdof, &ioid_int, rearr, NULL, NULL)))
-        ERR(ret);
+        AERR(ret);
     if ((ret = PIOc_init_decomp(iosysid, PIO_FLOAT, NDIM2, &dim_len[2], elements_per_pe,
                                 compdof, &ioid_float, rearr, NULL, NULL)))
-        ERR(ret);
+        AERR(ret);
     if ((ret = PIOc_init_decomp(iosysid, PIO_DOUBLE, NDIM2, &dim_len[2], elements_per_pe,
                                 compdof, &ioid_double, rearr, NULL, NULL)))
-        ERR(ret);
+        AERR(ret);
 
 #ifdef _NETCDF4
     if ((ret = PIOc_init_decomp(iosysid, PIO_UBYTE, NDIM2, &dim_len[2], elements_per_pe,
                                 compdof, &ioid_ubyte, rearr, NULL, NULL)))
-        ERR(ret);
+        AERR(ret);
     if ((ret = PIOc_init_decomp(iosysid, PIO_USHORT, NDIM2, &dim_len[2], elements_per_pe,
                                 compdof, &ioid_ushort, rearr, NULL, NULL)))
-        ERR(ret);
+        AERR(ret);
     if ((ret = PIOc_init_decomp(iosysid, PIO_UINT, NDIM2, &dim_len[2], elements_per_pe,
                                 compdof, &ioid_uint, rearr, NULL, NULL)))
-        ERR(ret);
+        AERR(ret);
     if ((ret = PIOc_init_decomp(iosysid, PIO_INT64, NDIM2, &dim_len[2], elements_per_pe,
                                 compdof, &ioid_int64, rearr, NULL, NULL)))
-        ERR(ret);
+        AERR(ret);
     if ((ret = PIOc_init_decomp(iosysid, PIO_UINT64, NDIM2, &dim_len[2], elements_per_pe,
                                 compdof, &ioid_uint64, rearr, NULL, NULL)))
-        ERR(ret);
+        AERR(ret);
 #endif
 
     if ((ret = PIOc_init_decomp(iosysid, PIO_INT, NDIM3, &dim_len[1], elements_per_pe_3d,
                                 compdof_3d, &ioid_4d_int, rearr, NULL, NULL)))
-        ERR(ret);
+        AERR(ret);
     if ((ret = PIOc_init_decomp(iosysid, PIO_FLOAT, NDIM3, &dim_len[1], elements_per_pe_3d,
                                 compdof_3d, &ioid_4d_float, rearr, NULL, NULL)))
-        ERR(ret);
+        AERR(ret);
 
     /* These are the decompositions associated with each type. */
 #ifdef _NETCDF4
@@ -457,12 +457,12 @@ int run_darray_async_test(int iosysid, int my_rank, MPI_Comm test_comm,
         sprintf(data_filename, "data_%s_iotype_%d.nc", TEST_NAME, flavor[fmt]);
         if ((ret = PIOc_createfile(iosysid, &ncid, &flavor[fmt], data_filename,
                                    NC_CLOBBER)))
-            ERR(ret);
+            AERR(ret);
 
         /* Define dimensions. */
         for (int d = 0; d < NDIM4; d++)
             if ((ret = PIOc_def_dim(ncid, dim_name[d], dim_len[d], &dimid[d])))
-                ERR(ret);
+                AERR(ret);
 
         /* Define variables. */
         char var_name[PIO_MAX_NAME + 1];
@@ -473,10 +473,10 @@ int run_darray_async_test(int iosysid, int my_rank, MPI_Comm test_comm,
             sprintf(var_name, "var_%d", t);
             sprintf(var_norec_name, "var_norec_%d", t);
             if ((ret = PIOc_def_var(ncid, var_name, my_type[t], NDIM3, dimids_3d, &rec_varid[t])))
-                ERR(ret);
+                AERR(ret);
             if ((ret = PIOc_def_var(ncid, var_norec_name, my_type[t], NDIM2, dimids_2d,
                                     &norec_varid[t])))
-                ERR(ret);
+                AERR(ret);
         }
 
         char var_name_4d[NUM_4D_VARS][PIO_MAX_NAME + 1] = {"var_4d_int", "var_4d_float"};
@@ -487,11 +487,11 @@ int run_darray_async_test(int iosysid, int my_rank, MPI_Comm test_comm,
         /* Define some 4D vars for extra fun. */
         for (int v = 0; v < NUM_4D_VARS; v++)
             if ((ret = PIOc_def_var(ncid, var_name_4d[v], var_type_4d[v], NDIM4, dimids_4d, &varid_4d[v])))
-                ERR(ret);
+                AERR(ret);
 
         /* End define mode. */
         if ((ret = PIOc_enddef(ncid)))
-            ERR(ret);
+            AERR(ret);
 
         /* Write a record and non-record var for each type. */
         for (int t = 0; t < num_types; t++)
@@ -503,22 +503,22 @@ int run_darray_async_test(int iosysid, int my_rank, MPI_Comm test_comm,
                 if (!r)
                 {
                     if ((ret = PIOc_setframe(ncid, rec_varid[t], 0)))
-                        ERR(ret);
+                        AERR(ret);
                 }
                 else
                 {
                     if ((ret = PIOc_advanceframe(ncid, rec_varid[t])))
-                        ERR(ret);
+                        AERR(ret);
                 }
 
                 /* Write a record of data. */
                 if ((ret = PIOc_write_darray(ncid, rec_varid[t], var_ioid[t], elements_per_pe,
                                              my_data[t], NULL)))
-                    ERR(ret);
+                    AERR(ret);
 
                 /* Sync the file. */
                 if ((ret = PIOc_sync(ncid)))
-                    ERR(ret);
+                    AERR(ret);
             } /* next record. */
         } /* next type */
 
@@ -526,7 +526,7 @@ int run_darray_async_test(int iosysid, int my_rank, MPI_Comm test_comm,
         for (int t = 0; t < num_types; t++)
         {
             if ((ret = PIOc_write_darray(ncid, norec_varid[t], var_ioid[t], elements_per_pe, my_data[t], NULL)))
-                ERR(ret);
+                AERR(ret);
         }
 
         /* Write the 4D vars. */
@@ -537,61 +537,61 @@ int run_darray_async_test(int iosysid, int my_rank, MPI_Comm test_comm,
                 if (!r)
                 {
                     if ((ret = PIOc_setframe(ncid, varid_4d[v], 0)))
-                        ERR(ret);
+                        AERR(ret);
                 }
                 else
                 {
                     if ((ret = PIOc_advanceframe(ncid, varid_4d[v])))
-                        ERR(ret);
+                        AERR(ret);
                 }
 
                 if ((ret = PIOc_write_darray(ncid, varid_4d[v], var_ioid_4d[v], elements_per_pe_3d,
                                              my_data_4d[v], NULL)))
-                    ERR(ret);
+                    AERR(ret);
             }
         }
 
         /* Close the file. */
         if ((ret = PIOc_closefile(ncid)))
-            ERR(ret);
+            AERR(ret);
 
         /* Check the file for correctness. */
         if ((ret = check_darray_file(iosysid, data_filename, PIO_IOTYPE_NETCDF, my_rank,
                                      rec_varid, norec_varid, num_types, varid_4d)))
-            ERR(ret);
+            AERR(ret);
 
     } /* next iotype */
 
     /* Free the decompositions. */
     if ((ret = PIOc_freedecomp(iosysid, ioid_byte)))
-        ERR(ret);
+        AERR(ret);
     if ((ret = PIOc_freedecomp(iosysid, ioid_char)))
-        ERR(ret);
+        AERR(ret);
     if ((ret = PIOc_freedecomp(iosysid, ioid_short)))
-        ERR(ret);
+        AERR(ret);
     if ((ret = PIOc_freedecomp(iosysid, ioid_int)))
-        ERR(ret);
+        AERR(ret);
     if ((ret = PIOc_freedecomp(iosysid, ioid_float)))
-        ERR(ret);
+        AERR(ret);
     if ((ret = PIOc_freedecomp(iosysid, ioid_double)))
-        ERR(ret);
+        AERR(ret);
 #ifdef _NETCDF4
     if ((ret = PIOc_freedecomp(iosysid, ioid_ubyte)))
-        ERR(ret);
+        AERR(ret);
     if ((ret = PIOc_freedecomp(iosysid, ioid_ushort)))
-        ERR(ret);
+        AERR(ret);
     if ((ret = PIOc_freedecomp(iosysid, ioid_uint)))
-        ERR(ret);
+        AERR(ret);
     if ((ret = PIOc_freedecomp(iosysid, ioid_int64)))
-        ERR(ret);
+        AERR(ret);
     if ((ret = PIOc_freedecomp(iosysid, ioid_uint64)))
-        ERR(ret);
+        AERR(ret);
 #endif /* _NETCDF4 */
 
     if ((ret = PIOc_freedecomp(iosysid, ioid_4d_int)))
-        ERR(ret);
+        AERR(ret);
     if ((ret = PIOc_freedecomp(iosysid, ioid_4d_float)))
-        ERR(ret);
+        AERR(ret);
     return 0;
 }
 

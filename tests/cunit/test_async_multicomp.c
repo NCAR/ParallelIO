@@ -91,7 +91,7 @@ int main(int argc, char **argv)
 
                     if ((ret = create_decomposition_2d(NUM_COMP_PROCS, my_rank, iosysid[my_comp_idx], dim_len_2d,
                                                        &ioid, PIO_SHORT)))
-                        ERR(ret);
+                        AERR2(ret, iosysid[my_comp_idx]);
 
 #ifndef USE_MPE /* For some reason MPE logging breaks this test! */
                 /* Test with and without darrays. */
@@ -102,18 +102,18 @@ int main(int argc, char **argv)
                         /* Create sample file. */
                         if ((ret = create_nc_sample_3(iosysid[my_comp_idx], iotype[i], my_rank, my_comp_idx,
                                                       filename, TEST_NAME, 0, use_darray, ioid)))
-                            ERR(ret);
+                            AERR2(ret, iosysid[my_comp_idx]);
 
                         /* Check the file for correctness. */
                         if ((ret = check_nc_sample_3(iosysid[my_comp_idx], iotype[i], my_rank, my_comp_idx,
                                                      filename, 0, 0, ioid)))
-                            ERR(ret);
+                            AERR2(ret, iosysid[my_comp_idx]);
                     } /* next use_darray */
 #endif /* USE_MPE */
 
                     /* Free the decomposition. */
                     if ((ret = PIOc_freedecomp(iosysid[my_comp_idx], ioid)))
-                        ERR(ret);
+                        AERR2(ret, iosysid[my_comp_idx]);
 
                 } /* next netcdf iotype */
 
