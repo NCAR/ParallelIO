@@ -87,12 +87,12 @@ int main(int argc, char **argv)
                 /* Create sample file. */
                 if ((ret = create_nc_sample_4(iosysid[my_comp_idx], iotype[i], my_rank, my_comp_idx,
                                               filename, TEST_NAME, 0, num_types)))
-                    ERR(ret);
+		    AERR2(ret, iosysid[my_comp_idx]);
 
                 /* Check the file for correctness. */
                 if ((ret = check_nc_sample_4(iosysid[my_comp_idx], iotype[i], my_rank, my_comp_idx,
                                              filename, 0, num_types)))
-                    ERR(ret);
+		    AERR2(ret, iosysid[my_comp_idx]);
 
                 /* Free the decompositions. */
                 /* for (int t = 0; t < num_types; t++) */

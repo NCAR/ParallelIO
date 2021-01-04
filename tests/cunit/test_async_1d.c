@@ -145,7 +145,7 @@ int main(int argc, char **argv)
 
         /* Shut down the IO system. */
         if ((ret = PIOc_finalize(iosysid)))
-            AERR(ret);
+            ERR(ret);
     }
 
     printf("%d %s SUCCESS!!\n", my_rank, TEST_NAME);
