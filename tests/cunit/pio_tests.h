@@ -31,6 +31,7 @@
 #define TEST_DARRAY_WRITE 3
 #define TEST_CLOSE 4
 #define TEST_CALCULATE 5
+#define TEST_DARRAY_READ 6
 
 int init_mpe_test_logging(int my_rank, int test_event[][TEST_NUM_EVENTS]);
 void test_start_mpe_log(int state);

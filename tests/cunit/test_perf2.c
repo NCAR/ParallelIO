@@ -39,7 +39,7 @@
 
 /* Test with and without specifying a fill value to
  * PIOc_write_darray(). */
-#define NUM_TEST_CASES_FILLVALUE 2
+#define NUM_TEST_CASES_FILLVALUE 1
 
 /* How many different number of IO tasks to check? */
 #define MAX_IO_TESTS 5
@@ -55,6 +55,8 @@ int dim_len[NDIM] = {NC_UNLIMITED, X_DIM_LEN, Y_DIM_LEN, Z_DIM_LEN};
 
 /* Run test for each of the rearrangers. */
 #define NUM_REARRANGERS_TO_TEST 2
+
+#define MILLION 1000000
 
 #ifdef USE_MPE
 /* This array holds even numbers for MPE. */
@@ -149,18 +151,21 @@ test_darray(int iosysid, int ioid, int num_flavors, int *flavor,
         long long startt, endt;
         long long delta;
         float num_megabytes = 0;
-        float delta_in_sec;
-        float mb_per_sec;
+        float delta_in_sec, read_sec;
+        float mb_per_sec, read_mb_per_sec;
 
 #ifdef USE_MPE
         test_start_mpe_log(TEST_CREATE);
 #endif /* USE_MPE */
 
+        /* How many megabytes will we write? */
+        num_megabytes = (NUM_TIMESTEPS * X_DIM_LEN * Y_DIM_LEN * Z_DIM_LEN * sizeof(int))/(MILLION);
+        
+        sprintf(filename, "data_%s_iotype_%d_rearr_%d.nc", TEST_NAME, flavor[fmt],
+                rearranger);
         /* Create the filename. Use the same filename for all, so we
          * don't waste disk space. */
-        /* sprintf(filename, "data_%s_iotype_%d_rearr_%d.nc", TEST_NAME, flavor[fmt], */
-        /*         rearranger); */
-        sprintf(filename, "data_%s.nc", TEST_NAME);
+        /* sprintf(filename, "data_%s.nc", TEST_NAME); */
 
 	/* Get name of this IOTYPE. */
 	if ((ret = get_iotype_name(flavor[fmt], flavorname)))
@@ -224,7 +229,6 @@ test_darray(int iosysid, int ioid, int num_flavors, int *flavor,
             }
 #endif /* USE_MPE */
 
-            num_megabytes += (X_DIM_LEN * Y_DIM_LEN * Z_DIM_LEN * sizeof(int))/(1024*1024);
         }
 
 #ifdef USE_MPE
@@ -249,13 +253,71 @@ test_darray(int iosysid, int ioid, int num_flavors, int *flavor,
         /* Compute the time delta */
         startt = (1000000 * starttime.tv_sec) + starttime.tv_usec;
         endt = (1000000 * endtime.tv_sec) + endtime.tv_usec;
-        delta = (endt - startt)/NUM_TIMESTEPS;
+        delta = (endt - startt);
         delta_in_sec = (float)delta / 1000000;
         mb_per_sec = num_megabytes / delta_in_sec;
+
+        /* Now reopen the file and re-read the data. */
+        {
+            int *test_data_in;
+            
+            if (!(test_data_in = malloc(sizeof(int) * arraylen)))
+                ERR(PIO_ENOMEM);
+
+            /* Re-open the file. */
+            if ((ret = PIOc_openfile2(iosysid, &ncid, &flavor[fmt], filename, PIO_NOWRITE)))
+                ERR(ret);
+
+            /* Start the clock. */
+            gettimeofday(&starttime, NULL);
+
+            for (int t = 0; t < NUM_TIMESTEPS; t++)
+            {
+#ifdef USE_MPE
+                test_start_mpe_log(TEST_DARRAY_READ);
+#endif /* USE_MPE */
+
+                /* Set the value of the record dimension. */
+                if ((ret = PIOc_setframe(ncid, varid, t)))
+                    ERR(ret);
+
+                /* Write the data. */
+                if ((ret = PIOc_read_darray(ncid, varid, ioid, arraylen, test_data_in)))
+                    ERR(ret);
+
+#ifdef USE_MPE
+                {
+                    char msg[MPE_MAX_MSG_LEN + 1];
+                    sprintf(msg, "read_darray timestep %d", t);
+                    test_stop_mpe_log(TEST_DARRAY_READ, msg);
+                }
+#endif /* USE_MPE */
+
+            } /* next timestep */
+
+            /* Stop the clock. */
+            gettimeofday(&endtime, NULL);
+
+            /* Compute the time delta */
+            startt = (1000000 * starttime.tv_sec) + starttime.tv_usec;
+            endt = (1000000 * endtime.tv_sec) + endtime.tv_usec;
+            delta = (endt - startt);
+            read_sec = (float)delta / 1000000;
+            read_mb_per_sec = num_megabytes / read_sec;
+
+            /* Close file. */
+            if ((ret = PIOc_closefile(ncid)))
+                ERR(ret);
+
+            /* Free resources. */
+            free(test_data_in);
+            
+        } /* re-reading file */
+        
         if (!my_rank)
-            printf("%d,\t%d,\t%s,\t%s,\t%s,\t%8.3f,\t%8.1f,\t%8.3f\n", ntasks, num_io_procs,
+            printf("%d,\t%d,\t%s,\t%s,\t%s,\t%8.3f,\t%8.3f,\t%8.1f,\t%8.3f\t%8.3f\n", ntasks, num_io_procs,
                    (rearranger == 1 ? "box" : "subset"), (provide_fill ? "fill" : "nofill"),
-		   flavorname, delta_in_sec, num_megabytes, mb_per_sec);
+		   flavorname, delta_in_sec, read_sec, num_megabytes, mb_per_sec, read_mb_per_sec);
     }
 
     free(test_data);
@@ -455,19 +517,29 @@ main(int argc, char **argv)
         ERR(ret);
 
     if (!my_rank)
-        printf("ntasks,\tnio,\trearr,\tfill,\tIOTYPE,\ttime(s),\tdata size(MB),\t"
-               "performance(MB/s)\n");
+        printf("ntasks,\tnio,\trearr,\tfill,\tIOTYPE,\twrite time(s),\tread time(s),\tdata size(MB),\t"
+               "write(MB/s),\tread(MB/s)\n");
 
     /* How many processors for IO? */
     num_io_tests = 1;
     if (ntasks >= 32)
+    {
         num_io_tests = 2;
+    }
     if (ntasks >= 64)
+    {
         num_io_tests = 3;
+    }
     if (ntasks >= 128)
+    {
         num_io_tests = 4;
+        ioproc_stride = 40;
+    }
     if (ntasks >= 512)
+    {
         num_io_tests = 5;
+        ioproc_stride = 40;
+    }
 
     for (i = 0; i < num_io_tests; i++)
     {
