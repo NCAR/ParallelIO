@@ -48,8 +48,8 @@
     } while (0)
 
 /**
- * For async tests, handle non-MPI errors by finalizing the MPI
- * library and exiting with an exit code.
+ * For async tests, handle non-MPI errors by finalizing the IOsystem
+ * and exiting with an exit code.
  */
 #define AERR(e) do {                                                     \
         fprintf(stderr, "%d Async Error %d in %s, line %d\n", my_rank, e, __FILE__, __LINE__); \
