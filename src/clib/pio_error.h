@@ -48,6 +48,16 @@
     } while (0)
 
 /**
+ * For async tests, handle non-MPI errors by finalizing the MPI
+ * library and exiting with an exit code.
+ */
+#define AERR(e) do {                                                     \
+        fprintf(stderr, "%d Async Error %d in %s, line %d\n", my_rank, e, __FILE__, __LINE__); \
+	PIOc_free_iosystem(iosysid);                                    \
+        return e;                                                       \
+    } while (0)
+
+/**
  * Handle MPI errors. This should only be used with MPI library
  * function calls. Print error message, finalize MPI and return error
  * code.

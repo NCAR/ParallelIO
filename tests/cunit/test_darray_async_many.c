@@ -223,6 +223,7 @@ int check_darray_file(int iosysid, char *data_filename, int iotype, int my_rank,
                     PBAIL(ERR_WRONG);
                 break;
             case PIO_UINT:
+		PBAIL(ERR_WRONG);
                 if (((unsigned int *)norec_data_in)[r] != expected_uint[r])
                     PBAIL(ERR_WRONG);
                 break;
@@ -558,7 +559,7 @@ int run_darray_async_test(int iosysid, int my_rank, MPI_Comm test_comm,
         /* Check the file for correctness. */
         if ((ret = check_darray_file(iosysid, data_filename, PIO_IOTYPE_NETCDF, my_rank,
                                      rec_varid, norec_varid, num_types, varid_4d)))
-            ERR(ret);
+            AERR(ret);
 
     } /* next iotype */
 
