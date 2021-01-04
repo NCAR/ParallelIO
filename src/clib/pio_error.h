@@ -14,8 +14,8 @@
 #include <pio.h>
 
 /**
- * Handle non-MPI errors by printing error message and goto exit. This
- * is used in test code.
+ * Handle non-MPI errors by printing error message, setting error
+ * code, and goto exit. This is used in test code.
  */
 #define PBAIL(e) do {							\
         fprintf(stderr, "%d Error %d in %s, line %d\n", my_rank, e, __FILE__, __LINE__); \
