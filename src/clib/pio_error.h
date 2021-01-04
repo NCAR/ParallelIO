@@ -19,6 +19,7 @@
  */
 #define PBAIL(e) do {                                                    \
         fprintf(stderr, "%d Error %d in %s, line %d\n", my_rank, e, __FILE__, __LINE__); \
+	ret = e;                                                        \
         goto exit;                                                      \
     } while (0)
 
