@@ -97,7 +97,7 @@ int main(int argc, char **argv)
                 for (int c = 0; c < COMPONENT_COUNT; c++)
                 {
                     if ((ret = PIOc_free_iosystem(iosysid[c])))
-			ERR(ret);
+                        ERR(ret);
                 }
             } /* endif comp_task */
 

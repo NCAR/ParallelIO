@@ -31,7 +31,7 @@
 #ifdef _NETCDF4
 #define MAX_NUM_TYPES 11
 int test_type[MAX_NUM_TYPES] = {PIO_BYTE, PIO_CHAR, PIO_SHORT, PIO_INT, PIO_FLOAT, PIO_DOUBLE,
-                                    PIO_UBYTE, PIO_USHORT, PIO_UINT, PIO_INT64, PIO_UINT64};
+                                PIO_UBYTE, PIO_USHORT, PIO_UINT, PIO_INT64, PIO_UINT64};
 #else
 #define MAX_NUM_TYPES 6
 int test_type[MAX_NUM_TYPES] = {PIO_BYTE, PIO_CHAR, PIO_SHORT, PIO_INT, PIO_FLOAT, PIO_DOUBLE};
@@ -72,7 +72,7 @@ int darray_fill_test(int iosysid, int my_rank, int num_iotypes, int *iotype,
             long long default_fill_int64 = PIO_FILL_INT64;
             unsigned long long default_fill_uint64 = PIO_FILL_UINT64;
 #endif /* _NETCDF4 */
-            
+
             /* Some incorrect fill values. */
             signed char wrong_fill_byte = TEST_VAL_42;
             unsigned char wrong_fill_char = TEST_VAL_42;
@@ -229,7 +229,7 @@ int darray_fill_test(int iosysid, int my_rank, int num_iotypes, int *iotype,
              * fixed.) */
             if (PIOc_write_darray(ncid, varid, ioid, LEN2, test_data, wrong_fillvalue) != PIO_EINVAL)
                 ERR(ERR_WRONG);
-            
+
             /* Write the data. There are 3 procs with data, each writes 2
              * values. */
             if ((ret = PIOc_write_darray(ncid, varid, ioid, LEN2, test_data, default_fillvalue)))
@@ -484,7 +484,7 @@ int run_darray_tests(int iosysid, int my_rank, int num_iotypes, int *iotype, int
     /* Run the darray fill value tests. */
     if ((ret = darray_fill_test(iosysid, my_rank, num_iotypes, iotype, async)))
         return ret;
-    
+
     return PIO_NOERR;
 }
 
