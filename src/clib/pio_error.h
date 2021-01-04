@@ -17,9 +17,9 @@
  * Handle non-MPI errors by printing error message and goto exit. This
  * is used in test code.
  */
-#define PBAIL(e) do {                                                    \
+#define PBAIL(e) do {							\
         fprintf(stderr, "%d Error %d in %s, line %d\n", my_rank, e, __FILE__, __LINE__); \
-	ret = e;                                                        \
+        ret = e;                                                        \
         goto exit;                                                      \
     } while (0)
 
@@ -27,9 +27,9 @@
  * Handle non-MPI errors by calling pio_err(), setting return code,
  * and goto exit. This is used in library code.
  */
-#define EXIT(ios, e) do {                                               \
-        ret = pio_err(NULL, NULL, e, __FILE__, __LINE__);        \
-        goto exit;                                                      \
+#define EXIT(ios, e) do {					\
+        ret = pio_err(NULL, NULL, e, __FILE__, __LINE__);	\
+        goto exit;						\
     } while (0)
 
 /**
