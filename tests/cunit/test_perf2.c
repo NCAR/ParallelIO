@@ -24,11 +24,11 @@
 #define NDIM3 3
 
 /* The length of our sample data along each dimension. */
-/* #define X_DIM_LEN 128 */
-/* #define Y_DIM_LEN 128 */
+#define X_DIM_LEN 512
+#define Y_DIM_LEN 512
 #define Z_DIM_LEN 32
-#define X_DIM_LEN 1024
-#define Y_DIM_LEN 1024
+/* #define X_DIM_LEN 1024 */
+/* #define Y_DIM_LEN 1024 */
 /* #define Z_DIM_LEN 128 */
 
 /* The number of timesteps of data to write. */
@@ -188,6 +188,14 @@ test_darray(int iosysid, int ioid, int num_flavors, int *flavor,
         if ((ret = PIOc_def_var(ncid, VAR_NAME, PIO_INT, NDIM, dimids, &varid)))
             ERR(ret);
 
+        /* NetCDF/HDF5 files benefit from having chunksize set. */
+        if (flavor[fmt] == PIO_IOTYPE_NETCDF4P || flavor[fmt] == PIO_IOTYPE_NETCDF4C)
+        {
+            PIO_Offset chunksizes[NDIM] = {NUM_TIMESTEPS / 2, X_DIM_LEN / 4, Y_DIM_LEN / 4, Z_DIM_LEN};
+            if ((ret = PIOc_def_var_chunking(ncid, varid, NC_CHUNKED, chunksizes)))
+                ERR(ret);
+        }
+
         /* End define mode. */
         if ((ret = PIOc_enddef(ncid)))
             ERR(ret);
@@ -315,7 +323,7 @@ test_darray(int iosysid, int ioid, int num_flavors, int *flavor,
         } /* re-reading file */
         
         if (!my_rank)
-            printf("%d,\t%d,\t%s,\t%s,\t%s,\t%8.3f,\t%8.3f,\t%8.1f,\t%8.3f\t%8.3f\n", ntasks, num_io_procs,
+            printf("%d,\t%d,\t%s,\t%s,\t%s,\t%8.3f,\t%8.3f,\t%8.1f,\t%8.3f,\t%8.3f\n", ntasks, num_io_procs,
                    (rearranger == 1 ? "box" : "subset"), (provide_fill ? "fill" : "nofill"),
 		   flavorname, delta_in_sec, read_sec, num_megabytes, mb_per_sec, read_mb_per_sec);
     }
@@ -539,8 +547,8 @@ main(int argc, char **argv)
 
     for (i = 0; i < num_io_tests; i++)
     {
-        for (r = 0; r < NUM_REARRANGERS_TO_TEST; r++)
-        /* for (r = 0; r < 1; r++) */
+        /* for (r = 0; r < NUM_REARRANGERS_TO_TEST; r++) */
+        for (r = 1; r < 2; r++)
         {
 #ifdef USE_MPE
             test_start_mpe_log(TEST_INIT);
@@ -571,7 +579,7 @@ main(int argc, char **argv)
         printf("finalizing io_test!\n");
 
     /* Finalize the MPI library. */
-    if ((ret = pio_test_finalize(&test_comm)))
+    if ((ret = pio_test_finalize2(&test_comm, TEST_NAME)))
         return ret;
 
     /* printf("%d %s SUCCESS!!\n", my_rank, TEST_NAME); */
