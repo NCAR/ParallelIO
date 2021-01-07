@@ -315,7 +315,7 @@ test_darray(int iosysid, int ioid, int num_flavors, int *flavor,
         } /* re-reading file */
         
         if (!my_rank)
-            printf("%d,\t%d,\t%s,\t%s,\t%s,\t%8.3f,\t%8.3f,\t%8.1f,\t%8.3f\t%8.3f\n", ntasks, num_io_procs,
+            printf("%d,\t%d,\t%s,\t%s,\t%s,\t%8.3f,\t%8.3f,\t%8.1f,\t%8.3f,\t%8.3f\n", ntasks, num_io_procs,
                    (rearranger == 1 ? "box" : "subset"), (provide_fill ? "fill" : "nofill"),
 		   flavorname, delta_in_sec, read_sec, num_megabytes, mb_per_sec, read_mb_per_sec);
     }
