@@ -83,6 +83,9 @@ void test_stop_mpe_log(int state, const char *msg);
 #define NUM_PIO_TYPES_TO_TEST 6
 #endif /* _NETCDF4 */
 
+/* Need this for performance calculations. */
+#define MILLION 1000000
+
 /* Function prototypes. */
 int pio_test_init2(int argc, char **argv, int *my_rank, int *ntasks, int min_ntasks,
                    int max_ntasks, int log_level, MPI_Comm *test_comm);

@@ -381,10 +381,10 @@ int main(int argc, char **argv)
 
                     /* Compute the time delta */
                     endt = (1000000 * endtime.tv_sec) + endtime.tv_usec;
-                    delta = (endt - startt)/NUM_TIMESTEPS;
+                    delta = (endt - startt);
                     delta_in_sec = (float)delta / 1000000;
                     num_megabytes = (X_DIM_LEN * Y_DIM_LEN * Z_DIM_LEN * (long long int)  NUM_TIMESTEPS *
-                                     sizeof(int))/(1024*1024);
+                                     sizeof(int))/(MILLION);
                     mb_per_sec = num_megabytes / delta_in_sec;
                     printf("%d,       %d,\t%s,\t%s,\t%s,\t%8.3f,\t%8.1f,\t%8.3f\n", ntasks, num_io_procs[niotest],
                            (rearranger[r] == 1 ? "box" : "subset"), (0 ? "fill" : "nofill"),
