@@ -24,11 +24,11 @@
 #define NDIM3 3
 
 /* The length of our sample data along each dimension. */
-/* #define X_DIM_LEN 128 */
-/* #define Y_DIM_LEN 128 */
+#define X_DIM_LEN 512
+#define Y_DIM_LEN 512
 #define Z_DIM_LEN 32
-#define X_DIM_LEN 1024
-#define Y_DIM_LEN 1024
+/* #define X_DIM_LEN 1024 */
+/* #define Y_DIM_LEN 1024 */
 /* #define Z_DIM_LEN 128 */
 
 /* The number of timesteps of data to write. */
@@ -187,6 +187,14 @@ test_darray(int iosysid, int ioid, int num_flavors, int *flavor,
         /* Define a variable. */
         if ((ret = PIOc_def_var(ncid, VAR_NAME, PIO_INT, NDIM, dimids, &varid)))
             ERR(ret);
+
+        /* NetCDF/HDF5 files benefit from having chunksize set. */
+        if (flavor[fmt] == PIO_IOTYPE_NETCDF4P || flavor[fmt] == PIO_IOTYPE_NETCDF4C)
+        {
+            PIO_Offset chunksizes[NDIM] = {NUM_TIMESTEPS / 2, X_DIM_LEN / 4, Y_DIM_LEN / 4, Z_DIM_LEN};
+            if ((ret = PIOc_def_var_chunking(ncid, varid, NC_CHUNKED, chunksizes)))
+                ERR(ret);
+        }
 
         /* End define mode. */
         if ((ret = PIOc_enddef(ncid)))
@@ -540,7 +548,7 @@ main(int argc, char **argv)
     for (i = 0; i < num_io_tests; i++)
     {
         /* for (r = 0; r < NUM_REARRANGERS_TO_TEST; r++) */
-        for (r = 0; r < 1; r++)
+        for (r = 1; r < 2; r++)
         {
 #ifdef USE_MPE
             test_start_mpe_log(TEST_INIT);

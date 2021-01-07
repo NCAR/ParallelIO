@@ -197,6 +197,14 @@ run_darray_async_test(int iosysid, int fmt, int my_rank, int ntasks, int niotask
         if ((ret = PIOc_def_var(ncid, REC_VAR_NAME, piotype, NDIM4, dimid, &varid)))
             PBAIL(ret);
 
+        /* NetCDF/HDF5 files benefit from having chunksize set. */
+        if (flavor[fmt] == PIO_IOTYPE_NETCDF4P || flavor[fmt] == PIO_IOTYPE_NETCDF4C)
+        {
+            PIO_Offset chunksizes[NDIM4] = {NUM_TIMESTEPS / 2, X_DIM_LEN / 4, Y_DIM_LEN / 4, Z_DIM_LEN};
+            if ((ret = PIOc_def_var_chunking(ncid, varid, NC_CHUNKED, chunksizes)))
+                ERR(ret);
+        }
+
         /* End define mode. */
         if ((ret = PIOc_enddef(ncid)))
             PBAIL(ret);
