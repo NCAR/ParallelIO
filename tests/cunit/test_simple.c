@@ -18,10 +18,10 @@
 
 int main(int argc, char **argv)
 {
-    int my_rank; 
-    int ntasks; 
+    int my_rank;
+    int ntasks;
     int num_iotasks = 1;
-    int iosysid, ioid; 
+    int iosysid, ioid;
     int gdimlen, elements_per_pe;
     PIO_Offset *compmap;
     int ncid, dimid[NDIM2], varid;
@@ -29,7 +29,7 @@ int main(int argc, char **argv)
     int flavor[NUM_FLAVORS]; /* iotypes for the supported netCDF IO flavors. */
     int *data, *data_in;
     int i, f;
-    int ret; 
+    int ret;
 
     /* Initialize MPI. */
     if ((ret = MPI_Init(&argc, &argv)))
@@ -44,9 +44,9 @@ int main(int argc, char **argv)
     /* PIOc_set_log_level(4); */
     if (ntasks != 1 && ntasks != 4)
     {
-	if (!my_rank)
-	    printf("Test must be run on 1 or 4 tasks.\n");
-	return ERR_AWFUL;
+        if (!my_rank)
+            printf("Test must be run on 1 or 4 tasks.\n");
+        return ERR_AWFUL;
     }
 
 #ifdef USE_MPE
@@ -65,7 +65,7 @@ int main(int argc, char **argv)
 
     /* Initialize the IOsystem. */
     if ((ret = PIOc_Init_Intracomm(MPI_COMM_WORLD, num_iotasks, 1, 0, PIO_REARR_BOX,
-        			   &iosysid)))
+                                   &iosysid)))
         ERR(ret);
 
     /* Find out which IOtypes are available in this build by calling
@@ -81,7 +81,7 @@ int main(int argc, char **argv)
     for (i = 0; i < elements_per_pe; i++)
         compmap[i] = my_rank + i;
     if ((ret = PIOc_init_decomp(iosysid, PIO_INT, NDIM1, &gdimlen, elements_per_pe, compmap,
-        			&ioid, PIO_REARR_BOX, NULL, NULL)))
+                                &ioid, PIO_REARR_BOX, NULL, NULL)))
         ERR(ret);
     free(compmap);
 
@@ -123,7 +123,7 @@ int main(int argc, char **argv)
             ERR(ret);
         if ((ret = PIOc_write_darray(ncid, varid, ioid, elements_per_pe, data, NULL)))
             ERR(ret);
-	
+
         /* Close the file. */
         if ((ret = PIOc_closefile(ncid)))
             ERR(ret);
@@ -132,19 +132,19 @@ int main(int argc, char **argv)
         {
             /* Reopen the file. */
             if ((ret = PIOc_openfile(iosysid, &ncid, &flavor[f], filename, NC_NOWRITE)))
-        	ERR(ret);
+                ERR(ret);
 
             /* Read the local array of data for this task and confirm correctness. */
             if ((ret = PIOc_setframe(ncid, varid, 0)))
-        	ERR(ret);
+                ERR(ret);
             if ((ret = PIOc_read_darray(ncid, varid, ioid, elements_per_pe, data_in)))
-        	ERR(ret);
+                ERR(ret);
             for (i = 0; i < elements_per_pe; i++)
-        	if (data_in[i] != data[i]) ERR(ERR_WRONG);
-	    
+                if (data_in[i] != data[i]) ERR(ERR_WRONG);
+
             /* Close the file. */
             if ((ret = PIOc_closefile(ncid)))
-        	ERR(ret);
+                ERR(ret);
         }
     } /* next IOType */
 

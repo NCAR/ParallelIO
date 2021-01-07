@@ -539,8 +539,8 @@ main(int argc, char **argv)
 
     for (i = 0; i < num_io_tests; i++)
     {
-        for (r = 0; r < NUM_REARRANGERS_TO_TEST; r++)
-        /* for (r = 0; r < 1; r++) */
+        /* for (r = 0; r < NUM_REARRANGERS_TO_TEST; r++) */
+        for (r = 0; r < 1; r++)
         {
 #ifdef USE_MPE
             test_start_mpe_log(TEST_INIT);
@@ -571,7 +571,7 @@ main(int argc, char **argv)
         printf("finalizing io_test!\n");
 
     /* Finalize the MPI library. */
-    if ((ret = pio_test_finalize(&test_comm)))
+    if ((ret = pio_test_finalize2(&test_comm, TEST_NAME)))
         return ret;
 
     /* printf("%d %s SUCCESS!!\n", my_rank, TEST_NAME); */
