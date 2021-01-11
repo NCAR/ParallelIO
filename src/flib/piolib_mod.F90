@@ -129,6 +129,7 @@ module piolib_mod
   interface PIO_init
      module procedure init_intracom
      module procedure init_intercom
+     module procedure init_intercom_v2
 
   end interface
 
@@ -754,6 +755,31 @@ contains
 #endif
   end subroutine init_intercom
 
+!>
+!! @public
+!! @ingroup PIO_init
+!! @brief Initialize the pio subsystem.
+!! @details  This is a collective call.  Input parameters are read on comp_rank=0
+!!   values on other tasks are ignored.  This variation of PIO_init sets up a distinct set of tasks
+!!   to handle IO, these tasks do not return from this call.  Instead they go to an internal loop
+!!   and wait to receive further instructions from the computational tasks
+!! @param iosystems a derived type which can be used in subsequent pio operations (defined in PIO_types).
+!! @param peer_comm  The communicator from which all other communicator arguments are derived
+!! @param comp_comms The computational communicator for each of the computational components
+!! @param io_comm    The io communicator
+!! @param rearranger The rearranger to use (optional)
+!<
+  subroutine init_intercom_v2(iosystems, peer_comm, comp_comms, io_comm, rearranger)
+    use iso_c_binding
+    type (iosystem_desc_t), intent(out)  :: iosystems(:)  ! io descriptor to initalize
+    integer, intent(in) :: peer_comm
+    integer, target, intent(in) :: comp_comms(:)   !  The compute communicator
+    integer, intent(in) :: io_comm     !  The io communicator
+    integer, intent(in), optional :: rearranger  ! The rearranger to use
+
+    call init_intercom(size(iosystems), peer_comm, comp_comms, io_comm, iosystems, rearranger);
+
+  end subroutine init_intercom_v2
 !>
 !! @public
 !! @defgroup PIO_set_hint  PIO_set_hint
