@@ -63,6 +63,23 @@ int main(int argc, char **argv)
     if ((ret = PIOc_set_iosystem_error_handling(PIO_DEFAULT, PIO_RETURN_ERROR, NULL)))
         ERR(ret);
 
+    /* These will not work due to bad input arguments. */
+    if (PIOc_Init_Intracomm(MPI_COMM_WORLD, num_iotasks, 1, -1, PIO_REARR_BOX,
+                            &iosysid) != PIO_EINVAL)
+        ERR(ERR_WRONG);
+    if (PIOc_Init_Intracomm(MPI_COMM_WORLD, num_iotasks, 1, 4, PIO_REARR_BOX,
+                            &iosysid) != PIO_EINVAL)
+        ERR(ERR_WRONG);
+    if (PIOc_Init_Intracomm(MPI_COMM_WORLD, num_iotasks, 5, 0, PIO_REARR_BOX,
+                            &iosysid) != PIO_EINVAL)
+        ERR(ERR_WRONG);
+    if (PIOc_Init_Intracomm(MPI_COMM_WORLD, 2, 2, 2, PIO_REARR_BOX,
+                            &iosysid) != PIO_EINVAL)
+        ERR(ERR_WRONG);
+    if (PIOc_Init_Intracomm(MPI_COMM_WORLD, 2, 2, 2, PIO_REARR_BOX,
+                            &iosysid) != PIO_EINVAL)
+        ERR(ERR_WRONG);
+
     /* Initialize the IOsystem. */
     if ((ret = PIOc_Init_Intracomm(MPI_COMM_WORLD, num_iotasks, 1, 0, PIO_REARR_BOX,
                                    &iosysid)))
