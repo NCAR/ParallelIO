@@ -924,7 +924,8 @@ PIOc_InitDecomp_bc(int iosysid, int pio_type, int ndims, const int *gdimlen,
  *
  * @param comp_comm the MPI_Comm of the compute tasks.
  * @param num_iotasks the number of io tasks to use.
- * @param stride the offset between io tasks in the comp_comm.
+ * @param stride the offset between io tasks in the comp_comm. The
+ * base + stride * num_iotasks must be <= total number of tasks.
  * @param base the comp_comm index of the first io task, with 0 being
  * the first task.
  * @param rearr the rearranger to use by default, this may be
