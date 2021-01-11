@@ -1094,8 +1094,10 @@ PIOc_Init_Intracomm(MPI_Comm comp_comm, int num_iotasks, int stride, int base,
  *
  * @param f90_comp_comm
  * @param num_iotasks the number of IO tasks
- * @param stride the stride to use assigning tasks
- * @param base the starting point when assigning tasks
+ * @param stride the offset between io tasks in the comp_comm. The
+ * base + stride * num_iotasks must be <= total number of tasks.
+ * @param base the comp_comm index of the first io task, with 0 being
+ * the first task.
  * @param rearr the rearranger
  * @param rearr_opts the rearranger options
  * @param iosysidp a pointer that gets the IO system ID
