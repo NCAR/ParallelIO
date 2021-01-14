@@ -501,6 +501,8 @@ int PIOc_closefile(int ncid)
         char conv_iotype[] = "netcdf";
 #endif
 
+        int rearr_type = PIO_REARR_SUBSET;
+
         /* Convert XXXX.nc.bp to XXXX.nc */
         len = strlen(file->filename);
         assert(len > 6 && len <= PIO_MAX_NAME);
@@ -508,7 +510,7 @@ int PIOc_closefile(int ncid)
         outfilename[len - 3] = '\0';
         LOG((1, "CONVERTING: %s", file->filename));
         MPI_Barrier(ios->union_comm);
-        ierr = C_API_ConvertBPToNC(file->filename, outfilename, conv_iotype, 0, ios->union_comm);
+        ierr = C_API_ConvertBPToNC(file->filename, outfilename, conv_iotype, rearr_type, ios->union_comm);
         MPI_Barrier(ios->union_comm);
         LOG((1, "DONE CONVERTING: %s", file->filename));
         if (ierr != PIO_NOERR)

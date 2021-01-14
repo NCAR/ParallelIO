@@ -2544,6 +2544,7 @@ int PIOc_def_var(int ncid, const char *name, nc_type xtype, int ndims,
         file->adios_vars[file->num_vars].name = strdup(name);
         file->adios_vars[file->num_vars].nc_type = xtype;
         file->adios_vars[file->num_vars].adios_type = PIOc_get_adios_type(xtype);
+        file->adios_vars[file->num_vars].adios_type_size = adios2_type_size(file->adios_vars[file->num_vars].adios_type, NULL);
         file->adios_vars[file->num_vars].nattrs = 0;
         file->adios_vars[file->num_vars].ndims = ndims;
         file->adios_vars[file->num_vars].adios_varid = 0;

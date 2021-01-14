@@ -13,7 +13,7 @@ static void init_user_options(spio_tool_utils::ArgParser &ap)
       .add_opt("idir", "Directory containing data output from PIO (in ADIOS format)")
       .add_opt("nc-file", "output file name after conversion")
       .add_opt("pio-format", "output PIO_IO_TYPE. Supported parameters: \"pnetcdf\",  \"netcdf\",  \"netcdf4c\",  \"netcdf4p\"")
-      .add_opt("reduce-memory-usage", "Reduce memory usage (execution time will likely increase)")
+      .add_opt("rearr", "PIO rearranger. Supported parameters: \"subset\", \"box\". Default \"subset\".")
       .add_opt("verbose", "Turn on verbose info messages");
 }
 
@@ -56,11 +56,11 @@ static int get_user_options(
               std::string &idir,
               std::string &ifile, std::string &ofile,
               std::string &otype,
-              int &mem_opt,
+              std::string &rearr,
               int &debug_lvl)
 {
     const std::string DEFAULT_PIO_FORMAT("pnetcdf");
-    mem_opt = 0;
+    const std::string DEFAULT_REARRANGER("subset");
     debug_lvl = 0;
 
 #ifdef SPIO_NO_CXX_REGEX
@@ -105,9 +105,13 @@ static int get_user_options(
         otype = DEFAULT_PIO_FORMAT;
     }
 
-    if (ap.has_arg("reduce-memory-usage"))
+    if (ap.has_arg("rearr"))
     {
-        mem_opt = 1;
+        rearr = ap.get_arg<std::string>("rearr");
+    }
+    else
+    {
+        rearr = DEFAULT_REARRANGER;
     }
 
     if (ap.has_arg("verbose"))
@@ -132,12 +136,11 @@ int main(int argc, char *argv[])
     init_user_options(ap);
 
     /* Parse the user options */
-    string idir, infilepath, outfilename, piotype;
-    int mem_opt = 0;
+    string idir, infilepath, outfilename, piotype, rearr;
     int debug_lvl = 0;
     ret = get_user_options(ap, argc, argv,
                             idir, infilepath, outfilename,
-                            piotype, mem_opt, debug_lvl);
+                            piotype, rearr, debug_lvl);
 
     if (ret != 0)
     {
@@ -156,11 +159,11 @@ int main(int argc, char *argv[])
     MPI_Barrier(comm_in);
     if (idir.size() == 0)
     {
-        ret = ConvertBPToNC(infilepath, outfilename, piotype, mem_opt, comm_in);
+        ret = ConvertBPToNC(infilepath, outfilename, piotype, rearr, comm_in);
     }
     else
     {
-        ret = MConvertBPToNC(idir, piotype, mem_opt, comm_in);
+        ret = MConvertBPToNC(idir, piotype, rearr, comm_in);
     }
     MPI_Barrier(comm_in);
 
