@@ -924,7 +924,9 @@ PIOc_InitDecomp_bc(int iosysid, int pio_type, int ndims, const int *gdimlen,
  *
  * @param comp_comm the MPI_Comm of the compute tasks.
  * @param num_iotasks the number of io tasks to use.
- * @param stride the offset between io tasks in the comp_comm.
+ * @param stride the offset between io tasks in the comp_comm. The mod
+ * operator is used when computing the IO tasks with the formula:
+ * <pre>ios->ioranks[i] = (base + i * ustride) % ios->num_comptasks</pre>.
  * @param base the comp_comm index of the first io task.
  * @param rearr the rearranger to use by default, this may be
  * overriden in the PIO_init_decomp(). The rearranger is not used
