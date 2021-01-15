@@ -128,6 +128,53 @@ PIO_TF_AUTO_TEST_SUB_BEGIN async_1comp_init_finalize
   end do
 PIO_TF_AUTO_TEST_SUB_END async_1comp_init_finalize
 
+! Async I/O as service test with 1 compute comm and an io comm
+! This test uses a different interface (from the test above)
+! to init the iosystems
+PIO_TF_AUTO_TEST_SUB_BEGIN async_1comp_init_finalize_v2
+  use mpi
+  implicit none
+  integer, parameter :: NUM_COMPONENTS = 1
+  integer :: comp_comms(NUM_COMPONENTS)
+  type(iosystem_desc_t) :: iosys(NUM_COMPONENTS)
+  integer :: odd_even_comm, io_comm
+  integer :: rank, sz, i
+  logical :: is_even
+  integer, parameter :: NUM_REARRANGERS = 2
+  integer :: rearrs(NUM_REARRANGERS) = (/pio_rearr_subset,pio_rearr_box/)
+  character(len=PIO_TF_MAX_STR_LEN) :: rearrs_info(NUM_REARRANGERS) = (/"PIO_REARR_SUBSET","PIO_REARR_BOX   "/)
+  integer :: ret = PIO_NOERR
+
+  do i=1,NUM_REARRANGERS
+    PIO_TF_LOG(0,*) "Testing rearr : ", trim(rearrs_info(i))
+    if(pio_tf_world_sz_ > 1) then
+      ! Create two disjoint sets of IO procs and compute procs
+      call split_world_odd_even(odd_even_comm, rank, sz, is_even)
+
+      ! All even procs are compute procs and all odd procs are
+      ! io procs
+      if(is_even) then
+        ! Compute proc
+        comp_comms(1) = odd_even_comm
+        io_comm = MPI_COMM_NULL
+        call PIO_init(iosys, pio_tf_comm_, comp_comms, io_comm, rearrs(i))
+      else
+        ! I/O proc
+        comp_comms(1) = MPI_COMM_NULL
+        io_comm = odd_even_comm
+        call PIO_init(iosys, pio_tf_comm_, comp_comms, io_comm, rearrs(i))
+      end if
+      ! Only compute procs call PIO function calls, I/O proc
+      ! waits inside PIO_init() waiting for commands from the
+      ! compute processes
+      if(is_even) then
+        call PIO_finalize(iosys(1), ret)
+      end if
+      call MPI_Comm_free(odd_even_comm, ret)
+      PIO_TF_CHECK_ERR(ret, "PIO_init()/Finalize() failed")
+    end if
+  end do
+PIO_TF_AUTO_TEST_SUB_END async_1comp_init_finalize_v2
 
 ! Async I/O as service test with 1 compute comm and an io comm
 ! Multiple calls to PIO_init() with alternating compute and
