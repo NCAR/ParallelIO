@@ -2041,14 +2041,18 @@ PIOc_init_async(MPI_Comm world, int num_io_procs, int *io_proc_list,
  * @author Jim Edwards
  */
 int
-PIOc_init_async_from_comms(MPI_Comm world, int component_count, MPI_Comm *comp_comm, MPI_Comm io_comm, int rearranger, int *iosysidp)
+PIOc_init_async_from_comms(MPI_Comm world, int component_count, MPI_Comm *comp_comm,
+                           MPI_Comm io_comm, int rearranger, int *iosysidp)
 {
     int my_rank;          /* Rank of this task. */
     int **my_proc_list;   /* Array of arrays of procs for comp components. */
     int *io_proc_list; /* List of processors in IO component. */
     int *num_procs_per_comp; /* List of number of tasks in each component */
-    int mpierr;           /* Return code from MPI functions. */
+    int num_io_procs = 0;
     int ret;              /* Return code. */
+#ifdef USE_MPE
+    bool in_io = false;
+#endif /* USE_MPE */
 
 #ifdef USE_MPE
     pio_start_mpe_log(INIT);
@@ -2065,10 +2069,11 @@ PIOc_init_async_from_comms(MPI_Comm world, int component_count, MPI_Comm *comp_c
     PLOG((1, "PIOc_init_async_from_comms component_count = %d", component_count));
 
     /* Get num_io_procs from io_comm, share with world */
-    int num_io_procs = 0;
-    bool in_io = false;
-    if(io_comm != MPI_COMM_NULL) {
+    if (io_comm != MPI_COMM_NULL)
+    {
+#ifdef USE_MPE
         in_io = true;
+#endif /* USE_MPE */
         if ((ret = MPI_Comm_size(io_comm, &num_io_procs)))
             return check_mpi(NULL, NULL, ret, __FILE__, __LINE__);
     }
@@ -2077,7 +2082,8 @@ PIOc_init_async_from_comms(MPI_Comm world, int component_count, MPI_Comm *comp_c
 
     /* Get io_proc_list from io_comm, share with world */
     io_proc_list = (int*) calloc(num_io_procs, sizeof(int));
-    if(io_comm != MPI_COMM_NULL) {
+    if (io_comm != MPI_COMM_NULL)
+    {
         int my_io_rank;
         if ((ret = MPI_Comm_rank(io_comm, &my_io_rank)))
             return check_mpi(NULL, NULL, ret, __FILE__, __LINE__);
