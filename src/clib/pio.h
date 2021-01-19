@@ -789,6 +789,7 @@ typedef struct adios_var_desc_t
 
     /** Type converted from NC type to adios type */
     adios2_type adios_type;
+    int adios_type_size;
 
     /** Number of dimensions */
     int ndims;
