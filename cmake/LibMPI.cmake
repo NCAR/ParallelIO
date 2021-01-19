@@ -60,6 +60,11 @@ function (platform_name RETURN_VARIABLE)
 
         set (${RETURN_VARIABLE} "lcrc" PARENT_SCOPE)
 
+    # LCRC machine - chrysalis
+    elseif (SITENAME MATCHES "^chrlogin")
+
+        set (${RETURN_VARIABLE} "lcrc" PARENT_SCOPE)
+
     # NERSC Machines
     elseif (SITENAME MATCHES "^edison" OR
         SITENAME MATCHES "^cori")
