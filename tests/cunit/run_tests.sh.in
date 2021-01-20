@@ -10,7 +10,6 @@ trap exit INT TERM
 
 printf 'running PIO tests...\n'
 
-# test_darray_multivar3
 PIO_TESTS='test_intercomm2 test_async_mpi test_spmd test_rearr test_async_simple '\
 'test_async_3proc test_async_4proc test_iosystem2_simple test_iosystem2_simple2 '\
 'test_iosystem2 test_iosystem3_simple test_iosystem3_simple2 test_iosystem3 test_simple test_pioc '\
