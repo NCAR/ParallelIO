@@ -53,7 +53,7 @@ jobs:
     - name: build
       run: |
         set -x
-        nc-config --verbose
+        nc-config --all
         export CFLAGS="-std=c99 -Wall -fsanitize=address -fno-omit-frame-pointer"
         export FCFLAGS="-Wall -fsanitize=address -fno-omit-frame-pointer"
         ./configure --enable-fortran
