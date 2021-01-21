@@ -1,4 +1,4 @@
-name: netcdf-4.7.4_hdf5-1.12.0_pnetcdf-12.1_ncint_mpich-3.3
+name: netcdf-4.7.4_hdf5-1.12.0_pnetcdf-12.2_ncint_mpich-3.3
 
 on:
   push:
@@ -102,7 +102,7 @@ jobs:
       uses: actions/cache@v2
       with:
         path: ~/pnetcdf
-        key: pnetcdf-${{ runner.os }}-1.12.1-mpich-3.3.2
+        key: pnetcdf-${{ runner.os }}-1.12.2-mpich-3.3.2
 
     - name: build-pnetcdf
       if: steps.cache-pnetcdf.outputs.cache-hit != 'true'
@@ -110,9 +110,9 @@ jobs:
         set -x
         export PATH="/home/runner/mpich/bin:$PATH"
         export CC=/home/runner/mpich/bin/mpicc
-        wget https://parallel-netcdf.github.io/Release/pnetcdf-1.12.1.tar.gz  &> /dev/null
-        tar -xzf pnetcdf-1.12.1.tar.gz
-        pushd pnetcdf-1.12.1
+        wget https://parallel-netcdf.github.io/Release/pnetcdf-1.12.2.tar.gz  &> /dev/null
+        tar -xzf pnetcdf-1.12.2.tar.gz
+        pushd pnetcdf-1.12.2
         ./configure --prefix=/home/runner/pnetcdf --enable-shared --disable-cxx
         make
         sudo make install
