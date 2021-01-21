@@ -2583,13 +2583,21 @@ int finalize_handler(iosystem_desc_t *ios, int index)
     return PIO_NOERR;
 }
 
-
+/**
+ * Set the log level.
+ *
+ * @param ios pointer to iosystem info
+ * @returns 0 for success, error code otherwise.
+ * @author Jim Edwards
+ */
 int set_loglevel_handler(iosystem_desc_t *ios)
 {
+#if PIO_ENABLE_LOGGING    
     int iosysid;
     int level;
     int mpierr;
-
+#endif
+    
     PLOG((0, "set_loglevel_handler called"));
     assert(ios);
 #if PIO_ENABLE_LOGGING
