@@ -62,7 +62,7 @@ jobs:
       uses: actions/cache@v2
       with:
         path: ~/netcdf-c
-        key: netcdf-c-${{ runner.os }}-4.7.4-mpich-3.3.2
+        key: netcdf-c-${{ runner.os }}-4.7.4-mpich-3.3.2-2
 
     - name: build-netcdf-c
       if: steps.cache-netcdf-c.outputs.cache-hit != 'true'
@@ -82,7 +82,7 @@ jobs:
       uses: actions/cache@v2
       with:
         path: ~/netcdf-fortran
-        key: netcdf-fortran-${{ runner.os }}-4.5.3-mpich-3.3.2
+        key: netcdf-fortran-${{ runner.os }}-4.5.3-mpich-3.3.2-2
 
     - name: build-netcdf-fortran
       if: steps.cache-netcdf-fortran.outputs.cache-hit != 'true'
