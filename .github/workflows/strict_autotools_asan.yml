@@ -1,4 +1,4 @@
-name: strict_autotools_ubuntu_latest
+name: autotools_ubuntu_latest_asan
 
 on:
   push:
@@ -53,9 +53,9 @@ jobs:
     - name: build
       run: |
         set -x
+        nc-config --verbose
         export CFLAGS="-std=c99 -Wall -fsanitize=address -fno-omit-frame-pointer"
-        export FFLAGS="-Wall"
         export FCFLAGS="-Wall -fsanitize=address -fno-omit-frame-pointer"
         ./configure --enable-fortran
-        make -j check
+        make check
         
