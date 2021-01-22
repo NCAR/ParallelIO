@@ -2714,6 +2714,8 @@ PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filename,
                                          &nvars, &rec_var, &pio_type,
                                          &pio_type_size, &mpi_type,
                                          &mpi_type_size, &ndims);
+                PLOG((2, "PIOc_openfile_retry:nc_open for 4C filename = %s mode = %d "
+                      "ierr = %d", filename, mode, ierr));
             }
             break;
 #endif /* _NETCDF4 */
@@ -2727,6 +2729,8 @@ PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filename,
                                          &nvars, &rec_var, &pio_type,
                                          &pio_type_size, &mpi_type,
                                          &mpi_type_size, &ndims);
+                PLOG((2, "PIOc_openfile_retry:nc_open for classic filename = %s mode = %d "
+                      "ierr = %d", filename, mode, ierr));
             }
             break;
 
