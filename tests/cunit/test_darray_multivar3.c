@@ -160,12 +160,6 @@ int test_multivar_darray(int iosysid, int ioid, int ioid_float, int num_flavors,
                                         frame, NULL, 0) != PIO_EVARDIMMISMATCH)
                 ERR(ERR_WRONG);
 
-            /* This should work since int and float are the same size
-             * and both are record vars. */
-            if ((ret = PIOc_write_darray_multi(ncid, varid+1, ioid, NUM_VAR-1, arraylen * (NUM_VAR-1), test_data_float,
-                                            frame, NULL, 0)))
-                ERR(ret);
-
             /* Close the netCDF file. */
             if ((ret = PIOc_closefile(ncid)))
                 ERR(ret);
