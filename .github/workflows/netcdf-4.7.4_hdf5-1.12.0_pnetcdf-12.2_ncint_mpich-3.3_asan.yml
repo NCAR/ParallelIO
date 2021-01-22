@@ -1,4 +1,4 @@
-name: netcdf-4.7.4_hdf5-1.12.0_pnetcdf-12.2_ncint_mpich-3.3
+name: netcdf-4.7.4_hdf5-1.12.0_pnetcdf-12.2_ncint_mpich-3.3_asan
 
 on:
   push:
@@ -143,7 +143,7 @@ jobs:
         export CFLAGS="-fsanitize=address -fno-omit-frame-pointer"
         export FCFLAGS="-fsanitize=address -fno-omit-frame-pointer"
         autoreconf -i
-        ./configure --enable-fortran
+        ./configure --enable-fortran --enable-netcdf-integration
         make -j check
         
         
