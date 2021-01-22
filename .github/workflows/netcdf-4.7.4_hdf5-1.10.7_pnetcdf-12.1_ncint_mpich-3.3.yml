@@ -143,7 +143,7 @@ jobs:
         export CFLAGS="-fsanitize=address -fno-omit-frame-pointer"
         export FCFLAGS="-fsanitize=address -fno-omit-frame-pointer"
         autoreconf -i
-        ./configure --enable-fortran
+        ./configure --enable-fortran --enable-netcdf-integration
         make -j check
         
         
