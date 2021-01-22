@@ -1,7 +1,5 @@
 /*
- * Tests for PIO distributed arrays. This test demonstrates problems
- * with the fill value that can arrise from mixing types in a
- * decomposition.
+ * Tests for PIO distributed arrays.
  *
  * @author Ed Hartnett
  */
