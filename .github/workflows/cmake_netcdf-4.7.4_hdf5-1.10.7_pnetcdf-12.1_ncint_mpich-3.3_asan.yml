@@ -140,6 +140,7 @@ jobs:
         source .bashrc
         export CC=/home/runner/mpich/bin/mpicc
         export FC=/home/runner/mpich/bin/mpifort
+        export LD_LIBRARY_PATH=/home/runner/netcdf/lib:/home/runner/pnetcdf/lib:$LD_LIBRARY_PATH
         rm -rf b1
         mkdir b1
         cd b1
