@@ -144,7 +144,7 @@ jobs:
         rm -rf b1
         mkdir b1
         cd b1
-        cmake -Wno-dev -DNetCDF_C_LIBRARY=/home/runner/netcdf-c/lib/libnetcdf.so -DNetCDF_C_INCLUDE_DIR=/home/runner/netcdf-c/include -DPnetCDF_PATH='/home/runner/pnetcdf' -DPIO_ENABLE_FORTRAN=Off -DPIO_HDF5_LOGGING=On -DPIO_USE_MALLOC=On -DPIO_ENABLE_LOGGING=On -DPIO_ENABLE_TIMING=Off ..
+        cmake -Wno-dev -DNetCDF_C_LIBRARY=/home/runner/netcdf-c/lib/libnetcdf.so -DNetCDF_C_INCLUDE_DIR=/home/runner/netcdf-c/include -DPnetCDF_PATH=/home/runner/pnetcdf -DPIO_ENABLE_FORTRAN=On -DPIO_ENABLE_LOGGING=On -DPIO_ENABLE_TIMING=Off -DNetCDF_Fortran_LIBRARY=/home/runner/netcdf-fortran/lib/libnetcdff.so -DNetCDF_Fortran_INCLUDE_DIR=/home/runner/netcdf-fortran/include ..
         make VERBOSE=1
         make tests VERBOSE=1
         ctest -VV
