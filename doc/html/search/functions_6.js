@@ -2,6 +2,7 @@ var searchData=
 [
   ['init',['init',['../structpioexample_1_1pioexampleclass.html#a839b15f3abf340e2b046964bfe297808',1,'pioexample::pioexampleclass::init()'],['../classpioexample.html#a78080ad7096ad345563544273bb61b85',1,'pioexample::init()']]],
   ['init_5fintercom',['init_intercom',['../group___p_i_o__init.html#gac9fca4c2e861e75d0de9605a77a8fb19',1,'piolib_mod']]],
+  ['init_5fintercom_5fv2',['init_intercom_v2',['../group___p_i_o__init.html#ga4003a8c32c50ac13109bdb4ef906491f',1,'piolib_mod']]],
   ['init_5fintracom',['init_intracom',['../group___p_i_o__init.html#ga24013f7eb18aa1552bb0a9ccecc689b3',1,'piolib_mod']]],
   ['init_5flogging',['init_logging',['../example2_8c.html#a34cfad2213dacda3f966cb58ca85ec62',1,'example2.c']]],
   ['inq_5fatt_5fdesc',['inq_att_desc',['../group___p_i_o__inq__att.html#ga3cf276e51e5b58322b5971c0228dd3f3',1,'pio_nf']]],
