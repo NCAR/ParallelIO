@@ -24,7 +24,7 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">SCORPIO
-   &#160;<span id="projectnumber">1.1.5</span>
+   &#160;<span id="projectnumber">1.1.6</span>
    </div>
   </td>
  </tr>
@@ -93,6 +93,9 @@ Functions/Subroutines</h2></td></tr>
 <tr class="memitem:gac9fca4c2e861e75d0de9605a77a8fb19"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__init.html#gac9fca4c2e861e75d0de9605a77a8fb19">piolib_mod::init_intercom</a> (component_count, peer_comm, comp_comms, io_comm, iosystem, rearranger)</td></tr>
 <tr class="memdesc:gac9fca4c2e861e75d0de9605a77a8fb19"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize the pio subsystem.  <a href="#gac9fca4c2e861e75d0de9605a77a8fb19">More...</a><br/></td></tr>
 <tr class="separator:gac9fca4c2e861e75d0de9605a77a8fb19"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga4003a8c32c50ac13109bdb4ef906491f"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__init.html#ga4003a8c32c50ac13109bdb4ef906491f">piolib_mod::init_intercom_v2</a> (iosystems, peer_comm, comp_comms, io_comm, rearranger)</td></tr>
+<tr class="memdesc:ga4003a8c32c50ac13109bdb4ef906491f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize the pio subsystem.  <a href="#ga4003a8c32c50ac13109bdb4ef906491f">More...</a><br/></td></tr>
+<tr class="separator:ga4003a8c32c50ac13109bdb4ef906491f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga479a1d9fe2edfc7ca321a1b482fe0211"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__init.html#ga479a1d9fe2edfc7ca321a1b482fe0211">PIOc_Init_Intracomm</a> (MPI_Comm comp_comm, int num_iotasks, int stride, int base, int rearr, int *iosysidp)</td></tr>
 <tr class="memdesc:ga479a1d9fe2edfc7ca321a1b482fe0211"><td class="mdescLeft">&#160;</td><td class="mdescRight">Library initialization used when IO tasks are a subset of compute tasks.  <a href="#ga479a1d9fe2edfc7ca321a1b482fe0211">More...</a><br/></td></tr>
 <tr class="separator:ga479a1d9fe2edfc7ca321a1b482fe0211"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -160,6 +163,63 @@ Functions/Subroutines</h2></td></tr>
     <tr><td class="paramname">comp_comms</td><td>The computational communicator for each of the computational components </td></tr>
     <tr><td class="paramname">io_comm</td><td>The io communicator </td></tr>
     <tr><td class="paramname">iosystem</td><td>a derived type which can be used in subsequent pio operations (defined in PIO_types). </td></tr>
+    <tr><td class="paramname">rearranger</td><td>The rearranger to use (optional) </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="ga4003a8c32c50ac13109bdb4ef906491f"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">subroutine piolib_mod::init_intercom_v2 </td>
+          <td>(</td>
+          <td class="paramtype">type (<a class="el" href="structiosystem__desc__t.html">iosystem_desc_t</a>), dimension(:), intent(out)&#160;</td>
+          <td class="paramname"><em>iosystems</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer, intent(in)&#160;</td>
+          <td class="paramname"><em>peer_comm</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer, dimension(:), intent(in), target&#160;</td>
+          <td class="paramname"><em>comp_comms</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer, intent(in)&#160;</td>
+          <td class="paramname"><em>io_comm</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer, intent(in), optional&#160;</td>
+          <td class="paramname"><em>rearranger</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Initialize the pio subsystem. </p>
+<p>This is a collective call. Input parameters are read on comp_rank=0 values on other tasks are ignored. This variation of PIO_init sets up a distinct set of tasks to handle IO, these tasks do not return from this call. Instead they go to an internal loop and wait to receive further instructions from the computational tasks </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">iosystems</td><td>a derived type which can be used in subsequent pio operations (defined in PIO_types). </td></tr>
+    <tr><td class="paramname">peer_comm</td><td>The communicator from which all other communicator arguments are derived </td></tr>
+    <tr><td class="paramname">comp_comms</td><td>The computational communicator for each of the computational components </td></tr>
+    <tr><td class="paramname">io_comm</td><td>The io communicator </td></tr>
     <tr><td class="paramname">rearranger</td><td>The rearranger to use (optional) </td></tr>
   </table>
   </dd>
@@ -458,7 +518,7 @@ Initialize the bget buffer, unless PIO_USE_MALLOC was used. </li>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Dec 17 2020 09:00:23 for SCORPIO by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Jan 26 2021 21:04:33 for SCORPIO by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>
