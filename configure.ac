@@ -399,6 +399,14 @@ fi
 AM_CONDITIONAL(BUILD_NCINT, [test "x$enable_netcdf_integration" = xyes])
 AM_CONDITIONAL(NETCDF_INTEGRATION, [test "x$enable_netcdf_integration" = xyes])
 
+# If we are building netCDF integration and also then PIO Fortran
+# library, then we also need netcdf-fortran.
+if test "x$enable_netcdf_integration" = xyes -a "x$enable_fortran" = xyes; then
+   AC_LANG_PUSH([Fortran])
+   AC_CHECK_LIB([netcdff], [nf_inq_libvers], [], [AC_MSG_ERROR([Can't find or link to the netcdf-fortran library, required because both --enable-fortran and --enable-netcdf-integration are specified.])])
+   AC_LANG_POP([Fortran])
+fi
+
 AC_CONFIG_FILES([tests/general/pio_tutil.F90:tests/general/util/pio_tutil.F90])
 
 # The user may have changed the MPIEXEC for these test scripts.
