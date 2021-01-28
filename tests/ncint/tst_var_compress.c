@@ -69,12 +69,13 @@ run_var_compress_test(int my_rank, int ntasks, int iosysid)
     if (nc_close(ncid)) PERR;
 
     {
-	int shuffle_in, deflate_in, deflate_level_in, storage_in;
+	/* int shuffle_in, deflate_in, deflate_level_in; */
+	int storage_in;
 	int *data_in;
 	size_t chunksizes_in[NDIM3];
 	int endian_in;
 	int d;
-        int ret;
+        /* int ret; */
 	
 	/* Open the file. */
 	if (nc_open(FILE_NAME, NC_PIO, &ncid)) PERR;
