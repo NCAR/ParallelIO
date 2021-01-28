@@ -42,7 +42,6 @@
 /* Run async tests. */
 int main(int argc, char **argv)
 {
-#ifdef USE_NETCDF4
     int my_rank; /* Zero-based rank of processor. */
     int ntasks; /* Number of processors involved in current execution. */
     int iosysid; /* The ID for the parallel I/O system. */
@@ -82,7 +81,7 @@ int main(int argc, char **argv)
     if (my_rank)
     {
         int ncid;
-        int iotype = PIO_IOTYPE_NETCDF4C;
+        int iotype = PIO_IOTYPE_NETCDF;
         int dimid[NDIM2];
         int gdimlen[NDIM1] = {DIM_LEN_1};
         PIO_Offset compmap[MAPLEN];
@@ -100,8 +99,8 @@ int main(int argc, char **argv)
             AERR(ret);
         if ((ret = PIOc_def_var(ncid, VAR_NAME, PIO_INT, NDIM2, dimid, &varid)))
             AERR(ret);
-        if ((ret = PIOc_def_var_fill(ncid, varid, PIO_NOFILL, NULL)))
-            AERR(ret);
+        /* if ((ret = PIOc_def_var_fill(ncid, varid, PIO_NOFILL, NULL))) */
+        /*     AERR(ret); */
         if ((ret = PIOc_enddef(ncid)))
             AERR(ret);
 
@@ -149,7 +148,6 @@ int main(int argc, char **argv)
     }
 
     printf("%d %s SUCCESS!!\n", my_rank, TEST_NAME);
-#endif /* USE_NETCDF4 */
 
     return 0;
 }
