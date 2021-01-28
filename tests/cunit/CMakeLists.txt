@@ -153,9 +153,9 @@ add_dependencies (tests test_async_perf)
 
 # Test Timeout in seconds.
 if (PIO_VALGRIND_CHECK)
-  set (DEFAULT_TEST_TIMEOUT 480)
+  set (DEFAULT_TEST_TIMEOUT 800)
 else ()
-  set (DEFAULT_TEST_TIMEOUT 480)
+  set (DEFAULT_TEST_TIMEOUT 600)
 endif ()
 
 # All tests need a certain number of tasks, but they should be able to
