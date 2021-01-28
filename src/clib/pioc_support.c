@@ -2137,6 +2137,8 @@ PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filename,
             if (!ierr)
                 ierr = ncmpi_buffer_attach(file->fh, pio_buffer_size_limit);
             break;
+#else
+	    ierr = PIO_EINVAL;
 #endif
         }
         PLOG((3, "create call complete file->fh %d", file->fh));
