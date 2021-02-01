@@ -102,49 +102,49 @@ main(int argc, char **argv)
             if (nc_put_vard_int(ncid, varid, ioid, 0, my_data)) PERR;
             if (nc_close(ncid)) PERR;
 
-            /* Reopen the file using netCDF integration. */
-            {
-                int ndims, nvars, ngatts, unlimdimid;
-                nc_type xtype_in;
-                char var_name_in[NC_MAX_NAME + 1];
-                char dim_name_in[NC_MAX_NAME + 1];
-                int natts_in;
-                int dimids_in[NDIM3];
-                size_t dim_len_in;
+            /* /\* Reopen the file using netCDF integration. *\/ */
+            /* { */
+            /*     int ndims, nvars, ngatts, unlimdimid; */
+            /*     nc_type xtype_in; */
+            /*     char var_name_in[NC_MAX_NAME + 1]; */
+            /*     char dim_name_in[NC_MAX_NAME + 1]; */
+            /*     int natts_in; */
+            /*     int dimids_in[NDIM3]; */
+            /*     size_t dim_len_in; */
 
-                /* Open the file. */
-                if (nc_open(FILE_NAME, NC_PIO, &ncid)) PERR;
+            /*     /\* Open the file. *\/ */
+            /*     if (nc_open(FILE_NAME, NC_PIO, &ncid)) PERR; */
 
-                /* Check the file. */
-                if (nc_inq(ncid, &ndims, &nvars, &ngatts, &unlimdimid)) PERR;
-                if (ndims != 3 || nvars != 1 || ngatts != 0 ||
-                    unlimdimid != 0) PERR;
-                if (nc_inq_var(ncid, 0, var_name_in, &xtype_in, &ndims,
-                               dimids_in, &natts_in)) PERR;
-                if (strcmp(var_name_in, VAR_NAME) || xtype_in != NC_INT || ndims != NDIM3
-                    || dimids_in[0] != 0 || dimids_in[1] != 1 || dimids_in[2] != 2 ||
-                    natts_in != 0) PERR;
-                if (nc_inq_dim(ncid, 0, dim_name_in, &dim_len_in)) PERR;
-                if (strcmp(dim_name_in, DIM_NAME_UNLIMITED) || dim_len_in != 1) PERR;
-                if (nc_inq_dim(ncid, 1, dim_name_in, &dim_len_in)) PERR;
-                if (strcmp(dim_name_in, DIM_NAME_X) || dim_len_in != DIM_LEN_X) PERR;
-                if (nc_inq_dim(ncid, 2, dim_name_in, &dim_len_in)) PERR;
-                if (strcmp(dim_name_in, DIM_NAME_Y) || dim_len_in != DIM_LEN_Y) PERR;
+            /*     /\* Check the file. *\/ */
+            /*     if (nc_inq(ncid, &ndims, &nvars, &ngatts, &unlimdimid)) PERR; */
+            /*     if (ndims != 3 || nvars != 1 || ngatts != 0 || */
+            /*         unlimdimid != 0) PERR; */
+            /*     if (nc_inq_var(ncid, 0, var_name_in, &xtype_in, &ndims, */
+            /*                    dimids_in, &natts_in)) PERR; */
+            /*     if (strcmp(var_name_in, VAR_NAME) || xtype_in != NC_INT || ndims != NDIM3 */
+            /*         || dimids_in[0] != 0 || dimids_in[1] != 1 || dimids_in[2] != 2 || */
+            /*         natts_in != 0) PERR; */
+            /*     if (nc_inq_dim(ncid, 0, dim_name_in, &dim_len_in)) PERR; */
+            /*     if (strcmp(dim_name_in, DIM_NAME_UNLIMITED) || dim_len_in != 1) PERR; */
+            /*     if (nc_inq_dim(ncid, 1, dim_name_in, &dim_len_in)) PERR; */
+            /*     if (strcmp(dim_name_in, DIM_NAME_X) || dim_len_in != DIM_LEN_X) PERR; */
+            /*     if (nc_inq_dim(ncid, 2, dim_name_in, &dim_len_in)) PERR; */
+            /*     if (strcmp(dim_name_in, DIM_NAME_Y) || dim_len_in != DIM_LEN_Y) PERR; */
 
-                /* Read distributed arrays. */
-                if (!(data_in = malloc(elements_per_pe * sizeof(int)))) PERR;
-                if (nc_get_vard_int(ncid, varid, ioid, 0, data_in)) PERR;
+            /*     /\* Read distributed arrays. *\/ */
+            /*     if (!(data_in = malloc(elements_per_pe * sizeof(int)))) PERR; */
+            /*     if (nc_get_vard_int(ncid, varid, ioid, 0, data_in)) PERR; */
 
-                /* Check results. */
-                for (i = 0; i < elements_per_pe; i++)
-                    if (data_in[i] != my_data[i]) PERR;
+            /*     /\* Check results. *\/ */
+            /*     for (i = 0; i < elements_per_pe; i++) */
+            /*         if (data_in[i] != my_data[i]) PERR; */
 
-                /* Close file. */
-                if (nc_close(ncid)) PERR;
+            /*     /\* Close file. *\/ */
+            /*     if (nc_close(ncid)) PERR; */
 
-                /* Free resources. */
-                free(data_in);
-            }
+            /*     /\* Free resources. *\/ */
+            /*     free(data_in); */
+            /* } */
 
             free(my_data);
             if (nc_free_decomp(ioid)) PERR;
