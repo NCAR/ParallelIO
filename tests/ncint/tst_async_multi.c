@@ -115,7 +115,7 @@ create_file(int file_num, int my_rank, int ntasks, int num_io_procs,
         if (nc_close(ncid)) PERR;
 
         /* Free resources. */
-        free(data_in);
+        /* free(data_in); */
     }
 
     /* Release resources. */
