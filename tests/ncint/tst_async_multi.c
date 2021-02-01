@@ -103,13 +103,13 @@ create_file(int file_num, int my_rank, int ntasks, int num_io_procs,
         if (nc_inq_dim(ncid, 2, dim_name_in, &dim_len_in)) PERR;
         if (strcmp(dim_name_in, DIM_NAME_Y) || dim_len_in != DIM_LEN_Y) PERR;
 
-        /* Read distributed arrays. */
-        if (!(data_in = malloc(elements_per_pe * sizeof(int)))) PERR;
-        if (nc_get_vard_int(ncid, varid, ioid, 0, data_in)) PERR;
+        /* /\* Read distributed arrays. *\/ */
+        /* if (!(data_in = malloc(elements_per_pe * sizeof(int)))) PERR; */
+        /* if (nc_get_vard_int(ncid, varid, ioid, 0, data_in)) PERR; */
 
-        /* Check results. */
-        for (i = 0; i < elements_per_pe; i++)
-            if (data_in[i] != my_data[i]) PERR;
+        /* /\* Check results. *\/ */
+        /* for (i = 0; i < elements_per_pe; i++) */
+        /*     if (data_in[i] != my_data[i]) PERR; */
 
         /* Close file. */
         if (nc_close(ncid)) PERR;
