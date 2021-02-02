@@ -101,7 +101,7 @@ jobs:
       run: |
         set -x
         gcc --version
-	export PATH=/home/runner/mpich/bin:/home/runner/netcdf-c/bin:$PATH
+        export PATH=/home/runner/mpich/bin:/home/runner/netcdf-c/bin:$PATH
         export CC=/home/runner/mpich/bin/mpicc
         export FC=/home/runner/mpich/bin/mpifort
         autoreconf -i
