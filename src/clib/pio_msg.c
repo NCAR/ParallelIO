@@ -2303,7 +2303,7 @@ int read_darray_handler(iosystem_desc_t *ios)
     int ncid;
     int varid;
     int ioid;
-    int arraylen;
+    PIO_Offset arraylen;
     void *data = NULL;
     int mpierr;
 
