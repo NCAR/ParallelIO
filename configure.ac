@@ -388,16 +388,12 @@ fi
 if test "x$enable_netcdf_integration" = xyes -a "x$have_netcdf_par" = xno; then
    AC_MSG_ERROR([Cannot use netCDF integration unless netCDF library was built for parallel I/O.])
 fi
-# These are needed by ncdispatch.h. Only build with HDF5 parallel
-# versions of netCDF. */
+
+# If netCDF integration is used, set this preprocessor symbol.
 if test "x$enable_netcdf_integration" = xyes; then
-  AC_DEFINE([HDF5_PARALLEL],[1],[Does HDF5 library provide parallel access])
-  AC_DEFINE([USE_NETCDF4],[1],[Does HDF5 library provide parallel access])
   AC_DEFINE([NETCDF_INTEGRATION],[1],[Are we building with netCDF integration])
 fi
-
 AM_CONDITIONAL(BUILD_NCINT, [test "x$enable_netcdf_integration" = xyes])
-AM_CONDITIONAL(NETCDF_INTEGRATION, [test "x$enable_netcdf_integration" = xyes])
 
 # If we are building netCDF integration and also then PIO Fortran
 # library, then we also need netcdf-fortran.
