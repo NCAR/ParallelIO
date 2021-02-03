@@ -148,7 +148,7 @@ int main(int argc, char **argv)
     /*         ERR(ret); */
     /* } */
 
-    printf("%d %s SUCCESS!!\n", my_rank, TEST_NAME);
+    /* printf("%d %s SUCCESS!!\n", my_rank, TEST_NAME); */
 #endif /* _NETCDF4 */
 
     return 0;
