@@ -105,6 +105,13 @@ documentation.
 # References
 
 Hartnett, E., Edwards, J., "THE PARALLELIO (PIO) C/FORTRAN LIBRARIES
-FOR SCALABLE HPC PERFORMANCE", American Meteorological Society Annual
-Meeting, January, 2021. Retrieved on Feb 3, 2021, from
+FOR SCALABLE HPC PERFORMANCE", 37th Conference on Environmental
+Information Processing Technologies, American Meteorological Society
+Annual Meeting, January, 2021. Retrieved on Feb 3, 2021, from
 [https://www.researchgate.net/publication/348169990_THE_PARALLELIO_PIO_CFORTRAN_LIBRARIES_FOR_SCALABLE_HPC_PERFORMANCE].
+
+Hartnett, E., Edwards, J., "POSTER: THE PARALLELIO (PIO) C/FORTRAN LIBRARIES
+FOR SCALABLE HPC PERFORMANCE", 37th Conference on Environmental
+Information Processing Technologies, American Meteorological Society
+Annual Meeting, January, 2021. Retrieved on Feb 3, 2021, from
+[https://www.researchgate.net/publication/348170136_THE_PARALLELIO_PIO_CFORTRAN_LIBRARIES_FOR_SCALABLE_HPC_PERFORMANCE].
