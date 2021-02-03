@@ -9,14 +9,14 @@ subset of processors to perform IO. Computational code calls
 netCDF-like functions to read and write data, and PIO uses the IO
 processors to perform all necessary IO.
 
-## Intercomm Mode
+## Intracomm Mode
 
-In Intercomm mode, PIO allows the user to designate some subset of
+In Intracomm mode, PIO allows the user to designate some subset of
 processors to do all I/O. The I/O processors also participate in
 computational work.
 
 ![I/O on Many Processors with Async
- Mode](./doc/images/I_O_on_many_async_small.png)
+ Mode](./doc/images/I_O_on_Many_Intracomm.png)
 
 ## Async Mode
 
