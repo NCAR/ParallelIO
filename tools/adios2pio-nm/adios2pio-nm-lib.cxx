@@ -276,6 +276,7 @@ struct Variable
     int nc_varid;
     bool is_timed;
     nc_type nctype;
+    int adiostype;
     int total_num_blocks;
     std::string op;
     std::string decomp_name; /* Decomposition */
@@ -954,6 +955,7 @@ VariableMap ProcessVariableDefinitions(IOVector &bpIO, EngineVector &bpReader, i
                 ERROR_CHECK_SINGLE_THROW(ierr, "adios_get_attr_a2 failed.")
                 std::string op(adata[0].data());
                 std::string decomp_name = NO_DECOMP;
+                int adiostype = adios2_type_unknown;
                 if (op == "darray")
                 {
                     attname = v + "/__pio__/decomp";
@@ -961,6 +963,13 @@ VariableMap ProcessVariableDefinitions(IOVector &bpIO, EngineVector &bpReader, i
                     ERROR_CHECK_SINGLE_THROW(ierr, "adios_get_attr_a2 failed.")
                     std::string tmp_str(adata[0].data());
                     decomp_name = tmp_str;
+                }
+                else if (op == "put_var")
+                {
+                    attname = v + "/__pio__/adiostype";
+                    ierr = adios_get_attr_a2(bpIO[0], (char*)attname.c_str(), atype, adata);
+                    ERROR_CHECK_SINGLE_THROW(ierr, "adios_get_attr_a2 failed.")
+                    adiostype = *((int*)adata[0].data());
                 }
 
                 TimerStop(read);
@@ -975,7 +984,7 @@ VariableMap ProcessVariableDefinitions(IOVector &bpIO, EngineVector &bpReader, i
 
                 TimerStop(write);
 
-                vars_map[v] = Variable{varid, timed, nctype, 0, op, decomp_name};
+                vars_map[v] = Variable{varid, timed, nctype, adiostype, 0, op, decomp_name};
 
                 ierr = ProcessVarAttributes(bpIO, bpReader, 0, v, ncid, varid, comm);
                 ERROR_CHECK_THROW(ierr, err_val, err_cnt, comm, "ProcessVariableDefinitions failed.")
@@ -1083,55 +1092,58 @@ int put_var_nm(int ncid, int varid, int nctype, const std::string &memtype, cons
     return ret;
 }
 
-int put_vara_nm(int ncid, int varid, int nctype,
+int put_vara_nm(int ncid, int varid, int nctype, int adiostype,
                 const PIO_Offset *start, const PIO_Offset *count,
                 const void* buf)
 {
     int ret = PIO_NOERR;
 
-    if (nctype == PIO_BYTE)
+    if (adiostype == adios2_type_int8_t)
     {
-       ret = PIOc_put_vara_schar(ncid, varid, start, count, (const signed char*)buf);
+        if (nctype == PIO_BYTE)
+            ret = PIOc_put_vara_schar(ncid, varid, start, count, (const signed char*)buf);
+        else
+            ret = PIOc_put_vara_text(ncid, varid, start, count, (const char*)buf);
     }
-    else if (nctype == PIO_STRING || nctype == PIO_CHAR)
-    {
-       ret = PIOc_put_vara_text(ncid, varid, start, count, (const char*)buf);
-    }
-    else if (nctype == PIO_SHORT)
+    else if (adiostype == adios2_type_int16_t)
     {
         ret = PIOc_put_vara_short(ncid, varid, start, count, (const signed short*)buf);
     }
-    else if (nctype == PIO_INT)
+    else if (adiostype == adios2_type_int32_t)
     {
         ret = PIOc_put_vara_int(ncid, varid, start, count, (const signed int*)buf);
     }
-    else if (nctype == PIO_FLOAT || nctype == PIO_REAL)
+    else if (adiostype == adios2_type_float)
     {
         ret = PIOc_put_vara_float(ncid, varid, start, count, (const float *)buf);
     }
-    else if (nctype == PIO_DOUBLE)
+    else if (adiostype == adios2_type_double)
     {
         ret = PIOc_put_vara_double(ncid, varid, start, count, (const double *)buf);
     }
-    else if (nctype == PIO_UBYTE)
+    else if (adiostype == adios2_type_uint8_t)
     {
         ret = PIOc_put_vara_uchar(ncid, varid, start, count, (const unsigned char *)buf);
     }
-    else if (nctype == PIO_USHORT)
+    else if (adiostype == adios2_type_uint16_t)
     {
         ret = PIOc_put_vara_ushort(ncid, varid, start, count, (const unsigned short *)buf);
     }
-    else if (nctype == PIO_UINT)
+    else if (adiostype == adios2_type_uint32_t)
     {
         ret = PIOc_put_vara_uint(ncid, varid, start, count, (const unsigned int *)buf);
     }
-    else if (nctype == PIO_INT64)
+    else if (adiostype == adios2_type_int64_t)
     {
         ret = PIOc_put_vara_longlong(ncid, varid, start, count, (const signed long long *)buf);
     }
-    else if (nctype == PIO_UINT64)
+    else if (adiostype == adios2_type_uint64_t)
     {
         ret = PIOc_put_vara_ulonglong(ncid, varid, start, count, (const unsigned long long *)buf);
+    }
+    else if (adiostype == adios2_type_string)
+    {
+        ret = PIOc_put_vara_text(ncid, varid, start, count, (const char *)buf);
     }
     else
     {
@@ -1281,7 +1293,7 @@ int adios2_ConvertVariablePutVar(adios2::Variable<T> *v_base,
                         nelems *= pio_var_countp[d];
                     }
 
-                    ret = put_vara_nm(ncid, var.nc_varid, var.nctype, start_ptr, count_ptr, data_buf);
+                    ret = put_vara_nm(ncid, var.nc_varid, var.nctype, var.adiostype, start_ptr, count_ptr, data_buf);
                     if (ret != PIO_NOERR)
                     {
                         cout << "rank " << mpirank << ":ERROR in PIOc_put_vara(), code = " << ret
@@ -1376,7 +1388,7 @@ int adios2_ConvertVariableTimedPutVar(adios2::Variable<T> *v_base,
 
                 start[0] = ts;
                 count[0] = 1;
-                ret = put_vara_nm(ncid, var.nc_varid, var.nctype, start, count, v_mins.data());
+                ret = put_vara_nm(ncid, var.nc_varid, var.nctype, var.adiostype, start, count, v_mins.data());
                 if (ret != PIO_NOERR)
                 {
                     cout << "ERROR in PIOc_put_vara(), code = " << ret
@@ -1486,7 +1498,7 @@ int adios2_ConvertVariableTimedPutVar(adios2::Variable<T> *v_base,
 
                 TimerStart(write);
 
-                ret = put_vara_nm(ncid, var.nc_varid, var.nctype, start_ptr, count_ptr, data_buf);
+                ret = put_vara_nm(ncid, var.nc_varid, var.nctype, var.adiostype, start_ptr, count_ptr, data_buf);
                 if (ret != PIO_NOERR)
                 {
                     cout << "ERROR in PIOc_put_vara(), code = " << ret
