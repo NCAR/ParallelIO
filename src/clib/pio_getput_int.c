@@ -1479,6 +1479,21 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                 }
             }
 
+            /* Need to save adios type for conversion, since we merge blocks as char arrays */
+            snprintf(att_name, PIO_MAX_NAME, "%s/__pio__/adiostype", av->name);
+            attributeH = adios2_inquire_attribute(file->ioH, att_name);
+            if (attributeH == NULL)
+            {
+                int save_adios_type = (int) (av->adios_type);
+                attributeH = adios2_define_attribute(file->ioH, att_name, adios2_type_int32_t, &save_adios_type);
+                if (attributeH == NULL)
+                {
+                    GPTLstop("PIO:PIOc_put_vars_tc");
+                    GPTLstop("PIO:PIOc_put_vars_tc_adios");
+                    return pio_err(ios, file, PIO_EADIOS2ERR, __FILE__, __LINE__, "Defining (ADIOS) attribute (name=%s) failed for file (%s, ncid=%d)", att_name, pio_get_fname_from_file(file), file->pio_ncid);
+                }
+            }
+
             snprintf(att_name, PIO_MAX_NAME, "%s/__pio__/ncop", av->name);
             attributeH = adios2_inquire_attribute(file->ioH, att_name);
             if (attributeH == NULL)
