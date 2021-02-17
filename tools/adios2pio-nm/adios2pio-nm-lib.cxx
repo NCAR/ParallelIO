@@ -1214,22 +1214,10 @@ int adios2_ConvertVariablePutVar(adios2::Variable<T> *v_base,
         if (v_base)
         {
             /* Compute the total number of blocks */
-            int l_nblocks = 0;
-            for (size_t i = 1; i <= wfiles.size(); i++)
-            {
-                adios2::Variable<T> v_base_tmp = bpIO[i].InquireVariable<T>(varname);
-                const auto v_blocks = bpReader[i].BlocksInfo(v_base_tmp, 0);
-                l_nblocks += v_blocks.size();
-            }
-            MPI_Allreduce(&l_nblocks, &(var.total_num_blocks), 1, MPI_INT, MPI_SUM, comm);
-
-            int var_num_blocks = var.total_num_blocks / num_bp_writers;
-            if (var.total_num_blocks != (var_num_blocks * num_bp_writers))
-            {
-                cout << "ERROR in PIOc_put_var(), code = " << ret
-                     << " at " << __func__ << ":" << __LINE__ << endl;
-                return BP2PIO_ERROR;
-            }
+            adios2::Variable<T> v_base_tmp = bpIO[0].InquireVariable<T>(varname);
+            const auto v_blocks = bpReader[0].BlocksInfo(v_base_tmp, 0);
+            size_t l_nblocks = v_blocks.size();
+            var.total_num_blocks = (int) l_nblocks;
 
             char start_varname[PIO_MAX_NAME];
             char count_varname[PIO_MAX_NAME];
@@ -1239,7 +1227,7 @@ int adios2_ConvertVariablePutVar(adios2::Variable<T> *v_base,
             int elemsize = adios2_type_size_a2(v_base->Type());
             assert(elemsize > 0);
 
-            for (int ii = 0; ii < var_num_blocks; ii++)
+            for (size_t ii = 0; ii < l_nblocks; ii++)
             {
                 try
                 {
@@ -1413,28 +1401,14 @@ int adios2_ConvertVariableTimedPutVar(adios2::Variable<T> *v_base,
         int nsteps = 1;
 
         /* Compute the total number of blocks */
-        int l_nblocks = 0;
-        for (size_t i = 1; i <= wfiles.size(); i++)
-        {
-            adios2::Variable<T> v_base_tmp = bpIO[i].InquireVariable<T>(varname);
-            const auto v_blocks = bpReader[i].BlocksInfo(v_base_tmp, 0);
-            l_nblocks += v_blocks.size();
-        }
-        MPI_Allreduce(&l_nblocks, &(var.total_num_blocks), 1, MPI_INT, MPI_SUM, comm);
+        adios2::Variable<T> v_base_tmp = bpIO[0].InquireVariable<T>(varname);
+        const auto v_blocks = bpReader[0].BlocksInfo(v_base_tmp, 0);
+        size_t l_nblocks = v_blocks.size();
+        var.total_num_blocks = (int) l_nblocks;
 
         if (var.is_timed)
         {
-            nsteps = var.total_num_blocks / nblocks_per_step;
-        }
-
-        if (var.total_num_blocks != (nsteps * nblocks_per_step))
-        {
-            if (debug_out)
-                cout << "rank " << mpirank << ":ERROR in processing variable '" << varname
-                     << "'. Number of blocks = " << var.total_num_blocks
-                     << " does not equal the number of steps * number of writers = "
-                     << nsteps << " * " << nblocks_per_step << " = " << nsteps * nblocks_per_step
-                     << endl;
+            nsteps = var.total_num_blocks;
         }
 
         char start_varname[PIO_MAX_NAME];
