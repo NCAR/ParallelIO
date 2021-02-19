@@ -988,19 +988,12 @@ int PIOc_inq_var(int ncid, int varid, char *name, int namelen, nc_type *xtypep, 
             if (nattsp)
                 *nattsp = file->adios_vars[varid].nattrs;
 
+            strncpy(file->varlist[varid].vname, file->adios_vars[varid].name, PIO_MAX_NAME);
+
             ierr = PIO_NOERR;
         }
         else
             ierr = PIO_EBADID;
-
-        /* Copied and modified from MPI_Bcast lines */
-        if (name && namelen > 0)
-        {
-            assert(namelen <= PIO_MAX_NAME + 1);
-            strncpy(name, my_name, namelen);
-        }
-
-        strncpy(file->varlist[varid].vname, my_name, PIO_MAX_NAME);
 
         return ierr;
     }
