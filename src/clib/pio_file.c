@@ -133,15 +133,23 @@ int PIOc_createfile(int iosysid, int *ncidp, int *iotype, const char *filename,
     int ret;               /* Return code from function calls. */
 
     GPTLstart("PIO:PIOc_createfile");
+    GPTLstart("PIO:write_total");
     if (*iotype == PIO_IOTYPE_ADIOS)
+    {
         GPTLstart("PIO:PIOc_createfile_adios");
+        GPTLstart("PIO:write_total_adios");
+    }
 
     /* Get the IO system info from the id. */
     if (!(ios = pio_get_iosystem_from_id(iosysid)))
     {
         GPTLstop("PIO:PIOc_createfile");
+        GPTLstop("PIO:write_total");
         if (*iotype == PIO_IOTYPE_ADIOS)
+        {
             GPTLstop("PIO:PIOc_createfile_adios");
+            GPTLstop("PIO:write_total_adios");
+        }
         return pio_err(NULL, NULL, PIO_EBADID, __FILE__, __LINE__,
                         "Unable to create file (%s, mode = %d, iotype=%s). Invalid arguments provided, invalid iosystem id (iosysid = %d)", (filename) ? filename : "NULL", mode, (!iotype) ? "UNKNOWN" : pio_iotype_to_string(*iotype), iosysid);
     }
@@ -150,8 +158,12 @@ int PIOc_createfile(int iosysid, int *ncidp, int *iotype, const char *filename,
     if ((ret = PIOc_createfile_int(iosysid, ncidp, iotype, filename, mode)))
     {
         GPTLstop("PIO:PIOc_createfile");
+        GPTLstop("PIO:write_total");
         if (*iotype == PIO_IOTYPE_ADIOS)
+        {
             GPTLstop("PIO:PIOc_createfile_adios");
+            GPTLstop("PIO:write_total_adios");
+        }
 
         return pio_err(ios, NULL, ret, __FILE__, __LINE__,
                         "Unable to create file (%s, mode = %d, iotype=%s) on iosystem (iosystem id = %d). Internal error creating the file", (filename) ? filename : "NULL", mode, (!iotype) ? "UNKNOWN" : pio_iotype_to_string(*iotype), iosysid);
@@ -167,16 +179,24 @@ int PIOc_createfile(int iosysid, int *ncidp, int *iotype, const char *filename,
         if ((ret = PIOc_set_fill(*ncidp, NC_NOFILL, NULL)))
         {
             GPTLstop("PIO:PIOc_createfile");
+            GPTLstop("PIO:write_total");
             if (*iotype == PIO_IOTYPE_ADIOS)
+            {
                 GPTLstop("PIO:PIOc_createfile_adios");
+                GPTLstop("PIO:write_total_adios");
+            }
             return pio_err(ios, NULL, ret, __FILE__, __LINE__,
                             "Unable to create file (%s, mode = %d, iotype=%s) on iosystem (iosystem id = %d). Setting fill mode to NOFILL failed.", (filename) ? filename : "NULL", mode, (!iotype) ? "UNKNOWN" : pio_iotype_to_string(*iotype), iosysid);
         }
     }
 
     GPTLstop("PIO:PIOc_createfile");
+    GPTLstop("PIO:write_total");
     if (*iotype == PIO_IOTYPE_ADIOS)
+    {
         GPTLstop("PIO:PIOc_createfile_adios");
+        GPTLstop("PIO:write_total_adios");
+    }
 
     return ret;
 }
@@ -375,13 +395,22 @@ int PIOc_closefile(int ncid)
     ios = file->iosystem;
 
     if (file->iotype == PIO_IOTYPE_ADIOS)
+    {
         GPTLstart("PIO:PIOc_closefile_adios");
+        GPTLstart("PIO:write_total_adios");
+#ifndef _ADIOS_BP2NC_TEST
+        GPTLstart("PIO:write_total");
+#endif
+    }
     else
     {
         GPTLstart("PIO:PIOc_closefile");
 
         if (file->mode & PIO_WRITE)
+        {
             GPTLstart("PIO:PIOc_closefile_write_mode");
+            GPTLstart("PIO:write_total");
+        }
     }
 
     /* Sync changes before closing on all tasks if async is not in
@@ -402,13 +431,22 @@ int PIOc_closefile(int ncid)
         if(ierr != PIO_NOERR)
         {
             if (file->iotype == PIO_IOTYPE_ADIOS)
+            {
                 GPTLstop("PIO:PIOc_closefile_adios");
+                GPTLstop("PIO:write_total_adios");
+#ifndef _ADIOS_BP2NC_TEST
+                GPTLstop("PIO:write_total");
+#endif
+            }
             else
             {
                 GPTLstop("PIO:PIOc_closefile");
 
                 if (file->mode & PIO_WRITE)
+                {
                     GPTLstop("PIO:PIOc_closefile_write_mode");
+                    GPTLstop("PIO:write_total");
+                }
             }
             return pio_err(ios, file, ierr, __FILE__, __LINE__,
                             "Closing file (%s, ncid=%d) failed. Error sending async msg PIO_MSG_CLOSE_FILE", pio_get_fname_from_file(file), ncid);
@@ -430,13 +468,22 @@ int PIOc_closefile(int ncid)
                 if (attributeH == NULL)
                 {
                     if (file->iotype == PIO_IOTYPE_ADIOS)
+                    {
                         GPTLstop("PIO:PIOc_closefile_adios");
+                        GPTLstop("PIO:write_total_adios");
+#ifndef _ADIOS_BP2NC_TEST
+                        GPTLstop("PIO:write_total");
+#endif
+                    }
                     else
                     {
                         GPTLstop("PIO:PIOc_closefile");
 
                         if (file->mode & PIO_WRITE)
+                        {
                             GPTLstop("PIO:PIOc_closefile_write_mode");
+                            GPTLstop("PIO:write_total");
+                        }
                     }
                     return pio_err(ios, file, PIO_EADIOS2ERR, __FILE__, __LINE__, "Defining (ADIOS) attribute (name=/__pio__/fillmode) failed for file (%s, ncid=%d)", pio_get_fname_from_file(file), file->pio_ncid);
                 }
@@ -446,12 +493,21 @@ int PIOc_closefile(int ncid)
             if (adiosErr != adios2_error_none)
             {
                 if (file->iotype == PIO_IOTYPE_ADIOS)
+                {
                     GPTLstop("PIO:PIOc_closefile_adios");
+                    GPTLstop("PIO:write_total_adios");
+#ifndef _ADIOS_BP2NC_TEST
+                    GPTLstop("PIO:write_total");
+#endif
+                }
                 else
                 {
                     GPTLstop("PIO:PIOc_closefile");
                     if (file->mode & PIO_WRITE)
+                    {
                         GPTLstop("PIO:PIOc_closefile_write_mode");
+                        GPTLstop("PIO:write_total");
+                    }
                 }
                 return pio_err(ios, file, PIO_EADIOS2ERR, __FILE__, __LINE__, "Closing (ADIOS) file (%s, ncid=%d) failed (adios2_error=%s)", pio_get_fname_from_file(file), file->pio_ncid, adios2_error_to_string(adiosErr));
             }
@@ -516,13 +572,19 @@ int PIOc_closefile(int ncid)
         if (ierr != PIO_NOERR)
         {
             if (file->iotype == PIO_IOTYPE_ADIOS)
+            {
                 GPTLstop("PIO:PIOc_closefile_adios");
+                GPTLstop("PIO:write_total_adios");
+            }
             else
             {
                 GPTLstop("PIO:PIOc_closefile");
 
                 if (file->mode & PIO_WRITE)
+                {
                     GPTLstop("PIO:PIOc_closefile_write_mode");
+                    GPTLstop("PIO:write_total");
+                }
             }
             return pio_err(ios, file, ierr, __FILE__, __LINE__,
                             "C_API_ConvertBPToNC(infile = %s, outfile = %s, piotype = %s) failed", file->filename, outfilename, conv_iotype);
@@ -532,13 +594,22 @@ int PIOc_closefile(int ncid)
         free(file->filename);
 
         if (file->iotype == PIO_IOTYPE_ADIOS)
+        {
             GPTLstop("PIO:PIOc_closefile_adios");
+            GPTLstop("PIO:write_total_adios");
+#ifndef _ADIOS_BP2NC_TEST
+            GPTLstop("PIO:write_total");
+#endif
+        }
         else
         {
             GPTLstop("PIO:PIOc_closefile");
 
             if (file->mode & PIO_WRITE)
+            {
                 GPTLstop("PIO:PIOc_closefile_write_mode");
+                GPTLstop("PIO:write_total");
+            }
         }
 
         /* Delete file from our list of open files. */
@@ -578,7 +649,10 @@ int PIOc_closefile(int ncid)
         default:
             GPTLstop("PIO:PIOc_closefile");
             if (file->mode & PIO_WRITE)
+            {
                 GPTLstop("PIO:PIOc_closefile_write_mode");
+                GPTLstop("PIO:write_total");
+            }
             return pio_err(ios, file, PIO_EBADIOTYPE, __FILE__, __LINE__,
                             "Closing file (%s, ncid=%d) failed. Unsupported iotype (%d) specified", pio_get_fname_from_file(file), file->pio_ncid, file->iotype);
         }
@@ -589,13 +663,19 @@ int PIOc_closefile(int ncid)
         LOG((1, "nc*_close failed, ierr = %d", ierr));
         GPTLstop("PIO:PIOc_closefile");
         if (file->mode & PIO_WRITE)
+        {
             GPTLstop("PIO:PIOc_closefile_write_mode");
+            GPTLstop("PIO:write_total");
+        }
         return pio_err(NULL, file, ierr, __FILE__, __LINE__,
                         "Closing file (%s, ncid=%d) failed. Underlying I/O library (iotype=%s) call failed", pio_get_fname_from_file(file), file->pio_ncid, pio_iotype_to_string(file->iotype));
     }
 
     if (file->mode & PIO_WRITE)
+    {
         GPTLstop("PIO:PIOc_closefile_write_mode");
+        GPTLstop("PIO:write_total");
+    }
 
     /* Delete file from our list of open files. */
     pio_delete_file_from_list(ncid);
@@ -693,11 +773,13 @@ int PIOc_sync(int ncid)
     int ierr = PIO_NOERR;  /* Return code from function calls. */
 
     GPTLstart("PIO:PIOc_sync");
+    GPTLstart("PIO:write_total");
 
     LOG((1, "PIOc_sync ncid = %d", ncid));
 
     ierr = sync_file(ncid);
 
     GPTLstop("PIO:PIOc_sync");
+    GPTLstop("PIO:write_total");
     return ierr;
 }

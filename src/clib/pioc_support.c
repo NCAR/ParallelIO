@@ -2203,16 +2203,9 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
     int mpierr = MPI_SUCCESS;  /* Return code from MPI function codes. */
     int ierr = PIO_NOERR;              /* Return code from function calls. */
 
-    GPTLstart("PIO:PIOc_createfile_int");
-    if (*iotype == PIO_IOTYPE_ADIOS)
-        GPTLstart("PIO:PIOc_createfile_int_adios");
-
     /* Get the IO system info from the iosysid. */
     if (!(ios = pio_get_iosystem_from_id(iosysid)))
     {
-        GPTLstop("PIO:PIOc_createfile_int");
-        if (*iotype == PIO_IOTYPE_ADIOS)
-            GPTLstop("PIO:PIOc_createfile_int_adios");
         return pio_err(NULL, NULL, PIO_EBADID, __FILE__, __LINE__,
                         "Creating file (%s) failed. Invalid iosystem id (%d) provided", (filename) ? filename : "UNKNOWN", iosysid);
     }
@@ -2220,9 +2213,6 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
     /* User must provide valid input for these parameters. */
     if (!ncidp || !iotype || !filename || strlen(filename) > PIO_MAX_NAME)
     {
-        GPTLstop("PIO:PIOc_createfile_int");
-        if (*iotype == PIO_IOTYPE_ADIOS)
-            GPTLstop("PIO:PIOc_createfile_int_adios");
         return pio_err(ios, NULL, PIO_EINVAL, __FILE__, __LINE__,
                         "Creating file failed. Invalid arguments provided, ncidp is %s (expected not NULL), iotype is %s (expected not NULL), filename is %s (expected not NULL), filename length = %lld (expected <= %d)", PIO_IS_NULL(ncidp), PIO_IS_NULL(iotype), PIO_IS_NULL(filename), (filename) ? ((unsigned long long )strlen(filename)) : 0, (int )PIO_MAX_NAME);
     }
@@ -2232,9 +2222,6 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
     {
         char avail_iotypes[PIO_MAX_NAME + 1];
         PIO_get_avail_iotypes(avail_iotypes, PIO_MAX_NAME);
-        GPTLstop("PIO:PIOc_createfile_int");
-        if (*iotype == PIO_IOTYPE_ADIOS)
-            GPTLstop("PIO:PIOc_createfile_int_adios");
         return pio_err(ios, NULL, PIO_EBADIOTYPE, __FILE__, __LINE__,
                         "Creating file (%s) failed. Invalid iotype (%s:%d) specified. Available iotypes are : %s", filename, pio_iotype_to_string(*iotype), *iotype, avail_iotypes);
     }
@@ -2245,9 +2232,6 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
     /* Allocate space for the file info. */
     if (!(file = calloc(sizeof(file_desc_t), 1)))
     {
-        GPTLstop("PIO:PIOc_createfile_int");
-        if (*iotype == PIO_IOTYPE_ADIOS)
-            GPTLstop("PIO:PIOc_createfile_int_adios");
         return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__,
                         "Creating file (%s) failed. Out of memory allocating %lld bytes for the file descriptor", filename, (unsigned long long) (sizeof(file_desc_t)));
     }
@@ -2297,9 +2281,6 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
         PIO_SEND_ASYNC_MSG(ios, msg, &ierr, len, filename, file->iotype, file->mode);
         if(ierr != PIO_NOERR)
         {
-            GPTLstop("PIO:PIOc_createfile_int");
-            if (*iotype == PIO_IOTYPE_ADIOS)
-                GPTLstop("PIO:PIOc_createfile_int_adios");
             return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
                             "Creating file (%s) failed. Error sending asynchronous message, PIO_MSG_CREATE_FILE, to create the file on iosystem (iosysid=%d)", filename, ios->iosysid);
         }
@@ -2316,9 +2297,6 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
         file->filename = malloc(len + 4);
         if (file->filename == NULL)
         {
-            GPTLstop("PIO:PIOc_createfile_int");
-            if (*iotype == PIO_IOTYPE_ADIOS)
-                GPTLstop("PIO:PIOc_createfile_int_adios");
             return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__,
                             "Creating file (%s) using ADIOS iotype failed. Out of memory allocating %lld bytes for the file name", filename, (unsigned long long) (len + 4));
         }
@@ -2349,9 +2327,6 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
              * directory while it is being deleted */
             if ((mpierr = MPI_Barrier(ios->union_comm)))
             {
-                GPTLstop("PIO:PIOc_createfile_int");
-                if (*iotype == PIO_IOTYPE_ADIOS)
-                    GPTLstop("PIO:PIOc_createfile_int_adios");
                 return check_mpi(ios, file, mpierr, __FILE__, __LINE__);
             }
         }
@@ -2365,18 +2340,12 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
             file->ioH = adios2_declare_io(ios->adiosH, (const char*)(declare_name));
             if (file->ioH == NULL)
             {
-                GPTLstop("PIO:PIOc_createfile_int");
-                if (*iotype == PIO_IOTYPE_ADIOS)
-                    GPTLstop("PIO:PIOc_createfile_int_adios");
                 return pio_err(ios, NULL, PIO_EADIOS2ERR, __FILE__, __LINE__, "Declaring (ADIOS) IO (name=%s) failed for file (%s)", declare_name, pio_get_fname_from_file(file));
             }
 
             adios2_error adiosErr = adios2_set_engine(file->ioH, "BP3");
             if (adiosErr != adios2_error_none)
             {
-                GPTLstop("PIO:PIOc_createfile_int");
-                if (*iotype == PIO_IOTYPE_ADIOS)
-                    GPTLstop("PIO:PIOc_createfile_int_adios");
                 return pio_err(ios, NULL, PIO_EADIOS2ERR, __FILE__, __LINE__, "Setting (ADIOS) engine (type=BP3) failed (adios2_error=%s) for file (%s)", adios2_error_to_string(adiosErr), pio_get_fname_from_file(file));
             }
 
@@ -2396,27 +2365,18 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
             adiosErr = adios2_set_parameter(file->ioH, "substreams", file->params);
             if (adiosErr != adios2_error_none)
             {
-                GPTLstop("PIO:PIOc_createfile_int");
-                if (*iotype == PIO_IOTYPE_ADIOS)
-                    GPTLstop("PIO:PIOc_createfile_int_adios");
                 return pio_err(ios, NULL, PIO_EADIOS2ERR, __FILE__, __LINE__, "Setting (ADIOS) parameter (substreams=%s) failed (adios2_error=%s) for file (%s)", file->params, adios2_error_to_string(adiosErr), pio_get_fname_from_file(file));
             }
 
             adiosErr = adios2_set_parameter(file->ioH, "CollectiveMetadata", "OFF");
             if (adiosErr != adios2_error_none)
             {
-                GPTLstop("PIO:PIOc_createfile_int");
-                if (*iotype == PIO_IOTYPE_ADIOS)
-                    GPTLstop("PIO:PIOc_createfile_int_adios");
                 return pio_err(ios, NULL, PIO_EADIOS2ERR, __FILE__, __LINE__, "Setting (ADIOS) parameter (CollectiveMetadata=OFF) failed (adios2_error=%s) for file (%s)", adios2_error_to_string(adiosErr), pio_get_fname_from_file(file));
             }
 
             file->engineH = adios2_open(file->ioH, file->filename, adios2_mode_write);
             if (file->engineH == NULL)
             {
-                GPTLstop("PIO:PIOc_createfile_int");
-                if (*iotype == PIO_IOTYPE_ADIOS)
-                    GPTLstop("PIO:PIOc_createfile_int_adios");
                 return pio_err(NULL, file, PIO_EADIOS2ERR, __FILE__, __LINE__, "Opening (ADIOS) file (%s) failed", pio_get_fname_from_file(file));
             }
 
@@ -2447,9 +2407,6 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
                                                        adios2_constant_dims_true);
                     if (variableH == NULL)
                     {
-                        GPTLstop("PIO:PIOc_createfile_int");
-                        if (*iotype == PIO_IOTYPE_ADIOS)
-                            GPTLstop("PIO:PIOc_createfile_int_adios");
                         return pio_err(ios, NULL, PIO_EADIOS2ERR, __FILE__, __LINE__, "Defining (ADIOS) variable (name=/__pio__/info/nproc) failed for file (%s)", pio_get_fname_from_file(file));
                     }
                 }
@@ -2457,9 +2414,6 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
                 adios2_error adiosErr = adios2_put(file->engineH, variableH, &ios->num_uniontasks, adios2_mode_sync);
                 if (adiosErr != adios2_error_none)
                 {
-                    GPTLstop("PIO:PIOc_createfile_int");
-                    if (*iotype == PIO_IOTYPE_ADIOS)
-                        GPTLstop("PIO:PIOc_createfile_int_adios");
                     return pio_err(ios, NULL, PIO_EADIOS2ERR, __FILE__, __LINE__, "Putting (ADIOS) variable (name=/__pio__/info/nproc) failed (adios2_error=%s) for file (%s)", adios2_error_to_string(adiosErr), pio_get_fname_from_file(file));
                 }
             }
@@ -2628,15 +2582,11 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
     ierr = check_netcdf(ios, NULL, ierr, __FILE__, __LINE__);
     /* If there was an error, free the memory we allocated and handle error. */
     if(ierr != PIO_NOERR){
-        if (file->iotype == PIO_IOTYPE_ADIOS)
-            GPTLstop("PIO:PIOc_createfile_int_adios");
-
 #ifdef _ADIOS2
         free(file->filename);
 #endif
 
         free(file);
-        GPTLstop("PIO:PIOc_createfile_int");
         return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
                         "Creating file (%s) failed. Internal error", filename);
     }
@@ -2644,9 +2594,6 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
     /* Broadcast mode to all tasks. */
     if ((mpierr = MPI_Bcast(&file->mode, 1, MPI_INT, ios->ioroot, ios->union_comm)))
     {
-        GPTLstop("PIO:PIOc_createfile_int");
-        if (*iotype == PIO_IOTYPE_ADIOS)
-            GPTLstop("PIO:PIOc_createfile_int_adios");
         return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
     }
 
@@ -2668,10 +2615,6 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
 
     LOG((2, "Created file %s file->fh = %d file->pio_ncid = %d", filename,
          file->fh, file->pio_ncid));
-
-    GPTLstop("PIO:PIOc_createfile_int");
-    if (file->iotype == PIO_IOTYPE_ADIOS)
-        GPTLstop("PIO:PIOc_createfile_int_adios");
 
     return ierr;
 }
