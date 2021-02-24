@@ -15,6 +15,7 @@ extern "C"{
 }
 
 #include "spio_io_summary.hpp"
+#include "spio_serializer.hpp"
 
 std::string PIO_Util::IO_Summary_Util::io_summary_stats2str(const IO_summary_stats_t &io_sstats)
 {
@@ -225,7 +226,13 @@ static int cache_or_print_stats(iosystem_desc_t *ios, int root_proc,
    */
   if(niosys == 1){
     assert(cached_gio_sstats.size() == cached_ios_names.size());
+    std::unique_ptr<PIO_Util::SPIO_serializer> spio_ser =
+      PIO_Util::Serializer_Utils::create_serializer(PIO_Util::Serializer_type::TEXT_SERIALIZER,
+        "io_perf_summary.txt");
+    std::vector<std::pair<std::string, std::string> > vals;
+    int id = spio_ser->serialize("ScorpioIOSummaryStatistics", vals);
     for(std::size_t i = 0; i < cached_gio_sstats.size(); i++){
+      std::vector<std::pair<std::string, std::string> > comp_vals;
       LOG((1, "I/O stats recv (component = %s):\n%s",
             cached_ios_names[i].c_str(),
             PIO_Util::IO_Summary_Util::io_summary_stats2str(cached_gio_sstats[i]).c_str()));
@@ -238,7 +245,23 @@ static int cache_or_print_stats(iosystem_desc_t *ios, int root_proc,
         << PIO_Util::IO_Summary_Util::bytes2hr((cached_gio_sstats[i].rtime_max > 0.0) ?
             (cached_gio_sstats[i].rb_total / cached_gio_sstats[i].rtime_max) : 0)
         << "/s \n";
+
+      const std::size_t ONE_GB = 1024 * 1024 * 1024;
+
+      PIO_Util::Serializer_Utils::serialize_pack("name", cached_ios_names[i], comp_vals);
+      PIO_Util::Serializer_Utils::serialize_pack("avg_wtput",
+        (cached_gio_sstats[i].wtime_max > 0.0) ?
+        (cached_gio_sstats[i].wb_total / (ONE_GB * cached_gio_sstats[i].wtime_max)) : 0.0,
+        comp_vals);
+
+      PIO_Util::Serializer_Utils::serialize_pack("avg_rtput",
+        (cached_gio_sstats[i].rtime_max > 0.0) ?
+        (cached_gio_sstats[i].rb_total / (ONE_GB * cached_gio_sstats[i].rtime_max)) : 0.0,
+        comp_vals);
+
+      spio_ser->serialize(id, "ModelComponentIOStatistics", comp_vals);
     }
+    spio_ser->sync();
   }
 
   return PIO_NOERR;
