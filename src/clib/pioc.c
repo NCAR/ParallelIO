@@ -1057,6 +1057,7 @@ int PIOc_Init_Intracomm(MPI_Comm comp_comm, int num_iotasks, int stride, int bas
     }
 #endif
 
+    ios->sname[0] = '\0';
     ios->io_comm = MPI_COMM_NULL;
     ios->intercomm = MPI_COMM_NULL;
     ios->error_handler = default_error_handler;
@@ -1201,6 +1202,13 @@ int PIOc_Init_Intracomm(MPI_Comm comp_comm, int num_iotasks, int stride, int bas
         GPTLstop("PIO:PIOc_Init_Intracomm");
         return pio_err(ios, NULL, ret, __FILE__, __LINE__,
                         "PIO Init failed. Internal error allocating buffer space on compute processes to cache user data");
+    }
+
+    ret = pio_create_uniq_str(ios, NULL, ios->sname, PIO_MAX_NAME, "tmp_", "_comp");
+    if(ret != PIO_NOERR)
+    {
+        /* Not a fatal error */
+        LOG((0, "Creating a unique name for the iosystem (iosysid=%d) failed, ret = %d", *iosysidp, ret));
     }
 
     LOG((2, "Init_Intracomm complete iosysid = %d", *iosysidp));
@@ -2269,6 +2277,7 @@ int PIOc_init_intercomm(int component_count, const MPI_Comm peer_comm,
 
         /* Initialize the iosystem */
         iosys[i]->iosysid = -1;
+        iosys[i]->sname[0] = '\0';
         iosys[i]->union_comm = MPI_COMM_NULL;
         iosys[i]->io_comm = MPI_COMM_NULL;
         iosys[i]->comp_comm = MPI_COMM_NULL;
@@ -2686,6 +2695,13 @@ int PIOc_init_intercomm(int component_count, const MPI_Comm peer_comm,
         iosysidps[i] = pio_add_to_iosystem_list(iosys[i], peer_comm);
         LOG((2, "PIOc_init_intercomm : iosys[%d]->ioid=%d, iosys[%d]->uniontasks = %d, iosys[%d]->union_rank=%d, %s", i, iosys[i]->iosysid, i, iosys[i]->num_uniontasks, i, iosys[i]->union_rank, ((iosys[i]->ioproc) ? ("IS IO PROC"):((iosys[i]->compproc) ? ("IS COMPUTE PROC") : ("NEITHER IO NOR COMPUTE PROC"))) ));
         LOG((2, "New IOsystem added to iosystem_list iosysid = %d", iosysidps[i]));
+
+        ret = pio_create_uniq_str(iosys[i], NULL, iosys[i]->sname, PIO_MAX_NAME, "tmp_", "_comp");
+        if(ret != PIO_NOERR)
+        {
+            /* Not Fatal error */
+            LOG((0, "Creating a unique name for the iosystem (iosysid=%d) failed,ret = %d", iosys[i]->iosysid, ret));
+        }
     }
 
     /* The comp_comms array is freed. The communicators will be freed internally

@@ -623,6 +623,9 @@ typedef struct iosystem_desc_t
      * calling PIOc_Init_Intercomm() or PIOc_Init_Intracomm(). */
     int iosysid;
 
+    /* I/O System name */
+    char sname[PIO_MAX_NAME + 1];
+
     /** This is an MPI intra communicator that includes all the tasks in
      * both the IO and the computation communicators. */
     MPI_Comm union_comm;
