@@ -198,6 +198,52 @@ void red_io_summary_stats(PIO_Util::IO_Summary_Util::IO_summary_stats_t *in_arr,
   }
 }
 
+static int cache_or_print_stats(iosystem_desc_t *ios, int root_proc,
+  PIO_Util::IO_Summary_Util::IO_summary_stats_t &gio_sstats)
+{
+  static std::vector<PIO_Util::IO_Summary_Util::IO_summary_stats_t> cached_gio_sstats;
+  static std::vector<std::string> cached_ios_names;
+  int niosys = 0;
+  int ierr;
+
+  assert(ios);
+
+  /* Cache only in the root process */
+  if(ios->union_rank == root_proc){
+    cached_gio_sstats.push_back(gio_sstats);
+    cached_ios_names.push_back(ios->sname);
+  }
+
+  ierr = pio_num_iosystem(&niosys);
+  if(ierr != PIO_NOERR){
+    return pio_err(ios, NULL, PIO_EINTERNAL, __FILE__, __LINE__,
+                    "Unable to query the number of active iosystems, ret = %d", ierr);
+  }
+
+  /* If this I/O system is the last one, print the I/O stats if this process has any 
+   * cached stats
+   */
+  if(niosys == 1){
+    assert(cached_gio_sstats.size() == cached_ios_names.size());
+    for(std::size_t i = 0; i < cached_gio_sstats.size(); i++){
+      LOG((1, "I/O stats recv (component = %s):\n%s",
+            cached_ios_names[i].c_str(),
+            PIO_Util::IO_Summary_Util::io_summary_stats2str(cached_gio_sstats[i]).c_str()));
+      std::cout << "Model Component I/O Statistics (" << cached_ios_names[i].c_str() << ")\n";
+      std::cout << "Average I/O write throughput = "
+        << PIO_Util::IO_Summary_Util::bytes2hr((cached_gio_sstats[i].wtime_max > 0.0) ?
+              (cached_gio_sstats[i].wb_total / cached_gio_sstats[i].wtime_max) : 0)
+        << "/s \n";
+      std::cout << "Average I/O read thoughput = "
+        << PIO_Util::IO_Summary_Util::bytes2hr((cached_gio_sstats[i].rtime_max > 0.0) ?
+            (cached_gio_sstats[i].rb_total / cached_gio_sstats[i].rtime_max) : 0)
+        << "/s \n";
+    }
+  }
+
+  return PIO_NOERR;
+}
+
 /* Write I/O performance summary */
 int spio_write_io_summary(iosystem_desc_t *ios)
 {
@@ -303,16 +349,10 @@ int spio_write_io_summary(iosystem_desc_t *ios)
             ios->iosysid);
   }
 
-  if(ios->union_rank == ROOT_PROC){
-    LOG((1, "I/O stats recv :\n%s",
-          PIO_Util::IO_Summary_Util::io_summary_stats2str(gio_sstats).c_str()));
-    assert(ios->io_fstats);
-    std::cout << "Average I/O write thoughput = "
-      << PIO_Util::IO_Summary_Util::bytes2hr((gio_sstats.wtime_max > 0.0) ? (gio_sstats.wb_total / gio_sstats.wtime_max) : 0)
-      << "/s \n";
-    std::cout << "Average I/O read thoughput = "
-      << PIO_Util::IO_Summary_Util::bytes2hr((gio_sstats.rtime_max > 0.0) ? (gio_sstats.rb_total / gio_sstats.rtime_max) : 0)
-      << "/s \n";
+  ierr = cache_or_print_stats(ios, ROOT_PROC, gio_sstats);
+  if(ierr != PIO_NOERR){
+    return pio_err(ios, NULL, PIO_EINTERNAL, __FILE__, __LINE__,
+            "Caching/printing I/O statistics failed (iosysid=%d)", ios->iosysid);
   }
 
   return PIO_NOERR;
