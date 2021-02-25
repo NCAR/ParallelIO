@@ -16,6 +16,7 @@
 #ifdef _ADIOS2
 #include <dirent.h>
 #endif
+#include "spio_io_summary.h"
 
 #define VERSNO 2001
 
@@ -2749,12 +2750,17 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
                         "Opening file (%s) failed. Invalid iotype (%s:%d) specified. Available iotypes are : %s", filename, pio_iotype_to_string(*iotype), *iotype, avail_iotypes);
     }
 
+    GPTLstart(ios->io_fstats->rd_timer_name);
+    GPTLstart(ios->io_fstats->tot_timer_name);
+
     LOG((2, "PIOc_openfile_retry iosysid = %d iotype = %d filename = %s mode = %d retry = %d",
          iosysid, *iotype, filename, mode, retry));
 
     /* Allocate space for the file info. */
     if (!(file = calloc(sizeof(*file), 1)))
     {
+        GPTLstop(ios->io_fstats->rd_timer_name);
+        GPTLstop(ios->io_fstats->tot_timer_name);
         return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__,
                         "Opening file (%s) failed. Out of memory allocating %lld bytes for the file structure", filename, (unsigned long long) (sizeof(*file)));
     }
@@ -2808,6 +2814,8 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
         PIO_SEND_ASYNC_MSG(ios, PIO_MSG_OPEN_FILE, &ierr, len, filename, file->iotype, file->mode);
         if(ierr != PIO_NOERR)
         {
+            GPTLstop(ios->io_fstats->rd_timer_name);
+            GPTLstop(ios->io_fstats->tot_timer_name);
             return pio_err(ios, file, ierr, __FILE__, __LINE__,
                             "Opening file (%s) failed. Sending asynchronous message, PIO_MSG_OPEN_FILE, failed on iosystem (iosysid=%d)", filename, ios->iosysid);
         }
@@ -2877,6 +2885,10 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
             free(file);
             {
                 char avail_iotypes[PIO_MAX_NAME + 1];
+
+                GPTLstop(ios->io_fstats->rd_timer_name);
+                GPTLstop(ios->io_fstats->tot_timer_name);
+
                 PIO_get_avail_iotypes(avail_iotypes, PIO_MAX_NAME);
                 return pio_err(ios, NULL, PIO_EBADIOTYPE, __FILE__, __LINE__,
                                 "Opening file (%s) failed. Invalid iotype (%s:%d) specified. Available iotypes are : %s", filename, pio_iotype_to_string(file->iotype), file->iotype, avail_iotypes);
@@ -2893,6 +2905,8 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
             /* Bcast error code from io rank 0 to all io procs */
             mpierr = MPI_Bcast(&ierr, 1, MPI_INT, 0, ios->io_comm);
             if(mpierr != MPI_SUCCESS){
+                GPTLstop(ios->io_fstats->rd_timer_name);
+                GPTLstop(ios->io_fstats->tot_timer_name);
                 return check_mpi(NULL, file, ierr, __FILE__, __LINE__);
             }
             if ((ierr != NC_NOERR) && (file->iotype != PIO_IOTYPE_NETCDF))
@@ -2942,6 +2956,8 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
     ierr = check_netcdf(ios, NULL, ierr, __FILE__, __LINE__);
     /* If there was an error, free allocated memory and deal with the error. */
     if(ierr != PIO_NOERR){
+        GPTLstop(ios->io_fstats->rd_timer_name);
+        GPTLstop(ios->io_fstats->tot_timer_name);
         free(file);
         LOG((1, "PIOc_openfile_retry failed, ierr = %d", ierr));
         return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
@@ -2950,7 +2966,11 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
 
     /* Broadcast open mode to all tasks. */
     if ((mpierr = MPI_Bcast(&file->mode, 1, MPI_INT, ios->ioroot, ios->my_comm)))
+    {
+        GPTLstop(ios->io_fstats->rd_timer_name);
+        GPTLstop(ios->io_fstats->tot_timer_name);
         return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+    }
 
     /* Add this file to the list of currently open files. */
     MPI_Comm comm = MPI_COMM_NULL;
@@ -2972,6 +2992,8 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
         ierr = PIOc_inq_unlimdims(*ncidp, &(file->num_unlim_dimids), NULL);
         if(ierr != PIO_NOERR)
         {
+            GPTLstop(ios->io_fstats->rd_timer_name);
+            GPTLstop(ios->io_fstats->tot_timer_name);
             return pio_err(ios, file, ierr, __FILE__, __LINE__,
                               "Opening file (%s) failed. Although the file was opened successfully, querying the number of unlimited dimensions in the file failed", filename);
         }
@@ -2980,12 +3002,16 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
             file->unlim_dimids = (int *)malloc(file->num_unlim_dimids * sizeof(int));
             if(!file->unlim_dimids)
             {
+                GPTLstop(ios->io_fstats->rd_timer_name);
+                GPTLstop(ios->io_fstats->tot_timer_name);
                 return pio_err(ios, file, PIO_ENOMEM, __FILE__, __LINE__,
                                 "Opening file (%s) failed. Out of memory allocating %lld bytes for caching the unlimited dimension ids", filename, (unsigned long long) (file->num_unlim_dimids * sizeof(int)));
             }
             ierr = PIOc_inq_unlimdims(*ncidp, NULL, file->unlim_dimids);
             if(ierr != PIO_NOERR)
             {
+                GPTLstop(ios->io_fstats->rd_timer_name);
+                GPTLstop(ios->io_fstats->tot_timer_name);
                 return pio_err(ios, file, ierr, __FILE__, __LINE__,
                                 "Opening file (%s) failed. Although the file was opened successfully, querying the unlimited dimensions in the file failed", filename);
             }
@@ -2993,6 +3019,8 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
         LOG((3, "File has %d unlimited dimensions", file->num_unlim_dimids));
     }
 
+    GPTLstop(ios->io_fstats->rd_timer_name);
+    GPTLstop(ios->io_fstats->tot_timer_name);
     return ierr;
 }
 

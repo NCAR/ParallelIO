@@ -6,6 +6,10 @@
 #include "pio_internal.h"
 
 typedef struct spio_io_fstats_summary{
+  char wr_timer_name[PIO_MAX_NAME + 1];
+  char rd_timer_name[PIO_MAX_NAME + 1];
+  char tot_timer_name[PIO_MAX_NAME + 1];
+
   /* Number of bytes read */
   PIO_Offset rb;
   /* Number of bytes written */

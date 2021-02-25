@@ -1211,6 +1211,11 @@ int PIOc_Init_Intracomm(MPI_Comm comp_comm, int num_iotasks, int stride, int bas
         LOG((0, "Creating a unique name for the iosystem (iosysid=%d) failed, ret = %d", *iosysidp, ret));
     }
 
+    /* Set the timer names for this iosystem */
+    snprintf(ios->io_fstats->wr_timer_name, PIO_MAX_NAME, "PIO:wr_%s", ios->sname);
+    snprintf(ios->io_fstats->rd_timer_name, PIO_MAX_NAME, "PIO:rd_%s", ios->sname);
+    snprintf(ios->io_fstats->tot_timer_name, PIO_MAX_NAME, "PIO:tot_%s", ios->sname);
+
     LOG((2, "Init_Intracomm complete iosysid = %d", *iosysidp));
 
     GPTLstop("PIO:PIOc_Init_Intracomm");
@@ -2702,6 +2707,10 @@ int PIOc_init_intercomm(int component_count, const MPI_Comm peer_comm,
             /* Not Fatal error */
             LOG((0, "Creating a unique name for the iosystem (iosysid=%d) failed,ret = %d", iosys[i]->iosysid, ret));
         }
+        /* Set the timer names for this iosystem */
+        snprintf(iosys[i]->io_fstats->wr_timer_name, PIO_MAX_NAME, "PIO:wr_%s", iosys[i]->sname);
+        snprintf(iosys[i]->io_fstats->rd_timer_name, PIO_MAX_NAME, "PIO:rd_%s", iosys[i]->sname);
+        snprintf(iosys[i]->io_fstats->tot_timer_name, PIO_MAX_NAME, "PIO:tot_%s", iosys[i]->sname);
     }
 
     /* The comp_comms array is freed. The communicators will be freed internally

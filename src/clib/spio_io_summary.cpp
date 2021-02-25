@@ -246,17 +246,17 @@ static int cache_or_print_stats(iosystem_desc_t *ios, int root_proc,
             (cached_gio_sstats[i].rb_total / cached_gio_sstats[i].rtime_max) : 0)
         << "/s \n";
 
-      const std::size_t ONE_GB = 1024 * 1024 * 1024;
+      const std::size_t ONE_MB = 1024 * 1024;
 
       PIO_Util::Serializer_Utils::serialize_pack("name", cached_ios_names[i], comp_vals);
       PIO_Util::Serializer_Utils::serialize_pack("avg_wtput",
         (cached_gio_sstats[i].wtime_max > 0.0) ?
-        (cached_gio_sstats[i].wb_total / (ONE_GB * cached_gio_sstats[i].wtime_max)) : 0.0,
+        (cached_gio_sstats[i].wb_total / (ONE_MB * cached_gio_sstats[i].wtime_max)) : 0.0,
         comp_vals);
 
       PIO_Util::Serializer_Utils::serialize_pack("avg_rtput",
         (cached_gio_sstats[i].rtime_max > 0.0) ?
-        (cached_gio_sstats[i].rb_total / (ONE_GB * cached_gio_sstats[i].rtime_max)) : 0.0,
+        (cached_gio_sstats[i].rb_total / (ONE_MB * cached_gio_sstats[i].rtime_max)) : 0.0,
         comp_vals);
 
       spio_ser->serialize(id, "ModelComponentIOStatistics", comp_vals);
@@ -271,23 +271,15 @@ static int cache_or_print_stats(iosystem_desc_t *ios, int root_proc,
 int spio_write_io_summary(iosystem_desc_t *ios)
 {
   int ierr = 0;
-  static const std::vector<std::string> wr_timers = {
-      "PIO:PIOc_createfile",
-      "PIO:PIOc_put_att_tc",
-      "PIO:PIOc_put_vars_tc",
-      "PIO:PIOc_write_darray",
-      "PIO:PIOc_sync",
-      "PIO:PIOc_closefile_write_mode"
+  const std::vector<std::string> wr_timers = {
+    ios->io_fstats->wr_timer_name
   };
 
   /* FIXME: We need better timers to distinguish between
    * read/write modes while opening a file
    */
-  static const std::vector<std::string> rd_timers = {
-      "PIO:PIOc_openfile",
-      "PIO:PIOc_get_att_tc",
-      "PIO:PIOc_get_vars_tc",
-      "PIO:PIOc_read_darray"
+  const std::vector<std::string> rd_timers = {
+    ios->io_fstats->rd_timer_name
   };
 
 #ifndef TIMING
