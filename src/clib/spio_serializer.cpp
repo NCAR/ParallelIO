@@ -34,7 +34,9 @@ int PIO_Util::Text_serializer::serialize(int parent_id,
 
   id2spaces_[val_id] = id_nspaces;
 
-  sdata_ += id_spaces + name + ID_SEP + NEWLINE;
+  /* FIXME: C++14, Use std::quoted() */
+  std::string qname = "\"" + name + "\"";
+  sdata_ += id_spaces + qname + ID_SEP + NEWLINE;
 
   int val_nspaces = id_nspaces + INC_SPACES;
   std::string val_spaces(val_nspaces, SPACE);
@@ -109,7 +111,8 @@ void PIO_Util::Serializer_Utils::serialize_pack(
   std::vector<std::pair<std::string, std::string> > &vals)
 {
   // FIXME: C++14 has std::quoted()
+  std::string qname = "\"" + name + "\"";
   std::string qval = "\"" + val + "\"";
-  vals.push_back(std::make_pair(name, qval));
+  vals.push_back(std::make_pair(qname, qval));
 }
 

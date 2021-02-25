@@ -61,7 +61,9 @@ namespace Serializer_Utils{
   void serialize_pack(const std::string &name, const T &val,
                       std::vector<std::pair<std::string, std::string> > &vals)
   {
-    vals.push_back(std::make_pair(name, std::to_string(val)));
+    /* FIXME: C++14 has std::quoted() */
+    std::string qname = "\"" + name + "\"";
+    vals.push_back(std::make_pair(qname, std::to_string(val)));
   }
 
   void serialize_pack(const std::string &name, const std::string &val,
