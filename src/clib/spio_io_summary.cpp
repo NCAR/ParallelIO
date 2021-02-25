@@ -259,6 +259,12 @@ static int cache_or_print_stats(iosystem_desc_t *ios, int root_proc,
         (cached_gio_sstats[i].rb_total / (ONE_MB * cached_gio_sstats[i].rtime_max)) : 0.0,
         comp_vals);
 
+      PIO_Util::Serializer_Utils::serialize_pack("tot_wb",
+        cached_gio_sstats[i].wb_total, comp_vals);
+
+      PIO_Util::Serializer_Utils::serialize_pack("tot_rb",
+        cached_gio_sstats[i].rb_total, comp_vals);
+
       spio_ser->serialize(id, "ModelComponentIOStatistics", comp_vals);
     }
     spio_ser->sync();
