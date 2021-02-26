@@ -3,6 +3,7 @@
 #include <sstream>
 #include <vector>
 #include <array>
+#include <map>
 #include <cassert>
 #include <stdexcept>
 #include <algorithm>
@@ -16,6 +17,91 @@ extern "C"{
 
 #include "spio_io_summary.hpp"
 #include "spio_serializer.hpp"
+
+namespace PIO_Util{
+  namespace IO_Summary_Util{
+    namespace GVars{
+      /* FIXME: Since iosystem and other structs are currently used
+       * in C we cannot store this cache there. We need to get rid of this global cache.
+       * std::map<IOID, std::map<FILENAME, FILE_SSTATS> >
+       */
+      std::map<int, std::map<std::string, IO_summary_stats_t> > file_sstats_cache;
+    }
+  } // namespace IO_Summary_Util
+} // namespace PIO_Util
+
+static inline PIO_Offset spio_min(PIO_Offset a, PIO_Offset b)
+{
+  return (a < b) ? a : b;
+}
+
+static inline PIO_Offset spio_max(PIO_Offset a, PIO_Offset b)
+{
+  return (a > b) ? a : b;
+}
+
+static inline double spio_min(double a, double b)
+{
+  return (a < b) ? a : b;
+}
+
+static inline double spio_max(double a, double b)
+{
+  return (a > b) ? a : b;
+}
+
+static void cache_file_stats(int iosysid, const std::string &filename,
+  const PIO_Util::IO_Summary_Util::IO_summary_stats_t &file_sstats)
+{
+  assert(filename.size() > 0);
+  if(PIO_Util::IO_Summary_Util::GVars::file_sstats_cache.count(iosysid) != 0){
+    if(PIO_Util::IO_Summary_Util::GVars::file_sstats_cache[iosysid].count(filename) == 0){
+      /* First time this file stats being cached for an iosysid with other
+       * cached file stats
+       */
+      PIO_Util::IO_Summary_Util::GVars::file_sstats_cache[iosysid][filename] = file_sstats;
+    }
+    else{
+      /* Stats for this file has been cached for this iosysid before.
+       * e.g. File being opened multiple times on the same I/O system
+       */
+      PIO_Util::IO_Summary_Util::IO_summary_stats_t sstats =
+        PIO_Util::IO_Summary_Util::GVars::file_sstats_cache[iosysid][filename];
+      sstats.rb_total += file_sstats.rb_total;
+      sstats.rb_min = spio_min(sstats.rb_min, file_sstats.rb_min);
+      sstats.rb_max = spio_max(sstats.rb_max, file_sstats.rb_max);
+      sstats.wb_total += file_sstats.wb_total;
+      sstats.wb_min = spio_min(sstats.wb_min, file_sstats.wb_min);
+      sstats.wb_max = spio_max(sstats.wb_max, file_sstats.wb_max);
+      sstats.rtime_min = spio_min(sstats.rtime_min, file_sstats.rtime_min);
+      sstats.rtime_max = spio_max(sstats.rtime_max, file_sstats.rtime_max);
+      sstats.wtime_min = spio_min(sstats.wtime_min, file_sstats.wtime_min);
+      sstats.wtime_max = spio_max(sstats.wtime_max, file_sstats.wtime_max);
+    }
+  }
+  else{
+    /* First file stats being cached for iosysid */
+    std::map<std::string, PIO_Util::IO_Summary_Util::IO_summary_stats_t> file_sstats_map;
+    file_sstats_map[filename] = file_sstats;
+    PIO_Util::IO_Summary_Util::GVars::file_sstats_cache[iosysid] = file_sstats_map;
+  }
+}
+
+static void get_file_stats(int iosysid, std::vector<std::string> &filenames,
+  std::vector<PIO_Util::IO_Summary_Util::IO_summary_stats_t> &file_stats)
+{
+  if(PIO_Util::IO_Summary_Util::GVars::file_sstats_cache.count(iosysid) == 0){
+    /* No file stats cached for this I/O system id */
+    return;
+  }
+  for(std::map<std::string, PIO_Util::IO_Summary_Util::IO_summary_stats_t>::const_iterator
+        citer = PIO_Util::IO_Summary_Util::GVars::file_sstats_cache[iosysid].cbegin();
+        citer != PIO_Util::IO_Summary_Util::GVars::file_sstats_cache[iosysid].cend();
+        ++citer){
+    filenames.push_back(citer->first);
+    file_stats.push_back(citer->second);
+  }
+}
 
 std::string PIO_Util::IO_Summary_Util::io_summary_stats2str(const IO_summary_stats_t &io_sstats)
 {
@@ -158,26 +244,6 @@ void red_io_summary_stats(PIO_Util::IO_Summary_Util::IO_summary_stats_t *in_arr,
   int *nelems, MPI_Datatype *pdt);
 } /* extern "C" */
 
-static inline PIO_Offset spio_min(PIO_Offset a, PIO_Offset b)
-{
-  return (a < b) ? a : b;
-}
-
-static inline PIO_Offset spio_max(PIO_Offset a, PIO_Offset b)
-{
-  return (a > b) ? a : b;
-}
-
-static inline double spio_min(double a, double b)
-{
-  return (a < b) ? a : b;
-}
-
-static inline double spio_max(double a, double b)
-{
-  return (a > b) ? a : b;
-}
-
 void red_io_summary_stats(PIO_Util::IO_Summary_Util::IO_summary_stats_t *in_arr,
   PIO_Util::IO_Summary_Util::IO_summary_stats_t *inout_arr,
   int *nelems, MPI_Datatype *pdt)
@@ -200,10 +266,15 @@ void red_io_summary_stats(PIO_Util::IO_Summary_Util::IO_summary_stats_t *in_arr,
 }
 
 static int cache_or_print_stats(iosystem_desc_t *ios, int root_proc,
-  PIO_Util::IO_Summary_Util::IO_summary_stats_t &gio_sstats)
+  PIO_Util::IO_Summary_Util::IO_summary_stats_t &iosys_gio_sstats,
+  std::vector<std::string> &file_names,
+  std::vector<PIO_Util::IO_Summary_Util::IO_summary_stats_t> &file_gio_sstats)
 {
-  static std::vector<PIO_Util::IO_Summary_Util::IO_summary_stats_t> cached_gio_sstats;
+  static std::vector<PIO_Util::IO_Summary_Util::IO_summary_stats_t> cached_ios_gio_sstats;
   static std::vector<std::string> cached_ios_names;
+  static std::vector<std::vector<PIO_Util::IO_Summary_Util::IO_summary_stats_t> >
+          cached_file_gio_sstats;
+  static std::vector<std::vector<std::string> > cached_file_names;
   int niosys = 0;
   int ierr;
 
@@ -211,8 +282,10 @@ static int cache_or_print_stats(iosystem_desc_t *ios, int root_proc,
 
   /* Cache only in the root process */
   if(ios->union_rank == root_proc){
-    cached_gio_sstats.push_back(gio_sstats);
+    cached_ios_gio_sstats.push_back(iosys_gio_sstats);
     cached_ios_names.push_back(ios->sname);
+    cached_file_gio_sstats.push_back(file_gio_sstats);
+    cached_file_names.push_back(file_names);
   }
 
   ierr = pio_num_iosystem(&niosys);
@@ -225,47 +298,88 @@ static int cache_or_print_stats(iosystem_desc_t *ios, int root_proc,
    * cached stats
    */
   if(niosys == 1){
-    assert(cached_gio_sstats.size() == cached_ios_names.size());
+    assert(cached_ios_gio_sstats.size() == cached_ios_names.size());
     std::unique_ptr<PIO_Util::SPIO_serializer> spio_ser =
       PIO_Util::Serializer_Utils::create_serializer(PIO_Util::Serializer_type::TEXT_SERIALIZER,
         "io_perf_summary.txt");
     std::vector<std::pair<std::string, std::string> > vals;
     int id = spio_ser->serialize("ScorpioIOSummaryStatistics", vals);
-    for(std::size_t i = 0; i < cached_gio_sstats.size(); i++){
+    for(std::size_t i = 0; i < cached_ios_gio_sstats.size(); i++){
       std::vector<std::pair<std::string, std::string> > comp_vals;
       LOG((1, "I/O stats recv (component = %s):\n%s",
             cached_ios_names[i].c_str(),
-            PIO_Util::IO_Summary_Util::io_summary_stats2str(cached_gio_sstats[i]).c_str()));
+            PIO_Util::IO_Summary_Util::io_summary_stats2str(cached_ios_gio_sstats[i]).c_str()));
       std::cout << "Model Component I/O Statistics (" << cached_ios_names[i].c_str() << ")\n";
       std::cout << "Average I/O write throughput = "
-        << PIO_Util::IO_Summary_Util::bytes2hr((cached_gio_sstats[i].wtime_max > 0.0) ?
-              (cached_gio_sstats[i].wb_total / cached_gio_sstats[i].wtime_max) : 0)
+        << PIO_Util::IO_Summary_Util::bytes2hr((cached_ios_gio_sstats[i].wtime_max > 0.0) ?
+              (cached_ios_gio_sstats[i].wb_total / cached_ios_gio_sstats[i].wtime_max) : 0)
         << "/s \n";
       std::cout << "Average I/O read thoughput = "
-        << PIO_Util::IO_Summary_Util::bytes2hr((cached_gio_sstats[i].rtime_max > 0.0) ?
-            (cached_gio_sstats[i].rb_total / cached_gio_sstats[i].rtime_max) : 0)
+        << PIO_Util::IO_Summary_Util::bytes2hr((cached_ios_gio_sstats[i].rtime_max > 0.0) ?
+            (cached_ios_gio_sstats[i].rb_total / cached_ios_gio_sstats[i].rtime_max) : 0)
         << "/s \n";
 
       const std::size_t ONE_MB = 1024 * 1024;
 
       PIO_Util::Serializer_Utils::serialize_pack("name", cached_ios_names[i], comp_vals);
       PIO_Util::Serializer_Utils::serialize_pack("avg_wtput",
-        (cached_gio_sstats[i].wtime_max > 0.0) ?
-        (cached_gio_sstats[i].wb_total / (ONE_MB * cached_gio_sstats[i].wtime_max)) : 0.0,
+        (cached_ios_gio_sstats[i].wtime_max > 0.0) ?
+        (cached_ios_gio_sstats[i].wb_total / (ONE_MB * cached_ios_gio_sstats[i].wtime_max)) : 0.0,
         comp_vals);
 
       PIO_Util::Serializer_Utils::serialize_pack("avg_rtput",
-        (cached_gio_sstats[i].rtime_max > 0.0) ?
-        (cached_gio_sstats[i].rb_total / (ONE_MB * cached_gio_sstats[i].rtime_max)) : 0.0,
+        (cached_ios_gio_sstats[i].rtime_max > 0.0) ?
+        (cached_ios_gio_sstats[i].rb_total / (ONE_MB * cached_ios_gio_sstats[i].rtime_max)) : 0.0,
         comp_vals);
 
       PIO_Util::Serializer_Utils::serialize_pack("tot_wb",
-        cached_gio_sstats[i].wb_total, comp_vals);
+        cached_ios_gio_sstats[i].wb_total, comp_vals);
 
       PIO_Util::Serializer_Utils::serialize_pack("tot_rb",
-        cached_gio_sstats[i].rb_total, comp_vals);
+        cached_ios_gio_sstats[i].rb_total, comp_vals);
 
       spio_ser->serialize(id, "ModelComponentIOStatistics", comp_vals);
+    }
+
+    assert(cached_file_gio_sstats.size() == cached_ios_gio_sstats.size());
+    for(std::size_t i = 0; i < cached_file_gio_sstats.size(); i++){
+      for(std::size_t j = 0; j < cached_file_gio_sstats[i].size(); j++){
+        std::vector<std::pair<std::string, std::string> > comp_vals;
+        LOG((1, "I/O stats recv (component = %s, file = %s):\n%s",
+              cached_ios_names[i].c_str(),
+              cached_file_names[i][j].c_str(),
+              PIO_Util::IO_Summary_Util::io_summary_stats2str(cached_file_gio_sstats[i][j]).c_str()));
+        std::cout << "File I/O Statistics (" << cached_file_names[i][j].c_str() << ")\n";
+        std::cout << "Average I/O write throughput = "
+          << PIO_Util::IO_Summary_Util::bytes2hr((cached_file_gio_sstats[i][j].wtime_max > 0.0) ?
+                (cached_file_gio_sstats[i][j].wb_total / cached_file_gio_sstats[i][j].wtime_max) : 0)
+          << "/s \n";
+        std::cout << "Average I/O read thoughput = "
+          << PIO_Util::IO_Summary_Util::bytes2hr((cached_file_gio_sstats[i][j].rtime_max > 0.0) ?
+              (cached_file_gio_sstats[i][j].rb_total / cached_file_gio_sstats[i][j].rtime_max) : 0)
+          << "/s \n";
+
+        const std::size_t ONE_MB = 1024 * 1024;
+
+        PIO_Util::Serializer_Utils::serialize_pack("name", cached_file_names[i][j], comp_vals);
+        PIO_Util::Serializer_Utils::serialize_pack("avg_wtput",
+          (cached_file_gio_sstats[i][j].wtime_max > 0.0) ?
+          (cached_file_gio_sstats[i][j].wb_total / (ONE_MB * cached_file_gio_sstats[i][j].wtime_max)) : 0.0,
+          comp_vals);
+
+        PIO_Util::Serializer_Utils::serialize_pack("avg_rtput",
+          (cached_file_gio_sstats[i][j].rtime_max > 0.0) ?
+          (cached_file_gio_sstats[i][j].rb_total / (ONE_MB * cached_file_gio_sstats[i][j].rtime_max)) : 0.0,
+          comp_vals);
+
+        PIO_Util::Serializer_Utils::serialize_pack("tot_wb",
+          cached_file_gio_sstats[i][j].wb_total, comp_vals);
+
+        PIO_Util::Serializer_Utils::serialize_pack("tot_rb",
+          cached_file_gio_sstats[i][j].rb_total, comp_vals);
+
+        spio_ser->serialize(id, "FileIOStatistics", comp_vals);
+      }
     }
     spio_ser->sync();
   }
@@ -342,6 +456,16 @@ int spio_write_io_summary(iosystem_desc_t *ios)
   LOG((1, "I/O stats sent :\n%s",
         PIO_Util::IO_Summary_Util::io_summary_stats2str(io_sstats).c_str()));
 
+  /* Get the I/O statistics of files belonging to this I/O system */
+  std::vector<std::string> filenames;
+  std::vector<PIO_Util::IO_Summary_Util::IO_summary_stats_t> tmp_sstats;
+
+  get_file_stats(ios->iosysid, filenames, tmp_sstats);
+
+  if(ios->union_rank == 0){
+    std::cout << "DEBUG: Retrieved cached info of " << filenames.size() << " files\n";
+  }
+
   MPI_Op op;
   ierr = MPI_Op_create((MPI_User_function *)red_io_summary_stats, true, &op);
   if(ierr != PIO_NOERR){
@@ -351,9 +475,16 @@ int spio_write_io_summary(iosystem_desc_t *ios)
             ios->iosysid);
   }
 
-  PIO_Util::IO_Summary_Util::IO_summary_stats_t gio_sstats = {0, 0, 0, 0, 0, 0, 0.0, 0.0, 0.0, 0.0};
+  //PIO_Util::IO_Summary_Util::IO_summary_stats_t gio_sstats = {0, 0, 0, 0, 0, 0, 0.0, 0.0, 0.0, 0.0};
+  /* Add the component I/O stats to the end of file I/O stats*/
+  const std::size_t nelems_to_red = filenames.size() + 1;
+  std::vector<PIO_Util::IO_Summary_Util::IO_summary_stats_t> gio_sstats(nelems_to_red);
+
+  tmp_sstats.push_back(io_sstats);
+
   const int ROOT_PROC = 0;
-  ierr = MPI_Reduce(&io_sstats, &gio_sstats, 1, io_sstats2mpi.get_mpi_datatype(), op, ROOT_PROC, ios->union_comm);
+  ierr = MPI_Reduce(tmp_sstats.data(), gio_sstats.data(), nelems_to_red, io_sstats2mpi.get_mpi_datatype(),
+                      op, ROOT_PROC, ios->union_comm);
   if(ierr != PIO_NOERR){
     LOG((1, "Reducing I/O memory statistics failed"));
     MPI_Op_free(&op);
@@ -370,7 +501,10 @@ int spio_write_io_summary(iosystem_desc_t *ios)
             ios->iosysid);
   }
 
-  ierr = cache_or_print_stats(ios, ROOT_PROC, gio_sstats);
+  PIO_Util::IO_Summary_Util::IO_summary_stats_t iosys_gio_stats = gio_sstats.back();
+  gio_sstats.pop_back();
+
+  ierr = cache_or_print_stats(ios, ROOT_PROC, iosys_gio_stats, filenames, gio_sstats);
   if(ierr != PIO_NOERR){
     return pio_err(ios, NULL, PIO_EINTERNAL, __FILE__, __LINE__,
             "Caching/printing I/O statistics failed (iosysid=%d)", ios->iosysid);
@@ -448,12 +582,8 @@ int spio_write_file_io_summary(file_desc_t *file)
   LOG((1, "File I/O stats sent :\n%s",
         PIO_Util::IO_Summary_Util::io_summary_stats2str(io_sstats).c_str()));
 
-  /*
-  if(file->iosystem->union_rank == 0){
-    std::cout << "File I/O stats : \n" <<
-        PIO_Util::IO_Summary_Util::io_summary_stats2str(io_sstats).c_str();
-  }
-  */
+  assert(file->iosystem);
+  cache_file_stats(file->iosystem->iosysid, file->fname, io_sstats);
 
   return PIO_NOERR;
 }
