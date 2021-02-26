@@ -304,6 +304,9 @@ static int cache_or_print_stats(iosystem_desc_t *ios, int root_proc,
         "io_perf_summary.txt");
     std::vector<std::pair<std::string, std::string> > vals;
     int id = spio_ser->serialize("ScorpioIOSummaryStatistics", vals);
+    std::vector<std::vector<std::pair<std::string, std::string> > > comp_vvals;
+    std::vector<int> comp_vvals_ids;
+
     for(std::size_t i = 0; i < cached_ios_gio_sstats.size(); i++){
       std::vector<std::pair<std::string, std::string> > comp_vals;
       LOG((1, "I/O stats recv (component = %s):\n%s",
@@ -338,13 +341,16 @@ static int cache_or_print_stats(iosystem_desc_t *ios, int root_proc,
       PIO_Util::Serializer_Utils::serialize_pack("tot_rb",
         cached_ios_gio_sstats[i].rb_total, comp_vals);
 
-      spio_ser->serialize(id, "ModelComponentIOStatistics", comp_vals);
+      comp_vvals.push_back(comp_vals);
     }
+    spio_ser->serialize(id, "ModelComponentIOStatistics", comp_vvals, comp_vvals_ids);
 
+    std::vector<std::vector<std::pair<std::string, std::string> > > file_vvals;
+    std::vector<int> file_vvals_ids;
     assert(cached_file_gio_sstats.size() == cached_ios_gio_sstats.size());
     for(std::size_t i = 0; i < cached_file_gio_sstats.size(); i++){
       for(std::size_t j = 0; j < cached_file_gio_sstats[i].size(); j++){
-        std::vector<std::pair<std::string, std::string> > comp_vals;
+        std::vector<std::pair<std::string, std::string> > file_vals;
         LOG((1, "I/O stats recv (component = %s, file = %s):\n%s",
               cached_ios_names[i].c_str(),
               cached_file_names[i][j].c_str(),
@@ -361,26 +367,27 @@ static int cache_or_print_stats(iosystem_desc_t *ios, int root_proc,
 
         const std::size_t ONE_MB = 1024 * 1024;
 
-        PIO_Util::Serializer_Utils::serialize_pack("name", cached_file_names[i][j], comp_vals);
+        PIO_Util::Serializer_Utils::serialize_pack("name", cached_file_names[i][j], file_vals);
         PIO_Util::Serializer_Utils::serialize_pack("avg_wtput",
           (cached_file_gio_sstats[i][j].wtime_max > 0.0) ?
           (cached_file_gio_sstats[i][j].wb_total / (ONE_MB * cached_file_gio_sstats[i][j].wtime_max)) : 0.0,
-          comp_vals);
+          file_vals);
 
         PIO_Util::Serializer_Utils::serialize_pack("avg_rtput",
           (cached_file_gio_sstats[i][j].rtime_max > 0.0) ?
           (cached_file_gio_sstats[i][j].rb_total / (ONE_MB * cached_file_gio_sstats[i][j].rtime_max)) : 0.0,
-          comp_vals);
+          file_vals);
 
         PIO_Util::Serializer_Utils::serialize_pack("tot_wb",
-          cached_file_gio_sstats[i][j].wb_total, comp_vals);
+          cached_file_gio_sstats[i][j].wb_total, file_vals);
 
         PIO_Util::Serializer_Utils::serialize_pack("tot_rb",
-          cached_file_gio_sstats[i][j].rb_total, comp_vals);
+          cached_file_gio_sstats[i][j].rb_total, file_vals);
 
-        spio_ser->serialize(id, "FileIOStatistics", comp_vals);
+        file_vvals.push_back(file_vals);
       }
     }
+    spio_ser->serialize(id, "FileIOStatistics", file_vvals, file_vvals_ids);
     spio_ser->sync();
   }
 
