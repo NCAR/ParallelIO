@@ -6,52 +6,59 @@
 
 /* Text Serializer function definitions */
 
-PIO_Util::Text_serializer::Text_serializer(const std::string &fname):
-  SPIO_serializer(fname), next_id_(START_ID + 1)
-{
-  /* Zero spaces for start id */
-  id2spaces_[START_ID] = START_ID_SPACES; 
-}
-
 int PIO_Util::Text_serializer::serialize(const std::string &name,
       const std::vector<std::pair<std::string, std::string> > &vals)
 {
-  int parent_id = START_ID;
-  return serialize(parent_id, name, vals);
+  Text_serializer_val sval = {name, vals};
+  int val_id = dom_tree_.add(sval);
+
+  /* Since this val has no parent, 0 spaces required for this tag */
+  id2spaces_[val_id] = 0;
+
+  return val_id;
 }
 
 int PIO_Util::Text_serializer::serialize(int parent_id,
       const std::string &name,
       const std::vector<std::pair<std::string, std::string> > &vals)
 {
-  const char SPACE = ' ';
-  const char ID_SEP = ':';
-  const char NEWLINE = '\n';
-  int val_id = next_id_++;
+  Text_serializer_val sval = {name, vals};
+  int val_id = dom_tree_.add(sval, parent_id);
 
-  int id_nspaces = id2spaces_.at(parent_id) + INC_SPACES;
-  std::string id_spaces(id_nspaces, SPACE);
-
-  id2spaces_[val_id] = id_nspaces;
-
-  /* FIXME: C++14, Use std::quoted() */
-  std::string qname = "\"" + name + "\"";
-  sdata_ += id_spaces + qname + ID_SEP + NEWLINE;
-
-  int val_nspaces = id_nspaces + INC_SPACES;
-  std::string val_spaces(val_nspaces, SPACE);
-
-  for(std::vector<std::pair<std::string, std::string> >::const_iterator citer = vals.cbegin();
-      citer != vals.cend(); ++citer){
-    sdata_ += val_spaces + (*citer).first + SPACE + ID_SEP + SPACE + (*citer).second + NEWLINE;
-  }
+  /* Number of spaces is INC_SPACES more than the parent tag */
+  id2spaces_[val_id] = id2spaces_[parent_id] + INC_SPACES;
 
   return val_id;
 }
 
+void PIO_Util::Text_serializer::serialize(const std::string &name,
+      const std::vector< std::vector<std::pair<std::string, std::string> > > &vvals,
+      std::vector<int> &val_ids)
+{
+  for(std::vector<std::vector<std::pair<std::string, std::string> > >::const_iterator
+      citer = vvals.cbegin(); citer != vvals.cend(); ++citer){
+    val_ids.push_back(serialize(name, *citer));
+  }
+}
+
+void PIO_Util::Text_serializer::serialize(int parent_id, const std::string &name,
+      const std::vector< std::vector<std::pair<std::string, std::string> > > &vvals,
+      std::vector<int> &val_ids)
+{
+  for(std::vector<std::vector<std::pair<std::string, std::string> > >::const_iterator
+      citer = vvals.cbegin(); citer != vvals.cend(); ++citer){
+    val_ids.push_back(serialize(parent_id, name, *citer));
+  }
+}
+
 void PIO_Util::Text_serializer::sync(void )
 {
-  //std::cout << sdata_.c_str() << "\n";
+  Text_serializer_visitor vis(id2spaces_, INC_SPACES);
+
+  dom_tree_.dfs(vis);
+
+  sdata_ = vis.get_serialized_data();
+
   std::ofstream fstr;
   fstr.open(pname_.c_str(), std::ofstream::out | std::ofstream::trunc);
   fstr << sdata_.c_str();
@@ -63,6 +70,32 @@ std::string PIO_Util::Text_serializer::get_serialized_data(void )
   return sdata_;
 }
 
+/* Text serializer visitor functions */
+void PIO_Util::Text_serializer::Text_serializer_visitor::enter_node(
+  Text_serializer_val &val, int val_id)
+{
+  int id_nspaces = id2spaces_[val_id];
+  std::string id_spaces(id_nspaces, SPACE);
+
+  std::string qname = "\"" + val.name + "\"";
+  sdata_ += id_spaces + qname + ID_SEP + NEWLINE;
+
+  int val_nspaces = id_nspaces + inc_spaces_;
+  std::string val_spaces(val_nspaces, SPACE);
+
+  for(std::vector<std::pair<std::string, std::string> >::const_iterator citer = val.vals.cbegin();
+      citer != val.vals.cend(); ++citer){
+    sdata_ += val_spaces + (*citer).first + SPACE + ID_SEP + SPACE + (*citer).second + NEWLINE;
+  }
+}
+
+void PIO_Util::Text_serializer::Text_serializer_visitor::enter_node(
+  Text_serializer_val &val, int val_id,
+  Text_serializer_val &parent_val, int parent_id)
+{
+  /* Text serializer does not use the parent info */
+  Text_serializer_visitor::enter_node(val, val_id);
+}
 /* Misc Serializer utils */
 
 /* Convert Serializer type to string */

@@ -6,6 +6,7 @@
 #include <memory>
 #include <utility>
 #include <map>
+#include "spio_tree.hpp"
 
 namespace PIO_Util{
 
@@ -18,6 +19,12 @@ class SPIO_serializer{
                           const std::vector<std::pair<std::string, std::string> > &vals) = 0;
     virtual int serialize(int parent_id, const std::string &name,
                           const std::vector<std::pair<std::string, std::string> > &vals) = 0;
+    virtual void serialize(const std::string &name,
+                          const std::vector<std::vector<std::pair<std::string, std::string> > > &vvals,
+                          std::vector<int> &val_ids) = 0;
+    virtual void serialize(int parent_id, const std::string &name,
+                          const std::vector<std::vector<std::pair<std::string, std::string> > > &vvals,
+                          std::vector<int> &val_ids) = 0;
     virtual void sync(void ) = 0;
     virtual std::string get_serialized_data(void ) = 0;
     virtual ~SPIO_serializer() {};
@@ -27,21 +34,49 @@ class SPIO_serializer{
 
 class Text_serializer : public SPIO_serializer{
   public:
-    Text_serializer(const std::string &fname);
+    Text_serializer(const std::string &fname) : SPIO_serializer(fname) {};
     int serialize(const std::string &name,
                   const std::vector<std::pair<std::string, std::string> > &vals) override;
     int serialize(int parent_id, const std::string &name,
                   const std::vector<std::pair<std::string, std::string> > &vals) override;
+    void serialize(const std::string &name,
+                  const std::vector<std::vector<std::pair<std::string, std::string> > > &vvals,
+                  std::vector<int> &val_ids) override;
+    void serialize(int parent_id, const std::string &name,
+                  const std::vector<std::vector<std::pair<std::string, std::string> > > &vvals,
+                  std::vector<int> &val_ids) override;
     void sync(void ) override;
     std::string get_serialized_data(void ) override;
     ~Text_serializer() {};
   private:
-    const int START_ID = 0;
-    int next_id_;
     std::string sdata_;
     const int START_ID_SPACES = 0;
     const int INC_SPACES = 2;
     std::map<int, int> id2spaces_;
+
+    struct Text_serializer_val{
+      std::string name;
+      std::vector<std::pair<std::string, std::string> > vals;
+    };
+
+    class Text_serializer_visitor : public SPIO_tree_visitor<Text_serializer_val>{
+      public:
+        Text_serializer_visitor(const std::map<int, int> &id2spaces,
+          int inc_spaces) : id2spaces_(id2spaces), inc_spaces_(inc_spaces) {};
+        void enter_node(Text_serializer_val &val, int val_id) override;
+        void enter_node(Text_serializer_val &val, int val_id,
+              Text_serializer_val &parent_val, int parent_id) override;
+        std::string get_serialized_data(void ) { return sdata_; };
+      private:
+        const char SPACE = ' ';
+        const char ID_SEP = ':';
+        const char NEWLINE = '\n';
+        std::string sdata_;
+        std::map<int, int> id2spaces_;
+        int inc_spaces_;
+    };
+
+    SPIO_tree<Text_serializer_val> dom_tree_;
 };
 
 enum class Serializer_type{
