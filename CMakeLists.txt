@@ -292,7 +292,7 @@ if (PIO_ENABLE_DOC)
   add_subdirectory (doc)
 endif ()
 
-SET(STATUS_PNETCDF PnetCDF_C_FOUND)
+SET(STATUS_PNETCDF ${PnetCDF_C_FOUND})
 
 ###
 # Check to see if netcdf-4 capability is present in netcdf-c.
