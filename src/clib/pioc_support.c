@@ -2237,9 +2237,23 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
                         "Creating file (%s) failed. Out of memory allocating %lld bytes for the file descriptor", filename, (unsigned long long) (sizeof(file_desc_t)));
     }
 
+    file->io_fstats = calloc(sizeof(spio_io_fstats_summary_t), 1);
+    if(!(file->io_fstats))
+    {
+        return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__,
+                        "Creating file (%s) failed. Out of memory allocating %lld bytes for caching file I/O statistics", filename, (unsigned long long) (sizeof(spio_io_fstats_summary_t)));
+    }
+
     /* Fill in some file values. */
     file->fh = -1;
     strncpy(file->fname, filename, PIO_MAX_NAME);
+    snprintf(file->io_fstats->wr_timer_name, PIO_MAX_NAME, "PIO:wr_%s", filename);
+    snprintf(file->io_fstats->rd_timer_name, PIO_MAX_NAME, "PIO:rd_%s", filename);
+    snprintf(file->io_fstats->tot_timer_name, PIO_MAX_NAME, "PIO:tot_%s", filename);
+
+    GPTLstart(file->io_fstats->wr_timer_name);
+    GPTLstart(file->io_fstats->tot_timer_name);
+
     file->iosystem = ios;
     file->iotype = *iotype;
     file->buffer.ioid = -1;
@@ -2282,6 +2296,8 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
         PIO_SEND_ASYNC_MSG(ios, msg, &ierr, len, filename, file->iotype, file->mode);
         if(ierr != PIO_NOERR)
         {
+            GPTLstop(file->io_fstats->wr_timer_name);
+            GPTLstop(file->io_fstats->tot_timer_name);
             return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
                             "Creating file (%s) failed. Error sending asynchronous message, PIO_MSG_CREATE_FILE, to create the file on iosystem (iosysid=%d)", filename, ios->iosysid);
         }
@@ -2298,6 +2314,8 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
         file->filename = malloc(len + 4);
         if (file->filename == NULL)
         {
+            GPTLstop(file->io_fstats->wr_timer_name);
+            GPTLstop(file->io_fstats->tot_timer_name);
             return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__,
                             "Creating file (%s) using ADIOS iotype failed. Out of memory allocating %lld bytes for the file name", filename, (unsigned long long) (len + 4));
         }
@@ -2328,6 +2346,8 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
              * directory while it is being deleted */
             if ((mpierr = MPI_Barrier(ios->union_comm)))
             {
+                GPTLstop(file->io_fstats->wr_timer_name);
+                GPTLstop(file->io_fstats->tot_timer_name);
                 return check_mpi(ios, file, mpierr, __FILE__, __LINE__);
             }
         }
@@ -2341,12 +2361,16 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
             file->ioH = adios2_declare_io(ios->adiosH, (const char*)(declare_name));
             if (file->ioH == NULL)
             {
+                GPTLstop(file->io_fstats->wr_timer_name);
+                GPTLstop(file->io_fstats->tot_timer_name);
                 return pio_err(ios, NULL, PIO_EADIOS2ERR, __FILE__, __LINE__, "Declaring (ADIOS) IO (name=%s) failed for file (%s)", declare_name, pio_get_fname_from_file(file));
             }
 
             adios2_error adiosErr = adios2_set_engine(file->ioH, "BP3");
             if (adiosErr != adios2_error_none)
             {
+                GPTLstop(file->io_fstats->wr_timer_name);
+                GPTLstop(file->io_fstats->tot_timer_name);
                 return pio_err(ios, NULL, PIO_EADIOS2ERR, __FILE__, __LINE__, "Setting (ADIOS) engine (type=BP3) failed (adios2_error=%s) for file (%s)", adios2_error_to_string(adiosErr), pio_get_fname_from_file(file));
             }
 
@@ -2366,18 +2390,24 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
             adiosErr = adios2_set_parameter(file->ioH, "substreams", file->params);
             if (adiosErr != adios2_error_none)
             {
+                GPTLstop(file->io_fstats->wr_timer_name);
+                GPTLstop(file->io_fstats->tot_timer_name);
                 return pio_err(ios, NULL, PIO_EADIOS2ERR, __FILE__, __LINE__, "Setting (ADIOS) parameter (substreams=%s) failed (adios2_error=%s) for file (%s)", file->params, adios2_error_to_string(adiosErr), pio_get_fname_from_file(file));
             }
 
             adiosErr = adios2_set_parameter(file->ioH, "CollectiveMetadata", "OFF");
             if (adiosErr != adios2_error_none)
             {
+                GPTLstop(file->io_fstats->wr_timer_name);
+                GPTLstop(file->io_fstats->tot_timer_name);
                 return pio_err(ios, NULL, PIO_EADIOS2ERR, __FILE__, __LINE__, "Setting (ADIOS) parameter (CollectiveMetadata=OFF) failed (adios2_error=%s) for file (%s)", adios2_error_to_string(adiosErr), pio_get_fname_from_file(file));
             }
 
             file->engineH = adios2_open(file->ioH, file->filename, adios2_mode_write);
             if (file->engineH == NULL)
             {
+                GPTLstop(file->io_fstats->wr_timer_name);
+                GPTLstop(file->io_fstats->tot_timer_name);
                 return pio_err(NULL, file, PIO_EADIOS2ERR, __FILE__, __LINE__, "Opening (ADIOS) file (%s) failed", pio_get_fname_from_file(file));
             }
 
@@ -2408,6 +2438,8 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
                                                        adios2_constant_dims_true);
                     if (variableH == NULL)
                     {
+                        GPTLstop(file->io_fstats->wr_timer_name);
+                        GPTLstop(file->io_fstats->tot_timer_name);
                         return pio_err(ios, NULL, PIO_EADIOS2ERR, __FILE__, __LINE__, "Defining (ADIOS) variable (name=/__pio__/info/nproc) failed for file (%s)", pio_get_fname_from_file(file));
                     }
                 }
@@ -2415,6 +2447,8 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
                 adios2_error adiosErr = adios2_put(file->engineH, variableH, &ios->num_uniontasks, adios2_mode_sync);
                 if (adiosErr != adios2_error_none)
                 {
+                    GPTLstop(file->io_fstats->wr_timer_name);
+                    GPTLstop(file->io_fstats->tot_timer_name);
                     return pio_err(ios, NULL, PIO_EADIOS2ERR, __FILE__, __LINE__, "Putting (ADIOS) variable (name=/__pio__/info/nproc) failed (adios2_error=%s) for file (%s)", adios2_error_to_string(adiosErr), pio_get_fname_from_file(file));
                 }
             }
@@ -2586,7 +2620,8 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
 #ifdef _ADIOS2
         free(file->filename);
 #endif
-
+        GPTLstop(file->io_fstats->wr_timer_name);
+        GPTLstop(file->io_fstats->tot_timer_name);
         free(file);
         return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
                         "Creating file (%s) failed. Internal error", filename);
@@ -2595,6 +2630,8 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
     /* Broadcast mode to all tasks. */
     if ((mpierr = MPI_Bcast(&file->mode, 1, MPI_INT, ios->ioroot, ios->union_comm)))
     {
+        GPTLstop(file->io_fstats->wr_timer_name);
+        GPTLstop(file->io_fstats->tot_timer_name);
         return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
     }
 
@@ -2617,6 +2654,8 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
     LOG((2, "Created file %s file->fh = %d file->pio_ncid = %d", filename,
          file->fh, file->pio_ncid));
 
+    GPTLstop(file->io_fstats->wr_timer_name);
+    GPTLstop(file->io_fstats->tot_timer_name);
     return ierr;
 }
 
@@ -2765,9 +2804,26 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
                         "Opening file (%s) failed. Out of memory allocating %lld bytes for the file structure", filename, (unsigned long long) (sizeof(*file)));
     }
 
+    file->io_fstats = calloc(sizeof(spio_io_fstats_summary_t), 1);
+    if(!(file->io_fstats))
+    {
+        GPTLstop(ios->io_fstats->rd_timer_name);
+        GPTLstop(ios->io_fstats->tot_timer_name);
+        return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__,
+                        "Opening file (%s) failed. Out of memory allocating %lld bytes for caching file I/O statistics", filename, (unsigned long long) (sizeof(spio_io_fstats_summary_t)));
+    }
+
     /* Fill in some file values. */
     file->fh = -1;
     strncpy(file->fname, filename, PIO_MAX_NAME);
+    snprintf(file->io_fstats->wr_timer_name, PIO_MAX_NAME, "PIO:wr_%s", filename);
+    snprintf(file->io_fstats->rd_timer_name, PIO_MAX_NAME, "PIO:rd_%s", filename);
+    snprintf(file->io_fstats->tot_timer_name, PIO_MAX_NAME, "PIO:tot_%s", filename);
+
+    /* FIXME: Files can be opened for rds and writes */
+    GPTLstart(file->io_fstats->rd_timer_name);
+    GPTLstart(file->io_fstats->tot_timer_name);
+
     file->iotype = *iotype;
 #ifdef _ADIOS2
     if (file->iotype == PIO_IOTYPE_ADIOS)
@@ -2816,6 +2872,8 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
         {
             GPTLstop(ios->io_fstats->rd_timer_name);
             GPTLstop(ios->io_fstats->tot_timer_name);
+            GPTLstop(file->io_fstats->rd_timer_name);
+            GPTLstop(file->io_fstats->tot_timer_name);
             return pio_err(ios, file, ierr, __FILE__, __LINE__,
                             "Opening file (%s) failed. Sending asynchronous message, PIO_MSG_OPEN_FILE, failed on iosystem (iosysid=%d)", filename, ios->iosysid);
         }
@@ -2888,6 +2946,8 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
 
                 GPTLstop(ios->io_fstats->rd_timer_name);
                 GPTLstop(ios->io_fstats->tot_timer_name);
+                GPTLstop(file->io_fstats->rd_timer_name);
+                GPTLstop(file->io_fstats->tot_timer_name);
 
                 PIO_get_avail_iotypes(avail_iotypes, PIO_MAX_NAME);
                 return pio_err(ios, NULL, PIO_EBADIOTYPE, __FILE__, __LINE__,
@@ -2907,6 +2967,8 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
             if(mpierr != MPI_SUCCESS){
                 GPTLstop(ios->io_fstats->rd_timer_name);
                 GPTLstop(ios->io_fstats->tot_timer_name);
+                GPTLstop(file->io_fstats->rd_timer_name);
+                GPTLstop(file->io_fstats->tot_timer_name);
                 return check_mpi(NULL, file, ierr, __FILE__, __LINE__);
             }
             if ((ierr != NC_NOERR) && (file->iotype != PIO_IOTYPE_NETCDF))
@@ -2958,6 +3020,8 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
     if(ierr != PIO_NOERR){
         GPTLstop(ios->io_fstats->rd_timer_name);
         GPTLstop(ios->io_fstats->tot_timer_name);
+        GPTLstop(file->io_fstats->rd_timer_name);
+        GPTLstop(file->io_fstats->tot_timer_name);
         free(file);
         LOG((1, "PIOc_openfile_retry failed, ierr = %d", ierr));
         return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
@@ -2969,6 +3033,8 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
     {
         GPTLstop(ios->io_fstats->rd_timer_name);
         GPTLstop(ios->io_fstats->tot_timer_name);
+        GPTLstop(file->io_fstats->rd_timer_name);
+        GPTLstop(file->io_fstats->tot_timer_name);
         return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
     }
 
@@ -2994,6 +3060,8 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
         {
             GPTLstop(ios->io_fstats->rd_timer_name);
             GPTLstop(ios->io_fstats->tot_timer_name);
+            GPTLstop(file->io_fstats->rd_timer_name);
+            GPTLstop(file->io_fstats->tot_timer_name);
             return pio_err(ios, file, ierr, __FILE__, __LINE__,
                               "Opening file (%s) failed. Although the file was opened successfully, querying the number of unlimited dimensions in the file failed", filename);
         }
@@ -3004,6 +3072,8 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
             {
                 GPTLstop(ios->io_fstats->rd_timer_name);
                 GPTLstop(ios->io_fstats->tot_timer_name);
+                GPTLstop(file->io_fstats->rd_timer_name);
+                GPTLstop(file->io_fstats->tot_timer_name);
                 return pio_err(ios, file, PIO_ENOMEM, __FILE__, __LINE__,
                                 "Opening file (%s) failed. Out of memory allocating %lld bytes for caching the unlimited dimension ids", filename, (unsigned long long) (file->num_unlim_dimids * sizeof(int)));
             }
@@ -3012,6 +3082,8 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
             {
                 GPTLstop(ios->io_fstats->rd_timer_name);
                 GPTLstop(ios->io_fstats->tot_timer_name);
+                GPTLstop(file->io_fstats->rd_timer_name);
+                GPTLstop(file->io_fstats->tot_timer_name);
                 return pio_err(ios, file, ierr, __FILE__, __LINE__,
                                 "Opening file (%s) failed. Although the file was opened successfully, querying the unlimited dimensions in the file failed", filename);
             }
@@ -3021,6 +3093,8 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
 
     GPTLstop(ios->io_fstats->rd_timer_name);
     GPTLstop(ios->io_fstats->tot_timer_name);
+    GPTLstop(file->io_fstats->rd_timer_name);
+    GPTLstop(file->io_fstats->tot_timer_name);
     return ierr;
 }
 

@@ -388,7 +388,7 @@ static int sync_file(int ncid)
 int PIOc_closefile(int ncid)
 {
     iosystem_desc_t *ios;  /* Pointer to io system information. */
-    file_desc_t *file;     /* Pointer to file information. */
+    file_desc_t *file = NULL;     /* Pointer to file information. */
     int ierr = PIO_NOERR;  /* Return code from function calls. */
 #ifdef _ADIOS2
     char outfilename[PIO_MAX_NAME + 1];
@@ -403,6 +403,7 @@ int PIOc_closefile(int ncid)
         return pio_err(NULL, NULL, ierr, __FILE__, __LINE__,
                         "Closing file failed. Invalid file id (ncid=%d) provided", ncid);
     }
+    assert(file);
     ios = file->iosystem;
     assert(ios);
 
@@ -414,6 +415,8 @@ int PIOc_closefile(int ncid)
         GPTLstart("PIO:write_total");
         GPTLstart(ios->io_fstats->wr_timer_name);
         GPTLstart(ios->io_fstats->tot_timer_name);
+        GPTLstart(file->io_fstats->wr_timer_name);
+        GPTLstart(file->io_fstats->tot_timer_name);
 #endif
     }
     else
@@ -426,6 +429,8 @@ int PIOc_closefile(int ncid)
             GPTLstart("PIO:write_total");
             GPTLstart(ios->io_fstats->wr_timer_name);
             GPTLstart(ios->io_fstats->tot_timer_name);
+            GPTLstart(file->io_fstats->wr_timer_name);
+            GPTLstart(file->io_fstats->tot_timer_name);
         }
     }
 
@@ -454,6 +459,8 @@ int PIOc_closefile(int ncid)
                 GPTLstop("PIO:write_total");
                 GPTLstop(ios->io_fstats->wr_timer_name);
                 GPTLstop(ios->io_fstats->tot_timer_name);
+                GPTLstop(file->io_fstats->wr_timer_name);
+                GPTLstop(file->io_fstats->tot_timer_name);
 #endif
             }
             else
@@ -466,6 +473,8 @@ int PIOc_closefile(int ncid)
                     GPTLstop("PIO:write_total");
                     GPTLstop(ios->io_fstats->wr_timer_name);
                     GPTLstop(ios->io_fstats->tot_timer_name);
+                    GPTLstop(file->io_fstats->wr_timer_name);
+                    GPTLstop(file->io_fstats->tot_timer_name);
                 }
             }
             return pio_err(ios, file, ierr, __FILE__, __LINE__,
@@ -495,6 +504,8 @@ int PIOc_closefile(int ncid)
                         GPTLstop("PIO:write_total");
                         GPTLstop(ios->io_fstats->wr_timer_name);
                         GPTLstop(ios->io_fstats->tot_timer_name);
+                        GPTLstop(file->io_fstats->wr_timer_name);
+                        GPTLstop(file->io_fstats->tot_timer_name);
 #endif
                     }
                     else
@@ -507,6 +518,8 @@ int PIOc_closefile(int ncid)
                             GPTLstop("PIO:write_total");
                             GPTLstop(ios->io_fstats->wr_timer_name);
                             GPTLstop(ios->io_fstats->tot_timer_name);
+                            GPTLstop(file->io_fstats->wr_timer_name);
+                            GPTLstop(file->io_fstats->tot_timer_name);
                         }
                     }
                     return pio_err(ios, file, PIO_EADIOS2ERR, __FILE__, __LINE__, "Defining (ADIOS) attribute (name=/__pio__/fillmode) failed for file (%s, ncid=%d)", pio_get_fname_from_file(file), file->pio_ncid);
@@ -524,6 +537,8 @@ int PIOc_closefile(int ncid)
                     GPTLstop("PIO:write_total");
                     GPTLstop(ios->io_fstats->wr_timer_name);
                     GPTLstop(ios->io_fstats->tot_timer_name);
+                    GPTLstop(file->io_fstats->wr_timer_name);
+                    GPTLstop(file->io_fstats->tot_timer_name);
 #endif
                 }
                 else
@@ -535,6 +550,8 @@ int PIOc_closefile(int ncid)
                         GPTLstop("PIO:write_total");
                         GPTLstop(ios->io_fstats->wr_timer_name);
                         GPTLstop(ios->io_fstats->tot_timer_name);
+                        GPTLstop(file->io_fstats->wr_timer_name);
+                        GPTLstop(file->io_fstats->tot_timer_name);
                       }
                   }
                 return pio_err(ios, file, PIO_EADIOS2ERR, __FILE__, __LINE__, "Closing (ADIOS) file (%s, ncid=%d) failed (adios2_error=%s)", pio_get_fname_from_file(file), file->pio_ncid, adios2_error_to_string(adiosErr));
@@ -614,6 +631,8 @@ int PIOc_closefile(int ncid)
                     GPTLstop("PIO:write_total");
                     GPTLstop(ios->io_fstats->wr_timer_name);
                     GPTLstop(ios->io_fstats->tot_timer_name);
+                    GPTLstop(file->io_fstats->wr_timer_name);
+                    GPTLstop(file->io_fstats->tot_timer_name);
                 }
             }
             return pio_err(ios, file, ierr, __FILE__, __LINE__,
@@ -631,6 +650,8 @@ int PIOc_closefile(int ncid)
             GPTLstop("PIO:write_total");
             GPTLstop(ios->io_fstats->wr_timer_name);
             GPTLstop(ios->io_fstats->tot_timer_name);
+            GPTLstop(file->io_fstats->wr_timer_name);
+            GPTLstop(file->io_fstats->tot_timer_name);
 #endif
         }
         else
@@ -643,8 +664,12 @@ int PIOc_closefile(int ncid)
                 GPTLstop("PIO:write_total");
                 GPTLstop(ios->io_fstats->wr_timer_name);
                 GPTLstop(ios->io_fstats->tot_timer_name);
+                GPTLstop(file->io_fstats->wr_timer_name);
+                GPTLstop(file->io_fstats->tot_timer_name);
             }
         }
+
+        spio_write_file_io_summary(file);
 
         /* Delete file from our list of open files. */
         pio_delete_file_from_list(ncid);
@@ -688,6 +713,8 @@ int PIOc_closefile(int ncid)
                 GPTLstop("PIO:write_total");
                 GPTLstop(ios->io_fstats->wr_timer_name);
                 GPTLstop(ios->io_fstats->tot_timer_name);
+                GPTLstop(file->io_fstats->wr_timer_name);
+                GPTLstop(file->io_fstats->tot_timer_name);
             }
             return pio_err(ios, file, PIO_EBADIOTYPE, __FILE__, __LINE__,
                             "Closing file (%s, ncid=%d) failed. Unsupported iotype (%d) specified", pio_get_fname_from_file(file), file->pio_ncid, file->iotype);
@@ -704,6 +731,8 @@ int PIOc_closefile(int ncid)
             GPTLstop("PIO:write_total");
             GPTLstop(ios->io_fstats->wr_timer_name);
             GPTLstop(ios->io_fstats->tot_timer_name);
+            GPTLstop(file->io_fstats->wr_timer_name);
+            GPTLstop(file->io_fstats->tot_timer_name);
         }
         return pio_err(NULL, file, ierr, __FILE__, __LINE__,
                         "Closing file (%s, ncid=%d) failed. Underlying I/O library (iotype=%s) call failed", pio_get_fname_from_file(file), file->pio_ncid, pio_iotype_to_string(file->iotype));
@@ -715,7 +744,11 @@ int PIOc_closefile(int ncid)
         GPTLstop("PIO:write_total");
         GPTLstop(ios->io_fstats->wr_timer_name);
         GPTLstop(ios->io_fstats->tot_timer_name);
+        GPTLstop(file->io_fstats->wr_timer_name);
+        GPTLstop(file->io_fstats->tot_timer_name);
     }
+
+    spio_write_file_io_summary(file);
 
     /* Delete file from our list of open files. */
     pio_delete_file_from_list(ncid);
@@ -824,6 +857,10 @@ int PIOc_sync(int ncid)
         return pio_err(NULL, NULL, ierr, __FILE__, __LINE__,
                         "Syncing file (ncid=%d) failed. Invalid file id. Unable to find internal structure associated with the file id", ncid);
     }
+    assert(file);
+
+    GPTLstart(file->io_fstats->wr_timer_name);
+    GPTLstart(file->io_fstats->tot_timer_name);
 
     ios = file->iosystem;
     assert(ios);
@@ -837,6 +874,8 @@ int PIOc_sync(int ncid)
     GPTLstop("PIO:write_total");
     GPTLstop(ios->io_fstats->wr_timer_name);
     GPTLstop(ios->io_fstats->tot_timer_name);
+    GPTLstop(file->io_fstats->wr_timer_name);
+    GPTLstop(file->io_fstats->tot_timer_name);
 
     return ierr;
 }

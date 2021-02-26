@@ -379,3 +379,81 @@ int spio_write_io_summary(iosystem_desc_t *ios)
   return PIO_NOERR;
 }
 
+/* Write File I/O performance summary */
+int spio_write_file_io_summary(file_desc_t *file)
+{
+  int ierr = 0;
+  const std::vector<std::string> wr_timers = {
+    file->io_fstats->wr_timer_name
+  };
+
+  /* FIXME: We need better timers to distinguish between
+   * read/write modes while opening a file
+   */
+  const std::vector<std::string> rd_timers = {
+    file->io_fstats->rd_timer_name
+  };
+
+#ifndef TIMING
+  return PIO_NOERR;
+#endif
+
+  assert(file);
+
+  const int THREAD_ID = 0;
+  double total_wr_time = 0, total_rd_time = 0;
+  for(std::vector<std::string>::const_iterator citer = wr_timers.cbegin();
+        citer != wr_timers.cend(); ++citer){
+    double wtime = 0;
+    ierr = GPTLget_wallclock((*citer).c_str(), THREAD_ID, &wtime);
+    if(ierr == 0){
+      total_wr_time += wtime;
+    }
+    else{
+      LOG((1,"Unable to get timer value for timer (%s)", (*citer).c_str()));
+    }
+  }
+
+  for(std::vector<std::string>::const_iterator citer = rd_timers.cbegin();
+        citer != rd_timers.cend(); ++citer){
+    double wtime = 0;
+    ierr = GPTLget_wallclock((*citer).c_str(), THREAD_ID, &wtime);
+    if(ierr == 0){
+      total_rd_time += wtime;
+    }
+    else{
+      LOG((1, "Unable to get timer value for timer (%s)", (*citer).c_str()));
+    }
+  }
+
+  LOG((1, "Total read time = %f s, write time = %f s", total_rd_time, total_wr_time));
+  LOG((1, "Total bytes read = %lld, bytes written = %lld",
+        (unsigned long long) file->io_fstats->rb, (unsigned long long) file->io_fstats->wb));
+
+  PIO_Util::IO_Summary_Util::IO_summary_stats_t io_sstats;
+  PIO_Util::IO_Summary_Util::IO_summary_stats2mpi io_sstats2mpi;
+
+  io_sstats.rb_total = file->io_fstats->rb;
+  io_sstats.rb_min = io_sstats.rb_total;
+  io_sstats.rb_max = io_sstats.rb_total;
+  io_sstats.wb_total = file->io_fstats->wb;
+  io_sstats.wb_min = io_sstats.wb_total;
+  io_sstats.wb_max = io_sstats.wb_total;
+
+  io_sstats.rtime_min = total_rd_time;
+  io_sstats.rtime_max = total_rd_time;
+  io_sstats.wtime_min = total_wr_time;
+  io_sstats.wtime_max = total_wr_time;
+
+  LOG((1, "File I/O stats sent :\n%s",
+        PIO_Util::IO_Summary_Util::io_summary_stats2str(io_sstats).c_str()));
+
+  /*
+  if(file->iosystem->union_rank == 0){
+    std::cout << "File I/O stats : \n" <<
+        PIO_Util::IO_Summary_Util::io_summary_stats2str(io_sstats).c_str();
+  }
+  */
+
+  return PIO_NOERR;
+}

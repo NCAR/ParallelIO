@@ -232,6 +232,7 @@ int write_darray_multi_par(file_desc_t *file, int nvars, int fndims, const int *
 #ifdef TIMING
             assert(ios && (ios->io_fstats));
             ios->io_fstats->wb += (PIO_Offset ) (iodesc->mpitype_size * tot_count * nvars);
+            file->io_fstats->wb += (PIO_Offset ) (iodesc->mpitype_size * tot_count * nvars);
 #endif /* TIMING */
 
             /* IO tasks will run the netCDF/pnetcdf functions to write the data. */
@@ -734,6 +735,7 @@ int recv_and_write_data(file_desc_t *file, const int *varids, const int *frame,
 #ifdef TIMING
                 assert(ios && (ios->io_fstats));
                 ios->io_fstats->wb += (PIO_Offset ) (iodesc->mpitype_size * tot_count * nvars);
+                file->io_fstats->wb += (PIO_Offset ) (iodesc->mpitype_size * tot_count * nvars);
 #endif /* TIMING */
 
                 /* Process each variable in the buffer. */
@@ -1080,6 +1082,7 @@ int pio_read_darray_nc(file_desc_t *file, int fndims, io_desc_t *iodesc, int vid
 #ifdef TIMING
             assert(ios && (ios->io_fstats));
             ios->io_fstats->rb += (PIO_Offset ) (iodesc->mpitype_size * tot_count);
+            file->io_fstats->rb += (PIO_Offset ) (iodesc->mpitype_size * tot_count);
 #endif /* TIMING */
 
             /* Do the read. */
@@ -1463,6 +1466,7 @@ int pio_read_darray_nc_serial(file_desc_t *file, int fndims, io_desc_t *iodesc, 
 #ifdef TIMING
                     assert(ios && (ios->io_fstats));
                     ios->io_fstats->rb += (PIO_Offset ) (iodesc->mpitype_size * regionsize);
+                    file->io_fstats->rb += (PIO_Offset ) (iodesc->mpitype_size * regionsize);
 #endif /* TIMING */
 
                     /* Read the data. */

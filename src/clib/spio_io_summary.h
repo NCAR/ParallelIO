@@ -17,4 +17,5 @@ typedef struct spio_io_fstats_summary{
 } spio_io_fstats_summary_t;
 
 int spio_write_io_summary(iosystem_desc_t *ios);
+int spio_write_file_io_summary(file_desc_t *file);
 #endif /* __SPIO_IO_SUMMARY_H__ */

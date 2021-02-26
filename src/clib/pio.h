@@ -737,6 +737,7 @@ typedef struct iosystem_desc_t
     adios2_adios *adiosH;
 #endif
 
+    /** I/O statistics associated with this I/O system */
     struct spio_io_fstats_summary *io_fstats;
 
     /** Pointer to the next iosystem_desc_t in the list. */
@@ -941,6 +942,9 @@ typedef struct file_desc_t
 
     /** Data buffer per IO decomposition for this file. */
     void *iobuf[PIO_IODESC_MAX_IDS];
+
+    /** I/O statistics associated with this file */
+    struct spio_io_fstats_summary *io_fstats;
 
     /** Pointer to the next file_desc_t in the list of open files. */
     struct file_desc_t *next;

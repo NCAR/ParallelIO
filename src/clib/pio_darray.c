@@ -1289,6 +1289,9 @@ int PIOc_write_darray(int ncid, int varid, int ioid, PIO_Offset arraylen, void *
         return pio_err(NULL, NULL, PIO_EBADID, __FILE__, __LINE__,
                         "Writing variable (varid=%d) failed on file. Invalid file id (ncid=%d) provided", varid, ncid);
     }
+    assert(file);
+    GPTLstart(file->io_fstats->wr_timer_name);
+    GPTLstart(file->io_fstats->tot_timer_name);
     ios = file->iosystem;
     assert(ios);
 
@@ -1314,6 +1317,8 @@ int PIOc_write_darray(int ncid, int varid, int ioid, PIO_Offset arraylen, void *
         GPTLstop("PIO:write_total");
         GPTLstop(ios->io_fstats->wr_timer_name);
         GPTLstop(ios->io_fstats->tot_timer_name);
+        GPTLstop(file->io_fstats->wr_timer_name);
+        GPTLstop(file->io_fstats->tot_timer_name);
         if (file->iotype == PIO_IOTYPE_ADIOS)
         {
             GPTLstop("PIO:PIOc_write_darray_adios");
@@ -1330,6 +1335,8 @@ int PIOc_write_darray(int ncid, int varid, int ioid, PIO_Offset arraylen, void *
         GPTLstop("PIO:write_total");
         GPTLstop(ios->io_fstats->wr_timer_name);
         GPTLstop(ios->io_fstats->tot_timer_name);
+        GPTLstop(file->io_fstats->wr_timer_name);
+        GPTLstop(file->io_fstats->tot_timer_name);
         if (file->iotype == PIO_IOTYPE_ADIOS)
         {
             GPTLstop("PIO:PIOc_write_darray_adios");
@@ -1349,6 +1356,8 @@ int PIOc_write_darray(int ncid, int varid, int ioid, PIO_Offset arraylen, void *
         GPTLstop("PIO:write_total");
         GPTLstop(ios->io_fstats->wr_timer_name);
         GPTLstop(ios->io_fstats->tot_timer_name);
+        GPTLstop(file->io_fstats->wr_timer_name);
+        GPTLstop(file->io_fstats->tot_timer_name);
         if (file->iotype == PIO_IOTYPE_ADIOS)
         {
             GPTLstop("PIO:PIOc_write_darray_adios");
@@ -1379,6 +1388,8 @@ int PIOc_write_darray(int ncid, int varid, int ioid, PIO_Offset arraylen, void *
             GPTLstop("PIO:write_total");
             GPTLstop(ios->io_fstats->wr_timer_name);
             GPTLstop(ios->io_fstats->tot_timer_name);
+            GPTLstop(file->io_fstats->wr_timer_name);
+            GPTLstop(file->io_fstats->tot_timer_name);
             if (file->iotype == PIO_IOTYPE_ADIOS)
             {
                 GPTLstop("PIO:PIOc_write_darray_adios");
@@ -1404,6 +1415,8 @@ int PIOc_write_darray(int ncid, int varid, int ioid, PIO_Offset arraylen, void *
             GPTLstop("PIO:write_total");
             GPTLstop(ios->io_fstats->wr_timer_name);
             GPTLstop(ios->io_fstats->tot_timer_name);
+            GPTLstop(file->io_fstats->wr_timer_name);
+            GPTLstop(file->io_fstats->tot_timer_name);
             if (file->iotype == PIO_IOTYPE_ADIOS)
             {
                 GPTLstop("PIO:PIOc_write_darray_adios");
@@ -1435,6 +1448,8 @@ int PIOc_write_darray(int ncid, int varid, int ioid, PIO_Offset arraylen, void *
         GPTLstop("PIO:write_total");
         GPTLstop(ios->io_fstats->wr_timer_name);
         GPTLstop(ios->io_fstats->tot_timer_name);
+        GPTLstop(file->io_fstats->wr_timer_name);
+        GPTLstop(file->io_fstats->tot_timer_name);
         return ierr;
     }
 #endif
@@ -1450,6 +1465,8 @@ int PIOc_write_darray(int ncid, int varid, int ioid, PIO_Offset arraylen, void *
             GPTLstop("PIO:write_total");
             GPTLstop(ios->io_fstats->wr_timer_name);
             GPTLstop(ios->io_fstats->tot_timer_name);
+            GPTLstop(file->io_fstats->wr_timer_name);
+            GPTLstop(file->io_fstats->tot_timer_name);
             return pio_err(ios, file, PIO_ENOMEM, __FILE__, __LINE__,
                             "Writing variable (%s, varid=%d) to file (%s, ncid=%d) failed. Out of memory allocating %lld bytes for a write multi buffer to cache user data", pio_get_fname_from_file(file), varid, pio_get_fname_from_file(file), file->pio_ncid, (unsigned long long) sizeof(wmulti_buffer));
         }
@@ -1504,6 +1521,8 @@ int PIOc_write_darray(int ncid, int varid, int ioid, PIO_Offset arraylen, void *
         GPTLstop("PIO:write_total");
         GPTLstop(ios->io_fstats->wr_timer_name);
         GPTLstop(ios->io_fstats->tot_timer_name);
+        GPTLstop(file->io_fstats->wr_timer_name);
+        GPTLstop(file->io_fstats->tot_timer_name);
         return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
     }
     LOG((2, "needsflush = %d", needsflush));
@@ -1541,6 +1560,8 @@ int PIOc_write_darray(int ncid, int varid, int ioid, PIO_Offset arraylen, void *
             GPTLstop("PIO:write_total");
             GPTLstop(ios->io_fstats->wr_timer_name);
             GPTLstop(ios->io_fstats->tot_timer_name);
+            GPTLstop(file->io_fstats->wr_timer_name);
+            GPTLstop(file->io_fstats->tot_timer_name);
             return pio_err(ios, file, ierr, __FILE__, __LINE__,
                             "Writing variable (%s, varid=%d) to file (%s, ncid=%d) failed. Flushing data (multiple cached variables with the same decomposition) from compute processes to I/O processes %s failed", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), file->pio_ncid, (needsflush == 2) ? "and to disk" : "");
         }
@@ -1570,6 +1591,8 @@ int PIOc_write_darray(int ncid, int varid, int ioid, PIO_Offset arraylen, void *
             GPTLstop("PIO:write_total");
             GPTLstop(ios->io_fstats->wr_timer_name);
             GPTLstop(ios->io_fstats->tot_timer_name);
+            GPTLstop(file->io_fstats->wr_timer_name);
+            GPTLstop(file->io_fstats->tot_timer_name);
             return pio_err(ios, file, PIO_ENOMEM, __FILE__, __LINE__,
                             "Writing variable (%s, varid=%d) to file (%s, ncid=%d) failed. Out of memory allocating space (realloc %lld bytes) to cache user data", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), file->pio_ncid, (long long int )((1 + wmb->num_arrays) * arraylen * iodesc->mpitype_size));
         }
@@ -1584,6 +1607,8 @@ int PIOc_write_darray(int ncid, int varid, int ioid, PIO_Offset arraylen, void *
         GPTLstop("PIO:write_total");
         GPTLstop(ios->io_fstats->wr_timer_name);
         GPTLstop(ios->io_fstats->tot_timer_name);
+        GPTLstop(file->io_fstats->wr_timer_name);
+        GPTLstop(file->io_fstats->tot_timer_name);
         return pio_err(ios, file, PIO_ENOMEM, __FILE__, __LINE__,
                         "Writing variable (%s, varid=%d) to file (%s, ncid=%d) failed. Out of memory allocating space (realloc %lld bytes) for array of variable ids in write multi buffer to cache user data", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), file->pio_ncid, (unsigned long long)(sizeof(int) * (1 + wmb->num_arrays)));
     }
@@ -1598,6 +1623,8 @@ int PIOc_write_darray(int ncid, int varid, int ioid, PIO_Offset arraylen, void *
             GPTLstop("PIO:write_total");
             GPTLstop(ios->io_fstats->wr_timer_name);
             GPTLstop(ios->io_fstats->tot_timer_name);
+            GPTLstop(file->io_fstats->wr_timer_name);
+            GPTLstop(file->io_fstats->tot_timer_name);
             return pio_err(ios, file, PIO_ENOMEM, __FILE__, __LINE__,
                             "Writing variable (%s, varid=%d) to file (%s, ncid=%d) failed. Out of memory allocating space (realloc %lld bytes) for array of frame numbers in write multi buffer to cache user data", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), file->pio_ncid, (unsigned long long)(sizeof(int) * (1 + wmb->num_arrays)));
         }
@@ -1614,6 +1641,8 @@ int PIOc_write_darray(int ncid, int varid, int ioid, PIO_Offset arraylen, void *
             GPTLstop("PIO:write_total");
             GPTLstop(ios->io_fstats->wr_timer_name);
             GPTLstop(ios->io_fstats->tot_timer_name);
+            GPTLstop(file->io_fstats->wr_timer_name);
+            GPTLstop(file->io_fstats->tot_timer_name);
             return pio_err(ios, file, PIO_ENOMEM, __FILE__, __LINE__,
                             "Writing variable (%s, varid=%d) to file (%s, ncid=%d) failed. Out of memory allocating space (realloc %lld bytes) for variable fillvalues in write multi buffer to cache user data", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), file->pio_ncid, (unsigned long long)(iodesc->mpitype_size * (1 + wmb->num_arrays)));
         }
@@ -1679,6 +1708,8 @@ int PIOc_write_darray(int ncid, int varid, int ioid, PIO_Offset arraylen, void *
                 GPTLstop("PIO:write_total");
                 GPTLstop(ios->io_fstats->wr_timer_name);
                 GPTLstop(ios->io_fstats->tot_timer_name);
+                GPTLstop(file->io_fstats->wr_timer_name);
+                GPTLstop(file->io_fstats->tot_timer_name);
                 return pio_err(ios, file, PIO_EBADTYPE, __FILE__, __LINE__,
                                 "Writing variable (%s, varid=%d) to file (%s, ncid=%d) failed. Unable to find a default fillvalue for variable, unsupported variable type", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), file->pio_ncid);
             }
@@ -1725,6 +1756,8 @@ int PIOc_write_darray(int ncid, int varid, int ioid, PIO_Offset arraylen, void *
     GPTLstop("PIO:write_total");
     GPTLstop(ios->io_fstats->wr_timer_name);
     GPTLstop(ios->io_fstats->tot_timer_name);
+    GPTLstop(file->io_fstats->wr_timer_name);
+    GPTLstop(file->io_fstats->tot_timer_name);
     return PIO_NOERR;
 }
 
@@ -1764,6 +1797,9 @@ int PIOc_read_darray(int ncid, int varid, int ioid, PIO_Offset arraylen,
         return pio_err(NULL, NULL, PIO_EBADID, __FILE__, __LINE__,
                         "Reading variable (varid=%d) failed. Invalid arguments provided, file id (ncid=%d) is invalid", varid, ncid);
     }
+    assert(file);
+    GPTLstart(file->io_fstats->rd_timer_name);
+    GPTLstart(file->io_fstats->tot_timer_name);
     ios = file->iosystem;
     assert(ios);
 
@@ -1778,6 +1814,8 @@ int PIOc_read_darray(int ncid, int varid, int ioid, PIO_Offset arraylen,
         GPTLstop("PIO:PIOc_read_darray");
         GPTLstop(ios->io_fstats->rd_timer_name);
         GPTLstop(ios->io_fstats->tot_timer_name);
+        GPTLstop(file->io_fstats->rd_timer_name);
+        GPTLstop(file->io_fstats->tot_timer_name);
         return pio_err(ios, file, PIO_EBADID, __FILE__, __LINE__,
                         "Reading variable (%s, varid=%d) from file (%s, ncid=%d)failed. Invalid arguments provided, I/O descriptor id (ioid=%d) is invalid", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), file->pio_ncid, ioid);
     }
@@ -1794,6 +1832,8 @@ int PIOc_read_darray(int ncid, int varid, int ioid, PIO_Offset arraylen,
         GPTLstop("PIO:PIOc_read_darray");
         GPTLstop(ios->io_fstats->rd_timer_name);
         GPTLstop(ios->io_fstats->tot_timer_name);
+        GPTLstop(file->io_fstats->rd_timer_name);
+        GPTLstop(file->io_fstats->tot_timer_name);
         return pio_err(ios, file, PIO_EADIOSREAD, __FILE__, __LINE__,
                         "Reading variable (%s, varid=%d) from file (%s, ncid=%d)failed . ADIOS currently does not support reading variables", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), file->pio_ncid);
     }
@@ -1810,6 +1850,8 @@ int PIOc_read_darray(int ncid, int varid, int ioid, PIO_Offset arraylen,
             GPTLstop("PIO:PIOc_read_darray");
             GPTLstop(ios->io_fstats->rd_timer_name);
             GPTLstop(ios->io_fstats->tot_timer_name);
+            GPTLstop(file->io_fstats->rd_timer_name);
+            GPTLstop(file->io_fstats->tot_timer_name);
             return pio_err(ios, file, ierr, __FILE__, __LINE__,
                             "Reading variable (%s, varid=%d) from file (%s, ncid=%d) failed . Inquiring number of variable dimensions failed", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), file->pio_ncid);
         }
@@ -1847,6 +1889,8 @@ int PIOc_read_darray(int ncid, int varid, int ioid, PIO_Offset arraylen,
             GPTLstop("PIO:PIOc_read_darray");
             GPTLstop(ios->io_fstats->rd_timer_name);
             GPTLstop(ios->io_fstats->tot_timer_name);
+            GPTLstop(file->io_fstats->rd_timer_name);
+            GPTLstop(file->io_fstats->tot_timer_name);
             return pio_err(ios, file, PIO_ENOMEM, __FILE__, __LINE__,
                             "Reading variable (%s, varid=%d) from file (%s, ncid=%d) failed . Out of memory allocating space (%lld bytes) in I/O processes to read data from file (before rearrangement)", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), file->pio_ncid, (long long int) (iodesc->mpitype_size * rlen));
         }
@@ -1862,6 +1906,8 @@ int PIOc_read_darray(int ncid, int varid, int ioid, PIO_Offset arraylen,
             GPTLstop("PIO:PIOc_read_darray");
             GPTLstop(ios->io_fstats->rd_timer_name);
             GPTLstop(ios->io_fstats->tot_timer_name);
+            GPTLstop(file->io_fstats->rd_timer_name);
+            GPTLstop(file->io_fstats->tot_timer_name);
             return pio_err(ios, file, ierr, __FILE__, __LINE__,
                             "Reading variable (%s, varid=%d) from file (%s, ncid=%d) failed . Sending async message, PIO_MSG_READDARRAY, failed", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), file->pio_ncid);
         }
@@ -1873,6 +1919,8 @@ int PIOc_read_darray(int ncid, int varid, int ioid, PIO_Offset arraylen,
             GPTLstop("PIO:PIOc_read_darray");
             GPTLstop(ios->io_fstats->rd_timer_name);
             GPTLstop(ios->io_fstats->tot_timer_name);
+            GPTLstop(file->io_fstats->rd_timer_name);
+            GPTLstop(file->io_fstats->tot_timer_name);
             return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
         }
         LOG((3, "shared fndims = %d", fndims));
@@ -1889,6 +1937,8 @@ int PIOc_read_darray(int ncid, int varid, int ioid, PIO_Offset arraylen,
             GPTLstop("PIO:PIOc_read_darray");
             GPTLstop(ios->io_fstats->rd_timer_name);
             GPTLstop(ios->io_fstats->tot_timer_name);
+            GPTLstop(file->io_fstats->rd_timer_name);
+            GPTLstop(file->io_fstats->tot_timer_name);
             return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
                             "Reading variable (%s, varid=%d) from file (%s, ncid=%d) failed . Saving the I/O decomposition (ioid=%d) failed, unable to create a unique file name for saving the decomposition", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), file->pio_ncid, ioid);
         }
@@ -1909,6 +1959,8 @@ int PIOc_read_darray(int ncid, int varid, int ioid, PIO_Offset arraylen,
                 GPTLstop("PIO:PIOc_read_darray");
                 GPTLstop(ios->io_fstats->rd_timer_name);
                 GPTLstop(ios->io_fstats->tot_timer_name);
+                GPTLstop(file->io_fstats->rd_timer_name);
+                GPTLstop(file->io_fstats->tot_timer_name);
                 return pio_err(ios, file, ierr, __FILE__, __LINE__,
                                 "Reading variable (%s, varid=%d) from file (%s, ncid=%d) failed . Reading variable in serial (iotype=%s) failed", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), file->pio_ncid, pio_iotype_to_string(file->iotype));
             }
@@ -1920,6 +1972,8 @@ int PIOc_read_darray(int ncid, int varid, int ioid, PIO_Offset arraylen,
                 GPTLstop("PIO:PIOc_read_darray");
                 GPTLstop(ios->io_fstats->rd_timer_name);
                 GPTLstop(ios->io_fstats->tot_timer_name);
+                GPTLstop(file->io_fstats->rd_timer_name);
+                GPTLstop(file->io_fstats->tot_timer_name);
                 return pio_err(ios, file, ierr, __FILE__, __LINE__,
                                 "Reading variable (%s, varid=%d) from file (%s, ncid=%d) failed . Reading variable in parallel (iotype=%s) failed", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), file->pio_ncid, pio_iotype_to_string(file->iotype));
             }
@@ -1928,6 +1982,8 @@ int PIOc_read_darray(int ncid, int varid, int ioid, PIO_Offset arraylen,
             GPTLstop("PIO:PIOc_read_darray");
             GPTLstop(ios->io_fstats->rd_timer_name);
             GPTLstop(ios->io_fstats->tot_timer_name);
+            GPTLstop(file->io_fstats->rd_timer_name);
+            GPTLstop(file->io_fstats->tot_timer_name);
             return pio_err(NULL, NULL, PIO_EBADIOTYPE, __FILE__, __LINE__,
                              "Reading variable (%s, varid=%d) from file (%s, ncid=%d) failed . Invalid iotype (%d) provided", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), file->pio_ncid, file->iotype);
         }
@@ -1942,6 +1998,8 @@ int PIOc_read_darray(int ncid, int varid, int ioid, PIO_Offset arraylen,
         GPTLstop("PIO:PIOc_read_darray");
         GPTLstop(ios->io_fstats->rd_timer_name);
         GPTLstop(ios->io_fstats->tot_timer_name);
+        GPTLstop(file->io_fstats->rd_timer_name);
+        GPTLstop(file->io_fstats->tot_timer_name);
         return pio_err(ios, file, ierr, __FILE__, __LINE__,
                          "Reading variable (%s, varid=%d) from file (%s, ncid=%d) failed . Rearranging data read in the I/O processes to compute processes failed", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), file->pio_ncid);
     }
@@ -1963,5 +2021,7 @@ int PIOc_read_darray(int ncid, int varid, int ioid, PIO_Offset arraylen,
     GPTLstop("PIO:PIOc_read_darray");
     GPTLstop(ios->io_fstats->rd_timer_name);
     GPTLstop(ios->io_fstats->tot_timer_name);
+    GPTLstop(file->io_fstats->rd_timer_name);
+    GPTLstop(file->io_fstats->tot_timer_name);
     return PIO_NOERR;
 }
