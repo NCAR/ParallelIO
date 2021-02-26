@@ -302,10 +302,15 @@ static int cache_or_print_stats(iosystem_desc_t *ios, int root_proc,
     std::unique_ptr<PIO_Util::SPIO_serializer> spio_ser =
       PIO_Util::Serializer_Utils::create_serializer(PIO_Util::Serializer_type::TEXT_SERIALIZER,
         "io_perf_summary.txt");
+    std::unique_ptr<PIO_Util::SPIO_serializer> spio_json_ser =
+      PIO_Util::Serializer_Utils::create_serializer(PIO_Util::Serializer_type::JSON_SERIALIZER,
+        "io_perf_summary.json");
     std::vector<std::pair<std::string, std::string> > vals;
     int id = spio_ser->serialize("ScorpioIOSummaryStatistics", vals);
+    int json_id = spio_json_ser->serialize("ScorpioIOSummaryStatistics", vals);
+
     std::vector<std::vector<std::pair<std::string, std::string> > > comp_vvals;
-    std::vector<int> comp_vvals_ids;
+    std::vector<int> comp_vvals_ids, json_comp_vvals_ids;
 
     for(std::size_t i = 0; i < cached_ios_gio_sstats.size(); i++){
       std::vector<std::pair<std::string, std::string> > comp_vals;
@@ -344,9 +349,10 @@ static int cache_or_print_stats(iosystem_desc_t *ios, int root_proc,
       comp_vvals.push_back(comp_vals);
     }
     spio_ser->serialize(id, "ModelComponentIOStatistics", comp_vvals, comp_vvals_ids);
+    spio_json_ser->serialize(json_id, "ModelComponentIOStatistics", comp_vvals, json_comp_vvals_ids);
 
     std::vector<std::vector<std::pair<std::string, std::string> > > file_vvals;
-    std::vector<int> file_vvals_ids;
+    std::vector<int> file_vvals_ids, json_file_vvals_ids;
     assert(cached_file_gio_sstats.size() == cached_ios_gio_sstats.size());
     for(std::size_t i = 0; i < cached_file_gio_sstats.size(); i++){
       for(std::size_t j = 0; j < cached_file_gio_sstats[i].size(); j++){
@@ -388,7 +394,9 @@ static int cache_or_print_stats(iosystem_desc_t *ios, int root_proc,
       }
     }
     spio_ser->serialize(id, "FileIOStatistics", file_vvals, file_vvals_ids);
+    spio_json_ser->serialize(json_id, "FileIOStatistics", file_vvals, json_file_vvals_ids);
     spio_ser->sync();
+    spio_json_ser->sync();
   }
 
   return PIO_NOERR;

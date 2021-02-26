@@ -10,7 +10,6 @@ class SPIO_tree_visitor{
     virtual void enter_node(T &val, int val_id) {};
     virtual void enter_node(T &val, int val_id, T &parent_val, int parent_id) {};
     /* Called all times, except the first time, a traveral is on a tree node */
-    virtual void on_node(T &val, int val_id) {};
     virtual void on_node(T &val, int val_id, T &parent_val, int parent_id) {};
     /* Called when we exit the node */
     virtual void exit_node(T &val, int val_id) {};
@@ -92,6 +91,14 @@ void SPIO_tree<T>::dfs(SPIO_tree::Node &node, SPIO_tree_visitor<T> &vis)
   for(std::vector<int>::const_iterator cid_iter = node.children.cbegin();
       cid_iter != node.children.cend(); ++cid_iter){
     dfs(nodes_[*cid_iter], vis);
+    /* Note that after traversing the last child we exit the node, we need to call
+     * exit_node() on the visitor
+     */
+    if(node.id != root_id_){
+      if(cid_iter + 1 != node.children.cend()){
+        vis.on_node(node.val, node.id, nodes_[node.parent_id].val, nodes_[node.parent_id].id);
+      }
+    }
   }
   if(node.id != root_id_){
     vis.exit_node(node.val, node.id, nodes_[node.parent_id].val, nodes_[node.parent_id].id);
