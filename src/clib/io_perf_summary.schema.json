@@ -1,0 +1,72 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/E3SM-Project/scorpio/tree/master/src/clib/io_perf_summary.schema.json",
+  "title": "I/O Performance summary",
+  "description": "Scorpio I/O performance statistics",
+
+  "definitions": {
+    "io_stats": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "description": "The name of the Model/Component/File",
+          "type": "string"
+        },
+        "avg_wtput": {
+          "description": "The average write throughput (MB/s)",
+          "type": "number",
+          "minimum": 0
+        },
+        "avg_rtput": {
+          "description": "The average read throughput (MB/s)",
+          "type": "number",
+          "minimum": 0
+        },
+        "tot_wb": {
+          "description": "Total data written to the file system (bytes)",
+          "type": "integer",
+          "minimum": 0
+        },
+        "tot_rb": {
+          "description": "Total data read from the file system (bytes)",
+          "type": "integer",
+          "minimum": 0
+        },
+        "tot_wtime": {
+          "description": "Total elapsed wallclock time (seconds)",
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+
+      "required": ["name", "avg_wtput", "avg_rtput", "tot_wb", "tot_rb", "tot_wtime"]
+    }
+  },
+
+  "type": "object",
+  "properties": {
+    "ScorpioIOSummaryStatistics" : {
+      "type": "object",
+      "properties": {
+        "OverallModelIOStatistics": {
+          "$ref": "#/definitions/io_stats"
+        },
+        "ModelComponentIOStatistics": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/io_stats"
+          }
+        },
+        "FileIOStatistics": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/io_stats"
+          }
+        }
+      },
+      "required": ["OverallModelIOStatistics", "ModelComponentIOStatistics", "FileIOStatistics"] 
+    }
+  },
+  "required": ["ScorpioIOSummaryStatistics"]
+}
+

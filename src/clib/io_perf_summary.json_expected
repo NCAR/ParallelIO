@@ -1,0 +1,48 @@
+{
+  "ScorpioIOSummaryStatistics" : {
+    "OverallModelIOStatistics" : {
+      "name" : "E3SM",
+      "avg_wtput" : 2.5,
+      "avg_rtput" : 1.5,
+      "tot_wb" : 1024,
+      "tot_rb" : 1024,
+      "tot_wtime" : 234
+    },
+    "ModelComponentIOStatistics" : [
+      {
+        "name" : "EAM",
+        "avg_wtput" : 2.5,
+        "avg_rtput" : 1.5,
+        "tot_wb" : 1024,
+        "tot_rb" : 1024,
+        "tot_wtime" : 234
+      },
+      {
+        "name" : "LND",
+        "avg_wtput" : 2.5,
+        "avg_rtput" : 1.5,
+        "tot_wb" : 1024,
+        "tot_rb" : 1024,
+        "tot_wtime" : 234
+      }
+    ],
+    "FileIOStatistics" : [
+      {
+        "name" : "file1.nc",
+        "avg_wtput" : 2.5,
+        "avg_rtput" : 1.5,
+        "tot_wb" : 1024,
+        "tot_rb" : 1024,
+        "tot_wtime" : 234
+      },
+      {
+        "name" : "file2.nc",
+        "avg_wtput" : 2.5,
+        "avg_rtput" : 1.5,
+        "tot_wb" : 1024,
+        "tot_rb" : 1024,
+        "tot_wtime" : 234
+      }
+    ]
+  }
+}
