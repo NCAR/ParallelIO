@@ -314,6 +314,7 @@ static int cache_or_print_stats(iosystem_desc_t *ios, int root_proc,
 
     for(std::size_t i = 0; i < cached_ios_gio_sstats.size(); i++){
       std::vector<std::pair<std::string, std::string> > comp_vals;
+      /*
       LOG((1, "I/O stats recv (component = %s):\n%s",
             cached_ios_names[i].c_str(),
             PIO_Util::IO_Summary_Util::io_summary_stats2str(cached_ios_gio_sstats[i]).c_str()));
@@ -326,6 +327,7 @@ static int cache_or_print_stats(iosystem_desc_t *ios, int root_proc,
         << PIO_Util::IO_Summary_Util::bytes2hr((cached_ios_gio_sstats[i].rtime_max > 0.0) ?
             (cached_ios_gio_sstats[i].rb_total / cached_ios_gio_sstats[i].rtime_max) : 0)
         << "/s \n";
+      */
 
       const std::size_t ONE_MB = 1024 * 1024;
 
@@ -357,6 +359,7 @@ static int cache_or_print_stats(iosystem_desc_t *ios, int root_proc,
     for(std::size_t i = 0; i < cached_file_gio_sstats.size(); i++){
       for(std::size_t j = 0; j < cached_file_gio_sstats[i].size(); j++){
         std::vector<std::pair<std::string, std::string> > file_vals;
+        /*
         LOG((1, "I/O stats recv (component = %s, file = %s):\n%s",
               cached_ios_names[i].c_str(),
               cached_file_names[i][j].c_str(),
@@ -370,6 +373,7 @@ static int cache_or_print_stats(iosystem_desc_t *ios, int root_proc,
           << PIO_Util::IO_Summary_Util::bytes2hr((cached_file_gio_sstats[i][j].rtime_max > 0.0) ?
               (cached_file_gio_sstats[i][j].rb_total / cached_file_gio_sstats[i][j].rtime_max) : 0)
           << "/s \n";
+        */
 
         const std::size_t ONE_MB = 1024 * 1024;
 
@@ -449,9 +453,11 @@ int spio_write_io_summary(iosystem_desc_t *ios)
     }
   }
 
+  /*
   LOG((1, "Total read time = %f s, write time = %f s", total_rd_time, total_wr_time));
   LOG((1, "Total bytes read = %lld, bytes written = %lld",
         (unsigned long long) ios->io_fstats->rb, (unsigned long long) ios->io_fstats->wb));
+  */
 
   PIO_Util::IO_Summary_Util::IO_summary_stats_t io_sstats;
   PIO_Util::IO_Summary_Util::IO_summary_stats2mpi io_sstats2mpi;
@@ -468,18 +474,16 @@ int spio_write_io_summary(iosystem_desc_t *ios)
   io_sstats.wtime_min = total_wr_time;
   io_sstats.wtime_max = total_wr_time;
 
+  /*
   LOG((1, "I/O stats sent :\n%s",
         PIO_Util::IO_Summary_Util::io_summary_stats2str(io_sstats).c_str()));
+  */
 
   /* Get the I/O statistics of files belonging to this I/O system */
   std::vector<std::string> filenames;
   std::vector<PIO_Util::IO_Summary_Util::IO_summary_stats_t> tmp_sstats;
 
   get_file_stats(ios->iosysid, filenames, tmp_sstats);
-
-  if(ios->union_rank == 0){
-    std::cout << "DEBUG: Retrieved cached info of " << filenames.size() << " files\n";
-  }
 
   MPI_Op op;
   ierr = MPI_Op_create((MPI_User_function *)red_io_summary_stats, true, &op);

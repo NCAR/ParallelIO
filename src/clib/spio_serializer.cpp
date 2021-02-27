@@ -104,7 +104,6 @@ int PIO_Util::Json_serializer::serialize(const std::string &name,
   Json_serializer_val sval = {Json_agg_type::OBJECT, name, vals};
   int val_id = dom_tree_.add(sval);
 
-  std::cout << "JSON Serializer : (root) : " << name.c_str() << ", id = " << val_id << "\n";
   id2spaces_[val_id] = START_ID_SPACES + INC_SPACES;
 
   return val_id;
@@ -117,8 +116,6 @@ int PIO_Util::Json_serializer::serialize(int parent_id,
   Json_serializer_val sval = {Json_agg_type::OBJECT, name, vals};
   int val_id = dom_tree_.add(sval, parent_id);
 
-  std::cout << "JSON Serializer : " << name.c_str() << ", id = " << val_id
-            << ", parent id = " << parent_id << "\n";
   /* Number of spaces is INC_SPACES more than the parent tag */
   id2spaces_[val_id] = id2spaces_[parent_id] + INC_SPACES;
 
@@ -133,7 +130,6 @@ void PIO_Util::Json_serializer::serialize(const std::string &name,
   Json_serializer_val sval = {Json_agg_type::ARRAY, name, vals}; 
 
   int sval_id = dom_tree_.add(sval);
-  std::cout << "JSON Serializer : (root, ARRAY) : " << name.c_str() << ", id = " << sval_id << "\n";
   id2spaces_[sval_id] = START_ID_SPACES + INC_SPACES;
 
   for(std::vector<std::vector<std::pair<std::string, std::string> > >::const_iterator
@@ -155,8 +151,6 @@ void PIO_Util::Json_serializer::serialize(int parent_id, const std::string &name
   Json_serializer_val sval = {Json_agg_type::ARRAY, name, vals}; 
 
   int sval_id = dom_tree_.add(sval, parent_id);
-  std::cout << "JSON Serializer : (ARRAY) : " << name.c_str() << ", id = " << sval_id
-            << ", parent id = " << parent_id << "\n";
   id2spaces_[sval_id] = id2spaces_[parent_id] + INC_SPACES;
 
   for(std::vector<std::vector<std::pair<std::string, std::string> > >::const_iterator
@@ -219,7 +213,6 @@ void PIO_Util::Json_serializer::Json_serializer_visitor::enter_node(
       citer != val.vals.cend(); ++citer){
     sdata_ += val_spaces + (*citer).first + SPACE + ID_SEP + SPACE + (*citer).second + NEWLINE;
   }
-  std::cout << "enter_node : " << val.name.c_str() << ": sdata = " << sdata_.c_str() << "\n";
 }
 
 void PIO_Util::Json_serializer::Json_serializer_visitor::enter_node(
@@ -236,7 +229,6 @@ void PIO_Util::Json_serializer::Json_serializer_visitor::on_node(
   std::string id_spaces(id_nspaces, SPACE);
 
   sdata_ += id_spaces + AGG_SEP + NEWLINE;
-  std::cout << "on_node : " << val.name.c_str() << ": sdata = " << sdata_.c_str() << "\n";
 }
 
 void PIO_Util::Json_serializer::Json_serializer_visitor::on_node(
