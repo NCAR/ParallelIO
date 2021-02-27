@@ -190,9 +190,14 @@ std::string PIO_Util::Json_serializer::get_serialized_data(void )
 }
 
 /* Text serializer visitor functions */
+
+void PIO_Util::Json_serializer::Json_serializer_visitor::begin(void)
+{
+  sdata_ += std::string(1, OBJECT_START) + std::string(1, NEWLINE);
+}
+
 void PIO_Util::Json_serializer::Json_serializer_visitor::enter_node(
-  Json_serializer_val &val, int val_id,
-  Json_serializer_val &parent_val, int parent_id)
+  Json_serializer_val &val, int val_id)
 {
   int id_nspaces = id2spaces_[val_id];
   std::string id_spaces(id_nspaces, SPACE);
@@ -217,9 +222,15 @@ void PIO_Util::Json_serializer::Json_serializer_visitor::enter_node(
   std::cout << "enter_node : " << val.name.c_str() << ": sdata = " << sdata_.c_str() << "\n";
 }
 
-void PIO_Util::Json_serializer::Json_serializer_visitor::on_node(
+void PIO_Util::Json_serializer::Json_serializer_visitor::enter_node(
   Json_serializer_val &val, int val_id,
   Json_serializer_val &parent_val, int parent_id)
+{
+  enter_node(val, val_id);
+}
+
+void PIO_Util::Json_serializer::Json_serializer_visitor::on_node(
+  Json_serializer_val &val, int val_id)
 {
   int id_nspaces = id2spaces_[val_id] + inc_spaces_;
   std::string id_spaces(id_nspaces, SPACE);
@@ -228,9 +239,15 @@ void PIO_Util::Json_serializer::Json_serializer_visitor::on_node(
   std::cout << "on_node : " << val.name.c_str() << ": sdata = " << sdata_.c_str() << "\n";
 }
 
-void PIO_Util::Json_serializer::Json_serializer_visitor::exit_node(
+void PIO_Util::Json_serializer::Json_serializer_visitor::on_node(
   Json_serializer_val &val, int val_id,
   Json_serializer_val &parent_val, int parent_id)
+{
+  on_node(val, val_id);
+}
+
+void PIO_Util::Json_serializer::Json_serializer_visitor::exit_node(
+  Json_serializer_val &val, int val_id)
 {
   int id_nspaces = id2spaces_[val_id] + inc_spaces_;
   std::string id_spaces(id_nspaces, SPACE);
@@ -243,6 +260,18 @@ void PIO_Util::Json_serializer::Json_serializer_visitor::exit_node(
                                       ARRAY_END : OBJECT_END;
     sdata_ += id_spaces + JSON_AGG_TYPE_END + NEWLINE;
   }
+}
+
+void PIO_Util::Json_serializer::Json_serializer_visitor::exit_node(
+  Json_serializer_val &val, int val_id,
+  Json_serializer_val &parent_val, int parent_id)
+{
+  exit_node(val, val_id);
+}
+
+void PIO_Util::Json_serializer::Json_serializer_visitor::end(void)
+{
+  sdata_ += std::string(1, OBJECT_END) + std::string(1, NEWLINE);
 }
 
 /* Misc Serializer utils */

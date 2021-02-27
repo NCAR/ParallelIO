@@ -6,14 +6,19 @@ namespace PIO_Util{
 template<typename T>
 class SPIO_tree_visitor{
   public:
+    /* Called once before the first node is traversed */
+    virtual void begin(void ) {};
     /* Called the first time a traversal enters a tree node */
     virtual void enter_node(T &val, int val_id) {};
     virtual void enter_node(T &val, int val_id, T &parent_val, int parent_id) {};
     /* Called all times, except the first time, a traveral is on a tree node */
+    virtual void on_node(T &val, int val_id) {};
     virtual void on_node(T &val, int val_id, T &parent_val, int parent_id) {};
     /* Called when we exit the node */
     virtual void exit_node(T &val, int val_id) {};
     virtual void exit_node(T &val, int val_id, T &parent_val, int parent_id) {};
+    /* Called once after all the nodes are traversed */
+    virtual void end(void ) {};
     virtual ~SPIO_tree_visitor() {};
 };
 
@@ -79,14 +84,21 @@ void SPIO_tree<T>::dfs(SPIO_tree_visitor<T> &vis)
     return;
   }
 
+  vis.begin();
   dfs(nodes_[0], vis);
+  vis.end();
 }
 
 template<typename T>
 void SPIO_tree<T>::dfs(SPIO_tree::Node &node, SPIO_tree_visitor<T> &vis)
 {
   if(node.id != root_id_){
-    vis.enter_node(node.val, node.id, nodes_[node.parent_id].val, nodes_[node.parent_id].id);
+    if(node.parent_id != root_id_){
+      vis.enter_node(node.val, node.id, nodes_[node.parent_id].val, nodes_[node.parent_id].id);
+    }
+    else{
+      vis.enter_node(node.val, node.id);
+    }
   }
   for(std::vector<int>::const_iterator cid_iter = node.children.cbegin();
       cid_iter != node.children.cend(); ++cid_iter){
@@ -96,12 +108,22 @@ void SPIO_tree<T>::dfs(SPIO_tree::Node &node, SPIO_tree_visitor<T> &vis)
      */
     if(node.id != root_id_){
       if(cid_iter + 1 != node.children.cend()){
-        vis.on_node(node.val, node.id, nodes_[node.parent_id].val, nodes_[node.parent_id].id);
+        if(node.parent_id != root_id_){
+          vis.on_node(node.val, node.id, nodes_[node.parent_id].val, nodes_[node.parent_id].id);
+        }
+        else{
+          vis.on_node(node.val, node.id);
+        }
       }
     }
   }
   if(node.id != root_id_){
-    vis.exit_node(node.val, node.id, nodes_[node.parent_id].val, nodes_[node.parent_id].id);
+    if(node.parent_id != root_id_){
+      vis.exit_node(node.val, node.id, nodes_[node.parent_id].val, nodes_[node.parent_id].id);
+    }
+    else{
+      vis.exit_node(node.val, node.id);
+    }
   }
 }
 

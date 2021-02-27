@@ -117,12 +117,17 @@ class Json_serializer : public SPIO_serializer{
       public:
         Json_serializer_visitor(const std::map<int, int> &id2spaces,
           int inc_spaces) : id2spaces_(id2spaces), inc_spaces_(inc_spaces) {};
+        void begin(void ) override;
+        void enter_node(Json_serializer_val &val, int val_id) override;
         void enter_node(Json_serializer_val &val, int val_id,
                         Json_serializer_val &parent_val, int parent_id) override;
+        void on_node(Json_serializer_val &val, int val_id) override;
         void on_node(Json_serializer_val &val, int val_id,
               Json_serializer_val &parent_val, int parent_id) override;
+        void exit_node(Json_serializer_val &val, int val_id) override;
         void exit_node(Json_serializer_val &val, int val_id,
                         Json_serializer_val &parent_val, int parent_id) override;
+        void end(void ) override;
         std::string get_serialized_data(void ) { return sdata_; };
       private:
         const char SPACE = ' ';
