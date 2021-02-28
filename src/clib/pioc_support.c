@@ -2622,6 +2622,7 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
 #endif
         GPTLstop(file->io_fstats->wr_timer_name);
         GPTLstop(file->io_fstats->tot_timer_name);
+        free(file->io_fstats);
         free(file);
         return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
                         "Creating file (%s) failed. Internal error", filename);
@@ -2940,7 +2941,6 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
 #endif
 
         default:
-            free(file);
             {
                 char avail_iotypes[PIO_MAX_NAME + 1];
 
@@ -2953,6 +2953,8 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
                 return pio_err(ios, NULL, PIO_EBADIOTYPE, __FILE__, __LINE__,
                                 "Opening file (%s) failed. Invalid iotype (%s:%d) specified. Available iotypes are : %s", filename, pio_iotype_to_string(file->iotype), file->iotype, avail_iotypes);
             }
+            free(file->io_fstats);
+            free(file);
         }
 
         /* If the caller requested a retry, and we failed to open a
@@ -3022,6 +3024,7 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
         GPTLstop(ios->io_fstats->tot_timer_name);
         GPTLstop(file->io_fstats->rd_timer_name);
         GPTLstop(file->io_fstats->tot_timer_name);
+        free(file->io_fstats);
         free(file);
         LOG((1, "PIOc_openfile_retry failed, ierr = %d", ierr));
         return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
