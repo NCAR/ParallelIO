@@ -281,6 +281,12 @@ int PIOc_put_att_tc(int ncid, int varid, const char *name, nc_type atttype,
 #ifdef _PNETCDF
         if (file->iotype == PIO_IOTYPE_PNETCDF)
         {
+            if(ios->io_rank == 0)
+            {
+                ios->io_fstats->wb += len * atttype_len;
+                file->io_fstats->wb += len * atttype_len;
+            }
+
             switch(memtype)
             {
             case NC_BYTE:
@@ -319,6 +325,12 @@ int PIOc_put_att_tc(int ncid, int varid, const char *name, nc_type atttype,
 
         if (file->iotype != PIO_IOTYPE_PNETCDF && file->iotype != PIO_IOTYPE_ADIOS && file->do_io)
         {
+            if(ios->io_rank == 0)
+            {
+                ios->io_fstats->wb += len * atttype_len;
+                file->io_fstats->wb += len * atttype_len;
+            }
+
             switch(memtype)
             {
 #ifdef _NETCDF
@@ -562,6 +574,9 @@ int PIOc_get_att_tc(int ncid, int varid, const char *name, nc_type memtype, void
         LOG((2, "PIOc_get_att_tc bcast complete attlen = %d atttype_len = %d memtype_len = %d", attlen, atttype_len,
              memtype_len));
     }
+
+    ios->io_fstats->rb += attlen * atttype_len;
+    file->io_fstats->rb += attlen * atttype_len;
 
     /* If this is an IO task, then call the netCDF function. */
     if (ios->ioproc)
@@ -1094,6 +1109,9 @@ int PIOc_get_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
         return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
     }
     LOG((2, "PIOc_get_vars_tc bcasting data complete"));
+
+    ios->io_fstats->rb += num_elem * typelen;
+    file->io_fstats->rb += num_elem * typelen;
 
     GPTLstop("PIO:PIOc_get_vars_tc");
     GPTLstop(ios->io_fstats->rd_timer_name);
@@ -1968,6 +1986,10 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                             printf("PIO: WARNING: Ignoring user-specified strides while writing the scalar variable (%s, varid=%d) to file (%s, ncid=%d). An invalid stride (stride[0] = %lld) provided (%s:%d)\n", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid, (long long int)stride[0], __FILE__, __LINE__);
                         }
                     }
+
+                    ios->io_fstats->wb += num_elem * typelen;
+                    file->io_fstats->wb += num_elem * typelen;
+
                     switch(xtype)
                     {
                     case NC_BYTE:
@@ -2045,6 +2067,8 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                 /* Only the IO master actually does the call. */
                 if (ios->iomaster == MPI_ROOT)
                 {
+                    ios->io_fstats->wb += num_elem * typelen;
+                    file->io_fstats->wb += num_elem * typelen;
                     switch(xtype)
                     {
                     case NC_BYTE:
@@ -2105,6 +2129,8 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
         {
             LOG((2, "PIOc_put_vars_tc calling netcdf function file->iotype = %d",
                  file->iotype));
+            ios->io_fstats->wb += num_elem * typelen;
+            file->io_fstats->wb += num_elem * typelen;
             switch(xtype)
             {
 #ifdef _NETCDF
