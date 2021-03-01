@@ -854,6 +854,8 @@ int PIOc_sync(int ncid)
     /* Get the file info from the ncid. */
     if ((ierr = pio_get_file(ncid, &file)))
     {
+        GPTLstop("PIO:PIOc_sync");
+        GPTLstop("PIO:write_total");
         return pio_err(NULL, NULL, ierr, __FILE__, __LINE__,
                         "Syncing file (ncid=%d) failed. Invalid file id. Unable to find internal structure associated with the file id", ncid);
     }
