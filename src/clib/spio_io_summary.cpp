@@ -4,9 +4,11 @@
 #include <vector>
 #include <array>
 #include <map>
-#include <cassert>
 #include <stdexcept>
 #include <algorithm>
+#include <cassert>
+#include <cstdlib>
+#include <ctime>
 
 extern "C"{
 #include "pio_config.h"
@@ -298,13 +300,17 @@ static int cache_or_print_stats(iosystem_desc_t *ios, int root_proc,
    * cached stats
    */
   if(niosys == 1){
+    std::srand(std::time(nullptr));
+    std::string sfname = std::string("io_perf_summary_") + std::to_string(std::rand());
+    const std::string sfname_txt_suffix(".txt");
+    const std::string sfname_json_suffix(".json");
     assert(cached_ios_gio_sstats.size() == cached_ios_names.size());
     std::unique_ptr<PIO_Util::SPIO_serializer> spio_ser =
       PIO_Util::Serializer_Utils::create_serializer(PIO_Util::Serializer_type::TEXT_SERIALIZER,
-        "io_perf_summary.txt");
+        sfname + sfname_txt_suffix);
     std::unique_ptr<PIO_Util::SPIO_serializer> spio_json_ser =
       PIO_Util::Serializer_Utils::create_serializer(PIO_Util::Serializer_type::JSON_SERIALIZER,
-        "io_perf_summary.json");
+        sfname + sfname_json_suffix);
     std::vector<std::pair<std::string, std::string> > vals;
     int id = spio_ser->serialize("ScorpioIOSummaryStatistics", vals);
     int json_id = spio_json_ser->serialize("ScorpioIOSummaryStatistics", vals);
