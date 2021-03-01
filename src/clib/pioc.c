@@ -1767,12 +1767,22 @@ int PIOc_init_async(MPI_Comm world, int num_io_procs, int *io_proc_list,
     /* Allocate struct to hold io system info for each computation component. */
     iosystem_desc_t *iosys[component_count], *my_iosys;
     for (int cmp1 = 0; cmp1 < component_count; cmp1++)
+    {
         if (!(iosys[cmp1] = (iosystem_desc_t *)calloc(1, sizeof(iosystem_desc_t))))
         {
             GPTLstop("PIO:PIOc_init_async");
             return pio_err(NULL, NULL, PIO_ENOMEM, __FILE__, __LINE__,
                             "PIO Init (async) failed. Out of memory");
         }
+#ifdef TIMING
+        iosys[cmp1]->io_fstats = calloc(1, sizeof(spio_io_fstats_summary_t));
+        if(!(iosys[cmp1]->io_fstats))
+        {
+            return pio_err(NULL, NULL, PIO_ENOMEM, __FILE__, __LINE__,
+                            "PIO init (async) failed. Out of memory allocating %lld bytes for storing I/O statistics in the I/O system descriptor for component %d", (unsigned long long) sizeof(spio_io_fstats_summary_t), cmp1);
+        }
+#endif
+  }
 
     /* Create group for world. */
     MPI_Group world_group;
@@ -2074,6 +2084,17 @@ int PIOc_init_async(MPI_Comm world, int num_io_procs, int *io_proc_list,
         /* Add this id to the list of PIO iosystem ids. */
         iosysidp[cmp] = pio_add_to_iosystem_list(my_iosys, MPI_COMM_NULL);
         LOG((2, "new iosys ID added to iosystem_list iosysid = %d", iosysidp[cmp]));
+
+        ret = pio_create_uniq_str(my_iosys, NULL, my_iosys->sname, PIO_MAX_NAME, "tmp_", "_comp");
+        if(ret != PIO_NOERR)
+        {
+            /* Not Fatal error */
+            LOG((0, "Creating a unique name for the iosystem (iosysid=%d) failed,ret = %d", my_iosys->iosysid, ret));
+        }
+        /* Set the timer names for this iosystem */
+        snprintf(my_iosys->io_fstats->wr_timer_name, PIO_MAX_NAME, "PIO:wr_%s", my_iosys->sname);
+        snprintf(my_iosys->io_fstats->rd_timer_name, PIO_MAX_NAME, "PIO:rd_%s", my_iosys->sname);
+        snprintf(my_iosys->io_fstats->tot_timer_name, PIO_MAX_NAME, "PIO:tot_%s", my_iosys->sname);
     } /* next computational component */
 
     /* Initialize async message signatures */
