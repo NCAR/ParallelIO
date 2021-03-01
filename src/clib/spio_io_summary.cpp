@@ -427,6 +427,11 @@ int spio_write_io_summary(iosystem_desc_t *ios)
 
   assert(ios);
 
+  /* For async I/O only collect statistics from the I/O processes */
+  if(ios->async && !(ios->ioproc)){
+    return PIO_NOERR;
+  }
+
   const int THREAD_ID = 0;
   double total_wr_time = 0, total_rd_time = 0;
   for(std::vector<std::string>::const_iterator citer = wr_timers.cbegin();
@@ -502,8 +507,9 @@ int spio_write_io_summary(iosystem_desc_t *ios)
   tmp_sstats.push_back(io_sstats);
 
   const int ROOT_PROC = 0;
+  MPI_Comm comm = (ios->async) ? (ios->io_comm) : (ios->union_comm);
   ierr = MPI_Reduce(tmp_sstats.data(), gio_sstats.data(), nelems_to_red, io_sstats2mpi.get_mpi_datatype(),
-                      op, ROOT_PROC, ios->union_comm);
+                      op, ROOT_PROC, comm);
   if(ierr != PIO_NOERR){
     LOG((1, "Reducing I/O memory statistics failed"));
     MPI_Op_free(&op);
