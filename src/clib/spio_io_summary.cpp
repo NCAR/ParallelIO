@@ -549,6 +549,7 @@ int spio_write_io_summary(iosystem_desc_t *ios)
   double total_wr_time = 0, total_rd_time = 0, total_tot_time = 0;
   for(std::vector<std::string>::const_iterator citer = wr_timers.cbegin();
         citer != wr_timers.cend(); ++citer){
+    /*
     double wtime = 0;
     ierr = GPTLget_wallclock((*citer).c_str(), THREAD_ID, &wtime);
     if(ierr == 0){
@@ -557,10 +558,13 @@ int spio_write_io_summary(iosystem_desc_t *ios)
     else{
       LOG((1,"Unable to get timer value for timer (%s)", (*citer).c_str()));
     }
+    */
+    total_wr_time += spio_ltimer_get_wtime((*citer).c_str());
   }
 
   for(std::vector<std::string>::const_iterator citer = rd_timers.cbegin();
         citer != rd_timers.cend(); ++citer){
+    /*
     double wtime = 0;
     ierr = GPTLget_wallclock((*citer).c_str(), THREAD_ID, &wtime);
     if(ierr == 0){
@@ -569,10 +573,13 @@ int spio_write_io_summary(iosystem_desc_t *ios)
     else{
       LOG((1, "Unable to get timer value for timer (%s)", (*citer).c_str()));
     }
+    */
+    total_rd_time += spio_ltimer_get_wtime((*citer).c_str());
   }
 
   for(std::vector<std::string>::const_iterator citer = tot_timers.cbegin();
         citer != tot_timers.cend(); ++citer){
+    /*
     double wtime = 0;
     ierr = GPTLget_wallclock((*citer).c_str(), THREAD_ID, &wtime);
     if(ierr == 0){
@@ -581,6 +588,8 @@ int spio_write_io_summary(iosystem_desc_t *ios)
     else{
       LOG((1, "Unable to get timer value for timer (%s)", (*citer).c_str()));
     }
+    */
+    total_tot_time += spio_ltimer_get_wtime((*citer).c_str());
   }
 
   /*
@@ -698,6 +707,7 @@ int spio_write_file_io_summary(file_desc_t *file)
   double total_wr_time = 0, total_rd_time = 0,  total_tot_time = 0;
   for(std::vector<std::string>::const_iterator citer = wr_timers.cbegin();
         citer != wr_timers.cend(); ++citer){
+    /*
     double wtime = 0;
     ierr = GPTLget_wallclock((*citer).c_str(), THREAD_ID, &wtime);
     if(ierr == 0){
@@ -706,10 +716,13 @@ int spio_write_file_io_summary(file_desc_t *file)
     else{
       LOG((1,"Unable to get timer value for timer (%s)", (*citer).c_str()));
     }
+    */
+    total_wr_time += spio_ltimer_get_wtime((*citer).c_str());
   }
 
   for(std::vector<std::string>::const_iterator citer = rd_timers.cbegin();
         citer != rd_timers.cend(); ++citer){
+    /*
     double wtime = 0;
     ierr = GPTLget_wallclock((*citer).c_str(), THREAD_ID, &wtime);
     if(ierr == 0){
@@ -718,10 +731,13 @@ int spio_write_file_io_summary(file_desc_t *file)
     else{
       LOG((1, "Unable to get timer value for timer (%s)", (*citer).c_str()));
     }
+    */
+    total_rd_time += spio_ltimer_get_wtime((*citer).c_str());
   }
 
   for(std::vector<std::string>::const_iterator citer = tot_timers.cbegin();
         citer != tot_timers.cend(); ++citer){
+    /*
     double wtime = 0;
     ierr = GPTLget_wallclock((*citer).c_str(), THREAD_ID, &wtime);
     if(ierr == 0){
@@ -730,6 +746,8 @@ int spio_write_file_io_summary(file_desc_t *file)
     else{
       LOG((1,"Unable to get timer value for timer (%s)", (*citer).c_str()));
     }
+    */
+    total_tot_time += spio_ltimer_get_wtime((*citer).c_str());
   }
 
   LOG((1, "Total read time = %f s, write time = %f s, total time = %f s", total_rd_time, total_wr_time, total_tot_time));

@@ -965,12 +965,12 @@ int PIOc_freedecomp(int iosysid, int ioid)
                         "Freeing PIO decomposition failed. Invalid iosystem id (%d) provided", iosysid);
     }
     assert(ios);
-    GPTLstart(ios->io_fstats->tot_timer_name);
+    spio_ltimer_start(ios->io_fstats->tot_timer_name);
 
     if (!(iodesc = pio_get_iodesc_from_id(ioid)))
     {
         GPTLstop("PIO:PIOc_freedecomp");
-        GPTLstop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
         return pio_err(ios, NULL, PIO_EBADID, __FILE__, __LINE__,
                         "Freeing PIO decomposition failed. Invalid io decomposition id (%d) provided", ioid);
     }
@@ -984,7 +984,7 @@ int PIOc_freedecomp(int iosysid, int ioid)
         if(ret != PIO_NOERR)
         {
             GPTLstop("PIO:PIOc_freedecomp");
-            GPTLstop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
             return pio_err(ios, NULL, ret, __FILE__, __LINE__,
                             "Freeing PIO decomposition failed (iosysid = %d, iodesc id=%d). Error sending asynchronous message, PIO_MSG_FREEDECOMP, on iosystem", iosysid, ioid);
         }
@@ -1006,7 +1006,7 @@ int PIOc_freedecomp(int iosysid, int ioid)
                 if ((mpierr = MPI_Type_free(&iodesc->rtype[i])))
                 {
                     GPTLstop("PIO:PIOc_freedecomp");
-                    GPTLstop(ios->io_fstats->tot_timer_name);
+                    spio_ltimer_stop(ios->io_fstats->tot_timer_name);
                     return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
                 }
 
@@ -1020,7 +1020,7 @@ int PIOc_freedecomp(int iosysid, int ioid)
                 if ((mpierr = MPI_Type_free(iodesc->stype + i)))
                 {
                     GPTLstop("PIO:PIOc_freedecomp");
-                    GPTLstop(ios->io_fstats->tot_timer_name);
+                    spio_ltimer_stop(ios->io_fstats->tot_timer_name);
                     return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
                 }
 
@@ -1050,7 +1050,7 @@ int PIOc_freedecomp(int iosysid, int ioid)
         if ((mpierr = MPI_Comm_free(&iodesc->subset_comm)))
         {
             GPTLstop("PIO:PIOc_freedecomp");
-            GPTLstop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
             return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
         }
 
@@ -1058,12 +1058,12 @@ int PIOc_freedecomp(int iosysid, int ioid)
     if (ret != PIO_NOERR)
     {
         GPTLstop("PIO:PIOc_freedecomp");
-        GPTLstop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
         return pio_err(ios, NULL, ret, __FILE__, __LINE__,
                         "Freeing PIO decomposition failed (iosysid = %d, ioid=%d). Error while trying to delete I/O descriptor from internal list", iosysid, ioid); 
     }
     GPTLstop("PIO:PIOc_freedecomp");
-    GPTLstop(ios->io_fstats->tot_timer_name);
+    spio_ltimer_stop(ios->io_fstats->tot_timer_name);
 
     return ret;
 }
@@ -2269,8 +2269,8 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
     snprintf(file->io_fstats->rd_timer_name, GPTL_TIMER_MAX_NAME, "PIO:rd_%s", tname);
     snprintf(file->io_fstats->tot_timer_name, GPTL_TIMER_MAX_NAME, "PIO:tot_%s", tname);
 
-    GPTLstart(file->io_fstats->wr_timer_name);
-    GPTLstart(file->io_fstats->tot_timer_name);
+    spio_ltimer_start(file->io_fstats->wr_timer_name);
+    spio_ltimer_start(file->io_fstats->tot_timer_name);
 
     file->iosystem = ios;
     file->iotype = *iotype;
@@ -2314,8 +2314,8 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
         PIO_SEND_ASYNC_MSG(ios, msg, &ierr, len, filename, file->iotype, file->mode);
         if(ierr != PIO_NOERR)
         {
-            GPTLstop(file->io_fstats->wr_timer_name);
-            GPTLstop(file->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->wr_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
                             "Creating file (%s) failed. Error sending asynchronous message, PIO_MSG_CREATE_FILE, to create the file on iosystem (iosysid=%d)", filename, ios->iosysid);
         }
@@ -2332,8 +2332,8 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
         file->filename = malloc(len + 4);
         if (file->filename == NULL)
         {
-            GPTLstop(file->io_fstats->wr_timer_name);
-            GPTLstop(file->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->wr_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__,
                             "Creating file (%s) using ADIOS iotype failed. Out of memory allocating %lld bytes for the file name", filename, (unsigned long long) (len + 4));
         }
@@ -2364,8 +2364,8 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
              * directory while it is being deleted */
             if ((mpierr = MPI_Barrier(ios->union_comm)))
             {
-                GPTLstop(file->io_fstats->wr_timer_name);
-                GPTLstop(file->io_fstats->tot_timer_name);
+                spio_ltimer_stop(file->io_fstats->wr_timer_name);
+                spio_ltimer_stop(file->io_fstats->tot_timer_name);
                 return check_mpi(ios, file, mpierr, __FILE__, __LINE__);
             }
         }
@@ -2379,16 +2379,16 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
             file->ioH = adios2_declare_io(ios->adiosH, (const char*)(declare_name));
             if (file->ioH == NULL)
             {
-                GPTLstop(file->io_fstats->wr_timer_name);
-                GPTLstop(file->io_fstats->tot_timer_name);
+                spio_ltimer_stop(file->io_fstats->wr_timer_name);
+                spio_ltimer_stop(file->io_fstats->tot_timer_name);
                 return pio_err(ios, NULL, PIO_EADIOS2ERR, __FILE__, __LINE__, "Declaring (ADIOS) IO (name=%s) failed for file (%s)", declare_name, pio_get_fname_from_file(file));
             }
 
             adios2_error adiosErr = adios2_set_engine(file->ioH, "BP3");
             if (adiosErr != adios2_error_none)
             {
-                GPTLstop(file->io_fstats->wr_timer_name);
-                GPTLstop(file->io_fstats->tot_timer_name);
+                spio_ltimer_stop(file->io_fstats->wr_timer_name);
+                spio_ltimer_stop(file->io_fstats->tot_timer_name);
                 return pio_err(ios, NULL, PIO_EADIOS2ERR, __FILE__, __LINE__, "Setting (ADIOS) engine (type=BP3) failed (adios2_error=%s) for file (%s)", adios2_error_to_string(adiosErr), pio_get_fname_from_file(file));
             }
 
@@ -2408,24 +2408,24 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
             adiosErr = adios2_set_parameter(file->ioH, "substreams", file->params);
             if (adiosErr != adios2_error_none)
             {
-                GPTLstop(file->io_fstats->wr_timer_name);
-                GPTLstop(file->io_fstats->tot_timer_name);
+                spio_ltimer_stop(file->io_fstats->wr_timer_name);
+                spio_ltimer_stop(file->io_fstats->tot_timer_name);
                 return pio_err(ios, NULL, PIO_EADIOS2ERR, __FILE__, __LINE__, "Setting (ADIOS) parameter (substreams=%s) failed (adios2_error=%s) for file (%s)", file->params, adios2_error_to_string(adiosErr), pio_get_fname_from_file(file));
             }
 
             adiosErr = adios2_set_parameter(file->ioH, "CollectiveMetadata", "OFF");
             if (adiosErr != adios2_error_none)
             {
-                GPTLstop(file->io_fstats->wr_timer_name);
-                GPTLstop(file->io_fstats->tot_timer_name);
+                spio_ltimer_stop(file->io_fstats->wr_timer_name);
+                spio_ltimer_stop(file->io_fstats->tot_timer_name);
                 return pio_err(ios, NULL, PIO_EADIOS2ERR, __FILE__, __LINE__, "Setting (ADIOS) parameter (CollectiveMetadata=OFF) failed (adios2_error=%s) for file (%s)", adios2_error_to_string(adiosErr), pio_get_fname_from_file(file));
             }
 
             file->engineH = adios2_open(file->ioH, file->filename, adios2_mode_write);
             if (file->engineH == NULL)
             {
-                GPTLstop(file->io_fstats->wr_timer_name);
-                GPTLstop(file->io_fstats->tot_timer_name);
+                spio_ltimer_stop(file->io_fstats->wr_timer_name);
+                spio_ltimer_stop(file->io_fstats->tot_timer_name);
                 return pio_err(NULL, file, PIO_EADIOS2ERR, __FILE__, __LINE__, "Opening (ADIOS) file (%s) failed", pio_get_fname_from_file(file));
             }
 
@@ -2456,8 +2456,8 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
                                                        adios2_constant_dims_true);
                     if (variableH == NULL)
                     {
-                        GPTLstop(file->io_fstats->wr_timer_name);
-                        GPTLstop(file->io_fstats->tot_timer_name);
+                        spio_ltimer_stop(file->io_fstats->wr_timer_name);
+                        spio_ltimer_stop(file->io_fstats->tot_timer_name);
                         return pio_err(ios, NULL, PIO_EADIOS2ERR, __FILE__, __LINE__, "Defining (ADIOS) variable (name=/__pio__/info/nproc) failed for file (%s)", pio_get_fname_from_file(file));
                     }
                 }
@@ -2465,8 +2465,8 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
                 adios2_error adiosErr = adios2_put(file->engineH, variableH, &ios->num_uniontasks, adios2_mode_sync);
                 if (adiosErr != adios2_error_none)
                 {
-                    GPTLstop(file->io_fstats->wr_timer_name);
-                    GPTLstop(file->io_fstats->tot_timer_name);
+                    spio_ltimer_stop(file->io_fstats->wr_timer_name);
+                    spio_ltimer_stop(file->io_fstats->tot_timer_name);
                     return pio_err(ios, NULL, PIO_EADIOS2ERR, __FILE__, __LINE__, "Putting (ADIOS) variable (name=/__pio__/info/nproc) failed (adios2_error=%s) for file (%s)", adios2_error_to_string(adiosErr), pio_get_fname_from_file(file));
                 }
             }
@@ -2638,8 +2638,8 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
 #ifdef _ADIOS2
         free(file->filename);
 #endif
-        GPTLstop(file->io_fstats->wr_timer_name);
-        GPTLstop(file->io_fstats->tot_timer_name);
+        spio_ltimer_stop(file->io_fstats->wr_timer_name);
+        spio_ltimer_stop(file->io_fstats->tot_timer_name);
         free(file->io_fstats);
         free(file);
         return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
@@ -2649,8 +2649,8 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
     /* Broadcast mode to all tasks. */
     if ((mpierr = MPI_Bcast(&file->mode, 1, MPI_INT, ios->ioroot, ios->union_comm)))
     {
-        GPTLstop(file->io_fstats->wr_timer_name);
-        GPTLstop(file->io_fstats->tot_timer_name);
+        spio_ltimer_stop(file->io_fstats->wr_timer_name);
+        spio_ltimer_stop(file->io_fstats->tot_timer_name);
         return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
     }
 
@@ -2673,8 +2673,8 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
     LOG((2, "Created file %s file->fh = %d file->pio_ncid = %d", filename,
          file->fh, file->pio_ncid));
 
-    GPTLstop(file->io_fstats->wr_timer_name);
-    GPTLstop(file->io_fstats->tot_timer_name);
+    spio_ltimer_stop(file->io_fstats->wr_timer_name);
+    spio_ltimer_stop(file->io_fstats->tot_timer_name);
     return ierr;
 }
 
@@ -2809,8 +2809,8 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
                         "Opening file (%s) failed. Invalid iotype (%s:%d) specified. Available iotypes are : %s", filename, pio_iotype_to_string(*iotype), *iotype, avail_iotypes);
     }
 
-    GPTLstart(ios->io_fstats->rd_timer_name);
-    GPTLstart(ios->io_fstats->tot_timer_name);
+    spio_ltimer_start(ios->io_fstats->rd_timer_name);
+    spio_ltimer_start(ios->io_fstats->tot_timer_name);
 
     LOG((2, "PIOc_openfile_retry iosysid = %d iotype = %d filename = %s mode = %d retry = %d",
          iosysid, *iotype, filename, mode, retry));
@@ -2818,8 +2818,8 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
     /* Allocate space for the file info. */
     if (!(file = calloc(sizeof(*file), 1)))
     {
-        GPTLstop(ios->io_fstats->rd_timer_name);
-        GPTLstop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(ios->io_fstats->rd_timer_name);
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
         return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__,
                         "Opening file (%s) failed. Out of memory allocating %lld bytes for the file structure", filename, (unsigned long long) (sizeof(*file)));
     }
@@ -2827,8 +2827,8 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
     file->io_fstats = calloc(sizeof(spio_io_fstats_summary_t), 1);
     if(!(file->io_fstats))
     {
-        GPTLstop(ios->io_fstats->rd_timer_name);
-        GPTLstop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(ios->io_fstats->rd_timer_name);
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
         return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__,
                         "Opening file (%s) failed. Out of memory allocating %lld bytes for caching file I/O statistics", filename, (unsigned long long) (sizeof(spio_io_fstats_summary_t)));
     }
@@ -2849,8 +2849,8 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
     snprintf(file->io_fstats->tot_timer_name, GPTL_TIMER_MAX_NAME, "PIO:tot_%s", tname);
 
     /* FIXME: Files can be opened for rds and writes */
-    GPTLstart(file->io_fstats->rd_timer_name);
-    GPTLstart(file->io_fstats->tot_timer_name);
+    spio_ltimer_start(file->io_fstats->rd_timer_name);
+    spio_ltimer_start(file->io_fstats->tot_timer_name);
 
     file->iotype = *iotype;
 #ifdef _ADIOS2
@@ -2898,10 +2898,10 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
         PIO_SEND_ASYNC_MSG(ios, PIO_MSG_OPEN_FILE, &ierr, len, filename, file->iotype, file->mode);
         if(ierr != PIO_NOERR)
         {
-            GPTLstop(ios->io_fstats->rd_timer_name);
-            GPTLstop(ios->io_fstats->tot_timer_name);
-            GPTLstop(file->io_fstats->rd_timer_name);
-            GPTLstop(file->io_fstats->tot_timer_name);
+            spio_ltimer_stop(ios->io_fstats->rd_timer_name);
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->rd_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return pio_err(ios, file, ierr, __FILE__, __LINE__,
                             "Opening file (%s) failed. Sending asynchronous message, PIO_MSG_OPEN_FILE, failed on iosystem (iosysid=%d)", filename, ios->iosysid);
         }
@@ -2971,10 +2971,10 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
             {
                 char avail_iotypes[PIO_MAX_NAME + 1];
 
-                GPTLstop(ios->io_fstats->rd_timer_name);
-                GPTLstop(ios->io_fstats->tot_timer_name);
-                GPTLstop(file->io_fstats->rd_timer_name);
-                GPTLstop(file->io_fstats->tot_timer_name);
+                spio_ltimer_stop(ios->io_fstats->rd_timer_name);
+                spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+                spio_ltimer_stop(file->io_fstats->rd_timer_name);
+                spio_ltimer_stop(file->io_fstats->tot_timer_name);
 
                 PIO_get_avail_iotypes(avail_iotypes, PIO_MAX_NAME);
                 return pio_err(ios, NULL, PIO_EBADIOTYPE, __FILE__, __LINE__,
@@ -2994,10 +2994,10 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
             /* Bcast error code from io rank 0 to all io procs */
             mpierr = MPI_Bcast(&ierr, 1, MPI_INT, 0, ios->io_comm);
             if(mpierr != MPI_SUCCESS){
-                GPTLstop(ios->io_fstats->rd_timer_name);
-                GPTLstop(ios->io_fstats->tot_timer_name);
-                GPTLstop(file->io_fstats->rd_timer_name);
-                GPTLstop(file->io_fstats->tot_timer_name);
+                spio_ltimer_stop(ios->io_fstats->rd_timer_name);
+                spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+                spio_ltimer_stop(file->io_fstats->rd_timer_name);
+                spio_ltimer_stop(file->io_fstats->tot_timer_name);
                 return check_mpi(NULL, file, ierr, __FILE__, __LINE__);
             }
             if ((ierr != NC_NOERR) && (file->iotype != PIO_IOTYPE_NETCDF))
@@ -3047,10 +3047,10 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
     ierr = check_netcdf(ios, NULL, ierr, __FILE__, __LINE__);
     /* If there was an error, free allocated memory and deal with the error. */
     if(ierr != PIO_NOERR){
-        GPTLstop(ios->io_fstats->rd_timer_name);
-        GPTLstop(ios->io_fstats->tot_timer_name);
-        GPTLstop(file->io_fstats->rd_timer_name);
-        GPTLstop(file->io_fstats->tot_timer_name);
+        spio_ltimer_stop(ios->io_fstats->rd_timer_name);
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(file->io_fstats->rd_timer_name);
+        spio_ltimer_stop(file->io_fstats->tot_timer_name);
         free(file->io_fstats);
         free(file);
         LOG((1, "PIOc_openfile_retry failed, ierr = %d", ierr));
@@ -3061,10 +3061,10 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
     /* Broadcast open mode to all tasks. */
     if ((mpierr = MPI_Bcast(&file->mode, 1, MPI_INT, ios->ioroot, ios->my_comm)))
     {
-        GPTLstop(ios->io_fstats->rd_timer_name);
-        GPTLstop(ios->io_fstats->tot_timer_name);
-        GPTLstop(file->io_fstats->rd_timer_name);
-        GPTLstop(file->io_fstats->tot_timer_name);
+        spio_ltimer_stop(ios->io_fstats->rd_timer_name);
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(file->io_fstats->rd_timer_name);
+        spio_ltimer_stop(file->io_fstats->tot_timer_name);
         return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
     }
 
@@ -3085,10 +3085,10 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
     /* Check if the file has unlimited dimensions */
     if(!ios->async || !ios->ioproc)
     {
-        GPTLstop(ios->io_fstats->rd_timer_name);
-        GPTLstop(ios->io_fstats->tot_timer_name);
-        GPTLstop(file->io_fstats->rd_timer_name);
-        GPTLstop(file->io_fstats->tot_timer_name);
+        spio_ltimer_stop(ios->io_fstats->rd_timer_name);
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(file->io_fstats->rd_timer_name);
+        spio_ltimer_stop(file->io_fstats->tot_timer_name);
         ierr = PIOc_inq_unlimdims(*ncidp, &(file->num_unlim_dimids), NULL);
         if(ierr != PIO_NOERR)
         {
@@ -3110,17 +3110,17 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
                                 "Opening file (%s) failed. Although the file was opened successfully, querying the unlimited dimensions in the file failed", filename);
             }
         }
-        GPTLstart(ios->io_fstats->rd_timer_name);
-        GPTLstart(ios->io_fstats->tot_timer_name);
-        GPTLstart(file->io_fstats->rd_timer_name);
-        GPTLstart(file->io_fstats->tot_timer_name);
+        spio_ltimer_start(ios->io_fstats->rd_timer_name);
+        spio_ltimer_start(ios->io_fstats->tot_timer_name);
+        spio_ltimer_start(file->io_fstats->rd_timer_name);
+        spio_ltimer_start(file->io_fstats->tot_timer_name);
         LOG((3, "File has %d unlimited dimensions", file->num_unlim_dimids));
     }
 
-    GPTLstop(ios->io_fstats->rd_timer_name);
-    GPTLstop(ios->io_fstats->tot_timer_name);
-    GPTLstop(file->io_fstats->rd_timer_name);
-    GPTLstop(file->io_fstats->tot_timer_name);
+    spio_ltimer_stop(ios->io_fstats->rd_timer_name);
+    spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+    spio_ltimer_stop(file->io_fstats->rd_timer_name);
+    spio_ltimer_stop(file->io_fstats->tot_timer_name);
     return ierr;
 }
 
@@ -3240,8 +3240,8 @@ int pioc_change_def(int ncid, int is_enddef)
     assert(file);
     ios = file->iosystem;
     assert(ios);
-    GPTLstart(ios->io_fstats->tot_timer_name);
-    GPTLstart(file->io_fstats->tot_timer_name);
+    spio_ltimer_start(ios->io_fstats->tot_timer_name);
+    spio_ltimer_start(file->io_fstats->tot_timer_name);
 
     /* If async is in use, and this is not an IO task, bcast the parameters. */
     if (ios->async)
@@ -3252,8 +3252,8 @@ int pioc_change_def(int ncid, int is_enddef)
         if(ierr != PIO_NOERR)
         {
             LOG((1, "Error sending async msg for PIO_MSG_ENDDEF/PIO_MSG_REDEF"));
-            GPTLstop(ios->io_fstats->tot_timer_name);
-            GPTLstop(file->io_fstats->tot_timer_name);
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
                             "Changing the define mode for file (%s) failed. Error sending async msg, PIO_MSG_ENDDEF/PIO_MSG_REDEF, on iosystem (iosysid=%d)", pio_get_fname_from_file(file), ios->iosysid);
         }
@@ -3290,15 +3290,15 @@ int pioc_change_def(int ncid, int is_enddef)
 
     ierr = check_netcdf(NULL, file, ierr, __FILE__, __LINE__);
     if(ierr != PIO_NOERR){
-      GPTLstop(ios->io_fstats->tot_timer_name);
-      GPTLstop(file->io_fstats->tot_timer_name);
+      spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+      spio_ltimer_stop(file->io_fstats->tot_timer_name);
       return pio_err(ios, file, ierr, __FILE__, __LINE__,
                       "Changing the define mode for file (%s) failed. Low-level I/O library API failed", pio_get_fname_from_file(file));
     }
     LOG((3, "pioc_change_def succeeded"));
 
-    GPTLstop(ios->io_fstats->tot_timer_name);
-    GPTLstop(file->io_fstats->tot_timer_name);
+    spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+    spio_ltimer_stop(file->io_fstats->tot_timer_name);
     return ierr;
 }
 
@@ -3558,7 +3558,7 @@ int PIOc_set_rearr_opts(int iosysid, int comm_type, int fcd, bool enable_hs_c2i,
                         "Setting rearranger options failed. Invalid iosystem id (%d) provided", iosysid);
     }
     assert(ios);
-    GPTLstart(ios->io_fstats->tot_timer_name);
+    spio_ltimer_start(ios->io_fstats->tot_timer_name);
 
     /* Perform sanity checks on the user supplied values and reset 
      * values not set (or of no interest) by the user 
@@ -3566,14 +3566,14 @@ int PIOc_set_rearr_opts(int iosysid, int comm_type, int fcd, bool enable_hs_c2i,
     ret = check_and_reset_rearr_opts(&user_rearr_opts);
     if (ret != PIO_NOERR)
     {
-        GPTLstop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
         return ret;
     }
 
     /* Set the options. */
     ios->rearr_opts = user_rearr_opts;
 
-    GPTLstop(ios->io_fstats->tot_timer_name);
+    spio_ltimer_stop(ios->io_fstats->tot_timer_name);
     return ret;
 }
 

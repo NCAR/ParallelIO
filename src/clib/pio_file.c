@@ -155,16 +155,16 @@ int PIOc_createfile(int iosysid, int *ncidp, int *iotype, const char *filename,
                         "Unable to create file (%s, mode = %d, iotype=%s). Invalid arguments provided, invalid iosystem id (iosysid = %d)", (filename) ? filename : "NULL", mode, (!iotype) ? "UNKNOWN" : pio_iotype_to_string(*iotype), iosysid);
     }
 
-    GPTLstart(ios->io_fstats->wr_timer_name);
-    GPTLstart(ios->io_fstats->tot_timer_name);
+    spio_ltimer_start(ios->io_fstats->wr_timer_name);
+    spio_ltimer_start(ios->io_fstats->tot_timer_name);
 
     /* Create the file. */
     if ((ret = PIOc_createfile_int(iosysid, ncidp, iotype, filename, mode)))
     {
         GPTLstop("PIO:PIOc_createfile");
         GPTLstop("PIO:write_total");
-        GPTLstop(ios->io_fstats->wr_timer_name);
-        GPTLstop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(ios->io_fstats->wr_timer_name);
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
         if (*iotype == PIO_IOTYPE_ADIOS)
         {
             GPTLstop("PIO:PIOc_createfile_adios");
@@ -182,8 +182,8 @@ int PIOc_createfile(int iosysid, int *ncidp, int *iotype, const char *filename,
     if (!ios->async || !ios->ioproc)
     {
         /* Set the fill mode to NOFILL. */
-        GPTLstop(ios->io_fstats->wr_timer_name);
-        GPTLstop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(ios->io_fstats->wr_timer_name);
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
         if ((ret = PIOc_set_fill(*ncidp, NC_NOFILL, NULL)))
         {
             GPTLstop("PIO:PIOc_createfile");
@@ -196,14 +196,14 @@ int PIOc_createfile(int iosysid, int *ncidp, int *iotype, const char *filename,
             return pio_err(ios, NULL, ret, __FILE__, __LINE__,
                             "Unable to create file (%s, mode = %d, iotype=%s) on iosystem (iosystem id = %d). Setting fill mode to NOFILL failed.", (filename) ? filename : "NULL", mode, (!iotype) ? "UNKNOWN" : pio_iotype_to_string(*iotype), iosysid);
         }
-        GPTLstart(ios->io_fstats->wr_timer_name);
-        GPTLstart(ios->io_fstats->tot_timer_name);
+        spio_ltimer_start(ios->io_fstats->wr_timer_name);
+        spio_ltimer_start(ios->io_fstats->tot_timer_name);
     }
 
     GPTLstop("PIO:PIOc_createfile");
     GPTLstop("PIO:write_total");
-    GPTLstop(ios->io_fstats->wr_timer_name);
-    GPTLstop(ios->io_fstats->tot_timer_name);
+    spio_ltimer_stop(ios->io_fstats->wr_timer_name);
+    spio_ltimer_stop(ios->io_fstats->tot_timer_name);
     if (*iotype == PIO_IOTYPE_ADIOS)
     {
         GPTLstop("PIO:PIOc_createfile_adios");
@@ -280,10 +280,10 @@ static int sync_file(int ncid)
     assert(file);
     ios = file->iosystem;
     assert(ios);
-    GPTLstart(ios->io_fstats->wr_timer_name);
-    GPTLstart(ios->io_fstats->tot_timer_name);
-    GPTLstart(file->io_fstats->wr_timer_name);
-    GPTLstart(file->io_fstats->tot_timer_name);
+    spio_ltimer_start(ios->io_fstats->wr_timer_name);
+    spio_ltimer_start(ios->io_fstats->tot_timer_name);
+    spio_ltimer_start(file->io_fstats->wr_timer_name);
+    spio_ltimer_start(file->io_fstats->tot_timer_name);
 
 #ifdef _ADIOS2
     if (file->iotype == PIO_IOTYPE_ADIOS)
@@ -308,15 +308,15 @@ static int sync_file(int ncid)
                  * multibuffer, flush it to IO tasks. */
                 if (wmb->num_arrays > 0)
                 {
-                    GPTLstop(ios->io_fstats->wr_timer_name);
-                    GPTLstop(ios->io_fstats->tot_timer_name);
-                    GPTLstop(file->io_fstats->wr_timer_name);
-                    GPTLstop(file->io_fstats->tot_timer_name);
+                    spio_ltimer_stop(ios->io_fstats->wr_timer_name);
+                    spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+                    spio_ltimer_stop(file->io_fstats->wr_timer_name);
+                    spio_ltimer_stop(file->io_fstats->tot_timer_name);
                     flush_buffer(ncid, wmb, false);
-                    GPTLstart(ios->io_fstats->wr_timer_name);
-                    GPTLstart(ios->io_fstats->tot_timer_name);
-                    GPTLstart(file->io_fstats->wr_timer_name);
-                    GPTLstart(file->io_fstats->tot_timer_name);
+                    spio_ltimer_start(ios->io_fstats->wr_timer_name);
+                    spio_ltimer_start(ios->io_fstats->tot_timer_name);
+                    spio_ltimer_start(file->io_fstats->wr_timer_name);
+                    spio_ltimer_start(file->io_fstats->tot_timer_name);
                 }
                 twmb = wmb;
                 wmb = wmb->next;
@@ -341,10 +341,10 @@ static int sync_file(int ncid)
         PIO_SEND_ASYNC_MSG(ios, msg, &ierr, ncid);
         if (ierr != PIO_NOERR)
         {
-            GPTLstop(ios->io_fstats->wr_timer_name);
-            GPTLstop(ios->io_fstats->tot_timer_name);
-            GPTLstop(file->io_fstats->wr_timer_name);
-            GPTLstop(file->io_fstats->tot_timer_name);
+            spio_ltimer_stop(ios->io_fstats->wr_timer_name);
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->wr_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
                             "Syncing file %s (ncid=%d) failed. Unable to send asynchronous message, PIO_MSG_SYNC, on iosystem (iosysid=%d)", pio_get_fname_from_file(file), ncid, ios->iosysid);
         }
@@ -385,10 +385,10 @@ static int sync_file(int ncid)
                 break;
 #endif
             default:
-                GPTLstop(ios->io_fstats->wr_timer_name);
-                GPTLstop(ios->io_fstats->tot_timer_name);
-                GPTLstop(file->io_fstats->wr_timer_name);
-                GPTLstop(file->io_fstats->tot_timer_name);
+                spio_ltimer_stop(ios->io_fstats->wr_timer_name);
+                spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+                spio_ltimer_stop(file->io_fstats->wr_timer_name);
+                spio_ltimer_stop(file->io_fstats->tot_timer_name);
                 return pio_err(ios, file, PIO_EBADIOTYPE, __FILE__, __LINE__,
                                 "Syncing file %s (ncid=%d) failed. Invalid/Unsupported iotype (%s:%d) provided", pio_get_fname_from_file(file), ncid, pio_iotype_to_string(file->iotype), file->iotype);
             }
@@ -400,17 +400,17 @@ static int sync_file(int ncid)
     if (ierr != PIO_NOERR)
     {
         LOG((1, "nc*_sync failed, ierr = %d", ierr));
-        GPTLstop(ios->io_fstats->wr_timer_name);
-        GPTLstop(ios->io_fstats->tot_timer_name);
-        GPTLstop(file->io_fstats->wr_timer_name);
-        GPTLstop(file->io_fstats->tot_timer_name);
+        spio_ltimer_stop(ios->io_fstats->wr_timer_name);
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(file->io_fstats->wr_timer_name);
+        spio_ltimer_stop(file->io_fstats->tot_timer_name);
         return ierr;
     }
 
-    GPTLstop(ios->io_fstats->wr_timer_name);
-    GPTLstop(ios->io_fstats->tot_timer_name);
-    GPTLstop(file->io_fstats->wr_timer_name);
-    GPTLstop(file->io_fstats->tot_timer_name);
+    spio_ltimer_stop(ios->io_fstats->wr_timer_name);
+    spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+    spio_ltimer_stop(file->io_fstats->wr_timer_name);
+    spio_ltimer_stop(file->io_fstats->tot_timer_name);
     return PIO_NOERR;
 }
 
@@ -449,10 +449,10 @@ int PIOc_closefile(int ncid)
         GPTLstart("PIO:write_total_adios");
 #ifndef _ADIOS_BP2NC_TEST
         GPTLstart("PIO:write_total");
-        GPTLstart(ios->io_fstats->wr_timer_name);
-        GPTLstart(ios->io_fstats->tot_timer_name);
-        GPTLstart(file->io_fstats->wr_timer_name);
-        GPTLstart(file->io_fstats->tot_timer_name);
+        spio_ltimer_start(ios->io_fstats->wr_timer_name);
+        spio_ltimer_start(ios->io_fstats->tot_timer_name);
+        spio_ltimer_start(file->io_fstats->wr_timer_name);
+        spio_ltimer_start(file->io_fstats->tot_timer_name);
 #endif
     }
     else
@@ -463,10 +463,10 @@ int PIOc_closefile(int ncid)
         {
             GPTLstart("PIO:PIOc_closefile_write_mode");
             GPTLstart("PIO:write_total");
-            GPTLstart(ios->io_fstats->wr_timer_name);
-            GPTLstart(ios->io_fstats->tot_timer_name);
-            GPTLstart(file->io_fstats->wr_timer_name);
-            GPTLstart(file->io_fstats->tot_timer_name);
+            spio_ltimer_start(ios->io_fstats->wr_timer_name);
+            spio_ltimer_start(ios->io_fstats->tot_timer_name);
+            spio_ltimer_start(file->io_fstats->wr_timer_name);
+            spio_ltimer_start(file->io_fstats->tot_timer_name);
         }
     }
 
@@ -475,15 +475,15 @@ int PIOc_closefile(int ncid)
     if (!ios->async || !ios->ioproc)
         if (file->mode & PIO_WRITE)
         {
-            GPTLstop(ios->io_fstats->wr_timer_name);
-            GPTLstop(ios->io_fstats->tot_timer_name);
-            GPTLstop(file->io_fstats->wr_timer_name);
-            GPTLstop(file->io_fstats->tot_timer_name);
+            spio_ltimer_stop(ios->io_fstats->wr_timer_name);
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->wr_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             sync_file(ncid);
-            GPTLstart(ios->io_fstats->wr_timer_name);
-            GPTLstart(ios->io_fstats->tot_timer_name);
-            GPTLstart(file->io_fstats->wr_timer_name);
-            GPTLstart(file->io_fstats->tot_timer_name);
+            spio_ltimer_start(ios->io_fstats->wr_timer_name);
+            spio_ltimer_start(ios->io_fstats->tot_timer_name);
+            spio_ltimer_start(file->io_fstats->wr_timer_name);
+            spio_ltimer_start(file->io_fstats->tot_timer_name);
         }
 
     /* If async is in use and this is a comp tasks, then the compmaster
@@ -503,10 +503,10 @@ int PIOc_closefile(int ncid)
                 GPTLstop("PIO:write_total_adios");
 #ifndef _ADIOS_BP2NC_TEST
                 GPTLstop("PIO:write_total");
-                GPTLstop(ios->io_fstats->wr_timer_name);
-                GPTLstop(ios->io_fstats->tot_timer_name);
-                GPTLstop(file->io_fstats->wr_timer_name);
-                GPTLstop(file->io_fstats->tot_timer_name);
+                spio_ltimer_stop(ios->io_fstats->wr_timer_name);
+                spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+                spio_ltimer_stop(file->io_fstats->wr_timer_name);
+                spio_ltimer_stop(file->io_fstats->tot_timer_name);
 #endif
             }
             else
@@ -517,10 +517,10 @@ int PIOc_closefile(int ncid)
                 {
                     GPTLstop("PIO:PIOc_closefile_write_mode");
                     GPTLstop("PIO:write_total");
-                    GPTLstop(ios->io_fstats->wr_timer_name);
-                    GPTLstop(ios->io_fstats->tot_timer_name);
-                    GPTLstop(file->io_fstats->wr_timer_name);
-                    GPTLstop(file->io_fstats->tot_timer_name);
+                    spio_ltimer_stop(ios->io_fstats->wr_timer_name);
+                    spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+                    spio_ltimer_stop(file->io_fstats->wr_timer_name);
+                    spio_ltimer_stop(file->io_fstats->tot_timer_name);
                 }
             }
             return pio_err(ios, file, ierr, __FILE__, __LINE__,
@@ -548,10 +548,10 @@ int PIOc_closefile(int ncid)
                         GPTLstop("PIO:write_total_adios");
 #ifndef _ADIOS_BP2NC_TEST
                         GPTLstop("PIO:write_total");
-                        GPTLstop(ios->io_fstats->wr_timer_name);
-                        GPTLstop(ios->io_fstats->tot_timer_name);
-                        GPTLstop(file->io_fstats->wr_timer_name);
-                        GPTLstop(file->io_fstats->tot_timer_name);
+                        spio_ltimer_stop(ios->io_fstats->wr_timer_name);
+                        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+                        spio_ltimer_stop(file->io_fstats->wr_timer_name);
+                        spio_ltimer_stop(file->io_fstats->tot_timer_name);
 #endif
                     }
                     else
@@ -562,10 +562,10 @@ int PIOc_closefile(int ncid)
                         {
                             GPTLstop("PIO:PIOc_closefile_write_mode");
                             GPTLstop("PIO:write_total");
-                            GPTLstop(ios->io_fstats->wr_timer_name);
-                            GPTLstop(ios->io_fstats->tot_timer_name);
-                            GPTLstop(file->io_fstats->wr_timer_name);
-                            GPTLstop(file->io_fstats->tot_timer_name);
+                            spio_ltimer_stop(ios->io_fstats->wr_timer_name);
+                            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+                            spio_ltimer_stop(file->io_fstats->wr_timer_name);
+                            spio_ltimer_stop(file->io_fstats->tot_timer_name);
                         }
                     }
                     return pio_err(ios, file, PIO_EADIOS2ERR, __FILE__, __LINE__, "Defining (ADIOS) attribute (name=/__pio__/fillmode) failed for file (%s, ncid=%d)", pio_get_fname_from_file(file), file->pio_ncid);
@@ -581,10 +581,10 @@ int PIOc_closefile(int ncid)
                     GPTLstop("PIO:write_total_adios");
 #ifndef _ADIOS_BP2NC_TEST
                     GPTLstop("PIO:write_total");
-                    GPTLstop(ios->io_fstats->wr_timer_name);
-                    GPTLstop(ios->io_fstats->tot_timer_name);
-                    GPTLstop(file->io_fstats->wr_timer_name);
-                    GPTLstop(file->io_fstats->tot_timer_name);
+                    spio_ltimer_stop(ios->io_fstats->wr_timer_name);
+                    spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+                    spio_ltimer_stop(file->io_fstats->wr_timer_name);
+                    spio_ltimer_stop(file->io_fstats->tot_timer_name);
 #endif
                 }
                 else
@@ -594,10 +594,10 @@ int PIOc_closefile(int ncid)
                     {
                         GPTLstop("PIO:PIOc_closefile_write_mode");
                         GPTLstop("PIO:write_total");
-                        GPTLstop(ios->io_fstats->wr_timer_name);
-                        GPTLstop(ios->io_fstats->tot_timer_name);
-                        GPTLstop(file->io_fstats->wr_timer_name);
-                        GPTLstop(file->io_fstats->tot_timer_name);
+                        spio_ltimer_stop(ios->io_fstats->wr_timer_name);
+                        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+                        spio_ltimer_stop(file->io_fstats->wr_timer_name);
+                        spio_ltimer_stop(file->io_fstats->tot_timer_name);
                       }
                   }
                 return pio_err(ios, file, PIO_EADIOS2ERR, __FILE__, __LINE__, "Closing (ADIOS) file (%s, ncid=%d) failed (adios2_error=%s)", pio_get_fname_from_file(file), file->pio_ncid, adios2_error_to_string(adiosErr));
@@ -675,10 +675,10 @@ int PIOc_closefile(int ncid)
                 {
                     GPTLstop("PIO:PIOc_closefile_write_mode");
                     GPTLstop("PIO:write_total");
-                    GPTLstop(ios->io_fstats->wr_timer_name);
-                    GPTLstop(ios->io_fstats->tot_timer_name);
-                    GPTLstop(file->io_fstats->wr_timer_name);
-                    GPTLstop(file->io_fstats->tot_timer_name);
+                    spio_ltimer_stop(ios->io_fstats->wr_timer_name);
+                    spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+                    spio_ltimer_stop(file->io_fstats->wr_timer_name);
+                    spio_ltimer_stop(file->io_fstats->tot_timer_name);
                 }
             }
             return pio_err(ios, file, ierr, __FILE__, __LINE__,
@@ -694,10 +694,10 @@ int PIOc_closefile(int ncid)
             GPTLstop("PIO:write_total_adios");
 #ifndef _ADIOS_BP2NC_TEST
             GPTLstop("PIO:write_total");
-            GPTLstop(ios->io_fstats->wr_timer_name);
-            GPTLstop(ios->io_fstats->tot_timer_name);
-            GPTLstop(file->io_fstats->wr_timer_name);
-            GPTLstop(file->io_fstats->tot_timer_name);
+            spio_ltimer_stop(ios->io_fstats->wr_timer_name);
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->wr_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
 #endif
         }
         else
@@ -708,10 +708,10 @@ int PIOc_closefile(int ncid)
             {
                 GPTLstop("PIO:PIOc_closefile_write_mode");
                 GPTLstop("PIO:write_total");
-                GPTLstop(ios->io_fstats->wr_timer_name);
-                GPTLstop(ios->io_fstats->tot_timer_name);
-                GPTLstop(file->io_fstats->wr_timer_name);
-                GPTLstop(file->io_fstats->tot_timer_name);
+                spio_ltimer_stop(ios->io_fstats->wr_timer_name);
+                spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+                spio_ltimer_stop(file->io_fstats->wr_timer_name);
+                spio_ltimer_stop(file->io_fstats->tot_timer_name);
             }
         }
 
@@ -757,10 +757,10 @@ int PIOc_closefile(int ncid)
             {
                 GPTLstop("PIO:PIOc_closefile_write_mode");
                 GPTLstop("PIO:write_total");
-                GPTLstop(ios->io_fstats->wr_timer_name);
-                GPTLstop(ios->io_fstats->tot_timer_name);
-                GPTLstop(file->io_fstats->wr_timer_name);
-                GPTLstop(file->io_fstats->tot_timer_name);
+                spio_ltimer_stop(ios->io_fstats->wr_timer_name);
+                spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+                spio_ltimer_stop(file->io_fstats->wr_timer_name);
+                spio_ltimer_stop(file->io_fstats->tot_timer_name);
             }
             return pio_err(ios, file, PIO_EBADIOTYPE, __FILE__, __LINE__,
                             "Closing file (%s, ncid=%d) failed. Unsupported iotype (%d) specified", pio_get_fname_from_file(file), file->pio_ncid, file->iotype);
@@ -775,10 +775,10 @@ int PIOc_closefile(int ncid)
         {
             GPTLstop("PIO:PIOc_closefile_write_mode");
             GPTLstop("PIO:write_total");
-            GPTLstop(ios->io_fstats->wr_timer_name);
-            GPTLstop(ios->io_fstats->tot_timer_name);
-            GPTLstop(file->io_fstats->wr_timer_name);
-            GPTLstop(file->io_fstats->tot_timer_name);
+            spio_ltimer_stop(ios->io_fstats->wr_timer_name);
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->wr_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
         }
         return pio_err(NULL, file, ierr, __FILE__, __LINE__,
                         "Closing file (%s, ncid=%d) failed. Underlying I/O library (iotype=%s) call failed", pio_get_fname_from_file(file), file->pio_ncid, pio_iotype_to_string(file->iotype));
@@ -788,10 +788,10 @@ int PIOc_closefile(int ncid)
     {
         GPTLstop("PIO:PIOc_closefile_write_mode");
         GPTLstop("PIO:write_total");
-        GPTLstop(ios->io_fstats->wr_timer_name);
-        GPTLstop(ios->io_fstats->tot_timer_name);
-        GPTLstop(file->io_fstats->wr_timer_name);
-        GPTLstop(file->io_fstats->tot_timer_name);
+        spio_ltimer_stop(ios->io_fstats->wr_timer_name);
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(file->io_fstats->wr_timer_name);
+        spio_ltimer_stop(file->io_fstats->tot_timer_name);
     }
 
     spio_write_file_io_summary(file);
@@ -831,7 +831,7 @@ int PIOc_deletefile(int iosysid, const char *filename)
     }
 
     assert(ios);
-    GPTLstart(ios->io_fstats->tot_timer_name);
+    spio_ltimer_start(ios->io_fstats->tot_timer_name);
 
     /* If async is in use, send message to IO master task. */
     if (ios->async)
@@ -842,7 +842,7 @@ int PIOc_deletefile(int iosysid, const char *filename)
         if(ierr != PIO_NOERR)
         {
             GPTLstop("PIO:PIOc_deletefile");
-            GPTLstop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
             return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
                         "Deleting file (%s) failed. Sending async message, PIO_MSG_DELETE_FILE, failed", (filename) ? filename : "NULL");
         }
@@ -871,13 +871,13 @@ int PIOc_deletefile(int iosysid, const char *filename)
     ierr = check_netcdf(ios, NULL, ierr, __FILE__, __LINE__);
     if(ierr != PIO_NOERR){
         GPTLstop("PIO:PIOc_deletefile");
-        GPTLstop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
         return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
                     "Deleting file (%s) failed. Internal I/O library call failed.", (filename) ? filename : "NULL");
     }
 
     GPTLstop("PIO:PIOc_deletefile");
-    GPTLstop(ios->io_fstats->tot_timer_name);
+    spio_ltimer_stop(ios->io_fstats->tot_timer_name);
     return ierr;
 }
 

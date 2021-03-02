@@ -49,6 +49,7 @@
 #include "gptl_skel.h"
 #endif
 #include <assert.h>
+#include "spio_ltimer.h"
 
 #if PIO_ENABLE_LOGGING
 void pio_log(int severity, const char *fmt, ...);
