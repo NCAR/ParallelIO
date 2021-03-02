@@ -31,6 +31,9 @@
 #if PIO_USE_MICRO_TIMING
   #define PIO_MICRO_TIMING 1
 #endif
+#if PIO_ENABLE_IO_STATS
+  #define SPIO_IO_STATS 1
+#endif
 
 #ifdef _NETCDF
 #include <netcdf.h>

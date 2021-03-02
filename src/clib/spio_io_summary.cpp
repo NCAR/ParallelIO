@@ -534,6 +534,10 @@ int spio_write_io_summary(iosystem_desc_t *ios)
   return PIO_NOERR;
 #endif
 
+#ifndef SPIO_IO_STATS
+  return PIO_NOERR;
+#endif
+
   assert(ios);
 
   /* For async I/O only collect statistics from the I/O processes */
@@ -681,6 +685,10 @@ int spio_write_file_io_summary(file_desc_t *file)
   };
 
 #ifndef TIMING
+  return PIO_NOERR;
+#endif
+
+#ifndef SPIO_IO_STATS
   return PIO_NOERR;
 #endif
 
