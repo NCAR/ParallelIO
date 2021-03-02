@@ -964,10 +964,13 @@ int PIOc_freedecomp(int iosysid, int ioid)
         return pio_err(NULL, NULL, PIO_EBADID, __FILE__, __LINE__,
                         "Freeing PIO decomposition failed. Invalid iosystem id (%d) provided", iosysid);
     }
+    assert(ios);
+    GPTLstart(ios->io_fstats->tot_timer_name);
 
     if (!(iodesc = pio_get_iodesc_from_id(ioid)))
     {
         GPTLstop("PIO:PIOc_freedecomp");
+        GPTLstop(ios->io_fstats->tot_timer_name);
         return pio_err(ios, NULL, PIO_EBADID, __FILE__, __LINE__,
                         "Freeing PIO decomposition failed. Invalid io decomposition id (%d) provided", ioid);
     }
@@ -981,6 +984,7 @@ int PIOc_freedecomp(int iosysid, int ioid)
         if(ret != PIO_NOERR)
         {
             GPTLstop("PIO:PIOc_freedecomp");
+            GPTLstop(ios->io_fstats->tot_timer_name);
             return pio_err(ios, NULL, ret, __FILE__, __LINE__,
                             "Freeing PIO decomposition failed (iosysid = %d, iodesc id=%d). Error sending asynchronous message, PIO_MSG_FREEDECOMP, on iosystem", iosysid, ioid);
         }
@@ -1002,6 +1006,7 @@ int PIOc_freedecomp(int iosysid, int ioid)
                 if ((mpierr = MPI_Type_free(&iodesc->rtype[i])))
                 {
                     GPTLstop("PIO:PIOc_freedecomp");
+                    GPTLstop(ios->io_fstats->tot_timer_name);
                     return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
                 }
 
@@ -1015,6 +1020,7 @@ int PIOc_freedecomp(int iosysid, int ioid)
                 if ((mpierr = MPI_Type_free(iodesc->stype + i)))
                 {
                     GPTLstop("PIO:PIOc_freedecomp");
+                    GPTLstop(ios->io_fstats->tot_timer_name);
                     return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
                 }
 
@@ -1044,6 +1050,7 @@ int PIOc_freedecomp(int iosysid, int ioid)
         if ((mpierr = MPI_Comm_free(&iodesc->subset_comm)))
         {
             GPTLstop("PIO:PIOc_freedecomp");
+            GPTLstop(ios->io_fstats->tot_timer_name);
             return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
         }
 
@@ -1051,10 +1058,12 @@ int PIOc_freedecomp(int iosysid, int ioid)
     if (ret != PIO_NOERR)
     {
         GPTLstop("PIO:PIOc_freedecomp");
+        GPTLstop(ios->io_fstats->tot_timer_name);
         return pio_err(ios, NULL, ret, __FILE__, __LINE__,
                         "Freeing PIO decomposition failed (iosysid = %d, ioid=%d). Error while trying to delete I/O descriptor from internal list", iosysid, ioid); 
     }
     GPTLstop("PIO:PIOc_freedecomp");
+    GPTLstop(ios->io_fstats->tot_timer_name);
 
     return ret;
 }
@@ -3076,13 +3085,13 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
     /* Check if the file has unlimited dimensions */
     if(!ios->async || !ios->ioproc)
     {
+        GPTLstop(ios->io_fstats->rd_timer_name);
+        GPTLstop(ios->io_fstats->tot_timer_name);
+        GPTLstop(file->io_fstats->rd_timer_name);
+        GPTLstop(file->io_fstats->tot_timer_name);
         ierr = PIOc_inq_unlimdims(*ncidp, &(file->num_unlim_dimids), NULL);
         if(ierr != PIO_NOERR)
         {
-            GPTLstop(ios->io_fstats->rd_timer_name);
-            GPTLstop(ios->io_fstats->tot_timer_name);
-            GPTLstop(file->io_fstats->rd_timer_name);
-            GPTLstop(file->io_fstats->tot_timer_name);
             return pio_err(ios, file, ierr, __FILE__, __LINE__,
                               "Opening file (%s) failed. Although the file was opened successfully, querying the number of unlimited dimensions in the file failed", filename);
         }
@@ -3091,24 +3100,20 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
             file->unlim_dimids = (int *)malloc(file->num_unlim_dimids * sizeof(int));
             if(!file->unlim_dimids)
             {
-                GPTLstop(ios->io_fstats->rd_timer_name);
-                GPTLstop(ios->io_fstats->tot_timer_name);
-                GPTLstop(file->io_fstats->rd_timer_name);
-                GPTLstop(file->io_fstats->tot_timer_name);
                 return pio_err(ios, file, PIO_ENOMEM, __FILE__, __LINE__,
                                 "Opening file (%s) failed. Out of memory allocating %lld bytes for caching the unlimited dimension ids", filename, (unsigned long long) (file->num_unlim_dimids * sizeof(int)));
             }
             ierr = PIOc_inq_unlimdims(*ncidp, NULL, file->unlim_dimids);
             if(ierr != PIO_NOERR)
             {
-                GPTLstop(ios->io_fstats->rd_timer_name);
-                GPTLstop(ios->io_fstats->tot_timer_name);
-                GPTLstop(file->io_fstats->rd_timer_name);
-                GPTLstop(file->io_fstats->tot_timer_name);
                 return pio_err(ios, file, ierr, __FILE__, __LINE__,
                                 "Opening file (%s) failed. Although the file was opened successfully, querying the unlimited dimensions in the file failed", filename);
             }
         }
+        GPTLstart(ios->io_fstats->rd_timer_name);
+        GPTLstart(ios->io_fstats->tot_timer_name);
+        GPTLstart(file->io_fstats->rd_timer_name);
+        GPTLstart(file->io_fstats->tot_timer_name);
         LOG((3, "File has %d unlimited dimensions", file->num_unlim_dimids));
     }
 
@@ -3232,7 +3237,11 @@ int pioc_change_def(int ncid, int is_enddef)
         return pio_err(NULL, NULL, ierr, __FILE__, __LINE__,
                         "Changing the define mode for file (ncid = %d) failed. Invalid file id", ncid);
     }
+    assert(file);
     ios = file->iosystem;
+    assert(ios);
+    GPTLstart(ios->io_fstats->tot_timer_name);
+    GPTLstart(file->io_fstats->tot_timer_name);
 
     /* If async is in use, and this is not an IO task, bcast the parameters. */
     if (ios->async)
@@ -3243,6 +3252,8 @@ int pioc_change_def(int ncid, int is_enddef)
         if(ierr != PIO_NOERR)
         {
             LOG((1, "Error sending async msg for PIO_MSG_ENDDEF/PIO_MSG_REDEF"));
+            GPTLstop(ios->io_fstats->tot_timer_name);
+            GPTLstop(file->io_fstats->tot_timer_name);
             return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
                             "Changing the define mode for file (%s) failed. Error sending async msg, PIO_MSG_ENDDEF/PIO_MSG_REDEF, on iosystem (iosysid=%d)", pio_get_fname_from_file(file), ios->iosysid);
         }
@@ -3279,11 +3290,15 @@ int pioc_change_def(int ncid, int is_enddef)
 
     ierr = check_netcdf(NULL, file, ierr, __FILE__, __LINE__);
     if(ierr != PIO_NOERR){
+      GPTLstop(ios->io_fstats->tot_timer_name);
+      GPTLstop(file->io_fstats->tot_timer_name);
       return pio_err(ios, file, ierr, __FILE__, __LINE__,
                       "Changing the define mode for file (%s) failed. Low-level I/O library API failed", pio_get_fname_from_file(file));
     }
     LOG((3, "pioc_change_def succeeded"));
 
+    GPTLstop(ios->io_fstats->tot_timer_name);
+    GPTLstop(file->io_fstats->tot_timer_name);
     return ierr;
 }
 
@@ -3542,17 +3557,23 @@ int PIOc_set_rearr_opts(int iosysid, int comm_type, int fcd, bool enable_hs_c2i,
         return pio_err(NULL, NULL, PIO_EBADID, __FILE__, __LINE__,
                         "Setting rearranger options failed. Invalid iosystem id (%d) provided", iosysid);
     }
+    assert(ios);
+    GPTLstart(ios->io_fstats->tot_timer_name);
 
     /* Perform sanity checks on the user supplied values and reset 
      * values not set (or of no interest) by the user 
      */
     ret = check_and_reset_rearr_opts(&user_rearr_opts);
     if (ret != PIO_NOERR)
+    {
+        GPTLstop(ios->io_fstats->tot_timer_name);
         return ret;
+    }
 
     /* Set the options. */
     ios->rearr_opts = user_rearr_opts;
 
+    GPTLstop(ios->io_fstats->tot_timer_name);
     return ret;
 }
 

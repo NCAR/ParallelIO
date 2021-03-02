@@ -20,6 +20,8 @@ typedef struct IO_summary_stats{
   double rtime_max;
   double wtime_min;
   double wtime_max;
+  double ttime_min;
+  double ttime_max;
 } IO_summary_stats_t;
 
 std::string io_summary_stats2str(const IO_summary_stats_t &io_sstats);
@@ -31,7 +33,7 @@ class IO_summary_stats2mpi{
     MPI_Datatype get_mpi_datatype(void ) const;
     ~IO_summary_stats2mpi();
   private:
-    static const int NUM_IO_SUMMARY_STATS_MEMBERS = 10;
+    static const int NUM_IO_SUMMARY_STATS_MEMBERS = 12;
     void get_io_summary_stats_address_disps(
       std::array<MPI_Aint, NUM_IO_SUMMARY_STATS_MEMBERS> &disps) const;
     MPI_Datatype dt_;

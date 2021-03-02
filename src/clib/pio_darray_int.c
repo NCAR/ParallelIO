@@ -2220,7 +2220,8 @@ void cn_buffer_report(iosystem_desc_t *ios, bool collective)
  */
 int flush_buffer(int ncid, wmulti_buffer *wmb, bool flushtodisk)
 {
-    file_desc_t *file;
+    iosystem_desc_t *ios = NULL;
+    file_desc_t *file = NULL;
     int ret;
 
     GPTLstart("PIO:flush_buffer");
@@ -2235,15 +2236,32 @@ int flush_buffer(int ncid, wmulti_buffer *wmb, bool flushtodisk)
                         "Internal error flushing data cached in a write multi buffer to %s. Invalid file id (ncid=%d) provided", (flushtodisk) ? "disk" : "I/O processes", ncid);
     }
 
+    assert(file);
+    ios = file->iosystem;
+    assert(ios);
+
+    GPTLstart(ios->io_fstats->wr_timer_name);
+    GPTLstart(ios->io_fstats->tot_timer_name);
+    GPTLstart(file->io_fstats->wr_timer_name);
+    GPTLstart(file->io_fstats->tot_timer_name);
+
     LOG((1, "flush_buffer ncid = %d flushtodisk = %d", ncid, flushtodisk));
 
     /* If there are any variables in this buffer... */
     if (wmb->num_arrays > 0)
     {
         /* Write any data in the buffer. */
+        GPTLstop(ios->io_fstats->wr_timer_name);
+        GPTLstop(ios->io_fstats->tot_timer_name);
+        GPTLstop(file->io_fstats->wr_timer_name);
+        GPTLstop(file->io_fstats->tot_timer_name);
         ret = PIOc_write_darray_multi(ncid, wmb->vid,  wmb->ioid, wmb->num_arrays,
                                       wmb->arraylen, wmb->data, wmb->frame,
                                       wmb->fillvalue, flushtodisk);
+        GPTLstart(ios->io_fstats->wr_timer_name);
+        GPTLstart(ios->io_fstats->tot_timer_name);
+        GPTLstart(file->io_fstats->wr_timer_name);
+        GPTLstart(file->io_fstats->tot_timer_name);
         LOG((2, "return from PIOc_write_darray_multi ret = %d", ret));
 
         wmb->num_arrays = 0;
@@ -2269,12 +2287,20 @@ int flush_buffer(int ncid, wmulti_buffer *wmb, bool flushtodisk)
         if (ret)
         {
             GPTLstop("PIO:flush_buffer");
+            GPTLstop(ios->io_fstats->wr_timer_name);
+            GPTLstop(ios->io_fstats->tot_timer_name);
+            GPTLstop(file->io_fstats->wr_timer_name);
+            GPTLstop(file->io_fstats->tot_timer_name);
             return pio_err(NULL, file, ret, __FILE__, __LINE__,
                         "Internal error flushing data cached in a write multi buffer to file (%s, ncid=%d). Error while flushing data to %s. Internal error flushing arrays (%d) in the write multi buffer", pio_get_fname_from_file(file), file->pio_ncid, (flushtodisk) ? "disk" : "I/O processes", wmb->num_arrays);
         }
     }
 
     GPTLstop("PIO:flush_buffer");
+    GPTLstop(ios->io_fstats->wr_timer_name);
+    GPTLstop(ios->io_fstats->tot_timer_name);
+    GPTLstop(file->io_fstats->wr_timer_name);
+    GPTLstop(file->io_fstats->tot_timer_name);
     return PIO_NOERR;
 }
 

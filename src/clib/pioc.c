@@ -542,11 +542,14 @@ int PIOc_InitDecomp(int iosysid, int pio_type, int ndims, const int *gdimlen, in
         return pio_err(NULL, NULL, PIO_EBADID, __FILE__, __LINE__,
                         "Initializing the PIO decomposition failed. Invalid io system id (%d) provided. Could not find an iosystem associated with the id", iosysid);
     }
+    assert(ios);
+    GPTLstart(ios->io_fstats->tot_timer_name);
 
     /* Caller must provide these. */
     if (!gdimlen || !compmap || !ioidp)
     {
         GPTLstop("PIO:PIOc_initdecomp");
+        GPTLstop(ios->io_fstats->tot_timer_name);
         return pio_err(ios, NULL, PIO_EINVAL, __FILE__, __LINE__,
                         "Initializing the PIO decomposition failed. Invalid pointers (NULL) to gdimlen(%s) or compmap(%s) or ioidp (%s) provided", (gdimlen) ? "not NULL" : "NULL", (compmap) ? "not NULL" : "NULL", (ioidp) ? "not NULL" : "NULL");
     }
@@ -556,6 +559,7 @@ int PIOc_InitDecomp(int iosysid, int pio_type, int ndims, const int *gdimlen, in
         if (gdimlen[i] <= 0)
         {
             GPTLstop("PIO:PIOc_initdecomp");
+            GPTLstop(ios->io_fstats->tot_timer_name);
             return pio_err(ios, NULL, PIO_EINVAL, __FILE__, __LINE__,
                             "Initializing the PIO decomposition failed. Invalid value for global dimension lengths provided. The global length of dimension %d is provided as %d (expected > 0)", i, gdimlen[i]);
         }
@@ -581,6 +585,7 @@ int PIOc_InitDecomp(int iosysid, int pio_type, int ndims, const int *gdimlen, in
         if(!amsg_iostart || !amsg_iocount)
         {
             GPTLstop("PIO:PIOc_initdecomp");
+            GPTLstop(ios->io_fstats->tot_timer_name);
             return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__,
                             "Initializing the PIO decomposition failed. Out of memory allocating %lld bytes for start array and %lld bytes for count array for sending asynchronous message, PIO_MSG_INITDECOMP_DOF, on iosystem (iosysid=%d)", (unsigned long long) (ndims * sizeof(PIO_Offset)), (unsigned long long) (ndims * sizeof(PIO_Offset)), ios->iosysid);
         }
@@ -608,6 +613,7 @@ int PIOc_InitDecomp(int iosysid, int pio_type, int ndims, const int *gdimlen, in
     if ((ierr = malloc_iodesc(ios, pio_type, ndims, &iodesc)))
     {
         GPTLstop("PIO:PIOc_initdecomp");
+        GPTLstop(ios->io_fstats->tot_timer_name);
         return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
                         "Initializing the PIO decomposition failed. Out of memory allocating memory for I/O descriptor");
     }
@@ -619,6 +625,7 @@ int PIOc_InitDecomp(int iosysid, int pio_type, int ndims, const int *gdimlen, in
     if (!(iodesc->map = malloc(sizeof(PIO_Offset) * maplen)))
     {
         GPTLstop("PIO:PIOc_initdecomp");
+        GPTLstop(ios->io_fstats->tot_timer_name);
         return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__,
                         "Initializing the PIO decomposition failed. Out of memory allocating %lld bytes to store I/O decomposition map", (unsigned long long) (sizeof(PIO_Offset) * maplen));
     }
@@ -629,6 +636,7 @@ int PIOc_InitDecomp(int iosysid, int pio_type, int ndims, const int *gdimlen, in
     if (!(iodesc->dimlen = malloc(sizeof(int) * ndims)))
     {
         GPTLstop("PIO:PIOc_initdecomp");
+        GPTLstop(ios->io_fstats->tot_timer_name);
         return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__,
                         "Initializing the PIO decomposition failed. Out of memory allocating %lld bytes for dimension sizes in the I/O decomposition map", (unsigned long long) (sizeof(int) * ndims));
     }
@@ -652,6 +660,7 @@ int PIOc_InitDecomp(int iosysid, int pio_type, int ndims, const int *gdimlen, in
                                             ndims, iodesc)))
         {
             GPTLstop("PIO:PIOc_initdecomp");
+            GPTLstop(ios->io_fstats->tot_timer_name);
             return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
                             "Initializing the PIO decomposition failed. Error creating the SUBSET rearranger");
         }
@@ -681,6 +690,7 @@ int PIOc_InitDecomp(int iosysid, int pio_type, int ndims, const int *gdimlen, in
                                              iodesc->firstregion->count, &iodesc->num_aiotasks)))
                 {
                     GPTLstop("PIO:PIOc_initdecomp");
+                    GPTLstop(ios->io_fstats->tot_timer_name);
                     return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
                                     "Initializing the PIO decomposition failed. Internal error calculating start/count for the decomposition");
                 }
@@ -690,6 +700,7 @@ int PIOc_InitDecomp(int iosysid, int pio_type, int ndims, const int *gdimlen, in
             if ((ierr = compute_maxIObuffersize(ios->io_comm, iodesc)))
             {
                 GPTLstop("PIO:PIOc_initdecomp");
+                GPTLstop(ios->io_fstats->tot_timer_name);
                 return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
                                 "Initializing the PIO decomposition failed. Internal error computing max io buffer size needed for the decomposition");
             }
@@ -703,6 +714,7 @@ int PIOc_InitDecomp(int iosysid, int pio_type, int ndims, const int *gdimlen, in
                                 ios->my_comm)))
         {
             GPTLstop("PIO:PIOc_initdecomp");
+            GPTLstop(ios->io_fstats->tot_timer_name);
             return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
         }
         LOG((3, "iodesc->num_aiotasks = %d", iodesc->num_aiotasks));
@@ -712,6 +724,7 @@ int PIOc_InitDecomp(int iosysid, int pio_type, int ndims, const int *gdimlen, in
             if ((ierr = box_rearrange_create(ios, maplen, compmap, gdimlen, ndims, iodesc)))
             {
                 GPTLstop("PIO:PIOc_initdecomp");
+                GPTLstop(ios->io_fstats->tot_timer_name);
                 return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
                                 "Error initializing the PIO decomposition. Error creating the BOX rearranger");
             }
@@ -739,6 +752,7 @@ int PIOc_InitDecomp(int iosysid, int pio_type, int ndims, const int *gdimlen, in
     if (*ioidp - PIO_IODESC_START_ID + 1 > PIO_IODESC_MAX_IDS)
     {
         GPTLstop("PIO:PIOc_initdecomp");
+        GPTLstop(ios->io_fstats->tot_timer_name);
         return pio_err(ios, NULL, PIO_EINTERNAL, __FILE__, __LINE__,
                        "Initializing the PIO decomposition failed. Maximum number of ioids (limit = %d) has been reached", PIO_IODESC_MAX_IDS);
     }
@@ -751,6 +765,7 @@ int PIOc_InitDecomp(int iosysid, int pio_type, int ndims, const int *gdimlen, in
         if(ierr != PIO_NOERR)
         {
             GPTLstop("PIO:PIOc_initdecomp");
+            GPTLstop(ios->io_fstats->tot_timer_name);
             return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
                             "Initializing the PIO decomposition failed. Creating a unique file name for saving the decomposition failed");
         }
@@ -791,6 +806,7 @@ int PIOc_InitDecomp(int iosysid, int pio_type, int ndims, const int *gdimlen, in
     performance_tune_rearranger(ios, iodesc);
 
     GPTLstop("PIO:PIOc_initdecomp");
+    GPTLstop(ios->io_fstats->tot_timer_name);
     return PIO_NOERR;
 }
 
@@ -1291,10 +1307,13 @@ int PIOc_set_hint(int iosysid, const char *hint, const char *hintval)
         return pio_err(NULL, NULL, PIO_EBADID, __FILE__, __LINE__,
                         "Setting PIO hints failed. Invalid io system id (%d) provided", iosysid);
     }
+    assert(ios);
+    GPTLstart(ios->io_fstats->tot_timer_name);
 
     /* User must provide these. */
     if (!hint || !hintval)
     {
+        GPTLstop(ios->io_fstats->tot_timer_name);
         return pio_err(ios, NULL, PIO_EINVAL, __FILE__, __LINE__,
                         "Setting PIO hints failed. Invalid pointers (NULL) to hint (%s) or hintval (%s) provided", (hint) ? "not NULL" : "NULL", (hintval) ? "not NULL" : "NULL");
     }
@@ -1306,6 +1325,7 @@ int PIOc_set_hint(int iosysid, const char *hint, const char *hintval)
         if ((mpierr = MPI_Info_create(&ios->info)))
         {
             LOG((1, "ERROR: Setting PIO hints failed. Creating MPI Info object failed (mpierr = %d)", mpierr));
+            GPTLstop(ios->io_fstats->tot_timer_name);
             return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
         }
 
@@ -1314,9 +1334,11 @@ int PIOc_set_hint(int iosysid, const char *hint, const char *hintval)
         if ((mpierr = MPI_Info_set(ios->info, hint, hintval)))
         {
             LOG((1, "ERROR: Setting PIO hints failed. Settnig MPI hints using info object failed (mpierr = %d)", mpierr));
+            GPTLstop(ios->io_fstats->tot_timer_name);
             return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
         }
 
+    GPTLstop(ios->io_fstats->tot_timer_name);
     return PIO_NOERR;
 }
 
@@ -1350,6 +1372,7 @@ int PIOc_finalize(int iosysid)
         return pio_err(NULL, NULL, PIO_EBADID, __FILE__, __LINE__,
                         "PIO Finalize failed. Invalid iosystem id (%d) provided", iosysid);
     }
+    assert(ios);
 
     /* If asynch IO is in use, send the PIO_MSG_FINALIZE message from the
      * comp master to the IO processes. This may be called by
@@ -1366,6 +1389,7 @@ int PIOc_finalize(int iosysid)
         if(ierr != PIO_NOERR)
         {
             GPTLstop("PIO:PIOc_finalize");
+            GPTLstop(ios->io_fstats->tot_timer_name);
             return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
                             "PIO Finalize failed on iosytem (%d). Error sending async msg for PIO_MSG_FINALIZE", iosysid);
         }

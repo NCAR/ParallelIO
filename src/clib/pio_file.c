@@ -182,12 +182,12 @@ int PIOc_createfile(int iosysid, int *ncidp, int *iotype, const char *filename,
     if (!ios->async || !ios->ioproc)
     {
         /* Set the fill mode to NOFILL. */
+        GPTLstop(ios->io_fstats->wr_timer_name);
+        GPTLstop(ios->io_fstats->tot_timer_name);
         if ((ret = PIOc_set_fill(*ncidp, NC_NOFILL, NULL)))
         {
             GPTLstop("PIO:PIOc_createfile");
             GPTLstop("PIO:write_total");
-            GPTLstop(ios->io_fstats->wr_timer_name);
-            GPTLstop(ios->io_fstats->tot_timer_name);
             if (*iotype == PIO_IOTYPE_ADIOS)
             {
                 GPTLstop("PIO:PIOc_createfile_adios");
@@ -196,6 +196,8 @@ int PIOc_createfile(int iosysid, int *ncidp, int *iotype, const char *filename,
             return pio_err(ios, NULL, ret, __FILE__, __LINE__,
                             "Unable to create file (%s, mode = %d, iotype=%s) on iosystem (iosystem id = %d). Setting fill mode to NOFILL failed.", (filename) ? filename : "NULL", mode, (!iotype) ? "UNKNOWN" : pio_iotype_to_string(*iotype), iosysid);
         }
+        GPTLstart(ios->io_fstats->wr_timer_name);
+        GPTLstart(ios->io_fstats->tot_timer_name);
     }
 
     GPTLstop("PIO:PIOc_createfile");
@@ -263,7 +265,7 @@ int PIOc_create(int iosysid, const char *filename, int cmode, int *ncidp)
 static int sync_file(int ncid)
 {
     iosystem_desc_t *ios;  /* Pointer to io system information. */
-    file_desc_t *file;     /* Pointer to file information. */
+    file_desc_t *file = NULL;     /* Pointer to file information. */
     int ierr = PIO_NOERR;  /* Return code from function calls. */
 
     LOG((1, "sync_file ncid = %d", ncid));
@@ -274,6 +276,14 @@ static int sync_file(int ncid)
         return pio_err(NULL, NULL, ierr, __FILE__, __LINE__,
                         "Syncing file (ncid=%d) failed. Invalid file id. Unable to find internal structure associated with the file id", ncid);
     }
+
+    assert(file);
+    ios = file->iosystem;
+    assert(ios);
+    GPTLstart(ios->io_fstats->wr_timer_name);
+    GPTLstart(ios->io_fstats->tot_timer_name);
+    GPTLstart(file->io_fstats->wr_timer_name);
+    GPTLstart(file->io_fstats->tot_timer_name);
 
 #ifdef _ADIOS2
     if (file->iotype == PIO_IOTYPE_ADIOS)
@@ -297,7 +307,17 @@ static int sync_file(int ncid)
                 /* If there are any data arrays waiting in the
                  * multibuffer, flush it to IO tasks. */
                 if (wmb->num_arrays > 0)
+                {
+                    GPTLstop(ios->io_fstats->wr_timer_name);
+                    GPTLstop(ios->io_fstats->tot_timer_name);
+                    GPTLstop(file->io_fstats->wr_timer_name);
+                    GPTLstop(file->io_fstats->tot_timer_name);
                     flush_buffer(ncid, wmb, false);
+                    GPTLstart(ios->io_fstats->wr_timer_name);
+                    GPTLstart(ios->io_fstats->tot_timer_name);
+                    GPTLstart(file->io_fstats->wr_timer_name);
+                    GPTLstart(file->io_fstats->tot_timer_name);
+                }
                 twmb = wmb;
                 wmb = wmb->next;
                 if (twmb == &file->buffer)
@@ -321,6 +341,10 @@ static int sync_file(int ncid)
         PIO_SEND_ASYNC_MSG(ios, msg, &ierr, ncid);
         if (ierr != PIO_NOERR)
         {
+            GPTLstop(ios->io_fstats->wr_timer_name);
+            GPTLstop(ios->io_fstats->tot_timer_name);
+            GPTLstop(file->io_fstats->wr_timer_name);
+            GPTLstop(file->io_fstats->tot_timer_name);
             return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
                             "Syncing file %s (ncid=%d) failed. Unable to send asynchronous message, PIO_MSG_SYNC, on iosystem (iosysid=%d)", pio_get_fname_from_file(file), ncid, ios->iosysid);
         }
@@ -361,6 +385,10 @@ static int sync_file(int ncid)
                 break;
 #endif
             default:
+                GPTLstop(ios->io_fstats->wr_timer_name);
+                GPTLstop(ios->io_fstats->tot_timer_name);
+                GPTLstop(file->io_fstats->wr_timer_name);
+                GPTLstop(file->io_fstats->tot_timer_name);
                 return pio_err(ios, file, PIO_EBADIOTYPE, __FILE__, __LINE__,
                                 "Syncing file %s (ncid=%d) failed. Invalid/Unsupported iotype (%s:%d) provided", pio_get_fname_from_file(file), ncid, pio_iotype_to_string(file->iotype), file->iotype);
             }
@@ -372,9 +400,17 @@ static int sync_file(int ncid)
     if (ierr != PIO_NOERR)
     {
         LOG((1, "nc*_sync failed, ierr = %d", ierr));
+        GPTLstop(ios->io_fstats->wr_timer_name);
+        GPTLstop(ios->io_fstats->tot_timer_name);
+        GPTLstop(file->io_fstats->wr_timer_name);
+        GPTLstop(file->io_fstats->tot_timer_name);
         return ierr;
     }
 
+    GPTLstop(ios->io_fstats->wr_timer_name);
+    GPTLstop(ios->io_fstats->tot_timer_name);
+    GPTLstop(file->io_fstats->wr_timer_name);
+    GPTLstop(file->io_fstats->tot_timer_name);
     return PIO_NOERR;
 }
 
@@ -438,7 +474,17 @@ int PIOc_closefile(int ncid)
      * use, but only on non-IO tasks if async is in use. */
     if (!ios->async || !ios->ioproc)
         if (file->mode & PIO_WRITE)
+        {
+            GPTLstop(ios->io_fstats->wr_timer_name);
+            GPTLstop(ios->io_fstats->tot_timer_name);
+            GPTLstop(file->io_fstats->wr_timer_name);
+            GPTLstop(file->io_fstats->tot_timer_name);
             sync_file(ncid);
+            GPTLstart(ios->io_fstats->wr_timer_name);
+            GPTLstart(ios->io_fstats->tot_timer_name);
+            GPTLstart(file->io_fstats->wr_timer_name);
+            GPTLstart(file->io_fstats->tot_timer_name);
+        }
 
     /* If async is in use and this is a comp tasks, then the compmaster
      * sends a msg to the pio_msg_handler running on the IO master and
@@ -784,6 +830,9 @@ int PIOc_deletefile(int iosysid, const char *filename)
                         "Deleting file (%s) failed. Invalid I/O system id (iosysid=%d) specified.", (filename) ? filename : "NULL", iosysid);
     }
 
+    assert(ios);
+    GPTLstart(ios->io_fstats->tot_timer_name);
+
     /* If async is in use, send message to IO master task. */
     if (ios->async)
     {
@@ -793,6 +842,7 @@ int PIOc_deletefile(int iosysid, const char *filename)
         if(ierr != PIO_NOERR)
         {
             GPTLstop("PIO:PIOc_deletefile");
+            GPTLstop(ios->io_fstats->tot_timer_name);
             return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
                         "Deleting file (%s) failed. Sending async message, PIO_MSG_DELETE_FILE, failed", (filename) ? filename : "NULL");
         }
@@ -821,11 +871,13 @@ int PIOc_deletefile(int iosysid, const char *filename)
     ierr = check_netcdf(ios, NULL, ierr, __FILE__, __LINE__);
     if(ierr != PIO_NOERR){
         GPTLstop("PIO:PIOc_deletefile");
+        GPTLstop(ios->io_fstats->tot_timer_name);
         return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
                     "Deleting file (%s) failed. Internal I/O library call failed.", (filename) ? filename : "NULL");
     }
 
     GPTLstop("PIO:PIOc_deletefile");
+    GPTLstop(ios->io_fstats->tot_timer_name);
     return ierr;
 }
 
@@ -843,8 +895,7 @@ int PIOc_deletefile(int iosysid, const char *filename)
  */
 int PIOc_sync(int ncid)
 {
-    iosystem_desc_t *ios;  /* Pointer to io system information. */
-    file_desc_t *file;     /* Pointer to file information. */
+    file_desc_t *file = NULL;     /* Pointer to file information. */
     int ierr = PIO_NOERR;  /* Return code from function calls. */
 
     GPTLstart("PIO:PIOc_sync");
@@ -861,23 +912,10 @@ int PIOc_sync(int ncid)
     }
     assert(file);
 
-    GPTLstart(file->io_fstats->wr_timer_name);
-    GPTLstart(file->io_fstats->tot_timer_name);
-
-    ios = file->iosystem;
-    assert(ios);
-
-    GPTLstart(ios->io_fstats->wr_timer_name);
-    GPTLstart(ios->io_fstats->tot_timer_name);
-
     ierr = sync_file(ncid);
 
     GPTLstop("PIO:PIOc_sync");
     GPTLstop("PIO:write_total");
-    GPTLstop(ios->io_fstats->wr_timer_name);
-    GPTLstop(ios->io_fstats->tot_timer_name);
-    GPTLstop(file->io_fstats->wr_timer_name);
-    GPTLstop(file->io_fstats->tot_timer_name);
 
     return ierr;
 }

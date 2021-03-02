@@ -79,6 +79,8 @@ static void cache_file_stats(int iosysid, const std::string &filename,
       sstats.rtime_max = spio_max(sstats.rtime_max, file_sstats.rtime_max);
       sstats.wtime_min = spio_min(sstats.wtime_min, file_sstats.wtime_min);
       sstats.wtime_max = spio_max(sstats.wtime_max, file_sstats.wtime_max);
+      sstats.ttime_min = spio_min(sstats.ttime_min, file_sstats.ttime_min);
+      sstats.ttime_max = spio_max(sstats.ttime_max, file_sstats.ttime_max);
     }
   }
   else{
@@ -118,6 +120,8 @@ std::string PIO_Util::IO_Summary_Util::io_summary_stats2str(const IO_summary_sta
   ostr << "Read time in secs (max) : " << io_sstats.rtime_max << "\n";
   ostr << "Write time in secs (min) : " << io_sstats.wtime_min << "\n";
   ostr << "Write time in secs (max) : " << io_sstats.wtime_max << "\n";
+  ostr << "Total time in secs (min) : " << io_sstats.ttime_min << "\n";
+  ostr << "Total time in secs (max) : " << io_sstats.ttime_max << "\n";
 
   return ostr.str();
 }
@@ -146,10 +150,10 @@ PIO_Util::IO_Summary_Util::IO_summary_stats2mpi::IO_summary_stats2mpi() : dt_(MP
   /* Corresponds to defn of IO_summary_stats */
   std::array<MPI_Datatype, NUM_IO_SUMMARY_STATS_MEMBERS> types = {MPI_OFFSET, MPI_OFFSET,
     MPI_OFFSET, MPI_OFFSET, MPI_OFFSET, MPI_OFFSET, MPI_DOUBLE, MPI_DOUBLE,
-    MPI_DOUBLE, MPI_DOUBLE};
+    MPI_DOUBLE, MPI_DOUBLE, MPI_DOUBLE, MPI_DOUBLE};
 
   std::array<MPI_Aint, NUM_IO_SUMMARY_STATS_MEMBERS> disps;
-  std::array<int, NUM_IO_SUMMARY_STATS_MEMBERS> blocklens = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+  std::array<int, NUM_IO_SUMMARY_STATS_MEMBERS> blocklens = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
 
   get_io_summary_stats_address_disps(disps);
 
@@ -233,6 +237,16 @@ void PIO_Util::IO_Summary_Util::IO_summary_stats2mpi::get_io_summary_stats_addre
     throw std::runtime_error("Getting address for I/O summary stat struct members failed");
   }
 
+  mpi_errno = MPI_Get_address(&(io_sstats.ttime_min), &disps[10]);
+  if(mpi_errno != MPI_SUCCESS){
+    throw std::runtime_error("Getting address for I/O summary stat struct members failed");
+  }
+
+  mpi_errno = MPI_Get_address(&(io_sstats.ttime_max), &disps[11]);
+  if(mpi_errno != MPI_SUCCESS){
+    throw std::runtime_error("Getting address for I/O summary stat struct members failed");
+  }
+
   assert(disps.size() > 0);
   MPI_Aint base_addr = disps[0];
   for(std::size_t i = 0; i < disps.size(); i++){
@@ -264,6 +278,8 @@ void red_io_summary_stats(PIO_Util::IO_Summary_Util::IO_summary_stats_t *in_arr,
     inout_arr->rtime_max = spio_max(inout_arr->rtime_max, in_arr->rtime_max);
     inout_arr->wtime_min = spio_min(inout_arr->wtime_min, in_arr->wtime_min);
     inout_arr->wtime_max = spio_max(inout_arr->wtime_max, in_arr->wtime_max);
+    inout_arr->ttime_min = spio_min(inout_arr->ttime_min, in_arr->ttime_min);
+    inout_arr->ttime_max = spio_max(inout_arr->ttime_max, in_arr->ttime_max);
   }
 }
 
@@ -286,15 +302,21 @@ static int cache_or_print_stats(iosystem_desc_t *ios, int root_proc,
   /* Cache only in the root process */
   if(ios->union_rank == root_proc){
     cached_overall_gio_sstats.rb_total += iosys_gio_sstats.rb_total;
-    cached_overall_gio_sstats.rb_min = spio_min(cached_overall_gio_sstats.rb_min, iosys_gio_sstats.rb_min);
-    cached_overall_gio_sstats.rb_max = spio_max(cached_overall_gio_sstats.rb_max, iosys_gio_sstats.rb_max);
+    /* FIXME: Since we are guessing the values below from Component I/O stats,
+     * they are lower bounds, not accurate. We need separate timers to capture
+     * overall I/O perf
+     */
+    cached_overall_gio_sstats.rb_min += iosys_gio_sstats.rb_min;
+    cached_overall_gio_sstats.rb_max += iosys_gio_sstats.rb_max;
     cached_overall_gio_sstats.wb_total += iosys_gio_sstats.wb_total;
-    cached_overall_gio_sstats.wb_min = spio_min(cached_overall_gio_sstats.wb_min, iosys_gio_sstats.wb_min);
-    cached_overall_gio_sstats.wb_max = spio_max(cached_overall_gio_sstats.wb_max, iosys_gio_sstats.wb_max);
-    cached_overall_gio_sstats.rtime_min = spio_min(cached_overall_gio_sstats.rtime_min, iosys_gio_sstats.rtime_min);
-    cached_overall_gio_sstats.rtime_max = spio_max(cached_overall_gio_sstats.rtime_max, iosys_gio_sstats.rtime_max);
-    cached_overall_gio_sstats.wtime_min = spio_min(cached_overall_gio_sstats.wtime_min, iosys_gio_sstats.wtime_min);
-    cached_overall_gio_sstats.wtime_max = spio_max(cached_overall_gio_sstats.wtime_max, iosys_gio_sstats.wtime_max);
+    cached_overall_gio_sstats.wb_min += iosys_gio_sstats.wb_min;
+    cached_overall_gio_sstats.wb_max += iosys_gio_sstats.wb_max;
+    cached_overall_gio_sstats.rtime_min += iosys_gio_sstats.rtime_min;
+    cached_overall_gio_sstats.rtime_max += iosys_gio_sstats.rtime_max;
+    cached_overall_gio_sstats.wtime_min += iosys_gio_sstats.wtime_min;
+    cached_overall_gio_sstats.wtime_max += iosys_gio_sstats.wtime_max;
+    cached_overall_gio_sstats.ttime_min += iosys_gio_sstats.ttime_min;
+    cached_overall_gio_sstats.ttime_max += iosys_gio_sstats.ttime_max;
 
     cached_ios_gio_sstats.push_back(iosys_gio_sstats);
     cached_ios_names.push_back(ios->sname);
@@ -349,6 +371,9 @@ static int cache_or_print_stats(iosystem_desc_t *ios, int root_proc,
     PIO_Util::Serializer_Utils::serialize_pack("tot_rb",
       cached_overall_gio_sstats.rb_total, overall_comp_vals);
 
+    PIO_Util::Serializer_Utils::serialize_pack("tot_wtime",
+      cached_overall_gio_sstats.ttime_max, overall_comp_vals);
+
     spio_ser->serialize(id, "OverallIOStatistics", overall_comp_vals);
     spio_json_ser->serialize(json_id, "OverallIOStatistics", overall_comp_vals);
 
@@ -390,6 +415,9 @@ static int cache_or_print_stats(iosystem_desc_t *ios, int root_proc,
 
       PIO_Util::Serializer_Utils::serialize_pack("tot_rb",
         cached_ios_gio_sstats[i].rb_total, comp_vals);
+
+      PIO_Util::Serializer_Utils::serialize_pack("tot_wtime",
+        cached_ios_gio_sstats[i].ttime_max, comp_vals);
 
       comp_vvals.push_back(comp_vals);
     }
@@ -438,6 +466,9 @@ static int cache_or_print_stats(iosystem_desc_t *ios, int root_proc,
         PIO_Util::Serializer_Utils::serialize_pack("tot_rb",
           cached_file_gio_sstats[i][j].rb_total, file_vals);
 
+        PIO_Util::Serializer_Utils::serialize_pack("tot_wtime",
+          cached_file_gio_sstats[i][j].ttime_max, file_vals);
+
         file_vvals.push_back(file_vals);
       }
     }
@@ -465,6 +496,10 @@ int spio_write_io_summary(iosystem_desc_t *ios)
     ios->io_fstats->rd_timer_name
   };
 
+  const std::vector<std::string> tot_timers = {
+    ios->io_fstats->tot_timer_name
+  };
+
 #ifndef TIMING
   return PIO_NOERR;
 #endif
@@ -477,7 +512,7 @@ int spio_write_io_summary(iosystem_desc_t *ios)
   }
 
   const int THREAD_ID = 0;
-  double total_wr_time = 0, total_rd_time = 0;
+  double total_wr_time = 0, total_rd_time = 0, total_tot_time = 0;
   for(std::vector<std::string>::const_iterator citer = wr_timers.cbegin();
         citer != wr_timers.cend(); ++citer){
     double wtime = 0;
@@ -502,8 +537,20 @@ int spio_write_io_summary(iosystem_desc_t *ios)
     }
   }
 
+  for(std::vector<std::string>::const_iterator citer = tot_timers.cbegin();
+        citer != tot_timers.cend(); ++citer){
+    double wtime = 0;
+    ierr = GPTLget_wallclock((*citer).c_str(), THREAD_ID, &wtime);
+    if(ierr == 0){
+      total_tot_time += wtime;
+    }
+    else{
+      LOG((1, "Unable to get timer value for timer (%s)", (*citer).c_str()));
+    }
+  }
+
   /*
-  LOG((1, "Total read time = %f s, write time = %f s", total_rd_time, total_wr_time));
+  LOG((1, "Total read time = %f s, write time = %f s, total time = %f s", total_rd_time, total_wr_time, total_tot_time));
   LOG((1, "Total bytes read = %lld, bytes written = %lld",
         (unsigned long long) ios->io_fstats->rb, (unsigned long long) ios->io_fstats->wb));
   */
@@ -522,6 +569,8 @@ int spio_write_io_summary(iosystem_desc_t *ios)
   io_sstats.rtime_max = total_rd_time;
   io_sstats.wtime_min = total_wr_time;
   io_sstats.wtime_max = total_wr_time;
+  io_sstats.ttime_min = total_tot_time;
+  io_sstats.ttime_max = total_tot_time;
 
   /*
   LOG((1, "I/O stats sent :\n%s",
@@ -597,6 +646,10 @@ int spio_write_file_io_summary(file_desc_t *file)
     file->io_fstats->rd_timer_name
   };
 
+  const std::vector<std::string> tot_timers = {
+    file->io_fstats->tot_timer_name
+  };
+
 #ifndef TIMING
   return PIO_NOERR;
 #endif
@@ -604,7 +657,7 @@ int spio_write_file_io_summary(file_desc_t *file)
   assert(file);
 
   const int THREAD_ID = 0;
-  double total_wr_time = 0, total_rd_time = 0;
+  double total_wr_time = 0, total_rd_time = 0,  total_tot_time = 0;
   for(std::vector<std::string>::const_iterator citer = wr_timers.cbegin();
         citer != wr_timers.cend(); ++citer){
     double wtime = 0;
@@ -629,7 +682,19 @@ int spio_write_file_io_summary(file_desc_t *file)
     }
   }
 
-  LOG((1, "Total read time = %f s, write time = %f s", total_rd_time, total_wr_time));
+  for(std::vector<std::string>::const_iterator citer = tot_timers.cbegin();
+        citer != tot_timers.cend(); ++citer){
+    double wtime = 0;
+    ierr = GPTLget_wallclock((*citer).c_str(), THREAD_ID, &wtime);
+    if(ierr == 0){
+      total_tot_time += wtime;
+    }
+    else{
+      LOG((1,"Unable to get timer value for timer (%s)", (*citer).c_str()));
+    }
+  }
+
+  LOG((1, "Total read time = %f s, write time = %f s, total time = %f s", total_rd_time, total_wr_time, total_tot_time));
   LOG((1, "Total bytes read = %lld, bytes written = %lld",
         (unsigned long long) file->io_fstats->rb, (unsigned long long) file->io_fstats->wb));
 
@@ -647,6 +712,8 @@ int spio_write_file_io_summary(file_desc_t *file)
   io_sstats.rtime_max = total_rd_time;
   io_sstats.wtime_min = total_wr_time;
   io_sstats.wtime_max = total_wr_time;
+  io_sstats.ttime_min = total_tot_time;
+  io_sstats.ttime_max = total_tot_time;
 
   LOG((1, "File I/O stats sent :\n%s",
         PIO_Util::IO_Summary_Util::io_summary_stats2str(io_sstats).c_str()));

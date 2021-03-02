@@ -91,15 +91,15 @@ int PIOc_put_att_tc(int ncid, int varid, const char *name, nc_type atttype,
     if (!ios->async || !ios->ioproc)
     {
         /* Get the length (in bytes) of the type in file. */
+        GPTLstop(ios->io_fstats->wr_timer_name);
+        GPTLstop(ios->io_fstats->tot_timer_name);
+        GPTLstop(file->io_fstats->wr_timer_name);
+        GPTLstop(file->io_fstats->tot_timer_name);
         ierr = PIOc_inq_type(ncid, atttype, NULL, &atttype_len);
         if(ierr != PIO_NOERR){
             LOG((1, "PIOc_inq_type failed, ierr = %d", ierr));
             GPTLstop("PIO:PIOc_put_att_tc");
             GPTLstop("PIO:write_total");
-            GPTLstop(ios->io_fstats->wr_timer_name);
-            GPTLstop(ios->io_fstats->tot_timer_name);
-            GPTLstop(file->io_fstats->wr_timer_name);
-            GPTLstop(file->io_fstats->tot_timer_name);
             if (file->iotype == PIO_IOTYPE_ADIOS)
             {
                 GPTLstop("PIO:PIOc_put_att_tc_adios");
@@ -117,10 +117,6 @@ int PIOc_put_att_tc(int ncid, int varid, const char *name, nc_type atttype,
             if(ierr != PIO_NOERR){
                 GPTLstop("PIO:PIOc_put_att_tc");
                 GPTLstop("PIO:write_total");
-                GPTLstop(ios->io_fstats->wr_timer_name);
-                GPTLstop(ios->io_fstats->tot_timer_name);
-                GPTLstop(file->io_fstats->wr_timer_name);
-                GPTLstop(file->io_fstats->tot_timer_name);
                 if (file->iotype == PIO_IOTYPE_ADIOS)
                 {
                     GPTLstop("PIO:PIOc_put_att_tc_adios");
@@ -130,6 +126,10 @@ int PIOc_put_att_tc(int ncid, int varid, const char *name, nc_type atttype,
                 return ierr;
             }
         }
+        GPTLstart(ios->io_fstats->wr_timer_name);
+        GPTLstart(ios->io_fstats->tot_timer_name);
+        GPTLstart(file->io_fstats->wr_timer_name);
+        GPTLstart(file->io_fstats->tot_timer_name);
         LOG((2, "PIOc_put_att atttype_len = %d memtype_len = %d", ncid, atttype_len, memtype_len));
     }
 
@@ -478,14 +478,14 @@ int PIOc_get_att_tc(int ncid, int varid, const char *name, nc_type memtype, void
     if (!ios->async || !ios->ioproc)
     {
         /* Get the type and length of the attribute. */
+        GPTLstop(ios->io_fstats->rd_timer_name);
+        GPTLstop(ios->io_fstats->tot_timer_name);
+        GPTLstop(file->io_fstats->rd_timer_name);
+        GPTLstop(file->io_fstats->tot_timer_name);
         ierr = PIOc_inq_att(ncid, varid, name, &atttype, &attlen);
         if(ierr != PIO_NOERR){
             LOG((1, "PIOc_inq_att failed, ierr = %d", ierr));
             GPTLstop("PIO:PIOc_get_att_tc");
-            GPTLstop(ios->io_fstats->rd_timer_name);
-            GPTLstop(ios->io_fstats->tot_timer_name);
-            GPTLstop(file->io_fstats->rd_timer_name);
-            GPTLstop(file->io_fstats->tot_timer_name);
             return ierr;
         }
         LOG((2, "atttype = %d attlen = %d", atttype, attlen));
@@ -495,10 +495,6 @@ int PIOc_get_att_tc(int ncid, int varid, const char *name, nc_type memtype, void
         if(ierr != PIO_NOERR){
             LOG((1, "PIOc_inq_type failed, ierr=%d", ierr));
             GPTLstop("PIO:PIOc_get_att_tc");
-            GPTLstop(ios->io_fstats->rd_timer_name);
-            GPTLstop(ios->io_fstats->tot_timer_name);
-            GPTLstop(file->io_fstats->rd_timer_name);
-            GPTLstop(file->io_fstats->tot_timer_name);
             return ierr;
         }
 
@@ -512,13 +508,13 @@ int PIOc_get_att_tc(int ncid, int varid, const char *name, nc_type memtype, void
             if(ierr != PIO_NOERR){
                 LOG((1, "PIOc_inq_type failed, ierr = %d", ierr));
                 GPTLstop("PIO:PIOc_get_att_tc");
-                GPTLstop(ios->io_fstats->rd_timer_name);
-                GPTLstop(ios->io_fstats->tot_timer_name);
-                GPTLstop(file->io_fstats->rd_timer_name);
-                GPTLstop(file->io_fstats->tot_timer_name);
                 return ierr;
             }
         }
+        GPTLstart(ios->io_fstats->rd_timer_name);
+        GPTLstart(ios->io_fstats->tot_timer_name);
+        GPTLstart(file->io_fstats->rd_timer_name);
+        GPTLstart(file->io_fstats->tot_timer_name);
     }
     LOG((2, "atttype_len = %d memtype_len = %d", atttype_len, memtype_len));
 
@@ -802,13 +798,13 @@ int PIOc_get_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
     if (!ios->async || !ios->ioproc)
     {
         /* Get the type of this var. */
+        GPTLstop(ios->io_fstats->rd_timer_name);
+        GPTLstop(ios->io_fstats->tot_timer_name);
+        GPTLstop(file->io_fstats->rd_timer_name);
+        GPTLstop(file->io_fstats->tot_timer_name);
         ierr = PIOc_inq_vartype(ncid, varid, &vartype);
         if(ierr != PIO_NOERR){
             GPTLstop("PIO:PIOc_get_vars_tc");
-            GPTLstop(ios->io_fstats->rd_timer_name);
-            GPTLstop(ios->io_fstats->tot_timer_name);
-            GPTLstop(file->io_fstats->rd_timer_name);
-            GPTLstop(file->io_fstats->tot_timer_name);
             return pio_err(NULL, NULL, ierr, __FILE__, __LINE__,
                         "Reading variable (%s, varid=%d) from file (%s, ncid=%d) failed. Inquiring the variable type failed", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid);
         }
@@ -825,10 +821,6 @@ int PIOc_get_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
             ierr = PIOc_inq_type(ncid, xtype, NULL, &typelen);
             if(ierr != PIO_NOERR){
                 GPTLstop("PIO:PIOc_get_vars_tc");
-                GPTLstop(ios->io_fstats->rd_timer_name);
-                GPTLstop(ios->io_fstats->tot_timer_name);
-                GPTLstop(file->io_fstats->rd_timer_name);
-                GPTLstop(file->io_fstats->tot_timer_name);
                 return pio_err(NULL, NULL, ierr, __FILE__, __LINE__,
                             "Reading variable (%s, varid=%d) from file (%s, ncid=%d) failed. Inquiring the variable type length failed", pio_get_vname_from_file(file, varid), varid, pio_get_vname_from_file(file, varid), ncid);
             }
@@ -838,13 +830,13 @@ int PIOc_get_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
         ierr = PIOc_inq_varndims(ncid, varid, &ndims);
         if(ierr != PIO_NOERR){
             GPTLstop("PIO:PIOc_get_vars_tc");
-            GPTLstop(ios->io_fstats->rd_timer_name);
-            GPTLstop(ios->io_fstats->tot_timer_name);
-            GPTLstop(file->io_fstats->rd_timer_name);
-            GPTLstop(file->io_fstats->tot_timer_name);
             return pio_err(NULL, NULL, ierr, __FILE__, __LINE__,
                         "Reading variable (%s, varid=%d) from file (%s, ncid=%d) failed. Inquiring the number of variable dimensions failed", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid);
         }
+        GPTLstart(ios->io_fstats->rd_timer_name);
+        GPTLstart(ios->io_fstats->tot_timer_name);
+        GPTLstart(file->io_fstats->rd_timer_name);
+        GPTLstart(file->io_fstats->tot_timer_name);
         LOG((3, "ndims = %d", ndims));
 
         /* Only scalar vars can pass NULL for start/count. */
@@ -1356,14 +1348,14 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
     if (!ios->async || !ios->ioproc)
     {
         /* Get the type of this var. */
+        GPTLstop(ios->io_fstats->wr_timer_name);
+        GPTLstop(ios->io_fstats->tot_timer_name);
+        GPTLstop(file->io_fstats->wr_timer_name);
+        GPTLstop(file->io_fstats->tot_timer_name);
         ierr = PIOc_inq_vartype(ncid, varid, &vartype);
         if(ierr != PIO_NOERR){
             GPTLstop("PIO:PIOc_put_vars_tc");
             GPTLstop("PIO:write_total");
-            GPTLstop(ios->io_fstats->wr_timer_name);
-            GPTLstop(ios->io_fstats->tot_timer_name);
-            GPTLstop(file->io_fstats->wr_timer_name);
-            GPTLstop(file->io_fstats->tot_timer_name);
             if (file->iotype == PIO_IOTYPE_ADIOS)
             {
                 GPTLstop("PIO:PIOc_put_vars_tc_adios");
@@ -1382,10 +1374,6 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
         if(ierr != PIO_NOERR){
             GPTLstop("PIO:PIOc_put_vars_tc");
             GPTLstop("PIO:write_total");
-            GPTLstop(ios->io_fstats->wr_timer_name);
-            GPTLstop(ios->io_fstats->tot_timer_name);
-            GPTLstop(file->io_fstats->wr_timer_name);
-            GPTLstop(file->io_fstats->tot_timer_name);
             if (file->iotype == PIO_IOTYPE_ADIOS)
             {
                 GPTLstop("PIO:PIOc_put_vars_tc_adios");
@@ -1404,10 +1392,6 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
             if(ierr != PIO_NOERR){
                 GPTLstop("PIO:PIOc_put_vars_tc");
                 GPTLstop("PIO:write_total");
-                GPTLstop(ios->io_fstats->wr_timer_name);
-                GPTLstop(ios->io_fstats->tot_timer_name);
-                GPTLstop(file->io_fstats->wr_timer_name);
-                GPTLstop(file->io_fstats->tot_timer_name);
                 if (file->iotype == PIO_IOTYPE_ADIOS)
                 {
                     GPTLstop("PIO:PIOc_put_vars_tc_adios");
@@ -1417,6 +1401,10 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                                 "Writing variable (%s, varid=%d) to file (%s, ncid=%d) failed. Inquiring variable type length failed", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid);
             }
         }
+        GPTLstart(ios->io_fstats->wr_timer_name);
+        GPTLstart(ios->io_fstats->tot_timer_name);
+        GPTLstart(file->io_fstats->wr_timer_name);
+        GPTLstart(file->io_fstats->tot_timer_name);
 
         LOG((2, "ndims = %d typelen = %d", ndims, typelen));
 
