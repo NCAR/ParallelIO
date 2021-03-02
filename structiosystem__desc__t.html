@@ -23,7 +23,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">PIO
-   &#160;<span id="projectnumber">2.5.2</span>
+   &#160;<span id="projectnumber">2.5.3</span>
    </div>
   </td>
  </tr>
@@ -79,11 +79,6 @@ $(function() {
 Collaboration diagram for iosystem_desc_t:</div>
 <div class="dyncontent">
 <div class="center"><img src="structiosystem__desc__t__coll__graph.png" border="0" usemap="#iosystem__desc__t_coll__map" alt="Collaboration graph"/></div>
-<map name="iosystem__desc__t_coll__map" id="iosystem__desc__t_coll__map">
-<area shape="rect" title="IO system descriptor structure." alt="" coords="14,199,145,225"/>
-<area shape="rect" href="structrearr__opt.html" title="Rearranger options." alt="" coords="39,109,120,136"/>
-<area shape="rect" href="structrearr__comm__fc__opt.html" title="Rearranger comm flow control options." alt="" coords="5,5,153,32"/>
-</map>
 <center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
@@ -143,11 +138,13 @@ int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struc
 int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structiosystem__desc__t.html#ae338cd1c51fc385932faefe5c80377a7">compmaster</a></td></tr>
 <tr class="memdesc:ae338cd1c51fc385932faefe5c80377a7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set to MPI_ROOT if this task is the master of comp communicator, 0 otherwise. <br /></td></tr>
 <tr class="separator:ae338cd1c51fc385932faefe5c80377a7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad4887d6eeefbbe4cf8373c6a094a10d1"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structiosystem__desc__t.html#ad4887d6eeefbbe4cf8373c6a094a10d1">ioroot</a></td></tr>
-<tr class="memdesc:ad4887d6eeefbbe4cf8373c6a094a10d1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Rank of IO root task (which is rank 0 in io_comm) in the union communicator.  <a href="structiosystem__desc__t.html#ad4887d6eeefbbe4cf8373c6a094a10d1">More...</a><br /></td></tr>
+<tr class="memitem:ad4887d6eeefbbe4cf8373c6a094a10d1"><td class="memItemLeft" align="right" valign="top"><a id="ad4887d6eeefbbe4cf8373c6a094a10d1"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structiosystem__desc__t.html#ad4887d6eeefbbe4cf8373c6a094a10d1">ioroot</a></td></tr>
+<tr class="memdesc:ad4887d6eeefbbe4cf8373c6a094a10d1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Rank of IO root task (which is rank 0 in io_comm) in the union communicator. <br /></td></tr>
 <tr class="separator:ad4887d6eeefbbe4cf8373c6a094a10d1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aeb4289bb6f3ea243e1a9bae70b45aaf9"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structiosystem__desc__t.html#aeb4289bb6f3ea243e1a9bae70b45aaf9">comproot</a></td></tr>
-<tr class="memdesc:aeb4289bb6f3ea243e1a9bae70b45aaf9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Rank of computation root task (which is rank 0 in comm_comms[cmp]) in the union communicator.  <a href="structiosystem__desc__t.html#aeb4289bb6f3ea243e1a9bae70b45aaf9">More...</a><br /></td></tr>
+<tr class="memitem:aeb4289bb6f3ea243e1a9bae70b45aaf9"><td class="memItemLeft" align="right" valign="top"><a id="aeb4289bb6f3ea243e1a9bae70b45aaf9"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structiosystem__desc__t.html#aeb4289bb6f3ea243e1a9bae70b45aaf9">comproot</a></td></tr>
+<tr class="memdesc:aeb4289bb6f3ea243e1a9bae70b45aaf9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Rank of computation root task (which is rank 0 in comm_comms[cmp]) in the union communicator. <br /></td></tr>
 <tr class="separator:aeb4289bb6f3ea243e1a9bae70b45aaf9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a64bb47312ace9243d5466cd37789227d"><td class="memItemLeft" align="right" valign="top"><a id="a64bb47312ace9243d5466cd37789227d"></a>
 int *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structiosystem__desc__t.html#a64bb47312ace9243d5466cd37789227d">ioranks</a></td></tr>
@@ -198,40 +195,6 @@ struct <a class="el" href="structiosystem__desc__t.html">iosystem_desc_t</a> *&#
 <div class="textblock"><p>IO system descriptor structure. </p>
 <p>This structure contains the general IO subsystem data and MPI structure </p>
 </div><h2 class="groupheader">Member Data Documentation</h2>
-<a id="aeb4289bb6f3ea243e1a9bae70b45aaf9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aeb4289bb6f3ea243e1a9bae70b45aaf9">&#9670;&nbsp;</a></span>comproot</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">int iosystem_desc_t::comproot</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Rank of computation root task (which is rank 0 in comm_comms[cmp]) in the union communicator. </p>
-<p>Will always = number of IO tasks in async situations. </p>
-
-</div>
-</div>
-<a id="ad4887d6eeefbbe4cf8373c6a094a10d1"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad4887d6eeefbbe4cf8373c6a094a10d1">&#9670;&nbsp;</a></span>ioroot</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">int iosystem_desc_t::ioroot</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Rank of IO root task (which is rank 0 in io_comm) in the union communicator. </p>
-<p>Will always be 0 for async situations. </p>
-
-</div>
-</div>
 <a id="a349780a2a7a8b14bccadba61d0a3283b"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a349780a2a7a8b14bccadba61d0a3283b">&#9670;&nbsp;</a></span>iosysid</h2>
 
@@ -255,7 +218,7 @@ struct <a class="el" href="structiosystem__desc__t.html">iosystem_desc_t</a> *&#
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Wed Sep 16 2020 06:54:38 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Mar 2 2021 10:44:52 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

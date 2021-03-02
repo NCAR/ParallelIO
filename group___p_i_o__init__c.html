@@ -23,7 +23,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">PIO
-   &#160;<span id="projectnumber">2.5.2</span>
+   &#160;<span id="projectnumber">2.5.3</span>
    </div>
   </td>
  </tr>
@@ -81,9 +81,18 @@ Functions</h2></td></tr>
 <tr class="memitem:ga6c15dcb7a77c662652357b8fee15ade8"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__init__c.html#ga6c15dcb7a77c662652357b8fee15ade8">PIOc_Init_Intracomm_from_F90</a> (int f90_comp_comm, const int num_iotasks, const int stride, const int base, const int rearr, <a class="el" href="pio_8h.html#a2e2d375ac2b7b95a859cc17999c73f42">rearr_opt_t</a> *rearr_opts, int *iosysidp)</td></tr>
 <tr class="memdesc:ga6c15dcb7a77c662652357b8fee15ade8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Interface to call from pio_init from fortran.  <a href="group___p_i_o__init__c.html#ga6c15dcb7a77c662652357b8fee15ade8">More...</a><br /></td></tr>
 <tr class="separator:ga6c15dcb7a77c662652357b8fee15ade8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gacd49545c100103dc978dbf90be048e75"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__init__c.html#gacd49545c100103dc978dbf90be048e75">PIOc_init_async_from_F90</a> (int f90_world_comm, int num_io_procs, int *io_proc_list, int component_count, int *procs_per_component, int *flat_proc_list, int *f90_io_comm, int *f90_comp_comm, int rearranger, int *iosysidp)</td></tr>
+<tr class="memdesc:gacd49545c100103dc978dbf90be048e75"><td class="mdescLeft">&#160;</td><td class="mdescRight">Interface to call from pio_init from fortran.  <a href="group___p_i_o__init__c.html#gacd49545c100103dc978dbf90be048e75">More...</a><br /></td></tr>
+<tr class="separator:gacd49545c100103dc978dbf90be048e75"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga7e5516ba62978bc9b6600dedf78648f9"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__init__c.html#ga7e5516ba62978bc9b6600dedf78648f9">PIOc_init_async_comms_from_F90</a> (int f90_world_comm, int component_count, int *f90_comp_comms, int f90_io_comm, int rearranger, int *iosysidp)</td></tr>
+<tr class="memdesc:ga7e5516ba62978bc9b6600dedf78648f9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Interface to call from pio_init from fortran.  <a href="group___p_i_o__init__c.html#ga7e5516ba62978bc9b6600dedf78648f9">More...</a><br /></td></tr>
+<tr class="separator:ga7e5516ba62978bc9b6600dedf78648f9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga017725f65a38a40963ac6936bbe7b5e9"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__init__c.html#ga017725f65a38a40963ac6936bbe7b5e9">PIOc_init_async</a> (MPI_Comm world, int num_io_procs, int *io_proc_list, int component_count, int *num_procs_per_comp, int **proc_list, MPI_Comm *user_io_comm, MPI_Comm *user_comp_comm, int rearranger, int *iosysidp)</td></tr>
 <tr class="memdesc:ga017725f65a38a40963ac6936bbe7b5e9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Library initialization used when IO tasks are distinct from compute tasks.  <a href="group___p_i_o__init__c.html#ga017725f65a38a40963ac6936bbe7b5e9">More...</a><br /></td></tr>
 <tr class="separator:ga017725f65a38a40963ac6936bbe7b5e9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gadccb3dee69de574a6f05da7e74de0b57"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__init__c.html#gadccb3dee69de574a6f05da7e74de0b57">PIOc_init_async_from_comms</a> (MPI_Comm world, int component_count, MPI_Comm *comp_comm, MPI_Comm io_comm, int rearranger, int *iosysidp)</td></tr>
+<tr class="memdesc:gadccb3dee69de574a6f05da7e74de0b57"><td class="mdescLeft">&#160;</td><td class="mdescRight">Library initialization used when IO tasks are distinct from compute tasks.  <a href="group___p_i_o__init__c.html#gadccb3dee69de574a6f05da7e74de0b57">More...</a><br /></td></tr>
+<tr class="separator:gadccb3dee69de574a6f05da7e74de0b57"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <p>Initialize the IOSystem, including specifying number of IO and computation tasks in C. </p>
@@ -192,6 +201,244 @@ Sequence of Events to do Asynch I/O</h2>
 
 </div>
 </div>
+<a id="ga7e5516ba62978bc9b6600dedf78648f9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga7e5516ba62978bc9b6600dedf78648f9">&#9670;&nbsp;</a></span>PIOc_init_async_comms_from_F90()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int PIOc_init_async_comms_from_F90 </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>f90_world_comm</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>component_count</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int *&#160;</td>
+          <td class="paramname"><em>f90_comp_comms</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>f90_io_comm</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>rearranger</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int *&#160;</td>
+          <td class="paramname"><em>iosysidp</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Interface to call from pio_init from fortran. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">f90_world_comm</td><td>the incoming communicator which includes all tasks </td></tr>
+    <tr><td class="paramname">component_count</td><td>the number of computational components used an iosysid will be generated for each and a comp_comm is expected for each </td></tr>
+    <tr><td class="paramname">f90_comp_comms</td><td>the comp_comm handles passed from fortran </td></tr>
+    <tr><td class="paramname">f90_io_comm</td><td>the io_comm passed from fortran </td></tr>
+    <tr><td class="paramname">rearranger</td><td>currently only PIO_REARRANGE_BOX is supported </td></tr>
+    <tr><td class="paramname">iosysidp</td><td>pointer to array of length component_count that gets the iosysid for each component. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>0 for success, error code otherwise</dd></dl>
+<dl class="section author"><dt>Author</dt><dd>Jim Edwards </dd></dl>
+
+</div>
+</div>
+<a id="gadccb3dee69de574a6f05da7e74de0b57"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gadccb3dee69de574a6f05da7e74de0b57">&#9670;&nbsp;</a></span>PIOc_init_async_from_comms()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int PIOc_init_async_from_comms </td>
+          <td>(</td>
+          <td class="paramtype">MPI_Comm&#160;</td>
+          <td class="paramname"><em>world</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>component_count</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">MPI_Comm *&#160;</td>
+          <td class="paramname"><em>comp_comm</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">MPI_Comm&#160;</td>
+          <td class="paramname"><em>io_comm</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>rearranger</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int *&#160;</td>
+          <td class="paramname"><em>iosysidp</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Library initialization used when IO tasks are distinct from compute tasks. </p>
+<p>This is a collective call. Input parameters are read on each comp_rank=0 and on io_rank=0, values on other tasks are ignored. This variation of PIO_init uses tasks in io_comm to handle IO, these tasks do not return from this call. Instead they go to an internal loop and wait to receive further instructions from the computational tasks.</p>
+<h2><a class="anchor" id="autotoc_md47"></a>
+Sequence of Events to do Asynch I/O</h2>
+<p>Here is the sequence of events that needs to occur when an IO operation is called from the collection of compute tasks. I'm going to use pio_put_var because write_darray has some special characteristics that make it a bit more complicated...</p>
+<p>Compute tasks call pio_put_var with an integer argument</p>
+<p>The MPI_Send sends a message from comp_rank=0 to io_rank=0 on union_comm (a comm defined as the union of io and compute tasks) msg is an integer which indicates the function being called, in this case the msg is PIO_MSG_PUT_VAR_INT</p>
+<p>The iotasks now know what additional arguments they should expect to receive from the compute tasks, in this case a file handle, a variable id, the length of the array and the array itself.</p>
+<p>The iotasks now have the information they need to complete the operation and they call the pio_put_var routine. (In pio1 this bit of code is in pio_get_put_callbacks.F90.in)</p>
+<p>After the netcdf operation is completed (in the case of an inq or get operation) the result is communicated back to the compute tasks.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">world</td><td>the communicator containing all the available tasks.</td></tr>
+    <tr><td class="paramname">component_count</td><td>number of computational components</td></tr>
+    <tr><td class="paramname">comp_comm</td><td>an array of size component_count which are the defined comms of each component - comp_comm should be MPI_COMM_NULL on tasks outside the tasks of each comm these comms may overlap</td></tr>
+    <tr><td class="paramname">io_comm</td><td>a communicator for the IO group, tasks in this comm do not return from this call.</td></tr>
+    <tr><td class="paramname">rearranger</td><td>the default rearranger to use for decompositions in this IO system. Only PIO_REARR_BOX is supported for async. Support for PIO_REARR_SUBSET will be provided in a future version.</td></tr>
+    <tr><td class="paramname">iosysidp</td><td>pointer to array of length component_count that gets the iosysid for each component.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>PIO_NOERR on success, error code otherwise.</dd></dl>
+<dl class="section author"><dt>Author</dt><dd>Jim Edwards </dd></dl>
+
+</div>
+</div>
+<a id="gacd49545c100103dc978dbf90be048e75"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gacd49545c100103dc978dbf90be048e75">&#9670;&nbsp;</a></span>PIOc_init_async_from_F90()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int PIOc_init_async_from_F90 </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>f90_world_comm</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>num_io_procs</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int *&#160;</td>
+          <td class="paramname"><em>io_proc_list</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>component_count</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int *&#160;</td>
+          <td class="paramname"><em>procs_per_component</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int *&#160;</td>
+          <td class="paramname"><em>flat_proc_list</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int *&#160;</td>
+          <td class="paramname"><em>f90_io_comm</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int *&#160;</td>
+          <td class="paramname"><em>f90_comp_comm</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>rearranger</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int *&#160;</td>
+          <td class="paramname"><em>iosysidp</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Interface to call from pio_init from fortran. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">f90_world_comm</td><td>the incoming communicator which includes all tasks </td></tr>
+    <tr><td class="paramname">num_io_procs</td><td>the number of IO tasks </td></tr>
+    <tr><td class="paramname">io_proc_list</td><td>the rank of io tasks in f90_world_comm </td></tr>
+    <tr><td class="paramname">component_count</td><td>the number of computational components used an iosysid will be generated for each </td></tr>
+    <tr><td class="paramname">procs_per_component</td><td>the number of procs in each computational component </td></tr>
+    <tr><td class="paramname">flat_proc_list</td><td>a 1D array of size component_count*maxprocs_per_component with rank in f90_world_comm </td></tr>
+    <tr><td class="paramname">f90_io_comm</td><td>the io_comm handle to be returned to fortran </td></tr>
+    <tr><td class="paramname">f90_comp_comm</td><td>the comp_comm handle to be returned to fortran </td></tr>
+    <tr><td class="paramname">rearranger</td><td>currently only PIO_REARRANGE_BOX is supported </td></tr>
+    <tr><td class="paramname">iosysidp</td><td>pointer to array of length component_count that gets the iosysid for each component. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>0 for success, error code otherwise</dd></dl>
+<dl class="section author"><dt>Author</dt><dd>Jim Edwards </dd></dl>
+
+</div>
+</div>
 <a id="ga479a1d9fe2edfc7ca321a1b482fe0211"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ga479a1d9fe2edfc7ca321a1b482fe0211">&#9670;&nbsp;</a></span>PIOc_Init_Intracomm()</h2>
 
@@ -265,15 +512,13 @@ Create MPI groups for IO tasks, and for computation tasks. </li>
 On IO tasks, create an IO communicator (ios-&gt;io_comm). </li>
 <li>
 Assign an iosystemid, and put this <a class="el" href="structiosystem__desc__t.html" title="IO system descriptor structure.">iosystem_desc_t</a> into the list of open iosystems. </li>
-<li>
-Initialize the bget buffer, unless PIO_USE_MALLOC was used. </li>
 </ul>
 <p>When complete, there are three MPI communicators (ios-&gt;comp_comm, ios-&gt;union_comm, and ios-&gt;io_comm) that must be freed by MPI.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">comp_comm</td><td>the MPI_Comm of the compute tasks. </td></tr>
     <tr><td class="paramname">num_iotasks</td><td>the number of io tasks to use. </td></tr>
-    <tr><td class="paramname">stride</td><td>the offset between io tasks in the comp_comm. </td></tr>
+    <tr><td class="paramname">stride</td><td>the offset between io tasks in the comp_comm. The mod operator is used when computing the IO tasks with the formula: <pre>ios-&gt;ioranks[i] = (base + i * ustride) % ios-&gt;num_comptasks</pre>. </td></tr>
     <tr><td class="paramname">base</td><td>the comp_comm index of the first io task. </td></tr>
     <tr><td class="paramname">rearr</td><td>the rearranger to use by default, this may be overriden in the PIO_init_decomp(). The rearranger is not used until the decomposition is initialized. </td></tr>
     <tr><td class="paramname">iosysidp</td><td>index of the defined system descriptor. </td></tr>
@@ -362,7 +607,7 @@ Initialize the bget buffer, unless PIO_USE_MALLOC was used. </li>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Wed Sep 16 2020 06:54:38 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Mar 2 2021 10:44:51 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

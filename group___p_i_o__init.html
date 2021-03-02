@@ -23,7 +23,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">PIO
-   &#160;<span id="projectnumber">2.5.2</span>
+   &#160;<span id="projectnumber">2.5.3</span>
    </div>
   </td>
  </tr>
@@ -78,6 +78,10 @@ Functions/Subroutines</h2></td></tr>
 <tr class="memitem:ga24013f7eb18aa1552bb0a9ccecc689b3"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__init.html#ga24013f7eb18aa1552bb0a9ccecc689b3">piolib_mod::init_intracom</a> (comp_rank, comp_comm, num_iotasks, num_aggregator, stride, rearr, iosystem, base, rearr_opts)</td></tr>
 <tr class="memdesc:ga24013f7eb18aa1552bb0a9ccecc689b3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Rearranger methods.  <a href="group___p_i_o__init.html#ga24013f7eb18aa1552bb0a9ccecc689b3">More...</a><br /></td></tr>
 <tr class="separator:ga24013f7eb18aa1552bb0a9ccecc689b3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga1f969de976dcfe9cca1c3257ba43f463"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__init.html#ga1f969de976dcfe9cca1c3257ba43f463">piolib_mod::init_intercom</a> (iosystem, incomm, procs_per_component, comp_proc_list, io_proc_list, rearranger, comp_comm, io_comm)</td></tr>
+<tr class="separator:ga1f969de976dcfe9cca1c3257ba43f463"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga023d900938e3992928255229ed7512ff"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___p_i_o__init.html#ga023d900938e3992928255229ed7512ff">piolib_mod::init_intercom_from_comms</a> (iosystem, world_comm, comp_comms, io_comm, rearranger)</td></tr>
+<tr class="separator:ga023d900938e3992928255229ed7512ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <p>Create a new IO System, designating numbers of I/O and computation tasks in Fortran. </p>
@@ -92,6 +96,143 @@ Functions/Subroutines</h2></td></tr>
 <div class="line">    this%pioIoSystem,           &amp; <span class="comment">! iosystem</span></div>
 <div class="line">    base=this%optBase)            ! base(<span class="keywordtype">optional</span> argument)</div>
 </div><!-- fragment --> <h2 class="groupheader">Function/Subroutine Documentation</h2>
+<a id="ga1f969de976dcfe9cca1c3257ba43f463"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga1f969de976dcfe9cca1c3257ba43f463">&#9670;&nbsp;</a></span>init_intercom()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">subroutine piolib_mod::init_intercom </td>
+          <td>(</td>
+          <td class="paramtype">type(<a class="el" href="structpio__types_1_1iosystem__desc__t.html">iosystem_desc_t</a>), dimension(:), intent(out)&#160;</td>
+          <td class="paramname"><em>iosystem</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer, intent(in)&#160;</td>
+          <td class="paramname"><em>incomm</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer, dimension(:), intent(in)&#160;</td>
+          <td class="paramname"><em>procs_per_component</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer, dimension(:,:), intent(in)&#160;</td>
+          <td class="paramname"><em>comp_proc_list</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer, dimension(:), intent(in)&#160;</td>
+          <td class="paramname"><em>io_proc_list</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer, intent(in)&#160;</td>
+          <td class="paramname"><em>rearranger</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer, dimension(:), intent(out)&#160;</td>
+          <td class="paramname"><em>comp_comm</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer, intent(out)&#160;</td>
+          <td class="paramname"><em>io_comm</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Initialize the pio subsystem. This is a collective call. Input parameters are read on comp_rank=0 values on other tasks are ignored. This variation of PIO_init sets up a distinct set of tasks to handle IO, these tasks do not return from this call. Instead they go to an internal loop and wait to receive further instructions from the computational tasks.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">iosystem</td><td>An array of type <a class="el" href="structiosystem__desc__t.html" title="IO system descriptor structure.">iosystem_desc_t</a> and size component_count </td></tr>
+    <tr><td class="paramname">incomm</td><td>A MPI communicator which includes all tasks in the call </td></tr>
+    <tr><td class="paramname">procs_per_component</td><td>An integer array of tasks per computational component </td></tr>
+    <tr><td class="paramname">comp_proc_list</td><td>A 2d array of all ranks in incomm for each computational component </td></tr>
+    <tr><td class="paramname">io_proc_list</td><td>An array of all io ranks in incomm </td></tr>
+    <tr><td class="paramname">rearranger</td><td>The rearranger to use (currently only PIO_BOX_REARR) </td></tr>
+    <tr><td class="paramname">comp_comm</td><td>On output the MPI comm for each computational component (MPI_COMM_NULL on tasks not in this component) </td></tr>
+    <tr><td class="paramname">io_comm</td><td>On output the MPI comm for the IO component (MPI_COMM_NULL on tasks not in io component) </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>Jim Edwards </dd></dl>
+
+</div>
+</div>
+<a id="ga023d900938e3992928255229ed7512ff"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga023d900938e3992928255229ed7512ff">&#9670;&nbsp;</a></span>init_intercom_from_comms()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">subroutine piolib_mod::init_intercom_from_comms </td>
+          <td>(</td>
+          <td class="paramtype">type(<a class="el" href="structpio__types_1_1iosystem__desc__t.html">iosystem_desc_t</a>), dimension(:), intent(out)&#160;</td>
+          <td class="paramname"><em>iosystem</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer, intent(in)&#160;</td>
+          <td class="paramname"><em>world_comm</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer, dimension(:), intent(in)&#160;</td>
+          <td class="paramname"><em>comp_comms</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer, intent(in)&#160;</td>
+          <td class="paramname"><em>io_comm</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer, intent(in)&#160;</td>
+          <td class="paramname"><em>rearranger</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Initialize the pio subsystem. This is a collective call. Input parameters are read on comp_ranks=0 and io_rank=0 values on other tasks are ignored. This variation of PIO_init uses tasks in io_comm to handle IO, these tasks do not return from this call. Instead they go to an internal loop and wait to receive further instructions from the computational tasks.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">iosystem</td><td>An array of type <a class="el" href="structiosystem__desc__t.html" title="IO system descriptor structure.">iosystem_desc_t</a> and size component_count </td></tr>
+    <tr><td class="paramname">world_comm</td><td>A MPI communicator which includes all tasks in the call </td></tr>
+    <tr><td class="paramname">comp_comms</td><td>On input the MPI comm for each computational component (MPI_COMM_NULL on tasks not in this component) </td></tr>
+    <tr><td class="paramname">io_comm</td><td>On input the MPI comm for the IO component (MPI_COMM_NULL on tasks not in io component) </td></tr>
+    <tr><td class="paramname">rearranger</td><td>The rearranger to use (currently only PIO_BOX_REARR)</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>Jim Edwards </dd></dl>
+
+</div>
+</div>
 <a id="ga24013f7eb18aa1552bb0a9ccecc689b3"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ga24013f7eb18aa1552bb0a9ccecc689b3">&#9670;&nbsp;</a></span>init_intracom()</h2>
 
@@ -149,7 +290,7 @@ Functions/Subroutines</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">type (<a class="el" href="structpio__types_1_1pio__rearr__opt__t.html">pio_rearr_opt_t</a>), intent(in), optional&#160;</td>
+          <td class="paramtype">type (<a class="el" href="structpio__types_1_1pio__rearr__opt__t.html">pio_rearr_opt_t</a>), intent(in), optional, target&#160;</td>
           <td class="paramname"><em>rearr_opts</em>&#160;</td>
         </tr>
         <tr>
@@ -175,7 +316,7 @@ Functions/Subroutines</h2></td></tr>
 </ul>
 </td></tr>
     <tr><td class="paramname">iosystem</td><td>a derived type which can be used in subsequent pio operations (defined in PIO_types). </td></tr>
-    <tr><td class="paramname">base</td><td><em>optional</em> argument can be used to offset the first io task - default base is task 1. </td></tr>
+    <tr><td class="paramname">base</td><td><em>optional</em> argument can be used to offset the first io task. Since this is an MPI task number, it is zero-based (the first task is 0). The default base is task 0. </td></tr>
     <tr><td class="paramname">rearr_opts</td><td>the rearranger options. </td></tr>
   </table>
   </dd>
@@ -187,7 +328,7 @@ Functions/Subroutines</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Wed Sep 16 2020 06:54:38 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Mar 2 2021 10:44:51 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

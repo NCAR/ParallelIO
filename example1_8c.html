@@ -23,7 +23,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">PIO
-   &#160;<span id="projectnumber">2.5.2</span>
+   &#160;<span id="projectnumber">2.5.3</span>
    </div>
   </td>
  </tr>
@@ -89,20 +89,6 @@ $(function() {
 Include dependency graph for example1.c:</div>
 <div class="dyncontent">
 <div class="center"><img src="example1_8c__incl.png" border="0" usemap="#example1_8c" alt=""/></div>
-<map name="example1_8c" id="example1_8c">
-<area shape="rect" title="A simple C example for the ParallelIO Library." alt="" coords="218,5,317,32"/>
-<area shape="rect" title=" " alt="" coords="5,80,79,107"/>
-<area shape="rect" title=" " alt="" coords="103,80,179,107"/>
-<area shape="rect" title=" " alt="" coords="121,155,187,181"/>
-<area shape="rect" title=" " alt="" coords="212,155,283,181"/>
-<area shape="rect" title=" " alt="" coords="435,80,510,107"/>
-<area shape="rect" title=" " alt="" coords="307,155,366,181"/>
-<area shape="rect" href="pio_8h.html" title=" " alt="" coords="356,80,411,107"/>
-<area shape="rect" title=" " alt="" coords="687,155,770,181"/>
-<area shape="rect" title=" " alt="" coords="391,155,461,181"/>
-<area shape="rect" title=" " alt="" coords="485,155,564,181"/>
-<area shape="rect" title=" " alt="" coords="589,155,663,181"/>
-</map>
 </div>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="define-members"></a>
@@ -155,13 +141,13 @@ Functions</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
 Variables</h2></td></tr>
-<tr class="memitem:ab936652dd13083dc9181ec7886ab04b7"><td class="memItemLeft" align="right" valign="top">char&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="example1_8c.html#ab936652dd13083dc9181ec7886ab04b7">err_buffer</a> [MPI_MAX_ERROR_STRING]</td></tr>
-<tr class="memdesc:ab936652dd13083dc9181ec7886ab04b7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Global err buffer for MPI.  <a href="example1_8c.html#ab936652dd13083dc9181ec7886ab04b7">More...</a><br /></td></tr>
-<tr class="separator:ab936652dd13083dc9181ec7886ab04b7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aeb75303058f3be9b462de7ba3f6b03a7"><td class="memItemLeft" align="right" valign="top"><a id="aeb75303058f3be9b462de7ba3f6b03a7"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="example1_8c.html#aeb75303058f3be9b462de7ba3f6b03a7">resultlen</a></td></tr>
-<tr class="memdesc:aeb75303058f3be9b462de7ba3f6b03a7"><td class="mdescLeft">&#160;</td><td class="mdescRight">This is the length of the most recent MPI error message, stored int the global error string. <br /></td></tr>
-<tr class="separator:aeb75303058f3be9b462de7ba3f6b03a7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0627610196e3a985e29c69528b79a954"><td class="memItemLeft" align="right" valign="top">char&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="example1_8c.html#a0627610196e3a985e29c69528b79a954">exerr_buffer</a> [MPI_MAX_ERROR_STRING]</td></tr>
+<tr class="memdesc:a0627610196e3a985e29c69528b79a954"><td class="mdescLeft">&#160;</td><td class="mdescRight">Global err buffer for MPI.  <a href="example1_8c.html#a0627610196e3a985e29c69528b79a954">More...</a><br /></td></tr>
+<tr class="separator:a0627610196e3a985e29c69528b79a954"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4411d1d09fde27d1e16fc86969a420b7"><td class="memItemLeft" align="right" valign="top"><a id="a4411d1d09fde27d1e16fc86969a420b7"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="example1_8c.html#a4411d1d09fde27d1e16fc86969a420b7">exresultlen</a></td></tr>
+<tr class="memdesc:a4411d1d09fde27d1e16fc86969a420b7"><td class="mdescLeft">&#160;</td><td class="mdescRight">This is the length of the most recent MPI error message, stored int the global error string. <br /></td></tr>
+<tr class="separator:a4411d1d09fde27d1e16fc86969a420b7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>A simple C example for the ParallelIO Library. </p>
@@ -200,9 +186,9 @@ int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="examp
         </tr>
       </table>
 </div><div class="memdoc">
-<b>Value:</b><div class="fragment"><div class="line">    <span class="keywordflow">do</span> {                \</div>
-<div class="line">    MPI_Finalize();             \</div>
-<div class="line">    return e;               \</div>
+<b>Value:</b><div class="fragment"><div class="line">        <span class="keywordflow">do</span> {                \</div>
+<div class="line">        MPI_Finalize();             \</div>
+<div class="line">        return e;               \</div>
 <div class="line">    } <span class="keywordflow">while</span> (0)</div>
 </div><!-- fragment -->
 <p>Handle non-MPI errors by finalizing the MPI library and exiting with an exit code. </p>
@@ -224,11 +210,11 @@ int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="examp
         </tr>
       </table>
 </div><div class="memdoc">
-<b>Value:</b><div class="fragment"><div class="line">    <span class="keywordflow">do</span> {                                                  \</div>
-<div class="line">    MPI_Error_string(e, <a class="code" href="example1_8c.html#ab936652dd13083dc9181ec7886ab04b7">err_buffer</a>, &amp;<a class="code" href="example1_8c.html#aeb75303058f3be9b462de7ba3f6b03a7">resultlen</a>);            \</div>
-<div class="line">    printf(<span class="stringliteral">&quot;MPI error, line %d, file %s: %s\n&quot;</span>, __LINE__, __FILE__, <a class="code" href="example1_8c.html#ab936652dd13083dc9181ec7886ab04b7">err_buffer</a>); \</div>
-<div class="line">    MPI_Finalize();                         \</div>
-<div class="line">    return 2;                           \</div>
+<b>Value:</b><div class="fragment"><div class="line">        <span class="keywordflow">do</span> {                                                  \</div>
+<div class="line">        MPI_Error_string(e, <a class="code" href="example1_8c.html#a0627610196e3a985e29c69528b79a954">exerr_buffer</a>, &amp;<a class="code" href="example1_8c.html#a4411d1d09fde27d1e16fc86969a420b7">exresultlen</a>);            \</div>
+<div class="line">        printf(<span class="stringliteral">&quot;MPI error, line %d, file %s: %s\n&quot;</span>, __LINE__, __FILE__, <a class="code" href="example1_8c.html#a0627610196e3a985e29c69528b79a954">exerr_buffer</a>); \</div>
+<div class="line">        MPI_Finalize();                         \</div>
+<div class="line">        return 2;                           \</div>
 <div class="line">    } <span class="keywordflow">while</span> (0)</div>
 </div><!-- fragment -->
 <p>Handle MPI errors. </p>
@@ -394,14 +380,14 @@ data:</pre><pre>foo = 42, 42, 42, 42, 43, 43, 43, 43, 44, 44, 44, 44, 45, 45, 45
 </div>
 </div>
 <h2 class="groupheader">Variable Documentation</h2>
-<a id="ab936652dd13083dc9181ec7886ab04b7"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab936652dd13083dc9181ec7886ab04b7">&#9670;&nbsp;</a></span>err_buffer</h2>
+<a id="a0627610196e3a985e29c69528b79a954"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0627610196e3a985e29c69528b79a954">&#9670;&nbsp;</a></span>exerr_buffer</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">char err_buffer[MPI_MAX_ERROR_STRING]</td>
+          <td class="memname">char exerr_buffer[MPI_MAX_ERROR_STRING]</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -412,11 +398,11 @@ data:</pre><pre>foo = 42, 42, 42, 42, 43, 43, 43, 43, 44, 44, 44, 44, 45, 45, 45
 </div>
 </div>
 </div><!-- contents -->
-<div class="ttc" id="aexample1_8c_html_aeb75303058f3be9b462de7ba3f6b03a7"><div class="ttname"><a href="example1_8c.html#aeb75303058f3be9b462de7ba3f6b03a7">resultlen</a></div><div class="ttdeci">int resultlen</div><div class="ttdoc">This is the length of the most recent MPI error message, stored int the global error string.</div><div class="ttdef"><b>Definition:</b> example1.c:80</div></div>
-<div class="ttc" id="aexample1_8c_html_ab936652dd13083dc9181ec7886ab04b7"><div class="ttname"><a href="example1_8c.html#ab936652dd13083dc9181ec7886ab04b7">err_buffer</a></div><div class="ttdeci">char err_buffer[MPI_MAX_ERROR_STRING]</div><div class="ttdoc">Global err buffer for MPI.</div><div class="ttdef"><b>Definition:</b> example1.c:76</div></div>
+<div class="ttc" id="aexample1_8c_html_a4411d1d09fde27d1e16fc86969a420b7"><div class="ttname"><a href="example1_8c.html#a4411d1d09fde27d1e16fc86969a420b7">exresultlen</a></div><div class="ttdeci">int exresultlen</div><div class="ttdoc">This is the length of the most recent MPI error message, stored int the global error string.</div><div class="ttdef"><b>Definition:</b> example1.c:80</div></div>
+<div class="ttc" id="aexample1_8c_html_a0627610196e3a985e29c69528b79a954"><div class="ttname"><a href="example1_8c.html#a0627610196e3a985e29c69528b79a954">exerr_buffer</a></div><div class="ttdeci">char exerr_buffer[MPI_MAX_ERROR_STRING]</div><div class="ttdoc">Global err buffer for MPI.</div><div class="ttdef"><b>Definition:</b> example1.c:76</div></div>
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Wed Sep 16 2020 06:54:38 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Mar 2 2021 10:44:51 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

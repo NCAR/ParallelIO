@@ -23,7 +23,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">PIO
-   &#160;<span id="projectnumber">2.5.2</span>
+   &#160;<span id="projectnumber">2.5.3</span>
    </div>
   </td>
  </tr>
@@ -75,16 +75,10 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><code>#include &quot;config.h&quot;</code><br />
-<code>#include &lt;netcdf.inc&gt;</code><br />
 </div><div class="textblock"><div class="dynheader">
 Include dependency graph for pio_types.F90:</div>
 <div class="dyncontent">
 <div class="center"><img src="pio__types_8_f90__incl.png" border="0" usemap="#pio__types_8_f90" alt=""/></div>
-<map name="pio__types_8_f90" id="pio__types_8_f90">
-<area shape="rect" title=" " alt="" coords="37,5,151,32"/>
-<area shape="rect" title=" " alt="" coords="5,80,79,107"/>
-<area shape="rect" title=" " alt="" coords="103,80,189,107"/>
-</map>
 </div>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
@@ -155,7 +149,7 @@ integer(i4), parameter, public&#160;</td><td class="memItemRight" valign="bottom
 <tr class="memdesc:ab0b97bdef734cdf178b4c4f6e729f18f"><td class="mdescLeft">&#160;</td><td class="mdescRight">default error handler <br /></td></tr>
 <tr class="separator:ab0b97bdef734cdf178b4c4f6e729f18f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa6ca58157c7e809655f77607ce919acc"><td class="memItemLeft" align="right" valign="top"><a id="aa6ca58157c7e809655f77607ce919acc"></a>
-integer, parameter, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio__types_8_f90.html#aa6ca58157c7e809655f77607ce919acc">pio_types::pio_64bit_data</a> = 0</td></tr>
+integer, parameter, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio__types_8_f90.html#aa6ca58157c7e809655f77607ce919acc">pio_types::pio_64bit_data</a> = 32</td></tr>
 <tr class="memdesc:aa6ca58157c7e809655f77607ce919acc"><td class="mdescLeft">&#160;</td><td class="mdescRight">CDF5 format. <br /></td></tr>
 <tr class="separator:aa6ca58157c7e809655f77607ce919acc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0432a6b71c714a288b97e253b5c83231"><td class="memItemLeft" align="right" valign="top"><a id="a0432a6b71c714a288b97e253b5c83231"></a>
@@ -163,79 +157,83 @@ integer, parameter, public&#160;</td><td class="memItemRight" valign="bottom"><a
 <tr class="memdesc:a0432a6b71c714a288b97e253b5c83231"><td class="mdescLeft">&#160;</td><td class="mdescRight">num ost <br /></td></tr>
 <tr class="separator:a0432a6b71c714a288b97e253b5c83231"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab7d075eb33a76e3eba4c804f561e1026"><td class="memItemLeft" align="right" valign="top"><a id="ab7d075eb33a76e3eba4c804f561e1026"></a>
-integer, parameter, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio__types_8_f90.html#ab7d075eb33a76e3eba4c804f561e1026">pio_types::pio_global</a> = nf_global</td></tr>
+integer, parameter, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio__types_8_f90.html#ab7d075eb33a76e3eba4c804f561e1026">pio_types::pio_global</a> = 0</td></tr>
 <tr class="memdesc:ab7d075eb33a76e3eba4c804f561e1026"><td class="mdescLeft">&#160;</td><td class="mdescRight">global atts <br /></td></tr>
 <tr class="separator:ab7d075eb33a76e3eba4c804f561e1026"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a848a4ac80b60f8b570bb9b73354d4185"><td class="memItemLeft" align="right" valign="top"><a id="a848a4ac80b60f8b570bb9b73354d4185"></a>
-integer, parameter, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio__types_8_f90.html#a848a4ac80b60f8b570bb9b73354d4185">pio_types::pio_unlimited</a> = nf_unlimited</td></tr>
+integer, parameter, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio__types_8_f90.html#a848a4ac80b60f8b570bb9b73354d4185">pio_types::pio_unlimited</a> = 0</td></tr>
 <tr class="memdesc:a848a4ac80b60f8b570bb9b73354d4185"><td class="mdescLeft">&#160;</td><td class="mdescRight">unlimited dimension <br /></td></tr>
 <tr class="separator:a848a4ac80b60f8b570bb9b73354d4185"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af1bd7b8e000f1848734d12d9e5a5af96"><td class="memItemLeft" align="right" valign="top"><a id="af1bd7b8e000f1848734d12d9e5a5af96"></a>
-integer, parameter, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio__types_8_f90.html#af1bd7b8e000f1848734d12d9e5a5af96">pio_types::pio_double</a> = nf_double</td></tr>
+integer, parameter, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio__types_8_f90.html#af1bd7b8e000f1848734d12d9e5a5af96">pio_types::pio_double</a> = 6</td></tr>
 <tr class="memdesc:af1bd7b8e000f1848734d12d9e5a5af96"><td class="mdescLeft">&#160;</td><td class="mdescRight">double type <br /></td></tr>
 <tr class="separator:af1bd7b8e000f1848734d12d9e5a5af96"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9a27cad4ee605e24c1d60375f97f1749"><td class="memItemLeft" align="right" valign="top"><a id="a9a27cad4ee605e24c1d60375f97f1749"></a>
-integer, parameter, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio__types_8_f90.html#a9a27cad4ee605e24c1d60375f97f1749">pio_types::pio_real</a> = nf_real</td></tr>
+integer, parameter, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio__types_8_f90.html#a9a27cad4ee605e24c1d60375f97f1749">pio_types::pio_real</a> = 5</td></tr>
 <tr class="memdesc:a9a27cad4ee605e24c1d60375f97f1749"><td class="mdescLeft">&#160;</td><td class="mdescRight">real type <br /></td></tr>
 <tr class="separator:a9a27cad4ee605e24c1d60375f97f1749"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af32fd42be568cc89fd08ff599fe31ecd"><td class="memItemLeft" align="right" valign="top"><a id="af32fd42be568cc89fd08ff599fe31ecd"></a>
-integer, parameter, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio__types_8_f90.html#af32fd42be568cc89fd08ff599fe31ecd">pio_types::pio_int</a> = nf_int</td></tr>
+integer, parameter, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio__types_8_f90.html#af32fd42be568cc89fd08ff599fe31ecd">pio_types::pio_int</a> = 4</td></tr>
 <tr class="memdesc:af32fd42be568cc89fd08ff599fe31ecd"><td class="mdescLeft">&#160;</td><td class="mdescRight">int type <br /></td></tr>
 <tr class="separator:af32fd42be568cc89fd08ff599fe31ecd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8597cb66b2ce49b1d98bb27f83746929"><td class="memItemLeft" align="right" valign="top"><a id="a8597cb66b2ce49b1d98bb27f83746929"></a>
-integer, parameter, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio__types_8_f90.html#a8597cb66b2ce49b1d98bb27f83746929">pio_types::pio_short</a> = nf_short</td></tr>
+integer, parameter, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio__types_8_f90.html#a8597cb66b2ce49b1d98bb27f83746929">pio_types::pio_short</a> = 3</td></tr>
 <tr class="memdesc:a8597cb66b2ce49b1d98bb27f83746929"><td class="mdescLeft">&#160;</td><td class="mdescRight">short int type <br /></td></tr>
 <tr class="separator:a8597cb66b2ce49b1d98bb27f83746929"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad18facff1e9078caec158687cfb6eb92"><td class="memItemLeft" align="right" valign="top"><a id="ad18facff1e9078caec158687cfb6eb92"></a>
-integer, parameter, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio__types_8_f90.html#ad18facff1e9078caec158687cfb6eb92">pio_types::pio_char</a> = nf_char</td></tr>
+integer, parameter, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio__types_8_f90.html#ad18facff1e9078caec158687cfb6eb92">pio_types::pio_char</a> = 2</td></tr>
 <tr class="memdesc:ad18facff1e9078caec158687cfb6eb92"><td class="mdescLeft">&#160;</td><td class="mdescRight">char type <br /></td></tr>
 <tr class="separator:ad18facff1e9078caec158687cfb6eb92"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8a6aff98b0908c533dd180d653b28e7c"><td class="memItemLeft" align="right" valign="top"><a id="a8a6aff98b0908c533dd180d653b28e7c"></a>
-integer, parameter, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio__types_8_f90.html#a8a6aff98b0908c533dd180d653b28e7c">pio_types::pio_noerr</a> = nf_noerr</td></tr>
+integer, parameter, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio__types_8_f90.html#a8a6aff98b0908c533dd180d653b28e7c">pio_types::pio_noerr</a> = 0</td></tr>
 <tr class="memdesc:a8a6aff98b0908c533dd180d653b28e7c"><td class="mdescLeft">&#160;</td><td class="mdescRight">no error <br /></td></tr>
 <tr class="separator:a8a6aff98b0908c533dd180d653b28e7c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af01c4a0dde8bb401f297626614cd81bc"><td class="memItemLeft" align="right" valign="top"><a id="af01c4a0dde8bb401f297626614cd81bc"></a>
-integer, parameter, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio__types_8_f90.html#af01c4a0dde8bb401f297626614cd81bc">pio_types::pio_write</a> = nf_write</td></tr>
+integer, parameter, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio__types_8_f90.html#af01c4a0dde8bb401f297626614cd81bc">pio_types::pio_write</a> = 1</td></tr>
 <tr class="memdesc:af01c4a0dde8bb401f297626614cd81bc"><td class="mdescLeft">&#160;</td><td class="mdescRight">read-write <br /></td></tr>
 <tr class="separator:af01c4a0dde8bb401f297626614cd81bc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6bebf25ec5e9051b23f0a05079e47a03"><td class="memItemLeft" align="right" valign="top"><a id="a6bebf25ec5e9051b23f0a05079e47a03"></a>
-integer, parameter, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio__types_8_f90.html#a6bebf25ec5e9051b23f0a05079e47a03">pio_types::pio_nowrite</a> = nf_nowrite</td></tr>
+integer, parameter, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio__types_8_f90.html#a6bebf25ec5e9051b23f0a05079e47a03">pio_types::pio_nowrite</a> = 0</td></tr>
 <tr class="memdesc:a6bebf25ec5e9051b23f0a05079e47a03"><td class="mdescLeft">&#160;</td><td class="mdescRight">read-only <br /></td></tr>
 <tr class="separator:a6bebf25ec5e9051b23f0a05079e47a03"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adc951e1c31b54757b44c05bd1cdd7c27"><td class="memItemLeft" align="right" valign="top"><a id="adc951e1c31b54757b44c05bd1cdd7c27"></a>
-integer, parameter, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio__types_8_f90.html#adc951e1c31b54757b44c05bd1cdd7c27">pio_types::pio_clobber</a> = nf_clobber</td></tr>
+integer, parameter, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio__types_8_f90.html#adc951e1c31b54757b44c05bd1cdd7c27">pio_types::pio_clobber</a> = 0</td></tr>
 <tr class="memdesc:adc951e1c31b54757b44c05bd1cdd7c27"><td class="mdescLeft">&#160;</td><td class="mdescRight">clobber existing file <br /></td></tr>
 <tr class="separator:adc951e1c31b54757b44c05bd1cdd7c27"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae830d99fb4364046a43f9f3995741b19"><td class="memItemLeft" align="right" valign="top"><a id="ae830d99fb4364046a43f9f3995741b19"></a>
-integer, parameter, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio__types_8_f90.html#ae830d99fb4364046a43f9f3995741b19">pio_types::pio_noclobber</a> = nf_NOclobber</td></tr>
+integer, parameter, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio__types_8_f90.html#ae830d99fb4364046a43f9f3995741b19">pio_types::pio_noclobber</a> = 4</td></tr>
 <tr class="memdesc:ae830d99fb4364046a43f9f3995741b19"><td class="mdescLeft">&#160;</td><td class="mdescRight">do not clobber existing file <br /></td></tr>
 <tr class="separator:ae830d99fb4364046a43f9f3995741b19"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acafbf1a767e2901254be6fa31ce3fa9c"><td class="memItemLeft" align="right" valign="top"><a id="acafbf1a767e2901254be6fa31ce3fa9c"></a>
+integer, parameter, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio__types_8_f90.html#acafbf1a767e2901254be6fa31ce3fa9c">pio_types::pio_fill</a> = 0</td></tr>
+<tr class="memdesc:acafbf1a767e2901254be6fa31ce3fa9c"><td class="mdescLeft">&#160;</td><td class="mdescRight">use fill values <br /></td></tr>
+<tr class="separator:acafbf1a767e2901254be6fa31ce3fa9c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5b073480db4afeeecee8e27c58d6d064"><td class="memItemLeft" align="right" valign="top"><a id="a5b073480db4afeeecee8e27c58d6d064"></a>
-integer, parameter, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio__types_8_f90.html#a5b073480db4afeeecee8e27c58d6d064">pio_types::pio_nofill</a> = nf_nofill</td></tr>
+integer, parameter, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio__types_8_f90.html#a5b073480db4afeeecee8e27c58d6d064">pio_types::pio_nofill</a> = 256</td></tr>
 <tr class="memdesc:a5b073480db4afeeecee8e27c58d6d064"><td class="mdescLeft">&#160;</td><td class="mdescRight">do not use fill values <br /></td></tr>
 <tr class="separator:a5b073480db4afeeecee8e27c58d6d064"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4c9ced6add00ac0d8fd44c90853ac814"><td class="memItemLeft" align="right" valign="top"><a id="a4c9ced6add00ac0d8fd44c90853ac814"></a>
-integer, parameter, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio__types_8_f90.html#a4c9ced6add00ac0d8fd44c90853ac814">pio_types::pio_max_name</a> = nf_max_name</td></tr>
+integer, parameter, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio__types_8_f90.html#a4c9ced6add00ac0d8fd44c90853ac814">pio_types::pio_max_name</a> = 256</td></tr>
 <tr class="memdesc:a4c9ced6add00ac0d8fd44c90853ac814"><td class="mdescLeft">&#160;</td><td class="mdescRight">max name len <br /></td></tr>
 <tr class="separator:a4c9ced6add00ac0d8fd44c90853ac814"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2820b3b092afd3df986baad8367a5486"><td class="memItemLeft" align="right" valign="top"><a id="a2820b3b092afd3df986baad8367a5486"></a>
-integer, parameter, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio__types_8_f90.html#a2820b3b092afd3df986baad8367a5486">pio_types::pio_max_var_dims</a> = min(6, nf_max_var_dims)</td></tr>
+integer, parameter, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio__types_8_f90.html#a2820b3b092afd3df986baad8367a5486">pio_types::pio_max_var_dims</a> = 6</td></tr>
 <tr class="memdesc:a2820b3b092afd3df986baad8367a5486"><td class="mdescLeft">&#160;</td><td class="mdescRight">max dims for a var <br /></td></tr>
 <tr class="separator:a2820b3b092afd3df986baad8367a5486"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a37a9ebb788a1ff17ccceab7712149cc6"><td class="memItemLeft" align="right" valign="top"><a id="a37a9ebb788a1ff17ccceab7712149cc6"></a>
-integer, parameter, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio__types_8_f90.html#a37a9ebb788a1ff17ccceab7712149cc6">pio_types::pio_64bit_offset</a> = nf_64bit_offset</td></tr>
+integer, parameter, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio__types_8_f90.html#a37a9ebb788a1ff17ccceab7712149cc6">pio_types::pio_64bit_offset</a> = 512</td></tr>
 <tr class="memdesc:a37a9ebb788a1ff17ccceab7712149cc6"><td class="mdescLeft">&#160;</td><td class="mdescRight">64bit offset format <br /></td></tr>
 <tr class="separator:a37a9ebb788a1ff17ccceab7712149cc6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a36a2029ef11559645a8718f3f4e64dd1"><td class="memItemLeft" align="right" valign="top"><a id="a36a2029ef11559645a8718f3f4e64dd1"></a>
-integer, parameter, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio__types_8_f90.html#a36a2029ef11559645a8718f3f4e64dd1">pio_types::pio_fill_int</a> = nf_fill_int</td></tr>
+integer, parameter, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio__types_8_f90.html#a36a2029ef11559645a8718f3f4e64dd1">pio_types::pio_fill_int</a> = -2147483647</td></tr>
 <tr class="memdesc:a36a2029ef11559645a8718f3f4e64dd1"><td class="mdescLeft">&#160;</td><td class="mdescRight">int fill value <br /></td></tr>
 <tr class="separator:a36a2029ef11559645a8718f3f4e64dd1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abbe6afb9bc3b96f8c1375d0ff23897bd"><td class="memItemLeft" align="right" valign="top"><a id="abbe6afb9bc3b96f8c1375d0ff23897bd"></a>
-real, parameter, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio__types_8_f90.html#abbe6afb9bc3b96f8c1375d0ff23897bd">pio_types::pio_fill_float</a> = nf_fill_float</td></tr>
+real, parameter, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio__types_8_f90.html#abbe6afb9bc3b96f8c1375d0ff23897bd">pio_types::pio_fill_float</a> = 9.9692099683868690e+36</td></tr>
 <tr class="memdesc:abbe6afb9bc3b96f8c1375d0ff23897bd"><td class="mdescLeft">&#160;</td><td class="mdescRight">float fill value <br /></td></tr>
 <tr class="separator:abbe6afb9bc3b96f8c1375d0ff23897bd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1330384d1870d7c74e16b8d1f831d172"><td class="memItemLeft" align="right" valign="top"><a id="a1330384d1870d7c74e16b8d1f831d172"></a>
-double precision, parameter, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio__types_8_f90.html#a1330384d1870d7c74e16b8d1f831d172">pio_types::pio_fill_double</a> = nf_fill_double</td></tr>
+double precision, parameter, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pio__types_8_f90.html#a1330384d1870d7c74e16b8d1f831d172">pio_types::pio_fill_double</a> = 9.9692099683868690d+36</td></tr>
 <tr class="memdesc:a1330384d1870d7c74e16b8d1f831d172"><td class="mdescLeft">&#160;</td><td class="mdescRight">double fill value <br /></td></tr>
 <tr class="separator:a1330384d1870d7c74e16b8d1f831d172"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abfd826392585fea4aa208cb7baa9b8dd"><td class="memItemLeft" align="right" valign="top"><a id="abfd826392585fea4aa208cb7baa9b8dd"></a>
@@ -272,7 +270,7 @@ integer, parameter, public&#160;</td><td class="memItemRight" valign="bottom"><a
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Wed Sep 16 2020 06:54:38 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Mar 2 2021 10:44:51 for PIO by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>
