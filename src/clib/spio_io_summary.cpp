@@ -283,6 +283,36 @@ void red_io_summary_stats(PIO_Util::IO_Summary_Util::IO_summary_stats_t *in_arr,
   }
 }
 
+static std::string file_names_to_ios_name(iosystem_desc_t *ios,
+        std::vector<std::string> &file_names)
+{
+  assert(ios);
+
+  std::string ios_name(ios->sname);
+  std::vector<std::pair<std::string, std::string> > e3sm_comp_names =
+    {
+      {".cpl.","CPL"},
+      {".eam.","EAM"},
+      {".elm.","ELM"},
+      {".mosart.","MOSART"},
+      {".mpaso.","MPASO"},
+      {".mpasli.","MPASLI"},
+      {".mpassi.","MPASSI"}
+    };
+
+  for(std::vector<std::string>::const_iterator fiter = file_names.cbegin();
+      fiter != file_names.cend(); ++fiter){
+    for(std::vector<std::pair<std::string, std::string> >::const_iterator
+          efiter = e3sm_comp_names.cbegin(); efiter != e3sm_comp_names.cend(); ++efiter){
+      if((*fiter).find(efiter->first) != std::string::npos){
+        return efiter->second;
+      }
+    }
+  }
+
+  return ios_name;
+}
+
 static int cache_or_print_stats(iosystem_desc_t *ios, int root_proc,
   PIO_Util::IO_Summary_Util::IO_summary_stats_t &iosys_gio_sstats,
   std::vector<std::string> &file_names,
@@ -319,7 +349,7 @@ static int cache_or_print_stats(iosystem_desc_t *ios, int root_proc,
     cached_overall_gio_sstats.ttime_max += iosys_gio_sstats.ttime_max;
 
     cached_ios_gio_sstats.push_back(iosys_gio_sstats);
-    cached_ios_names.push_back(ios->sname);
+    cached_ios_names.push_back(file_names_to_ios_name(ios, file_names));
     cached_file_gio_sstats.push_back(file_gio_sstats);
     cached_file_names.push_back(file_names);
   }
