@@ -8,7 +8,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cstdlib>
-#include <ctime>
+#include <unistd.h>
 
 extern "C"{
 #include "pio_config.h"
@@ -366,8 +366,8 @@ static int cache_or_print_stats(iosystem_desc_t *ios, int root_proc,
   if(niosys == 1){
     const std::string model_name = "Scorpio";
     const std::size_t ONE_MB = 1024 * 1024;
-    std::srand(std::time(nullptr));
-    std::string sfname = std::string("io_perf_summary_") + std::to_string(std::rand());
+    long long int pid = static_cast<long long int>(getpid());
+    std::string sfname = std::string("io_perf_summary_") + std::to_string(pid);
     const std::string sfname_txt_suffix(".txt");
     const std::string sfname_json_suffix(".json");
 
