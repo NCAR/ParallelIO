@@ -363,7 +363,7 @@ static int cache_or_print_stats(iosystem_desc_t *ios, int root_proc,
   /* If this I/O system is the last one, print the I/O stats if this process has any 
    * cached stats
    */
-  if(niosys == 1){
+  if((niosys == 1) && (cached_ios_gio_sstats.size() > 0)){
     const std::string model_name = "Scorpio";
     const std::size_t ONE_MB = 1024 * 1024;
     long long int pid = static_cast<long long int>(getpid());
