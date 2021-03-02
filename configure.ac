@@ -20,6 +20,7 @@ AC_SUBST([VERSION_MAJOR], [2])
 AC_SUBST([VERSION_MINOR], [5])
 AC_SUBST([VERSION_PATCH], [3])
 
+
 # The m4 directory holds macros for autoconf.
 AC_CONFIG_MACRO_DIR([m4])
 
