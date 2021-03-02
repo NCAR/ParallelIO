@@ -1371,6 +1371,16 @@ int PIOc_finalize(int iosysid)
         }
     }
 
+#ifdef TIMING
+    ierr = spio_write_io_summary(ios);
+    if(ierr != PIO_NOERR)
+    {
+        return pio_err(ios, NULL, PIO_EINTERNAL, __FILE__, __LINE__,
+                        "PIO Finalize failed on iosytem (%d). Unable to write I/O summary for the iosystem", iosysid);
+    }
+    free(ios->io_fstats);
+#endif
+
     /* Free this memory that was allocated in init_intracomm. */
     if (ios->ioranks)
         free(ios->ioranks);
@@ -1440,13 +1450,6 @@ int PIOc_finalize(int iosysid)
     LOG((2, "PIOc_finalize completed successfully"));
     GPTLstop("PIO:PIOc_finalize");
 #ifdef TIMING
-    ierr = spio_write_io_summary(ios);
-    if(ierr != PIO_NOERR)
-    {
-        return pio_err(ios, NULL, PIO_EINTERNAL, __FILE__, __LINE__,
-                        "PIO Finalize failed on iosytem (%d). Unable to write I/O summary for the iosystem", iosysid);
-    }
-    free(ios->io_fstats);
 #ifdef TIMING_INTERNAL
     if(ios->io_comm != MPI_COMM_NULL)
     {
