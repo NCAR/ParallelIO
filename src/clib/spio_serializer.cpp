@@ -9,6 +9,7 @@
 int PIO_Util::Text_serializer::serialize(const std::string &name,
       const std::vector<std::pair<std::string, std::string> > &vals)
 {
+  /* Add the user data to the internal tree */
   Text_serializer_val sval = {name, vals};
   int val_id = dom_tree_.add(sval);
 
@@ -22,6 +23,7 @@ int PIO_Util::Text_serializer::serialize(int parent_id,
       const std::string &name,
       const std::vector<std::pair<std::string, std::string> > &vals)
 {
+  /* Add the user data to the internal tree */
   Text_serializer_val sval = {name, vals};
   int val_id = dom_tree_.add(sval, parent_id);
 
@@ -53,12 +55,18 @@ void PIO_Util::Text_serializer::serialize(int parent_id, const std::string &name
 
 void PIO_Util::Text_serializer::sync(void )
 {
+  /* Create a text serializer */
   Text_serializer_visitor vis(id2spaces_, INC_SPACES);
 
+  /* Traverse the tree using the text serializer. The text serializer
+   * serializes the data in the tree to text and caches it
+   */
   dom_tree_.dfs(vis);
 
+  /* Get the cached serialized data from the text serializer */
   sdata_ = vis.get_serialized_data();
 
+  /* Write the data out to the text file */
   std::ofstream fstr;
   fstr.open(pname_.c_str(), std::ofstream::out | std::ofstream::trunc);
   fstr << sdata_.c_str();
@@ -83,6 +91,7 @@ void PIO_Util::Text_serializer::Text_serializer_visitor::enter_node(
   int val_nspaces = id_nspaces + inc_spaces_;
   std::string val_spaces(val_nspaces, SPACE);
 
+  /* Serialize and cache the (name, value) pairs on the node */
   for(std::vector<std::pair<std::string, std::string> >::const_iterator citer = val.vals.cbegin();
       citer != val.vals.cend(); ++citer){
     sdata_ += val_spaces + (*citer).first + SPACE + ID_SEP + SPACE + (*citer).second + NEWLINE;
@@ -101,6 +110,7 @@ void PIO_Util::Text_serializer::Text_serializer_visitor::enter_node(
 int PIO_Util::Json_serializer::serialize(const std::string &name,
       const std::vector<std::pair<std::string, std::string> > &vals)
 {
+  /* Add the user data to the internal tree */
   Json_serializer_val sval = {Json_agg_type::OBJECT, name, vals};
   int val_id = dom_tree_.add(sval);
 
@@ -113,6 +123,7 @@ int PIO_Util::Json_serializer::serialize(int parent_id,
       const std::string &name,
       const std::vector<std::pair<std::string, std::string> > &vals)
 {
+  /* Add the user data to the internal tree */
   Json_serializer_val sval = {Json_agg_type::OBJECT, name, vals};
   int val_id = dom_tree_.add(sval, parent_id);
 
@@ -129,9 +140,13 @@ void PIO_Util::Json_serializer::serialize(const std::string &name,
   std::vector<std::pair<std::string, std::string> > vals;
   Json_serializer_val sval = {Json_agg_type::ARRAY, name, vals}; 
 
+  /* Add the tag with name, name, as a node in the tree */
   int sval_id = dom_tree_.add(sval);
   id2spaces_[sval_id] = START_ID_SPACES + INC_SPACES;
 
+  /* Since the values are part of an array, mark each as an ARRAY_ELEMENT and
+   * add it as children of the tag node
+   */
   for(std::vector<std::vector<std::pair<std::string, std::string> > >::const_iterator
       citer = vvals.cbegin(); citer != vvals.cend(); ++citer){
     //val_ids.push_back(serialize(sval_id, name, *citer));
@@ -150,9 +165,13 @@ void PIO_Util::Json_serializer::serialize(int parent_id, const std::string &name
   std::vector<std::pair<std::string, std::string> > vals;
   Json_serializer_val sval = {Json_agg_type::ARRAY, name, vals}; 
 
+  /* Add the tag with name, name, as a node in the tree */
   int sval_id = dom_tree_.add(sval, parent_id);
   id2spaces_[sval_id] = id2spaces_[parent_id] + INC_SPACES;
 
+  /* Since the values are part of an array, mark each as an ARRAY_ELEMENT and
+   * add it as children of the tag node
+   */
   for(std::vector<std::vector<std::pair<std::string, std::string> > >::const_iterator
       citer = vvals.cbegin(); citer != vvals.cend(); ++citer){
     //val_ids.push_back(serialize(sval_id, name, *citer));
@@ -166,12 +185,18 @@ void PIO_Util::Json_serializer::serialize(int parent_id, const std::string &name
 
 void PIO_Util::Json_serializer::sync(void )
 {
+  /* Create a JSON serializer */
   Json_serializer_visitor vis(id2spaces_, INC_SPACES);
 
+  /* Traverse the tree using the JSON serializer. The serializer will
+   * serialize the contents of the tree and cache it
+   */
   dom_tree_.dfs(vis);
 
+  /* Retrieve the cached serialized contents of the tree from the serializer */
   sdata_ = vis.get_serialized_data();
 
+  /* Write the serialized data to the JSON file */
   std::ofstream fstr;
   fstr.open(pname_.c_str(), std::ofstream::out | std::ofstream::trunc);
   fstr << sdata_.c_str();
@@ -187,6 +212,7 @@ std::string PIO_Util::Json_serializer::get_serialized_data(void )
 
 void PIO_Util::Json_serializer::Json_serializer_visitor::begin(void)
 {
+  /* Start the root JSON object that encapsulates all objects in the JSON file */
   sdata_ += std::string(1, OBJECT_START) + std::string(1, NEWLINE);
 }
 
@@ -197,10 +223,12 @@ void PIO_Util::Json_serializer::Json_serializer_visitor::enter_node(
   std::string id_spaces(id_nspaces, SPACE);
     
   if(val.type == Json_agg_type::ARRAY_ELEMENT){
+    /* Each array element is a JSON object */
     sdata_ += id_spaces + OBJECT_START + NEWLINE;
   }
   else{
     std::string qname = "\"" + val.name + "\"";
+    /* Check if the tag corresponds to a JSON array or object */
     const char JSON_AGG_TYPE_START = (val.type == Json_agg_type::ARRAY) ?
                                       ARRAY_START : OBJECT_START;
     sdata_ += id_spaces + qname + ID_SEP + JSON_AGG_TYPE_START + NEWLINE;
@@ -209,6 +237,7 @@ void PIO_Util::Json_serializer::Json_serializer_visitor::enter_node(
   int val_nspaces = id_nspaces + inc_spaces_;
   std::string val_spaces(val_nspaces, SPACE);
 
+  /* Serialize all (name, value) pairs on this node */
   for(std::vector<std::pair<std::string, std::string> >::const_iterator citer = val.vals.cbegin();
       citer != val.vals.cend(); ++citer){
     sdata_ += val_spaces + (*citer).first + SPACE + ID_SEP + SPACE + (*citer).second + NEWLINE;
@@ -228,6 +257,7 @@ void PIO_Util::Json_serializer::Json_serializer_visitor::on_node(
   int id_nspaces = id2spaces_[val_id] + inc_spaces_;
   std::string id_spaces(id_nspaces, SPACE);
 
+  /* Separate out the JSON objects in this aggregate object using AGG_SEP */
   sdata_ += id_spaces + AGG_SEP + NEWLINE;
 }
 
@@ -245,6 +275,7 @@ void PIO_Util::Json_serializer::Json_serializer_visitor::exit_node(
   std::string id_spaces(id_nspaces, SPACE);
 
   if(val.type == Json_agg_type::ARRAY_ELEMENT){
+    /* Each array element is a json object, close/end the object */
     sdata_ += id_spaces + OBJECT_END + NEWLINE;
   }
   else{
@@ -263,6 +294,7 @@ void PIO_Util::Json_serializer::Json_serializer_visitor::exit_node(
 
 void PIO_Util::Json_serializer::Json_serializer_visitor::end(void)
 {
+  /* Close out the root JSON object that contains all other objects in the file */
   sdata_ += std::string(1, OBJECT_END) + std::string(1, NEWLINE);
 }
 

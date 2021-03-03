@@ -3,6 +3,9 @@
 
 namespace PIO_Util{
 
+/* All visitors used with SPIO_tree<T> must inherit from this generic
+ * visitor class
+ */
 template<typename T>
 class SPIO_tree_visitor{
   public:
@@ -22,22 +25,38 @@ class SPIO_tree_visitor{
     virtual ~SPIO_tree_visitor() {};
 };
 
+/* A generic tree
+ * Only adding values/nodes to the tree is allowed. Deletion is not supported
+ */
 template<typename T>
 class SPIO_tree{
   public:
     SPIO_tree();
+    /* Add a value to the tree, returns a unique id for the value */
     int add(const T &val);
+    /* Add a value as a child to a previous value added in the tree
+     * The id of the previous value needs to be passed in as the parent_id
+     */
     int add(const T &val, int parent_id);
+    /* Perform depth first search on the tree */
     void dfs(SPIO_tree_visitor<T> &vis);
   private:
+    /* Internal node of the tree */
     struct Node{
+      /* Unique id for the node */
       int id;
+      /* Id of parent of the node */
       int parent_id;
+      /* The user data cached on the node */
       T val;
+      /* Ids of children of this node */
       std::vector<int> children;
     };
+    /* Id of the internal root added for the tree */
     int root_id_;
+    /* The nodes of the tree is stored in this vector */
     std::vector<Node> nodes_;
+    /* Internal function that implements DFS */
     void dfs(Node &node, SPIO_tree_visitor<T> &vis);
 };
 
@@ -49,6 +68,7 @@ SPIO_tree<T>::SPIO_tree()
   T dummy_val;
   std::vector<int> children;
 
+  /* Create the root node, this node is not visible to the user */
   Node root_node = {id, parent_id, dummy_val, children};
 
   root_id_ = root_node.id;
@@ -89,6 +109,7 @@ void SPIO_tree<T>::dfs(SPIO_tree_visitor<T> &vis)
   vis.end();
 }
 
+/* Depth first search traversal on the tree */
 template<typename T>
 void SPIO_tree<T>::dfs(SPIO_tree::Node &node, SPIO_tree_visitor<T> &vis)
 {

@@ -10,28 +10,53 @@
 
 namespace PIO_Util{
 
+/* The serializer base class
+ * Serializers can be used to serialize (name, value) pairs into text/json/xml files
+ */
 class SPIO_serializer{
   public:
+    /* Create the serializer with a persistent name, pname */
     SPIO_serializer(const std::string &pname) : pname_(pname) {}
+    /* Get the persistent name of the serializer */
     std::string get_name(void ) const { return pname_; }
+    /* Set the persistent name of the serializer */
     void set_name(const std::string &name) { pname_ = name; }
+    /* Serialize a vector of (name, value) pairs, vals, with a tag with name, name
+     * The function returns the id of the tag being serialized
+     */
     virtual int serialize(const std::string &name,
                           const std::vector<std::pair<std::string, std::string> > &vals) = 0;
+    /* Serialize a vector of (name, value) pairs, vals, with a tag with name, name, inside another
+     * tag with id parent_id
+     * The function returns the id of the tag being serialized
+     */
     virtual int serialize(int parent_id, const std::string &name,
                           const std::vector<std::pair<std::string, std::string> > &vals) = 0;
+    /* Serialize an array of tags, each tag containing a vector of value pairs
+     * The function returns the ids of the value_pairs (each element in the array) being serialized
+     * in the val_ids array
+     */
     virtual void serialize(const std::string &name,
                           const std::vector<std::vector<std::pair<std::string, std::string> > > &vvals,
                           std::vector<int> &val_ids) = 0;
+    /* Serialize an array of tags, each tag containing a vector of value pairs inside another
+     * tag with id parent_id
+     * The function returns the ids of the value_pairs (each element in the array) being serialized
+     * in the val_ids array
+     */
     virtual void serialize(int parent_id, const std::string &name,
                           const std::vector<std::vector<std::pair<std::string, std::string> > > &vvals,
                           std::vector<int> &val_ids) = 0;
+    /* Sync/flush the contents. In the case of the text serializer the data is written out to the file */
     virtual void sync(void ) = 0;
+    /* Get the serialized data. The contents need to be synced by calling sync() before calling this func */
     virtual std::string get_serialized_data(void ) = 0;
     virtual ~SPIO_serializer() {};
   protected:
     std::string pname_;
 };
 
+/* Class to serialize (name, value) pairs and tags in to a text file */
 class Text_serializer : public SPIO_serializer{
   public:
     Text_serializer(const std::string &fname) : SPIO_serializer(fname) {};
@@ -49,16 +74,22 @@ class Text_serializer : public SPIO_serializer{
     std::string get_serialized_data(void ) override;
     ~Text_serializer() {};
   private:
+    /* Cache of the serialized data */
     std::string sdata_;
     const int START_ID_SPACES = 0;
     const int INC_SPACES = 2;
+    /* Store the number of spaces to output for each tag/id */
     std::map<int, int> id2spaces_;
 
+    /* The internal tree stores the tag name and the associated (name, value) pairs 
+     * in this struct
+     */
     struct Text_serializer_val{
       std::string name;
       std::vector<std::pair<std::string, std::string> > vals;
     };
 
+    /* Visitor class used to serialize the contents of the internal tree to text */
     class Text_serializer_visitor : public SPIO_tree_visitor<Text_serializer_val>{
       public:
         Text_serializer_visitor(const std::map<int, int> &id2spaces,
@@ -79,6 +110,7 @@ class Text_serializer : public SPIO_serializer{
     SPIO_tree<Text_serializer_val> dom_tree_;
 };
 
+/* Class to serialize (name, value) pairs and tags in to a json file */
 class Json_serializer : public SPIO_serializer{
   public:
     Json_serializer(const std::string &fname) : SPIO_serializer(fname) {};
@@ -99,20 +131,26 @@ class Json_serializer : public SPIO_serializer{
     std::string sdata_;
     const int START_ID_SPACES = 0;
     const int INC_SPACES = 2;
+    /* Store the number of spaces to output for each tag/id */
     std::map<int, int> id2spaces_;
 
+    /* We need to distinguish between array, an array element and object json types */
     enum class Json_agg_type{
       ARRAY,
       ARRAY_ELEMENT,
       OBJECT
     };
 
+    /* The internal tree stores the tag name and the associated (name, value) pairs 
+     * in this struct
+     */
     struct Json_serializer_val{
       Json_agg_type type;
       std::string name;
       std::vector<std::pair<std::string, std::string> > vals;
     };
 
+    /* Visitor class used to serialize the contents of the internal tree to json */
     class Json_serializer_visitor : public SPIO_tree_visitor<Json_serializer_val>{
       public:
         Json_serializer_visitor(const std::map<int, int> &id2spaces,
@@ -154,11 +192,17 @@ enum class Serializer_type{
 };
 
 namespace Serializer_Utils{
+  /* Convert Serializer type to string */
   std::string to_string(const Serializer_type &type);
 
+  /* Factory for serializers */
   std::unique_ptr<SPIO_serializer> create_serializer(const Serializer_type &type,
                                     const std::string &persistent_name);
 
+  /* Utility function to pack (name, value) pairs of different types into
+   * a vector of string pairs that is used by the serializer to serialize
+   * the pairs.
+   */
   template<typename T>
   void serialize_pack(const std::string &name, const T &val,
                       std::vector<std::pair<std::string, std::string> > &vals)

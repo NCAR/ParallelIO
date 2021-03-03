@@ -23,15 +23,19 @@ extern "C"{
 namespace PIO_Util{
   namespace IO_Summary_Util{
     namespace GVars{
+      /* File I/O statistics cache:
+       * This cache stores per file I/O statistics per I/O system
+       * std::map<IOID, std::map<FILENAME, FILE_SSTATS> >
+       */
       /* FIXME: Since iosystem and other structs are currently used
        * in C we cannot store this cache there. We need to get rid of this global cache.
-       * std::map<IOID, std::map<FILENAME, FILE_SSTATS> >
        */
       std::map<int, std::map<std::string, IO_summary_stats_t> > file_sstats_cache;
     }
   } // namespace IO_Summary_Util
 } // namespace PIO_Util
 
+/* min/max definitions for PIO_Offset type */
 static inline PIO_Offset spio_min(PIO_Offset a, PIO_Offset b)
 {
   return (a < b) ? a : b;
@@ -52,6 +56,10 @@ static inline double spio_max(double a, double b)
   return (a > b) ? a : b;
 }
 
+/* Cache file I/O statistics
+ * This function is called on a file close to cache the statistics for that
+ * file
+ */
 static void cache_file_stats(int iosysid, const std::string &filename,
   const PIO_Util::IO_Summary_Util::IO_summary_stats_t &file_sstats)
 {
@@ -91,6 +99,7 @@ static void cache_file_stats(int iosysid, const std::string &filename,
   }
 }
 
+/* Get all the I/O statistics for all files in an I/O system */
 static void get_file_stats(int iosysid, std::vector<std::string> &filenames,
   std::vector<PIO_Util::IO_Summary_Util::IO_summary_stats_t> &file_stats)
 {
@@ -107,6 +116,7 @@ static void get_file_stats(int iosysid, std::vector<std::string> &filenames,
   }
 }
 
+/* Convert IO_summary_stats_t struct to string */
 std::string PIO_Util::IO_Summary_Util::io_summary_stats2str(const IO_summary_stats_t &io_sstats)
 {
   std::stringstream ostr;
@@ -126,6 +136,9 @@ std::string PIO_Util::IO_Summary_Util::io_summary_stats2str(const IO_summary_sta
   return ostr.str();
 }
 
+/* Convert bytes to human readable format
+ * e.g. nb = 1024 (1024 bytes) would be converted to 1 KB
+ */
 std::string PIO_Util::IO_Summary_Util::bytes2hr(PIO_Offset nb)
 {
   const std::vector<std::pair<std::size_t, std::string> > predef_fmts =
@@ -144,6 +157,9 @@ std::string PIO_Util::IO_Summary_Util::bytes2hr(PIO_Offset nb)
   return ostr.str();
 }
 
+/* Definitions for the functions IO_summary_stats2mpi class, the class is used to convert
+ * the struct to an MPI datatype
+ */
 PIO_Util::IO_Summary_Util::IO_summary_stats2mpi::IO_summary_stats2mpi() : dt_(MPI_DATATYPE_NULL)
 {
   int mpi_errno = MPI_SUCCESS;
@@ -255,6 +271,7 @@ void PIO_Util::IO_Summary_Util::IO_summary_stats2mpi::get_io_summary_stats_addre
 }
 
 extern "C"{
+/* User defined MPI reduce function to consolidate I/O performance statistics */
 void red_io_summary_stats(PIO_Util::IO_Summary_Util::IO_summary_stats_t *in_arr,
   PIO_Util::IO_Summary_Util::IO_summary_stats_t *inout_arr,
   int *nelems, MPI_Datatype *pdt);
@@ -283,6 +300,9 @@ void red_io_summary_stats(PIO_Util::IO_Summary_Util::IO_summary_stats_t *in_arr,
   }
 }
 
+/* Guess the I/O system (E3SM component) name from the file names
+ * used by the I/O system
+ */
 static std::string file_names_to_ios_name(iosystem_desc_t *ios,
         std::vector<std::string> &file_names)
 {
@@ -313,16 +333,26 @@ static std::string file_names_to_ios_name(iosystem_desc_t *ios,
   return ios_name;
 }
 
+/* Cache or write I/O system I/O performance statistics */
 static int cache_or_print_stats(iosystem_desc_t *ios, int root_proc,
   PIO_Util::IO_Summary_Util::IO_summary_stats_t &iosys_gio_sstats,
   std::vector<std::string> &file_names,
   std::vector<PIO_Util::IO_Summary_Util::IO_summary_stats_t> &file_gio_sstats)
 {
+  /* Static cache of overall I/O statistics for the application */
   static PIO_Util::IO_Summary_Util::IO_summary_stats_t cached_overall_gio_sstats;
+  /* Static cache of I/O statistics for I/O systems */
   static std::vector<PIO_Util::IO_Summary_Util::IO_summary_stats_t> cached_ios_gio_sstats;
+  /* Static cache of I/O system names, these have a one to noe correspondence with the
+   * I/O statistics cache above, cached_ios_gio_sstats
+   */
   static std::vector<std::string> cached_ios_names;
+  /* Static cache of I/O statistics for files */
   static std::vector<std::vector<PIO_Util::IO_Summary_Util::IO_summary_stats_t> >
           cached_file_gio_sstats;
+  /* Static cache of file names, these have a one to noe correspondence with the
+   * I/O statistics cache above, cached_file_gio_sstats
+   */
   static std::vector<std::vector<std::string> > cached_file_names;
   int niosys = 0;
   int ierr;
@@ -333,7 +363,7 @@ static int cache_or_print_stats(iosystem_desc_t *ios, int root_proc,
   if(ios->union_rank == root_proc){
     cached_overall_gio_sstats.rb_total += iosys_gio_sstats.rb_total;
     /* FIXME: Since we are guessing the values below from Component I/O stats,
-     * they are lower bounds, not accurate. We need separate timers to capture
+     * they are upper bounds, not accurate. We need separate timers to capture
      * overall I/O perf
      */
     cached_overall_gio_sstats.rb_min += iosys_gio_sstats.rb_min;
@@ -367,11 +397,14 @@ static int cache_or_print_stats(iosystem_desc_t *ios, int root_proc,
     const std::string model_name = "Scorpio";
     const std::size_t ONE_MB = 1024 * 1024;
     long long int pid = static_cast<long long int>(getpid());
+    /* The summary file name is : "io_perf_summary_<PID>.[txt|json]" */
     std::string sfname = std::string("io_perf_summary_") + std::to_string(pid);
     const std::string sfname_txt_suffix(".txt");
     const std::string sfname_json_suffix(".json");
 
     assert(cached_ios_gio_sstats.size() == cached_ios_names.size());
+
+    /* Create TEXT and JSON serializers */
     std::unique_ptr<PIO_Util::SPIO_serializer> spio_ser =
       PIO_Util::Serializer_Utils::create_serializer(PIO_Util::Serializer_type::TEXT_SERIALIZER,
         sfname + sfname_txt_suffix);
@@ -504,6 +537,8 @@ static int cache_or_print_stats(iosystem_desc_t *ios, int root_proc,
     }
     spio_ser->serialize(id, "FileIOStatistics", file_vvals, file_vvals_ids);
     spio_json_ser->serialize(json_id, "FileIOStatistics", file_vvals, json_file_vvals_ids);
+
+    /* Sync/flush I/O performance statistics to the files */
     spio_ser->sync();
     spio_json_ser->sync();
   }
@@ -511,7 +546,11 @@ static int cache_or_print_stats(iosystem_desc_t *ios, int root_proc,
   return PIO_NOERR;
 }
 
-/* Write I/O performance summary */
+/* Write I/O performance summary
+ * This function is called when an I/O system is finalized. The performance data is
+ * cached if there are any I/O systems pending to be finalized. When the last I/O
+ * system is finalized the I/O performance statistics are written to the output files
+ */
 int spio_write_io_summary(iosystem_desc_t *ios)
 {
   int ierr = 0;
@@ -545,6 +584,7 @@ int spio_write_io_summary(iosystem_desc_t *ios)
     return PIO_NOERR;
   }
 
+  /* Get timings for this I/O system from the timers */
   double total_wr_time = 0, total_rd_time = 0, total_tot_time = 0;
   for(std::vector<std::string>::const_iterator citer = wr_timers.cbegin();
         citer != wr_timers.cend(); ++citer){
@@ -589,10 +629,10 @@ int spio_write_io_summary(iosystem_desc_t *ios)
         PIO_Util::IO_Summary_Util::io_summary_stats2str(io_sstats).c_str()));
   */
 
-  /* Get the I/O statistics of files belonging to this I/O system */
   std::vector<std::string> filenames;
   std::vector<PIO_Util::IO_Summary_Util::IO_summary_stats_t> tmp_sstats;
 
+  /* Get the I/O statistics of files belonging to this I/O system */
   get_file_stats(ios->iosysid, filenames, tmp_sstats);
 
   MPI_Op op;
@@ -605,12 +645,13 @@ int spio_write_io_summary(iosystem_desc_t *ios)
   }
 
   //PIO_Util::IO_Summary_Util::IO_summary_stats_t gio_sstats = {0, 0, 0, 0, 0, 0, 0.0, 0.0, 0.0, 0.0};
-  /* Add the component I/O stats to the end of file I/O stats*/
+  /* Add the component I/O stats to the end of file I/O stats */
   const std::size_t nelems_to_red = filenames.size() + 1;
   std::vector<PIO_Util::IO_Summary_Util::IO_summary_stats_t> gio_sstats(nelems_to_red);
 
   tmp_sstats.push_back(io_sstats);
 
+  /* Consolidate I/O performance statistics for the files, belonging to this I/O system, and the I/O system */
   const int ROOT_PROC = 0;
   MPI_Comm comm = (ios->async) ? (ios->io_comm) : (ios->union_comm);
   ierr = MPI_Reduce(tmp_sstats.data(), gio_sstats.data(), nelems_to_red, io_sstats2mpi.get_mpi_datatype(),
@@ -631,6 +672,7 @@ int spio_write_io_summary(iosystem_desc_t *ios)
             ios->iosysid);
   }
 
+  /* Retrieve the global I/O performance statistics for the I/O system */
   PIO_Util::IO_Summary_Util::IO_summary_stats_t iosys_gio_stats = gio_sstats.back();
   gio_sstats.pop_back();
 
@@ -643,7 +685,10 @@ int spio_write_io_summary(iosystem_desc_t *ios)
   return PIO_NOERR;
 }
 
-/* Write File I/O performance summary */
+/* Write File I/O performance summary
+ * This function is called when a file is closed. The I/O performance statistics collected here is cached
+ * until the associated I/O system is finalized.
+ */
 int spio_write_file_io_summary(file_desc_t *file)
 {
   const std::vector<std::string> wr_timers = {
@@ -671,6 +716,7 @@ int spio_write_file_io_summary(file_desc_t *file)
 
   assert(file);
 
+  /* Get timings for this file from the timers */
   double total_wr_time = 0, total_rd_time = 0,  total_tot_time = 0;
   for(std::vector<std::string>::const_iterator citer = wr_timers.cbegin();
         citer != wr_timers.cend(); ++citer){
@@ -712,6 +758,7 @@ int spio_write_file_io_summary(file_desc_t *file)
         PIO_Util::IO_Summary_Util::io_summary_stats2str(io_sstats).c_str()));
 
   assert(file->iosystem);
+  /* Cache the file I/O statistics, until the I/O system is finalized */
   cache_file_stats(file->iosystem->iosysid, file->fname, io_sstats);
 
   return PIO_NOERR;
