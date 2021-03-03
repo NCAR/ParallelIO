@@ -71,7 +71,6 @@ int test_simple_types(int wrank)
     Utils::quoted_str(dval_tag) + ID_SEP + std::to_string(dval) + NEWLINE;
 
   /* Pack the user values into the vector of vals passed to the serializer */
-                            
   std::vector<std::pair<std::string, std::string> > vals;
   PIO_Util::Serializer_Utils::serialize_pack(name_tag, name, vals);
   PIO_Util::Serializer_Utils::serialize_pack(ival_tag, ival, vals);
@@ -106,7 +105,7 @@ int test_simple_types(int wrank)
    *    "name" : "helloworld"
    *    "ival" : 3
    *    "dval" : 3.14
-      }
+   *  }
    *}
    */
   const std::string JSON_OBJECT_START("{");
@@ -144,6 +143,133 @@ int test_simple_types(int wrank)
   return PIO_NOERR;
 }
 
+/* Test serializing array types */
+int test_array_types(int wrank)
+{
+  /* Add a string, int and double */
+  std::vector<std::pair<std::string, std::string> > names = {
+    {"name", "helloworld1"}, {"name", "helloworld2"}, {"name", "helloworld3"}
+  };
+  const std::string ID_SEP(":");
+  const std::string NEWLINE("\n");
+
+  std::string ser_tag("SerializedVals");
+
+  /*
+   * ============ Expected Serialized Text ===========
+   * "SerializedVals":
+   *  "name" : "helloworld1"
+   * "SerializedVals":
+   *  "name" : "helloworld2"
+   * "SerializedVals":
+   *  "name" : "helloworld3"
+   */
+  std::string exp_ser_txt;
+  for(std::vector<std::pair<std::string, std::string> >::const_iterator
+        citer = names.cbegin(); citer != names.cend(); ++citer){
+    exp_ser_txt +=
+      Utils::quoted_str(ser_tag) + ID_SEP + NEWLINE +
+        Utils::quoted_str(citer->first) + ID_SEP
+        + Utils::quoted_str(citer->second) + NEWLINE;
+  }
+
+  /* Pack the user values into the vector of vals passed to the serializer */
+  std::vector<std::vector<std::pair<std::string, std::string> > > vvals;
+  for(std::vector<std::pair<std::string, std::string> >::const_iterator
+        citer = names.cbegin(); citer != names.cend(); ++citer){
+    std::vector<std::pair<std::string, std::string> > vals;
+    PIO_Util::Serializer_Utils::serialize_pack(citer->first, citer->second, vals);
+    vvals.push_back(vals);
+  }
+
+  /* Create a text serializer */
+  std::unique_ptr<PIO_Util::SPIO_serializer> spio_text_ser =
+    PIO_Util::Serializer_Utils::create_serializer(
+      PIO_Util::Serializer_type::TEXT_SERIALIZER, "test_array_types.txt");
+
+  /* Serialize the vals, sync and retrieve the serialized data */
+  std::vector<int> val_ids;
+  spio_text_ser->serialize(ser_tag, vvals, val_ids);
+  spio_text_ser->sync();
+  std::string serialized_txt = spio_text_ser->get_serialized_data();
+
+  if(Utils::rem_blank_str(serialized_txt) != Utils::rem_blank_str(exp_ser_txt)){
+    LOG_RANK0(wrank, "test_array_types() FAILED\n");
+    LOG_RANK0(wrank, "Serialized text : \n");
+    LOG_RANK0(wrank, "%s\n", serialized_txt.c_str());
+    LOG_RANK0(wrank, "Expected serialized text : \n");
+    LOG_RANK0(wrank, "%s\n", exp_ser_txt.c_str());
+
+    return PIO_EINTERNAL;
+  }
+
+  LOG_RANK0(wrank, "Testing TEXT serializer PASSED\n");
+
+  /*
+   * ============ Expected Serialized JSON ===========
+   *{
+   * "SerializedVals":[
+   *    {
+   *      "name" : "helloworld1"
+   *    },
+   *    {
+   *      "name" : "helloworld2"
+   *    },
+   *    {
+   *      "name" : "helloworld3"
+   *    }
+   * ]
+   *}
+   */
+  const std::string JSON_OBJECT_START("{");
+  const std::string JSON_ARRAY_START("[");
+  const std::string JSON_OBJECT_END("}");
+  const std::string JSON_ARRAY_END("]");
+  const std::string JSON_ARRAY_ELEMENT_SEP(",");
+
+  std::string exp_ser_json =
+    JSON_OBJECT_START + NEWLINE +
+      Utils::quoted_str(ser_tag) + ID_SEP + JSON_ARRAY_START + NEWLINE;
+
+  for(std::vector<std::pair<std::string, std::string> >::const_iterator
+        citer = names.cbegin(); citer != names.cend(); ++citer){
+    exp_ser_json +=
+        JSON_OBJECT_START + NEWLINE +
+          Utils::quoted_str(citer->first) + ID_SEP + Utils::quoted_str(citer->second) + NEWLINE +
+        JSON_OBJECT_END + NEWLINE;
+    if(citer + 1 != names.cend()){
+      exp_ser_json += JSON_ARRAY_ELEMENT_SEP + NEWLINE;
+    }
+  }
+
+  exp_ser_json +=
+      JSON_ARRAY_END + NEWLINE +
+    JSON_OBJECT_END + NEWLINE;
+
+  /* Create a JSON serializer */
+  std::unique_ptr<PIO_Util::SPIO_serializer> spio_json_ser =
+    PIO_Util::Serializer_Utils::create_serializer(
+      PIO_Util::Serializer_type::JSON_SERIALIZER, "test_simple_types.json");
+
+  /* Serialize the vals, sync and retrieve the serialized data */
+  spio_json_ser->serialize(ser_tag, vvals, val_ids);
+  spio_json_ser->sync();
+  std::string serialized_json = spio_json_ser->get_serialized_data();
+
+  if(Utils::rem_blank_str(serialized_json) != Utils::rem_blank_str(exp_ser_json)){
+    LOG_RANK0(wrank, "test_array_types() FAILED\n");
+    LOG_RANK0(wrank, "Serialized JSON : \n");
+    LOG_RANK0(wrank, "%s\n", serialized_json.c_str());
+    LOG_RANK0(wrank, "Expected serialized JSON : \n");
+    LOG_RANK0(wrank, "%s\n", exp_ser_json.c_str());
+
+    return PIO_EINTERNAL;
+  }
+
+  LOG_RANK0(wrank, "Testing JSON serializer PASSED\n");
+  return PIO_NOERR;
+}
+
 int test_driver(MPI_Comm comm, int wrank, int wsz, int *num_errors)
 {
   int nerrs = 0, ret = PIO_NOERR;
@@ -162,6 +288,21 @@ int test_driver(MPI_Comm comm, int wrank, int wsz, int *num_errors)
   }
   else{
     LOG_RANK0(wrank, "test_simple_types() PASSED\n");
+  }
+
+  /* Testing array types */
+  try{
+    ret = test_array_types(wrank);
+  }
+  catch(...){
+    ret = PIO_EINTERNAL;
+  }
+  if(ret != PIO_NOERR){
+    LOG_RANK0(wrank, "test_array_types() FAILED, ret = %d\n", ret);
+    nerrs++;
+  }
+  else{
+    LOG_RANK0(wrank, "test_array_types() PASSED\n");
   }
 
   *num_errors += nerrs;
