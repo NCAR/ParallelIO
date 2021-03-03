@@ -270,6 +270,117 @@ int test_array_types(int wrank)
   return PIO_NOERR;
 }
 
+/* Test serializing hierarchical/tiered data */
+int test_tiered_data(int wrank)
+{
+  /* Add a string, int and double */
+  std::string name_tag("name");
+  std::string name("helloworld");
+  std::string ival_tag("ival");
+  int ival = 3;
+  std::string dval_tag("dval");
+  double dval = 3.14;
+  const std::string ID_SEP(":");
+  const std::string NEWLINE("\n");
+
+  std::string ser_tag_tier1("SerializedValsT1");
+  std::string ser_tag_tier2("SerializedValsT2");
+
+  /*
+   * ============ Expected Serialized Text ===========
+   * "SerializedValsT1":
+   *  "SerializedValsT2":
+   *    "name" : "helloworld"
+   *    "ival" : 3
+   *    "dval" : 3.14
+   */
+  std::string exp_ser_txt =
+    Utils::quoted_str(ser_tag_tier1) + ID_SEP + NEWLINE +
+    Utils::quoted_str(ser_tag_tier2) + ID_SEP + NEWLINE +
+    Utils::quoted_str(name_tag) + ID_SEP + Utils::quoted_str(name) + NEWLINE +
+    Utils::quoted_str(ival_tag) + ID_SEP + std::to_string(ival) + NEWLINE +
+    Utils::quoted_str(dval_tag) + ID_SEP + std::to_string(dval) + NEWLINE;
+
+  /* Pack the user values into the vector of vals passed to the serializer */
+  std::vector<std::pair<std::string, std::string> > empty_vals;
+  std::vector<std::pair<std::string, std::string> > vals;
+  PIO_Util::Serializer_Utils::serialize_pack(name_tag, name, vals);
+  PIO_Util::Serializer_Utils::serialize_pack(ival_tag, ival, vals);
+  PIO_Util::Serializer_Utils::serialize_pack(dval_tag, dval, vals);
+
+  /* Create a text serializer */
+  std::unique_ptr<PIO_Util::SPIO_serializer> spio_text_ser =
+    PIO_Util::Serializer_Utils::create_serializer(
+      PIO_Util::Serializer_type::TEXT_SERIALIZER, "test_htypes.txt");
+
+  /* Serialize the vals, sync and retrieve the serialized data */
+  int t1_id = spio_text_ser->serialize(ser_tag_tier1, empty_vals);
+  spio_text_ser->serialize(t1_id, ser_tag_tier2, vals);
+  spio_text_ser->sync();
+  std::string serialized_txt = spio_text_ser->get_serialized_data();
+
+  if(Utils::rem_blank_str(serialized_txt) != Utils::rem_blank_str(exp_ser_txt)){
+    LOG_RANK0(wrank, "test_simple_types() FAILED\n");
+    LOG_RANK0(wrank, "Serialized text : \n");
+    LOG_RANK0(wrank, "%s\n", serialized_txt.c_str());
+    LOG_RANK0(wrank, "Expected serialized text : \n");
+    LOG_RANK0(wrank, "%s\n", exp_ser_txt.c_str());
+
+    return PIO_EINTERNAL;
+  }
+
+  LOG_RANK0(wrank, "Testing TEXT serializer PASSED\n");
+
+  /*
+   * ============ Expected Serialized JSON ===========
+   *{
+   * "SerializedValsT1":{
+   *  "SerializedValsT2":{
+   *      "name" : "helloworld"
+   *      "ival" : 3
+   *      "dval" : 3.14
+   *    }
+   *  }
+   *}
+   */
+  const std::string JSON_OBJECT_START("{");
+  const std::string JSON_OBJECT_END("}");
+  std::string exp_ser_json =
+    JSON_OBJECT_START + NEWLINE +
+      Utils::quoted_str(ser_tag_tier1) + ID_SEP + JSON_OBJECT_START + NEWLINE +
+        Utils::quoted_str(ser_tag_tier2) + ID_SEP + JSON_OBJECT_START + NEWLINE +
+          Utils::quoted_str(name_tag) + ID_SEP + Utils::quoted_str(name) + NEWLINE +
+          Utils::quoted_str(ival_tag) + ID_SEP + std::to_string(ival) + NEWLINE +
+          Utils::quoted_str(dval_tag) + ID_SEP + std::to_string(dval) + NEWLINE +
+        JSON_OBJECT_END + NEWLINE +
+      JSON_OBJECT_END + NEWLINE +
+    JSON_OBJECT_END + NEWLINE;
+
+  /* Create a JSON serializer */
+  std::unique_ptr<PIO_Util::SPIO_serializer> spio_json_ser =
+    PIO_Util::Serializer_Utils::create_serializer(
+      PIO_Util::Serializer_type::JSON_SERIALIZER, "test_htypes.json");
+
+  /* Serialize the vals, sync and retrieve the serialized data */
+  t1_id = spio_json_ser->serialize(ser_tag_tier1, empty_vals);
+  spio_json_ser->serialize(t1_id, ser_tag_tier2, vals);
+  spio_json_ser->sync();
+  std::string serialized_json = spio_json_ser->get_serialized_data();
+
+  if(Utils::rem_blank_str(serialized_json) != Utils::rem_blank_str(exp_ser_json)){
+    LOG_RANK0(wrank, "test_simple_types() FAILED\n");
+    LOG_RANK0(wrank, "Serialized JSON : \n");
+    LOG_RANK0(wrank, "%s\n", serialized_json.c_str());
+    LOG_RANK0(wrank, "Expected serialized JSON : \n");
+    LOG_RANK0(wrank, "%s\n", exp_ser_json.c_str());
+
+    return PIO_EINTERNAL;
+  }
+
+  LOG_RANK0(wrank, "Testing JSON serializer PASSED\n");
+  return PIO_NOERR;
+}
+
 int test_driver(MPI_Comm comm, int wrank, int wsz, int *num_errors)
 {
   int nerrs = 0, ret = PIO_NOERR;
@@ -303,6 +414,21 @@ int test_driver(MPI_Comm comm, int wrank, int wsz, int *num_errors)
   }
   else{
     LOG_RANK0(wrank, "test_array_types() PASSED\n");
+  }
+
+  /* Testing hierarchical/tiered data */
+  try{
+    ret = test_tiered_data(wrank);
+  }
+  catch(...){
+    ret = PIO_EINTERNAL;
+  }
+  if(ret != PIO_NOERR){
+    LOG_RANK0(wrank, "test_tiered_data() FAILED, ret = %d\n", ret);
+    nerrs++;
+  }
+  else{
+    LOG_RANK0(wrank, "test_tiered_data() PASSED\n");
   }
 
   *num_errors += nerrs;
