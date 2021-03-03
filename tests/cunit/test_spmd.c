@@ -349,56 +349,185 @@ int test_misc()
     return 0;
 }
 
-/* This test code was recovered from main() in pioc_sc.c. */
+/* Test the CalcStartandCount() function for the BOX rearranger */
 int test_CalcStartandCount()
 {
-    int ndims = 2;
-    int gdims[2] = {31, 777602};
-    int num_io_procs = 24;
-    bool converged = false;
-    PIO_Offset start[ndims], kount[ndims];
-    int iorank, numaiotasks = 0;
-    long int tpsize = 0;
-    long int psize;
-    long int pgdims = 1;
-    int scnt;
-    int ret;
+    /*
+     *  num_io_procs: the number of specified IO tasks
+     *  num_aiotasks: the number of IO tasks actually used
+     *
+     *  [Some restrictions]
+     *  1) num_aiotasks <= num_io_procs: the best case is to use all available IO tasks.
+     *  2) num_aiotasks >= 1: the worse case is to use only one IO task.
+     *  3) We must have minimum blocksize data (1024 bytes by default) on each used IO task (not applicable
+     *     if the total size of the data is relatively small).
+     *  4) For simplicity, the partition algorithm requires that num_aiotasks is continuously divisible
+     *     by each outer dimension length, until the quotient is less than or equal to an inner dimension
+     *     length to terminate the calculation of start and count.
+     */
+    int num_io_procs, num_aiotasks;
 
-    for (int i = 0; i < ndims; i++)
-        pgdims *= gdims[i];
+    /* For sufficiently large data, the target blocksize on each IO task should be at least 1024 bytes */
+    const int minbytes = 1024;
 
-    while (!converged)
     {
-        for (iorank = 0; iorank < num_io_procs; iorank++)
+        int ndims = 2;
+        int gdims[2] = {31, 777602};
+        PIO_Offset start[2], count[2];
+        long int tpsize = 0;
+        int ret;
+
+        long int pgdims = 1;
+        for (int i = 0; i < ndims; i++)
+            pgdims *= gdims[i];
+
+        num_io_procs = 24;
+
+        for (int iorank = 0; iorank < num_io_procs; iorank++)
         {
             if ((ret = CalcStartandCount(PIO_DOUBLE, ndims, gdims, num_io_procs, iorank,
-                                         start, kount, &numaiotasks)))
+                                         start, count, &num_aiotasks)))
                 return ret;
-            if (iorank < numaiotasks)
-                printf("iorank %d start %lld %lld count %lld %lld\n", iorank, start[0],
-                       start[1], kount[0], kount[1]);
 
-            if (numaiotasks < 0)
-                return numaiotasks;
+            /* 24 < 31 */
+            if (num_aiotasks != 24)
+                return ERR_WRONG;
 
-            psize = 1;
-            scnt = 0;
-            for (int i = 0; i < ndims; i++)
+            if (iorank < num_aiotasks)
             {
-                psize *= kount[i];
-                scnt += kount[i];
+                long int psize = 1;
+                for (int i = 0; i < ndims; i++)
+                    psize *= count[i];
+
+                if (psize * sizeof(double) < minbytes)
+                    return ERR_WRONG;
+
+                tpsize += psize;
             }
-            tpsize += psize;
         }
 
-        if (tpsize == pgdims)
-            converged = true;
-        else
+        if (tpsize != pgdims)
+            return ERR_WRONG;
+    }
+
+    {
+        int ndims = 2;
+        int gdims[2] = {72, 777602};
+        PIO_Offset start[2], count[2];
+        long int tpsize = 0;
+        int ret;
+
+        long int pgdims = 1;
+        for (int i = 0; i < ndims; i++)
+            pgdims *= gdims[i];
+
+        num_io_procs = 337;
+
+        for (int iorank = 0; iorank < num_io_procs; iorank++)
         {
-            printf("Failed to converge %ld %ld %d\n", tpsize, pgdims, num_io_procs);
-            tpsize = 0;
-            num_io_procs--;
+            if ((ret = CalcStartandCount(PIO_DOUBLE, ndims, gdims, num_io_procs, iorank,
+                                         start, count, &num_aiotasks)))
+                return ret;
+
+            /* 288 / 72 = 4, 4 < 777602 */
+            if (num_aiotasks != 288)
+                return ERR_WRONG;
+
+            if (iorank < num_aiotasks)
+            {
+                long int psize = 1;
+                for (int i = 0; i < ndims; i++)
+                    psize *= count[i];
+
+                if (psize * sizeof(double) < minbytes)
+                    return ERR_WRONG;
+
+                tpsize += psize;
+            }
         }
+
+        if (tpsize != pgdims)
+            return ERR_WRONG;
+    }
+
+    {
+        int ndims = 3;
+        int gdims[3] = {15, 360, 720};
+        PIO_Offset start[3], count[3];
+        long int tpsize = 0;
+        int ret;
+
+        long int pgdims = 1;
+        for (int i = 0; i < ndims; i++)
+            pgdims *= gdims[i];
+
+        num_io_procs = 64;
+
+        for (int iorank = 0; iorank < num_io_procs; iorank++)
+        {
+            if ((ret = CalcStartandCount(PIO_DOUBLE, ndims, gdims, num_io_procs, iorank,
+                                         start, count, &num_aiotasks)))
+                return ret;
+
+            /* 60 / 15 = 4, 4 < 360 */
+            if (num_aiotasks != 60)
+                return ERR_WRONG;
+
+            if (iorank < num_aiotasks)
+            {
+                long int psize = 1;
+                for (int i = 0; i < ndims; i++)
+                    psize *= count[i];
+
+                if (psize * sizeof(double) < minbytes)
+                    return ERR_WRONG;
+
+                tpsize += psize;
+            }
+        }
+
+        if (tpsize != pgdims)
+            return ERR_WRONG;
+    }
+
+    {
+        int ndims = 4;
+        int gdims[4] = {6, 8, 20, 1024};
+        PIO_Offset start[4], count[4];
+        long int tpsize = 0;
+        int ret;
+
+        long int pgdims = 1;
+        for (int i = 0; i < ndims; i++)
+            pgdims *= gdims[i];
+
+        num_io_procs = 256;
+
+        for (int iorank = 0; iorank < num_io_procs; iorank++)
+        {
+            if ((ret = CalcStartandCount(PIO_DOUBLE, ndims, gdims, num_io_procs, iorank,
+                                         start, count, &num_aiotasks)))
+                return ret;
+
+            /* 240 / 6 = 40, 40 / 8 = 5, 5 < 20 */
+            if (num_aiotasks != 240)
+                return ERR_WRONG;
+
+            if (iorank < num_aiotasks)
+            {
+                long int psize = 1;
+                for (int i = 0; i < ndims; i++)
+                    psize *= count[i];
+
+                if (psize * sizeof(double) < minbytes)
+                    return ERR_WRONG;
+
+                tpsize += psize;
+            }
+        }
+
+        if (tpsize != pgdims)
+            return ERR_WRONG;
     }
 
     return 0;
