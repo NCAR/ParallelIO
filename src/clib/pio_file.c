@@ -280,15 +280,16 @@ static int sync_file(int ncid)
     assert(file);
     ios = file->iosystem;
     assert(ios);
-    spio_ltimer_start(ios->io_fstats->wr_timer_name);
-    spio_ltimer_start(ios->io_fstats->tot_timer_name);
-    spio_ltimer_start(file->io_fstats->wr_timer_name);
-    spio_ltimer_start(file->io_fstats->tot_timer_name);
 
 #ifdef _ADIOS2
     if (file->iotype == PIO_IOTYPE_ADIOS)
         return PIO_NOERR;
 #endif
+
+    spio_ltimer_start(ios->io_fstats->wr_timer_name);
+    spio_ltimer_start(ios->io_fstats->tot_timer_name);
+    spio_ltimer_start(file->io_fstats->wr_timer_name);
+    spio_ltimer_start(file->io_fstats->tot_timer_name);
 
     ios = file->iosystem;
     assert(ios);
@@ -449,10 +450,6 @@ int PIOc_closefile(int ncid)
         GPTLstart("PIO:write_total_adios");
 #ifndef _ADIOS_BP2NC_TEST
         GPTLstart("PIO:write_total");
-        spio_ltimer_start(ios->io_fstats->wr_timer_name);
-        spio_ltimer_start(ios->io_fstats->tot_timer_name);
-        spio_ltimer_start(file->io_fstats->wr_timer_name);
-        spio_ltimer_start(file->io_fstats->tot_timer_name);
 #endif
     }
     else
@@ -463,10 +460,6 @@ int PIOc_closefile(int ncid)
         {
             GPTLstart("PIO:PIOc_closefile_write_mode");
             GPTLstart("PIO:write_total");
-            spio_ltimer_start(ios->io_fstats->wr_timer_name);
-            spio_ltimer_start(ios->io_fstats->tot_timer_name);
-            spio_ltimer_start(file->io_fstats->wr_timer_name);
-            spio_ltimer_start(file->io_fstats->tot_timer_name);
         }
     }
 
@@ -475,16 +468,28 @@ int PIOc_closefile(int ncid)
     if (!ios->async || !ios->ioproc)
         if (file->mode & PIO_WRITE)
         {
-            spio_ltimer_stop(ios->io_fstats->wr_timer_name);
-            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
-            spio_ltimer_stop(file->io_fstats->wr_timer_name);
-            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             sync_file(ncid);
+        }
+
+    if (file->iotype == PIO_IOTYPE_ADIOS)
+    {
+#ifndef _ADIOS_BP2NC_TEST
+        spio_ltimer_start(ios->io_fstats->wr_timer_name);
+        spio_ltimer_start(ios->io_fstats->tot_timer_name);
+        spio_ltimer_start(file->io_fstats->wr_timer_name);
+        spio_ltimer_start(file->io_fstats->tot_timer_name);
+#endif
+    }
+    else
+    {
+        if (file->mode & PIO_WRITE)
+        {
             spio_ltimer_start(ios->io_fstats->wr_timer_name);
             spio_ltimer_start(ios->io_fstats->tot_timer_name);
             spio_ltimer_start(file->io_fstats->wr_timer_name);
             spio_ltimer_start(file->io_fstats->tot_timer_name);
         }
+    }
 
     /* If async is in use and this is a comp tasks, then the compmaster
      * sends a msg to the pio_msg_handler running on the IO master and
