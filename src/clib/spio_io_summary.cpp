@@ -78,17 +78,18 @@ static void cache_file_stats(int iosysid, const std::string &filename,
       PIO_Util::IO_Summary_Util::IO_summary_stats_t sstats =
         PIO_Util::IO_Summary_Util::GVars::file_sstats_cache[iosysid][filename];
       sstats.rb_total += file_sstats.rb_total;
-      sstats.rb_min = spio_min(sstats.rb_min, file_sstats.rb_min);
-      sstats.rb_max = spio_max(sstats.rb_max, file_sstats.rb_max);
+      sstats.rb_min += file_sstats.rb_min;
+      sstats.rb_max += file_sstats.rb_max;
       sstats.wb_total += file_sstats.wb_total;
-      sstats.wb_min = spio_min(sstats.wb_min, file_sstats.wb_min);
-      sstats.wb_max = spio_max(sstats.wb_max, file_sstats.wb_max);
-      sstats.rtime_min = spio_min(sstats.rtime_min, file_sstats.rtime_min);
-      sstats.rtime_max = spio_max(sstats.rtime_max, file_sstats.rtime_max);
-      sstats.wtime_min = spio_min(sstats.wtime_min, file_sstats.wtime_min);
-      sstats.wtime_max = spio_max(sstats.wtime_max, file_sstats.wtime_max);
-      sstats.ttime_min = spio_min(sstats.ttime_min, file_sstats.ttime_min);
-      sstats.ttime_max = spio_max(sstats.ttime_max, file_sstats.ttime_max);
+      sstats.wb_min += file_sstats.wb_min;
+      sstats.wb_max += file_sstats.wb_max;
+      sstats.rtime_min += file_sstats.rtime_min;
+      sstats.rtime_max += file_sstats.rtime_max;
+      sstats.wtime_min += file_sstats.wtime_min;
+      sstats.wtime_max += file_sstats.wtime_max;
+      sstats.ttime_min += file_sstats.ttime_min;
+      sstats.ttime_max += file_sstats.ttime_max;
+      PIO_Util::IO_Summary_Util::GVars::file_sstats_cache[iosysid][filename] = sstats;
     }
   }
   else{
