@@ -273,12 +273,12 @@ void PIO_Util::IO_Summary_Util::IO_summary_stats2mpi::get_io_summary_stats_addre
 
 extern "C"{
 /* User defined MPI reduce function to consolidate I/O performance statistics */
-void red_io_summary_stats(PIO_Util::IO_Summary_Util::IO_summary_stats_t *in_arr,
+void reduce_io_summary_stats(PIO_Util::IO_Summary_Util::IO_summary_stats_t *in_arr,
   PIO_Util::IO_Summary_Util::IO_summary_stats_t *inout_arr,
   int *nelems, MPI_Datatype *pdt);
 } /* extern "C" */
 
-void red_io_summary_stats(PIO_Util::IO_Summary_Util::IO_summary_stats_t *in_arr,
+void reduce_io_summary_stats(PIO_Util::IO_Summary_Util::IO_summary_stats_t *in_arr,
   PIO_Util::IO_Summary_Util::IO_summary_stats_t *inout_arr,
   int *nelems, MPI_Datatype *pdt)
 {
@@ -637,7 +637,7 @@ int spio_write_io_summary(iosystem_desc_t *ios)
   get_file_stats(ios->iosysid, filenames, tmp_sstats);
 
   MPI_Op op;
-  ierr = MPI_Op_create((MPI_User_function *)red_io_summary_stats, true, &op);
+  ierr = MPI_Op_create((MPI_User_function *)reduce_io_summary_stats, true, &op);
   if(ierr != PIO_NOERR){
     LOG((1, "MPI_Op_create for reducing I/O memory stats failed"));
     return pio_err(ios, NULL, PIO_EINTERNAL, __FILE__, __LINE__,
