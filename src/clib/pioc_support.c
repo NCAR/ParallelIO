@@ -2970,18 +2970,19 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
         default:
             {
                 char avail_iotypes[PIO_MAX_NAME + 1];
+                int tmp_iotype = file->iotype;
 
                 spio_ltimer_stop(ios->io_fstats->rd_timer_name);
                 spio_ltimer_stop(ios->io_fstats->tot_timer_name);
                 spio_ltimer_stop(file->io_fstats->rd_timer_name);
                 spio_ltimer_stop(file->io_fstats->tot_timer_name);
 
+                free(file->io_fstats);
+                free(file);
                 PIO_get_avail_iotypes(avail_iotypes, PIO_MAX_NAME);
                 return pio_err(ios, NULL, PIO_EBADIOTYPE, __FILE__, __LINE__,
-                                "Opening file (%s) failed. Invalid iotype (%s:%d) specified. Available iotypes are : %s", filename, pio_iotype_to_string(file->iotype), file->iotype, avail_iotypes);
+                                "Opening file (%s) failed. Invalid iotype (%s:%d) specified. Available iotypes are : %s", filename, pio_iotype_to_string(tmp_iotype), tmp_iotype, avail_iotypes);
             }
-            free(file->io_fstats);
-            free(file);
         }
 
         /* If the caller requested a retry, and we failed to open a
@@ -3047,6 +3048,7 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
     ierr = check_netcdf(ios, NULL, ierr, __FILE__, __LINE__);
     /* If there was an error, free allocated memory and deal with the error. */
     if(ierr != PIO_NOERR){
+        int tmp_iotype = file->iotype;
         spio_ltimer_stop(ios->io_fstats->rd_timer_name);
         spio_ltimer_stop(ios->io_fstats->tot_timer_name);
         spio_ltimer_stop(file->io_fstats->rd_timer_name);
@@ -3055,7 +3057,7 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
         free(file);
         LOG((1, "PIOc_openfile_retry failed, ierr = %d", ierr));
         return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
-                        "Opening file (%s) with iotype %d (%s) failed. The low level I/O library call failed", filename, *iotype, pio_iotype_to_string(*iotype));;
+                        "Opening file (%s) with iotype %d (%s) failed. The low level I/O library call failed", filename, tmp_iotype, pio_iotype_to_string(tmp_iotype));;
     }
 
     /* Broadcast open mode to all tasks. */
