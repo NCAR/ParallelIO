@@ -20,6 +20,7 @@
 #ifdef PIO_MICRO_TIMING
 #include "pio_timer.h"
 #endif
+#include "spio_io_summary.h"
 
 #ifdef _ADIOS2
 int adios2_type_size(adios2_type type, const void *var)
@@ -98,7 +99,11 @@ int PIOc_inq(int ncid, int *ndimsp, int *nvarsp, int *ngattsp, int *unlimdimidp)
         return pio_err(NULL, NULL, ierr, __FILE__, __LINE__,
                         "Inquiring information about file (ncid=%d) failed. Invalid file id. Unable to find internal structure assocaited with the file id", ncid);
     }
+    assert(file);
     ios = file->iosystem;
+    assert(ios);
+    spio_ltimer_start(ios->io_fstats->tot_timer_name);
+    spio_ltimer_start(file->io_fstats->tot_timer_name);
 
     /* If async is in use, and this is not an IO task, bcast the parameters. */
     if (ios->async)
@@ -113,6 +118,8 @@ int PIOc_inq(int ncid, int *ndimsp, int *nvarsp, int *ngattsp, int *unlimdimidp)
             ngatts_present, unlimdimid_present);
         if(ierr != PIO_NOERR)
         {
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
                             "Inquiring information about file %s (ncid=%d) failed. Unable to send asynchronous message, PIO_MSG_INQ on iosystem (iosysid=%d)", pio_get_fname_from_file(file), ncid, ios->iosysid);
         }
@@ -141,6 +148,8 @@ int PIOc_inq(int ncid, int *ndimsp, int *nvarsp, int *ngattsp, int *unlimdimidp)
             }
         }
 
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(file->io_fstats->tot_timer_name);
         return PIO_NOERR;
      }
 #endif
@@ -196,6 +205,8 @@ int PIOc_inq(int ncid, int *ndimsp, int *nvarsp, int *ngattsp, int *unlimdimidp)
     /* A failure to inquire is not fatal */
     mpierr = MPI_Bcast(&ierr, 1, MPI_INT, ios->ioroot, ios->my_comm);
     if(mpierr != MPI_SUCCESS){
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(file->io_fstats->tot_timer_name);
         return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
     }
 
@@ -207,20 +218,38 @@ int PIOc_inq(int ncid, int *ndimsp, int *nvarsp, int *ngattsp, int *unlimdimidp)
     /* Broadcast results to all tasks. Ignore NULL parameters. */
     if (ndimsp)
         if ((mpierr = MPI_Bcast(ndimsp, 1, MPI_INT, ios->ioroot, ios->my_comm)))
+        {
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+        }
 
     if (nvarsp)
         if ((mpierr = MPI_Bcast(nvarsp, 1, MPI_INT, ios->ioroot, ios->my_comm)))
+        {
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+        }
 
     if (ngattsp)
         if ((mpierr = MPI_Bcast(ngattsp, 1, MPI_INT, ios->ioroot, ios->my_comm)))
+        {
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+        }
 
     if (unlimdimidp)
         if ((mpierr = MPI_Bcast(unlimdimidp, 1, MPI_INT, ios->ioroot, ios->my_comm)))
+        {
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+        }
 
+    spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+    spio_ltimer_stop(file->io_fstats->tot_timer_name);
     return PIO_NOERR;
 }
 
@@ -312,7 +341,11 @@ int PIOc_inq_unlimdims(int ncid, int *nunlimdimsp, int *unlimdimidsp)
         return pio_err(NULL, NULL, ierr, __FILE__, __LINE__,
                         "Inquiring unlimited dimension information failed on file (ncid=%d). Invalid file id. Unable to find internal structure associated with the file id", ncid);
     }
+    assert(file);
     ios = file->iosystem;
+    assert(ios);
+    spio_ltimer_start(ios->io_fstats->tot_timer_name);
+    spio_ltimer_start(file->io_fstats->tot_timer_name);
 
     /* If async is in use, and this is not an IO task, bcast the parameters. */
     if (ios->async)
@@ -325,6 +358,8 @@ int PIOc_inq_unlimdims(int ncid, int *nunlimdimsp, int *unlimdimidsp)
             nunlimdimsp_present, unlimdimidsp_present);
         if(ierr != PIO_NOERR)
         {
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
                             "Inquiring unlimited dimension information on file %s (ncid=%d) failed. Unable to send asynchronous message, PIO_MSG_INQ_UNLIMDIMS on iosystem (iosysid=%d)", pio_get_fname_from_file(file), ncid, ios->iosysid);
         }
@@ -404,26 +439,44 @@ int PIOc_inq_unlimdims(int ncid, int *nunlimdimsp, int *unlimdimidsp)
     /* A failure to inquire is not fatal */
     mpierr = MPI_Bcast(&ierr, 1, MPI_INT, ios->ioroot, ios->my_comm);
     if(mpierr != MPI_SUCCESS){
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(file->io_fstats->tot_timer_name);
         return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
     }
 
     if(ierr != PIO_NOERR){
         LOG((1, "nc*_inq_unlimdims failed, ierr = %d", ierr));
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(file->io_fstats->tot_timer_name);
         return ierr;
     }
 
     /* Broadcast results to all tasks. Ignore NULL parameters. */
     if ((mpierr = MPI_Bcast(&tmp_nunlimdims, 1, MPI_INT, ios->ioroot, ios->my_comm)))
+    {
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(file->io_fstats->tot_timer_name);
         return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+    }
     
     if (nunlimdimsp)
         if ((mpierr = MPI_Bcast(nunlimdimsp, 1, MPI_INT, ios->ioroot, ios->my_comm)))
+        {
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+        }
 
     if (unlimdimidsp)
         if ((mpierr = MPI_Bcast(unlimdimidsp, tmp_nunlimdims, MPI_INT, ios->ioroot, ios->my_comm)))
+        {
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+        }
 
+    spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+    spio_ltimer_stop(file->io_fstats->tot_timer_name);
     return PIO_NOERR;
 }
 
@@ -453,7 +506,11 @@ int PIOc_inq_type(int ncid, nc_type xtype, char *name, PIO_Offset *sizep)
         return pio_err(NULL, NULL, ierr, __FILE__, __LINE__,
                         "Inquiring type information failed on file (ncid=%d). Invalid file id. Unable to find internal structure associated with the file id", ncid);
     }
+    assert(file);
     ios = file->iosystem;
+    assert(ios);
+    spio_ltimer_start(ios->io_fstats->tot_timer_name);
+    spio_ltimer_start(file->io_fstats->tot_timer_name);
 
     /* If async is in use, and this is not an IO task, bcast the parameters. */
     if (ios->async)
@@ -465,6 +522,8 @@ int PIOc_inq_type(int ncid, nc_type xtype, char *name, PIO_Offset *sizep)
         PIO_SEND_ASYNC_MSG(ios, msg, &ierr, ncid, xtype, name_present, size_present);
         if(ierr != PIO_NOERR)
         {
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
                             "Inquiring type information on file %s (ncid=%d) failed. Unable to send asynchronous message, PIO_MSG_INQ_TYPE on iosystem (iosysid=%d)", pio_get_fname_from_file(file), ncid, ios->iosysid);
         }
@@ -481,6 +540,8 @@ int PIOc_inq_type(int ncid, nc_type xtype, char *name, PIO_Offset *sizep)
             *sizep = (PIO_Offset) asize;
         }
 
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(file->io_fstats->tot_timer_name);
         return PIO_NOERR;
     }
 #endif
@@ -504,6 +565,8 @@ int PIOc_inq_type(int ncid, nc_type xtype, char *name, PIO_Offset *sizep)
     ierr = check_netcdf(NULL, file, ierr, __FILE__, __LINE__);
     if(ierr != PIO_NOERR){
         LOG((1, "nc*_inq_type failed, ierr = %d", ierr));
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(file->io_fstats->tot_timer_name);
         return ierr;
     }
 
@@ -514,15 +577,29 @@ int PIOc_inq_type(int ncid, nc_type xtype, char *name, PIO_Offset *sizep)
         if (ios->iomaster == MPI_ROOT)
             slen = strlen(name);
         if ((mpierr = MPI_Bcast(&slen, 1, MPI_INT, ios->ioroot, ios->my_comm)))
+        {
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+        }
         if (!mpierr)
             if ((mpierr = MPI_Bcast((void *)name, slen + 1, MPI_CHAR, ios->ioroot, ios->my_comm)))
+            {
+                spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+                spio_ltimer_stop(file->io_fstats->tot_timer_name);
                 return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+            }
     }
     if (sizep)
         if ((mpierr = MPI_Bcast(sizep , 1, MPI_OFFSET, ios->ioroot, ios->my_comm)))
+        {
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+        }
 
+    spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+    spio_ltimer_stop(file->io_fstats->tot_timer_name);
     return PIO_NOERR;
 }
 
@@ -550,7 +627,11 @@ int PIOc_inq_format(int ncid, int *formatp)
         return pio_err(NULL, NULL, ierr, __FILE__, __LINE__,
                         "Inquiring format failed on file (ncid=%d). Invalid fild id. Unable to find internal structure associated with the file id", ncid);
     }
+    assert(file);
     ios = file->iosystem;
+    assert(ios);
+    spio_ltimer_start(ios->io_fstats->tot_timer_name);
+    spio_ltimer_start(file->io_fstats->tot_timer_name);
 
     /* If async is in use, and this is not an IO task, bcast the parameters. */
     if (ios->async)
@@ -561,6 +642,8 @@ int PIOc_inq_format(int ncid, int *formatp)
         PIO_SEND_ASYNC_MSG(ios, msg, &ierr, ncid, format_present);
         if(ierr != PIO_NOERR)
         {
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
                             "Inquiring format of file %s (ncid=%d) failed. Unable to send asynchronous message, PIO_MSG_INQ_FORMAT, on iosystem (iosysid=%d)", pio_get_fname_from_file(file), ncid, ios->iosysid);
         }
@@ -571,6 +654,8 @@ int PIOc_inq_format(int ncid, int *formatp)
     if (file->iotype == PIO_IOTYPE_ADIOS)
     {
         *formatp = 1;
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(file->io_fstats->tot_timer_name);
         return PIO_NOERR;
     }
 #endif
@@ -602,14 +687,22 @@ int PIOc_inq_format(int ncid, int *formatp)
     ierr = check_netcdf(NULL, file, ierr, __FILE__, __LINE__);
     if(ierr != PIO_NOERR){
         LOG((1, "nc*_inq_format failed, ierr = %d", ierr));
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(file->io_fstats->tot_timer_name);
         return ierr;
     }
 
     /* Broadcast results to all tasks. Ignore NULL parameters. */
     if (formatp)
         if ((mpierr = MPI_Bcast(formatp , 1, MPI_INT, ios->ioroot, ios->my_comm)))
+        {
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+        }
 
+    spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+    spio_ltimer_stop(file->io_fstats->tot_timer_name);
     return PIO_NOERR;
 }
 
@@ -643,7 +736,11 @@ int PIOc_inq_dim(int ncid, int dimid, char *name, PIO_Offset *lenp)
         return pio_err(NULL, NULL, ierr, __FILE__, __LINE__,
                         "Inquiring dimension (dimid=%d) information failed on file (ncid=%d). Invalid file id. Unable to find internal structure associated with the file id", dimid, ncid);
     }
+    assert(file);
     ios = file->iosystem;
+    assert(ios);
+    spio_ltimer_start(ios->io_fstats->tot_timer_name);
+    spio_ltimer_start(file->io_fstats->tot_timer_name);
 
     /* If async is in use, and this is not an IO task, bcast the parameters. */
     if (ios->async)
@@ -656,6 +753,8 @@ int PIOc_inq_dim(int ncid, int dimid, char *name, PIO_Offset *lenp)
         if(ierr != PIO_NOERR)
         {
             const char *dname = (name) ? name : "UNKNOWN";
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
                             "Inquiring information about dimension %s (dimid=%d) failed on file %s (ncid=%d) failed. Unable to send asynchronous message, PIO_MSG_INQ_DIM, on iosystem (iosysid=%d)", dname, dimid, pio_get_fname_from_file(file), ncid, ios->iosysid);
         }
@@ -694,6 +793,8 @@ int PIOc_inq_dim(int ncid, int dimid, char *name, PIO_Offset *lenp)
             ierr = PIO_EBADDIM;
         }
 
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(file->io_fstats->tot_timer_name);
         return ierr;
     }
 #endif
@@ -722,11 +823,15 @@ int PIOc_inq_dim(int ncid, int dimid, char *name, PIO_Offset *lenp)
     /* A failure to inquire is not fatal */
     mpierr = MPI_Bcast(&ierr, 1, MPI_INT, ios->ioroot, ios->my_comm);
     if(mpierr != MPI_SUCCESS){
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(file->io_fstats->tot_timer_name);
         return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
     }
 
     if(ierr != PIO_NOERR){
         LOG((1, "nc*_inq_dim failed, ierr = %d", ierr));
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(file->io_fstats->tot_timer_name);
         return ierr;
     }
 
@@ -738,16 +843,30 @@ int PIOc_inq_dim(int ncid, int dimid, char *name, PIO_Offset *lenp)
         if (ios->iomaster == MPI_ROOT)
             slen = strlen(name);
         if ((mpierr = MPI_Bcast(&slen, 1, MPI_INT, ios->ioroot, ios->my_comm)))
+        {
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+        }
         if ((mpierr = MPI_Bcast((void *)name, slen + 1, MPI_CHAR, ios->ioroot, ios->my_comm)))
+        {
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+        }
     }
 
     if (lenp)
         if ((mpierr = MPI_Bcast(lenp , 1, MPI_OFFSET, ios->ioroot, ios->my_comm)))
+        {
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+        }
 
     LOG((2, "done with PIOc_inq_dim"));
+    spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+    spio_ltimer_stop(file->io_fstats->tot_timer_name);
     return PIO_NOERR;
 }
 
@@ -813,7 +932,12 @@ int PIOc_inq_dimid(int ncid, const char *name, int *idp)
         return pio_err(NULL, NULL, ierr, __FILE__, __LINE__,
                         "Inquiring id of dimension %s failed on file (ncid=%d). Invalid file id. Unable to find internal structure associated with the file id", dname, ncid);
     }
+    assert(file);
     ios = file->iosystem;
+    assert(ios);
+    spio_ltimer_start(ios->io_fstats->tot_timer_name);
+    spio_ltimer_start(file->io_fstats->tot_timer_name);
+
     LOG((2, "iosysid = %d", ios->iosysid));
 
     /* User must provide name shorter than PIO_MAX_NAME +1. */
@@ -821,6 +945,8 @@ int PIOc_inq_dimid(int ncid, const char *name, int *idp)
     {
         const char *str_null_msg = "The specified dimension name pointer is NULL";
         const char *str_too_long_msg = "The specified dimension name is too long (> PIO_MAX_NAME chars)";
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(file->io_fstats->tot_timer_name);
         return pio_err(ios, file, PIO_EINVAL, __FILE__, __LINE__,
                         "Inquiring id of dimension failed on file %s (ncid=%d). %s", pio_get_fname_from_file(file), ncid, (!name) ? str_null_msg : str_too_long_msg);
     }
@@ -837,6 +963,8 @@ int PIOc_inq_dimid(int ncid, const char *name, int *idp)
         PIO_SEND_ASYNC_MSG(ios, msg, &ierr, ncid, namelen, name, id_present);
         if(ierr != PIO_NOERR)
         {
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return pio_err(ios, file, ierr, __FILE__, __LINE__,
                             "Inquiring id of dimension %s failed on file %s (ncid=%d) failed. Unable to send asynchronous message, PIO_MSG_INQ_DIMID, on iosystem (iosysid=%d)", name, pio_get_fname_from_file(file), ncid, ios->iosysid);
         }
@@ -868,6 +996,8 @@ int PIOc_inq_dimid(int ncid, const char *name, int *idp)
             printf("\n");
         }
 
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(file->io_fstats->tot_timer_name);
         return ierr;
     }
 #endif
@@ -890,19 +1020,29 @@ int PIOc_inq_dimid(int ncid, const char *name, int *idp)
     /* A failure to inquire is not fatal */
     mpierr = MPI_Bcast(&ierr, 1, MPI_INT, ios->ioroot, ios->my_comm);
     if(mpierr != MPI_SUCCESS){
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(file->io_fstats->tot_timer_name);
         return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
     }
 
     if(ierr != PIO_NOERR){
         LOG((1, "nc*_inq_dimid failed, ierr = %d", ierr));
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(file->io_fstats->tot_timer_name);
         return ierr;
     }
 
     /* Broadcast results. */
     if (idp)
         if ((mpierr = MPI_Bcast(idp, 1, MPI_INT, ios->ioroot, ios->my_comm)))
+        {
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+        }
 
+    spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+    spio_ltimer_stop(file->io_fstats->tot_timer_name);
     return PIO_NOERR;
 }
 
@@ -945,7 +1085,11 @@ int PIOc_inq_var(int ncid, int varid, char *name, int namelen, nc_type *xtypep, 
         return pio_err(NULL, NULL, ierr, __FILE__, __LINE__,
                         "Inquiring information on variable (varid=%d) failed on file (ncid=%d). Invalid file id. Unable to find internal structure associated with the file id", varid, ncid);
     }
+    assert(file);
     ios = file->iosystem;
+    assert(ios);
+    spio_ltimer_start(ios->io_fstats->tot_timer_name);
+    spio_ltimer_start(file->io_fstats->tot_timer_name);
 
     /* If async is in use, and this is not an IO task, bcast the parameters. */
     if (ios->async)
@@ -961,6 +1105,8 @@ int PIOc_inq_var(int ncid, int varid, char *name, int namelen, nc_type *xtypep, 
             xtype_present, ndims_present, dimids_present, natts_present);
         if(ierr != PIO_NOERR)
         {
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
                             "Inquiring information of variable %s (varid=%d) failed on file %s (ncid=%d) failed. Unable to send asynchronous message, PIO_MSG_INQ_VAR, on iosystem (iosysid=%d)", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid, ios->iosysid);
         }
@@ -995,6 +1141,8 @@ int PIOc_inq_var(int ncid, int varid, char *name, int namelen, nc_type *xtypep, 
         else
             ierr = PIO_EBADID;
 
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(file->io_fstats->tot_timer_name);
         return ierr;
     }
 #endif
@@ -1014,6 +1162,8 @@ int PIOc_inq_var(int ncid, int varid, char *name, int namelen, nc_type *xtypep, 
                 tmp_dimidsp = (int *)malloc(ndims * sizeof(int));
                 if(!tmp_dimidsp)
                 {
+                    spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+                    spio_ltimer_stop(file->io_fstats->tot_timer_name);
                     return pio_err(ios, file, PIO_ENOMEM, __FILE__, __LINE__,
                                     "Inquiring information of variable %s (varid=%d) failed on file %s (ncid=%d) failed. Out of memory allocating %lld bytes for storing dimension ids", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid, (unsigned long long) (ndims * sizeof(int)));
                 }
@@ -1098,11 +1248,15 @@ int PIOc_inq_var(int ncid, int varid, char *name, int namelen, nc_type *xtypep, 
     /* A failure to inquire is not fatal */
     mpierr = MPI_Bcast(&ierr, 1, MPI_INT, ios->ioroot, ios->my_comm);
     if(mpierr != MPI_SUCCESS){
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(file->io_fstats->tot_timer_name);
         return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
     }
 
     if(ierr != PIO_NOERR){
         LOG((1, "nc*_inq_var failed, ierr = %d", ierr));
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(file->io_fstats->tot_timer_name);
         return ierr;
     }
 
@@ -1110,9 +1264,17 @@ int PIOc_inq_var(int ncid, int varid, char *name, int namelen, nc_type *xtypep, 
     if (ios->iomaster == MPI_ROOT)
         slen = strlen(my_name);
     if ((mpierr = MPI_Bcast(&slen, 1, MPI_INT, ios->ioroot, ios->my_comm)))
+    {
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(file->io_fstats->tot_timer_name);
         return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+    }
     if ((mpierr = MPI_Bcast((void *)my_name, slen + 1, MPI_CHAR, ios->ioroot, ios->my_comm)))
+    {
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(file->io_fstats->tot_timer_name);
         return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+    }
     if (name && namelen > 0)
     {
         assert(namelen <= PIO_MAX_NAME + 1);
@@ -1133,6 +1295,8 @@ int PIOc_inq_var(int ncid, int varid, char *name, int namelen, nc_type *xtypep, 
         file->varlist[varid].rd_mtimer = mtimer_create(tmp_timer_name, ios->my_comm, timer_log_fname);
         if(!mtimer_is_valid(file->varlist[varid].rd_mtimer))
         {
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return pio_err(ios, file, PIO_EINTERNAL, __FILE__, __LINE__,
                             "Inquiring information of variable %s (varid=%d) failed on file %s (ncid=%d) failed. Error creating micro timer (read) for variable", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid);
         }
@@ -1141,6 +1305,8 @@ int PIOc_inq_var(int ncid, int varid, char *name, int namelen, nc_type *xtypep, 
         file->varlist[varid].rd_rearr_mtimer = mtimer_create(tmp_timer_name, ios->my_comm, timer_log_fname);
         if(!mtimer_is_valid(file->varlist[varid].rd_rearr_mtimer))
         {
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return pio_err(ios, file, PIO_EINTERNAL, __FILE__, __LINE__,
                             "Inquiring information of variable %s (varid=%d) failed on file %s (ncid=%d) failed. Error creating micro timer (read rearrange) for variable", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid);
         }
@@ -1148,6 +1314,8 @@ int PIOc_inq_var(int ncid, int varid, char *name, int namelen, nc_type *xtypep, 
         file->varlist[varid].wr_mtimer = mtimer_create(tmp_timer_name, ios->my_comm, timer_log_fname);
         if(!mtimer_is_valid(file->varlist[varid].wr_mtimer))
         {
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return pio_err(ios, file, PIO_EINTERNAL, __FILE__, __LINE__,
                             "Inquiring information of variable %s (varid=%d) failed on file %s (ncid=%d) failed. Error creating micro timer (write) for variable", pio_get_fname_from_file(file), varid, pio_get_fname_from_file(file), ncid);
         }
@@ -1156,6 +1324,8 @@ int PIOc_inq_var(int ncid, int varid, char *name, int namelen, nc_type *xtypep, 
         file->varlist[varid].wr_rearr_mtimer = mtimer_create(tmp_timer_name, ios->my_comm, timer_log_fname);
         if(!mtimer_is_valid(file->varlist[varid].wr_rearr_mtimer))
         {
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return pio_err(ios, file, PIO_EINTERNAL, __FILE__, __LINE__,
                             "Inquiring information of variable %s (varid=%d) failed on file %s (ncid=%d) failed. Error creating micro timer (write rearrange) for variable", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid);
         }
@@ -1163,31 +1333,57 @@ int PIOc_inq_var(int ncid, int varid, char *name, int namelen, nc_type *xtypep, 
 #endif
 
     if ((mpierr = MPI_Bcast(&(file->varlist[varid].rec_var), 1, MPI_INT, ios->ioroot, ios->my_comm)))
+    {
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(file->io_fstats->tot_timer_name);
         return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+    }
 
     if (xtypep)
         if ((mpierr = MPI_Bcast(xtypep, 1, MPI_INT, ios->ioroot, ios->my_comm)))
+        {
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+        }
 
     if (ndimsp)
     {
         LOG((2, "PIOc_inq_var about to Bcast ndims = %d ios->ioroot = %d ios->my_comm = %d",
              *ndimsp, ios->ioroot, ios->my_comm));
         if ((mpierr = MPI_Bcast(ndimsp, 1, MPI_INT, ios->ioroot, ios->my_comm)))
+        {
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+        }
         LOG((2, "PIOc_inq_var Bcast ndims = %d", *ndimsp));
     }
     if (dimidsp)
     {
         if ((mpierr = MPI_Bcast(&ndims, 1, MPI_INT, ios->ioroot, ios->my_comm)))
+        {
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+        }
         if ((mpierr = MPI_Bcast(dimidsp, ndims, MPI_INT, ios->ioroot, ios->my_comm)))
+        {
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+        }
     }
     if (nattsp)
         if ((mpierr = MPI_Bcast(nattsp, 1, MPI_INT, ios->ioroot, ios->my_comm)))
+        {
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+        }
 
+    spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+    spio_ltimer_stop(file->io_fstats->tot_timer_name);
     return PIO_NOERR;
 }
 
@@ -1304,13 +1500,19 @@ int PIOc_inq_varid(int ncid, const char *name, int *varidp)
         return pio_err(NULL, NULL, ierr, __FILE__, __LINE__,
                         "Inquiring id for variable %s failed on file (ncid=%d). Invalid file id. Unable to find internal structure associated with the file id", vname, ncid);
     }
+    assert(file);
     ios = file->iosystem;
+    assert(ios);
+    spio_ltimer_start(ios->io_fstats->tot_timer_name);
+    spio_ltimer_start(file->io_fstats->tot_timer_name);
 
     /* Caller must provide name. */
     if (!name || strlen(name) > PIO_MAX_NAME)
     {
         const char *vname = (name) ? name : "UNKNOWN";
         const char *err_msg = (!name) ? "The pointer to variable name is NULL" : "The length of variable name exceeds PIO_MAX_NAME";
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(file->io_fstats->tot_timer_name);
         return pio_err(ios, file, PIO_EINVAL, __FILE__, __LINE__,
                         "Inquiring id for variable %s failed on file %s (ncid=%d). %s", vname, pio_get_fname_from_file(file), ncid, err_msg);
     }
@@ -1324,6 +1526,8 @@ int PIOc_inq_varid(int ncid, const char *name, int *varidp)
         PIO_SEND_ASYNC_MSG(ios, msg, &ierr, ncid, namelen, name);
         if(ierr != PIO_NOERR)
         {
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
                         "Inquiring id for variable %s failed on file %s (ncid=%d). Unable to send asynchronous message, PIO_MSG_INQ_VARID, on iosystem (iosysid=%d)", name, pio_get_fname_from_file(file), ncid, ios->iosysid);
         }
@@ -1344,6 +1548,8 @@ int PIOc_inq_varid(int ncid, const char *name, int *varidp)
             }
         }
 
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(file->io_fstats->tot_timer_name);
         return ierr;
     }
 #endif
@@ -1365,18 +1571,26 @@ int PIOc_inq_varid(int ncid, const char *name, int *varidp)
     /* A failure to inquire is not fatal */
     mpierr = MPI_Bcast(&ierr, 1, MPI_INT, ios->ioroot, ios->my_comm);
     if(mpierr != MPI_SUCCESS){
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(file->io_fstats->tot_timer_name);
         return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
     }
 
     if(ierr != PIO_NOERR){
         LOG((1, "nc*_inq_varid failed, ierr = %d", ierr));
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(file->io_fstats->tot_timer_name);
         return ierr;
     }
 
     /* Broadcast results to all tasks. Ignore NULL parameters. */
     if (varidp)
         if ((mpierr = MPI_Bcast(varidp, 1, MPI_INT, ios->ioroot, ios->my_comm)))
+        {
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+        }
 
 #ifdef PIO_MICRO_TIMING
     /* Create timers for the variable
@@ -1391,6 +1605,8 @@ int PIOc_inq_varid(int ncid, const char *name, int *varidp)
         file->varlist[*varidp].rd_mtimer = mtimer_create(tmp_timer_name, ios->my_comm, timer_log_fname);
         if(!mtimer_is_valid(file->varlist[*varidp].rd_mtimer))
         {
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return pio_err(ios, file, PIO_EINTERNAL, __FILE__, __LINE__,
                             "Inquiring id for variable %s failed on file %s (ncid=%d). Unable to create micro timers (read) for variable", name, pio_get_fname_from_file(file), ncid);
         }
@@ -1399,6 +1615,8 @@ int PIOc_inq_varid(int ncid, const char *name, int *varidp)
         file->varlist[*varidp].rd_rearr_mtimer = mtimer_create(tmp_timer_name, ios->my_comm, timer_log_fname);
         if(!mtimer_is_valid(file->varlist[*varidp].rd_rearr_mtimer))
         {
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return pio_err(ios, file, PIO_EINTERNAL, __FILE__, __LINE__,
                             "Inquiring id for variable %s failed on file %s (ncid=%d). Unable to create micro timers (read rearrange) for variable", name, pio_get_fname_from_file(file), ncid);
         }
@@ -1406,6 +1624,8 @@ int PIOc_inq_varid(int ncid, const char *name, int *varidp)
         file->varlist[*varidp].wr_mtimer = mtimer_create(tmp_timer_name, ios->my_comm, timer_log_fname);
         if(!mtimer_is_valid(file->varlist[*varidp].wr_mtimer))
         {
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return pio_err(ios, file, PIO_EINTERNAL, __FILE__, __LINE__,
                             "Inquiring id for variable %s failed on file %s (ncid=%d). Unable to create micro timers (write) for variable", name, pio_get_fname_from_file(file), ncid);
         }
@@ -1414,11 +1634,15 @@ int PIOc_inq_varid(int ncid, const char *name, int *varidp)
         file->varlist[*varidp].wr_rearr_mtimer = mtimer_create(tmp_timer_name, ios->my_comm, timer_log_fname);
         if(!mtimer_is_valid(file->varlist[*varidp].wr_rearr_mtimer))
         {
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return pio_err(ios, file, PIO_EINTERNAL, __FILE__, __LINE__,
                             "Inquiring id for variable %s failed on file %s (ncid=%d). Unable to create micro timers (write rearrange) for variable", name, pio_get_fname_from_file(file), ncid);
         }
     }
 #endif
+    spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+    spio_ltimer_stop(file->io_fstats->tot_timer_name);
     return PIO_NOERR;
 }
 
@@ -1455,13 +1679,19 @@ int PIOc_inq_att(int ncid, int varid, const char *name, nc_type *xtypep,
         return pio_err(NULL, NULL, ierr, __FILE__, __LINE__,
                         "Inquiring attribute (%s) associated with variable (varid=%d) failed on file (ncid=%d). Unable to query internal structure associated with the file id", aname, varid, ncid);
     }
+    assert(file);
     ios = file->iosystem;
+    assert(ios);
+    spio_ltimer_start(ios->io_fstats->tot_timer_name);
+    spio_ltimer_start(file->io_fstats->tot_timer_name);
 
     /* User must provide name shorter than PIO_MAX_NAME +1. */
     if (!name || strlen(name) > PIO_MAX_NAME)
     {
         const char *aname = (name) ? name : "UNKNOWN";
         const char *err_msg = (!name) ? "The pointer to attribute name is NULL" : "The length of attribute name exceeds PIO_MAX_NAME";
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(file->io_fstats->tot_timer_name);
         return pio_err(ios, file, PIO_EINVAL, __FILE__, __LINE__,
                         "Inquiring info for attribute, %s, associated with variable %s (varid=%d) failed on file %s (ncid=%d). %s", aname, pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid, err_msg);
     }
@@ -1478,6 +1708,8 @@ int PIOc_inq_att(int ncid, int varid, const char *name, nc_type *xtypep,
         if(ierr != PIO_NOERR)
         {
             const char *aname = (name) ? name : "UNKNOWN";
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
                             "Inquiring info for attribute, %s, associated with variable %s (varid=%d) failed on file %s (ncid=%d). Unable to send asynchronous message, PIO_MSG_INQ_ATT, on iosystem (iosysid=%d)", aname, pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid, ios->iosysid);
         } 
@@ -1503,6 +1735,8 @@ int PIOc_inq_att(int ncid, int varid, const char *name, nc_type *xtypep,
             }
         }
 
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(file->io_fstats->tot_timer_name);
         return ierr;
     }
 #endif
@@ -1525,22 +1759,36 @@ int PIOc_inq_att(int ncid, int varid, const char *name, nc_type *xtypep,
     /* A failure to inquire is not fatal */
     mpierr = MPI_Bcast(&ierr, 1, MPI_INT, ios->ioroot, ios->my_comm);
     if(mpierr != MPI_SUCCESS){
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(file->io_fstats->tot_timer_name);
         return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
     }
 
     if(ierr != PIO_NOERR){
         LOG((1, "nc*_inq_att failed, ierr = %d", ierr));
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(file->io_fstats->tot_timer_name);
         return ierr;
     }
 
     /* Broadcast results. */
     if (xtypep)
         if ((mpierr = MPI_Bcast(xtypep, 1, MPI_INT, ios->ioroot, ios->my_comm)))
+        {
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+        }
     if (lenp)
         if ((mpierr = MPI_Bcast(lenp, 1, MPI_OFFSET, ios->ioroot, ios->my_comm)))
+        {
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+        }
 
+    spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+    spio_ltimer_stop(file->io_fstats->tot_timer_name);
     return PIO_NOERR;
 }
 
@@ -1610,7 +1858,11 @@ int PIOc_inq_attname(int ncid, int varid, int attnum, char *name)
         return pio_err(NULL, NULL, ierr, __FILE__, __LINE__,
                         "Inquiring name of attribute with id=%d associated with variable (varid=%d) on file (ncid%d) failed. Unable to inquire internal structure associated with the file id", attnum, varid, ncid);
     }
+    assert(file);
     ios = file->iosystem;
+    assert(ios);
+    spio_ltimer_start(ios->io_fstats->tot_timer_name);
+    spio_ltimer_start(file->io_fstats->tot_timer_name);
 
     /* If async is in use, and this is not an IO task, bcast the parameters. */
     if (ios->async)
@@ -1621,6 +1873,8 @@ int PIOc_inq_attname(int ncid, int varid, int attnum, char *name)
         PIO_SEND_ASYNC_MSG(ios, msg, &ierr, ncid, varid, attnum, name_present);
         if(ierr != PIO_NOERR)
         {
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
                             "Inquiring name of attribute with id=%d associated with variable %s (varid=%d) on file %s (ncid%d) failed. Unable to send asynchronous message, PIO_MSG_INQ_ATTNAME, on iosystem (iosysid=%d)", attnum, pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid, ios->iosysid);
         }
@@ -1654,6 +1908,8 @@ int PIOc_inq_attname(int ncid, int varid, int attnum, char *name)
     ierr = check_netcdf(NULL, file, ierr, __FILE__, __LINE__);
     if(ierr != PIO_NOERR){
         LOG((1, "nc*_inq_attname failed, ierr = %d", ierr));
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(file->io_fstats->tot_timer_name);
         return ierr;
     }
 
@@ -1662,12 +1918,22 @@ int PIOc_inq_attname(int ncid, int varid, int attnum, char *name)
     {
         int namelen = strlen(name);
         if ((mpierr = MPI_Bcast(&namelen, 1, MPI_INT, ios->ioroot, ios->my_comm)))
+        {
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+        }
         /* Casting to void to avoid warnings on some compilers. */
         if ((mpierr = MPI_Bcast((void *)name, namelen + 1, MPI_CHAR, ios->ioroot, ios->my_comm)))
+        {
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+        }
     }
 
+    spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+    spio_ltimer_stop(file->io_fstats->tot_timer_name);
     return PIO_NOERR;
 }
 
@@ -1701,13 +1967,19 @@ int PIOc_inq_attid(int ncid, int varid, const char *name, int *idp)
         return pio_err(NULL, NULL, ierr, __FILE__, __LINE__,
                         "Inquiring id of attribute %s associated with variable (varid=%d) on file (ncid%d) failed. Unable to inquire internal structure associated with the file id", aname, varid, ncid);
     }
+    assert(file);
     ios = file->iosystem;
+    assert(ios);
+    spio_ltimer_start(ios->io_fstats->tot_timer_name);
+    spio_ltimer_start(file->io_fstats->tot_timer_name);
 
     /* User must provide name shorter than PIO_MAX_NAME +1. */
     if (!name || strlen(name) > PIO_MAX_NAME)
     {
         const char *aname = (name) ? name : "UNKNOWN";
         const char *err_msg = (!name) ? "The pointer to attribute name is NULL" : "The length of attribute name exceeds PIO_MAX_NAME";
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(file->io_fstats->tot_timer_name);
         return pio_err(ios, file, PIO_EINVAL, __FILE__, __LINE__,
                         "Inquiring id for attribute, %s, associated with variable %s (varid=%d) failed on file %s (ncid=%d). %s", aname, pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid, err_msg);
     }
@@ -1725,6 +1997,8 @@ int PIOc_inq_attid(int ncid, int varid, const char *name, int *idp)
         if(ierr != PIO_NOERR)
         {
             const char *aname = (name) ? name : "UNKNOWN";
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
                             "Inquiring id for attribute, %s, associated with variable %s (varid=%d) failed on file %s (ncid=%d). Unable to send asynchronous message, PIO_MSG_INQ_ATTID, on iosystem (iosysid=%d)", aname, pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid, ios->iosysid);
         }
@@ -1757,19 +2031,29 @@ int PIOc_inq_attid(int ncid, int varid, const char *name, int *idp)
     /* A failure to inquire is not fatal */
     mpierr = MPI_Bcast(&ierr, 1, MPI_INT, ios->ioroot, ios->my_comm);
     if(mpierr != MPI_SUCCESS){
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(file->io_fstats->tot_timer_name);
         return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
     }
 
     if(ierr != PIO_NOERR){
         LOG((1, "nc*_inq_attid failed, ierr = %d", ierr));
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(file->io_fstats->tot_timer_name);
         return ierr;
     }
 
     /* Broadcast results. */
     if (idp)
         if ((mpierr = MPI_Bcast(idp, 1, MPI_INT, ios->ioroot, ios->my_comm)))
+        {
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+        }
 
+    spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+    spio_ltimer_stop(file->io_fstats->tot_timer_name);
     return PIO_NOERR;
 }
 
@@ -1800,13 +2084,19 @@ int PIOc_rename_dim(int ncid, int dimid, const char *name)
         return pio_err(NULL, NULL, ierr, __FILE__, __LINE__,
                         "Renaming dimension (dimid=%d) to %s failed on file (ncid=%d). Unable to inquire internal structure associated with the file id", dimid, dname, ncid);
     }
+    assert(file);
     ios = file->iosystem;
+    assert(ios);
+    spio_ltimer_start(ios->io_fstats->tot_timer_name);
+    spio_ltimer_start(file->io_fstats->tot_timer_name);
 
     /* User must provide name shorter than PIO_MAX_NAME +1. */
     if (!name || strlen(name) > PIO_MAX_NAME)
     {
         const char *dname = (name) ? name : "UNKNOWN";
         const char *err_msg = (!name) ? "The pointer to dimension name is NULL" : "The length of dimension name exceeds PIO_MAX_NAME";
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(file->io_fstats->tot_timer_name);
         return pio_err(ios, file, PIO_EINVAL, __FILE__, __LINE__,
                         "Renaming dimension (dimid=%d) to %s failed on file %s (ncid=%d). %s", dimid, dname, pio_get_fname_from_file(file), ncid, err_msg);
     }
@@ -1823,6 +2113,8 @@ int PIOc_rename_dim(int ncid, int dimid, const char *name)
         if(ierr != PIO_NOERR)
         {
             const char *dname = (name) ? name : "UNKNOWN";
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
                             "Renaming dimension (dimid=%d) to %s failed on file %s (ncid=%d). Unable to send asynchronous message, PIO_MSG_RENAME_DIM, on iosystem (iosysid=%d)", dimid, dname, pio_get_fname_from_file(file), ncid, ios->iosysid);
         }
@@ -1855,9 +2147,13 @@ int PIOc_rename_dim(int ncid, int dimid, const char *name)
     ierr = check_netcdf(NULL, file, ierr, __FILE__, __LINE__);
     if(ierr != PIO_NOERR){
         LOG((1, "nc*_rename_dim failed, ierr = %d", ierr));
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(file->io_fstats->tot_timer_name);
         return ierr;
     }
 
+    spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+    spio_ltimer_stop(file->io_fstats->tot_timer_name);
     return PIO_NOERR;
 }
 
@@ -1889,13 +2185,19 @@ int PIOc_rename_var(int ncid, int varid, const char *name)
         return pio_err(NULL, NULL, ierr, __FILE__, __LINE__,
                         "Renaming variable (varid=%d) to %s failed on file (ncid=%d). Unable to inquire internal structure associated with the file id", varid, vname, ncid);
     }
+    assert(file);
     ios = file->iosystem;
+    assert(ios);
+    spio_ltimer_start(ios->io_fstats->tot_timer_name);
+    spio_ltimer_start(file->io_fstats->tot_timer_name);
 
     /* User must provide name shorter than PIO_MAX_NAME +1. */
     if (!name || strlen(name) > PIO_MAX_NAME)
     {
         const char *vname = (name) ? name : "UNKNOWN";
         const char *err_msg = (!name) ? "The pointer to variable name is NULL" : "The length of variable name exceeds PIO_MAX_NAME";
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(file->io_fstats->tot_timer_name);
         return pio_err(ios, file, PIO_EINVAL, __FILE__, __LINE__,
                         "Renaming variable (varid=%d) to %s failed on file %s (ncid=%d). %s", varid, vname, pio_get_fname_from_file(file), ncid, err_msg);
     }
@@ -1912,6 +2214,8 @@ int PIOc_rename_var(int ncid, int varid, const char *name)
         if(ierr != PIO_NOERR)
         {
             const char *vname = (name) ? name : "UNKNOWN";
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
                             "Renaming variable (varid=%d) to %s failed on file %s (ncid=%d). Unable to send asynchronous message, PIO_MSG_RENAME_VAR, on iosystem (iosysid=%d)", varid, vname, pio_get_fname_from_file(file), ncid, ios->iosysid);
         }
@@ -1944,9 +2248,13 @@ int PIOc_rename_var(int ncid, int varid, const char *name)
     ierr = check_netcdf(NULL, file, ierr, __FILE__, __LINE__);
     if(ierr != PIO_NOERR){
         LOG((1, "nc*_rename_var failed, ierr = %d", ierr));
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(file->io_fstats->tot_timer_name);
         return ierr;
     }
 
+    spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+    spio_ltimer_stop(file->io_fstats->tot_timer_name);
     return PIO_NOERR;
 }
 
@@ -1981,7 +2289,11 @@ int PIOc_rename_att(int ncid, int varid, const char *name,
         return pio_err(NULL, NULL, ierr, __FILE__, __LINE__,
                         "Renaming attribute %s associated with variable (varid=%d) to %s failed on file (ncid=%d). Unable to inquire internal structure associated with the file id", aname, varid, anewname, ncid);
     }
+    assert(file);
     ios = file->iosystem;
+    assert(ios);
+    spio_ltimer_start(ios->io_fstats->tot_timer_name);
+    spio_ltimer_start(file->io_fstats->tot_timer_name);
 
     /* User must provide names of correct length. */
     if (!name || strlen(name) > PIO_MAX_NAME ||
@@ -1991,6 +2303,8 @@ int PIOc_rename_att(int ncid, int varid, const char *name,
         const char *anewname = (newname) ? newname : "UNKNOWN";
         const char *err_msg_name = (!name) ? "The pointer to attribute name is NULL" : "The length of attribute name exceeds PIO_MAX_NAME";
         const char *err_msg_newname = (!newname) ? "The pointer to the new attribute name is NULL" : "The length of the new attribute name exceeds PIO_MAX_NAME";
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(file->io_fstats->tot_timer_name);
         return pio_err(ios, file, PIO_EINVAL, __FILE__, __LINE__,
                         "Renaming attribute %s associated with variable %s (varid=%d) to %s failed on file %s (ncid=%d). %s", aname, pio_get_vname_from_file(file, varid), varid, anewname, pio_get_fname_from_file(file), ncid, (!name || (strlen(name) > PIO_MAX_NAME) ? err_msg_name : err_msg_newname));
     }
@@ -2011,6 +2325,8 @@ int PIOc_rename_att(int ncid, int varid, const char *name,
         {
             const char *aname = (name) ? name : "UNKNOWN";
             const char *anewname = (newname) ? newname : "UNKNOWN";
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
                         "Renaming attribute %s associated with variable %s (varid=%d) to %s failed on file %s (ncid=%d). Unable to send asynchronous message, PIO_MSG_RENAME_ATT, on iosystem (iosysid=%d)", aname, pio_get_vname_from_file(file, varid), varid, anewname, pio_get_fname_from_file(file), ncid, ios->iosysid);
         }
@@ -2042,10 +2358,14 @@ int PIOc_rename_att(int ncid, int varid, const char *name,
     ierr = check_netcdf(NULL, file, ierr, __FILE__, __LINE__);
     if(ierr != PIO_NOERR){
         LOG((1, "nc*_rename_att failed, ierr = %d", ierr));
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(file->io_fstats->tot_timer_name);
         return ierr;
     }
 
     LOG((2, "PIOc_rename_att succeeded"));
+    spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+    spio_ltimer_stop(file->io_fstats->tot_timer_name);
     return PIO_NOERR;
 }
 
@@ -2078,13 +2398,19 @@ int PIOc_del_att(int ncid, int varid, const char *name)
         return pio_err(NULL, NULL, ierr, __FILE__, __LINE__,
                         "Deleting attribute %s associated with variable (varid=%d) failed on file (ncid=%d). Unable to inquire internal structure associated with the file id", aname, varid, ncid);
     }
+    assert(file);
     ios = file->iosystem;
+    assert(ios);
+    spio_ltimer_start(ios->io_fstats->tot_timer_name);
+    spio_ltimer_start(file->io_fstats->tot_timer_name);
 
     /* User must provide name shorter than PIO_MAX_NAME +1. */
     if (!name || strlen(name) > PIO_MAX_NAME)
     {
         const char *aname = (name) ? name : "UNKNOWN";
         const char *err_msg = (!name) ? "The pointer to attribute name is NULL" : "The length of attribute name exceeds PIO_MAX_NAME";
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(file->io_fstats->tot_timer_name);
         return pio_err(ios, file, PIO_EINVAL, __FILE__, __LINE__,
                         "Deleting attribute %s associated with variable %s (varid=%d) failed on file %s (ncid=%d). %s", aname, pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid, err_msg);
     }
@@ -2101,6 +2427,8 @@ int PIOc_del_att(int ncid, int varid, const char *name)
         if(ierr != PIO_NOERR)
         {
             const char *aname = (name) ? name : "UNKNOWN";
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
                             "Deleting attribute %s associated with variable %s (varid=%d) failed on file %s (ncid=%d). Unable to send asynchronous message, PIO_MSG_DEL_ATT, on iosystem (iosysid=%d)", aname, pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid, ios->iosysid);
         }
@@ -2132,9 +2460,13 @@ int PIOc_del_att(int ncid, int varid, const char *name)
     ierr = check_netcdf(NULL, file, ierr, __FILE__, __LINE__);
     if(ierr != PIO_NOERR){
         LOG((1, "nc*_del_att failed, ierr = %d", ierr));
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(file->io_fstats->tot_timer_name);
         return ierr;
     }
 
+    spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+    spio_ltimer_stop(file->io_fstats->tot_timer_name);
     return PIO_NOERR;
 }
 
@@ -2169,7 +2501,11 @@ int PIOc_set_fill(int ncid, int fillmode, int *old_modep)
         return pio_err(NULL, NULL, ierr, __FILE__, __LINE__,
                         "Setting fill mode failed on file (ncid=%d). Unable to query internal structure associated with the file id", ncid);
     }
+    assert(file);
     ios = file->iosystem;
+    assert(ios);
+    spio_ltimer_start(ios->io_fstats->tot_timer_name);
+    spio_ltimer_start(file->io_fstats->tot_timer_name);
 
     /* If async is in use, and this is not an IO task, bcast the parameters. */
     if (ios->async)
@@ -2180,6 +2516,8 @@ int PIOc_set_fill(int ncid, int fillmode, int *old_modep)
         PIO_SEND_ASYNC_MSG(ios, msg, &ierr, ncid, fillmode, old_modep_present);
         if(ierr != PIO_NOERR)
         {
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
                             "Setting fill mode failed on file %s (ncid=%d). Unable to send asynchronous message, PIO_MSG_SET_FILL, on iosystem (iosysid=%d)", pio_get_fname_from_file(file), ncid, ios->iosysid);
         }
@@ -2194,6 +2532,8 @@ int PIOc_set_fill(int ncid, int fillmode, int *old_modep)
 
         file->fillmode = fillmode;
 
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(file->io_fstats->tot_timer_name);
         return PIO_NOERR;
     }
 #endif
@@ -2218,6 +2558,8 @@ int PIOc_set_fill(int ncid, int fillmode, int *old_modep)
     ierr = check_netcdf(NULL, file, ierr, __FILE__, __LINE__);
     if(ierr != PIO_NOERR){
         LOG((1, "nc*_set_fill failed, ierr = %d", ierr));
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(file->io_fstats->tot_timer_name);
         return ierr;
     }
 
@@ -2226,10 +2568,16 @@ int PIOc_set_fill(int ncid, int fillmode, int *old_modep)
     {
         LOG((2, "old_mode = %d", *old_modep));
         if ((mpierr = MPI_Bcast(old_modep, 1, MPI_INT, ios->ioroot, ios->my_comm)))
+        {
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+        }
     }
 
     LOG((2, "PIOc_set_fill succeeded"));
+    spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+    spio_ltimer_stop(file->io_fstats->tot_timer_name);
     return PIO_NOERR;
 }
 
@@ -2301,13 +2649,19 @@ int PIOc_def_dim(int ncid, const char *name, PIO_Offset len, int *idp)
         return pio_err(NULL, NULL, ierr, __FILE__, __LINE__,
                         "Defining dimension %s in file (ncid=%d) failed. Unable to inquire internal structure associated with the file id", dname, ncid);
     }
+    assert(file);
     ios = file->iosystem;
+    assert(ios);
+    spio_ltimer_start(ios->io_fstats->tot_timer_name);
+    spio_ltimer_start(file->io_fstats->tot_timer_name);
 
     /* User must provide name shorter than PIO_MAX_NAME +1. */
     if (!name || strlen(name) > PIO_MAX_NAME)
     {
         const char *dname = (name) ? name : "UNKNOWN";
         const char *err_msg = (!name) ? "The pointer to dimension name is NULL" : "The length of dimension name exceeds PIO_MAX_NAME";
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(file->io_fstats->tot_timer_name);
         return pio_err(ios, file, PIO_EINVAL, __FILE__, __LINE__,
                         "Defining dimension %s in file %s (ncid=%d) failed. %s", dname, pio_get_fname_from_file(file), ncid, err_msg);
     }
@@ -2329,6 +2683,8 @@ int PIOc_def_dim(int ncid, const char *name, PIO_Offset len, int *idp)
         if(ierr != PIO_NOERR)
         {
             const char *dname = (name) ? name : "UNKNOWN";
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return pio_err(ios, file, ierr, __FILE__, __LINE__,
                         "Defining dimension %s in file %s (ncid=%d) failed. Unable to send asynchronous message, PIO_MSG_DEF_DIM, on iosystem (iosysid=%d)", dname, pio_get_fname_from_file(file), ncid, ios->iosysid);
         }
@@ -2351,6 +2707,8 @@ int PIOc_def_dim(int ncid, const char *name, PIO_Offset len, int *idp)
                                                adios2_constant_dims_false);
             if (variableH == NULL)
             {
+                spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+                spio_ltimer_stop(file->io_fstats->tot_timer_name);
                 return pio_err(ios, file, PIO_EADIOS2ERR, __FILE__, __LINE__, "Defining (ADIOS) variable (name=%s) failed for file (%s, ncid=%d)", dimname, pio_get_fname_from_file(file), file->pio_ncid);
             }
         }
@@ -2363,6 +2721,8 @@ int PIOc_def_dim(int ncid, const char *name, PIO_Offset len, int *idp)
         adios2_error adiosErr = adios2_put(file->engineH, variableH, &len, adios2_mode_sync);
         if (adiosErr != adios2_error_none)
         {
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return pio_err(ios, file, ierr, __FILE__, __LINE__, "adios2_put failed, error code = %d", adiosErr);
         }
 
@@ -2374,6 +2734,8 @@ int PIOc_def_dim(int ncid, const char *name, PIO_Offset len, int *idp)
             if (!file->unlim_dimids)
             {
                 const char *dname = (name) ? name : "UNKNOWN";
+                spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+                spio_ltimer_stop(file->io_fstats->tot_timer_name);
                 return pio_err(ios, file, PIO_ENOMEM, __FILE__, __LINE__,
                             "Defining dimension %s in file %s (ncid=%d) failed. Out of memory allocating %lld bytes to cache unlimited dimension ids", dname, pio_get_fname_from_file(file), ncid, (unsigned long long) (file->num_unlim_dimids * sizeof(int)));
             }
@@ -2382,6 +2744,8 @@ int PIOc_def_dim(int ncid, const char *name, PIO_Offset len, int *idp)
             LOG((1, "pio_def_dim : %d dim is unlimited", *idp));
         }
 
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(file->io_fstats->tot_timer_name);
         return PIO_NOERR;
     }
 #endif
@@ -2403,13 +2767,19 @@ int PIOc_def_dim(int ncid, const char *name, PIO_Offset len, int *idp)
     ierr = check_netcdf(NULL, file, ierr, __FILE__, __LINE__);
     if(ierr != PIO_NOERR){
         LOG((1, "nc*_def_dim failed, ierr = %d", ierr));
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(file->io_fstats->tot_timer_name);
         return ierr;
     }
 
     /* Broadcast results to all tasks. Ignore NULL parameters. */
     if (idp)
         if ((mpierr = MPI_Bcast(idp , 1, MPI_INT, ios->ioroot, ios->my_comm)))
+        {
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+        }
 
     if(len == PIO_UNLIMITED)
     {
@@ -2419,6 +2789,8 @@ int PIOc_def_dim(int ncid, const char *name, PIO_Offset len, int *idp)
         if(!file->unlim_dimids)
         {
             const char *dname = (name) ? name : "UNKNOWN";
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return pio_err(ios, file, PIO_ENOMEM, __FILE__, __LINE__,
                         "Defining dimension %s in file %s (ncid=%d) failed. Out of memory allocating %lld bytes to cache unlimited dimension ids", dname, pio_get_fname_from_file(file), ncid, (unsigned long long) (file->num_unlim_dimids * sizeof(int)));
         }
@@ -2427,6 +2799,8 @@ int PIOc_def_dim(int ncid, const char *name, PIO_Offset len, int *idp)
     }
 
     LOG((2, "def_dim ierr = %d", ierr));
+    spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+    spio_ltimer_stop(file->io_fstats->tot_timer_name);
     return PIO_NOERR;
 }
 
@@ -2466,7 +2840,11 @@ int PIOc_def_var(int ncid, const char *name, nc_type xtype, int ndims,
         return pio_err(NULL, NULL, ierr, __FILE__, __LINE__,
                         "Defining variable %s in file (ncid=%d) failed. Unable to inquire internal structure associated with the file id", vname, ncid);
     }
+    assert(file);
     ios = file->iosystem;
+    assert(ios);
+    spio_ltimer_start(ios->io_fstats->tot_timer_name);
+    spio_ltimer_start(file->io_fstats->tot_timer_name);
 
     /* User must provide name and storage for varid. */
     if (!name || !varidp || strlen(name) > PIO_MAX_NAME)
@@ -2474,6 +2852,8 @@ int PIOc_def_var(int ncid, const char *name, nc_type xtype, int ndims,
         const char *vname = (name) ? name : "UNKNOWN";
         const char *err_msg_varidp = "Invalid (NULL) pointer to buffer to return variable id";
         const char *err_msg_name = (!name) ? "The pointer to variable name is NULL" : "The length of variable name exceeds PIO_MAX_NAME";
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(file->io_fstats->tot_timer_name);
         return pio_err(ios, file, PIO_EINVAL, __FILE__, __LINE__,
                         "Defining variable %s in file %s (ncid=%d) failed. %s", vname, pio_get_fname_from_file(file), ncid, ((!varidp) ? err_msg_varidp : err_msg_name));
     }
@@ -2490,11 +2870,15 @@ int PIOc_def_var(int ncid, const char *name, nc_type xtype, int ndims,
         {
             PIO_Offset dimlen;
             
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             ierr = PIOc_inq_dimlen(ncid, dimidsp[d], &dimlen);
             if(ierr != PIO_NOERR){
                 LOG((1, "PIOc_inq_dimlen failed, ierr = %d", ierr));
                 return ierr;
             }
+            spio_ltimer_start(ios->io_fstats->tot_timer_name);
+            spio_ltimer_start(file->io_fstats->tot_timer_name);
             if (dimlen == PIO_UNLIMITED)
                 invalid_unlim_dim++;
         }
@@ -2513,19 +2897,29 @@ int PIOc_def_var(int ncid, const char *name, nc_type xtype, int ndims,
         if(ierr != PIO_NOERR)
         {
             const char *vname = (name) ? name : "UNKNOWN";
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
                             "Defining variable %s in file %s (ncid=%d) failed. Unable to send asynchronous message, PIO_MSG_DEF_VAR, on iosystem (iosysid=%d)", vname, pio_get_fname_from_file(file), ncid, ios->iosysid);
         }
 
         /* Broadcast values currently only known on computation tasks to IO tasks. */
         if ((mpierr = MPI_Bcast(&invalid_unlim_dim, 1, MPI_INT, ios->comproot, ios->my_comm)))
+        {
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+        }
     }
 
     /* Check that only one unlimited dim is specified, and that it is
      * first. */
     if (invalid_unlim_dim)
-            return PIO_EINVAL;
+    {
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(file->io_fstats->tot_timer_name);
+        return PIO_EINVAL;
+    }
 
     /* ADIOS: assume all procs are also IO tasks */
 #ifdef _ADIOS2
@@ -2553,6 +2947,8 @@ int PIOc_def_var(int ncid, const char *name, nc_type xtype, int ndims,
         if (file->adios_vars[file->num_vars].gdimids == NULL)
         {
             const char *vname = (name) ? name : "UNKNOWN";
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return pio_err(ios, file, PIO_ENOMEM, __FILE__, __LINE__,
                             "Defining variable %s in file %s (ncid=%d) using ADIOS iotype failed. Out of memory allocating %lld bytes for global dimensions", vname, pio_get_fname_from_file(file), ncid, (unsigned long long) (ndims * sizeof(int)));
         }
@@ -2573,6 +2969,8 @@ int PIOc_def_var(int ncid, const char *name, nc_type xtype, int ndims,
                     attributeH = adios2_define_attribute(file->ioH, att_name, adios2_type_int32_t, &av->ndims);
                     if (attributeH == NULL)
                     {
+                        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+                        spio_ltimer_stop(file->io_fstats->tot_timer_name);
                         return pio_err(ios, file, PIO_EADIOS2ERR, __FILE__, __LINE__, "Defining (ADIOS) attribute (name=%s) failed for file (%s, ncid=%d)", att_name, pio_get_fname_from_file(file), file->pio_ncid);
                     }
                 }
@@ -2584,6 +2982,8 @@ int PIOc_def_var(int ncid, const char *name, nc_type xtype, int ndims,
                     attributeH = adios2_define_attribute(file->ioH, att_name, adios2_type_int32_t, &av->nc_type);
                     if (attributeH == NULL)
                     {
+                        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+                        spio_ltimer_stop(file->io_fstats->tot_timer_name);
                         return pio_err(ios, file, PIO_EADIOS2ERR, __FILE__, __LINE__, "Defining (ADIOS) attribute (name=%s) failed for file (%s, ncid=%d)", att_name, pio_get_fname_from_file(file), file->pio_ncid);
                     }
                 }
@@ -2602,6 +3002,8 @@ int PIOc_def_var(int ncid, const char *name, nc_type xtype, int ndims,
                         attributeH = adios2_define_attribute_array(file->ioH, att_name, adios2_type_string, dimnames, av->ndims);
                         if (attributeH == NULL)
                         {
+                            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+                            spio_ltimer_stop(file->io_fstats->tot_timer_name);
                             return pio_err(ios, file, PIO_EADIOS2ERR, __FILE__, __LINE__, "Defining (ADIOS) attribute array (name=%s, size=%d) failed for file (%s, ncid=%d)", att_name, av->ndims, pio_get_fname_from_file(file), file->pio_ncid);
                         }
                     }
@@ -2627,6 +3029,8 @@ int PIOc_def_var(int ncid, const char *name, nc_type xtype, int ndims,
             file->varlist[*varidp].rec_var = is_rec_var;
         }
 
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(file->io_fstats->tot_timer_name);
         return PIO_NOERR;
     }
 #endif
@@ -2697,6 +3101,8 @@ int PIOc_def_var(int ncid, const char *name, nc_type xtype, int ndims,
     ierr = check_netcdf(NULL, file, ierr, __FILE__, __LINE__);
     if(ierr != PIO_NOERR){
         LOG((1, "nc*_def_var_* failed, ierr = %d", ierr));
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(file->io_fstats->tot_timer_name);
         return ierr;
     }
 
@@ -2704,7 +3110,11 @@ int PIOc_def_var(int ncid, const char *name, nc_type xtype, int ndims,
     /* FIXME: varidp should be valid, no need to check it here */
     if (varidp)
         if ((mpierr = MPI_Bcast(varidp, 1, MPI_INT, ios->ioroot, ios->my_comm)))
+        {
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+        }
 
     strncpy(file->varlist[*varidp].vname, name, PIO_MAX_NAME);
     if(file->num_unlim_dimids > 0)
@@ -2736,6 +3146,8 @@ int PIOc_def_var(int ncid, const char *name, nc_type xtype, int ndims,
         if(!mtimer_is_valid(file->varlist[*varidp].rd_mtimer))
         {
             const char *vname = (name) ? name : "UNKNOWN";
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return pio_err(ios, file, PIO_EINTERNAL, __FILE__, __LINE__,
                             "Defining variable %s in file %s (ncid=%d) failed. Unable to create micro timer (read) for the variable", vname, pio_get_fname_from_file(file), ncid);
         }
@@ -2745,6 +3157,8 @@ int PIOc_def_var(int ncid, const char *name, nc_type xtype, int ndims,
         if(!mtimer_is_valid(file->varlist[*varidp].rd_rearr_mtimer))
         {
             const char *vname = (name) ? name : "UNKNOWN";
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return pio_err(ios, file, PIO_EINTERNAL, __FILE__, __LINE__,
                             "Defining variable %s in file %s (ncid=%d) failed. Unable to create micro timer (read rearrange) for the variable", vname, pio_get_fname_from_file(file), ncid);
         }
@@ -2753,6 +3167,8 @@ int PIOc_def_var(int ncid, const char *name, nc_type xtype, int ndims,
         if(!mtimer_is_valid(file->varlist[*varidp].wr_mtimer))
         {
             const char *vname = (name) ? name : "UNKNOWN";
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return pio_err(ios, file, PIO_EINTERNAL, __FILE__, __LINE__,
                             "Defining variable %s in file %s (ncid=%d) failed. Unable to create micro timer (write) for the variable", vname, pio_get_fname_from_file(file), ncid);
         }
@@ -2762,11 +3178,15 @@ int PIOc_def_var(int ncid, const char *name, nc_type xtype, int ndims,
         if(!mtimer_is_valid(file->varlist[*varidp].wr_rearr_mtimer))
         {
             const char *vname = (name) ? name : "UNKNOWN";
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return pio_err(ios, file, PIO_EINTERNAL, __FILE__, __LINE__,
                             "Defining variable %s in file %s (ncid=%d) failed. Unable to create micro timer (write rearrange) for the variable", vname, pio_get_fname_from_file(file), ncid);
         }
     }
 #endif
+    spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+    spio_ltimer_stop(file->io_fstats->tot_timer_name);
     return PIO_NOERR;
 }
 
@@ -2815,13 +3235,19 @@ int PIOc_def_var_fill(int ncid, int varid, int fill_mode, const void *fill_value
         return pio_err(NULL, NULL, ierr, __FILE__, __LINE__,
                         "Defining fillvalue for variable (varid=%d) failed on file (ncid=%d). Unable to inquire internal structure associated with the file id", varid, ncid);
     }
+    assert(file);
     ios = file->iosystem;
+    assert(ios);
+    spio_ltimer_start(ios->io_fstats->tot_timer_name);
+    spio_ltimer_start(file->io_fstats->tot_timer_name);
 
     /* Caller must provide correct values. */
     if ((fill_mode != NC_FILL && fill_mode != NC_NOFILL) ||
         (fill_mode == NC_FILL && !fill_valuep))
     {
         const char *err_msg = (fill_mode != NC_NOFILL) ? "Fill mode specified by the user is not valid" : "The pointer to fill value is invalid (NULL)";
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(file->io_fstats->tot_timer_name);
         return pio_err(ios, file, PIO_EINVAL, __FILE__, __LINE__,
                         "Defining fillvalue for variable %s (varid=%d) failed on file %s (ncid=%d). %s", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid, err_msg);
     }
@@ -2831,6 +3257,8 @@ int PIOc_def_var_fill(int ncid, int varid, int fill_mode, const void *fill_value
      * type. */
     if (!ios->async || !ios->ioproc)
     {
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(file->io_fstats->tot_timer_name);
         ierr = PIOc_inq_vartype(ncid, varid, &xtype);
         if(ierr != PIO_NOERR){
             LOG((1, "PIOc_inq_vartype failed, ierr = %d", ierr));
@@ -2841,6 +3269,8 @@ int PIOc_def_var_fill(int ncid, int varid, int fill_mode, const void *fill_value
             LOG((1, "PIOc_inq_type failed, ierr = %d", ierr));
             return ierr;
         }
+        spio_ltimer_start(ios->io_fstats->tot_timer_name);
+        spio_ltimer_start(file->io_fstats->tot_timer_name);
     }
     LOG((2, "PIOc_def_var_fill type_size = %d", type_size));
 
@@ -2860,6 +3290,8 @@ int PIOc_def_var_fill(int ncid, int varid, int fill_mode, const void *fill_value
             (fill_value_present) ? fill_valuep : amsg_fillvalue_p);
         if(ierr != PIO_NOERR)
         {
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
                         "Defining fillvalue for variable %s (varid=%d) failed on file %s (ncid=%d). Unable to send asynchronous message, PIO_MSG_DEF_VAR_FILL, on iosystem (iosysid=%d)", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid, ios->iosysid);
         }
@@ -2871,9 +3303,17 @@ int PIOc_def_var_fill(int ncid, int varid, int fill_mode, const void *fill_value
 
         /* Broadcast values currently only known on computation tasks to IO tasks. */
         if ((mpierr = MPI_Bcast(&xtype, 1, MPI_INT, ios->comproot, ios->my_comm)))
+        {
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+        }
         if ((mpierr = MPI_Bcast(&type_size, 1, MPI_OFFSET, ios->comproot, ios->my_comm)))
+        {
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+        }
     }
 
     if (ios->ioproc)
@@ -2914,9 +3354,13 @@ int PIOc_def_var_fill(int ncid, int varid, int fill_mode, const void *fill_value
     ierr = check_netcdf(NULL, file, ierr, __FILE__, __LINE__);
     if(ierr != PIO_NOERR){
         LOG((1, "nc*_def_var_fill failed, ierr = %d", ierr));
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(file->io_fstats->tot_timer_name);
         return ierr;
     }
 
+    spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+    spio_ltimer_stop(file->io_fstats->tot_timer_name);
     return PIO_NOERR;
 }
 
@@ -2957,7 +3401,11 @@ int PIOc_inq_var_fill(int ncid, int varid, int *no_fill, void *fill_valuep)
         return pio_err(NULL, NULL, ierr, __FILE__, __LINE__,
                         "Inquiring fill value settings for the variable (varid=%d) failed on file (ncid=%d). Unable to query internal structure associated with the file id", varid, ncid);
     }
+    assert(file);
     ios = file->iosystem;
+    assert(ios);
+    spio_ltimer_start(ios->io_fstats->tot_timer_name);
+    spio_ltimer_start(file->io_fstats->tot_timer_name);
     LOG((2, "found file"));
 
     /* Run this on all tasks if async is not in use, but only on
@@ -2965,6 +3413,8 @@ int PIOc_inq_var_fill(int ncid, int varid, int *no_fill, void *fill_valuep)
      * type. */
     if (!ios->async || !ios->ioproc)
     {
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(file->io_fstats->tot_timer_name);
         ierr = PIOc_inq_vartype(ncid, varid, &xtype);
         if(ierr != PIO_NOERR){
             LOG((1, "PIOc_inq_vartype failed, ierr = %d", ierr));
@@ -2975,6 +3425,8 @@ int PIOc_inq_var_fill(int ncid, int varid, int *no_fill, void *fill_valuep)
             LOG((1, "PIOc_inq_type failed, ierr = %d", ierr));
             return ierr;
         }
+        spio_ltimer_start(ios->io_fstats->tot_timer_name);
+        spio_ltimer_start(file->io_fstats->tot_timer_name);
         LOG((2, "PIOc_inq_var_fill type_size = %d", type_size));
     }
 
@@ -2989,15 +3441,25 @@ int PIOc_inq_var_fill(int ncid, int varid, int *no_fill, void *fill_valuep)
             no_fill_present, fill_value_present);
         if(ierr != PIO_NOERR)
         {
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
                             "Inquiring fill value settings for the variable %s (varid=%d) failed on file %s (ncid=%d). Unable to send asynchronous message, PIO_MSG_INQ_VAR_FILL, on iosystem (iosysid=%d)", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid, ios->iosysid);
         }
 
         /* Broadcast values currently only known on computation tasks to IO tasks. */
         if ((mpierr = MPI_Bcast(&xtype, 1, MPI_INT, ios->comproot, ios->my_comm)))
+        {
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+        }
         if ((mpierr = MPI_Bcast(&type_size, 1, MPI_OFFSET, ios->comproot, ios->my_comm)))
+        {
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+        }
     }
 
     /* If this is an IO task, then call the netCDF function. */
@@ -3055,6 +3517,8 @@ int PIOc_inq_var_fill(int ncid, int varid, int *no_fill, void *fill_valuep)
                         break;
                     default:
                         {
+                          spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+                          spio_ltimer_stop(file->io_fstats->tot_timer_name);
                           return pio_err(ios, file, NC_EBADTYPE, __FILE__, __LINE__,
                                           "Inquiring fill value settings for the variable %s (varid=%d) failed on file %s (ncid=%d). Unsupported type (xtype=%x) specified for the fillvalue", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid, xtype);
                         }
@@ -3087,17 +3551,29 @@ int PIOc_inq_var_fill(int ncid, int varid, int *no_fill, void *fill_valuep)
     ierr = check_netcdf(NULL, file, ierr, __FILE__, __LINE__);
     if(ierr != PIO_NOERR){
         LOG((1, "nc*_inq_var_fill failed, ierr = %d", ierr));
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(file->io_fstats->tot_timer_name);
         return ierr;
     }
 
     /* Broadcast results to all tasks. Ignore NULL parameters. */
     if (no_fill)
         if ((mpierr = MPI_Bcast(no_fill, 1, MPI_INT, ios->ioroot, ios->my_comm)))
+        {
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+        }
     if (fill_valuep)
         if ((mpierr = MPI_Bcast(fill_valuep, type_size, MPI_CHAR, ios->ioroot, ios->my_comm)))
+        {
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+        }
 
+    spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+    spio_ltimer_stop(file->io_fstats->tot_timer_name);
     return PIO_NOERR;
 }
 
@@ -3130,7 +3606,9 @@ int PIOc_get_att(int ncid, int varid, const char *name, void *ip)
         return pio_err(NULL, NULL, ierr, __FILE__, __LINE__,
                         "Getting attribute %s associated with variable (varid=%d) failed on file (ncid=%d). Unable to query internal structure associated with the file id", aname, varid, ncid);
     }
+    assert(file);
     ios = file->iosystem;
+    assert(ios);
 
     /* User must provide a name and destination pointer. */
     if (!name || !ip || strlen(name) > PIO_MAX_NAME)
@@ -3729,19 +4207,26 @@ int PIOc_copy_att(int incid, int ivarid, const char *name,
     return pio_err(NULL, NULL, ierr, __FILE__, __LINE__,
                     "Copying attribute (%s) associated with variable (varid=%d) failed on file (ncid=%d). Unable to query internal structure associated with the input file id", aname, ivarid, incid);
   }
+  assert(ifile);
   ios = ifile->iosystem;
+  spio_ltimer_start(ios->io_fstats->tot_timer_name);
+  GPTLstart(ifile->io_fstats->tot_timer_name);
   assert(ios);
 
   /* User must provide name shorter than PIO_MAX_NAME +1. */
   if(!name || strlen(name) > PIO_MAX_NAME){
     const char *aname = (name) ? name : "UNKNOWN";
     const char *err_msg = (!name) ? "The pointer to attribute name is NULL" : "The length of attribute name exceeds PIO_MAX_NAME";
+    spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+    GPTLstop(ifile->io_fstats->tot_timer_name);
     return pio_err(ios, ifile, PIO_EINVAL, __FILE__, __LINE__,
                     "Copying attribute, %s, associated with variable %s (varid=%d) failed on file %s (ncid=%d). %s", aname, pio_get_vname_from_file(ifile, ivarid), ivarid, pio_get_fname_from_file(ifile), incid, err_msg);
   }
 
   /* Find file corresponding to the output file id */
   if((ierr = pio_get_file(oncid, &ofile))){
+    spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+    GPTLstop(ifile->io_fstats->tot_timer_name);
     return pio_err(NULL, NULL, ierr, __FILE__, __LINE__,
                     "Copying attribute (%s) associated with variable (varid=%d) failed on file (ncid=%d). Unable to query internal structure associated with the output file id", name, ovarid, oncid);
   }
@@ -3751,10 +4236,14 @@ int PIOc_copy_att(int incid, int ivarid, const char *name,
    */
   assert(ofile->iosystem);
   if(ofile->iosystem->iosysid != ifile->iosystem->iosysid){
+    spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+    GPTLstop(ifile->io_fstats->tot_timer_name);
     return pio_err(ios, NULL, PIO_EINVAL, __FILE__, __LINE__,
                     "Copying attribute, %s, associated with variable %s (varid=%d) from file %s (ncid=%d, iosystem id = %d) to %s (ncid=%d, iosystem id =%d) failed. The two files operate on different iosystems, we currently do not support copying attributes between files operating on two different iosystems", name, pio_get_vname_from_file(ifile, ivarid), ivarid, pio_get_fname_from_file(ifile), incid, ifile->iosystem->iosysid, pio_get_fname_from_file(ofile), oncid, ofile->iosystem->iosysid);
   }
   if(ofile->iotype != ifile->iotype){
+    spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+    GPTLstop(ifile->io_fstats->tot_timer_name);
     return pio_err(ios, NULL, PIO_EINVAL, __FILE__, __LINE__,
                     "Copying attribute, %s, associated with variable %s (varid=%d) from file %s (ncid=%d, iosystem id = %d, iotype=%s) to %s (ncid=%d, iosystem id =%d, iotype=%s) failed. The iotypes of the two files are different, we currently do not support copying attributes between files with different iotypes", name, pio_get_vname_from_file(ifile, ivarid), ivarid, pio_get_fname_from_file(ifile), incid, ifile->iosystem->iosysid, pio_iotype_to_string(ifile->iotype), pio_get_fname_from_file(ofile), oncid, ofile->iosystem->iosysid, pio_iotype_to_string(ofile->iotype));
   }
@@ -3765,6 +4254,8 @@ int PIOc_copy_att(int incid, int ivarid, const char *name,
     int namelen = strlen(name) + 1;
     PIO_SEND_ASYNC_MSG(ios, msg, &ierr, incid, ivarid, namelen, name, oncid, ovarid);
     if(ierr != PIO_NOERR){
+      spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+      GPTLstop(ifile->io_fstats->tot_timer_name);
       return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
                       "Copying attribute, %s, associated with variable %s (varid=%d) from file %s (ncid=%d) to %s (ncid=%d, varid=%d) failed. Unable to send asynchronous message, PIO_MSG_COPY_ATT, on iosystem (iosysid=%d)", name, pio_get_vname_from_file(ifile, ivarid), ivarid, pio_get_fname_from_file(ifile), incid, pio_get_fname_from_file(ofile), oncid, ovarid, ios->iosysid);
     }
@@ -3798,6 +4289,8 @@ int PIOc_copy_att(int incid, int ivarid, const char *name,
              */
             nc_type att_type;
             PIO_Offset att_len = 0, type_sz = 0;
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            GPTLstop(ifile->io_fstats->tot_timer_name);
             ierr = PIOc_inq_att(ifile->fh, ivarid, name, &att_type, &att_len);
             if(ierr != PIO_NOERR){
               ierr = pio_err(ios, ifile, ierr, __FILE__, __LINE__,
@@ -3829,14 +4322,20 @@ int PIOc_copy_att(int incid, int ivarid, const char *name,
               break;
             }
             free(pbuf);
+            spio_ltimer_start(ios->io_fstats->tot_timer_name);
+            GPTLstart(ifile->io_fstats->tot_timer_name);
             break;
           }
   } /* switch(file->iotype) */
 
   if(ierr != PIO_NOERR){
+    spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+    GPTLstop(ifile->io_fstats->tot_timer_name);
     return pio_err(ios, ifile, ierr, __FILE__, __LINE__,
             "Copying attribute, %s, associated with variable %s (varid=%d) in file %s (ncid=%d) to file %s (ncid=%d) failed with iotype = %s (%d)", name, pio_get_vname_from_file(ifile, ivarid), ivarid, pio_get_fname_from_file(ifile), incid, pio_get_fname_from_file(ofile), oncid, pio_iotype_to_string(ifile->iotype), ifile->iotype);
   }
 
+  spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+  GPTLstop(ifile->io_fstats->tot_timer_name);
   return PIO_NOERR;
 }

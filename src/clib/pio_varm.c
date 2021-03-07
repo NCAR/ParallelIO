@@ -1,6 +1,7 @@
 #include <pio_config.h>
 #include <pio.h>
 #include <pio_internal.h>
+#include "spio_io_summary.h"
 
 ///
 /// PIO interface to nc_put_varm
@@ -26,11 +27,15 @@ int PIOc_put_varm (int ncid, int varid, const PIO_Offset start[], const PIO_Offs
     /* Get file info. */
     if ((ierr = pio_get_file(ncid, &file)))
         return ierr;
+
     ios = file->iosystem;
 
     /* Sorry, but varm functions are not supported by the async interface. */
     if (ios->async)
         return PIO_EINVAL;
+
+    spio_ltimer_start(ios->io_fstats->tot_timer_name);
+    spio_ltimer_start(file->io_fstats->tot_timer_name);
 
     if (ios->ioproc){
         switch(file->iotype){
@@ -71,12 +76,16 @@ int PIOc_put_varm (int ncid, int varid, const PIO_Offset start[], const PIO_Offs
             break;
 #endif
         default:
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return pio_err(ios, file, PIO_EBADIOTYPE, __FILE__, __LINE__, "Invalid IO type");
         }
     }
 
     ierr = check_netcdf(NULL, file, ierr, __FILE__,__LINE__);
 
+    spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+    spio_ltimer_stop(file->io_fstats->tot_timer_name);
     return ierr;
 }
 
@@ -100,11 +109,17 @@ int PIOc_put_varm_uchar (int ncid, int varid, const PIO_Offset start[], const PI
     /* Get file info. */
     if ((ierr = pio_get_file(ncid, &file)))
         return ierr;
+
+    assert(file);
     ios = file->iosystem;
+    assert(ios);
 
     /* Sorry, but varm functions are not supported by the async interface. */
     if (ios->async)
         return PIO_EINVAL;
+
+    spio_ltimer_start(ios->io_fstats->tot_timer_name);
+    spio_ltimer_start(file->io_fstats->tot_timer_name);
 
     if (ios->ioproc){
         switch(file->iotype){
@@ -145,12 +160,16 @@ int PIOc_put_varm_uchar (int ncid, int varid, const PIO_Offset start[], const PI
             break;
 #endif
         default:
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return pio_err(ios, file, PIO_EBADIOTYPE, __FILE__, __LINE__, "Invalid IO type");
         }
     }
 
     ierr = check_netcdf(NULL, file, ierr, __FILE__,__LINE__);
 
+    spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+    spio_ltimer_stop(file->io_fstats->tot_timer_name);
     return ierr;
 }
 
@@ -180,6 +199,8 @@ int PIOc_put_varm_short (int ncid, int varid, const PIO_Offset start[], const PI
     if (ios->async)
         return PIO_EINVAL;
 
+    spio_ltimer_start(ios->io_fstats->tot_timer_name);
+    spio_ltimer_start(file->io_fstats->tot_timer_name);
     if (ios->ioproc){
         switch(file->iotype){
 #ifdef _NETCDF4
@@ -219,12 +240,16 @@ int PIOc_put_varm_short (int ncid, int varid, const PIO_Offset start[], const PI
             break;
 #endif
         default:
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return pio_err(ios, file, PIO_EBADIOTYPE, __FILE__, __LINE__, "Invalid IO type");
         }
     }
 
     ierr = check_netcdf(NULL, file, ierr, __FILE__,__LINE__);
 
+    spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+    spio_ltimer_stop(file->io_fstats->tot_timer_name);
     return ierr;
 }
 ///
@@ -254,6 +279,8 @@ int PIOc_put_varm_text (int ncid, int varid, const PIO_Offset start[], const PIO
         return PIO_EINVAL;
 
 
+    spio_ltimer_start(ios->io_fstats->tot_timer_name);
+    spio_ltimer_start(file->io_fstats->tot_timer_name);
 
     if (ios->ioproc){
         switch(file->iotype){
@@ -294,12 +321,16 @@ int PIOc_put_varm_text (int ncid, int varid, const PIO_Offset start[], const PIO
             break;
 #endif
         default:
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return pio_err(ios, file, PIO_EBADIOTYPE, __FILE__, __LINE__, "Invalid IO type");
         }
     }
 
     ierr = check_netcdf(NULL, file, ierr, __FILE__,__LINE__);
 
+    spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+    spio_ltimer_stop(file->io_fstats->tot_timer_name);
     return ierr;
 }
 
@@ -330,6 +361,8 @@ int PIOc_put_varm_ushort (int ncid, int varid, const PIO_Offset start[], const P
         return PIO_EINVAL;
 
 
+    spio_ltimer_start(ios->io_fstats->tot_timer_name);
+    spio_ltimer_start(file->io_fstats->tot_timer_name);
 
     if (ios->ioproc){
         switch(file->iotype){
@@ -370,12 +403,16 @@ int PIOc_put_varm_ushort (int ncid, int varid, const PIO_Offset start[], const P
             break;
 #endif
         default:
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return pio_err(ios, file, PIO_EBADIOTYPE, __FILE__, __LINE__, "Invalid IO type");
         }
     }
 
     ierr = check_netcdf(NULL, file, ierr, __FILE__,__LINE__);
 
+    spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+    spio_ltimer_stop(file->io_fstats->tot_timer_name);
     return ierr;
 }
 
@@ -406,6 +443,8 @@ int PIOc_put_varm_ulonglong (int ncid, int varid, const PIO_Offset start[], cons
         return PIO_EINVAL;
 
 
+    spio_ltimer_start(ios->io_fstats->tot_timer_name);
+    spio_ltimer_start(file->io_fstats->tot_timer_name);
 
     if (ios->ioproc){
         switch(file->iotype){
@@ -446,12 +485,16 @@ int PIOc_put_varm_ulonglong (int ncid, int varid, const PIO_Offset start[], cons
             break;
 #endif
         default:
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return pio_err(ios, file, PIO_EBADIOTYPE, __FILE__, __LINE__, "Invalid IO type");
         }
     }
 
     ierr = check_netcdf(NULL, file, ierr, __FILE__,__LINE__);
 
+    spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+    spio_ltimer_stop(file->io_fstats->tot_timer_name);
     return ierr;
 }
 ///
@@ -481,6 +524,8 @@ int PIOc_put_varm_int (int ncid, int varid, const PIO_Offset start[], const PIO_
         return PIO_EINVAL;
 
 
+    spio_ltimer_start(ios->io_fstats->tot_timer_name);
+    spio_ltimer_start(file->io_fstats->tot_timer_name);
 
     if (ios->ioproc){
         switch(file->iotype){
@@ -521,12 +566,16 @@ int PIOc_put_varm_int (int ncid, int varid, const PIO_Offset start[], const PIO_
             break;
 #endif
         default:
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return pio_err(ios, file, PIO_EBADIOTYPE, __FILE__, __LINE__, "Invalid IO type");
         }
     }
 
     ierr = check_netcdf(NULL, file, ierr, __FILE__,__LINE__);
 
+    spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+    spio_ltimer_stop(file->io_fstats->tot_timer_name);
     return ierr;
 }
 
@@ -557,6 +606,8 @@ int PIOc_put_varm_float (int ncid, int varid, const PIO_Offset start[], const PI
         return PIO_EINVAL;
 
 
+    spio_ltimer_start(ios->io_fstats->tot_timer_name);
+    spio_ltimer_start(file->io_fstats->tot_timer_name);
 
     if (ios->ioproc){
         switch(file->iotype){
@@ -597,12 +648,16 @@ int PIOc_put_varm_float (int ncid, int varid, const PIO_Offset start[], const PI
             break;
 #endif
         default:
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return pio_err(ios, file, PIO_EBADIOTYPE, __FILE__, __LINE__, "Invalid IO type");
         }
     }
 
     ierr = check_netcdf(NULL, file, ierr, __FILE__,__LINE__);
 
+    spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+    spio_ltimer_stop(file->io_fstats->tot_timer_name);
     return ierr;
 }
 ///
@@ -632,6 +687,8 @@ int PIOc_put_varm_long (int ncid, int varid, const PIO_Offset start[], const PIO
         return PIO_EINVAL;
 
 
+    spio_ltimer_start(ios->io_fstats->tot_timer_name);
+    spio_ltimer_start(file->io_fstats->tot_timer_name);
 
     if (ios->ioproc){
         switch(file->iotype){
@@ -672,12 +729,16 @@ int PIOc_put_varm_long (int ncid, int varid, const PIO_Offset start[], const PIO
             break;
 #endif
         default:
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return pio_err(ios, file, PIO_EBADIOTYPE, __FILE__, __LINE__, "Invalid IO type");
         }
     }
 
     ierr = check_netcdf(NULL, file, ierr, __FILE__,__LINE__);
 
+    spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+    spio_ltimer_stop(file->io_fstats->tot_timer_name);
     return ierr;
 }
 
@@ -709,6 +770,8 @@ int PIOc_put_varm_uint (int ncid, int varid, const PIO_Offset start[], const PIO
         return PIO_EINVAL;
 
 
+    spio_ltimer_start(ios->io_fstats->tot_timer_name);
+    spio_ltimer_start(file->io_fstats->tot_timer_name);
 
     if (ios->ioproc){
         switch(file->iotype){
@@ -749,12 +812,16 @@ int PIOc_put_varm_uint (int ncid, int varid, const PIO_Offset start[], const PIO
             break;
 #endif
         default:
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return pio_err(ios, file, PIO_EBADIOTYPE, __FILE__, __LINE__, "Invalid IO type");
         }
     }
 
     ierr = check_netcdf(NULL, file, ierr, __FILE__,__LINE__);
 
+    spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+    spio_ltimer_stop(file->io_fstats->tot_timer_name);
     return ierr;
 }
 
@@ -785,6 +852,8 @@ int PIOc_put_varm_double (int ncid, int varid, const PIO_Offset start[], const P
         return PIO_EINVAL;
 
 
+    spio_ltimer_start(ios->io_fstats->tot_timer_name);
+    spio_ltimer_start(file->io_fstats->tot_timer_name);
 
     if (ios->ioproc){
         switch(file->iotype){
@@ -825,12 +894,16 @@ int PIOc_put_varm_double (int ncid, int varid, const PIO_Offset start[], const P
             break;
 #endif
         default:
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return pio_err(ios, file, PIO_EBADIOTYPE, __FILE__, __LINE__, "Invalid IO type");
         }
     }
 
     ierr = check_netcdf(NULL, file, ierr, __FILE__,__LINE__);
 
+    spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+    spio_ltimer_stop(file->io_fstats->tot_timer_name);
     return ierr;
 }
 ///
@@ -860,6 +933,8 @@ int PIOc_put_varm_schar (int ncid, int varid, const PIO_Offset start[], const PI
         return PIO_EINVAL;
 
 
+    spio_ltimer_start(ios->io_fstats->tot_timer_name);
+    spio_ltimer_start(file->io_fstats->tot_timer_name);
 
     if (ios->ioproc){
         switch(file->iotype){
@@ -900,12 +975,16 @@ int PIOc_put_varm_schar (int ncid, int varid, const PIO_Offset start[], const PI
             break;
 #endif
         default:
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return pio_err(ios, file, PIO_EBADIOTYPE, __FILE__, __LINE__, "Invalid IO type");
         }
     }
 
     ierr = check_netcdf(NULL, file, ierr, __FILE__,__LINE__);
 
+    spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+    spio_ltimer_stop(file->io_fstats->tot_timer_name);
     return ierr;
 }
 
@@ -934,6 +1013,9 @@ int PIOc_put_varm_longlong (int ncid, int varid, const PIO_Offset start[], const
     /* Sorry, but varm functions are not supported by the async interface. */
     if (ios->async)
         return PIO_EINVAL;
+
+    spio_ltimer_start(ios->io_fstats->tot_timer_name);
+    spio_ltimer_start(file->io_fstats->tot_timer_name);
 
     if (ios->ioproc){
         switch(file->iotype){
@@ -974,12 +1056,16 @@ int PIOc_put_varm_longlong (int ncid, int varid, const PIO_Offset start[], const
             break;
 #endif
         default:
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return pio_err(ios, file, PIO_EBADIOTYPE, __FILE__, __LINE__, "Invalid IO type");
         }
     }
 
     ierr = check_netcdf(NULL, file, ierr, __FILE__,__LINE__);
 
+    spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+    spio_ltimer_stop(file->io_fstats->tot_timer_name);
     return ierr;
 }
 
@@ -1008,6 +1094,9 @@ int PIOc_get_varm_uchar (int ncid, int varid, const PIO_Offset start[], const PI
     /* Sorry, but varm functions are not supported by the async interface. */
     if (ios->async)
         return PIO_EINVAL;
+
+    spio_ltimer_start(ios->io_fstats->tot_timer_name);
+    spio_ltimer_start(file->io_fstats->tot_timer_name);
 
     if (ios->ioproc){
         switch(file->iotype){
@@ -1040,6 +1129,8 @@ int PIOc_get_varm_uchar (int ncid, int varid, const PIO_Offset start[], const PI
             break;
 #endif
         default:
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return pio_err(ios, file, PIO_EBADIOTYPE, __FILE__, __LINE__, "Invalid IO type");
         }
     }
@@ -1051,6 +1142,8 @@ int PIOc_get_varm_uchar (int ncid, int varid, const PIO_Offset start[], const PI
         MPI_Bcast(buf, ibufcnt, ibuftype, ios->ioroot, ios->my_comm);
     }
 
+    spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+    spio_ltimer_stop(file->io_fstats->tot_timer_name);
     return ierr;
 }
 
@@ -1079,6 +1172,9 @@ int PIOc_get_varm_schar (int ncid, int varid, const PIO_Offset start[], const PI
     /* Sorry, but varm functions are not supported by the async interface. */
     if (ios->async)
         return PIO_EINVAL;
+
+    spio_ltimer_start(ios->io_fstats->tot_timer_name);
+    spio_ltimer_start(file->io_fstats->tot_timer_name);
 
     if (ios->ioproc){
         switch(file->iotype){
@@ -1111,6 +1207,8 @@ int PIOc_get_varm_schar (int ncid, int varid, const PIO_Offset start[], const PI
             break;
 #endif
         default:
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return pio_err(ios, file, PIO_EBADIOTYPE, __FILE__, __LINE__, "Invalid IO type");
         }
     }
@@ -1122,6 +1220,8 @@ int PIOc_get_varm_schar (int ncid, int varid, const PIO_Offset start[], const PI
         MPI_Bcast(buf, ibufcnt, ibuftype, ios->ioroot, ios->my_comm);
     }
 
+    spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+    spio_ltimer_stop(file->io_fstats->tot_timer_name);
     return ierr;
 }
 
@@ -1150,6 +1250,9 @@ int PIOc_get_varm_double (int ncid, int varid, const PIO_Offset start[], const P
     /* Sorry, but varm functions are not supported by the async interface. */
     if (ios->async)
         return PIO_EINVAL;
+
+    spio_ltimer_start(ios->io_fstats->tot_timer_name);
+    spio_ltimer_start(file->io_fstats->tot_timer_name);
 
     if (ios->ioproc){
         switch(file->iotype){
@@ -1182,6 +1285,8 @@ int PIOc_get_varm_double (int ncid, int varid, const PIO_Offset start[], const P
             break;
 #endif
         default:
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return pio_err(ios, file, PIO_EBADIOTYPE, __FILE__, __LINE__, "Invalid IO type");
         }
     }
@@ -1193,6 +1298,8 @@ int PIOc_get_varm_double (int ncid, int varid, const PIO_Offset start[], const P
         MPI_Bcast(buf, ibufcnt, ibuftype, ios->ioroot, ios->my_comm);
     }
 
+    spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+    spio_ltimer_stop(file->io_fstats->tot_timer_name);
     return ierr;
 }
 
@@ -1221,6 +1328,9 @@ int PIOc_get_varm_text (int ncid, int varid, const PIO_Offset start[], const PIO
     /* Sorry, but varm functions are not supported by the async interface. */
     if (ios->async)
         return PIO_EINVAL;
+
+    spio_ltimer_start(ios->io_fstats->tot_timer_name);
+    spio_ltimer_start(file->io_fstats->tot_timer_name);
 
     if (ios->ioproc){
         switch(file->iotype){
@@ -1253,6 +1363,8 @@ int PIOc_get_varm_text (int ncid, int varid, const PIO_Offset start[], const PIO
             break;
 #endif
         default:
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return pio_err(ios, file, PIO_EBADIOTYPE, __FILE__, __LINE__, "Invalid IO type");
         }
     }
@@ -1264,6 +1376,8 @@ int PIOc_get_varm_text (int ncid, int varid, const PIO_Offset start[], const PIO
         MPI_Bcast(buf, ibufcnt, ibuftype, ios->ioroot, ios->my_comm);
     }
 
+    spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+    spio_ltimer_stop(file->io_fstats->tot_timer_name);
     return ierr;
 }
 
@@ -1292,6 +1406,9 @@ int PIOc_get_varm_int (int ncid, int varid, const PIO_Offset start[], const PIO_
     /* Sorry, but varm functions are not supported by the async interface. */
     if (ios->async)
         return PIO_EINVAL;
+
+    spio_ltimer_start(ios->io_fstats->tot_timer_name);
+    spio_ltimer_start(file->io_fstats->tot_timer_name);
 
     if (ios->ioproc){
         switch(file->iotype){
@@ -1324,6 +1441,8 @@ int PIOc_get_varm_int (int ncid, int varid, const PIO_Offset start[], const PIO_
             break;
 #endif
         default:
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return pio_err(ios, file, PIO_EBADIOTYPE, __FILE__, __LINE__, "Invalid IO type");
         }
     }
@@ -1335,6 +1454,8 @@ int PIOc_get_varm_int (int ncid, int varid, const PIO_Offset start[], const PIO_
         MPI_Bcast(buf, ibufcnt, ibuftype, ios->ioroot, ios->my_comm);
     }
 
+    spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+    spio_ltimer_stop(file->io_fstats->tot_timer_name);
     return ierr;
 }
 
@@ -1363,6 +1484,9 @@ int PIOc_get_varm_uint (int ncid, int varid, const PIO_Offset start[], const PIO
     /* Sorry, but varm functions are not supported by the async interface. */
     if (ios->async)
         return PIO_EINVAL;
+
+    spio_ltimer_start(ios->io_fstats->tot_timer_name);
+    spio_ltimer_start(file->io_fstats->tot_timer_name);
 
     if (ios->ioproc){
         switch(file->iotype){
@@ -1395,6 +1519,8 @@ int PIOc_get_varm_uint (int ncid, int varid, const PIO_Offset start[], const PIO
             break;
 #endif
         default:
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return pio_err(ios, file, PIO_EBADIOTYPE, __FILE__, __LINE__, "Invalid IO type");
         }
     }
@@ -1406,6 +1532,8 @@ int PIOc_get_varm_uint (int ncid, int varid, const PIO_Offset start[], const PIO
         MPI_Bcast(buf, ibufcnt, ibuftype, ios->ioroot, ios->my_comm);
     }
 
+    spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+    spio_ltimer_stop(file->io_fstats->tot_timer_name);
     return ierr;
 }
 
@@ -1429,6 +1557,9 @@ int PIOc_get_varm (int ncid, int varid, const PIO_Offset start[], const PIO_Offs
     /* Sorry, but varm functions are not supported by the async interface. */
     if (ios->async)
         return PIO_EINVAL;
+
+    spio_ltimer_start(ios->io_fstats->tot_timer_name);
+    spio_ltimer_start(file->io_fstats->tot_timer_name);
 
     if (ios->ioproc){
         switch(file->iotype){
@@ -1461,6 +1592,8 @@ int PIOc_get_varm (int ncid, int varid, const PIO_Offset start[], const PIO_Offs
             break;
 #endif
         default:
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return pio_err(ios, file, PIO_EBADIOTYPE, __FILE__, __LINE__, "Invalid IO type");
         }
     }
@@ -1472,6 +1605,8 @@ int PIOc_get_varm (int ncid, int varid, const PIO_Offset start[], const PIO_Offs
         MPI_Bcast(buf, ibufcnt, ibuftype, ios->ioroot, ios->my_comm);
     }
 
+    spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+    spio_ltimer_stop(file->io_fstats->tot_timer_name);
     return ierr;
 }
 
@@ -1500,6 +1635,9 @@ int PIOc_get_varm_float (int ncid, int varid, const PIO_Offset start[], const PI
     /* Sorry, but varm functions are not supported by the async interface. */
     if (ios->async)
         return PIO_EINVAL;
+
+    spio_ltimer_start(ios->io_fstats->tot_timer_name);
+    spio_ltimer_start(file->io_fstats->tot_timer_name);
 
     if (ios->ioproc){
         switch(file->iotype){
@@ -1532,6 +1670,8 @@ int PIOc_get_varm_float (int ncid, int varid, const PIO_Offset start[], const PI
             break;
 #endif
         default:
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return pio_err(ios, file, PIO_EBADIOTYPE, __FILE__, __LINE__, "Invalid IO type");
         }
     }
@@ -1543,6 +1683,8 @@ int PIOc_get_varm_float (int ncid, int varid, const PIO_Offset start[], const PI
         MPI_Bcast(buf, ibufcnt, ibuftype, ios->ioroot, ios->my_comm);
     }
 
+    spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+    spio_ltimer_stop(file->io_fstats->tot_timer_name);
     return ierr;
 }
 
@@ -1571,6 +1713,9 @@ int PIOc_get_varm_long (int ncid, int varid, const PIO_Offset start[], const PIO
     /* Sorry, but varm functions are not supported by the async interface. */
     if (ios->async)
         return PIO_EINVAL;
+
+    spio_ltimer_start(ios->io_fstats->tot_timer_name);
+    spio_ltimer_start(file->io_fstats->tot_timer_name);
 
     if (ios->ioproc){
         switch(file->iotype){
@@ -1603,6 +1748,8 @@ int PIOc_get_varm_long (int ncid, int varid, const PIO_Offset start[], const PIO
             break;
 #endif
         default:
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return pio_err(ios, file, PIO_EBADIOTYPE, __FILE__, __LINE__, "Invalid IO type");
         }
     }
@@ -1614,6 +1761,8 @@ int PIOc_get_varm_long (int ncid, int varid, const PIO_Offset start[], const PIO
         MPI_Bcast(buf, ibufcnt, ibuftype, ios->ioroot, ios->my_comm);
     }
 
+    spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+    spio_ltimer_stop(file->io_fstats->tot_timer_name);
     return ierr;
 }
 
@@ -1642,6 +1791,9 @@ int PIOc_get_varm_ushort (int ncid, int varid, const PIO_Offset start[], const P
     /* Sorry, but varm functions are not supported by the async interface. */
     if (ios->async)
         return PIO_EINVAL;
+
+    spio_ltimer_start(ios->io_fstats->tot_timer_name);
+    spio_ltimer_start(file->io_fstats->tot_timer_name);
 
     if (ios->ioproc){
         switch(file->iotype){
@@ -1674,6 +1826,8 @@ int PIOc_get_varm_ushort (int ncid, int varid, const PIO_Offset start[], const P
             break;
 #endif
         default:
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return pio_err(ios, file, PIO_EBADIOTYPE, __FILE__, __LINE__, "Invalid IO type");
         }
     }
@@ -1685,6 +1839,8 @@ int PIOc_get_varm_ushort (int ncid, int varid, const PIO_Offset start[], const P
         MPI_Bcast(buf, ibufcnt, ibuftype, ios->ioroot, ios->my_comm);
     }
 
+    spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+    spio_ltimer_stop(file->io_fstats->tot_timer_name);
     return ierr;
 }
 
@@ -1713,6 +1869,9 @@ int PIOc_get_varm_longlong (int ncid, int varid, const PIO_Offset start[], const
     /* Sorry, but varm functions are not supported by the async interface. */
     if (ios->async)
         return PIO_EINVAL;
+
+    spio_ltimer_start(ios->io_fstats->tot_timer_name);
+    spio_ltimer_start(file->io_fstats->tot_timer_name);
 
     if (ios->ioproc){
         switch(file->iotype){
@@ -1745,6 +1904,8 @@ int PIOc_get_varm_longlong (int ncid, int varid, const PIO_Offset start[], const
             break;
 #endif
         default:
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return pio_err(ios, file, PIO_EBADIOTYPE, __FILE__, __LINE__, "Invalid IO type");
         }
     }
@@ -1756,6 +1917,8 @@ int PIOc_get_varm_longlong (int ncid, int varid, const PIO_Offset start[], const
         MPI_Bcast(buf, ibufcnt, ibuftype, ios->ioroot, ios->my_comm);
     }
 
+    spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+    spio_ltimer_stop(file->io_fstats->tot_timer_name);
     return ierr;
 }
 
@@ -1784,6 +1947,9 @@ int PIOc_get_varm_short (int ncid, int varid, const PIO_Offset start[], const PI
     /* Sorry, but varm functions are not supported by the async interface. */
     if (ios->async)
         return PIO_EINVAL;
+
+    spio_ltimer_start(ios->io_fstats->tot_timer_name);
+    spio_ltimer_start(file->io_fstats->tot_timer_name);
 
     if (ios->ioproc){
         switch(file->iotype){
@@ -1816,6 +1982,8 @@ int PIOc_get_varm_short (int ncid, int varid, const PIO_Offset start[], const PI
             break;
 #endif
         default:
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return pio_err(ios, file, PIO_EBADIOTYPE, __FILE__, __LINE__, "Invalid IO type");
         }
     }
@@ -1827,6 +1995,8 @@ int PIOc_get_varm_short (int ncid, int varid, const PIO_Offset start[], const PI
         MPI_Bcast(buf, ibufcnt, ibuftype, ios->ioroot, ios->my_comm);
     }
 
+    spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+    spio_ltimer_stop(file->io_fstats->tot_timer_name);
     return ierr;
 }
 
@@ -1855,6 +2025,9 @@ int PIOc_get_varm_ulonglong (int ncid, int varid, const PIO_Offset start[], cons
     /* Sorry, but varm functions are not supported by the async interface. */
     if (ios->async)
         return PIO_EINVAL;
+
+    spio_ltimer_start(ios->io_fstats->tot_timer_name);
+    spio_ltimer_start(file->io_fstats->tot_timer_name);
 
     if (ios->ioproc){
         switch(file->iotype){
@@ -1887,6 +2060,8 @@ int PIOc_get_varm_ulonglong (int ncid, int varid, const PIO_Offset start[], cons
             break;
 #endif
         default:
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return pio_err(ios, file, PIO_EBADIOTYPE, __FILE__, __LINE__, "Invalid IO type");
         }
     }
@@ -1898,5 +2073,7 @@ int PIOc_get_varm_ulonglong (int ncid, int varid, const PIO_Offset start[], cons
         MPI_Bcast(buf, ibufcnt, ibuftype, ios->ioroot, ios->my_comm);
     }
 
+    spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+    spio_ltimer_stop(file->io_fstats->tot_timer_name);
     return ierr;
 }

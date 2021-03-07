@@ -31,6 +31,9 @@
 #if PIO_USE_MICRO_TIMING
   #define PIO_MICRO_TIMING 1
 #endif
+#if PIO_ENABLE_IO_STATS
+  #define SPIO_IO_STATS 1
+#endif
 
 #ifdef _NETCDF
 #include <netcdf.h>
@@ -608,6 +611,9 @@ typedef struct io_desc_t
     struct io_desc_t *next;
 } io_desc_t;
 
+/* Forward decl for I/O file summary stats info */
+struct spio_io_fstats_summary;
+
 /**
  * IO system descriptor structure.
  *
@@ -619,6 +625,9 @@ typedef struct iosystem_desc_t
     /** The ID of this iosystem_desc_t. This will be obtained by
      * calling PIOc_Init_Intercomm() or PIOc_Init_Intracomm(). */
     int iosysid;
+
+    /* I/O System name */
+    char sname[PIO_MAX_NAME + 1];
 
     /** This is an MPI intra communicator that includes all the tasks in
      * both the IO and the computation communicators. */
@@ -730,6 +739,9 @@ typedef struct iosystem_desc_t
     /* ADIOS handle */
     adios2_adios *adiosH;
 #endif
+
+    /** I/O statistics associated with this I/O system */
+    struct spio_io_fstats_summary *io_fstats;
 
     /** Pointer to the next iosystem_desc_t in the list. */
     struct iosystem_desc_t *next;
@@ -933,6 +945,9 @@ typedef struct file_desc_t
 
     /** Data buffer per IO decomposition for this file. */
     void *iobuf[PIO_IODESC_MAX_IDS];
+
+    /** I/O statistics associated with this file */
+    struct spio_io_fstats_summary *io_fstats;
 
     /** Pointer to the next file_desc_t in the list of open files. */
     struct file_desc_t *next;

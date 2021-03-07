@@ -12,6 +12,7 @@
 #include <pio_config.h>
 #include <pio.h>
 #include <pio_internal.h>
+#include "spio_io_summary.h"
 
 /**
  * Write a netCDF attribute of any type, converting to any type.
@@ -40,24 +41,44 @@ int PIOc_put_att_tc(int ncid, int varid, const char *name, nc_type atttype,
     int ierr = PIO_NOERR;           /* Return code from function calls. */
 
     GPTLstart("PIO:PIOc_put_att_tc");
+    GPTLstart("PIO:write_total");
     /* Find the info about this file. */
     if ((ierr = pio_get_file(ncid, &file)))
     {
         GPTLstop("PIO:PIOc_put_att_tc");
+        GPTLstop("PIO:write_total");
         return pio_err(NULL, NULL, ierr, __FILE__, __LINE__,
                         "Writing variable (varid=%d) attribute (%s) to file failed. Invalid file id (ncid=%d) provided", varid, (name) ? name : "NULL", ncid);
     }
+    assert(file);
+    spio_ltimer_start(file->io_fstats->wr_timer_name);
+    spio_ltimer_start(file->io_fstats->tot_timer_name);
     ios = file->iosystem;
+    assert(ios);
+
+    spio_ltimer_start(ios->io_fstats->wr_timer_name);
+    spio_ltimer_start(ios->io_fstats->tot_timer_name);
 
     if (file->iotype == PIO_IOTYPE_ADIOS)
+    {
         GPTLstart("PIO:PIOc_put_att_tc_adios");
+        GPTLstart("PIO:write_total_adios");
+    }
 
     /* User must provide some valid parameters. */
     if (!name || !op || strlen(name) > PIO_MAX_NAME || len < 0)
     {
         GPTLstop("PIO:PIOc_put_att_tc");
+        GPTLstop("PIO:write_total");
+        spio_ltimer_stop(ios->io_fstats->wr_timer_name);
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(file->io_fstats->wr_timer_name);
+        spio_ltimer_stop(file->io_fstats->tot_timer_name);
         if (file->iotype == PIO_IOTYPE_ADIOS)
+        {
             GPTLstop("PIO:PIOc_put_att_tc_adios");
+            GPTLstop("PIO:write_total_adios");
+        }
         return pio_err(ios, file, PIO_EINVAL, __FILE__, __LINE__,
                         "Writing variable (%s, varid=%d) attribute (%s) to file (%s, ncid=%d) failed. Invalid arguments provided, Attribute name (name) is %s (expected not NULL), Attribute data pointer (op) is %s (expected not NULL), Attribute name length is %lld (expected <= %d), Attribute length is %lld (expected >= 0)", pio_get_vname_from_file(file, varid), varid, PIO_IS_NULL(name), pio_get_fname_from_file(file), file->pio_ncid, PIO_IS_NULL(name), PIO_IS_NULL(op), (name) ? ((unsigned long long )strlen(name)) : 0,  PIO_MAX_NAME, (unsigned long long ) len);
     }
@@ -70,12 +91,20 @@ int PIOc_put_att_tc(int ncid, int varid, const char *name, nc_type atttype,
     if (!ios->async || !ios->ioproc)
     {
         /* Get the length (in bytes) of the type in file. */
+        spio_ltimer_stop(ios->io_fstats->wr_timer_name);
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(file->io_fstats->wr_timer_name);
+        spio_ltimer_stop(file->io_fstats->tot_timer_name);
         ierr = PIOc_inq_type(ncid, atttype, NULL, &atttype_len);
         if(ierr != PIO_NOERR){
             LOG((1, "PIOc_inq_type failed, ierr = %d", ierr));
             GPTLstop("PIO:PIOc_put_att_tc");
+            GPTLstop("PIO:write_total");
             if (file->iotype == PIO_IOTYPE_ADIOS)
+            {
                 GPTLstop("PIO:PIOc_put_att_tc_adios");
+                GPTLstop("PIO:write_total_adios");
+            }
             return ierr;
         }
 
@@ -87,12 +116,20 @@ int PIOc_put_att_tc(int ncid, int varid, const char *name, nc_type atttype,
             ierr = PIOc_inq_type(ncid, memtype, NULL, &memtype_len);
             if(ierr != PIO_NOERR){
                 GPTLstop("PIO:PIOc_put_att_tc");
+                GPTLstop("PIO:write_total");
                 if (file->iotype == PIO_IOTYPE_ADIOS)
+                {
                     GPTLstop("PIO:PIOc_put_att_tc_adios");
+                    GPTLstop("PIO:write_total_adios");
+                }
                 LOG((1, "PIOc_inq_type failed, ierr = %d", ierr));
                 return ierr;
             }
         }
+        spio_ltimer_start(ios->io_fstats->wr_timer_name);
+        spio_ltimer_start(ios->io_fstats->tot_timer_name);
+        spio_ltimer_start(file->io_fstats->wr_timer_name);
+        spio_ltimer_start(file->io_fstats->tot_timer_name);
         LOG((2, "PIOc_put_att atttype_len = %d memtype_len = %d", ncid, atttype_len, memtype_len));
     }
 
@@ -108,8 +145,16 @@ int PIOc_put_att_tc(int ncid, int varid, const char *name, nc_type atttype,
         if(ierr != PIO_NOERR)
         {
             GPTLstop("PIO:PIOc_put_att_tc");
+            GPTLstop("PIO:write_total");
+            spio_ltimer_stop(ios->io_fstats->wr_timer_name);
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->wr_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             if (file->iotype == PIO_IOTYPE_ADIOS)
+            {
                 GPTLstop("PIO:PIOc_put_att_tc_adios");
+                GPTLstop("PIO:write_total_adios");
+            }
             return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
                             "Writing variable (%s, varid=%d) attribute (%s) to file (%s, ncid=%d) failed. Error sending asynchronous message, PIO_MSG_PUT_ATT",  pio_get_vname_from_file(file, varid), varid, name, pio_get_fname_from_file(file), file->pio_ncid);
         }
@@ -118,15 +163,31 @@ int PIOc_put_att_tc(int ncid, int varid, const char *name, nc_type atttype,
         if ((mpierr = MPI_Bcast(&atttype_len, 1, MPI_OFFSET, ios->comproot, ios->my_comm)))
         {
             GPTLstop("PIO:PIOc_put_att_tc");
+            GPTLstop("PIO:write_total");
+            spio_ltimer_stop(ios->io_fstats->wr_timer_name);
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->wr_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             if (file->iotype == PIO_IOTYPE_ADIOS)
+            {
                 GPTLstop("PIO:PIOc_put_att_tc_adios");
+                GPTLstop("PIO:write_total_adios");
+            }
             return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
         }
         if ((mpierr = MPI_Bcast(&memtype_len, 1, MPI_OFFSET, ios->comproot, ios->my_comm)))
         {
             GPTLstop("PIO:PIOc_put_att_tc");
+            GPTLstop("PIO:write_total");
+            spio_ltimer_stop(ios->io_fstats->wr_timer_name);
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->wr_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             if (file->iotype == PIO_IOTYPE_ADIOS)
+            {
                 GPTLstop("PIO:PIOc_put_att_tc_adios");
+                GPTLstop("PIO:write_total_adios");
+            }
             return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
         }
         LOG((2, "PIOc_put_att bcast from comproot = %d atttype_len = %d", ios->comproot,
@@ -160,7 +221,13 @@ int PIOc_put_att_tc(int ncid, int varid, const char *name, nc_type atttype,
         {
             fprintf(stderr, "ERROR: Num of attributes exceeds maximum (%d).\n", PIO_MAX_VARS);
             GPTLstop("PIO:PIOc_put_att_tc");
+            GPTLstop("PIO:write_total");
+            spio_ltimer_stop(ios->io_fstats->wr_timer_name);
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->wr_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             GPTLstop("PIO:PIOc_put_att_tc_adios");
+            GPTLstop("PIO:write_total_adios");
             return PIO_EMAXATTS;
         }
         file->adios_attrs[num_attrs].att_name = strdup(name);
@@ -184,13 +251,25 @@ int PIOc_put_att_tc(int ncid, int varid, const char *name, nc_type atttype,
             if (attributeH == NULL)
             {
                 GPTLstop("PIO:PIOc_put_att_tc");
+                GPTLstop("PIO:write_total");
+                spio_ltimer_stop(ios->io_fstats->wr_timer_name);
+                spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+                spio_ltimer_stop(file->io_fstats->wr_timer_name);
+                spio_ltimer_stop(file->io_fstats->tot_timer_name);
                 GPTLstop("PIO:PIOc_put_att_tc_adios");
+                GPTLstop("PIO:write_total_adios");
                 return pio_err(ios, file, PIO_EADIOS2ERR, __FILE__, __LINE__, "Defining (ADIOS) attribute (name=%s) failed for file (%s, ncid=%d)", att_name, pio_get_fname_from_file(file), file->pio_ncid);
             }
         }
 
         GPTLstop("PIO:PIOc_put_att_tc");
+        GPTLstop("PIO:write_total");
+        spio_ltimer_stop(ios->io_fstats->wr_timer_name);
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(file->io_fstats->wr_timer_name);
+        spio_ltimer_stop(file->io_fstats->tot_timer_name);
         GPTLstop("PIO:PIOc_put_att_tc_adios");
+        GPTLstop("PIO:write_total_adios");
 
         return PIO_NOERR;
     }
@@ -202,6 +281,12 @@ int PIOc_put_att_tc(int ncid, int varid, const char *name, nc_type atttype,
 #ifdef _PNETCDF
         if (file->iotype == PIO_IOTYPE_PNETCDF)
         {
+            if(ios->io_rank == 0)
+            {
+                ios->io_fstats->wb += len * atttype_len;
+                file->io_fstats->wb += len * atttype_len;
+            }
+
             switch(memtype)
             {
             case NC_BYTE:
@@ -227,6 +312,11 @@ int PIOc_put_att_tc(int ncid, int varid, const char *name, nc_type atttype,
                 break;
             default:
                 GPTLstop("PIO:PIOc_put_att_tc");
+                GPTLstop("PIO:write_total");
+                spio_ltimer_stop(ios->io_fstats->wr_timer_name);
+                spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+                spio_ltimer_stop(file->io_fstats->wr_timer_name);
+                spio_ltimer_stop(file->io_fstats->tot_timer_name);
                 return pio_err(ios, file, PIO_EBADTYPE, __FILE__, __LINE__,
                                 "Writing variable (%s, varid=%d) attribute (%s) to file (%s, ncid=%d) failed. Unsupported PnetCDF attribute type (memtype = %x)", pio_get_vname_from_file(file, varid), varid, name, pio_get_fname_from_file(file), file->pio_ncid, memtype);
             }
@@ -235,6 +325,12 @@ int PIOc_put_att_tc(int ncid, int varid, const char *name, nc_type atttype,
 
         if (file->iotype != PIO_IOTYPE_PNETCDF && file->iotype != PIO_IOTYPE_ADIOS && file->do_io)
         {
+            if(ios->io_rank == 0)
+            {
+                ios->io_fstats->wb += len * atttype_len;
+                file->io_fstats->wb += len * atttype_len;
+            }
+
             switch(memtype)
             {
 #ifdef _NETCDF
@@ -283,6 +379,11 @@ int PIOc_put_att_tc(int ncid, int varid, const char *name, nc_type atttype,
 #endif /* _NETCDF4 */
             default:
                 GPTLstop("PIO:PIOc_put_att_tc");
+                GPTLstop("PIO:write_total");
+                spio_ltimer_stop(ios->io_fstats->wr_timer_name);
+                spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+                spio_ltimer_stop(file->io_fstats->wr_timer_name);
+                spio_ltimer_stop(file->io_fstats->tot_timer_name);
                 return pio_err(ios, file, PIO_EBADTYPE, __FILE__, __LINE__,
                                 "Writing variable (%s, varid=%d) attribute (%s) to file (%s, ncid=%d) failed. Unsupported attribute type (memtype = %x)", pio_get_vname_from_file(file, varid), varid, name, pio_get_fname_from_file(file), file->pio_ncid, memtype);
             }
@@ -293,11 +394,21 @@ int PIOc_put_att_tc(int ncid, int varid, const char *name, nc_type atttype,
     if(ierr != PIO_NOERR){
         LOG((1, "nc*_put_att_* failed, ierr = %d", ierr));
         GPTLstop("PIO:PIOc_put_att_tc");
+        GPTLstop("PIO:write_total");
+        spio_ltimer_stop(ios->io_fstats->wr_timer_name);
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(file->io_fstats->wr_timer_name);
+        spio_ltimer_stop(file->io_fstats->tot_timer_name);
         return pio_err(NULL, file, ierr, __FILE__, __LINE__,
                         "Writing variable (%s, varid=%d) attribute (%s) to file (%s, ncid=%d) failed. Internal I/O library (%s) call failed", pio_get_vname_from_file(file, varid), varid, name, pio_get_fname_from_file(file), file->pio_ncid, pio_iotype_to_string(file->iotype));
     }
 
     GPTLstop("PIO:PIOc_put_att_tc");
+    GPTLstop("PIO:write_total");
+    spio_ltimer_stop(ios->io_fstats->wr_timer_name);
+    spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+    spio_ltimer_stop(file->io_fstats->wr_timer_name);
+    spio_ltimer_stop(file->io_fstats->tot_timer_name);
     return PIO_NOERR;
 }
 
@@ -338,12 +449,23 @@ int PIOc_get_att_tc(int ncid, int varid, const char *name, nc_type memtype, void
         return pio_err(NULL, NULL, ierr, __FILE__, __LINE__,
                         "Reading attribute (%s) from file failed. Invalid file id (ncid=%d) provided", (name) ? name : "NULL", ncid);
     }
+    assert(file);
+    spio_ltimer_start(file->io_fstats->rd_timer_name);
+    spio_ltimer_start(file->io_fstats->tot_timer_name);
     ios = file->iosystem;
+    assert(ios);
+
+    spio_ltimer_start(ios->io_fstats->rd_timer_name);
+    spio_ltimer_start(ios->io_fstats->tot_timer_name);
 
     /* User must provide a name and destination pointer. */
     if (!name || !ip || strlen(name) > PIO_MAX_NAME)
     {
         GPTLstop("PIO:PIOc_get_att_tc");
+        spio_ltimer_stop(ios->io_fstats->rd_timer_name);
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(file->io_fstats->rd_timer_name);
+        spio_ltimer_stop(file->io_fstats->tot_timer_name);
         return pio_err(ios, file, PIO_EINVAL, __FILE__, __LINE__,
                         "Reading variable (%s, varid=%d) attribute (%s) failed. Invalid arguments provided, Attribute name is %s (expected not NULL), attribute data pointer is %s (expected not NULL), attribute name length = %lld (expected <= %d)", pio_get_vname_from_file(file, varid), varid, (name) ? name : "UNKNOWN", PIO_IS_NULL(name), PIO_IS_NULL(ip), (name) ? ((unsigned long long )strlen(name)) : 0, PIO_MAX_NAME);
     }
@@ -356,6 +478,10 @@ int PIOc_get_att_tc(int ncid, int varid, const char *name, nc_type memtype, void
     if (!ios->async || !ios->ioproc)
     {
         /* Get the type and length of the attribute. */
+        spio_ltimer_stop(ios->io_fstats->rd_timer_name);
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(file->io_fstats->rd_timer_name);
+        spio_ltimer_stop(file->io_fstats->tot_timer_name);
         ierr = PIOc_inq_att(ncid, varid, name, &atttype, &attlen);
         if(ierr != PIO_NOERR){
             LOG((1, "PIOc_inq_att failed, ierr = %d", ierr));
@@ -385,6 +511,10 @@ int PIOc_get_att_tc(int ncid, int varid, const char *name, nc_type memtype, void
                 return ierr;
             }
         }
+        spio_ltimer_start(ios->io_fstats->rd_timer_name);
+        spio_ltimer_start(ios->io_fstats->tot_timer_name);
+        spio_ltimer_start(file->io_fstats->rd_timer_name);
+        spio_ltimer_start(file->io_fstats->tot_timer_name);
     }
     LOG((2, "atttype_len = %d memtype_len = %d", atttype_len, memtype_len));
 
@@ -400,6 +530,10 @@ int PIOc_get_att_tc(int ncid, int varid, const char *name, nc_type memtype, void
         {
             LOG((1, "Error sending async msg for PIO_MSG_GET_ATT"));
             GPTLstop("PIO:PIOc_get_att_tc");
+            spio_ltimer_stop(ios->io_fstats->rd_timer_name);
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->rd_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
                             "Reading variable (%s, varid=%d) attribute (%s) failed. Error sending asynchronous message, PIO_MSG_GET_ATT", (varid != PIO_GLOBAL) ? file->varlist[varid].vname : "PIO_GLOBAL", varid, name);
         }
@@ -409,21 +543,36 @@ int PIOc_get_att_tc(int ncid, int varid, const char *name, nc_type memtype, void
         if ((mpierr = MPI_Bcast(&attlen, 1, MPI_OFFSET, ios->comproot, ios->my_comm)))
         {
             GPTLstop("PIO:PIOc_get_att_tc");
+            spio_ltimer_stop(ios->io_fstats->rd_timer_name);
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->rd_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
         }
         if ((mpierr = MPI_Bcast(&atttype_len, 1, MPI_OFFSET, ios->comproot, ios->my_comm)))
         {
             GPTLstop("PIO:PIOc_get_att_tc");
+            spio_ltimer_stop(ios->io_fstats->rd_timer_name);
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->rd_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
         }
         if ((mpierr = MPI_Bcast(&memtype_len, 1, MPI_OFFSET, ios->comproot, ios->my_comm)))
         {
             GPTLstop("PIO:PIOc_get_att_tc");
+            spio_ltimer_stop(ios->io_fstats->rd_timer_name);
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->rd_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
         }
         LOG((2, "PIOc_get_att_tc bcast complete attlen = %d atttype_len = %d memtype_len = %d", attlen, atttype_len,
              memtype_len));
     }
+
+    ios->io_fstats->rb += attlen * atttype_len;
+    file->io_fstats->rb += attlen * atttype_len;
 
     /* If this is an IO task, then call the netCDF function. */
     if (ios->ioproc)
@@ -457,6 +606,10 @@ int PIOc_get_att_tc(int ncid, int varid, const char *name, nc_type memtype, void
                 break;
             default:
                 GPTLstop("PIO:PIOc_get_att_tc");
+                spio_ltimer_stop(ios->io_fstats->rd_timer_name);
+                spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+                spio_ltimer_stop(file->io_fstats->rd_timer_name);
+                spio_ltimer_stop(file->io_fstats->tot_timer_name);
                 return pio_err(ios, file, PIO_EBADTYPE, __FILE__, __LINE__,
                                 "Reading variable (%s, varid=%d) attribute (%s) failed. Unsupported PnetCDF attribute type (type = %x)", (varid != PIO_GLOBAL) ? file->varlist[varid].vname : "PIO_GLOBAL", varid, name, memtype);
             }
@@ -513,6 +666,10 @@ int PIOc_get_att_tc(int ncid, int varid, const char *name, nc_type memtype, void
 #endif /* _NETCDF4 */
             default:
                 GPTLstop("PIO:PIOc_get_att_tc");
+                spio_ltimer_stop(ios->io_fstats->rd_timer_name);
+                spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+                spio_ltimer_stop(file->io_fstats->rd_timer_name);
+                spio_ltimer_stop(file->io_fstats->tot_timer_name);
                 return pio_err(ios, file, PIO_EBADTYPE, __FILE__, __LINE__,
                                 "Reading variable (%s, varid=%d) attribute (%s) failed. Unsupported attribute type (type = %x)", (varid != PIO_GLOBAL) ? file->varlist[varid].vname : "PIO_GLOBAL", varid, name, memtype);
             }
@@ -523,6 +680,10 @@ int PIOc_get_att_tc(int ncid, int varid, const char *name, nc_type memtype, void
     if(ierr != PIO_NOERR){
         LOG((1, "nc*_get_att_* failed, ierr = %d", ierr));
         GPTLstop("PIO:PIOc_get_att_tc");
+        spio_ltimer_stop(ios->io_fstats->rd_timer_name);
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(file->io_fstats->rd_timer_name);
+        spio_ltimer_stop(file->io_fstats->tot_timer_name);
         return pio_err(NULL, file, ierr, __FILE__, __LINE__,
                         "Reading variable (%s, varid=%d) attribute (%s) failed. Internal I/O library (%s) call failed", (varid != PIO_GLOBAL) ? file->varlist[varid].vname : "PIO_GLOBAL", varid, name, pio_iotype_to_string(file->iotype));
     }
@@ -533,11 +694,19 @@ int PIOc_get_att_tc(int ncid, int varid, const char *name, nc_type memtype, void
                             ios->my_comm)))
     {
         GPTLstop("PIO:PIOc_get_att_tc");
+        spio_ltimer_stop(ios->io_fstats->rd_timer_name);
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(file->io_fstats->rd_timer_name);
+        spio_ltimer_stop(file->io_fstats->tot_timer_name);
         return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
     }
 
     LOG((2, "get_att_tc data bcast complete"));
     GPTLstop("PIO:PIOc_get_att_tc");
+    spio_ltimer_stop(ios->io_fstats->rd_timer_name);
+    spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+    spio_ltimer_stop(file->io_fstats->rd_timer_name);
+    spio_ltimer_stop(file->io_fstats->tot_timer_name);
     return PIO_NOERR;
 }
 
@@ -603,12 +772,23 @@ int PIOc_get_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
         return pio_err(NULL, NULL, ierr, __FILE__, __LINE__,
                         "Reading variable (varid=%d) from file failed. Invalid file id (ncid=%d) provided", varid, ncid);
     }
+    assert(file);
+    spio_ltimer_start(file->io_fstats->rd_timer_name);
+    spio_ltimer_start(file->io_fstats->tot_timer_name);
     ios = file->iosystem;
+    assert(ios);
+
+    spio_ltimer_start(ios->io_fstats->rd_timer_name);
+    spio_ltimer_start(ios->io_fstats->tot_timer_name);
 
     /* User must provide a place to put some data. */
     if (!buf)
     {
         GPTLstop("PIO:PIOc_get_vars_tc");
+        spio_ltimer_stop(ios->io_fstats->rd_timer_name);
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(file->io_fstats->rd_timer_name);
+        spio_ltimer_stop(file->io_fstats->tot_timer_name);
         return pio_err(ios, file, PIO_EINVAL, __FILE__, __LINE__,
                         "Reading variable (%s, varid=%d) from file (%s, ncid=%d) failed. The user buffer (buf) provided is NULL (expected a valid user buffer to read data)", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid);
     }
@@ -618,6 +798,10 @@ int PIOc_get_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
     if (!ios->async || !ios->ioproc)
     {
         /* Get the type of this var. */
+        spio_ltimer_stop(ios->io_fstats->rd_timer_name);
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(file->io_fstats->rd_timer_name);
+        spio_ltimer_stop(file->io_fstats->tot_timer_name);
         ierr = PIOc_inq_vartype(ncid, varid, &vartype);
         if(ierr != PIO_NOERR){
             GPTLstop("PIO:PIOc_get_vars_tc");
@@ -649,6 +833,10 @@ int PIOc_get_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
             return pio_err(NULL, NULL, ierr, __FILE__, __LINE__,
                         "Reading variable (%s, varid=%d) from file (%s, ncid=%d) failed. Inquiring the number of variable dimensions failed", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid);
         }
+        spio_ltimer_start(ios->io_fstats->rd_timer_name);
+        spio_ltimer_start(ios->io_fstats->tot_timer_name);
+        spio_ltimer_start(file->io_fstats->rd_timer_name);
+        spio_ltimer_start(file->io_fstats->tot_timer_name);
         LOG((3, "ndims = %d", ndims));
 
         /* Only scalar vars can pass NULL for start/count. */
@@ -694,6 +882,10 @@ int PIOc_get_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
         if(ierr != PIO_NOERR)
         {
             GPTLstop("PIO:PIOc_get_vars_tc");
+            spio_ltimer_stop(ios->io_fstats->rd_timer_name);
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->rd_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
                             "Reading variable (%s, varid=%d) from file (%s, ncid=%d) failed. Error sending asynchronous message, PIO_MSG_GET_VARS", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid);
         }
@@ -715,16 +907,28 @@ int PIOc_get_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
         if ((mpierr = MPI_Bcast(&num_elem, 1, MPI_OFFSET, ios->comproot, ios->my_comm)))
         {
             GPTLstop("PIO:PIOc_get_vars_tc");
+            spio_ltimer_stop(ios->io_fstats->rd_timer_name);
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->rd_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
         }
         if ((mpierr = MPI_Bcast(&typelen, 1, MPI_OFFSET, ios->comproot, ios->my_comm)))
         {
             GPTLstop("PIO:PIOc_get_vars_tc");
+            spio_ltimer_stop(ios->io_fstats->rd_timer_name);
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->rd_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
         }
         if ((mpierr = MPI_Bcast(&xtype, 1, MPI_INT, ios->comproot, ios->my_comm)))
         {
             GPTLstop("PIO:PIOc_get_vars_tc");
+            spio_ltimer_stop(ios->io_fstats->rd_timer_name);
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->rd_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
         }
     }
@@ -741,6 +945,10 @@ int PIOc_get_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
             if ((ierr = ncmpi_begin_indep_data(file->fh)))
             {
                 GPTLstop("PIO:PIOc_get_vars_tc");
+                spio_ltimer_stop(ios->io_fstats->rd_timer_name);
+                spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+                spio_ltimer_stop(file->io_fstats->rd_timer_name);
+                spio_ltimer_stop(file->io_fstats->tot_timer_name);
                 return pio_err(ios, file, ierr, __FILE__, __LINE__,
                                 "Reading variable (%s, varid=%d) from file (%s, ncid=%d) failed. Starting independent (across processes) access failed on the file", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid);
             }
@@ -774,6 +982,10 @@ int PIOc_get_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                     break;
                 default:
                     GPTLstop("PIO:PIOc_get_vars_tc");
+                    spio_ltimer_stop(ios->io_fstats->rd_timer_name);
+                    spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+                    spio_ltimer_stop(file->io_fstats->rd_timer_name);
+                    spio_ltimer_stop(file->io_fstats->tot_timer_name);
                     return pio_err(ios, file, PIO_EBADIOTYPE, __FILE__, __LINE__,
                                     "Reading variable (%s, varid=%d) from file (%s, ncid=%d) failed. Unsupported variable type (type=%x)", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid, xtype);
                 }
@@ -783,6 +995,10 @@ int PIOc_get_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
             if ((ierr = ncmpi_end_indep_data(file->fh)))
             {
                 GPTLstop("PIO:PIOc_get_vars_tc");
+                spio_ltimer_stop(ios->io_fstats->rd_timer_name);
+                spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+                spio_ltimer_stop(file->io_fstats->rd_timer_name);
+                spio_ltimer_stop(file->io_fstats->tot_timer_name);
                 return pio_err(ios, file, ierr, __FILE__, __LINE__,
                                 "Reading variable (%s, varid=%d) from file (%s, ncid=%d) failed. Ending independent (across processes) access failed on the file", pio_get_vname_from_file(file, varid), varid, pio_get_vname_from_file(file, varid), ncid);
             }
@@ -851,6 +1067,10 @@ int PIOc_get_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
 #endif /* _NETCDF4 */
             default:
                 GPTLstop("PIO:PIOc_get_vars_tc");
+                spio_ltimer_stop(ios->io_fstats->rd_timer_name);
+                spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+                spio_ltimer_stop(file->io_fstats->rd_timer_name);
+                spio_ltimer_stop(file->io_fstats->tot_timer_name);
                 return pio_err(ios, file, PIO_EBADTYPE, __FILE__, __LINE__,
                                 "Reading variable (%s, varid=%d) from file (%s, ncid=%d) failed. Unsupported variable type (type=%x)", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid, xtype);
             }
@@ -860,6 +1080,10 @@ int PIOc_get_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
     if(ierr != PIO_NOERR){
         LOG((1, "nc*_get_vars_* failed, ierr = %d", ierr));
         GPTLstop("PIO:PIOc_get_vars_tc");
+        spio_ltimer_stop(ios->io_fstats->rd_timer_name);
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(file->io_fstats->rd_timer_name);
+        spio_ltimer_stop(file->io_fstats->tot_timer_name);
         return pio_err(NULL, file, ierr, __FILE__, __LINE__,
                         "Reading variable (%s, varid=%d) from file (%s, ncid=%d) failed. The internal I/O library (%s) call failed", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid, pio_iotype_to_string(file->iotype));
     }
@@ -870,11 +1094,22 @@ int PIOc_get_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
     if ((mpierr = MPI_Bcast(buf, num_elem * typelen, MPI_BYTE, ios->ioroot, ios->my_comm)))
     {
         GPTLstop("PIO:PIOc_get_vars_tc");
+        spio_ltimer_stop(ios->io_fstats->rd_timer_name);
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(file->io_fstats->rd_timer_name);
+        spio_ltimer_stop(file->io_fstats->tot_timer_name);
         return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
     }
     LOG((2, "PIOc_get_vars_tc bcasting data complete"));
 
+    ios->io_fstats->rb += num_elem * typelen;
+    file->io_fstats->rb += num_elem * typelen;
+
     GPTLstop("PIO:PIOc_get_vars_tc");
+    spio_ltimer_stop(ios->io_fstats->rd_timer_name);
+    spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+    spio_ltimer_stop(file->io_fstats->rd_timer_name);
+    spio_ltimer_stop(file->io_fstats->tot_timer_name);
     return PIO_NOERR;
 }
 
@@ -1062,6 +1297,7 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
     int ierr = PIO_NOERR;          /* Return code from function calls. */
 
     GPTLstart("PIO:PIOc_put_vars_tc");
+    GPTLstart("PIO:write_total");
     LOG((1, "PIOc_put_vars_tc ncid = %d varid = %d start_present = %d "
          "count_present = %d stride_present = %d xtype = %d", ncid, varid,
          start_present, count_present, stride_present, xtype));
@@ -1070,20 +1306,39 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
     if ((ierr = pio_get_file(ncid, &file)))
     {
         GPTLstop("PIO:PIOc_put_vars_tc");
+        GPTLstop("PIO:write_total");
         return pio_err(NULL, NULL, ierr, __FILE__, __LINE__,
                         "Writing variable (varid=%d) to file failed. Invalid file id (ncid=%d) provided", varid, ncid);
     }
+    assert(file);
+    spio_ltimer_start(file->io_fstats->wr_timer_name);
+    spio_ltimer_start(file->io_fstats->tot_timer_name);
     ios = file->iosystem;
+    assert(ios);
+
+    spio_ltimer_start(ios->io_fstats->wr_timer_name);
+    spio_ltimer_start(ios->io_fstats->tot_timer_name);
 
     if (file->iotype == PIO_IOTYPE_ADIOS)
+    {
         GPTLstart("PIO:PIOc_put_vars_tc_adios");
+        GPTLstart("PIO:write_total_adios");
+    }
 
     /* User must provide a place to put some data. */
     if (!buf)
     {
         GPTLstop("PIO:PIOc_put_vars_tc");
+        GPTLstop("PIO:write_total");
+        spio_ltimer_stop(ios->io_fstats->wr_timer_name);
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(file->io_fstats->wr_timer_name);
+        spio_ltimer_stop(file->io_fstats->tot_timer_name);
         if (file->iotype == PIO_IOTYPE_ADIOS)
+        {
             GPTLstop("PIO:PIOc_put_vars_tc_adios");
+            GPTLstop("PIO:write_total_adios");
+        }
         return pio_err(ios, file, PIO_EINVAL, __FILE__, __LINE__,
                         "Writing variable (%s, varid=%d) to file (%s, ncid=%d) failed. Invalid/NULL user buffer provided", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid);
     }
@@ -1093,11 +1348,19 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
     if (!ios->async || !ios->ioproc)
     {
         /* Get the type of this var. */
+        spio_ltimer_stop(ios->io_fstats->wr_timer_name);
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(file->io_fstats->wr_timer_name);
+        spio_ltimer_stop(file->io_fstats->tot_timer_name);
         ierr = PIOc_inq_vartype(ncid, varid, &vartype);
         if(ierr != PIO_NOERR){
             GPTLstop("PIO:PIOc_put_vars_tc");
+            GPTLstop("PIO:write_total");
             if (file->iotype == PIO_IOTYPE_ADIOS)
+            {
                 GPTLstop("PIO:PIOc_put_vars_tc_adios");
+                GPTLstop("PIO:write_total_adios");
+            }
             return pio_err(NULL, NULL, ierr, __FILE__, __LINE__,
                             "Writing variable (%s, varid=%d) to file (%s, ncid=%d) failed. Inquiring variable type failed", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid);
         }
@@ -1110,8 +1373,12 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
         ierr = PIOc_inq_varndims(ncid, varid, &ndims);
         if(ierr != PIO_NOERR){
             GPTLstop("PIO:PIOc_put_vars_tc");
+            GPTLstop("PIO:write_total");
             if (file->iotype == PIO_IOTYPE_ADIOS)
+            {
                 GPTLstop("PIO:PIOc_put_vars_tc_adios");
+                GPTLstop("PIO:write_total_adios");
+            }
             return pio_err(NULL, NULL, ierr, __FILE__, __LINE__,
                             "Writing variable (%s, varid=%d) to file (%s, ncid=%d) failed. Inquiring number of dimensions of the variable failed", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid);
         }
@@ -1124,12 +1391,20 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
             ierr = PIOc_inq_type(ncid, xtype, NULL, &typelen);
             if(ierr != PIO_NOERR){
                 GPTLstop("PIO:PIOc_put_vars_tc");
+                GPTLstop("PIO:write_total");
                 if (file->iotype == PIO_IOTYPE_ADIOS)
+                {
                     GPTLstop("PIO:PIOc_put_vars_tc_adios");
+                    GPTLstop("PIO:write_total_adios");
+                }
                 return pio_err(NULL, NULL, ierr, __FILE__, __LINE__,
                                 "Writing variable (%s, varid=%d) to file (%s, ncid=%d) failed. Inquiring variable type length failed", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid);
             }
         }
+        spio_ltimer_start(ios->io_fstats->wr_timer_name);
+        spio_ltimer_start(ios->io_fstats->tot_timer_name);
+        spio_ltimer_start(file->io_fstats->wr_timer_name);
+        spio_ltimer_start(file->io_fstats->tot_timer_name);
 
         LOG((2, "ndims = %d typelen = %d", ndims, typelen));
 
@@ -1174,8 +1449,16 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
         if(ierr != PIO_NOERR)
         {
             GPTLstop("PIO:PIOc_put_vars_tc");
+            GPTLstop("PIO:write_total");
+            spio_ltimer_stop(ios->io_fstats->wr_timer_name);
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->wr_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             if (file->iotype == PIO_IOTYPE_ADIOS)
+            {
                 GPTLstop("PIO:PIOc_put_vars_tc_adios");
+                GPTLstop("PIO:write_total_adios");
+            }
             return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
                             "Writing variable (%s, varid=%d) to file (%s, ncid=%d) failed. Error sending asynchronous message, PIO_MSG_PUT_VARS", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid);
         }
@@ -1198,15 +1481,31 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
         if ((mpierr = MPI_Bcast(&ndims, 1, MPI_INT, ios->comproot, ios->my_comm)))
         {
             GPTLstop("PIO:PIOc_put_vars_tc");
+            GPTLstop("PIO:write_total");
+            spio_ltimer_stop(ios->io_fstats->wr_timer_name);
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->wr_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             if (file->iotype == PIO_IOTYPE_ADIOS)
+            {
                 GPTLstop("PIO:PIOc_put_vars_tc_adios");
+                GPTLstop("PIO:write_total_adios");
+            }
             return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
         }
         if ((mpierr = MPI_Bcast(&xtype, 1, MPI_INT, ios->comproot, ios->my_comm)))
         {
             GPTLstop("PIO:PIOc_put_vars_tc");
+            GPTLstop("PIO:write_total");
+            spio_ltimer_stop(ios->io_fstats->wr_timer_name);
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->wr_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             if (file->iotype == PIO_IOTYPE_ADIOS)
+            {
                 GPTLstop("PIO:PIOc_put_vars_tc_adios");
+                GPTLstop("PIO:write_total_adios");
+            }
             return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
         }
         LOG((2, "PIOc_put_vars_tc complete bcast from comproot ndims = %d", ndims));
@@ -1219,7 +1518,13 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
         if (varid < 0 || varid >= file->num_vars)
         {
             GPTLstop("PIO:PIOc_put_vars_tc");
+            GPTLstop("PIO:write_total");
+            spio_ltimer_stop(ios->io_fstats->wr_timer_name);
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->wr_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             GPTLstop("PIO:PIOc_put_vars_tc_adios");
+            GPTLstop("PIO:write_total_adios");
             return pio_err(ios, file, PIO_EBADID, __FILE__, __LINE__,
                             "Writing variable to file (%s, ncid=%d) failed. Invalid variable id (varid=%d, expected >=0 and < number of variables in the file, %d) provided", pio_get_fname_from_file(file), ncid, varid, file->num_vars);
         }
@@ -1289,7 +1594,13 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                     if (av->adios_varid == NULL)
                     {
                         GPTLstop("PIO:PIOc_put_vars_tc");
+                        GPTLstop("PIO:write_total");
+                        spio_ltimer_stop(ios->io_fstats->wr_timer_name);
+                        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+                        spio_ltimer_stop(file->io_fstats->wr_timer_name);
+                        spio_ltimer_stop(file->io_fstats->tot_timer_name);
                         GPTLstop("PIO:PIOc_put_vars_tc_adios");
+                        GPTLstop("PIO:write_total_adios");
                         return pio_err(NULL, file, PIO_EADIOS2ERR, __FILE__, __LINE__, "Defining (ADIOS) variable (name=%s) failed for file (%s, ncid=%d)", av->name, pio_get_fname_from_file(file), file->pio_ncid);
                     }
                 }
@@ -1298,7 +1609,13 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                 if (adiosErr != adios2_error_none)
                 {
                     GPTLstop("PIO:PIOc_put_vars_tc");
+                    GPTLstop("PIO:write_total");
+                    spio_ltimer_stop(ios->io_fstats->wr_timer_name);
+                    spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+                    spio_ltimer_stop(file->io_fstats->wr_timer_name);
+                    spio_ltimer_stop(file->io_fstats->tot_timer_name);
                     GPTLstop("PIO:PIOc_put_vars_tc_adios");
+                    GPTLstop("PIO:write_total_adios");
                     return pio_err(ios, file, PIO_EADIOS2ERR, __FILE__, __LINE__, "Putting (ADIOS) variable (name=%s) failed (adios2_error=%s) for file (%s, ncid=%d)", av->name, adios2_error_to_string(adiosErr), pio_get_fname_from_file(file), file->pio_ncid);
                 }
             }
@@ -1389,7 +1706,13 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                     if (av->adios_varid == NULL)
                     {
                         GPTLstop("PIO:PIOc_put_vars_tc");
+                        GPTLstop("PIO:write_total");
+                        spio_ltimer_stop(ios->io_fstats->wr_timer_name);
+                        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+                        spio_ltimer_stop(file->io_fstats->wr_timer_name);
+                        spio_ltimer_stop(file->io_fstats->tot_timer_name);
                         GPTLstop("PIO:PIOc_put_vars_tc_adios");
+                        GPTLstop("PIO:write_total_adios");
                         return pio_err(ios, file, PIO_EADIOS2ERR, __FILE__, __LINE__, "Defining (ADIOS) variable (name=%s) failed for file (%s, ncid=%d)", av->name, pio_get_fname_from_file(file), file->pio_ncid);
                     }
                 }
@@ -1399,7 +1722,13 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                     if (adiosErr != adios2_error_none)
                     {
                         GPTLstop("PIO:PIOc_put_vars_tc");
+                        GPTLstop("PIO:write_total");
+                        spio_ltimer_stop(ios->io_fstats->wr_timer_name);
+                        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+                        spio_ltimer_stop(file->io_fstats->wr_timer_name);
+                        spio_ltimer_stop(file->io_fstats->tot_timer_name);
                         GPTLstop("PIO:PIOc_put_vars_tc_adios");
+                        GPTLstop("PIO:write_total_adios");
                         return pio_err(ios, file, PIO_EADIOS2ERR, __FILE__, __LINE__, "Setting (ADIOS) selection to variable (name=%s) failed (adios2_error=%s) for file (%s, ncid=%d)", av->name, adios2_error_to_string(adiosErr), pio_get_fname_from_file(file), file->pio_ncid);
                     }
                 }
@@ -1408,7 +1737,13 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                 if (mem_buffer == NULL)
                 {
                     GPTLstop("PIO:PIOc_put_vars_tc");
+                    GPTLstop("PIO:write_total");
+                    spio_ltimer_stop(ios->io_fstats->wr_timer_name);
+                    spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+                    spio_ltimer_stop(file->io_fstats->wr_timer_name);
+                    spio_ltimer_stop(file->io_fstats->tot_timer_name);
                     GPTLstop("PIO:PIOc_put_vars_tc_adios");
+                    GPTLstop("PIO:write_total_adios");
                     return pio_err(ios, file, PIO_ENOMEM, __FILE__, __LINE__,
                                     "Writing variable (%s, varid=%d) to file (%s, ncid=%d) failed. Out of memory, allocating memory (%lld bytes) for putting ADIOS variable (name = %s)", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid, (long long int) (av_size * sizeof(unsigned char)), av->name);
                 }
@@ -1424,7 +1759,13 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                 if (adiosErr != adios2_error_none)
                 {
                     GPTLstop("PIO:PIOc_put_vars_tc");
+                    GPTLstop("PIO:write_total");
+                    spio_ltimer_stop(ios->io_fstats->wr_timer_name);
+                    spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+                    spio_ltimer_stop(file->io_fstats->wr_timer_name);
+                    spio_ltimer_stop(file->io_fstats->tot_timer_name);
                     GPTLstop("PIO:PIOc_put_vars_tc_adios");
+                    GPTLstop("PIO:write_total_adios");
                     return pio_err(ios, file, PIO_EADIOS2ERR, __FILE__, __LINE__, "Putting (ADIOS) variable (name=%s) failed (adios2_error=%s) for file (%s, ncid=%d)", av->name, adios2_error_to_string(adiosErr), pio_get_fname_from_file(file), file->pio_ncid);
                 }
 
@@ -1446,7 +1787,13 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                     if (attributeH == NULL)
                     {
                         GPTLstop("PIO:PIOc_put_vars_tc");
+                        GPTLstop("PIO:write_total");
+                        spio_ltimer_stop(ios->io_fstats->wr_timer_name);
+                        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+                        spio_ltimer_stop(file->io_fstats->wr_timer_name);
+                        spio_ltimer_stop(file->io_fstats->tot_timer_name);
                         GPTLstop("PIO:PIOc_put_vars_tc_adios");
+                        GPTLstop("PIO:write_total_adios");
                         return pio_err(ios, file, PIO_EADIOS2ERR, __FILE__, __LINE__, "Defining (ADIOS) attribute array (name=%s, size=%d) failed for file (%s, ncid=%d)", att_name, av->ndims, pio_get_fname_from_file(file), file->pio_ncid);
                     }
                 }
@@ -1465,7 +1812,13 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                 if (attributeH == NULL)
                 {
                     GPTLstop("PIO:PIOc_put_vars_tc");
+                    GPTLstop("PIO:write_total");
+                    spio_ltimer_stop(ios->io_fstats->wr_timer_name);
+                    spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+                    spio_ltimer_stop(file->io_fstats->wr_timer_name);
+                    spio_ltimer_stop(file->io_fstats->tot_timer_name);
                     GPTLstop("PIO:PIOc_put_vars_tc_adios");
+                    GPTLstop("PIO:write_total_adios");
                     return pio_err(ios, file, PIO_EADIOS2ERR, __FILE__, __LINE__, "Defining (ADIOS) attribute (name=%s) failed for file (%s, ncid=%d)", att_name, pio_get_fname_from_file(file), file->pio_ncid);
                 }
             }
@@ -1478,7 +1831,13 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                 if (attributeH == NULL)
                 {
                     GPTLstop("PIO:PIOc_put_vars_tc");
+                    GPTLstop("PIO:write_total");
+                    spio_ltimer_stop(ios->io_fstats->wr_timer_name);
+                    spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+                    spio_ltimer_stop(file->io_fstats->wr_timer_name);
+                    spio_ltimer_stop(file->io_fstats->tot_timer_name);
                     GPTLstop("PIO:PIOc_put_vars_tc_adios");
+                    GPTLstop("PIO:write_total_adios");
                     return pio_err(ios, file, PIO_EADIOS2ERR, __FILE__, __LINE__, "Defining (ADIOS) attribute (name=%s) failed for file (%s, ncid=%d)", att_name, pio_get_fname_from_file(file), file->pio_ncid);
                 }
             }
@@ -1493,7 +1852,13 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                 if (attributeH == NULL)
                 {
                     GPTLstop("PIO:PIOc_put_vars_tc");
+                    GPTLstop("PIO:write_total");
+                    spio_ltimer_stop(ios->io_fstats->wr_timer_name);
+                    spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+                    spio_ltimer_stop(file->io_fstats->wr_timer_name);
+                    spio_ltimer_stop(file->io_fstats->tot_timer_name);
                     GPTLstop("PIO:PIOc_put_vars_tc_adios");
+                    GPTLstop("PIO:write_total_adios");
                     return pio_err(ios, file, PIO_EADIOS2ERR, __FILE__, __LINE__, "Defining (ADIOS) attribute (name=%s) failed for file (%s, ncid=%d)", att_name, pio_get_fname_from_file(file), file->pio_ncid);
                 }
             }
@@ -1506,14 +1871,26 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                 if (attributeH == NULL)
                 {
                     GPTLstop("PIO:PIOc_put_vars_tc");
+                    GPTLstop("PIO:write_total");
+                    spio_ltimer_stop(ios->io_fstats->wr_timer_name);
+                    spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+                    spio_ltimer_stop(file->io_fstats->wr_timer_name);
+                    spio_ltimer_stop(file->io_fstats->tot_timer_name);
                     GPTLstop("PIO:PIOc_put_vars_tc_adios");
+                    GPTLstop("PIO:write_total_adios");
                     return pio_err(ios, file, PIO_EADIOS2ERR, __FILE__, __LINE__, "Defining (ADIOS) attribute (name=%s) failed for file (%s, ncid=%d)", att_name, pio_get_fname_from_file(file), file->pio_ncid);
                 }
             }
         }
 
         GPTLstop("PIO:PIOc_put_vars_tc");
+        GPTLstop("PIO:write_total");
+        spio_ltimer_stop(ios->io_fstats->wr_timer_name);
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(file->io_fstats->wr_timer_name);
+        spio_ltimer_stop(file->io_fstats->tot_timer_name);
         GPTLstop("PIO:PIOc_put_vars_tc_adios");
+        GPTLstop("PIO:write_total_adios");
 
         return PIO_NOERR;
     }
@@ -1533,6 +1910,11 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                                                sizeof(int) * (vdesc->nreqs + PIO_REQUEST_ALLOC_CHUNK))))
                 {
                     GPTLstop("PIO:PIOc_put_vars_tc");
+                    GPTLstop("PIO:write_total");
+                    spio_ltimer_stop(ios->io_fstats->wr_timer_name);
+                    spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+                    spio_ltimer_stop(file->io_fstats->wr_timer_name);
+                    spio_ltimer_stop(file->io_fstats->tot_timer_name);
                     return pio_err(ios, file, PIO_ENOMEM, __FILE__, __LINE__,
                                     "Writing variable (%s, varid=%d) to file (%s, ncid=%d) failed. Out of memory, reallocating memory (%lld bytes) for array to store PnetCDF request handles", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid, (long long int) (sizeof(int) * (vdesc->nreqs + PIO_REQUEST_ALLOC_CHUNK)));
                 }
@@ -1544,6 +1926,11 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                 if(!(vdesc->request_sz))
                 {
                     GPTLstop("PIO:PIOc_put_vars_tc");
+                    GPTLstop("PIO:write_total");
+                    spio_ltimer_stop(ios->io_fstats->wr_timer_name);
+                    spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+                    spio_ltimer_stop(file->io_fstats->wr_timer_name);
+                    spio_ltimer_stop(file->io_fstats->tot_timer_name);
                     return pio_err(ios, file, PIO_ENOMEM, __FILE__, __LINE__,
                                     "Writing variable (%s, varid=%d) to file (%s, ncid=%d) failed. Out of memory, reallocating memory (%lld bytes) for array to store PnetCDF request handles", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid, (long long int) (sizeof(int) * (vdesc->nreqs + PIO_REQUEST_ALLOC_CHUNK)));
                 }
@@ -1587,6 +1974,10 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                             printf("PIO: WARNING: Ignoring user-specified strides while writing the scalar variable (%s, varid=%d) to file (%s, ncid=%d). An invalid stride (stride[0] = %lld) provided (%s:%d)\n", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid, (long long int)stride[0], __FILE__, __LINE__);
                         }
                     }
+
+                    ios->io_fstats->wb += num_elem * typelen;
+                    file->io_fstats->wb += num_elem * typelen;
+
                     switch(xtype)
                     {
                     case NC_BYTE:
@@ -1612,6 +2003,11 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                         break;
                     default:
                         GPTLstop("PIO:PIOc_put_vars_tc");
+                        GPTLstop("PIO:write_total");
+                        spio_ltimer_stop(ios->io_fstats->wr_timer_name);
+                        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+                        spio_ltimer_stop(file->io_fstats->wr_timer_name);
+                        spio_ltimer_stop(file->io_fstats->tot_timer_name);
                         return pio_err(ios, file, PIO_EBADIOTYPE, __FILE__, __LINE__,
                                         "Writing variable (%s, varid=%d) to file (%s, ncid=%d) failed. Unsupported PnetCDF variable type (type=%x)", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid, xtype);
                     }
@@ -1642,6 +2038,11 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                     if (!(fake_stride = malloc(ndims * sizeof(PIO_Offset))))
                     {
                         GPTLstop("PIO:PIOc_put_vars_tc");
+                        GPTLstop("PIO:write_total");
+                        spio_ltimer_stop(ios->io_fstats->wr_timer_name);
+                        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+                        spio_ltimer_stop(file->io_fstats->wr_timer_name);
+                        spio_ltimer_stop(file->io_fstats->tot_timer_name);
                         return pio_err(ios, file, PIO_ENOMEM, __FILE__, __LINE__,
                                         "Writing variable (%s, varid=%d) to file (%s, ncid=%d) failed. Out of memory, allocating memory (%lld bytes) for default variable stride", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid, (long long int) (ndims * sizeof(PIO_Offset)));
                     }
@@ -1654,6 +2055,8 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                 /* Only the IO master actually does the call. */
                 if (ios->iomaster == MPI_ROOT)
                 {
+                    ios->io_fstats->wb += num_elem * typelen;
+                    file->io_fstats->wb += num_elem * typelen;
                     switch(xtype)
                     {
                     case NC_BYTE:
@@ -1679,6 +2082,11 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                         break;
                     default:
                         GPTLstop("PIO:PIOc_put_vars_tc");
+                        GPTLstop("PIO:write_total");
+                        spio_ltimer_stop(ios->io_fstats->wr_timer_name);
+                        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+                        spio_ltimer_stop(file->io_fstats->wr_timer_name);
+                        spio_ltimer_stop(file->io_fstats->tot_timer_name);
                         return pio_err(ios, file, PIO_EBADTYPE, __FILE__, __LINE__,
                                         "Writing variable (%s, varid=%d) to file (%s, ncid=%d) failed. Unsupported PnetCDF variable type (%x)", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid, xtype);
                     }
@@ -1709,6 +2117,8 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
         {
             LOG((2, "PIOc_put_vars_tc calling netcdf function file->iotype = %d",
                  file->iotype));
+            ios->io_fstats->wb += num_elem * typelen;
+            file->io_fstats->wb += num_elem * typelen;
             switch(xtype)
             {
 #ifdef _NETCDF
@@ -1769,6 +2179,11 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
 #endif /* _NETCDF4 */
             default:
                 GPTLstop("PIO:PIOc_put_vars_tc");
+                GPTLstop("PIO:write_total");
+                spio_ltimer_stop(ios->io_fstats->wr_timer_name);
+                spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+                spio_ltimer_stop(file->io_fstats->wr_timer_name);
+                spio_ltimer_stop(file->io_fstats->tot_timer_name);
                 return pio_err(ios, file, PIO_EBADTYPE, __FILE__, __LINE__,
                                 "Writing variable (%s, varid=%d) to file (%s, ncid=%d) failed. Unsupported variable type (%x) for iotype=%s", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid, xtype, pio_iotype_to_string(file->iotype));
             }
@@ -1780,6 +2195,11 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
     if(ierr != PIO_NOERR){
         LOG((1, "nc*_put_vars_* failed, ierr = %d", ierr));
         GPTLstop("PIO:PIOc_put_vars_tc");
+        GPTLstop("PIO:write_total");
+        spio_ltimer_stop(ios->io_fstats->wr_timer_name);
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(file->io_fstats->wr_timer_name);
+        spio_ltimer_stop(file->io_fstats->tot_timer_name);
         return pio_err(NULL, file, ierr, __FILE__, __LINE__,
                         "Writing variable (%s, varid=%d) to file (%s, ncid=%d) failed. Underlying I/O library call failed(iotype=%x:%s) ", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid, xtype, pio_iotype_to_string(file->iotype));
                     
@@ -1788,6 +2208,11 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
     LOG((2, "PIOc_put_vars_tc bcast netcdf return code %d complete", ierr));
 
     GPTLstop("PIO:PIOc_put_vars_tc");
+    GPTLstop("PIO:write_total");
+    spio_ltimer_stop(ios->io_fstats->wr_timer_name);
+    spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+    spio_ltimer_stop(file->io_fstats->wr_timer_name);
+    spio_ltimer_stop(file->io_fstats->tot_timer_name);
     return PIO_NOERR;
 }
 

@@ -57,4 +57,8 @@
  *  0 otherwise */
 #define PIO_USE_MICRO_TIMING @USE_MICRO_TIMING@
 
+/** Set to 1 if the library is configured to print I/O statistics,
+ *  0 otherwise */
+#define PIO_ENABLE_IO_STATS @ENABLE_IO_STATS@
+
 #endif /* _PIO_CONFIG_ */
