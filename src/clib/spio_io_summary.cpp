@@ -172,6 +172,7 @@ PIO_Util::IO_Summary_Util::IO_summary_stats2mpi::IO_summary_stats2mpi() : dt_(MP
   std::array<MPI_Aint, NUM_IO_SUMMARY_STATS_MEMBERS> disps;
   std::array<int, NUM_IO_SUMMARY_STATS_MEMBERS> blocklens = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
 
+#ifndef MPI_SERIAL
   get_io_summary_stats_address_disps(disps);
 
   mpi_errno = MPI_Type_create_struct(NUM_IO_SUMMARY_STATS_MEMBERS, blocklens.data(),
@@ -184,6 +185,7 @@ PIO_Util::IO_Summary_Util::IO_summary_stats2mpi::IO_summary_stats2mpi() : dt_(MP
   if(mpi_errno != MPI_SUCCESS){
     throw std::runtime_error("Committing MPI datatype for I/O summary stats struct failed");
   }
+#endif
 }
 
 MPI_Datatype PIO_Util::IO_Summary_Util::IO_summary_stats2mpi::get_mpi_datatype(void ) const
@@ -204,6 +206,7 @@ void PIO_Util::IO_Summary_Util::IO_summary_stats2mpi::get_io_summary_stats_addre
   int mpi_errno = MPI_SUCCESS;
   IO_summary_stats io_sstats;
 
+#ifndef MPI_SERIAL
   mpi_errno = MPI_Get_address(&io_sstats, &disps[0]);
   if(mpi_errno != MPI_SUCCESS){
     throw std::runtime_error("Getting address for I/O summary stat struct members failed");
@@ -269,6 +272,9 @@ void PIO_Util::IO_Summary_Util::IO_summary_stats2mpi::get_io_summary_stats_addre
   for(std::size_t i = 0; i < disps.size(); i++){
     disps[i] -= base_addr;
   }
+#else
+  throw std::runtime_error("Getting address for I/O summary stat struct members is not supported for MPI serial");
+#endif
 }
 
 extern "C"{
@@ -636,6 +642,15 @@ int spio_write_io_summary(iosystem_desc_t *ios)
   /* Get the I/O statistics of files belonging to this I/O system */
   get_file_stats(ios->iosysid, filenames, tmp_sstats);
 
+  //PIO_Util::IO_Summary_Util::IO_summary_stats_t gio_sstats = {0, 0, 0, 0, 0, 0, 0.0, 0.0, 0.0, 0.0};
+  /* Add the component I/O stats to the end of file I/O stats */
+  const std::size_t nelems_to_red = filenames.size() + 1;
+  std::vector<PIO_Util::IO_Summary_Util::IO_summary_stats_t> gio_sstats(nelems_to_red);
+
+  tmp_sstats.push_back(io_sstats);
+
+  const int ROOT_PROC = 0;
+#ifndef MPI_SERIAL
   MPI_Op op;
   ierr = MPI_Op_create((MPI_User_function *)reduce_io_summary_stats, true, &op);
   if(ierr != PIO_NOERR){
@@ -645,15 +660,7 @@ int spio_write_io_summary(iosystem_desc_t *ios)
             ios->iosysid);
   }
 
-  //PIO_Util::IO_Summary_Util::IO_summary_stats_t gio_sstats = {0, 0, 0, 0, 0, 0, 0.0, 0.0, 0.0, 0.0};
-  /* Add the component I/O stats to the end of file I/O stats */
-  const std::size_t nelems_to_red = filenames.size() + 1;
-  std::vector<PIO_Util::IO_Summary_Util::IO_summary_stats_t> gio_sstats(nelems_to_red);
-
-  tmp_sstats.push_back(io_sstats);
-
   /* Consolidate I/O performance statistics for the files, belonging to this I/O system, and the I/O system */
-  const int ROOT_PROC = 0;
   MPI_Comm comm = (ios->async) ? (ios->io_comm) : (ios->union_comm);
   ierr = MPI_Reduce(tmp_sstats.data(), gio_sstats.data(), nelems_to_red, io_sstats2mpi.get_mpi_datatype(),
                       op, ROOT_PROC, comm);
@@ -672,6 +679,13 @@ int spio_write_io_summary(iosystem_desc_t *ios)
             "Freeing MPI reduction operation for reducing I/O summary statistics failed for I/O system (iosysid=%d)",
             ios->iosysid);
   }
+#else
+  /* For MPI serial library, i.e., one MPI process, copy file I/O stats and component I/O stats to global I/O stats */
+  assert(gio_sstats.size() == tmp_sstats.size());
+  for(std::size_t i = 0 ; i < tmp_sstats.size(); i++){
+    gio_sstats[i] = tmp_sstats[i];
+  }
+#endif
 
   /* Retrieve the global I/O performance statistics for the I/O system */
   PIO_Util::IO_Summary_Util::IO_summary_stats_t iosys_gio_stats = gio_sstats.back();
