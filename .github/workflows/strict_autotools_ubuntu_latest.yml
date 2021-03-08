@@ -43,7 +43,7 @@ jobs:
         wget https://parallel-netcdf.github.io/Release/pnetcdf-1.12.2.tar.gz &> /dev/null
         tar -xzvf pnetcdf-1.12.2.tar.gz
         pushd pnetcdf-1.12.2
-        ./configure --prefix=/home/runner/pnetcdf --enable-shared --disable-cxx
+        ./configure --prefix=/home/runner/pnetcdf --disable-cxx
         make
         sudo make install
         popd
