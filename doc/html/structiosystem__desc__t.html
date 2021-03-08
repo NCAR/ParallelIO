@@ -24,7 +24,7 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">SCORPIO
-   &#160;<span id="projectnumber">1.1.6</span>
+   &#160;<span id="projectnumber">1.2.0</span>
    </div>
   </td>
  </tr>
@@ -114,6 +114,9 @@ Public Attributes</h2></td></tr>
 <tr class="memitem:a349780a2a7a8b14bccadba61d0a3283b"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structiosystem__desc__t.html#a349780a2a7a8b14bccadba61d0a3283b">iosysid</a></td></tr>
 <tr class="memdesc:a349780a2a7a8b14bccadba61d0a3283b"><td class="mdescLeft">&#160;</td><td class="mdescRight">The ID of this <a class="el" href="structiosystem__desc__t.html" title="IO system descriptor structure. ">iosystem_desc_t</a>.  <a href="#a349780a2a7a8b14bccadba61d0a3283b">More...</a><br/></td></tr>
 <tr class="separator:a349780a2a7a8b14bccadba61d0a3283b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a51248a043e7013ceacf8a2af6ded5da8"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a51248a043e7013ceacf8a2af6ded5da8"></a>
+char&#160;</td><td class="memItemRight" valign="bottom"><b>sname</b> [PIO_MAX_NAME+1]</td></tr>
+<tr class="separator:a51248a043e7013ceacf8a2af6ded5da8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5d23f90564ab0753aed17688cf6d9263"><td class="memItemLeft" align="right" valign="top">MPI_Comm&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structiosystem__desc__t.html#a5d23f90564ab0753aed17688cf6d9263">union_comm</a></td></tr>
 <tr class="memdesc:a5d23f90564ab0753aed17688cf6d9263"><td class="mdescLeft">&#160;</td><td class="mdescRight">This is an MPI intra communicator that includes all the tasks in both the IO and the computation communicators.  <a href="#a5d23f90564ab0753aed17688cf6d9263">More...</a><br/></td></tr>
 <tr class="separator:a5d23f90564ab0753aed17688cf6d9263"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -199,6 +202,10 @@ struct <br class="typebreak"/>
 <tr class="memitem:a90c06b85112d2cbcef262b8a8c0aea12"><td class="memItemLeft" align="right" valign="top"><a class="el" href="pio_8h.html#af676ea8a0aa46e2f1a2cc2b6dc8c7569">rearr_opt_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structiosystem__desc__t.html#a90c06b85112d2cbcef262b8a8c0aea12">rearr_opts</a></td></tr>
 <tr class="memdesc:a90c06b85112d2cbcef262b8a8c0aea12"><td class="mdescLeft">&#160;</td><td class="mdescRight">Rearranger options.  <a href="#a90c06b85112d2cbcef262b8a8c0aea12">More...</a><br/></td></tr>
 <tr class="separator:a90c06b85112d2cbcef262b8a8c0aea12"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acdb654e33d5dd371ed673152badea2d4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="acdb654e33d5dd371ed673152badea2d4"></a>
+struct spio_io_fstats_summary *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structiosystem__desc__t.html#acdb654e33d5dd371ed673152badea2d4">io_fstats</a></td></tr>
+<tr class="memdesc:acdb654e33d5dd371ed673152badea2d4"><td class="mdescLeft">&#160;</td><td class="mdescRight">I/O statistics associated with this I/O system. <br/></td></tr>
+<tr class="separator:acdb654e33d5dd371ed673152badea2d4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad4885665a95c1c45ce592e180e127e34"><td class="memItemLeft" align="right" valign="top">struct <a class="el" href="structiosystem__desc__t.html">iosystem_desc_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structiosystem__desc__t.html#ad4885665a95c1c45ce592e180e127e34">next</a></td></tr>
 <tr class="memdesc:ad4885665a95c1c45ce592e180e127e34"><td class="mdescLeft">&#160;</td><td class="mdescRight">Pointer to the next <a class="el" href="structiosystem__desc__t.html" title="IO system descriptor structure. ">iosystem_desc_t</a> in the list.  <a href="#ad4885665a95c1c45ce592e180e127e34">More...</a><br/></td></tr>
 <tr class="separator:ad4885665a95c1c45ce592e180e127e34"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -622,7 +629,7 @@ struct <br class="typebreak"/>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Jan 26 2021 21:04:34 for SCORPIO by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Mar 8 2021 14:45:32 for SCORPIO by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>
