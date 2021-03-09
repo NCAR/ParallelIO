@@ -402,6 +402,7 @@ static int cache_or_print_stats(iosystem_desc_t *ios, int root_proc,
     std::string sfname = std::string("io_perf_summary_") + std::to_string(pid);
     const std::string sfname_txt_suffix(".txt");
     const std::string sfname_json_suffix(".json");
+    const std::string sfname_xml_suffix(".xml");
 
     assert(cached_ios_gio_sstats.size() == cached_ios_names.size());
 
@@ -412,9 +413,13 @@ static int cache_or_print_stats(iosystem_desc_t *ios, int root_proc,
     std::unique_ptr<PIO_Util::SPIO_serializer> spio_json_ser =
       PIO_Util::Serializer_Utils::create_serializer(PIO_Util::Serializer_type::JSON_SERIALIZER,
         sfname + sfname_json_suffix);
+    std::unique_ptr<PIO_Util::SPIO_serializer> spio_xml_ser =
+      PIO_Util::Serializer_Utils::create_serializer(PIO_Util::Serializer_type::XML_SERIALIZER,
+        sfname + sfname_xml_suffix);
     std::vector<std::pair<std::string, std::string> > vals;
     int id = spio_ser->serialize("ScorpioIOSummaryStatistics", vals);
     int json_id = spio_json_ser->serialize("ScorpioIOSummaryStatistics", vals);
+    int xml_id = spio_xml_ser->serialize("ScorpioIOSummaryStatistics", vals);
 
     /* Add Overall I/O performance statistics */
     std::vector<std::pair<std::string, std::string> > overall_comp_vals;
@@ -440,10 +445,11 @@ static int cache_or_print_stats(iosystem_desc_t *ios, int root_proc,
 
     spio_ser->serialize(id, "OverallIOStatistics", overall_comp_vals);
     spio_json_ser->serialize(json_id, "OverallIOStatistics", overall_comp_vals);
+    spio_xml_ser->serialize(xml_id, "OverallIOStatistics", overall_comp_vals);
 
     /* Add Model Component I/O performance statistics */
     std::vector<std::vector<std::pair<std::string, std::string> > > comp_vvals;
-    std::vector<int> comp_vvals_ids, json_comp_vvals_ids;
+    std::vector<int> comp_vvals_ids, json_comp_vvals_ids, xml_comp_vvals_ids;
 
     for(std::size_t i = 0; i < cached_ios_gio_sstats.size(); i++){
       std::vector<std::pair<std::string, std::string> > comp_vals;
@@ -487,10 +493,11 @@ static int cache_or_print_stats(iosystem_desc_t *ios, int root_proc,
     }
     spio_ser->serialize(id, "ModelComponentIOStatistics", comp_vvals, comp_vvals_ids);
     spio_json_ser->serialize(json_id, "ModelComponentIOStatistics", comp_vvals, json_comp_vvals_ids);
+    spio_xml_ser->serialize(xml_id, "ModelComponentIOStatistics", comp_vvals, xml_comp_vvals_ids);
 
     /* Add File I/O statistics */
     std::vector<std::vector<std::pair<std::string, std::string> > > file_vvals;
-    std::vector<int> file_vvals_ids, json_file_vvals_ids;
+    std::vector<int> file_vvals_ids, json_file_vvals_ids, xml_file_vvals_ids;
     assert(cached_file_gio_sstats.size() == cached_ios_gio_sstats.size());
     for(std::size_t i = 0; i < cached_file_gio_sstats.size(); i++){
       for(std::size_t j = 0; j < cached_file_gio_sstats[i].size(); j++){
@@ -538,10 +545,12 @@ static int cache_or_print_stats(iosystem_desc_t *ios, int root_proc,
     }
     spio_ser->serialize(id, "FileIOStatistics", file_vvals, file_vvals_ids);
     spio_json_ser->serialize(json_id, "FileIOStatistics", file_vvals, json_file_vvals_ids);
+    spio_xml_ser->serialize(xml_id, "FileIOStatistics", file_vvals, xml_file_vvals_ids);
 
     /* Sync/flush I/O performance statistics to the files */
     spio_ser->sync();
     spio_json_ser->sync();
+    spio_xml_ser->sync();
   }
 
   return PIO_NOERR;
