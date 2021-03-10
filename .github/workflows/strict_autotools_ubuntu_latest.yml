@@ -34,7 +34,7 @@ jobs:
       uses: actions/cache@v2
       with:
         path: ~/pnetcdf
-        key: pnetcdf-${{ runner.os }}-1.12.1
+        key: pnetcdf-${{ runner.os }}-1.12.1-1
 
     - name: build-pnetcdf
       if: steps.cache-pnetcdf.outputs.cache-hit != 'true'
