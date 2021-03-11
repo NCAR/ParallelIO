@@ -155,19 +155,20 @@ int test_simple_types(int wrank)
    * ============ Expected Serialized JSON ===========
    *{
    * "SerializedVals":{
-   *    "name" : "helloworld"
-   *    "ival" : 3
+   *    "name" : "helloworld",
+   *    "ival" : 3,
    *    "dval" : 3.14
    *  }
    *}
    */
   const std::string JSON_OBJECT_START("{");
   const std::string JSON_OBJECT_END("}");
+  const std::string COMMA(",");
   std::string exp_ser_json =
     JSON_OBJECT_START + NEWLINE +
       Utils::quoted_str(ser_tag) + ID_SEP + JSON_OBJECT_START + NEWLINE +
-        Utils::quoted_str(name_tag) + ID_SEP + Utils::quoted_str(name) + NEWLINE +
-        Utils::quoted_str(ival_tag) + ID_SEP + std::to_string(ival) + NEWLINE +
+        Utils::quoted_str(name_tag) + ID_SEP + Utils::quoted_str(name) + COMMA + NEWLINE +
+        Utils::quoted_str(ival_tag) + ID_SEP + std::to_string(ival) + COMMA + NEWLINE +
         Utils::quoted_str(dval_tag) + ID_SEP + std::to_string(dval) + NEWLINE +
       JSON_OBJECT_END + NEWLINE +
     JSON_OBJECT_END + NEWLINE;
@@ -482,8 +483,8 @@ int test_tiered_data(int wrank)
    *{
    * "SerializedValsT1":{
    *  "SerializedValsT2":{
-   *      "name" : "helloworld"
-   *      "ival" : 3
+   *      "name" : "helloworld",
+   *      "ival" : 3,
    *      "dval" : 3.14
    *    }
    *  }
@@ -491,12 +492,13 @@ int test_tiered_data(int wrank)
    */
   const std::string JSON_OBJECT_START("{");
   const std::string JSON_OBJECT_END("}");
+  const std::string COMMA(",");
   std::string exp_ser_json =
     JSON_OBJECT_START + NEWLINE +
       Utils::quoted_str(ser_tag_tier1) + ID_SEP + JSON_OBJECT_START + NEWLINE +
         Utils::quoted_str(ser_tag_tier2) + ID_SEP + JSON_OBJECT_START + NEWLINE +
-          Utils::quoted_str(name_tag) + ID_SEP + Utils::quoted_str(name) + NEWLINE +
-          Utils::quoted_str(ival_tag) + ID_SEP + std::to_string(ival) + NEWLINE +
+          Utils::quoted_str(name_tag) + ID_SEP + Utils::quoted_str(name) + COMMA + NEWLINE +
+          Utils::quoted_str(ival_tag) + ID_SEP + std::to_string(ival) + COMMA + NEWLINE +
           Utils::quoted_str(dval_tag) + ID_SEP + std::to_string(dval) + NEWLINE +
         JSON_OBJECT_END + NEWLINE +
       JSON_OBJECT_END + NEWLINE +

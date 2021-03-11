@@ -368,7 +368,7 @@ std::string PIO_Util::Json_serializer::get_serialized_data(void )
   return sdata_;
 }
 
-/* Text serializer visitor functions */
+/* Json serializer visitor functions */
 
 void PIO_Util::Json_serializer::Json_serializer_visitor::begin(void)
 {
@@ -400,7 +400,11 @@ void PIO_Util::Json_serializer::Json_serializer_visitor::enter_node(
   /* Serialize all (name, value) pairs on this node */
   for(std::vector<std::pair<std::string, std::string> >::const_iterator citer = val.vals.cbegin();
       citer != val.vals.cend(); ++citer){
-    sdata_ += val_spaces + (*citer).first + SPACE + ID_SEP + SPACE + (*citer).second + NEWLINE;
+    sdata_ += val_spaces + (*citer).first + SPACE + ID_SEP + SPACE + (*citer).second;
+    if(citer + 1 != val.vals.cend()){
+      sdata_ += ELEM_SEP;
+    }
+    sdata_ += NEWLINE;
   }
 }
 
@@ -417,8 +421,8 @@ void PIO_Util::Json_serializer::Json_serializer_visitor::on_node(
   int id_nspaces = id2spaces_[val_id] + inc_spaces_;
   std::string id_spaces(id_nspaces, SPACE);
 
-  /* Separate out the JSON objects in this aggregate object using AGG_SEP */
-  sdata_ += id_spaces + AGG_SEP + NEWLINE;
+  /* Separate out the JSON objects in this aggregate object using ELEM_SEP */
+  sdata_ += id_spaces + ELEM_SEP + NEWLINE;
 }
 
 void PIO_Util::Json_serializer::Json_serializer_visitor::on_node(

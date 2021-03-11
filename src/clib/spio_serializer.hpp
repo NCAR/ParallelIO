@@ -235,7 +235,7 @@ class Json_serializer : public SPIO_serializer{
         const char ARRAY_END = ']';
         const char OBJECT_START = '{';
         const char OBJECT_END = '}';
-        const char AGG_SEP = ',';
+        const char ELEM_SEP = ',';
         std::string sdata_;
         std::map<int, int> id2spaces_;
         int inc_spaces_;
