@@ -6,6 +6,7 @@ AC_INIT(pio, 2.5.3)
 AC_CONFIG_SRCDIR(src/clib/pio_darray.c)
 AM_INIT_AUTOMAKE([foreign serial-tests])
 
+
 # The PIO version, again. Use AC_SUBST for pio_meta.h and
 # AC_DEFINE_UNQUOTED for config.h.
 AC_SUBST([PIO_VERSION_MAJOR]) PIO_VERSION_MAJOR=2
