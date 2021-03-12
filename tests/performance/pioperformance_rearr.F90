@@ -603,7 +603,7 @@ contains
     integer(kind=PIO_Offset_kind) :: maplen, gmaplen
     integer :: ndims
     integer, pointer :: gdims(:)
-    character(len=20) :: fname
+    character(len=128) :: fname
     type(var_desc_t) :: vari(nvars), varr(nvars), vard(nvars)
     type(iosystem_desc_t) :: iosystem
     integer :: stride, n
@@ -718,7 +718,9 @@ contains
                 call pio_init(mype, comm, ntasks, 0, stride, PIO_REARR_SUBSET,&
                   iosystem, rearr_opts=rearr_opts)
                    
-                write(fname, '(a,i1,a,i4.4,a,i1,a)') 'pioperf.',rearr,'-',ntasks,'-',iotype,'.nc'
+                write(fname, '(a,i1,a,i5.5,a,i5.5,a,i5.5,a,i1,a,i5.5,a,i5.5,a)') 'pioperf-rearr-', rearr, &
+                      '-ncomptasks-', npe, '-niotasks-', ntasks, '-stride-', stride, '-iotype-', iotype, &
+                      '-nframes-',nframes,'-nvars-',nvars,'.nc'
 		
                 ierr =  PIO_CreateFile(iosystem, File, iotype, trim(fname), mode)
 
