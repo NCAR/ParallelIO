@@ -965,13 +965,15 @@ contains
              enddo
           enddo
        enddo
-!       deallocate(compmap)
+       deallocate(compmap)
+       deallocate(gdims)
        deallocate(ifld)
        deallocate(ifld_in)
        deallocate(rfld)
        deallocate(dfld)
        deallocate(dfld_in)
        deallocate(rfld_in)
+       call MPI_Comm_free(comm, ierr)
     endif
 
   end subroutine pioperformance_rearrtest
