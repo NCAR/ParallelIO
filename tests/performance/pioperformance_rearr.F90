@@ -8,7 +8,7 @@ program pioperformance_rearr
 #endif
   use perf_mod, only : t_initf, t_finalizef
   use pio, only : pio_iotype_netcdf, pio_iotype_pnetcdf, pio_iotype_netcdf4p, &
-       pio_iotype_netcdf4c, pio_rearr_subset, pio_rearr_box, PIO_MAX_NAME,&
+       pio_iotype_netcdf4c, pio_iotype_adios, pio_rearr_subset, pio_rearr_box, PIO_MAX_NAME,&
         pio_rearr_opt_t, pio_rearr_comm_p2p, pio_rearr_comm_coll,&
         pio_rearr_comm_fc_2d_disable, pio_rearr_comm_fc_1d_comp2io,&
         pio_rearr_comm_fc_1d_io2comp, pio_rearr_comm_fc_2d_enable,&
@@ -214,6 +214,8 @@ contains
       pio_type = PIO_IOTYPE_NETCDF4C
     else if(pio_typename .eq. 'pnetcdf') then
       pio_type = PIO_IOTYPE_PNETCDF
+    else if(pio_typename .eq. 'adios') then
+      pio_type = PIO_IOTYPE_ADIOS
     else
       !print *, "ERROR: Unrecognized pio type :", pio_typename,&
       !          __FILE__, __LINE__
