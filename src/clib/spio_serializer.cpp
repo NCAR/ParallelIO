@@ -106,6 +106,166 @@ void PIO_Util::Text_serializer::Text_serializer_visitor::enter_node(
   Text_serializer_visitor::enter_node(val, val_id);
 }
 
+/* XML Serializer function definitions */
+
+int PIO_Util::XML_serializer::serialize(const std::string &name,
+      const std::vector<std::pair<std::string, std::string> > &vals)
+{
+  /* Add the user data to the internal tree */
+  XML_serializer_val sval = {name, vals};
+  int val_id = dom_tree_.add(sval);
+
+  /* Since this val has no parent, 0 spaces required for this tag */
+  id2spaces_[val_id] = 0;
+
+  return val_id;
+}
+
+int PIO_Util::XML_serializer::serialize(int parent_id,
+      const std::string &name,
+      const std::vector<std::pair<std::string, std::string> > &vals)
+{
+  /* Add the user data to the internal tree */
+  XML_serializer_val sval = {name, vals};
+  int val_id = dom_tree_.add(sval, parent_id);
+
+  /* Number of spaces is INC_SPACES more than the parent tag */
+  id2spaces_[val_id] = id2spaces_[parent_id] + INC_SPACES;
+
+  return val_id;
+}
+
+void PIO_Util::XML_serializer::serialize(const std::string &name,
+      const std::vector< std::vector<std::pair<std::string, std::string> > > &vvals,
+      std::vector<int> &val_ids)
+{
+  for(std::vector<std::vector<std::pair<std::string, std::string> > >::const_iterator
+      citer = vvals.cbegin(); citer != vvals.cend(); ++citer){
+    val_ids.push_back(serialize(name, *citer));
+  }
+}
+
+void PIO_Util::XML_serializer::serialize(int parent_id, const std::string &name,
+      const std::vector< std::vector<std::pair<std::string, std::string> > > &vvals,
+      std::vector<int> &val_ids)
+{
+  for(std::vector<std::vector<std::pair<std::string, std::string> > >::const_iterator
+      citer = vvals.cbegin(); citer != vvals.cend(); ++citer){
+    val_ids.push_back(serialize(parent_id, name, *citer));
+  }
+}
+
+void PIO_Util::XML_serializer::sync(void )
+{
+  /* Create an XML serializer */
+  XML_serializer_visitor vis(id2spaces_, INC_SPACES);
+
+  /* Traverse the tree using the XML serializer. The XML serializer
+   * serializes the data in the tree to text and caches it
+   */
+  dom_tree_.dfs(vis);
+
+  /* Get the cached serialized data from the XML serializer */
+  sdata_ = vis.get_serialized_data();
+
+  /* Write the data out to the XML file */
+  std::ofstream fstr;
+  fstr.open(pname_.c_str(), std::ofstream::out | std::ofstream::trunc);
+  fstr << sdata_.c_str();
+  fstr.close();
+}
+
+std::string PIO_Util::XML_serializer::get_serialized_data(void )
+{
+  return sdata_;
+}
+
+/* XML serializer visitor functions */
+void PIO_Util::XML_serializer::XML_serializer_visitor::enter_node(
+  XML_serializer_val &val, int val_id)
+{
+  int id_nspaces = id2spaces_[val_id];
+  std::string id_spaces(id_nspaces, SPACE);
+
+  std::string tname = get_start_tag(val.name);
+  sdata_ += id_spaces + tname + NEWLINE;
+
+  int val_nspaces = id_nspaces + inc_spaces_;
+  std::string val_spaces(val_nspaces, SPACE);
+
+  /* Serialize and cache the (name, value) pairs on the node */
+  for(std::vector<std::pair<std::string, std::string> >::const_iterator citer = val.vals.cbegin();
+      citer != val.vals.cend(); ++citer){
+    std::string stag_name = get_start_tag(citer->first);
+    std::string etag_name = get_end_tag(citer->first);
+    sdata_ += val_spaces + stag_name + SPACE + citer->second + SPACE + etag_name + NEWLINE;
+  }
+}
+
+void PIO_Util::XML_serializer::XML_serializer_visitor::enter_node(
+  XML_serializer_val &val, int val_id,
+  XML_serializer_val &parent_val, int parent_id)
+{
+  /* XML serializer does not use the parent info */
+  XML_serializer_visitor::enter_node(val, val_id);
+}
+
+void PIO_Util::XML_serializer::XML_serializer_visitor::exit_node(
+  XML_serializer_val &val, int val_id)
+{
+  int id_nspaces = id2spaces_[val_id];
+  std::string id_spaces(id_nspaces, SPACE);
+
+  std::string tname = get_end_tag(val.name);
+  sdata_ += id_spaces + tname + NEWLINE;
+}
+
+void PIO_Util::XML_serializer::XML_serializer_visitor::exit_node(
+  XML_serializer_val &val, int val_id,
+  XML_serializer_val &parent_val, int parent_id)
+{
+  /* XML serializer does not use the parent info */
+  XML_serializer_visitor::exit_node(val, val_id);
+}
+
+/* XML tagify the tag names */
+std::string PIO_Util::XML_serializer::XML_serializer_visitor::get_start_tag(
+  const std::string &tag_name)
+{
+  return std::string("<") +
+          get_unquoted_str(tag_name) +
+          std::string(">");
+}
+
+std::string PIO_Util::XML_serializer::XML_serializer_visitor::get_end_tag(
+  const std::string &tag_name)
+{
+  return std::string("</") +
+          get_unquoted_str(tag_name) +
+          std::string(">");
+}
+
+/* Remove double quotes around a string
+ * The function only removes double quotes if its present at the beginning
+ * and the end of a string
+ * e.g.
+ *  "helloworld" --> helloworld
+ *  'helloworld' --> 'helloworld'
+ *  helloworld --> helloworld
+ *  hello"world" --> hello"world"
+ */
+std::string PIO_Util::XML_serializer::XML_serializer_visitor::get_unquoted_str(
+  const std::string &str)
+{
+  const char DQUOTE = '"';
+  if(str.size() >= 2){
+    if((str[0] == DQUOTE) && (str[str.size() - 1] == DQUOTE)){
+      return str.substr(1, str.size() - 2);
+    }
+  }
+  return str;
+}
+
 /* JSON Serializer functions */
 int PIO_Util::Json_serializer::serialize(const std::string &name,
       const std::vector<std::pair<std::string, std::string> > &vals)
@@ -208,7 +368,7 @@ std::string PIO_Util::Json_serializer::get_serialized_data(void )
   return sdata_;
 }
 
-/* Text serializer visitor functions */
+/* Json serializer visitor functions */
 
 void PIO_Util::Json_serializer::Json_serializer_visitor::begin(void)
 {
@@ -240,7 +400,11 @@ void PIO_Util::Json_serializer::Json_serializer_visitor::enter_node(
   /* Serialize all (name, value) pairs on this node */
   for(std::vector<std::pair<std::string, std::string> >::const_iterator citer = val.vals.cbegin();
       citer != val.vals.cend(); ++citer){
-    sdata_ += val_spaces + (*citer).first + SPACE + ID_SEP + SPACE + (*citer).second + NEWLINE;
+    sdata_ += val_spaces + (*citer).first + SPACE + ID_SEP + SPACE + (*citer).second;
+    if(citer + 1 != val.vals.cend()){
+      sdata_ += ELEM_SEP;
+    }
+    sdata_ += NEWLINE;
   }
 }
 
@@ -257,8 +421,8 @@ void PIO_Util::Json_serializer::Json_serializer_visitor::on_node(
   int id_nspaces = id2spaces_[val_id] + inc_spaces_;
   std::string id_spaces(id_nspaces, SPACE);
 
-  /* Separate out the JSON objects in this aggregate object using AGG_SEP */
-  sdata_ += id_spaces + AGG_SEP + NEWLINE;
+  /* Separate out the JSON objects in this aggregate object using ELEM_SEP */
+  sdata_ += id_spaces + ELEM_SEP + NEWLINE;
 }
 
 void PIO_Util::Json_serializer::Json_serializer_visitor::on_node(
@@ -329,7 +493,7 @@ std::unique_ptr<PIO_Util::SPIO_serializer> PIO_Util::Serializer_Utils::create_se
     return std::unique_ptr<Json_serializer>(new Json_serializer(persistent_name));
   }
   else if(type == Serializer_type::XML_SERIALIZER){
-    throw std::runtime_error("XML serializer is currently not supported");
+    return std::unique_ptr<XML_serializer>(new XML_serializer(persistent_name));
   }
   else if(type == Serializer_type::TEXT_SERIALIZER){
     return std::unique_ptr<Text_serializer>(new Text_serializer(persistent_name));

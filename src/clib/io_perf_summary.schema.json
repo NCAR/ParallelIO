@@ -34,7 +34,7 @@
         },
         "tot_wtime": {
           "description": "Total elapsed wallclock time (seconds)",
-          "type": "integer",
+          "type": "number",
           "minimum": 0
         }
       },
@@ -48,7 +48,7 @@
     "ScorpioIOSummaryStatistics" : {
       "type": "object",
       "properties": {
-        "OverallModelIOStatistics": {
+        "OverallIOStatistics": {
           "$ref": "#/definitions/io_stats"
         },
         "ModelComponentIOStatistics": {
@@ -64,7 +64,7 @@
           }
         }
       },
-      "required": ["OverallModelIOStatistics", "ModelComponentIOStatistics", "FileIOStatistics"] 
+      "required": ["OverallIOStatistics", "ModelComponentIOStatistics", "FileIOStatistics"]
     }
   },
   "required": ["ScorpioIOSummaryStatistics"]

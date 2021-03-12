@@ -40,6 +40,16 @@ static std::string quoted_str(const std::string &str)
   return (std::string("\"") + str + std::string("\""));
 }
 
+static std::string get_start_xml_tag(const std::string &tag_name)
+{
+  return std::string("<") + tag_name + std::string(">");
+}
+
+static std::string get_end_xml_tag(const std::string &tag_name)
+{
+  return std::string("</") + tag_name + std::string(">");
+}
+
 } // namespace Utils
 
 /* Test serializing simple types */
@@ -99,22 +109,66 @@ int test_simple_types(int wrank)
   LOG_RANK0(wrank, "Testing TEXT serializer PASSED\n");
 
   /*
+   * ============ Expected Serialized XML ===========
+   * <SerializedVals>
+   *  <name> "helloworld" </name>
+   *  <ival> 3 </ival>
+   *  <dval> 3.14 </dval>
+   * </SerializedVals>
+   */
+  std::string exp_ser_xml =
+    Utils::get_start_xml_tag(ser_tag) + NEWLINE +
+      Utils::get_start_xml_tag(name_tag) +
+        Utils::quoted_str(name) +
+      Utils::get_end_xml_tag(name_tag) + NEWLINE +
+      Utils::get_start_xml_tag(ival_tag) +
+        std::to_string(ival) +
+      Utils::get_end_xml_tag(ival_tag) + NEWLINE +
+      Utils::get_start_xml_tag(dval_tag) +
+        std::to_string(dval) +
+      Utils::get_end_xml_tag(dval_tag) + NEWLINE +
+    Utils::get_end_xml_tag(ser_tag) + NEWLINE;
+
+  /* Create an XML serializer */
+  std::unique_ptr<PIO_Util::SPIO_serializer> spio_xml_ser =
+    PIO_Util::Serializer_Utils::create_serializer(
+      PIO_Util::Serializer_type::XML_SERIALIZER, "test_simple_types.xml");
+
+  /* Serialize the vals, sync and retrieve the serialized data */
+  spio_xml_ser->serialize(ser_tag, vals);
+  spio_xml_ser->sync();
+  std::string serialized_xml = spio_xml_ser->get_serialized_data();
+
+  if(Utils::rem_blank_str(serialized_xml) != Utils::rem_blank_str(exp_ser_xml)){
+    LOG_RANK0(wrank, "test_simple_types() FAILED\n");
+    LOG_RANK0(wrank, "Serialized XML : \n");
+    LOG_RANK0(wrank, "%s\n", serialized_xml.c_str());
+    LOG_RANK0(wrank, "Expected serialized XML : \n");
+    LOG_RANK0(wrank, "%s\n", exp_ser_xml.c_str());
+
+    return PIO_EINTERNAL;
+  }
+
+  LOG_RANK0(wrank, "Testing XML serializer PASSED\n");
+
+  /*
    * ============ Expected Serialized JSON ===========
    *{
    * "SerializedVals":{
-   *    "name" : "helloworld"
-   *    "ival" : 3
+   *    "name" : "helloworld",
+   *    "ival" : 3,
    *    "dval" : 3.14
    *  }
    *}
    */
   const std::string JSON_OBJECT_START("{");
   const std::string JSON_OBJECT_END("}");
+  const std::string COMMA(",");
   std::string exp_ser_json =
     JSON_OBJECT_START + NEWLINE +
       Utils::quoted_str(ser_tag) + ID_SEP + JSON_OBJECT_START + NEWLINE +
-        Utils::quoted_str(name_tag) + ID_SEP + Utils::quoted_str(name) + NEWLINE +
-        Utils::quoted_str(ival_tag) + ID_SEP + std::to_string(ival) + NEWLINE +
+        Utils::quoted_str(name_tag) + ID_SEP + Utils::quoted_str(name) + COMMA + NEWLINE +
+        Utils::quoted_str(ival_tag) + ID_SEP + std::to_string(ival) + COMMA + NEWLINE +
         Utils::quoted_str(dval_tag) + ID_SEP + std::to_string(dval) + NEWLINE +
       JSON_OBJECT_END + NEWLINE +
     JSON_OBJECT_END + NEWLINE;
@@ -204,6 +258,51 @@ int test_array_types(int wrank)
   }
 
   LOG_RANK0(wrank, "Testing TEXT serializer PASSED\n");
+
+  /*
+   * ============ Expected Serialized XML ===========
+   * <SerializedVals>
+   *  <name> "helloworld1" </name>
+   * </SerializedVals>
+   * <SerializedVals>
+   *  <name> "helloworld2" </name>
+   * </SerializedVals>
+   * <SerializedVals>
+   *  <name> "helloworld3" </name>
+   * </SerializedVals>
+   */
+  std::string exp_ser_xml;
+  for(std::vector<std::pair<std::string, std::string> >::const_iterator
+        citer = names.cbegin(); citer != names.cend(); ++citer){
+    exp_ser_xml +=
+      Utils::get_start_xml_tag(ser_tag) + NEWLINE +
+        Utils::get_start_xml_tag(citer->first) +
+          Utils::quoted_str(citer->second) +
+        Utils::get_end_xml_tag(citer->first) + NEWLINE +
+      Utils::get_end_xml_tag(ser_tag) + NEWLINE;
+  }
+
+  /* Create an XML serializer */
+  std::unique_ptr<PIO_Util::SPIO_serializer> spio_xml_ser =
+    PIO_Util::Serializer_Utils::create_serializer(
+      PIO_Util::Serializer_type::XML_SERIALIZER, "test_array_types.xml");
+
+  /* Serialize the vals, sync and retrieve the serialized data */
+  spio_xml_ser->serialize(ser_tag, vvals, val_ids);
+  spio_xml_ser->sync();
+  std::string serialized_xml = spio_xml_ser->get_serialized_data();
+
+  if(Utils::rem_blank_str(serialized_xml) != Utils::rem_blank_str(exp_ser_xml)){
+    LOG_RANK0(wrank, "test_array_types() FAILED\n");
+    LOG_RANK0(wrank, "Serialized XML : \n");
+    LOG_RANK0(wrank, "%s\n", serialized_xml.c_str());
+    LOG_RANK0(wrank, "Expected serialized XML : \n");
+    LOG_RANK0(wrank, "%s\n", exp_ser_xml.c_str());
+
+    return PIO_EINTERNAL;
+  }
+
+  LOG_RANK0(wrank, "Testing XML serializer PASSED\n");
 
   /*
    * ============ Expected Serialized JSON ===========
@@ -332,12 +431,60 @@ int test_tiered_data(int wrank)
   LOG_RANK0(wrank, "Testing TEXT serializer PASSED\n");
 
   /*
+   * ============ Expected Serialized XML ===========
+   * <SerializedValsT1>
+   *  <SerializedValsT2>
+   *    <name> "helloworld" </name>
+   *    <ival> 3 </ival>
+   *    <dval> 3.14 </dval>
+   *  </SerializedValsT2>
+   * </SerializedValsT1>
+   */
+  std::string exp_ser_xml =
+    Utils::get_start_xml_tag(ser_tag_tier1) + NEWLINE +
+      Utils::get_start_xml_tag(ser_tag_tier2) + NEWLINE +
+        Utils::get_start_xml_tag(name_tag) +
+          Utils::quoted_str(name) +
+        Utils::get_end_xml_tag(name_tag) + NEWLINE +
+        Utils::get_start_xml_tag(ival_tag) +
+          std::to_string(ival) +
+        Utils::get_end_xml_tag(ival_tag) + NEWLINE +
+        Utils::get_start_xml_tag(dval_tag) +
+          std::to_string(dval) +
+        Utils::get_end_xml_tag(dval_tag) + NEWLINE +
+      Utils::get_end_xml_tag(ser_tag_tier2) + NEWLINE +
+    Utils::get_end_xml_tag(ser_tag_tier1) + NEWLINE;
+
+  /* Create an XML serializer */
+  std::unique_ptr<PIO_Util::SPIO_serializer> spio_xml_ser =
+    PIO_Util::Serializer_Utils::create_serializer(
+      PIO_Util::Serializer_type::XML_SERIALIZER, "test_htypes.xml");
+
+  /* Serialize the vals, sync and retrieve the serialized data */
+  t1_id = spio_xml_ser->serialize(ser_tag_tier1, empty_vals);
+  spio_xml_ser->serialize(t1_id, ser_tag_tier2, vals);
+  spio_xml_ser->sync();
+  std::string serialized_xml = spio_xml_ser->get_serialized_data();
+
+  if(Utils::rem_blank_str(serialized_xml) != Utils::rem_blank_str(exp_ser_xml)){
+    LOG_RANK0(wrank, "test_simple_types() FAILED\n");
+    LOG_RANK0(wrank, "Serialized XML : \n");
+    LOG_RANK0(wrank, "%s\n", serialized_xml.c_str());
+    LOG_RANK0(wrank, "Expected serialized XML : \n");
+    LOG_RANK0(wrank, "%s\n", exp_ser_xml.c_str());
+
+    return PIO_EINTERNAL;
+  }
+
+  LOG_RANK0(wrank, "Testing XML serializer PASSED\n");
+
+  /*
    * ============ Expected Serialized JSON ===========
    *{
    * "SerializedValsT1":{
    *  "SerializedValsT2":{
-   *      "name" : "helloworld"
-   *      "ival" : 3
+   *      "name" : "helloworld",
+   *      "ival" : 3,
    *      "dval" : 3.14
    *    }
    *  }
@@ -345,12 +492,13 @@ int test_tiered_data(int wrank)
    */
   const std::string JSON_OBJECT_START("{");
   const std::string JSON_OBJECT_END("}");
+  const std::string COMMA(",");
   std::string exp_ser_json =
     JSON_OBJECT_START + NEWLINE +
       Utils::quoted_str(ser_tag_tier1) + ID_SEP + JSON_OBJECT_START + NEWLINE +
         Utils::quoted_str(ser_tag_tier2) + ID_SEP + JSON_OBJECT_START + NEWLINE +
-          Utils::quoted_str(name_tag) + ID_SEP + Utils::quoted_str(name) + NEWLINE +
-          Utils::quoted_str(ival_tag) + ID_SEP + std::to_string(ival) + NEWLINE +
+          Utils::quoted_str(name_tag) + ID_SEP + Utils::quoted_str(name) + COMMA + NEWLINE +
+          Utils::quoted_str(ival_tag) + ID_SEP + std::to_string(ival) + COMMA + NEWLINE +
           Utils::quoted_str(dval_tag) + ID_SEP + std::to_string(dval) + NEWLINE +
         JSON_OBJECT_END + NEWLINE +
       JSON_OBJECT_END + NEWLINE +

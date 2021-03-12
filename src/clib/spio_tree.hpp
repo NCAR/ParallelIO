@@ -31,7 +31,7 @@ class SPIO_tree_visitor{
 template<typename T>
 class SPIO_tree{
   public:
-    SPIO_tree();
+    SPIO_tree() {};
     /* Add a value to the tree, returns a unique id for the value */
     int add(const T &val);
     /* Add a value as a child to a previous value added in the tree
@@ -52,74 +52,79 @@ class SPIO_tree{
       /* Ids of children of this node */
       std::vector<int> children;
     };
-    /* Id of the internal root added for the tree */
-    int root_id_;
+    /* Id of the imaginary node of the tree that is
+     * the parent of all root nodes */
+    static const int ROOT_ID = -1;
     /* The nodes of the tree is stored in this vector */
     std::vector<Node> nodes_;
+    /* Id of the root nodes of the trees in the forest */
+    std::vector<std::size_t> root_node_ids_;
     /* Internal function that implements DFS */
     void dfs(Node &node, SPIO_tree_visitor<T> &vis);
 };
 
-template<typename T>
-SPIO_tree<T>::SPIO_tree()
-{
-  int id = 0;
-  int parent_id = 0;
-  T dummy_val;
-  std::vector<int> children;
-
-  /* Create the root node, this node is not visible to the user */
-  Node root_node = {id, parent_id, dummy_val, children};
-
-  root_id_ = root_node.id;
-
-  /* Add the root node */
-  nodes_.push_back(root_node);
-}
-
+/* Add a value to the tree. This value has no parent.
+ * A unique id for this value is returned
+ */
 template<typename T>
 int SPIO_tree<T>::add(const T &val)
 {
-  int parent_id = root_id_;
-  return add(val, parent_id);
-}
-
-template<typename T>
-int SPIO_tree<T>::add(const T &val, int parent_id)
-{
-  int id = nodes_.size();
+  int parent_id = ROOT_ID;
+  int id = static_cast<int>(nodes_.size());
   std::vector<int> children;
   Node val_node = {id, parent_id, val, children};
 
   nodes_.push_back(val_node);
+  /* Since this value has no parent, its a root node */
+  root_node_ids_.push_back(id);
+
+  return id;
+}
+
+/* Add value as a child to the value previously added
+ * to the tree, whose id is parent_id
+ * The id of this value is returned
+ */
+template<typename T>
+int SPIO_tree<T>::add(const T &val, int parent_id)
+{
+  int id = static_cast<int>(nodes_.size());
+  std::vector<int> children;
+  Node val_node = {id, parent_id, val, children};
+
+  nodes_.push_back(val_node);
+  /* Update the parent with reference to this node */
   nodes_[parent_id].children.push_back(id);  
 
   return id;
 }
 
+/* Perform depth first traversal on all nodes in the tree */
 template<typename T>
 void SPIO_tree<T>::dfs(SPIO_tree_visitor<T> &vis)
 {
-  if(nodes_.size() == 0){
+  if(root_node_ids_.size() == 0){
     return;
   }
 
   vis.begin();
-  dfs(nodes_[0], vis);
+  /* Perform DFS on all the trees in the forest */
+  for(std::vector<std::size_t>::const_iterator citer = root_node_ids_.cbegin();
+        citer != root_node_ids_.cend(); ++citer){
+    dfs(nodes_[*citer], vis);
+  }
   vis.end();
 }
 
-/* Depth first search traversal on the tree */
+/* Perform depth first search traversal on node, node, in the tree */
 template<typename T>
 void SPIO_tree<T>::dfs(SPIO_tree::Node &node, SPIO_tree_visitor<T> &vis)
 {
-  if(node.id != root_id_){
-    if(node.parent_id != root_id_){
-      vis.enter_node(node.val, node.id, nodes_[node.parent_id].val, nodes_[node.parent_id].id);
-    }
-    else{
-      vis.enter_node(node.val, node.id);
-    }
+  if(node.parent_id != ROOT_ID){
+    vis.enter_node(node.val, node.id, nodes_[node.parent_id].val, nodes_[node.parent_id].id);
+  }
+  else{
+    vis.enter_node(node.val, node.id);
   }
   for(std::vector<int>::const_iterator cid_iter = node.children.cbegin();
       cid_iter != node.children.cend(); ++cid_iter){
@@ -127,24 +132,20 @@ void SPIO_tree<T>::dfs(SPIO_tree::Node &node, SPIO_tree_visitor<T> &vis)
     /* Note that after traversing the last child we exit the node, we need to call
      * exit_node() on the visitor
      */
-    if(node.id != root_id_){
-      if(cid_iter + 1 != node.children.cend()){
-        if(node.parent_id != root_id_){
-          vis.on_node(node.val, node.id, nodes_[node.parent_id].val, nodes_[node.parent_id].id);
-        }
-        else{
-          vis.on_node(node.val, node.id);
-        }
+    if(cid_iter + 1 != node.children.cend()){
+      if(node.parent_id != ROOT_ID){
+        vis.on_node(node.val, node.id, nodes_[node.parent_id].val, nodes_[node.parent_id].id);
+      }
+      else{
+        vis.on_node(node.val, node.id);
       }
     }
   }
-  if(node.id != root_id_){
-    if(node.parent_id != root_id_){
-      vis.exit_node(node.val, node.id, nodes_[node.parent_id].val, nodes_[node.parent_id].id);
-    }
-    else{
-      vis.exit_node(node.val, node.id);
-    }
+  if(node.parent_id != ROOT_ID){
+    vis.exit_node(node.val, node.id, nodes_[node.parent_id].val, nodes_[node.parent_id].id);
+  }
+  else{
+    vis.exit_node(node.val, node.id);
   }
 }
 

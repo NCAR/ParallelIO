@@ -110,6 +110,66 @@ class Text_serializer : public SPIO_serializer{
     SPIO_tree<Text_serializer_val> dom_tree_;
 };
 
+/* Class to serialize (name, value) pairs and tags in to an XML file */
+class XML_serializer : public SPIO_serializer{
+  public:
+    XML_serializer(const std::string &fname) : SPIO_serializer(fname) {};
+    int serialize(const std::string &name,
+                  const std::vector<std::pair<std::string, std::string> > &vals) override;
+    int serialize(int parent_id, const std::string &name,
+                  const std::vector<std::pair<std::string, std::string> > &vals) override;
+    void serialize(const std::string &name,
+                  const std::vector<std::vector<std::pair<std::string, std::string> > > &vvals,
+                  std::vector<int> &val_ids) override;
+    void serialize(int parent_id, const std::string &name,
+                  const std::vector<std::vector<std::pair<std::string, std::string> > > &vvals,
+                  std::vector<int> &val_ids) override;
+    void sync(void ) override;
+    std::string get_serialized_data(void ) override;
+    ~XML_serializer() {};
+  private:
+    /* Cache of the serialized data */
+    std::string sdata_;
+    const int START_ID_SPACES = 0;
+    const int INC_SPACES = 2;
+    /* Store the number of spaces to output for each tag/id */
+    std::map<int, int> id2spaces_;
+
+    /* The internal tree stores the tag name and the associated (name, value) pair
+     * in this struct
+     */
+    struct XML_serializer_val{
+      std::string name;
+      std::vector<std::pair<std::string, std::string> > vals;
+    };
+
+    /* Visitor class used to serialize the contents of the internal tree to text */
+    class XML_serializer_visitor : public SPIO_tree_visitor<XML_serializer_val>{
+      public:
+        XML_serializer_visitor(const std::map<int, int> &id2spaces,
+          int inc_spaces) : id2spaces_(id2spaces), inc_spaces_(inc_spaces) {};
+        void enter_node(XML_serializer_val &val, int val_id) override;
+        void enter_node(XML_serializer_val &val, int val_id,
+              XML_serializer_val &parent_val, int parent_id) override;
+        void exit_node(XML_serializer_val &val, int val_id) override;
+        void exit_node(XML_serializer_val &val, int val_id,
+              XML_serializer_val &parent_val, int parent_id) override;
+        std::string get_serialized_data(void ) { return sdata_; };
+      private:
+        const char SPACE = ' ';
+        const char NEWLINE = '\n';
+        std::string sdata_;
+        std::map<int, int> id2spaces_;
+        int inc_spaces_;
+
+        std::string get_start_tag(const std::string &tag_name);
+        std::string get_end_tag(const std::string &tag_name);
+        std::string get_unquoted_str(const std::string &str);
+    };
+
+    SPIO_tree<XML_serializer_val> dom_tree_;
+};
+
 /* Class to serialize (name, value) pairs and tags in to a json file */
 class Json_serializer : public SPIO_serializer{
   public:
@@ -175,7 +235,7 @@ class Json_serializer : public SPIO_serializer{
         const char ARRAY_END = ']';
         const char OBJECT_START = '{';
         const char OBJECT_END = '}';
-        const char AGG_SEP = ',';
+        const char ELEM_SEP = ',';
         std::string sdata_;
         std::map<int, int> id2spaces_;
         int inc_spaces_;
