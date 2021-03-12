@@ -664,9 +664,9 @@ contains
 
        call MPI_ALLREDUCE(maplen,gmaplen,1,MPI_INTEGER8,MPI_SUM,comm,ierr)
 
-!       if(gmaplen /= product(gdims)) then
-!          print *,__FILE__,__LINE__,gmaplen,gdims
-!       endif
+       if (gmaplen > product(gdims)) then
+          gmaplen = product(gdims)
+       endif
     
        allocate(ifld(maplen,nvars))
        allocate(ifld_in(maplen,nvars,nframes))
