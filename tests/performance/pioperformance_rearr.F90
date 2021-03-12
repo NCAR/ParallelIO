@@ -700,11 +700,11 @@ contains
           if(mype==0) then
              !print *,'iotype=',piotypes(k)
           endif
-!          if(iotype==PIO_IOTYPE_PNETCDF) then
-!             mode = PIO_64BIT_DATA
-!          else
+          if(iotype==PIO_IOTYPE_PNETCDF) then
+             mode = PIO_64BIT_DATA
+          else
              mode = 0
-!          endif
+          endif
           do rearrtype=1,2
              rearr = rearrangers(rearrtype)
              if(rearr /= PIO_REARR_SUBSET .and. rearr /= PIO_REARR_BOX) exit
