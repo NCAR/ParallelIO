@@ -8,7 +8,7 @@ program pioperformance_rearr
 #endif
   use perf_mod, only : t_initf, t_finalizef
   use pio, only : pio_iotype_netcdf, pio_iotype_pnetcdf, pio_iotype_netcdf4p, &
-       pio_iotype_netcdf4c, pio_rearr_subset, pio_rearr_box, PIO_MAX_NAME,&
+       pio_iotype_netcdf4c, pio_iotype_adios, pio_rearr_subset, pio_rearr_box, PIO_MAX_NAME,&
         pio_rearr_opt_t, pio_rearr_comm_p2p, pio_rearr_comm_coll,&
         pio_rearr_comm_fc_2d_disable, pio_rearr_comm_fc_1d_comp2io,&
         pio_rearr_comm_fc_1d_io2comp, pio_rearr_comm_fc_2d_enable,&
@@ -214,6 +214,8 @@ contains
       pio_type = PIO_IOTYPE_NETCDF4C
     else if(pio_typename .eq. 'pnetcdf') then
       pio_type = PIO_IOTYPE_PNETCDF
+    else if(pio_typename .eq. 'adios') then
+      pio_type = PIO_IOTYPE_ADIOS
     else
       !print *, "ERROR: Unrecognized pio type :", pio_typename,&
       !          __FILE__, __LINE__
@@ -603,7 +605,7 @@ contains
     integer(kind=PIO_Offset_kind) :: maplen, gmaplen
     integer :: ndims
     integer, pointer :: gdims(:)
-    character(len=20) :: fname
+    character(len=128) :: fname
     type(var_desc_t) :: vari(nvars), varr(nvars), vard(nvars)
     type(iosystem_desc_t) :: iosystem
     integer :: stride, n
@@ -621,6 +623,7 @@ contains
     integer, parameter :: MAX_TIMESTAMPS = 2
     double precision :: wall(MAX_TIMESTAMPS), sys(MAX_TIMESTAMPS),&
                         usr(MAX_TIMESTAMPS)
+    double precision :: wall_init_decomp(MAX_TIMESTAMPS), wall_wr_darr(MAX_TIMESTAMPS), wall_close(MAX_TIMESTAMPS)
     integer :: niomin, niomax
     integer :: nv, mode
     integer,  parameter :: c0 = -1
@@ -664,9 +667,9 @@ contains
 
        call MPI_ALLREDUCE(maplen,gmaplen,1,MPI_INTEGER8,MPI_SUM,comm,ierr)
 
-!       if(gmaplen /= product(gdims)) then
-!          print *,__FILE__,__LINE__,gmaplen,gdims
-!       endif
+       if (gmaplen > product(gdims)) then
+          gmaplen = product(gdims)
+       endif
     
        allocate(ifld(maplen,nvars))
        allocate(ifld_in(maplen,nvars,nframes))
@@ -700,11 +703,11 @@ contains
           if(mype==0) then
              !print *,'iotype=',piotypes(k)
           endif
-!          if(iotype==PIO_IOTYPE_PNETCDF) then
-!             mode = PIO_64BIT_DATA
-!          else
+          if(iotype==PIO_IOTYPE_PNETCDF) then
+             mode = PIO_64BIT_DATA
+          else
              mode = 0
-!          endif
+          endif
           do rearrtype=1,2
              rearr = rearrangers(rearrtype)
              if(rearr /= PIO_REARR_SUBSET .and. rearr /= PIO_REARR_BOX) exit
@@ -718,14 +721,16 @@ contains
                 call pio_init(mype, comm, ntasks, 0, stride, PIO_REARR_SUBSET,&
                   iosystem, rearr_opts=rearr_opts)
                    
-                write(fname, '(a,i1,a,i4.4,a,i1,a)') 'pioperf.',rearr,'-',ntasks,'-',iotype,'.nc'
+                write(fname, '(a,i1,a,i5.5,a,i5.5,a,i5.5,a,i1,a,i5.5,a,i5.5,a)') 'pioperf-rearr-', rearr, &
+                      '-ncomptasks-', npe, '-niotasks-', ntasks, '-stride-', stride, '-iotype-', iotype, &
+                      '-nframes-',nframes,'-nvars-',nvars,'.nc'
 		
                 ierr =  PIO_CreateFile(iosystem, File, iotype, trim(fname), mode)
 
                 call WriteMetadata(File, gdims, vari, varr, vard, unlimdimindof)
 
                 call MPI_Barrier(comm,ierr)
-                call get_tstamp(wall(1), usr(1), sys(1))
+                call get_tstamp(wall_init_decomp(1), usr(1), sys(1))
 
                 if(.not. unlimdimindof) then
 #ifdef VARINT
@@ -739,6 +744,7 @@ contains
 #endif
                 endif
 
+                call get_tstamp(wall(1), usr(1), sys(1))
                 ! print *,__FILE__,__LINE__,minval(dfld),maxval(dfld),minloc(dfld),maxloc(dfld)
 
                 do frame=1,nframes
@@ -786,14 +792,25 @@ contains
 #endif                
                    endif
                 enddo
+                call get_tstamp(wall_wr_darr(2), usr(2), sys(2))
                 call pio_closefile(File)
 
 
                 call MPI_Barrier(comm,ierr)
 
                 call get_tstamp(wall(2), usr(2), sys(2))
+                wall_init_decomp(2) = wall(1)
+                wall_wr_darr(1) = wall(1)
+                wall_close(1) = wall_wr_darr(2)
+                wall_close(2) = wall(2)
                 wall(1) = wall(2)-wall(1)
                 call MPI_Reduce(wall(1), wall(2), 1, MPI_DOUBLE_PRECISION, MPI_MAX, 0, comm, ierr)
+                wall_wr_darr(1) = wall_wr_darr(2)-wall_wr_darr(1)
+                call MPI_Reduce(wall_wr_darr(1), wall_wr_darr(2), 1, MPI_DOUBLE_PRECISION, MPI_MAX, 0, comm, ierr)
+                wall_close(1) = wall_close(2)-wall_close(1)
+                call MPI_Reduce(wall_close(1), wall_close(2), 1, MPI_DOUBLE_PRECISION, MPI_MAX, 0, comm, ierr)
+                wall_init_decomp(1) = wall_init_decomp(2)-wall_init_decomp(1)
+                call MPI_Reduce(wall_init_decomp(1), wall_init_decomp(2), 1, MPI_DOUBLE_PRECISION, MPI_MAX, 0, comm, ierr)
                 if(mype==0) then
                    ! print out performance in MB/s
                    nvarmult = 0
@@ -806,6 +823,11 @@ contains
 #ifdef VARDOUBLE
                    nvarmult = nvarmult+2
 #endif
+                   print *, 'nvars = ', nvars, ', nframes = ', nframes, ', gmaplen = ', gmaplen, &
+                            ', init decomp time = ', wall_init_decomp(2), &
+                            ', write darray time = ', wall_wr_darr(2), &
+                            ', close file time = ', wall_close(2), &
+                            ', write time (write darray + close file) = ', wall(2)
                    write(*,'(a15,a9,i10,i10,i10,f20.10)') &	
                    'RESULT: write ',&
                     rearr_name(rearr), piotypes(k), ntasks, nvars, &
@@ -965,13 +987,15 @@ contains
              enddo
           enddo
        enddo
-!       deallocate(compmap)
+       deallocate(compmap)
+       deallocate(gdims)
        deallocate(ifld)
        deallocate(ifld_in)
        deallocate(rfld)
        deallocate(dfld)
        deallocate(dfld_in)
        deallocate(rfld_in)
+       call MPI_Comm_free(comm, ierr)
     endif
 
   end subroutine pioperformance_rearrtest
