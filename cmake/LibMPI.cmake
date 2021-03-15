@@ -67,7 +67,6 @@ function (platform_name RETURN_VARIABLE)
         set (${RETURN_VARIABLE} "unknown" PARENT_SCOPE)
 
     endif ()
-    message("Found platform ${RETURN_VARIABLE} from sitename ${SITENAME}")
 endfunction ()
 
 #==============================================================================
