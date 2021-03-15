@@ -25,7 +25,7 @@ jobs:
       uses: actions/cache@v2
       with:
         path: ~/mpich
-        key: mpich-${{ runner.os }}-3.3.2
+        key: mpich-${{ runner.os }}-3.3.2-1
 
     - name: build-mpich
       if: steps.cache-mpich.outputs.cache-hit != 'true'
@@ -42,7 +42,7 @@ jobs:
       uses: actions/cache@v2
       with:
         path: ~/hdf5
-        key: hdf5-${{ runner.os }}-1.10.6-mpich-3.3.2
+        key: hdf5-${{ runner.os }}-1.10.6-mpich-3.3.2-1
 
     - name: build-hdf5
       if: steps.cache-hdf5.outputs.cache-hit != 'true'
@@ -62,7 +62,7 @@ jobs:
       uses: actions/cache@v2
       with:
         path: ~/netcdf-c
-        key: netcdf-c-${{ runner.os }}-4.7.4-mpich-3.3.2
+        key: netcdf-c-${{ runner.os }}-4.7.4-mpich-3.3.2-1
 
     - name: build-netcdf-c
       if: steps.cache-netcdf-c.outputs.cache-hit != 'true'
@@ -82,7 +82,7 @@ jobs:
       uses: actions/cache@v2
       with:
         path: ~/netcdf-fortran
-        key: netcdf-fortran-${{ runner.os }}-4.5.3-mpich-3.3.2
+        key: netcdf-fortran-${{ runner.os }}-4.5.3-mpich-3.3.2-1
 
     - name: build-netcdf-fortran
       if: steps.cache-netcdf-fortran.outputs.cache-hit != 'true'
@@ -102,7 +102,7 @@ jobs:
       uses: actions/cache@v2
       with:
         path: ~/pnetcdf
-        key: pnetcdf-${{ runner.os }}-1.12.1-mpich-3.3.2
+        key: pnetcdf-${{ runner.os }}-1.12.1-mpich-3.3.2-1
 
     - name: build-pnetcdf
       if: steps.cache-pnetcdf.outputs.cache-hit != 'true'
