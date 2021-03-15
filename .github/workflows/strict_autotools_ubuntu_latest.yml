@@ -56,6 +56,6 @@ jobs:
         export CFLAGS="-std=c99 -Wall"
         export FFLAGS="-Wall"
         export FCFLAGS="-Wall"
-        export DISTCHECK_CONFIGURE_FLAGS="--enable-fortran"
-        ./configure  --with-mpiexec='mpiexec --oversubscribe'
+        export DISTCHECK_CONFIGURE_FLAGS="--enable-fortran --with-mpiexec='/usr/bin/mpiexec --oversubscribe'"
+        ./configure
         make -j distcheck
