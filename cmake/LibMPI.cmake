@@ -33,9 +33,9 @@ function (platform_name RETURN_VARIABLE)
 
     if (SITENAME MATCHES "^laramie" OR
             SITENAME MATCHES "^cheyenne" OR
-	    SITENAME MATCHES "^chadmin")
+            SITENAME MATCHES "^chadmin")
 
-	set (${RETURN_VARIABLE} "nwscla" PARENT_SCOPE)
+        set (${RETURN_VARIABLE} "nwscla" PARENT_SCOPE)
 
     # ALCF/Argonne Machines
     elseif (SITENAME MATCHES "^mira" OR
@@ -67,7 +67,6 @@ function (platform_name RETURN_VARIABLE)
         set (${RETURN_VARIABLE} "unknown" PARENT_SCOPE)
 
     endif ()
-
 endfunction ()
 
 #==============================================================================
