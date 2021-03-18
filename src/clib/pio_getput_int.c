@@ -281,7 +281,7 @@ int PIOc_put_att_tc(int ncid, int varid, const char *name, nc_type atttype,
 #ifdef _PNETCDF
         if (file->iotype == PIO_IOTYPE_PNETCDF)
         {
-            if(ios->io_rank == 0)
+            if (ios->iomaster == MPI_ROOT)
             {
                 ios->io_fstats->wb += len * atttype_len;
                 file->io_fstats->wb += len * atttype_len;
@@ -325,7 +325,7 @@ int PIOc_put_att_tc(int ncid, int varid, const char *name, nc_type atttype,
 
         if (file->iotype != PIO_IOTYPE_PNETCDF && file->iotype != PIO_IOTYPE_ADIOS && file->do_io)
         {
-            if(ios->io_rank == 0)
+            if (ios->iomaster == MPI_ROOT)
             {
                 ios->io_fstats->wb += len * atttype_len;
                 file->io_fstats->wb += len * atttype_len;
