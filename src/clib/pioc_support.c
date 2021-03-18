@@ -2208,7 +2208,7 @@ int PIO_get_avail_iotypes(char *buf, size_t sz)
 int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filename,
                         int mode)
 {
-    char tname[GPTL_TIMER_MAX_NAME];
+    char tname[SPIO_TIMER_MAX_NAME];
     iosystem_desc_t *ios;  /* Pointer to io system information. */
     file_desc_t *file;     /* Pointer to file information. */
     int mpierr = MPI_SUCCESS;  /* Return code from MPI function codes. */
@@ -2257,7 +2257,7 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
     /* Fill in some file values. */
     file->fh = -1;
     strncpy(file->fname, filename, PIO_MAX_NAME);
-    ierr = pio_create_uniq_str(ios, NULL, tname, GPTL_TIMER_MAX_NAME, "tmp_", "_file");
+    ierr = pio_create_uniq_str(ios, NULL, tname, SPIO_TIMER_MAX_NAME, "tmp_", "_file");
     if(ierr != PIO_NOERR)
     {
         /* Not a fatal error */
@@ -2265,9 +2265,9 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
         tname[0] = '\0';
     }
 
-    snprintf(file->io_fstats->wr_timer_name, GPTL_TIMER_MAX_NAME, "PIO:wr_%s", tname);
-    snprintf(file->io_fstats->rd_timer_name, GPTL_TIMER_MAX_NAME, "PIO:rd_%s", tname);
-    snprintf(file->io_fstats->tot_timer_name, GPTL_TIMER_MAX_NAME, "PIO:tot_%s", tname);
+    snprintf(file->io_fstats->wr_timer_name, SPIO_TIMER_MAX_NAME, "PIO:wr_%s", tname);
+    snprintf(file->io_fstats->rd_timer_name, SPIO_TIMER_MAX_NAME, "PIO:rd_%s", tname);
+    snprintf(file->io_fstats->tot_timer_name, SPIO_TIMER_MAX_NAME, "PIO:tot_%s", tname);
 
     spio_ltimer_start(file->io_fstats->wr_timer_name);
     spio_ltimer_start(file->io_fstats->tot_timer_name);
@@ -2778,7 +2778,7 @@ int check_unlim_use(int ncid)
 int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filename,
                         int mode, int retry)
 {
-    char tname[GPTL_TIMER_MAX_NAME];
+    char tname[SPIO_TIMER_MAX_NAME];
     iosystem_desc_t *ios;      /* Pointer to io system information. */
     file_desc_t *file;         /* Pointer to file information. */
     int imode;                 /* Internal mode val for netcdf4 file open. */
@@ -2836,7 +2836,7 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
     /* Fill in some file values. */
     file->fh = -1;
     strncpy(file->fname, filename, PIO_MAX_NAME);
-    ierr = pio_create_uniq_str(ios, NULL, tname, GPTL_TIMER_MAX_NAME, "tmp_", "_file");
+    ierr = pio_create_uniq_str(ios, NULL, tname, SPIO_TIMER_MAX_NAME, "tmp_", "_file");
     if(ierr != PIO_NOERR)
     {
         /* Not a fatal error */
@@ -2844,9 +2844,9 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
         tname[0] = '\0';
     }
 
-    snprintf(file->io_fstats->wr_timer_name, GPTL_TIMER_MAX_NAME, "PIO:wr_%s", tname);
-    snprintf(file->io_fstats->rd_timer_name, GPTL_TIMER_MAX_NAME, "PIO:rd_%s", tname);
-    snprintf(file->io_fstats->tot_timer_name, GPTL_TIMER_MAX_NAME, "PIO:tot_%s", tname);
+    snprintf(file->io_fstats->wr_timer_name, SPIO_TIMER_MAX_NAME, "PIO:wr_%s", tname);
+    snprintf(file->io_fstats->rd_timer_name, SPIO_TIMER_MAX_NAME, "PIO:rd_%s", tname);
+    snprintf(file->io_fstats->tot_timer_name, SPIO_TIMER_MAX_NAME, "PIO:tot_%s", tname);
 
     /* FIXME: Files can be opened for rds and writes */
     spio_ltimer_start(file->io_fstats->rd_timer_name);

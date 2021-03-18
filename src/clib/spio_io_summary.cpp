@@ -576,10 +576,6 @@ int spio_write_io_summary(iosystem_desc_t *ios)
     ios->io_fstats->tot_timer_name
   };
 
-#ifndef TIMING
-  return PIO_NOERR;
-#endif
-
 #ifndef SPIO_IO_STATS
   return PIO_NOERR;
 #endif
@@ -720,10 +716,6 @@ int spio_write_file_io_summary(file_desc_t *file)
   const std::vector<std::string> tot_timers = {
     file->io_fstats->tot_timer_name
   };
-
-#ifndef TIMING
-  return PIO_NOERR;
-#endif
 
 #ifndef SPIO_IO_STATS
   return PIO_NOERR;
