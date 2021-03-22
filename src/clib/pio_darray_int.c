@@ -16,9 +16,7 @@
 #ifdef PIO_MICRO_TIMING
 #include "pio_timer.h"
 #endif
-#ifdef TIMING
 #include "spio_io_summary.h"
-#endif
 
 /* 10MB default limit. */
 extern PIO_Offset pio_buffer_size_limit;
@@ -229,11 +227,9 @@ int write_darray_multi_par(file_desc_t *file, int nvars, int fndims, const int *
                 break;
             }
 
-#ifdef TIMING
             assert(ios && (ios->io_fstats));
             ios->io_fstats->wb += (PIO_Offset ) (iodesc->mpitype_size * tot_count * nvars);
             file->io_fstats->wb += (PIO_Offset ) (iodesc->mpitype_size * tot_count * nvars);
-#endif /* TIMING */
 
             /* IO tasks will run the netCDF/pnetcdf functions to write the data. */
             switch (file->iotype)
@@ -732,11 +728,9 @@ int recv_and_write_data(file_desc_t *file, const int *varids, const int *frame,
                     LOG((3, "start[%d] = %d count[%d] = %d", i, start[i], i, count[i]));
                 }
 
-#ifdef TIMING
                 assert(ios && (ios->io_fstats));
                 ios->io_fstats->wb += (PIO_Offset ) (iodesc->mpitype_size * tot_count * nvars);
                 file->io_fstats->wb += (PIO_Offset ) (iodesc->mpitype_size * tot_count * nvars);
-#endif /* TIMING */
 
                 /* Process each variable in the buffer. */
                 for (int nv = 0; nv < nvars; nv++)
@@ -1079,11 +1073,9 @@ int pio_read_darray_nc(file_desc_t *file, int fndims, io_desc_t *iodesc, int vid
                 }
             }
 
-#ifdef TIMING
             assert(ios && (ios->io_fstats));
             ios->io_fstats->rb += (PIO_Offset ) (iodesc->mpitype_size * tot_count);
             file->io_fstats->rb += (PIO_Offset ) (iodesc->mpitype_size * tot_count);
-#endif /* TIMING */
 
             /* Do the read. */
             switch (file->iotype)
@@ -1463,11 +1455,9 @@ int pio_read_darray_nc_serial(file_desc_t *file, int fndims, io_desc_t *iodesc, 
                     }
                     loffset += regionsize;
 
-#ifdef TIMING
                     assert(ios && (ios->io_fstats));
                     ios->io_fstats->rb += (PIO_Offset ) (iodesc->mpitype_size * regionsize);
                     file->io_fstats->rb += (PIO_Offset ) (iodesc->mpitype_size * regionsize);
-#endif /* TIMING */
 
                     /* Read the data. */
                     /* ierr = nc_get_vara(file->fh, vid, start, count, bufptr); */

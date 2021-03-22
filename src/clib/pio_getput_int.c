@@ -238,6 +238,12 @@ int PIOc_put_att_tc(int ncid, int varid, const char *name, nc_type atttype,
         file->adios_attrs[num_attrs].adios_type = adios_type;
         file->num_attrs++;
 
+        if (file->adios_iomaster == MPI_ROOT)
+        {
+            ios->io_fstats->wb += len * atttype_len;
+            file->io_fstats->wb += len * atttype_len;
+        }
+
         char att_name[PIO_MAX_NAME];
         snprintf(att_name, PIO_MAX_NAME, "%s/%s", path, name);
         adios2_attribute *attributeH = adios2_inquire_attribute(file->ioH, att_name);
@@ -281,7 +287,7 @@ int PIOc_put_att_tc(int ncid, int varid, const char *name, nc_type atttype,
 #ifdef _PNETCDF
         if (file->iotype == PIO_IOTYPE_PNETCDF)
         {
-            if(ios->io_rank == 0)
+            if (ios->iomaster == MPI_ROOT)
             {
                 ios->io_fstats->wb += len * atttype_len;
                 file->io_fstats->wb += len * atttype_len;
@@ -325,7 +331,7 @@ int PIOc_put_att_tc(int ncid, int varid, const char *name, nc_type atttype,
 
         if (file->iotype != PIO_IOTYPE_PNETCDF && file->iotype != PIO_IOTYPE_ADIOS && file->do_io)
         {
-            if(ios->io_rank == 0)
+            if (ios->iomaster == MPI_ROOT)
             {
                 ios->io_fstats->wb += len * atttype_len;
                 file->io_fstats->wb += len * atttype_len;
@@ -1585,6 +1591,9 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                     }
                 }
 
+                ios->io_fstats->wb += num_elem * typelen;
+                file->io_fstats->wb += num_elem * typelen;
+
                 av->adios_varid = adios2_inquire_variable(file->ioH, av->name);
                 if (av->adios_varid == NULL)
                 {
@@ -1632,9 +1641,8 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
             }
 
             /* Only the IO master actually does these ADIOS calls. */
-            if (ios->iomaster == MPI_ROOT)
+            if (file->adios_iomaster == MPI_ROOT)
             {
-
                 int d_start = 0;
                 if (file->dim_values[av->gdimids[0]] == PIO_UNLIMITED)
                 {
@@ -1692,6 +1700,9 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                 }
                 buf_size *= av->adios_type_size;
                 av_size += buf_size;
+
+                ios->io_fstats->wb += num_elem * typelen;
+                file->io_fstats->wb += num_elem * typelen;
 
                 /* PIOc_put_var may be called multiple times with different start/count values
                  * for a variable. ADIOS should output data for each of those calls not just

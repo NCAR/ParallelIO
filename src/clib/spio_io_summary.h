@@ -5,15 +5,16 @@
 #include "pio.h"
 #include "pio_internal.h"
 
-#define GPTL_TIMER_MAX_NAME 63
+/* GPTL timers assume this as the maximum name size */
+#define SPIO_TIMER_MAX_NAME 63
 /* The struct below is used to cache I/O statistics
  * for I/O systems and files
  */
 typedef struct spio_io_fstats_summary{
   /* Timer names for capturing write/read/total times */
-  char wr_timer_name[GPTL_TIMER_MAX_NAME + 1];
-  char rd_timer_name[GPTL_TIMER_MAX_NAME + 1];
-  char tot_timer_name[GPTL_TIMER_MAX_NAME + 1];
+  char wr_timer_name[SPIO_TIMER_MAX_NAME + 1];
+  char rd_timer_name[SPIO_TIMER_MAX_NAME + 1];
+  char tot_timer_name[SPIO_TIMER_MAX_NAME + 1];
 
   /* Number of bytes read */
   PIO_Offset rb;

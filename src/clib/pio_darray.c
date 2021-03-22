@@ -1565,6 +1565,8 @@ int PIOc_write_darray(int ncid, int varid, int ioid, PIO_Offset arraylen, void *
 #ifdef _ADIOS2
     if (file->iotype == PIO_IOTYPE_ADIOS)
     {
+        ios->io_fstats->wb += iodesc->mpitype_size * arraylen;
+        file->io_fstats->wb += iodesc->mpitype_size * arraylen;
         ierr = PIOc_write_darray_adios(file, varid, ioid, iodesc, arraylen, array, fillvalue);
         GPTLstop("PIO:PIOc_write_darray_adios");
         GPTLstop("PIO:write_total_adios");
