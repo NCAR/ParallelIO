@@ -1525,6 +1525,9 @@ int PIOc_write_darray(int ncid, int varid, int ioid, PIO_Offset arraylen, void *
     vdesc = &(file->varlist[varid]);
     LOG((2, "vdesc record %d nreqs %d", vdesc->record, vdesc->nreqs));
 
+    ios->io_fstats->wb += iodesc->mpitype_size * iodesc->llen;
+    file->io_fstats->wb += iodesc->mpitype_size * iodesc->llen;
+
     /* If we don't know the fill value for this var, get it. */
     if (!vdesc->fillvalue)
     {
@@ -1565,8 +1568,6 @@ int PIOc_write_darray(int ncid, int varid, int ioid, PIO_Offset arraylen, void *
 #ifdef _ADIOS2
     if (file->iotype == PIO_IOTYPE_ADIOS)
     {
-        ios->io_fstats->wb += iodesc->mpitype_size * arraylen;
-        file->io_fstats->wb += iodesc->mpitype_size * arraylen;
         ierr = PIOc_write_darray_adios(file, varid, ioid, iodesc, arraylen, array, fillvalue);
         GPTLstop("PIO:PIOc_write_darray_adios");
         GPTLstop("PIO:write_total_adios");
@@ -1959,6 +1960,9 @@ int PIOc_read_darray(int ncid, int varid, int ioid, PIO_Offset arraylen,
     }
     pioassert(iodesc->rearranger == PIO_REARR_BOX || iodesc->rearranger == PIO_REARR_SUBSET,
               "unknown rearranger", __FILE__, __LINE__);
+
+    ios->io_fstats->rb += iodesc->mpitype_size * iodesc->llen;
+    file->io_fstats->rb += iodesc->mpitype_size * iodesc->llen;
 
 #ifdef PIO_MICRO_TIMING
     mtimer_start(file->varlist[varid].rd_mtimer);
