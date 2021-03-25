@@ -3012,6 +3012,7 @@ int PIOc_def_var(int ncid, const char *name, nc_type xtype, int ndims,
         }
 
         strncpy(file->varlist[*varidp].vname, name, PIO_MAX_NAME);
+        file->varlist[*varidp].pio_type = xtype;
         if (file->num_unlim_dimids > 0)
         {
             int is_rec_var = 0;
@@ -3117,6 +3118,7 @@ int PIOc_def_var(int ncid, const char *name, nc_type xtype, int ndims,
         }
 
     strncpy(file->varlist[*varidp].vname, name, PIO_MAX_NAME);
+    file->varlist[*varidp].pio_type = xtype;
     if(file->num_unlim_dimids > 0)
     {
         int is_rec_var = 0;

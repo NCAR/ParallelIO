@@ -2281,13 +2281,21 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
     */
     for (int i = 0; i < PIO_MAX_VARS; i++)
     {
+        file->varlist[i].varid = -1;
         file->varlist[i].vname[0] = '\0';
+        file->varlist[i].vdesc[0] = '\0';
+        file->varlist[i].rec_var = 0;
         file->varlist[i].record = -1;
         file->varlist[i].request = NULL;
+        file->varlist[i].request_sz = NULL;
         file->varlist[i].nreqs = 0;
         file->varlist[i].fillvalue = NULL;
-        file->varlist[i].pio_type = 0;
+        file->varlist[i].pio_type = NC_NAT;
         file->varlist[i].type_size = 0;
+        file->varlist[i].vrsize = 0;
+        file->varlist[i].rb_pend = 0;
+        file->varlist[i].vrsize = 0;
+        file->varlist[i].wb_pend = 0;
         file->varlist[i].use_fill = 0;
         file->varlist[i].fillbuf = NULL;
     }
@@ -2878,8 +2886,23 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
 
     for (int i = 0; i < PIO_MAX_VARS; i++)
     {
+        file->varlist[i].varid = -1;
         file->varlist[i].vname[0] = '\0';
+        file->varlist[i].vdesc[0] = '\0';
+        file->varlist[i].rec_var = 0;
         file->varlist[i].record = -1;
+        file->varlist[i].request = NULL;
+        file->varlist[i].request_sz = NULL;
+        file->varlist[i].nreqs = 0;
+        file->varlist[i].fillvalue = NULL;
+        file->varlist[i].pio_type = NC_NAT;
+        file->varlist[i].type_size = 0;
+        file->varlist[i].vrsize = 0;
+        file->varlist[i].rb_pend = 0;
+        file->varlist[i].vrsize = 0;
+        file->varlist[i].wb_pend = 0;
+        file->varlist[i].use_fill = 0;
+        file->varlist[i].fillbuf = NULL;
     }
 
     /* Set to true if this task should participate in IO (only true

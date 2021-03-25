@@ -1523,21 +1523,29 @@ int PIOc_write_darray(int ncid, int varid, int ioid, PIO_Offset arraylen, void *
         spio_ltimer_stop(file->io_fstats->tot_timer_name);
 
         /* Find out PIO data type of var. */
-        if ((ierr = PIOc_inq_vartype(ncid, varid, &vdesc->pio_type)))
+        if (vdesc->pio_type == NC_NAT)
         {
-            GPTLstop("PIO:PIOc_write_darray");
-            GPTLstop("PIO:write_total");
-            return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
-                            "Writing variable (%s, varid=%d) to file (%s, ncid=%d) failed. Inquiring variable data type failed", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), file->pio_ncid);
+            if ((ierr = PIOc_inq_vartype(ncid, varid, &vdesc->pio_type)))
+            {
+                GPTLstop("PIO:PIOc_write_darray");
+                GPTLstop("PIO:write_total");
+                return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
+                                "Writing variable (%s, varid=%d) to file (%s, ncid=%d) failed. Inquiring variable data type failed", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), file->pio_ncid);
+            }
         }
 
+        assert(vdesc->pio_type != NC_NAT);
+
         /* Find out length of type. */
-        if ((ierr = PIOc_inq_type(ncid, vdesc->pio_type, NULL, &vdesc->type_size)))
+        if (vdesc->type_size == 0)
         {
-            GPTLstop("PIO:PIOc_write_darray");
-            GPTLstop("PIO:write_total");
-            return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
-                            "Writing variable (%s, varid=%d) to file (%s, ncid=%d) failed. Inquiring variable data type length failed", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), file->pio_ncid);
+            if ((ierr = PIOc_inq_type(ncid, vdesc->pio_type, NULL, &vdesc->type_size)))
+            {
+                GPTLstop("PIO:PIOc_write_darray");
+                GPTLstop("PIO:write_total");
+                return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
+                                "Writing variable (%s, varid=%d) to file (%s, ncid=%d) failed. Inquiring variable data type length failed", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), file->pio_ncid);
+            }
         }
 
         assert(vdesc->type_size > 0);
@@ -1998,19 +2006,27 @@ int PIOc_read_darray(int ncid, int varid, int ioid, PIO_Offset arraylen,
         spio_ltimer_stop(file->io_fstats->tot_timer_name);
 
         /* Find out PIO data type of var. */
-        if ((ierr = PIOc_inq_vartype(ncid, varid, &vdesc->pio_type)))
+        if (vdesc->pio_type == NC_NAT)
         {
-            GPTLstop("PIO:PIOc_read_darray");
-            return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
-                            "Reading variable (%s, varid=%d) from file (%s, ncid=%d) failed. Inquiring variable data type failed", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), file->pio_ncid);
+            if ((ierr = PIOc_inq_vartype(ncid, varid, &vdesc->pio_type)))
+            {
+                GPTLstop("PIO:PIOc_read_darray");
+                return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
+                                "Reading variable (%s, varid=%d) from file (%s, ncid=%d) failed. Inquiring variable data type failed", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), file->pio_ncid);
+            }
         }
 
+        assert(vdesc->pio_type != NC_NAT);
+
         /* Find out length of type. */
-        if ((ierr = PIOc_inq_type(ncid, vdesc->pio_type, NULL, &vdesc->type_size)))
+        if (vdesc->type_size == 0)
         {
-            GPTLstop("PIO:PIOc_read_darray");
-            return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
-                            "Reading variable (%s, varid=%d) from file (%s, ncid=%d) failed. Inquiring variable data type length failed", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), file->pio_ncid);
+            if ((ierr = PIOc_inq_type(ncid, vdesc->pio_type, NULL, &vdesc->type_size)))
+            {
+                GPTLstop("PIO:PIOc_read_darray");
+                return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
+                                "Reading variable (%s, varid=%d) from file (%s, ncid=%d) failed. Inquiring variable data type length failed", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), file->pio_ncid);
+            }
         }
 
         assert(vdesc->type_size > 0);
