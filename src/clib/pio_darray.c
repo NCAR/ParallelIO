@@ -1523,7 +1523,7 @@ int PIOc_write_darray(int ncid, int varid, int ioid, PIO_Offset arraylen, void *
         spio_ltimer_stop(file->io_fstats->tot_timer_name);
 
         /* Find out PIO data type of var. */
-        if (vdesc->pio_type == NC_NAT)
+        if (vdesc->pio_type == PIO_NAT)
         {
             if ((ierr = PIOc_inq_vartype(ncid, varid, &vdesc->pio_type)))
             {
@@ -1534,7 +1534,7 @@ int PIOc_write_darray(int ncid, int varid, int ioid, PIO_Offset arraylen, void *
             }
         }
 
-        assert(vdesc->pio_type != NC_NAT);
+        assert(vdesc->pio_type != PIO_NAT);
 
         /* Find out length of type. */
         if (vdesc->type_size == 0)
@@ -2006,7 +2006,7 @@ int PIOc_read_darray(int ncid, int varid, int ioid, PIO_Offset arraylen,
         spio_ltimer_stop(file->io_fstats->tot_timer_name);
 
         /* Find out PIO data type of var. */
-        if (vdesc->pio_type == NC_NAT)
+        if (vdesc->pio_type == PIO_NAT)
         {
             if ((ierr = PIOc_inq_vartype(ncid, varid, &vdesc->pio_type)))
             {
@@ -2016,7 +2016,7 @@ int PIOc_read_darray(int ncid, int varid, int ioid, PIO_Offset arraylen,
             }
         }
 
-        assert(vdesc->pio_type != NC_NAT);
+        assert(vdesc->pio_type != PIO_NAT);
 
         /* Find out length of type. */
         if (vdesc->type_size == 0)

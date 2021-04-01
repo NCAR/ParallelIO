@@ -157,6 +157,7 @@ unsigned long get_adios2_io_cnt();
 #define PIO_UNLIMITED NC_UNLIMITED
 
 /* NetCDF types. */
+#define PIO_NAT    NC_NAT
 #define PIO_BYTE   NC_BYTE
 #define PIO_CHAR   NC_CHAR
 #define PIO_SHORT  NC_SHORT

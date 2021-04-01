@@ -440,7 +440,7 @@ int PIOc_get_att_tc(int ncid, int varid, const char *name, nc_type memtype, void
 {
     iosystem_desc_t *ios;   /* Pointer to io system information. */
     file_desc_t *file;      /* Pointer to file information. */
-    nc_type atttype = NC_NAT;   /* The type of the attribute. */
+    nc_type atttype = PIO_NAT;   /* The type of the attribute. */
     PIO_Offset attlen = 0;      /* Number of elements in the attribute array. */
     PIO_Offset atttype_len = 0; /* Length in bytes of one element of the attribute type. */
     PIO_Offset memtype_len = 0; /* Length in bytes of one element of the memory type. */
@@ -745,7 +745,7 @@ int PIOc_get_att_tc(int ncid, int varid, const char *name, nc_type memtype, void
  * used.
  * @param xtype the netCDF type of the data being passed in buf. Data
  * will be automatically covnerted from the type of the variable being
- * read from to this type. If NC_NAT then the variable's file type
+ * read from to this type. If PIO_NAT then the variable's file type
  * will be used. Use special PIO_LONG_INTERNAL for _long() functions.
  * @param buf pointer to the data to be written.
  * @return PIO_NOERR on success, error code otherwise.
@@ -759,7 +759,7 @@ int PIOc_get_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
     int ndims = 0;         /* The number of dimensions in the variable. */
     PIO_Offset typelen = 0; /* Size (in bytes) of the data type of data in buf. */
     PIO_Offset num_elem = 1; /* Number of data elements in the buffer. */
-    nc_type vartype = NC_NAT; /* The type of the var we are reading from. */
+    nc_type vartype = PIO_NAT; /* The type of the var we are reading from. */
     char start_present = start ? true : false;
     char count_present = count ? true : false;
     char stride_present = stride ? true : false;
@@ -816,7 +816,7 @@ int PIOc_get_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
         }
 
         /* If no type was specified, use the var type. */
-        if (xtype == NC_NAT)
+        if (xtype == PIO_NAT)
             xtype = vartype;
 
         /* Handle _long() calls with an special type. */
@@ -1277,7 +1277,7 @@ int PIOc_get_var_tc(int ncid, int varid, nc_type xtype, void *buf)
  * used.
  * @param xtype the netCDF type of the data being passed in buf. Data
  * will be automatically covnerted from this type to the type of the
- * variable being written to. If NC_NAT then the variable's file type
+ * variable being written to. If PIO_NAT then the variable's file type
  * will be used. Use special PIO_LONG_INTERNAL for _long() functions.
  * @param buf pointer to the data to be written.
  *
@@ -1298,7 +1298,7 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
     var_desc_t *vdesc;
     int *request = NULL;
     PIO_Offset *request_sz = NULL;
-    nc_type vartype = NC_NAT;   /* The type of the var we are reading from. */
+    nc_type vartype = PIO_NAT;   /* The type of the var we are reading from. */
     int mpierr = MPI_SUCCESS;  /* Return code from MPI function codes. */
     int ierr = PIO_NOERR;          /* Return code from function calls. */
 
@@ -1372,7 +1372,7 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
         }
 
         /* If no type was specified, use the var type. */
-        if (xtype == NC_NAT)
+        if (xtype == PIO_NAT)
             xtype = vartype;
 
         /* Get the number of dims for this var. */
@@ -1543,7 +1543,7 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
         /* Write ADIOS with memory type since ADIOS does not do conversions.
          * Add an attribute describing the target output type (defined type).
          */
-        if (xtype == NC_NAT)
+        if (xtype == PIO_NAT)
             xtype = vartype;
 
         if (xtype == PIO_LONG_INTERNAL)
