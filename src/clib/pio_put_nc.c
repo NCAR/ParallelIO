@@ -1167,7 +1167,7 @@ int PIOc_put_var_double(int ncid, int varid, const double *op)
  */
 int PIOc_put_var(int ncid, int varid, const void *op)
 {
-    return PIOc_put_var_tc(ncid, varid, NC_NAT, op);
+    return PIOc_put_var_tc(ncid, varid, PIO_NAT, op);
 }
 
 /**
@@ -1187,7 +1187,7 @@ int PIOc_put_var(int ncid, int varid, const void *op)
  */
 int PIOc_put_var1(int ncid, int varid, const PIO_Offset *index, const void *op)
 {
-    return PIOc_put_var1_tc(ncid, varid, index, NC_NAT, op);
+    return PIOc_put_var1_tc(ncid, varid, index, PIO_NAT, op);
 }
 
 /**
@@ -1211,7 +1211,7 @@ int PIOc_put_var1(int ncid, int varid, const PIO_Offset *index, const void *op)
 int PIOc_put_vara(int ncid, int varid, const PIO_Offset *start, const PIO_Offset *count,
                   const void *op)
 {
-    return PIOc_put_vars_tc(ncid, varid, start, count, NULL, NC_NAT, op);
+    return PIOc_put_vars_tc(ncid, varid, start, count, NULL, PIO_NAT, op);
 }
 
 /**
@@ -1238,5 +1238,5 @@ int PIOc_put_vara(int ncid, int varid, const PIO_Offset *start, const PIO_Offset
 int PIOc_put_vars(int ncid, int varid, const PIO_Offset *start, const PIO_Offset *count,
                   const PIO_Offset *stride, const void *op)
 {
-    return PIOc_put_vars_tc(ncid, varid, start, count, stride, NC_NAT, op);
+    return PIOc_put_vars_tc(ncid, varid, start, count, stride, PIO_NAT, op);
 }

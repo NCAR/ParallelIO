@@ -2290,7 +2290,7 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
         file->varlist[i].request_sz = NULL;
         file->varlist[i].nreqs = 0;
         file->varlist[i].fillvalue = NULL;
-        file->varlist[i].pio_type = NC_NAT;
+        file->varlist[i].pio_type = PIO_NAT;
         file->varlist[i].type_size = 0;
         file->varlist[i].vrsize = 0;
         file->varlist[i].rb_pend = 0;
@@ -2895,7 +2895,7 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
         file->varlist[i].request_sz = NULL;
         file->varlist[i].nreqs = 0;
         file->varlist[i].fillvalue = NULL;
-        file->varlist[i].pio_type = NC_NAT;
+        file->varlist[i].pio_type = PIO_NAT;
         file->varlist[i].type_size = 0;
         file->varlist[i].vrsize = 0;
         file->varlist[i].rb_pend = 0;
