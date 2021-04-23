@@ -1,0 +1,5 @@
+<map id="iosystem_desc_t" name="iosystem_desc_t">
+<area shape="rect" id="node1" title="IO system descriptor structure." alt="" coords="14,199,145,225"/>
+<area shape="rect" id="node2" href="$structrearr__opt.html" title="Rearranger options." alt="" coords="39,109,120,136"/>
+<area shape="rect" id="node3" href="$structrearr__comm__fc__opt.html" title="Rearranger comm flow control options." alt="" coords="5,5,153,32"/>
+</map>
