@@ -10,7 +10,7 @@ lib_LTLIBRARIES = libpiof.la
 # These linker flags specify libtool version info.
 # See http://www.gnu.org/software/libtool/manual/libtool.html#Libtool-versioning
 # for information regarding incrementing `-version-info`.
-libpiof_la_LDFLAGS = -version-info 5:0:1
+libpiof_la_LDFLAGS = -version-info 6:0:2
 
 # The library soure files.
 libpiof_la_LIBADD = libpio_nf.la libpio_kinds.la libpio_support.la	\
