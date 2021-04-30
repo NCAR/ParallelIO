@@ -81,12 +81,14 @@ program pioperformance_rearr
   else
     use_gptl = .true.
   end if
+#ifndef TIMING_INTERNAL
   if(use_gptl) then
     call gptlinitialize()
   else
     call t_initf(PIO_NML_FNAME, LogPrint=.false.,&
       mpicom=MPI_COMM_WORLD, MasterTask=MasterTask)
   end if
+#endif
   niotypes = 0
   do i=1,MAX_PIO_TYPES
      if (piotypes(i) > -1) niotypes = niotypes+1
@@ -112,11 +114,13 @@ program pioperformance_rearr
      enddo
   enddo
 
+#ifndef TIMING_INTERNAL
   if(use_gptl) then
     call gptlfinalize()
   else
     call t_finalizef()
   end if
+#endif
 
   call MPI_Finalize(ierr)
 contains
