@@ -27,14 +27,14 @@ jobs:
         sudo apt-spy2 fix --commit
         # after selecting a specific mirror, we need to run 'apt-get update'
         sudo apt-get update
-        sudo apt-get install netcdf-bin libnetcdf-dev doxygen graphviz wget gfortran libjpeg-dev libz-dev openmpi-bin libopenmpi-dev 
+        sudo apt-get install netcdf-bin libnetcdf-dev doxygen graphviz wget gfortran libjpeg-dev libz-dev openmpi-bin libopenmpi-dev
 
     - name: cache-pnetcdf
       id: cache-pnetcdf
       uses: actions/cache@v2
       with:
         path: ~/pnetcdf
-        key: pnetcdf-${{ runner.os }}-1.12.1
+        key: pnetcdf-${{ runner.os }}-1.12.1-1
 
     - name: build-pnetcdf
       if: steps.cache-pnetcdf.outputs.cache-hit != 'true'
@@ -56,7 +56,6 @@ jobs:
         export CFLAGS="-std=c99 -Wall"
         export FFLAGS="-Wall"
         export FCFLAGS="-Wall"
-        export DISTCHECK_CONFIGURE_FLAGS="--enable-fortran"
+        export DISTCHECK_CONFIGURE_FLAGS="--enable-fortran --with-mpiexec='/usr/bin/mpiexec --oversubscribe'"
         ./configure
         make -j distcheck
-        

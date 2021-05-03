@@ -266,7 +266,12 @@ PIOc_get_att_tc(int ncid, int varid, const char *name, nc_type memtype, void *ip
     {
         /* Get the type and length of the attribute. */
         if ((ierr = PIOc_inq_att(ncid, varid, name, &atttype, &attlen)))
-            return check_netcdf(file, ierr, __FILE__, __LINE__);
+        {
+            if (ios->async)
+                return ierr;
+            else
+                return check_netcdf(file, ierr, __FILE__, __LINE__);
+        }
         PLOG((2, "atttype = %d attlen = %d", atttype, attlen));
 
         /* Get the length (in bytes) of the type of the attribute. */
@@ -1135,6 +1140,8 @@ PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Offset 
                 int *request;
 
                 PLOG((2, "PIOc_put_vars_tc calling pnetcdf function"));
+                flush_output_buffer(file, false, num_elem*typelen);
+
                 /*vdesc = &file->varlist[varid];*/
                 if ((ierr = get_var_desc(varid, &file->varlist, &vdesc)))
                     return pio_err(ios, file, ierr, __FILE__, __LINE__);
@@ -1143,47 +1150,42 @@ PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Offset 
                                                    sizeof(int) * (vdesc->nreqs + PIO_REQUEST_ALLOC_CHUNK))))
                         return pio_err(ios, file, PIO_ENOMEM, __FILE__, __LINE__);
                 request = vdesc->request + vdesc->nreqs;
-                PLOG((2, "PIOc_put_vars_tc request = %d", vdesc->request));
+                PLOG((2, "PIOc_put_vars_tc request = %d size = %d", vdesc->request, num_elem*typelen));
 
-                /* Only the IO master actually does the call. */
-//                if (ios->iomaster == MPI_ROOT)
-//                {
-                    switch(xtype)
-                    {
-                    case NC_BYTE:
-                        ierr = ncmpi_bput_vars_schar(file->fh, varid, start, count, fake_stride, buf, request);
-                        break;
-                    case NC_CHAR:
-                        ierr = ncmpi_bput_vars_text(file->fh, varid, start, count, fake_stride, buf, request);
-                        break;
-                    case NC_SHORT:
-                        ierr = ncmpi_bput_vars_short(file->fh, varid, start, count, fake_stride, buf, request);
-                        break;
-                    case NC_INT:
-                        ierr = ncmpi_bput_vars_int(file->fh, varid, start, count, fake_stride, buf, request);
-                        break;
-                    case PIO_LONG_INTERNAL:
-                        ierr = ncmpi_bput_vars_long(file->fh, varid, start, count, fake_stride, buf, request);
-                        break;
-                    case NC_FLOAT:
-                        ierr = ncmpi_bput_vars_float(file->fh, varid, start, count, fake_stride, buf, request);
-                        break;
-                    case NC_DOUBLE:
-                        ierr = ncmpi_bput_vars_double(file->fh, varid, start, count, fake_stride, buf, request);
-                        break;
-                    default:
-                        return pio_err(ios, file, PIO_EBADTYPE, __FILE__, __LINE__);
-                    }
-                    PLOG((2, "PIOc_put_vars_tc io_rank 0 done with pnetcdf call, ierr=%d", ierr));
+                switch(xtype)
+                {
+                case NC_BYTE:
+                    ierr = ncmpi_bput_vars_schar(file->fh, varid, start, count, fake_stride, buf, request);
+                    break;
+                case NC_CHAR:
+                    ierr = ncmpi_bput_vars_text(file->fh, varid, start, count, fake_stride, buf, request);
+                    break;
+                case NC_SHORT:
+                    ierr = ncmpi_bput_vars_short(file->fh, varid, start, count, fake_stride, buf, request);
+                    break;
+                case NC_INT:
+                    ierr = ncmpi_bput_vars_int(file->fh, varid, start, count, fake_stride, buf, request);
+                    break;
+                case PIO_LONG_INTERNAL:
+                    ierr = ncmpi_bput_vars_long(file->fh, varid, start, count, fake_stride, buf, request);
+                    break;
+                case NC_FLOAT:
+                    ierr = ncmpi_bput_vars_float(file->fh, varid, start, count, fake_stride, buf, request);
+                    break;
+                case NC_DOUBLE:
+                    ierr = ncmpi_bput_vars_double(file->fh, varid, start, count, fake_stride, buf, request);
+                    break;
+                default:
+                    return pio_err(ios, file, PIO_EBADTYPE, __FILE__, __LINE__);
+                }
+                PLOG((2, "PIOc_put_vars_tc io_rank 0 done with pnetcdf call, ierr=%d", ierr));
 
-//                }
-//                else
-//                    *request = PIO_REQ_NULL;
 
                 vdesc->nreqs++;
-                flush_output_buffer(file, false, 0);
-                PLOG((2, "PIOc_put_vars_tc flushed output buffer"));
-                if(ierr == -40)
+//                flush_output_buffer(file, ierr == PIO_EINSUFFBUF, 0);
+//                PLOG((2, "PIOc_put_vars_tc flushed output buffer"));
+
+                if(ierr == PIO_EINVALCOORDS)
                     for(int i=0; i<ndims; i++)
                         PLOG((2,"start[%d] %ld count[%d] %ld\n",i,start[i],i,count[i]));
             } /* endif ndims == 0 */
@@ -1260,15 +1262,13 @@ PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Offset 
         if (ndims && !stride_present)
             free(fake_stride);
 
-        if (ierr)
-            return check_netcdf(file, ierr, __FILE__, __LINE__);
     }
 
     /* Broadcast and check the return code. */
-    /* if ((mpierr = MPI_Bcast(&ierr, 1, MPI_INT, ios->ioroot, ios->my_comm))) */
-    /*     return check_mpi(NULL, file, mpierr, __FILE__, __LINE__); */
-    /* if (ierr) */
-    /*     return check_netcdf(file, ierr, __FILE__, __LINE__); */
+    if ((mpierr = MPI_Bcast(&ierr, 1, MPI_INT, ios->ioroot, ios->my_comm)))
+        return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+    if (ierr)
+        return check_netcdf(file, ierr, __FILE__, __LINE__);
     PLOG((2, "PIOc_put_vars_tc bcast netcdf return code %d complete", ierr));
 
     return PIO_NOERR;

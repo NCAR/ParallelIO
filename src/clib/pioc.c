@@ -579,6 +579,10 @@ PIOc_InitDecomp(int iosysid, int pio_type, int ndims, const int *gdimlen, int ma
             return check_mpi(ios, NULL, mpierr2, __FILE__, __LINE__);
         if (mpierr)
             return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
+
+        if(rearranger && (*rearranger != ios->default_rearranger))
+            return pio_err(ios, NULL, PIO_EBADREARR, __FILE__,__LINE__);
+
     }
 
     /* Allocate space for the iodesc info. This also allocates the
@@ -920,7 +924,9 @@ PIOc_InitDecomp_bc(int iosysid, int pio_type, int ndims, const int *gdimlen,
  *
  * @param comp_comm the MPI_Comm of the compute tasks.
  * @param num_iotasks the number of io tasks to use.
- * @param stride the offset between io tasks in the comp_comm.
+ * @param stride the offset between io tasks in the comp_comm. The mod
+ * operator is used when computing the IO tasks with the formula:
+ * <pre>ios->ioranks[i] = (base + i * ustride) % ios->num_comptasks</pre>.
  * @param base the comp_comm index of the first io task.
  * @param rearr the rearranger to use by default, this may be
  * overriden in the PIO_init_decomp(). The rearranger is not used
@@ -1593,7 +1599,7 @@ PIOc_init_async(MPI_Comm world, int num_io_procs, int *io_proc_list,
 
     /* Check input parameters. Only allow box rearranger for now. */
     if (num_io_procs < 1 || component_count < 1 || !num_procs_per_comp || !iosysidp ||
-        (rearranger != PIO_REARR_BOX))
+        (rearranger != PIO_REARR_BOX && rearranger != PIO_REARR_SUBSET))
         return pio_err(NULL, NULL, PIO_EINVAL, __FILE__, __LINE__);
 
     my_proc_list = (int**) malloc(component_count * sizeof(int*));
@@ -2037,14 +2043,18 @@ PIOc_init_async(MPI_Comm world, int num_io_procs, int *io_proc_list,
  * @author Jim Edwards
  */
 int
-PIOc_init_async_from_comms(MPI_Comm world, int component_count, MPI_Comm *comp_comm, MPI_Comm io_comm, int rearranger, int *iosysidp)
+PIOc_init_async_from_comms(MPI_Comm world, int component_count, MPI_Comm *comp_comm,
+                           MPI_Comm io_comm, int rearranger, int *iosysidp)
 {
     int my_rank;          /* Rank of this task. */
     int **my_proc_list;   /* Array of arrays of procs for comp components. */
     int *io_proc_list; /* List of processors in IO component. */
     int *num_procs_per_comp; /* List of number of tasks in each component */
-    int mpierr;           /* Return code from MPI functions. */
+    int num_io_procs = 0;
     int ret;              /* Return code. */
+#ifdef USE_MPE
+    bool in_io = false;
+#endif /* USE_MPE */
 
 #ifdef USE_MPE
     pio_start_mpe_log(INIT);
@@ -2052,7 +2062,7 @@ PIOc_init_async_from_comms(MPI_Comm world, int component_count, MPI_Comm *comp_c
 
     /* Check input parameters. Only allow box rearranger for now. */
     if (component_count < 1 || !comp_comm || !iosysidp ||
-        (rearranger != PIO_REARR_BOX))
+        (rearranger != PIO_REARR_BOX && rearranger != PIO_REARR_SUBSET))
         return pio_err(NULL, NULL, PIO_EINVAL, __FILE__, __LINE__);
 
     /* Turn on the logging system for PIO. */
@@ -2061,10 +2071,11 @@ PIOc_init_async_from_comms(MPI_Comm world, int component_count, MPI_Comm *comp_c
     PLOG((1, "PIOc_init_async_from_comms component_count = %d", component_count));
 
     /* Get num_io_procs from io_comm, share with world */
-    int num_io_procs = 0;
-    bool in_io = false;
-    if(io_comm != MPI_COMM_NULL) {
+    if (io_comm != MPI_COMM_NULL)
+    {
+#ifdef USE_MPE
         in_io = true;
+#endif /* USE_MPE */
         if ((ret = MPI_Comm_size(io_comm, &num_io_procs)))
             return check_mpi(NULL, NULL, ret, __FILE__, __LINE__);
     }
@@ -2073,19 +2084,25 @@ PIOc_init_async_from_comms(MPI_Comm world, int component_count, MPI_Comm *comp_c
 
     /* Get io_proc_list from io_comm, share with world */
     io_proc_list = (int*) calloc(num_io_procs, sizeof(int));
-    if(io_comm != MPI_COMM_NULL) {
+    if (io_comm != MPI_COMM_NULL)
+    {
         int my_io_rank;
         if ((ret = MPI_Comm_rank(io_comm, &my_io_rank)))
             return check_mpi(NULL, NULL, ret, __FILE__, __LINE__);
         if ((ret = MPI_Comm_rank(world, &my_rank)))
             return check_mpi(NULL, NULL, ret, __FILE__, __LINE__);
         io_proc_list[my_io_rank] = my_rank;
+        component_count = 0;
     }
     if ((ret = MPI_Allreduce(MPI_IN_PLACE, io_proc_list, num_io_procs, MPI_INT, MPI_MAX, world)))
         return check_mpi(NULL, NULL, ret, __FILE__, __LINE__);
 
     /* Get num_procs_per_comp for each comp and share with world */
+    if ((ret = MPI_Allreduce(MPI_IN_PLACE, &(component_count), 1, MPI_INT, MPI_MAX, world)))
+        return check_mpi(NULL, NULL, ret, __FILE__, __LINE__);
+
     num_procs_per_comp = (int *) malloc(component_count * sizeof(int));
+
     for(int cmp=0; cmp < component_count; cmp++)
     {
         num_procs_per_comp[cmp] = 0;
@@ -2119,11 +2136,11 @@ PIOc_init_async_from_comms(MPI_Comm world, int component_count, MPI_Comm *comp_c
             return check_mpi(NULL, NULL, ret, __FILE__, __LINE__);
     }
 
-
     if((ret = PIOc_init_async(world, num_io_procs, io_proc_list, component_count,
                            num_procs_per_comp, my_proc_list, NULL, NULL, rearranger,
                               iosysidp)))
         return pio_err(NULL, NULL, ret, __FILE__, __LINE__);
+
     for(int cmp=0; cmp < component_count; cmp++)
         free(my_proc_list[cmp]);
     free(my_proc_list);

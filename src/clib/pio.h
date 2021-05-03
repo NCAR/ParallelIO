@@ -766,6 +766,7 @@ enum PIO_ERROR_HANDLERS
 #define PIO_FIRST_ERROR_CODE (-500)  /**< The first error code for PIO. */
 #define PIO_EBADIOTYPE  (-500)       /**< Bad IOTYPE error. */
 #define PIO_EVARDIMMISMATCH (-501)   /**< Variable dimensions do not match in a multivar call. */
+#define PIO_EBADREARR (-502)        /**< Rearranger error in async mode.  */
 #define PIO_REQ_NULL (NC_REQ_NULL-1) /**< Request null. */
 
 #if defined(__cplusplus)
@@ -774,6 +775,7 @@ extern "C" {
     /* Error handling. */
     int PIOc_strerror(int pioerr, char *errstr);
     int PIOc_set_log_level(int level);
+    int PIOc_set_global_log_level(int iosysid, int level);
 
     /* Decomposition. */
 

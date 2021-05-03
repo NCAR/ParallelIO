@@ -11,7 +11,7 @@ project (PIO C Fortran)
 # The project version number.
 set(VERSION_MAJOR   2   CACHE STRING "Project major version number.")
 set(VERSION_MINOR   5   CACHE STRING "Project minor version number.")
-set(VERSION_PATCH   2   CACHE STRING "Project patch version number.")
+set(VERSION_PATCH   4   CACHE STRING "Project patch version number.")
 mark_as_advanced(VERSION_MAJOR VERSION_MINOR VERSION_PATCH)
 
 # Create version info in autotools parlance for pio_meta.h.
@@ -249,10 +249,14 @@ INCLUDE(FindNetCDF)
 message("Fortran Library build is ${PIO_ENABLE_FORTRAN}")
 if (PIO_ENABLE_FORTRAN)
   find_package (NetCDF REQUIRED COMPONENTS C Fortran)
-  find_package (PnetCDF COMPONENTS C Fortran)
+  if (WITH_PNETCDF)
+    find_package (PnetCDF COMPONENTS C Fortran)
+  endif()
 else()
   find_package (NetCDF REQUIRED COMPONENTS C)
-  find_package (PnetCDF COMPONENTS C)
+  if (WITH_PNETCDF)
+    find_package (PnetCDF COMPONENTS C)
+  endif()
 endif()
 
 # Did we find pnetCDF? If so, set _PNETCDF in config.h.
@@ -294,9 +298,7 @@ if (PIO_ENABLE_DOC)
   add_subdirectory (doc)
 endif ()
 
-
-
-SET(STATUS_PNETCDF PnetCDF_C_FOUND)
+SET(STATUS_PNETCDF ${PnetCDF_C_FOUND})
 
 ###
 # Check to see if netcdf-4 capability is present in netcdf-c.
