@@ -94,6 +94,12 @@ option (PIO_USE_MPISERIAL    "Enable mpi-serial support (instead of MPI)"   OFF)
 option (PIO_USE_PNETCDF_VARD       "Use pnetcdf put_vard "  OFF)
 option (WITH_PNETCDF         "Require the use of PnetCDF"                   ON)
 
+if(APPLE)
+  # The linker on macOS does not include `common symbols` by default
+  # Passing the -c flag includes them and fixes an error with undefined symbols (err_buffer, resultlen)
+  set(CMAKE_C_ARCHIVE_FINISH "<CMAKE_RANLIB> -c <TARGET>")
+endif()
+
 # Set a variable that appears in the config.h.in file.
 if(PIO_USE_PNETCDF_VARD)
   set(USE_VARD 1)
