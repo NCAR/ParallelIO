@@ -6,7 +6,6 @@ program pioperformance_rearr
 #ifndef NO_MPIMOD
   use mpi
 #endif
-  use perf_mod, only : t_initf, t_finalizef
   use pio, only : pio_iotype_netcdf, pio_iotype_pnetcdf, pio_iotype_netcdf4p, &
        pio_iotype_netcdf4c, pio_iotype_adios, pio_rearr_subset, pio_rearr_box, PIO_MAX_NAME,&
         pio_rearr_opt_t, pio_rearr_comm_p2p, pio_rearr_comm_coll,&
@@ -35,11 +34,9 @@ program pioperformance_rearr
   integer :: vs, varsize(MAX_NVARS) !  Local size of array for idealized decomps
   logical :: unlimdimindof
   type(pio_rearr_opt_t) :: rearr_opts
-  logical :: nml_file_exists = .false. , use_gptl = .false.
 #ifdef BGQTRY
   external :: print_memusage
 #endif
-  external :: gptlinitialize, gptlfinalize
 #ifdef _PIO1
   integer, parameter :: PIO_FILL_INT   = 02147483647
   real, parameter    :: PIO_FILL_FLOAT = 9.969209968E+36
@@ -75,20 +72,6 @@ program pioperformance_rearr
         niotasks, nframes, unlimdimindof, nvars, varsize,&
         rearr_opts, ierr)
 
-  inquire(file=PIO_NML_FNAME,exist=nml_file_exists)
-  if(nml_file_exists) then
-    use_gptl = .false.
-  else
-    use_gptl = .true.
-  end if
-#ifndef TIMING_INTERNAL
-  if(use_gptl) then
-    call gptlinitialize()
-  else
-    call t_initf(PIO_NML_FNAME, LogPrint=.false.,&
-      mpicom=MPI_COMM_WORLD, MasterTask=MasterTask)
-  end if
-#endif
   niotypes = 0
   do i=1,MAX_PIO_TYPES
      if (piotypes(i) > -1) niotypes = niotypes+1
@@ -113,14 +96,6 @@ program pioperformance_rearr
         endif
      enddo
   enddo
-
-#ifndef TIMING_INTERNAL
-  if(use_gptl) then
-    call gptlfinalize()
-  else
-    call t_finalizef()
-  end if
-#endif
 
   call MPI_Finalize(ierr)
 contains
@@ -567,30 +542,11 @@ contains
 
   end subroutine read_user_input
 
-  subroutine get_tstamp(wall, sys, usr)
-    use perf_mod
-    double precision, intent(out) :: wall, sys, usr
-    interface
-      function gptlstamp(wall, sys, usr)
-        integer :: gptlstamp
-        double precision, intent(out) :: wall, sys, usr
-      end function
-    end interface
-    integer :: ierr
-
-    if(use_gptl) then
-      ierr = gptlstamp(wall, sys, usr)
-    else
-      call t_stampf(wall, sys, usr)
-    end if
-  end subroutine get_tstamp
-
   subroutine pioperformance_rearrtest(filename, piotypes, mype, npe_base, &
        rearrangers, rearr_opts, niotasks,nframes, nvars, varsize,&
        unlimdimindof)
     use pio
     use pio_support, only : pio_readdof
-    use perf_mod
     character(len=*), intent(in) :: filename
     integer, intent(in) :: mype, npe_base
     integer, intent(in) :: piotypes(:)
@@ -625,8 +581,7 @@ contains
     integer :: k, errorcnt
     character(len=PIO_MAX_NAME) :: varname
     integer, parameter :: MAX_TIMESTAMPS = 2
-    double precision :: wall(MAX_TIMESTAMPS), sys(MAX_TIMESTAMPS),&
-                        usr(MAX_TIMESTAMPS)
+    double precision :: wall(MAX_TIMESTAMPS)
     double precision :: wall_init_decomp(MAX_TIMESTAMPS), wall_wr_darr(MAX_TIMESTAMPS), wall_close(MAX_TIMESTAMPS)
     integer :: niomin, niomax
     integer :: nv, mode
@@ -734,7 +689,7 @@ contains
                 call WriteMetadata(File, gdims, vari, varr, vard, unlimdimindof)
 
                 call MPI_Barrier(comm,ierr)
-                call get_tstamp(wall_init_decomp(1), usr(1), sys(1))
+                wall_init_decomp(1) = MPI_Wtime()
 
                 if(.not. unlimdimindof) then
 #ifdef VARINT
@@ -748,7 +703,7 @@ contains
 #endif
                 endif
 
-                call get_tstamp(wall(1), usr(1), sys(1))
+                wall(1) = MPI_Wtime()
                 ! print *,__FILE__,__LINE__,minval(dfld),maxval(dfld),minloc(dfld),maxloc(dfld)
 
                 do frame=1,nframes
@@ -796,13 +751,13 @@ contains
 #endif                
                    endif
                 enddo
-                call get_tstamp(wall_wr_darr(2), usr(2), sys(2))
+                wall_wr_darr(2) = MPI_Wtime()
                 call pio_closefile(File)
 
 
                 call MPI_Barrier(comm,ierr)
 
-                call get_tstamp(wall(2), usr(2), sys(2))
+                wall(2) = MPI_Wtime()
                 wall_init_decomp(2) = wall(1)
                 wall_wr_darr(1) = wall(1)
                 wall_close(1) = wall_wr_darr(2)
@@ -871,7 +826,7 @@ contains
 
 
                 call MPI_Barrier(comm,ierr)
-                call get_tstamp(wall(1), usr(1), sys(1))
+                wall(1) = MPI_Wtime()
                 
                 do frame=1,nframes                   
                    do nv=1,nvars
@@ -892,7 +847,7 @@ contains
                 
                 call pio_closefile(File)
                 call MPI_Barrier(comm,ierr)
-                call get_tstamp(wall(2), usr(2), sys(2))
+                wall(2) = MPI_Wtime()
                 wall(1) = wall(2)-wall(1)
                 call MPI_Reduce(wall(1), wall(2), 1, MPI_DOUBLE_PRECISION, MPI_MAX, 0, comm, ierr)
                 errorcnt = 0
