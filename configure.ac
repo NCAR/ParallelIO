@@ -38,6 +38,10 @@ fi
 LD=ld # Required for MPE to work.
 LT_INIT
 
+# Find and learn about install and ranlib.
+AC_PROG_INSTALL
+AC_PROG_RANLIB
+
 # Find and learn about the C compiler.
 AC_PROG_CC
 AC_PROG_CC_C99
