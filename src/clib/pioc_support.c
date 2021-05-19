@@ -2586,6 +2586,40 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
             MPI_Info_set(ios->info, "romio_no_indep_rw", "true");
 #endif
 
+            /* Users can set striping_factor and striping_unit hints for files created with
+               MPI-IO. If they are not explicitly set with PIO_set_hint or PIOc_set_hint,
+               use some default values below.
+             */
+            char info_striping_factor[PIO_MAX_NAME];
+            char info_striping_unit[PIO_MAX_NAME];
+            int flag;
+
+            /* Number of Object Storage Targets (OSTs) a file exists on */
+            MPI_Info_get(ios->info, "striping_factor", PIO_MAX_NAME, info_striping_factor, &flag);
+            if (!flag)
+            {
+                /* NERSC warning:
+                   Do not use a stripe count larger than stripe_large (72 OSTs).
+                   This will result in poor performance and can adversely affect
+                   the entire file system.
+                 */
+                const int STRIPE_LIMIT = 72;
+
+                int striping_factor_size = (ios->num_iotasks < STRIPE_LIMIT)? ios->num_iotasks : STRIPE_LIMIT;
+                char striping_factor_str[PIO_MAX_NAME];
+                snprintf(striping_factor_str, PIO_MAX_NAME, "%d", striping_factor_size);
+
+                MPI_Info_set(ios->info, "striping_factor", striping_factor_str);
+            }
+
+            /* Number of bytes write on one OST before cycling to the next */
+            MPI_Info_get(ios->info, "striping_unit", PIO_MAX_NAME, info_striping_unit, &flag);
+            if (!flag)
+            {
+                /* Default (1MB) has been most successful on NERSC */
+                MPI_Info_set(ios->info, "striping_unit", "1048576");
+            }
+
             /* Set some PnetCDF I/O hints below */
 
             /* Do not align the starting file offsets of individual fixed-size
