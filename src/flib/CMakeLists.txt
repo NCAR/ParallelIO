@@ -13,12 +13,12 @@ set (PIO_Fortran_SRCS pio_nf.F90
   pio_kinds.F90
   pio_types.F90
   piolib_mod.F90
-  pio_nf_utils.F90
-  pio_support.F90)
+  pio_nf_utils.F90)
 
 set (PIO_GenF90_SRCS pionfatt_mod.F90
   pionfput_mod.F90
   pionfget_mod.F90
+  pio_support.F90
   piodarray.F90)
 
 set (PIO_Fortran_MODS ${CMAKE_CURRENT_BINARY_DIR}/pio.mod
