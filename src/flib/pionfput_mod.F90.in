@@ -11,8 +11,7 @@ module pionfput_mod
   use pio_kinds, only: i4,r4,r8
   use pio_types, only : file_desc_t, var_desc_t, pio_noerr
   use pio_support, only : piodie, get_text_var_sz
-  ! DIMS 0,1,2,3,4,5
-  use pio_support, only : Fstring2Cstring_{DIMS}d
+  use pio_support, only : Fstring2Cstring
 
   implicit none
   private
@@ -272,7 +271,7 @@ contains
       cval_sz = clen
     end if
     allocate(cval(cval_sz))
-    call Fstring2Cstring_{DIMS}d (ival, cval, cval_sz, clen, cstr_add_null = .false.)
+    call Fstring2Cstring(ival, cval, cval_sz, clen, cstr_add_null = .false.)
     ierr = PIOc_put_var_text(file%fh, varid-1,  cval)
     deallocate(cval)
 
@@ -487,7 +486,7 @@ contains
         !               'd',
         !               'e',
         !               'f' ]
-        call Fstring2Cstring_{DIMS}d (ival, cval, cval_sz, clen, cstr_add_null = .false.)
+        call Fstring2Cstring(ival, cval, cval_sz, clen, cstr_add_null = .false.)
 
         ierr = PIOc_put_vara_text(file%fh, varid-1,  cstart, ccount, cval)
         deallocate(cval)

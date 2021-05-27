@@ -16,7 +16,7 @@ module piolib_mod
         pio_noerr, pio_rearr_subset, pio_rearr_box, pio_rearr_opt_t
   !--------------
   use pio_support, only : piodie, debug, debugio, debugasync, checkmpireturn,&
-                          Fstring2Cstring_0d
+                          Fstring2Cstring
   use pio_nf, only : pio_set_log_level
   !
 
@@ -813,9 +813,9 @@ contains
     chintval_sz = len_trim(hintval) + 1
     allocate(chintval(chintval_sz))
 
-    call Fstring2Cstring_0d(trim(hint), chint, chint_sz, chint_sz,&
+    call Fstring2Cstring(trim(hint), chint, chint_sz, chint_sz,&
                             cstr_add_null = .true.)
-    call Fstring2Cstring_0d(trim(hintval), chintval, chintval_sz, chintval_sz,&
+    call Fstring2Cstring(trim(hintval), chintval, chintval_sz, chintval_sz,&
                             cstr_add_null = .true.)
 
     ierr = PIOc_set_hint(iosystem%iosysid, chint, chintval)

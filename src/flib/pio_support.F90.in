@@ -22,8 +22,13 @@ module pio_support
   public :: pio_writedof
   public :: replace_c_null
   public :: get_text_var_sz
-  ! DIMS 0,1,2,3,4,5
-  public :: Fstring2Cstring_{DIMS}d
+
+  public :: Fstring2Cstring
+
+  interface Fstring2Cstring
+    ! DIMS 0,1,2,3,4,5
+    module procedure Fstring2Cstring_{DIMS}d
+  end interface
 
   logical, public :: Debug=.FALSE.
   logical, public :: DebugIO=.FALSE.
