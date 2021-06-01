@@ -15,7 +15,8 @@ module piolib_mod
         pio_iotype_netcdf, pio_iotype_pnetcdf, pio_iotype_netcdf4p, pio_iotype_netcdf4c, &
         pio_noerr, pio_rearr_subset, pio_rearr_box, pio_rearr_opt_t
   !--------------
-  use pio_support, only : piodie, debug, debugio, debugasync, checkmpireturn
+  use pio_support, only : piodie, debug, debugio, debugasync, checkmpireturn,&
+                          Fstring2Cstring
   use pio_nf, only : pio_set_log_level
   !
 
@@ -793,6 +794,8 @@ contains
   subroutine PIO_set_hint(iosystem, hint, hintval)
     type (iosystem_desc_t), intent(inout)  :: iosystem  ! io descriptor to initalize
     character(len=*), intent(in) :: hint, hintval
+    character(C_CHAR), allocatable :: chint(:), chintval(:)
+    integer :: chint_sz, chintval_sz
     integer :: ierr
 
     interface
@@ -800,14 +803,25 @@ contains
             bind(C,name="PIOc_set_hint")
          use iso_c_binding
          integer(C_INT), intent(in), value :: iosysid
-         character(C_CHAR), intent(in) :: key
-         character(C_CHAR), intent(in) :: val
+         character(C_CHAR), intent(in) :: key(*)
+         character(C_CHAR), intent(in) :: val(*)
        end function PIOc_set_hint
     end interface
 
+    chint_sz = len_trim(hint) + 1
+    allocate(chint(chint_sz))
+    chintval_sz = len_trim(hintval) + 1
+    allocate(chintval(chintval_sz))
 
-    ierr = PIOc_set_hint(iosystem%iosysid, hint, hintval)
+    call Fstring2Cstring(trim(hint), chint, chint_sz, chint_sz,&
+                            cstr_add_null = .true.)
+    call Fstring2Cstring(trim(hintval), chintval, chintval_sz, chintval_sz,&
+                            cstr_add_null = .true.)
 
+    ierr = PIOc_set_hint(iosystem%iosysid, chint, chintval)
+
+    deallocate(chint)
+    deallocate(chintval)
 
   end subroutine PIO_set_hint
 

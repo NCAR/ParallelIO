@@ -1,0 +1,117 @@
+integer function test_file_write(iotype, iotype_desc) result(ierr)
+  use pio_tutil
+  Implicit none
+  integer, intent(in) :: iotype
+  character(len=*), intent(in) :: iotype_desc
+
+  integer, parameter :: VEC_LOCAL_SZ = 7
+  type(var_desc_t)  :: pio_var
+  type(file_desc_t) :: pio_file
+  character(len=PIO_TF_MAX_STR_LEN) :: filename
+  character(len=*), parameter :: VNAME = "PIO_TF_test_var"
+  type(io_desc_t) :: iodesc
+  integer, dimension(VEC_LOCAL_SZ) :: compdof, compdof_rel_disps
+  integer, dimension(VEC_LOCAL_SZ) :: wbuf, rbuf
+  integer, dimension(1) :: dims
+  integer :: pio_dim
+  integer :: i
+
+  ierr = PIO_NOERR
+
+  do i=1,VEC_LOCAL_SZ
+    compdof_rel_disps(i) = i
+  end do
+  dims(1) = VEC_LOCAL_SZ * pio_tf_world_sz_
+  compdof = VEC_LOCAL_SZ * pio_tf_world_rank_ + compdof_rel_disps
+  wbuf = pio_tf_world_rank_;
+  rbuf = -1
+
+  call PIO_initdecomp(pio_tf_iosystem_, PIO_INT, dims, compdof, iodesc)
+
+  filename = "test_pio_hints.testfile"
+  PIO_TF_LOG(0,*) "Testing : PIO_TF_DATA_TYPE : ", iotype_desc
+  ierr = PIO_createfile(pio_tf_iosystem_, pio_file, iotype, filename, PIO_CLOBBER) 
+  PIO_TF_CHECK_ERR(ierr, "Could not create file " // trim(filename))
+
+  ierr = PIO_def_dim(pio_file, 'PIO_TF_test_dim', dims(1), pio_dim)
+  PIO_TF_CHECK_ERR(ierr, "Failed to define a dim : " // trim(filename))
+
+  ierr = PIO_def_var(pio_file, VNAME, PIO_INT, (/pio_dim/), pio_var)
+  PIO_TF_CHECK_ERR(ierr, "Failed to define a var : " // trim(filename))
+
+  ierr = PIO_enddef(pio_file)
+  PIO_TF_CHECK_ERR(ierr, "Failed to end redef mode : " // trim(filename))
+
+  ! Write the variable out
+  call PIO_write_darray(pio_file, pio_var, iodesc, wbuf, ierr)
+  PIO_TF_CHECK_ERR(ierr, "Failed to write darray : " // trim(filename))
+
+#ifdef PIO_TEST_CLOSE_OPEN_FOR_SYNC
+  call PIO_closefile(pio_file)
+
+  ierr = PIO_openfile(pio_tf_iosystem_, pio_file, iotype, filename, PIO_nowrite)
+  PIO_TF_CHECK_ERR(ierr, "Could not reopen file " // trim(filename))
+
+  ierr = PIO_inq_varid(pio_file, VNAME, pio_var)
+  PIO_TF_CHECK_ERR(ierr, "Could not inq var1 : " // trim(filename))
+
+#else
+  call PIO_syncfile(pio_file)
+#endif
+
+  rbuf = -1
+  call PIO_read_darray(pio_file, pio_var, iodesc, rbuf, ierr)
+  PIO_TF_CHECK_ERR(ierr, "Failed to read first darray : " // trim(filename))
+
+  PIO_TF_CHECK_VAL((rbuf, wbuf), "Got wrong val")
+
+  call PIO_closefile(pio_file)
+  call PIO_deletefile(pio_tf_iosystem_, filename)
+
+  call PIO_freedecomp(pio_tf_iosystem_, iodesc)
+end function test_file_write
+
+PIO_TF_AUTO_TEST_SUB_BEGIN test_set_hint
+  Implicit none
+  interface
+    integer function test_file_write(iotype, iotype_desc)
+      integer, intent(in) :: iotype
+      character(len=*), intent(in) :: iotype_desc
+    end function
+  end interface
+
+  integer, dimension(:), allocatable :: iotypes
+  character(len=PIO_TF_MAX_STR_LEN), dimension(:), allocatable :: iotype_descs
+  integer :: num_iotypes
+  integer :: i, ret
+
+  ! Set the Scorpio hints
+  ! If the hints are not processed by Scorpio these hints are set as MPI
+  ! hints. This allows users to set hints for low level libraries like PnetCDF
+
+  ! Set striping factor for Lustre file systems to 8
+  ! The file will be striped across 8 OSTs
+  call PIO_set_hint(pio_tf_iosystem_, "striping_factor", "8")
+  !PIO_TF_CHECK_ERR(ret, "Setting striping factor failed")
+
+  ! Set striping unit for Lustre file systems to 1KB
+  ! Each file stripe would be 1KB
+  call PIO_set_hint(pio_tf_iosystem_, "striping_unit", "1024")
+  !PIO_TF_CHECK_ERR(ret, "Setting striping unit failed")
+
+  call PIO_set_hint(pio_tf_iosystem_, "spio_test_hint1", "spio_test_hint1_val")
+
+  num_iotypes = 0
+  call PIO_TF_Get_nc_iotypes(iotypes, iotype_descs, num_iotypes)
+  do i=1,num_iotypes
+    ret = test_file_write(iotypes(i), iotype_descs(i))
+    PIO_TF_CHECK_ERR(ret, "Failed to write data to file after setting hints")
+  end do
+
+  if(allocated(iotypes)) then
+    deallocate(iotypes)
+    deallocate(iotype_descs)
+  end if
+
+PIO_TF_AUTO_TEST_SUB_END test_set_hint
+
