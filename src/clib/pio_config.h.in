@@ -37,6 +37,12 @@
 /** Maximum number of non-contiguous regions cached in a single IO process. */
 #define PIO_MAX_CACHED_IO_REGIONS @PIO_MAX_CACHED_IO_REGIONS@
 
+/** Maximum number of OSTs to be used in a Lustre file syestem. */
+#define PIO_MAX_LUSTRE_OSTS @PIO_MAX_LUSTRE_OSTS@
+
+/** Striping unit hint in bytes for a Lustre or GPFS file system. */
+#define PIO_STRIPING_UNIT @PIO_STRIPING_UNIT@
+
 /** Set to 1 if the library is configured to use the PnetCDF library,
  *  0 otherwise */
 #define PIO_USE_PNETCDF @PIO_USE_PNETCDF@

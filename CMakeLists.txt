@@ -100,6 +100,37 @@ else()
   set(PIO_MAX_CACHED_IO_REGIONS 0)
 endif()
 
+if(DEFINED PIO_MAX_LUSTRE_OSTS)
+  message (STATUS "Using PIO_MAX_LUSTRE_OSTS = " ${PIO_MAX_LUSTRE_OSTS})
+else()
+  cmake_host_system_information (RESULT FQDN_SITENAME QUERY FQDN)
+  if(FQDN_SITENAME MATCHES "^cori")
+    set(PIO_MAX_LUSTRE_OSTS 72)
+    message (STATUS "Using PIO_MAX_LUSTRE_OSTS = " ${PIO_MAX_LUSTRE_OSTS} " (default)")
+  elseif(FQDN_SITENAME MATCHES "^theta")
+    set(PIO_MAX_LUSTRE_OSTS 48)
+    message (STATUS "Using PIO_MAX_LUSTRE_OSTS = " ${PIO_MAX_LUSTRE_OSTS} " (default)")
+  else()
+    set(PIO_MAX_LUSTRE_OSTS 0)
+  endif()
+endif()
+
+if(DEFINED PIO_STRIPING_UNIT)
+  message (STATUS "Using PIO_STRIPING_UNIT = " ${PIO_STRIPING_UNIT})
+else()
+  cmake_host_system_information (RESULT FQDN_SITENAME QUERY FQDN)
+  if(FQDN_SITENAME MATCHES "^cori" OR
+     FQDN_SITENAME MATCHES "^theta")
+    set(PIO_STRIPING_UNIT 1048576)
+    message (STATUS "Using PIO_STRIPING_UNIT = " ${PIO_STRIPING_UNIT} " (default)")
+  elseif(FQDN_SITENAME MATCHES "^.*[.]olcf")
+    set(PIO_STRIPING_UNIT 16777216)
+    message (STATUS "Using PIO_STRIPING_UNIT = " ${PIO_STRIPING_UNIT} " (default)")
+  else()
+    set(PIO_STRIPING_UNIT 0)
+  endif()
+endif()
+
 #==============================================================================
 #  PREPEND TO CMAKE MODULE PATH
 #==============================================================================
