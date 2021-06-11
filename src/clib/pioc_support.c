@@ -2586,6 +2586,63 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
             MPI_Info_set(ios->info, "romio_no_indep_rw", "true");
 #endif
 
+            /* Users can set striping_factor and striping_unit hints for files created with
+               MPI-IO. If they are not explicitly set with PIO_set_hint or PIOc_set_hint,
+               use some default values below.
+             */
+
+#if PIO_MAX_LUSTRE_OSTS
+            /* A Lustre file system has a limited number of available OSTs to use. For example,
+               this number is 248 on Cori and 56 on Theta currently.
+
+               We should not go to full as Lustre will bypass assigning slow OSTs to the file
+               at file creation time, going to a recommended smaller number (e.g. 72 on Cori
+               and 48 on Theta) leaves room for this.
+
+               We also do not want to create high metadata requests which might negatively
+               impact other users.
+             */
+            char info_striping_factor[PIO_MAX_NAME];
+            int flag_striping_factor;
+
+            /* Number of Object Storage Targets (OSTs) a file exists on */
+            MPI_Info_get(ios->info, "striping_factor", PIO_MAX_NAME, info_striping_factor, &flag_striping_factor);
+            if (!flag_striping_factor)
+            {
+                int striping_factor_size = (ios->num_iotasks < PIO_MAX_LUSTRE_OSTS)? ios->num_iotasks : PIO_MAX_LUSTRE_OSTS;
+                char striping_factor_str[PIO_MAX_NAME];
+                snprintf(striping_factor_str, PIO_MAX_NAME, "%d", striping_factor_size);
+
+                MPI_Info_set(ios->info, "striping_factor", striping_factor_str);
+            }
+#endif
+
+#if PIO_STRIPING_UNIT
+            /* In a Lustre file system, striping_unit (stripe-size) is the number of bytes write on one
+               OST before cycling to the next. Default (1MB) has been most successful.
+
+               One optimization we need for GPFS is to align writes to the file system block size.
+               We can do this by setting the "striping_unit" hint to GPFS block size (16MB on Summit).
+
+               For a block-based parallel file system such as GPFS, an application write becomes a block
+               write at the file system layer. If a write straddles two blocks, locks must be acquired
+               for both blocks. Aligning the start of a variable to a block boundary, combined with
+               collective I/O optimizations in the MPI-IO library can often eliminate all unaligned
+               file system accesses.
+             */
+            char info_striping_unit[PIO_MAX_NAME];
+            int flag_striping_unit;
+
+            MPI_Info_get(ios->info, "striping_unit", PIO_MAX_NAME, info_striping_unit, &flag_striping_unit);
+            if (!flag_striping_unit)
+            {
+                char striping_unit_str[PIO_MAX_NAME];
+                snprintf(striping_unit_str, PIO_MAX_NAME, "%d", PIO_STRIPING_UNIT);
+
+                MPI_Info_set(ios->info, "striping_unit", striping_unit_str);
+            }
+#endif
+
             /* Set some PnetCDF I/O hints below */
 
             /* Do not align the starting file offsets of individual fixed-size
