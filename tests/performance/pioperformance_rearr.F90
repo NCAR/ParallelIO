@@ -37,6 +37,13 @@ program pioperformance_rearr
 #ifdef BGQTRY
   external :: print_memusage
 #endif
+
+#ifdef TIMING
+#ifndef TIMING_INTERNAL
+  external :: gptlinitialize, gptlfinalize
+#endif
+#endif
+
 #ifdef _PIO1
   integer, parameter :: PIO_FILL_INT   = 02147483647
   real, parameter    :: PIO_FILL_FLOAT = 9.969209968E+36
@@ -72,6 +79,12 @@ program pioperformance_rearr
         niotasks, nframes, unlimdimindof, nvars, varsize,&
         rearr_opts, ierr)
 
+#ifdef TIMING
+#ifndef TIMING_INTERNAL
+  call gptlinitialize()
+#endif
+#endif
+
   niotypes = 0
   do i=1,MAX_PIO_TYPES
      if (piotypes(i) > -1) niotypes = niotypes+1
@@ -96,6 +109,12 @@ program pioperformance_rearr
         endif
      enddo
   enddo
+
+#ifdef TIMING
+#ifndef TIMING_INTERNAL
+  call gptlfinalize()
+#endif
+#endif
 
   call MPI_Finalize(ierr)
 contains
