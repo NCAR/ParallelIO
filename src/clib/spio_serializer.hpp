@@ -255,6 +255,16 @@ namespace Serializer_Utils{
   /* Convert Serializer type to string */
   std::string to_string(const Serializer_type &type);
 
+  /* Get the file name prefix. An empty string is returned if there is no
+   * prefix required.
+   * The text based serializers need to use this prefix to create all files
+   *
+   * e.g. For file based serializers if all the serialized files need to be moved
+   * to a separate directory this function will return the name of the directory
+   * used to consolidate the serialized files
+   */
+  std::string get_fname_prefix(void );
+
   /* Factory for serializers */
   std::unique_ptr<SPIO_serializer> create_serializer(const Serializer_type &type,
                                     const std::string &persistent_name);
