@@ -33,13 +33,23 @@
           "minimum": 0
         },
         "tot_wtime(s)": {
-          "description": "Total elapsed wallclock time (seconds)",
+          "description": "Total write time (seconds)",
+          "type": "number",
+          "minimum": 0
+        },
+        "tot_rtime(s)": {
+          "description": "Total read time (seconds)",
+          "type": "number",
+          "minimum": 0
+        },
+        "tot_time(s)": {
+          "description": "Total time (seconds)",
           "type": "number",
           "minimum": 0
         }
       },
 
-      "required": ["name", "avg_wtput(MB/s)", "avg_rtput(MB/s)", "tot_wb(bytes)", "tot_rb(bytes)", "tot_wtime(s)"]
+      "required": ["name", "avg_wtput(MB/s)", "avg_rtput(MB/s)", "tot_wb(bytes)", "tot_rb(bytes)", "tot_wtime(s)", "tot_rtime(s)", "tot_time(s)"]
     }
   },
 

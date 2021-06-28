@@ -442,6 +442,12 @@ static int cache_or_print_stats(iosystem_desc_t *ios, int root_proc,
       cached_overall_gio_sstats.rb_total, overall_comp_vals);
 
     PIO_Util::Serializer_Utils::serialize_pack("tot_wtime(s)",
+      cached_overall_gio_sstats.wtime_max, overall_comp_vals);
+
+    PIO_Util::Serializer_Utils::serialize_pack("tot_rtime(s)",
+      cached_overall_gio_sstats.rtime_max, overall_comp_vals);
+
+    PIO_Util::Serializer_Utils::serialize_pack("tot_time(s)",
       cached_overall_gio_sstats.ttime_max, overall_comp_vals);
 
     spio_ser->serialize(id, "OverallIOStatistics", overall_comp_vals);
@@ -487,6 +493,12 @@ static int cache_or_print_stats(iosystem_desc_t *ios, int root_proc,
         cached_ios_gio_sstats[i].rb_total, comp_vals);
 
       PIO_Util::Serializer_Utils::serialize_pack("tot_wtime(s)",
+        cached_ios_gio_sstats[i].wtime_max, comp_vals);
+
+      PIO_Util::Serializer_Utils::serialize_pack("tot_rtime(s)",
+        cached_ios_gio_sstats[i].rtime_max, comp_vals);
+
+      PIO_Util::Serializer_Utils::serialize_pack("tot_time(s)",
         cached_ios_gio_sstats[i].ttime_max, comp_vals);
 
       comp_vvals.push_back(comp_vals);
@@ -537,6 +549,12 @@ static int cache_or_print_stats(iosystem_desc_t *ios, int root_proc,
           cached_file_gio_sstats[i][j].rb_total, file_vals);
 
         PIO_Util::Serializer_Utils::serialize_pack("tot_wtime(s)",
+          cached_file_gio_sstats[i][j].wtime_max, file_vals);
+
+        PIO_Util::Serializer_Utils::serialize_pack("tot_rtime(s)",
+          cached_file_gio_sstats[i][j].rtime_max, file_vals);
+
+        PIO_Util::Serializer_Utils::serialize_pack("tot_time(s)",
           cached_file_gio_sstats[i][j].ttime_max, file_vals);
 
         file_vvals.push_back(file_vals);

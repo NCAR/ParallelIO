@@ -6,6 +6,8 @@
     <tot_wb(bytes)>1024</tot_wb(bytes)>
     <tot_rb(bytes)>1024</tot_rb(bytes)>
     <tot_wtime(s)>234</tot_wtime(s)>
+    <tot_rtime(s)>234</tot_rtime(s)>
+    <tot_time(s)>512</tot_time(s)>
   </OverallModelIOStatistics>
   <ModelComponentIOStatistics>
     <name>"EAM"</name>
@@ -14,6 +16,8 @@
     <tot_wb(bytes)>1024</tot_wb(bytes)>
     <tot_rb(bytes)>1024</tot_rb(bytes)>
     <tot_wtime(s)>234</tot_wtime(s)>
+    <tot_rtime(s)>234</tot_rtime(s)>
+    <tot_time(s)>512</tot_time(s)>
   </ModelComponentIOStatistics>
   <ModelComponentIOStatistics>
     <name>"LND"</name>
@@ -22,6 +26,8 @@
     <tot_wb(bytes)>1024</tot_wb(bytes)>
     <tot_rb(bytes)>1024</tot_rb(bytes)>
     <tot_wtime(s)>234</tot_wtime(s)>
+    <tot_rtime(s)>234</tot_rtime(s)>
+    <tot_time(s)>512</tot_time(s)>
   </ModelComponentIOStatistics>
   <FileIOStatistics>
     <name>"file1.nc"</name>
@@ -30,6 +36,8 @@
     <tot_wb(bytes)>1024</tot_wb(bytes)>
     <tot_rb(bytes)>1024</tot_rb(bytes)>
     <tot_wtime(s)>234</tot_wtime(s)>
+    <tot_rtime(s)>234</tot_rtime(s)>
+    <tot_time(s)>512</tot_time(s)>
   </FileIOStatistics>
   <FileIOStatistics>
     <name>"file2.nc"</name>
@@ -38,5 +46,7 @@
     <tot_wb(bytes)>1024</tot_wb(bytes)>
     <tot_rb(bytes)>1024</tot_rb(bytes)>
     <tot_wtime(s)>234</tot_wtime(s)>
+    <tot_rtime(s)>234</tot_rtime(s)>
+    <tot_time(s)>512</tot_time(s)>
   </FileIOStatistics>
 </ScorpioIOSummaryStatistics>

@@ -6,6 +6,8 @@
       "tot_wb(bytes)" : 1024,
       "tot_rb(bytes)" : 1024,
       "tot_wtime(s)" : 234
+      "tot_rtime(s)" : 234
+      "tot_time(s)" : 512
     "ModelComponentIOStatistics":
       "name" : "EAM",
       "avg_wtput(MB/s)" : 2.5,
@@ -13,6 +15,8 @@
       "tot_wb(bytes)" : 1024,
       "tot_rb(bytes)" : 1024,
       "tot_wtime(s)" : 234
+      "tot_rtime(s)" : 234
+      "tot_time(s)" : 512
     "ModelComponentIOStatistics":
       "name" : "LND",
       "avg_wtput(MB/s)" : 2.5,
@@ -20,6 +24,8 @@
       "tot_wb(bytes)" : 1024,
       "tot_rb(bytes)" : 1024,
       "tot_wtime(s)" : 234
+      "tot_rtime(s)" : 234
+      "tot_time(s)" : 512
     "FileIOStatistics":
       "name" : "file1.nc",
       "avg_wtput(MB/s)" : 2.5,
@@ -27,6 +33,8 @@
       "tot_wb(bytes)" : 1024,
       "tot_rb(bytes)" : 1024,
       "tot_wtime(s)" : 234
+      "tot_rtime(s)" : 234
+      "tot_time(s)" : 512
     "FileIOStatistics":
       "name" : "file2.nc",
       "avg_wtput(MB/s)" : 2.5,
@@ -34,3 +42,5 @@
       "tot_wb(bytes)" : 1024,
       "tot_rb(bytes)" : 1024,
       "tot_wtime(s)" : 234
+      "tot_rtime(s)" : 234
+      "tot_time(s)" : 512
