@@ -425,23 +425,23 @@ static int cache_or_print_stats(iosystem_desc_t *ios, int root_proc,
     /* Add Overall I/O performance statistics */
     std::vector<std::pair<std::string, std::string> > overall_comp_vals;
     PIO_Util::Serializer_Utils::serialize_pack("name", model_name, overall_comp_vals);
-    PIO_Util::Serializer_Utils::serialize_pack("avg_wtput",
+    PIO_Util::Serializer_Utils::serialize_pack("avg_wtput(MB/s)",
       (cached_overall_gio_sstats.wtime_max > 0.0) ?
       (cached_overall_gio_sstats.wb_total / (ONE_MB * cached_overall_gio_sstats.wtime_max)) : 0.0,
       overall_comp_vals);
 
-    PIO_Util::Serializer_Utils::serialize_pack("avg_rtput",
+    PIO_Util::Serializer_Utils::serialize_pack("avg_rtput(MB/s)",
       (cached_overall_gio_sstats.rtime_max > 0.0) ?
       (cached_overall_gio_sstats.rb_total / (ONE_MB * cached_overall_gio_sstats.rtime_max)) : 0.0,
       overall_comp_vals);
 
-    PIO_Util::Serializer_Utils::serialize_pack("tot_wb",
+    PIO_Util::Serializer_Utils::serialize_pack("tot_wb(bytes)",
       cached_overall_gio_sstats.wb_total, overall_comp_vals);
 
-    PIO_Util::Serializer_Utils::serialize_pack("tot_rb",
+    PIO_Util::Serializer_Utils::serialize_pack("tot_rb(bytes)",
       cached_overall_gio_sstats.rb_total, overall_comp_vals);
 
-    PIO_Util::Serializer_Utils::serialize_pack("tot_wtime",
+    PIO_Util::Serializer_Utils::serialize_pack("tot_wtime(s)",
       cached_overall_gio_sstats.ttime_max, overall_comp_vals);
 
     spio_ser->serialize(id, "OverallIOStatistics", overall_comp_vals);
@@ -470,23 +470,23 @@ static int cache_or_print_stats(iosystem_desc_t *ios, int root_proc,
 
 
       PIO_Util::Serializer_Utils::serialize_pack("name", cached_ios_names[i], comp_vals);
-      PIO_Util::Serializer_Utils::serialize_pack("avg_wtput",
+      PIO_Util::Serializer_Utils::serialize_pack("avg_wtput(MB/s)",
         (cached_ios_gio_sstats[i].wtime_max > 0.0) ?
         (cached_ios_gio_sstats[i].wb_total / (ONE_MB * cached_ios_gio_sstats[i].wtime_max)) : 0.0,
         comp_vals);
 
-      PIO_Util::Serializer_Utils::serialize_pack("avg_rtput",
+      PIO_Util::Serializer_Utils::serialize_pack("avg_rtput(MB/s)",
         (cached_ios_gio_sstats[i].rtime_max > 0.0) ?
         (cached_ios_gio_sstats[i].rb_total / (ONE_MB * cached_ios_gio_sstats[i].rtime_max)) : 0.0,
         comp_vals);
 
-      PIO_Util::Serializer_Utils::serialize_pack("tot_wb",
+      PIO_Util::Serializer_Utils::serialize_pack("tot_wb(bytes)",
         cached_ios_gio_sstats[i].wb_total, comp_vals);
 
-      PIO_Util::Serializer_Utils::serialize_pack("tot_rb",
+      PIO_Util::Serializer_Utils::serialize_pack("tot_rb(bytes)",
         cached_ios_gio_sstats[i].rb_total, comp_vals);
 
-      PIO_Util::Serializer_Utils::serialize_pack("tot_wtime",
+      PIO_Util::Serializer_Utils::serialize_pack("tot_wtime(s)",
         cached_ios_gio_sstats[i].ttime_max, comp_vals);
 
       comp_vvals.push_back(comp_vals);
@@ -520,23 +520,23 @@ static int cache_or_print_stats(iosystem_desc_t *ios, int root_proc,
         const std::size_t ONE_MB = 1024 * 1024;
 
         PIO_Util::Serializer_Utils::serialize_pack("name", cached_file_names[i][j], file_vals);
-        PIO_Util::Serializer_Utils::serialize_pack("avg_wtput",
+        PIO_Util::Serializer_Utils::serialize_pack("avg_wtput(MB/s)",
           (cached_file_gio_sstats[i][j].wtime_max > 0.0) ?
           (cached_file_gio_sstats[i][j].wb_total / (ONE_MB * cached_file_gio_sstats[i][j].wtime_max)) : 0.0,
           file_vals);
 
-        PIO_Util::Serializer_Utils::serialize_pack("avg_rtput",
+        PIO_Util::Serializer_Utils::serialize_pack("avg_rtput(MB/s)",
           (cached_file_gio_sstats[i][j].rtime_max > 0.0) ?
           (cached_file_gio_sstats[i][j].rb_total / (ONE_MB * cached_file_gio_sstats[i][j].rtime_max)) : 0.0,
           file_vals);
 
-        PIO_Util::Serializer_Utils::serialize_pack("tot_wb",
+        PIO_Util::Serializer_Utils::serialize_pack("tot_wb(bytes)",
           cached_file_gio_sstats[i][j].wb_total, file_vals);
 
-        PIO_Util::Serializer_Utils::serialize_pack("tot_rb",
+        PIO_Util::Serializer_Utils::serialize_pack("tot_rb(bytes)",
           cached_file_gio_sstats[i][j].rb_total, file_vals);
 
-        PIO_Util::Serializer_Utils::serialize_pack("tot_wtime",
+        PIO_Util::Serializer_Utils::serialize_pack("tot_wtime(s)",
           cached_file_gio_sstats[i][j].ttime_max, file_vals);
 
         file_vvals.push_back(file_vals);

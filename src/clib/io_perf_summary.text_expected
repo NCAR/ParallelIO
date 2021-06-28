@@ -1,36 +1,36 @@
   "ScorpioIOSummaryStatistics":
     "OverallModelIOStatistics":
       "name" : "E3SM",
-      "avg_wtput" : 2.5,
-      "avg_rtput" : 1.5,
-      "tot_wb" : 1024,
-      "tot_rb" : 1024,
-      "tot_wtime" : 234
+      "avg_wtput(MB/s)" : 2.5,
+      "avg_rtput(MB/s)" : 1.5,
+      "tot_wb(bytes)" : 1024,
+      "tot_rb(bytes)" : 1024,
+      "tot_wtime(s)" : 234
     "ModelComponentIOStatistics":
       "name" : "EAM",
-      "avg_wtput" : 2.5,
-      "avg_rtput" : 1.5,
-      "tot_wb" : 1024,
-      "tot_rb" : 1024,
-      "tot_wtime" : 234
+      "avg_wtput(MB/s)" : 2.5,
+      "avg_rtput(MB/s)" : 1.5,
+      "tot_wb(bytes)" : 1024,
+      "tot_rb(bytes)" : 1024,
+      "tot_wtime(s)" : 234
     "ModelComponentIOStatistics":
       "name" : "LND",
-      "avg_wtput" : 2.5,
-      "avg_rtput" : 1.5,
-      "tot_wb" : 1024,
-      "tot_rb" : 1024,
-      "tot_wtime" : 234
+      "avg_wtput(MB/s)" : 2.5,
+      "avg_rtput(MB/s)" : 1.5,
+      "tot_wb(bytes)" : 1024,
+      "tot_rb(bytes)" : 1024,
+      "tot_wtime(s)" : 234
     "FileIOStatistics":
       "name" : "file1.nc",
-      "avg_wtput" : 2.5,
-      "avg_rtput" : 1.5,
-      "tot_wb" : 1024,
-      "tot_rb" : 1024,
-      "tot_wtime" : 234
+      "avg_wtput(MB/s)" : 2.5,
+      "avg_rtput(MB/s)" : 1.5,
+      "tot_wb(bytes)" : 1024,
+      "tot_rb(bytes)" : 1024,
+      "tot_wtime(s)" : 234
     "FileIOStatistics":
       "name" : "file2.nc",
-      "avg_wtput" : 2.5,
-      "avg_rtput" : 1.5,
-      "tot_wb" : 1024,
-      "tot_rb" : 1024,
-      "tot_wtime" : 234
+      "avg_wtput(MB/s)" : 2.5,
+      "avg_rtput(MB/s)" : 1.5,
+      "tot_wb(bytes)" : 1024,
+      "tot_rb(bytes)" : 1024,
+      "tot_wtime(s)" : 234

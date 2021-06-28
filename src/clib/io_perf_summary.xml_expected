@@ -1,42 +1,42 @@
 <ScorpioIOSummaryStatistics>
   <OverallModelIOStatistics>
     <name>"E3SM"</name>
-    <avg_wtput>2.5</avg_wtput>
-    <avg_rtput>1.5</avg_rtput>
-    <tot_wb>1024</tot_wb>
-    <tot_rb>1024</tot_rb>
-    <tot_wtime>234</tot_wtime>
+    <avg_wtput(MB/s)>2.5</avg_wtput(MB/s)>
+    <avg_rtput(MB/s)>1.5</avg_rtput(MB/s)>
+    <tot_wb(bytes)>1024</tot_wb(bytes)>
+    <tot_rb(bytes)>1024</tot_rb(bytes)>
+    <tot_wtime(s)>234</tot_wtime(s)>
   </OverallModelIOStatistics>
   <ModelComponentIOStatistics>
     <name>"EAM"</name>
-    <avg_wtput>2.5</avg_wtput>
-    <avg_rtput>1.5</avg_rtput>
-    <tot_wb>1024</tot_wb>
-    <tot_rb>1024</tot_rb>
-    <tot_wtime>234</tot_wtime>
+    <avg_wtput(MB/s)>2.5</avg_wtput(MB/s)>
+    <avg_rtput(MB/s)>1.5</avg_rtput(MB/s)>
+    <tot_wb(bytes)>1024</tot_wb(bytes)>
+    <tot_rb(bytes)>1024</tot_rb(bytes)>
+    <tot_wtime(s)>234</tot_wtime(s)>
   </ModelComponentIOStatistics>
   <ModelComponentIOStatistics>
     <name>"LND"</name>
-    <avg_wtput>2.5</avg_wtput>
-    <avg_rtput>1.5</avg_rtput>
-    <tot_wb>1024</tot_wb>
-    <tot_rb>1024</tot_rb>
-    <tot_wtime>234</tot_wtime>
+    <avg_wtput(MB/s)>2.5</avg_wtput(MB/s)>
+    <avg_rtput(MB/s)>1.5</avg_rtput(MB/s)>
+    <tot_wb(bytes)>1024</tot_wb(bytes)>
+    <tot_rb(bytes)>1024</tot_rb(bytes)>
+    <tot_wtime(s)>234</tot_wtime(s)>
   </ModelComponentIOStatistics>
   <FileIOStatistics>
     <name>"file1.nc"</name>
-    <avg_wtput>2.5</avg_wtput>
-    <avg_rtput>1.5</avg_rtput>
-    <tot_wb>1024</tot_wb>
-    <tot_rb>1024</tot_rb>
-    <tot_wtime>234</tot_wtime>
+    <avg_wtput(MB/s)>2.5</avg_wtput(MB/s)>
+    <avg_rtput(MB/s)>1.5</avg_rtput(MB/s)>
+    <tot_wb(bytes)>1024</tot_wb(bytes)>
+    <tot_rb(bytes)>1024</tot_rb(bytes)>
+    <tot_wtime(s)>234</tot_wtime(s)>
   </FileIOStatistics>
   <FileIOStatistics>
     <name>"file2.nc"</name>
-    <avg_wtput>2.5</avg_wtput>
-    <avg_rtput>1.5</avg_rtput>
-    <tot_wb>1024</tot_wb>
-    <tot_rb>1024</tot_rb>
-    <tot_wtime>234</tot_wtime>
+    <avg_wtput(MB/s)>2.5</avg_wtput(MB/s)>
+    <avg_rtput(MB/s)>1.5</avg_rtput(MB/s)>
+    <tot_wb(bytes)>1024</tot_wb(bytes)>
+    <tot_rb(bytes)>1024</tot_rb(bytes)>
+    <tot_wtime(s)>234</tot_wtime(s)>
   </FileIOStatistics>
 </ScorpioIOSummaryStatistics>
