@@ -316,7 +316,8 @@ static std::string file_names_to_ios_name(iosystem_desc_t *ios,
   assert(ios);
 
   std::string ios_name(ios->sname);
-  std::vector<std::pair<std::string, std::string> > e3sm_comp_names =
+  /* Output file name hints */
+  std::vector<std::pair<std::string, std::string> > e3sm_comp_ohints =
     {
       {".cpl.","CPL"},
       {".eam.","EAM"},
@@ -326,13 +327,40 @@ static std::string file_names_to_ios_name(iosystem_desc_t *ios,
       {".mpasli.","MPASLI"},
       {".mpassi.","MPASSI"}
     };
+  /* Input file name hints */
+  std::vector<std::pair<std::string, std::string> > e3sm_comp_ihints =
+    {
+      {"/inputdata/cpl","CPL"},
+      {"/inputdata/atm","EAM"},
+      {"/inputdata/clm","ELM"},
+      {"/inputdata/lnd","ELM"},
+      {"/inputdata/rof/mosart","MOSART"},
+      {"/inputdata/rof","RTM"},
+      {"/inputdata/ocn/mpas-o","MPASO"},
+      {"/inputdata/ocn","OCN"},
+      {"/inputdata/glc/mpasli","MPASLI"},
+      {"/inputdata/glc","GLC"},
+      {"/inputdata/ice/mpas-cice","MPASSI"},
+      {"/inputdata/ice","CICE"},
+      {"/inputdata/wav","WAV"}
+    };
+  /* FIXME: We currently have no hints for IAC & ESP components */
 
   for(std::vector<std::string>::const_iterator fiter = file_names.cbegin();
       fiter != file_names.cend(); ++fiter){
+    /* First check output files for hints */
     for(std::vector<std::pair<std::string, std::string> >::const_iterator
-          efiter = e3sm_comp_names.cbegin(); efiter != e3sm_comp_names.cend(); ++efiter){
-      if((*fiter).find(efiter->first) != std::string::npos){
-        return efiter->second;
+          hiter = e3sm_comp_ohints.cbegin(); hiter != e3sm_comp_ohints.cend(); ++hiter){
+      if((*fiter).find(hiter->first) != std::string::npos){
+        return hiter->second;
+      }
+    }
+
+    /* Check input files for hints */
+    for(std::vector<std::pair<std::string, std::string> >::const_iterator
+          hiter = e3sm_comp_ihints.cbegin(); hiter != e3sm_comp_ihints.cend(); ++hiter){
+      if((*fiter).find(hiter->first) != std::string::npos){
+        return hiter->second;
       }
     }
   }
