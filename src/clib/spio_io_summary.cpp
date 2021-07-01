@@ -319,30 +319,30 @@ static std::string file_names_to_ios_name(iosystem_desc_t *ios,
   /* Output file name hints */
   std::vector<std::pair<std::string, std::string> > e3sm_comp_ohints =
     {
-      {".cpl.","CPL"},
-      {".eam.","EAM"},
-      {".elm.","ELM"},
-      {".mosart.","MOSART"},
-      {".mpaso.","MPASO"},
-      {".mpasli.","MPASLI"},
-      {".mpassi.","MPASSI"}
+      {".cpl.","COMP_CPL: CPL"},
+      {".eam.","COMP_ATM: EAM"},
+      {".elm.","COMP_LND: ELM"},
+      {".mosart.","COMP_ROF: MOSART"},
+      {".mpaso.","COMP_OCN: MPASO"},
+      {".mpasli.","COMP_GLC: MPASLI"},
+      {".mpassi.","COMP_ICE: MPASSI"}
     };
   /* Input file name hints */
   std::vector<std::pair<std::string, std::string> > e3sm_comp_ihints =
     {
-      {"/inputdata/cpl","CPL"},
-      {"/inputdata/atm","EAM"},
-      {"/inputdata/clm","ELM"},
-      {"/inputdata/lnd","ELM"},
-      {"/inputdata/rof/mosart","MOSART"},
-      {"/inputdata/rof","RTM"},
-      {"/inputdata/ocn/mpas-o","MPASO"},
-      {"/inputdata/ocn","OCN"},
-      {"/inputdata/glc/mpasli","MPASLI"},
-      {"/inputdata/glc","GLC"},
-      {"/inputdata/ice/mpas-cice","MPASSI"},
-      {"/inputdata/ice","CICE"},
-      {"/inputdata/wav","WAV"}
+      {"/inputdata/cpl","COMP_CPL: CPL"},
+      {"/inputdata/atm","COMP_ATM: EAM"},
+      {"/inputdata/clm","COMP_LND: ELM"},
+      {"/inputdata/lnd","COMP_LND: ELM"},
+      {"/inputdata/rof/mosart","COMP_ROF: MOSART"},
+      {"/inputdata/rof","COMP_ROF: ROF"},
+      {"/inputdata/ocn/mpas-o","COMP_OCN: MPASO"},
+      {"/inputdata/ocn","COMP_OCN: OCN"},
+      {"/inputdata/glc/mpasli","COMP_GLC: MPASLI"},
+      {"/inputdata/glc","COMP_GLC: GLC"},
+      {"/inputdata/ice/mpas-cice","COMP_ICE: MPASSI"},
+      {"/inputdata/ice","COMP_ICE: ICE"},
+      {"/inputdata/wav","COMP_WAV: WAV"}
     };
   /* FIXME: We currently have no hints for IAC & ESP components */
 
