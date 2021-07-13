@@ -2199,9 +2199,12 @@ int flush_buffer(int ncid, wmulti_buffer *wmb, bool flushtodisk)
     ios = file->iosystem;
     assert(ios);
 
-    spio_ltimer_start(ios->io_fstats->wr_timer_name);
+    if(file->mode & PIO_WRITE)
+    {
+        spio_ltimer_start(ios->io_fstats->wr_timer_name);
+        spio_ltimer_start(file->io_fstats->wr_timer_name);
+    }
     spio_ltimer_start(ios->io_fstats->tot_timer_name);
-    spio_ltimer_start(file->io_fstats->wr_timer_name);
     spio_ltimer_start(file->io_fstats->tot_timer_name);
 
     LOG((1, "flush_buffer ncid = %d flushtodisk = %d", ncid, flushtodisk));
@@ -2210,16 +2213,22 @@ int flush_buffer(int ncid, wmulti_buffer *wmb, bool flushtodisk)
     if (wmb->num_arrays > 0)
     {
         /* Write any data in the buffer. */
-        spio_ltimer_stop(ios->io_fstats->wr_timer_name);
+        if(file->mode & PIO_WRITE)
+        {
+            spio_ltimer_stop(ios->io_fstats->wr_timer_name);
+            spio_ltimer_stop(file->io_fstats->wr_timer_name);
+        }
         spio_ltimer_stop(ios->io_fstats->tot_timer_name);
-        spio_ltimer_stop(file->io_fstats->wr_timer_name);
         spio_ltimer_stop(file->io_fstats->tot_timer_name);
         ret = PIOc_write_darray_multi(ncid, wmb->vid,  wmb->ioid, wmb->num_arrays,
                                       wmb->arraylen, wmb->data, wmb->frame,
                                       wmb->fillvalue, flushtodisk);
-        spio_ltimer_start(ios->io_fstats->wr_timer_name);
+        if(file->mode & PIO_WRITE)
+        {
+            spio_ltimer_start(ios->io_fstats->wr_timer_name);
+            spio_ltimer_start(file->io_fstats->wr_timer_name);
+        }
         spio_ltimer_start(ios->io_fstats->tot_timer_name);
-        spio_ltimer_start(file->io_fstats->wr_timer_name);
         spio_ltimer_start(file->io_fstats->tot_timer_name);
         LOG((2, "return from PIOc_write_darray_multi ret = %d", ret));
 
@@ -2246,9 +2255,12 @@ int flush_buffer(int ncid, wmulti_buffer *wmb, bool flushtodisk)
         if (ret)
         {
             GPTLstop("PIO:flush_buffer");
-            spio_ltimer_stop(ios->io_fstats->wr_timer_name);
+            if(file->mode & PIO_WRITE)
+            {
+                spio_ltimer_stop(ios->io_fstats->wr_timer_name);
+                spio_ltimer_stop(file->io_fstats->wr_timer_name);
+            }
             spio_ltimer_stop(ios->io_fstats->tot_timer_name);
-            spio_ltimer_stop(file->io_fstats->wr_timer_name);
             spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return pio_err(NULL, file, ret, __FILE__, __LINE__,
                         "Internal error flushing data cached in a write multi buffer to file (%s, ncid=%d). Error while flushing data to %s. Internal error flushing arrays (%d) in the write multi buffer", pio_get_fname_from_file(file), file->pio_ncid, (flushtodisk) ? "disk" : "I/O processes", wmb->num_arrays);
@@ -2256,9 +2268,12 @@ int flush_buffer(int ncid, wmulti_buffer *wmb, bool flushtodisk)
     }
 
     GPTLstop("PIO:flush_buffer");
-    spio_ltimer_stop(ios->io_fstats->wr_timer_name);
+    if(file->mode & PIO_WRITE)
+    {
+        spio_ltimer_stop(ios->io_fstats->wr_timer_name);
+        spio_ltimer_stop(file->io_fstats->wr_timer_name);
+    }
     spio_ltimer_stop(ios->io_fstats->tot_timer_name);
-    spio_ltimer_stop(file->io_fstats->wr_timer_name);
     spio_ltimer_stop(file->io_fstats->tot_timer_name);
     return PIO_NOERR;
 }

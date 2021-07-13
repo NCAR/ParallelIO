@@ -286,9 +286,12 @@ static int sync_file(int ncid)
         return PIO_NOERR;
 #endif
 
-    spio_ltimer_start(ios->io_fstats->wr_timer_name);
+    if(file->mode & PIO_WRITE)
+    {
+        spio_ltimer_start(ios->io_fstats->wr_timer_name);
+        spio_ltimer_start(file->io_fstats->wr_timer_name);
+    }
     spio_ltimer_start(ios->io_fstats->tot_timer_name);
-    spio_ltimer_start(file->io_fstats->wr_timer_name);
     spio_ltimer_start(file->io_fstats->tot_timer_name);
 
     ios = file->iosystem;
@@ -342,9 +345,12 @@ static int sync_file(int ncid)
         PIO_SEND_ASYNC_MSG(ios, msg, &ierr, ncid);
         if (ierr != PIO_NOERR)
         {
-            spio_ltimer_stop(ios->io_fstats->wr_timer_name);
+            if(file->mode & PIO_WRITE)
+            {
+                spio_ltimer_stop(ios->io_fstats->wr_timer_name);
+                spio_ltimer_stop(file->io_fstats->wr_timer_name);
+            }
             spio_ltimer_stop(ios->io_fstats->tot_timer_name);
-            spio_ltimer_stop(file->io_fstats->wr_timer_name);
             spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
                             "Syncing file %s (ncid=%d) failed. Unable to send asynchronous message, PIO_MSG_SYNC, on iosystem (iosysid=%d)", pio_get_fname_from_file(file), ncid, ios->iosysid);
@@ -401,16 +407,22 @@ static int sync_file(int ncid)
     if (ierr != PIO_NOERR)
     {
         LOG((1, "nc*_sync failed, ierr = %d", ierr));
-        spio_ltimer_stop(ios->io_fstats->wr_timer_name);
+        if(file->mode & PIO_WRITE)
+        {
+            spio_ltimer_stop(ios->io_fstats->wr_timer_name);
+            spio_ltimer_stop(file->io_fstats->wr_timer_name);
+        }
         spio_ltimer_stop(ios->io_fstats->tot_timer_name);
-        spio_ltimer_stop(file->io_fstats->wr_timer_name);
         spio_ltimer_stop(file->io_fstats->tot_timer_name);
         return ierr;
     }
 
-    spio_ltimer_stop(ios->io_fstats->wr_timer_name);
+    if(file->mode & PIO_WRITE)
+    {
+        spio_ltimer_stop(ios->io_fstats->wr_timer_name);
+        spio_ltimer_stop(file->io_fstats->wr_timer_name);
+    }
     spio_ltimer_stop(ios->io_fstats->tot_timer_name);
-    spio_ltimer_stop(file->io_fstats->wr_timer_name);
     spio_ltimer_stop(file->io_fstats->tot_timer_name);
     return PIO_NOERR;
 }
