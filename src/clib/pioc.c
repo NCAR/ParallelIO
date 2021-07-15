@@ -428,16 +428,27 @@ int pio_create_uniq_str(iosystem_desc_t *ios, io_desc_t *iodesc, char *str, int 
     if(ios)
     {
         /* Add ios specific info into the str */
+        assert(ios->iosysid < MILLION);
         assert(ios->num_comptasks < MILLION);
         assert(rem_len > 0);
+        const char *iosysid_fmt = (ios->iosysid < HUNDRED) ? (INT_FMT_LT_HUNDRED) : ((ios->iosysid < TEN_THOUSAND) ? (INT_FMT_LT_TEN_THOUSAND): INT_FMT_LT_MILLION);
         const char *num_comptasks_fmt = (ios->num_comptasks < HUNDRED) ? (INT_FMT_LT_HUNDRED) : ((ios->num_comptasks < TEN_THOUSAND) ? (INT_FMT_LT_TEN_THOUSAND): INT_FMT_LT_MILLION);
         const char *num_iotasks_fmt = num_comptasks_fmt;
+
+        snprintf(sptr, rem_len, iosysid_fmt, ios->iosysid);
+        rem_len = len - strlen(str);
+        sptr = str + strlen(str);
+        snprintf(sptr, rem_len, "%s", "id");
+        rem_len = len - strlen(str);
+        sptr = str + strlen(str);
+
         snprintf(sptr, rem_len, num_comptasks_fmt, ios->num_comptasks);
         rem_len = len - strlen(str);
         sptr = str + strlen(str);
         snprintf(sptr, rem_len, "%s", "tasks");
         rem_len = len - strlen(str);
         sptr = str + strlen(str);
+
         snprintf(sptr, rem_len, num_iotasks_fmt, ios->num_iotasks);
         rem_len = len - strlen(str);
         sptr = str + strlen(str);
