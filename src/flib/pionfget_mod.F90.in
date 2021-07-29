@@ -556,6 +556,12 @@ CONTAINS
     max_flen= len(fstr(1))
     do j=1,fstr_dim_sz(1)
       cstr_copied = .false.
+      if(cstr_idx * max_clen + min(max_clen, max_flen) > cstr_sz) then
+        print *, "WARNING: The number of strings read (", cstr_idx, ") ",&
+                  "is less than the number of expected strings in the ",&
+                  "Fortran array (", fstr_dim_sz(1), " strings) "
+        exit
+      end if
       do i=1,min(max_clen, max_flen)
         fstr(j)(i:i) = cstr(cstr_idx * max_clen + i)
         if(fstr(j)(i:i) == C_NULL_CHAR) then
@@ -580,6 +586,12 @@ CONTAINS
     do k=1,fstr_dim_sz(2)
       do j=1,fstr_dim_sz(1)
         cstr_copied = .false.
+        if(cstr_idx * max_clen + min(max_clen, max_flen) > cstr_sz) then
+          print *, "WARNING: The number of strings read (", cstr_idx, ") ",&
+                    "is less than the number of expected strings in the ",&
+                    "Fortran array (", fstr_dim_sz(1) * fstr_dim_sz(2), " strings) "
+          exit
+        end if
         do i=1,min(max_clen, max_flen)
           fstr(j,k)(i:i) = cstr(cstr_idx * max_clen + i)
           if(fstr(j,k)(i:i) == C_NULL_CHAR) then
@@ -606,6 +618,13 @@ CONTAINS
       do k=1,fstr_dim_sz(2)
         do j=1,fstr_dim_sz(1)
           cstr_copied = .false.
+          if(cstr_idx * max_clen + min(max_clen, max_flen) > cstr_sz) then
+            print *, "WARNING: The number of strings read (", cstr_idx, ") ",&
+                      "is less than the number of expected strings in the ",&
+                      "Fortran array (",&
+                      fstr_dim_sz(1) * fstr_dim_sz(2) * fstr_dim_sz(3), " strings) "
+            exit
+          end if
           do i=1,min(max_clen, max_flen)
             fstr(j,k,m)(i:i) = cstr(cstr_idx * max_clen + i)
             if(fstr(j,k,m)(i:i) == C_NULL_CHAR) then
@@ -634,6 +653,14 @@ CONTAINS
         do k=1,fstr_dim_sz(2)
           do j=1,fstr_dim_sz(1)
             cstr_copied = .false.
+            if(cstr_idx * max_clen + min(max_clen, max_flen) > cstr_sz) then
+              print *, "WARNING: The number of strings read (", cstr_idx, ") ",&
+                        "is less than the number of expected strings in the ",&
+                        "Fortran array (",&
+                        fstr_dim_sz(1) * fstr_dim_sz(2) * fstr_dim_sz(3) * fstr_dim_sz(4),&
+                        " strings) "
+              exit
+            end if
             do i=1,min(max_clen, max_flen)
               fstr(j,k,m,n)(i:i) = cstr(cstr_idx * max_clen + i)
               if(fstr(j,k,m,n)(i:i) == C_NULL_CHAR) then
@@ -664,6 +691,14 @@ CONTAINS
           do k=1,fstr_dim_sz(2)
             do j=1,fstr_dim_sz(1)
               cstr_copied = .false.
+              if(cstr_idx * max_clen + min(max_clen, max_flen) > cstr_sz) then
+                print *, "WARNING: The number of strings read (", cstr_idx, ") ",&
+                          "is less than the number of expected strings in the ",&
+                          "Fortran array (",&
+                          fstr_dim_sz(1) * fstr_dim_sz(2) * fstr_dim_sz(3) * fstr_dim_sz(4) * fstr_dim_sz(5),&
+                          " strings) "
+                exit
+              end if
               do i=1,min(max_clen, max_flen)
                 fstr(j,k,m,n,q)(i:i) = cstr(cstr_idx * max_clen + i)
                 if(fstr(j,k,m,n,q)(i:i) == C_NULL_CHAR) then
