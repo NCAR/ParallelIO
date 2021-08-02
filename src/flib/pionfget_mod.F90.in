@@ -8,9 +8,9 @@ module pionfget_mod
 #ifdef TIMING
   use perf_mod, only : t_startf, t_stopf      ! _EXTERNAL
 #endif
-  use pio_kinds, only: i4,r4,r8
+  use pio_kinds, only: i4,r4,r8,pio_offset_kind
   use pio_types, only : file_desc_t, var_desc_t, pio_noerr
-  use pio_support, only : replace_c_null, get_text_var_sz, piodie
+  use pio_support, only : replace_c_null, get_text_var_sz, get_var_dim_sz, piodie
   implicit none
   private
 !>
@@ -466,6 +466,18 @@ CONTAINS
     type (File_desc_t), intent(in) :: File
     integer, intent(in) :: varid
     {VTYPE}, intent(out) :: ival{DIMSTR}
+    integer(PIO_OFFSET_KIND) :: var_sz
+
+    ierr = get_var_dim_sz(File, varid, var_sz)
+    if(ierr /= PIO_NOERR) then
+      call piodie(__PIO_FILE__, __LINE__, "Unable to get variable dimension size")
+    end if
+
+    if(INT(SIZE(ival), PIO_OFFSET_KIND) < var_sz) then
+      print *, "ERROR: The size of the user buffer (", SIZE(ival), " elements) ",&
+                "is smaller than the size of the variable (", var_sz, " elements)"
+      call piodie(__PIO_FILE__, __LINE__, "Insufficient user buffer size")
+    end if
 
     ierr = get_var_{TYPE}_internal(File%fh, varid, ival)
 
