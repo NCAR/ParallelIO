@@ -428,16 +428,27 @@ int pio_create_uniq_str(iosystem_desc_t *ios, io_desc_t *iodesc, char *str, int 
     if(ios)
     {
         /* Add ios specific info into the str */
+        assert(ios->iosysid < MILLION);
         assert(ios->num_comptasks < MILLION);
         assert(rem_len > 0);
+        const char *iosysid_fmt = (ios->iosysid < HUNDRED) ? (INT_FMT_LT_HUNDRED) : ((ios->iosysid < TEN_THOUSAND) ? (INT_FMT_LT_TEN_THOUSAND): INT_FMT_LT_MILLION);
         const char *num_comptasks_fmt = (ios->num_comptasks < HUNDRED) ? (INT_FMT_LT_HUNDRED) : ((ios->num_comptasks < TEN_THOUSAND) ? (INT_FMT_LT_TEN_THOUSAND): INT_FMT_LT_MILLION);
         const char *num_iotasks_fmt = num_comptasks_fmt;
+
+        snprintf(sptr, rem_len, iosysid_fmt, ios->iosysid);
+        rem_len = len - strlen(str);
+        sptr = str + strlen(str);
+        snprintf(sptr, rem_len, "%s", "id");
+        rem_len = len - strlen(str);
+        sptr = str + strlen(str);
+
         snprintf(sptr, rem_len, num_comptasks_fmt, ios->num_comptasks);
         rem_len = len - strlen(str);
         sptr = str + strlen(str);
         snprintf(sptr, rem_len, "%s", "tasks");
         rem_len = len - strlen(str);
         sptr = str + strlen(str);
+
         snprintf(sptr, rem_len, num_iotasks_fmt, ios->num_iotasks);
         rem_len = len - strlen(str);
         sptr = str + strlen(str);
@@ -1218,7 +1229,7 @@ int PIOc_Init_Intracomm(MPI_Comm comp_comm, int num_iotasks, int stride, int bas
                         "PIO Init failed. Internal error allocating buffer space on compute processes to cache user data");
     }
 
-    ret = pio_create_uniq_str(ios, NULL, ios->sname, PIO_MAX_NAME, "tmp_", "_comp");
+    ret = pio_create_uniq_str(ios, NULL, ios->sname, PIO_MAX_NAME, "UNKNOWN:SPIO_COMP_", "_tmp_name");
     if(ret != PIO_NOERR)
     {
         /* Not a fatal error */
@@ -2106,7 +2117,7 @@ int PIOc_init_async(MPI_Comm world, int num_io_procs, int *io_proc_list,
         iosysidp[cmp] = pio_add_to_iosystem_list(my_iosys, MPI_COMM_NULL);
         LOG((2, "new iosys ID added to iosystem_list iosysid = %d", iosysidp[cmp]));
 
-        ret = pio_create_uniq_str(my_iosys, NULL, my_iosys->sname, PIO_MAX_NAME, "tmp_", "_comp");
+        ret = pio_create_uniq_str(my_iosys, NULL, my_iosys->sname, PIO_MAX_NAME, "UNKNOWN:SPIO_COMP_", "_tmp_name");
         if(ret != PIO_NOERR)
         {
             /* Not Fatal error */
@@ -2741,7 +2752,7 @@ int PIOc_init_intercomm(int component_count, const MPI_Comm peer_comm,
         LOG((2, "PIOc_init_intercomm : iosys[%d]->ioid=%d, iosys[%d]->uniontasks = %d, iosys[%d]->union_rank=%d, %s", i, iosys[i]->iosysid, i, iosys[i]->num_uniontasks, i, iosys[i]->union_rank, ((iosys[i]->ioproc) ? ("IS IO PROC"):((iosys[i]->compproc) ? ("IS COMPUTE PROC") : ("NEITHER IO NOR COMPUTE PROC"))) ));
         LOG((2, "New IOsystem added to iosystem_list iosysid = %d", iosysidps[i]));
 
-        ret = pio_create_uniq_str(iosys[i], NULL, iosys[i]->sname, PIO_MAX_NAME, "tmp_", "_comp");
+        ret = pio_create_uniq_str(iosys[i], NULL, iosys[i]->sname, PIO_MAX_NAME, "UNKNOWN:SPIO_COMP_", "_tmp_name");
         if(ret != PIO_NOERR)
         {
             /* Not Fatal error */

@@ -12,34 +12,44 @@
           "description": "The name of the Model/Component/File",
           "type": "string"
         },
-        "avg_wtput": {
+        "avg_wtput(MB/s)": {
           "description": "The average write throughput (MB/s)",
           "type": "number",
           "minimum": 0
         },
-        "avg_rtput": {
+        "avg_rtput(MB/s)": {
           "description": "The average read throughput (MB/s)",
           "type": "number",
           "minimum": 0
         },
-        "tot_wb": {
+        "tot_wb(bytes)": {
           "description": "Total data written to the file system (bytes)",
           "type": "integer",
           "minimum": 0
         },
-        "tot_rb": {
+        "tot_rb(bytes)": {
           "description": "Total data read from the file system (bytes)",
           "type": "integer",
           "minimum": 0
         },
-        "tot_wtime": {
-          "description": "Total elapsed wallclock time (seconds)",
+        "tot_wtime(s)": {
+          "description": "Total write time (seconds)",
+          "type": "number",
+          "minimum": 0
+        },
+        "tot_rtime(s)": {
+          "description": "Total read time (seconds)",
+          "type": "number",
+          "minimum": 0
+        },
+        "tot_time(s)": {
+          "description": "Total time (seconds)",
           "type": "number",
           "minimum": 0
         }
       },
 
-      "required": ["name", "avg_wtput", "avg_rtput", "tot_wb", "tot_rb", "tot_wtime"]
+      "required": ["name", "avg_wtput(MB/s)", "avg_rtput(MB/s)", "tot_wb(bytes)", "tot_rb(bytes)", "tot_wtime(s)", "tot_rtime(s)", "tot_time(s)"]
     }
   },
 

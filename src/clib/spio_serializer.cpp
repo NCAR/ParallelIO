@@ -3,6 +3,8 @@
 #include <stdexcept>
 #include <iostream>
 #include <fstream>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 /* Text Serializer function definitions */
 
@@ -68,7 +70,8 @@ void PIO_Util::Text_serializer::sync(void )
 
   /* Write the data out to the text file */
   std::ofstream fstr;
-  fstr.open(pname_.c_str(), std::ofstream::out | std::ofstream::trunc);
+  std::string pname = PIO_Util::Serializer_Utils::get_fname_prefix() + pname_;
+  fstr.open(pname.c_str(), std::ofstream::out | std::ofstream::trunc);
   fstr << sdata_.c_str();
   fstr.close();
 }
@@ -170,7 +173,8 @@ void PIO_Util::XML_serializer::sync(void )
 
   /* Write the data out to the XML file */
   std::ofstream fstr;
-  fstr.open(pname_.c_str(), std::ofstream::out | std::ofstream::trunc);
+  std::string pname = PIO_Util::Serializer_Utils::get_fname_prefix() + pname_;
+  fstr.open(pname.c_str(), std::ofstream::out | std::ofstream::trunc);
   fstr << sdata_.c_str();
   fstr.close();
 }
@@ -358,7 +362,8 @@ void PIO_Util::Json_serializer::sync(void )
 
   /* Write the serialized data to the JSON file */
   std::ofstream fstr;
-  fstr.open(pname_.c_str(), std::ofstream::out | std::ofstream::trunc);
+  std::string pname = PIO_Util::Serializer_Utils::get_fname_prefix() + pname_;
+  fstr.open(pname.c_str(), std::ofstream::out | std::ofstream::trunc);
   fstr << sdata_.c_str();
   fstr.close();
 }
@@ -482,6 +487,27 @@ std::string PIO_Util::Serializer_Utils::to_string(const PIO_Util::Serializer_typ
   else{
     return "UNKNOWN";
   }
+}
+
+/* Get the prefix for file names used by file-based (Text, XML, Json) serializers */
+std::string PIO_Util::Serializer_Utils::get_fname_prefix(void )
+{
+  const std::string default_timing_dir("spio_stats");
+  const std::string dir_sep("/");
+  std::string fname_prefix;
+
+  struct stat sb;
+  /* If there exists a directory named "spio_stats" use it as the file name prefix
+   * So if there is a directory named "spio_stats" all text based serializers
+   * will create/collect stats/files in this directory
+   */
+  if(stat(default_timing_dir.c_str(), &sb) == 0){
+    if(S_ISDIR(sb.st_mode)){
+      fname_prefix = default_timing_dir + dir_sep;
+    }
+  }
+
+  return fname_prefix;
 }
 
 /* Create a serializer */

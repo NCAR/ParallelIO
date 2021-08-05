@@ -50,6 +50,9 @@ foreach (SRC_FILE IN LISTS GENERATED_SRCS)
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${SRC_FILE}.in)
 endforeach ()
 
+set(DEF_SPIO_TIMING_DIR ${CMAKE_BINARY_DIR}/spio_stats)
+file(MAKE_DIRECTORY ${DEF_SPIO_TIMING_DIR})
+
 # The PIO library is written using C, C++ and Fortran languages
 # IBM compilers require Fortran/C/C++ mixed language programs
 # to be linked with the C++ linker. Other compilers require the

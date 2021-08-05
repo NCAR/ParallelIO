@@ -316,23 +316,51 @@ static std::string file_names_to_ios_name(iosystem_desc_t *ios,
   assert(ios);
 
   std::string ios_name(ios->sname);
-  std::vector<std::pair<std::string, std::string> > e3sm_comp_names =
+  /* Output file name hints */
+  std::vector<std::pair<std::string, std::string> > e3sm_comp_ohints =
     {
-      {".cpl.","CPL"},
-      {".eam.","EAM"},
-      {".elm.","ELM"},
-      {".mosart.","MOSART"},
-      {".mpaso.","MPASO"},
-      {".mpasli.","MPASLI"},
-      {".mpassi.","MPASSI"}
+      {".cpl.","COMP_CPL: CPL"},
+      {".eam.","COMP_ATM: EAM"},
+      {".elm.","COMP_LND: ELM"},
+      {".mosart.","COMP_ROF: MOSART"},
+      {".mpaso.","COMP_OCN: MPASO"},
+      {".mpasli.","COMP_GLC: MPASLI"},
+      {".mpassi.","COMP_ICE: MPASSI"}
     };
+  /* Input file name hints */
+  std::vector<std::pair<std::string, std::string> > e3sm_comp_ihints =
+    {
+      {"/inputdata/cpl","COMP_CPL: CPL"},
+      {"/inputdata/atm","COMP_ATM: EAM"},
+      {"/inputdata/clm","COMP_LND: ELM"},
+      {"/inputdata/lnd","COMP_LND: ELM"},
+      {"/inputdata/rof/mosart","COMP_ROF: MOSART"},
+      {"/inputdata/rof","COMP_ROF: ROF"},
+      {"/inputdata/ocn/mpas-o","COMP_OCN: MPASO"},
+      {"/inputdata/ocn","COMP_OCN: OCN"},
+      {"/inputdata/glc/mpasli","COMP_GLC: MPASLI"},
+      {"/inputdata/glc","COMP_GLC: GLC"},
+      {"/inputdata/ice/mpas-cice","COMP_ICE: MPASSI"},
+      {"/inputdata/ice","COMP_ICE: ICE"},
+      {"/inputdata/wav","COMP_WAV: WAV"}
+    };
+  /* FIXME: We currently have no hints for IAC & ESP components */
 
   for(std::vector<std::string>::const_iterator fiter = file_names.cbegin();
       fiter != file_names.cend(); ++fiter){
+    /* First check output files for hints */
     for(std::vector<std::pair<std::string, std::string> >::const_iterator
-          efiter = e3sm_comp_names.cbegin(); efiter != e3sm_comp_names.cend(); ++efiter){
-      if((*fiter).find(efiter->first) != std::string::npos){
-        return efiter->second;
+          hiter = e3sm_comp_ohints.cbegin(); hiter != e3sm_comp_ohints.cend(); ++hiter){
+      if((*fiter).find(hiter->first) != std::string::npos){
+        return hiter->second;
+      }
+    }
+
+    /* Check input files for hints */
+    for(std::vector<std::pair<std::string, std::string> >::const_iterator
+          hiter = e3sm_comp_ihints.cbegin(); hiter != e3sm_comp_ihints.cend(); ++hiter){
+      if((*fiter).find(hiter->first) != std::string::npos){
+        return hiter->second;
       }
     }
   }
@@ -425,23 +453,29 @@ static int cache_or_print_stats(iosystem_desc_t *ios, int root_proc,
     /* Add Overall I/O performance statistics */
     std::vector<std::pair<std::string, std::string> > overall_comp_vals;
     PIO_Util::Serializer_Utils::serialize_pack("name", model_name, overall_comp_vals);
-    PIO_Util::Serializer_Utils::serialize_pack("avg_wtput",
+    PIO_Util::Serializer_Utils::serialize_pack("avg_wtput(MB/s)",
       (cached_overall_gio_sstats.wtime_max > 0.0) ?
       (cached_overall_gio_sstats.wb_total / (ONE_MB * cached_overall_gio_sstats.wtime_max)) : 0.0,
       overall_comp_vals);
 
-    PIO_Util::Serializer_Utils::serialize_pack("avg_rtput",
+    PIO_Util::Serializer_Utils::serialize_pack("avg_rtput(MB/s)",
       (cached_overall_gio_sstats.rtime_max > 0.0) ?
       (cached_overall_gio_sstats.rb_total / (ONE_MB * cached_overall_gio_sstats.rtime_max)) : 0.0,
       overall_comp_vals);
 
-    PIO_Util::Serializer_Utils::serialize_pack("tot_wb",
+    PIO_Util::Serializer_Utils::serialize_pack("tot_wb(bytes)",
       cached_overall_gio_sstats.wb_total, overall_comp_vals);
 
-    PIO_Util::Serializer_Utils::serialize_pack("tot_rb",
+    PIO_Util::Serializer_Utils::serialize_pack("tot_rb(bytes)",
       cached_overall_gio_sstats.rb_total, overall_comp_vals);
 
-    PIO_Util::Serializer_Utils::serialize_pack("tot_wtime",
+    PIO_Util::Serializer_Utils::serialize_pack("tot_wtime(s)",
+      cached_overall_gio_sstats.wtime_max, overall_comp_vals);
+
+    PIO_Util::Serializer_Utils::serialize_pack("tot_rtime(s)",
+      cached_overall_gio_sstats.rtime_max, overall_comp_vals);
+
+    PIO_Util::Serializer_Utils::serialize_pack("tot_time(s)",
       cached_overall_gio_sstats.ttime_max, overall_comp_vals);
 
     spio_ser->serialize(id, "OverallIOStatistics", overall_comp_vals);
@@ -470,23 +504,29 @@ static int cache_or_print_stats(iosystem_desc_t *ios, int root_proc,
 
 
       PIO_Util::Serializer_Utils::serialize_pack("name", cached_ios_names[i], comp_vals);
-      PIO_Util::Serializer_Utils::serialize_pack("avg_wtput",
+      PIO_Util::Serializer_Utils::serialize_pack("avg_wtput(MB/s)",
         (cached_ios_gio_sstats[i].wtime_max > 0.0) ?
         (cached_ios_gio_sstats[i].wb_total / (ONE_MB * cached_ios_gio_sstats[i].wtime_max)) : 0.0,
         comp_vals);
 
-      PIO_Util::Serializer_Utils::serialize_pack("avg_rtput",
+      PIO_Util::Serializer_Utils::serialize_pack("avg_rtput(MB/s)",
         (cached_ios_gio_sstats[i].rtime_max > 0.0) ?
         (cached_ios_gio_sstats[i].rb_total / (ONE_MB * cached_ios_gio_sstats[i].rtime_max)) : 0.0,
         comp_vals);
 
-      PIO_Util::Serializer_Utils::serialize_pack("tot_wb",
+      PIO_Util::Serializer_Utils::serialize_pack("tot_wb(bytes)",
         cached_ios_gio_sstats[i].wb_total, comp_vals);
 
-      PIO_Util::Serializer_Utils::serialize_pack("tot_rb",
+      PIO_Util::Serializer_Utils::serialize_pack("tot_rb(bytes)",
         cached_ios_gio_sstats[i].rb_total, comp_vals);
 
-      PIO_Util::Serializer_Utils::serialize_pack("tot_wtime",
+      PIO_Util::Serializer_Utils::serialize_pack("tot_wtime(s)",
+        cached_ios_gio_sstats[i].wtime_max, comp_vals);
+
+      PIO_Util::Serializer_Utils::serialize_pack("tot_rtime(s)",
+        cached_ios_gio_sstats[i].rtime_max, comp_vals);
+
+      PIO_Util::Serializer_Utils::serialize_pack("tot_time(s)",
         cached_ios_gio_sstats[i].ttime_max, comp_vals);
 
       comp_vvals.push_back(comp_vals);
@@ -520,23 +560,29 @@ static int cache_or_print_stats(iosystem_desc_t *ios, int root_proc,
         const std::size_t ONE_MB = 1024 * 1024;
 
         PIO_Util::Serializer_Utils::serialize_pack("name", cached_file_names[i][j], file_vals);
-        PIO_Util::Serializer_Utils::serialize_pack("avg_wtput",
+        PIO_Util::Serializer_Utils::serialize_pack("avg_wtput(MB/s)",
           (cached_file_gio_sstats[i][j].wtime_max > 0.0) ?
           (cached_file_gio_sstats[i][j].wb_total / (ONE_MB * cached_file_gio_sstats[i][j].wtime_max)) : 0.0,
           file_vals);
 
-        PIO_Util::Serializer_Utils::serialize_pack("avg_rtput",
+        PIO_Util::Serializer_Utils::serialize_pack("avg_rtput(MB/s)",
           (cached_file_gio_sstats[i][j].rtime_max > 0.0) ?
           (cached_file_gio_sstats[i][j].rb_total / (ONE_MB * cached_file_gio_sstats[i][j].rtime_max)) : 0.0,
           file_vals);
 
-        PIO_Util::Serializer_Utils::serialize_pack("tot_wb",
+        PIO_Util::Serializer_Utils::serialize_pack("tot_wb(bytes)",
           cached_file_gio_sstats[i][j].wb_total, file_vals);
 
-        PIO_Util::Serializer_Utils::serialize_pack("tot_rb",
+        PIO_Util::Serializer_Utils::serialize_pack("tot_rb(bytes)",
           cached_file_gio_sstats[i][j].rb_total, file_vals);
 
-        PIO_Util::Serializer_Utils::serialize_pack("tot_wtime",
+        PIO_Util::Serializer_Utils::serialize_pack("tot_wtime(s)",
+          cached_file_gio_sstats[i][j].wtime_max, file_vals);
+
+        PIO_Util::Serializer_Utils::serialize_pack("tot_rtime(s)",
+          cached_file_gio_sstats[i][j].rtime_max, file_vals);
+
+        PIO_Util::Serializer_Utils::serialize_pack("tot_time(s)",
           cached_file_gio_sstats[i][j].ttime_max, file_vals);
 
         file_vvals.push_back(file_vals);
