@@ -470,7 +470,10 @@ CONTAINS
 
     ierr = get_var_dim_sz(File, varid, var_sz)
     if(ierr /= PIO_NOERR) then
-      call piodie(__PIO_FILE__, __LINE__, "Unable to get variable dimension size")
+      print *, "WARNING: Getting variable dimensions failed, (varid = ", varid, ")"
+      ! Instead of aborting here let the internal/C APIs handle the error
+      ! based on the error handler chosen by the user
+      var_sz = INT(SIZE(ival), PIO_OFFSET_KIND)
     end if
 
     if(INT(SIZE(ival), PIO_OFFSET_KIND) < var_sz) then

@@ -242,7 +242,11 @@ contains
     ! Get the number of dimensions in variable
     ierr = PIOc_inq_varndims(File%fh, varid-1, ndims)
     if(ierr /= PIO_NOERR) then
-      call piodie(__PIO_FILE__, __LINE__, "Inquiring number of dims of variable failed")
+      ! Since we don't handle error handlers in the Fortran wrapper
+      ! issue a warning and return an error code (instead of abort)
+      print *, "WARNING: Inquiring number of dims of variable failed.",&
+                __PIO_FILE__, ":", __LINE__
+      return
     end if
     if(ndims == 0) then
       ! A scalar variable
