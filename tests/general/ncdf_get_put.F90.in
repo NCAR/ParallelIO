@@ -290,6 +290,177 @@ PIO_TF_AUTO_TEST_SUB_BEGIN test_put_get_1dvar
 
 PIO_TF_AUTO_TEST_SUB_END test_put_get_1dvar
 
+! Put and get variables with large/small (compared to the variable size) user buffers
+PIO_TF_TEMPLATE<PIO_TF_PREDEF_TYPENAME PIO_TF_DATA_TYPE, PIO_TF_PREDEF_TYPENAME PIO_TF_FC_DATA_TYPE>
+PIO_TF_AUTO_TEST_SUB_BEGIN test_put_get_1dvar_ls_buf
+  Implicit none
+  type(file_desc_t) :: pio_file
+  character(len=PIO_TF_MAX_STR_LEN) :: filename
+  type(var_desc_t)  :: pio_var, pio_cvar
+  integer :: pio_dim
+
+  integer, parameter :: DIM_LEN = 200
+  integer, parameter :: DIM_LARGE_LEN = DIM_LEN + 100
+  integer, parameter :: DIM_SMALL_LEN = DIM_LEN - 100
+  ! User buffer to put/get the value is larger than the variable dim
+  PIO_TF_FC_DATA_TYPE, dimension(DIM_LARGE_LEN) :: lpval, lgval
+  CHARACTER(len=DIM_LARGE_LEN) :: lpcval, lgcval
+  ! User buffer to put the value is smaller than the variable dim
+  PIO_TF_FC_DATA_TYPE, dimension(DIM_SMALL_LEN) :: spval
+  CHARACTER(len=DIM_SMALL_LEN) :: spcval
+
+  integer, dimension(:), allocatable :: iotypes
+  character(len=PIO_TF_MAX_STR_LEN), dimension(:), allocatable :: iotype_descs
+  character(len=*), parameter :: PIO_VAR_NAME = 'dummy_var_put_val'
+  character(len=*), parameter :: PIO_CVAR_NAME = 'dummy_var_put_cval'
+  integer :: num_iotypes
+  integer :: i, j, ret
+
+  ! Initialize the part of the user buffer written out to the file
+  do i=1,DIM_SMALL_LEN
+    spval(i) = i
+    spcval(i:i) = 's'
+  end do
+
+  ! Initialize the part of the user buffer written out to the file
+  do i=1,DIM_LEN
+    lpval(i) = i
+    lpcval(i:i) = 'l'
+  end do
+
+  ! Initialize the part of get/put user buffers not read_from/written_to the file
+  do i=DIM_LEN+1,DIM_LARGE_LEN
+    lpval(i) = pio_tf_world_sz_
+    ! Note : For strings the entire get buffer gets initialized by Scorpio, so
+    ! any prior contents in the get buffer is erased. So any non-space character
+    ! that is assigned to gcval(i:i) will be overwritten by Scorpio
+    lpcval(i:i) = ''
+    lgval(i) = lpval(i)
+    lgcval(i:i) = lpcval(i:i)
+  end do
+
+  num_iotypes = 0
+  call PIO_TF_Get_nc_iotypes(iotypes, iotype_descs, num_iotypes)
+  filename = "test_pio_ncdf_get_put.testfile"
+  do i=1,num_iotypes
+    PIO_TF_LOG(0,*) "Testing type :", iotype_descs(i)
+    ret = PIO_createfile(pio_tf_iosystem_, pio_file, iotypes(i), filename, PIO_CLOBBER)
+    PIO_TF_CHECK_ERR(ret, "Failed to open:" // trim(filename))
+
+    ! Since file is just created no need to enter redef
+    ret = PIO_def_dim(pio_file, 'dummy_dim_put_val', DIM_LEN, pio_dim)
+    PIO_TF_CHECK_ERR(ret, "Failed to define dim:" // trim(filename))
+
+    ret = PIO_def_var(pio_file, PIO_VAR_NAME, PIO_TF_DATA_TYPE, (/pio_dim/), pio_var)
+    PIO_TF_CHECK_ERR(ret, "Failed to define var:" // trim(filename))
+
+    ret = PIO_def_var(pio_file, PIO_CVAR_NAME, PIO_char, (/pio_dim/), pio_cvar)
+    PIO_TF_CHECK_ERR(ret, "Failed to define char var:" // trim(filename))
+
+    ret = PIO_enddef(pio_file)
+    PIO_TF_CHECK_ERR(ret, "Failed to enddef:" // trim(filename))
+
+    ! Put and get the values using a user buffer that is larger than the
+    ! variable
+    ret = PIO_put_var(pio_file, pio_var, lpval);
+    PIO_TF_CHECK_ERR(ret, "Failed to put var:" // trim(filename))
+
+    ret = PIO_put_var(pio_file, pio_cvar, lpcval);
+    PIO_TF_CHECK_ERR(ret, "Failed to put char var:" // trim(filename))
+
+#ifdef PIO_TEST_CLOSE_OPEN_FOR_SYNC
+    call PIO_closefile(pio_file)
+
+    ret = PIO_openfile(pio_tf_iosystem_, pio_file, iotypes(i), filename, PIO_nowrite)
+    PIO_TF_CHECK_ERR(ret, "Failed to reopen:" // trim(filename))
+
+    ret = PIO_inq_varid(pio_file, PIO_VAR_NAME, pio_var)
+    PIO_TF_CHECK_ERR(ret, "Failed to get scalar var:" // trim(filename))
+
+    ret = PIO_inq_varid(pio_file, PIO_CVAR_NAME, pio_cvar)
+    PIO_TF_CHECK_ERR(ret, "Failed to get scalar char var:" // trim(filename))
+#else
+    call PIO_syncfile(pio_file)
+#endif
+
+    ret = PIO_get_var(pio_file, pio_var, lgval);
+    PIO_TF_CHECK_ERR(ret, "Failed to get var:" // trim(filename))
+
+    PIO_TF_CHECK_VAL((lgval, lpval), "Get with large user buffer : Got wrong value")
+
+    ret = PIO_get_var(pio_file, pio_cvar, lgcval);
+    PIO_TF_CHECK_ERR(ret, "Failed to get char var:" // trim(filename))
+
+    PIO_TF_CHECK_VAL((lgcval, lpcval), "Get with large user buffer : Got wrong value")
+
+    ! Put the values using a user buffer that is smaller than the
+    ! variable and get it with a larger buffer
+    ret = PIO_put_var(pio_file, pio_var, spval);
+    PIO_TF_CHECK_ERR(ret, "Failed to put var:" // trim(filename))
+
+    ret = PIO_put_var(pio_file, pio_cvar, spcval);
+    PIO_TF_CHECK_ERR(ret, "Failed to put char var:" // trim(filename))
+
+#ifdef PIO_TEST_CLOSE_OPEN_FOR_SYNC
+    call PIO_closefile(pio_file)
+
+    ret = PIO_openfile(pio_tf_iosystem_, pio_file, iotypes(i), filename, PIO_nowrite)
+    PIO_TF_CHECK_ERR(ret, "Failed to reopen:" // trim(filename))
+
+    ret = PIO_inq_varid(pio_file, PIO_VAR_NAME, pio_var)
+    PIO_TF_CHECK_ERR(ret, "Failed to get scalar var:" // trim(filename))
+
+    ret = PIO_inq_varid(pio_file, PIO_CVAR_NAME, pio_cvar)
+    PIO_TF_CHECK_ERR(ret, "Failed to get scalar char var:" // trim(filename))
+#else
+    call PIO_syncfile(pio_file)
+#endif
+
+  do j=1,DIM_SMALL_LEN
+    lpcval(j:j) = spcval(j:j)
+  end do
+
+  ! Since only values in spval and spcval, i.e., <= DIM_SMALL_LEN, is written
+  ! out initialize the rest of the values in the buffer used to read the data
+  ! and compare
+  do j=DIM_SMALL_LEN+1,DIM_LARGE_LEN
+    lpval(j) = 0
+    ! Note : For strings the entire get buffer gets initialized by Scorpio, so
+    ! any prior contents in the get buffer is erased. So any non-space character
+    ! that is assigned to gcval(i:i) will be overwritten by Scorpio
+    lpcval(j:j) = ''
+    lgval(j) = lpval(j)
+    lgcval(j:j) = lpcval(j:j)
+  end do
+
+    ! Note: Getting a variable with a buffer smaller than the size of the variable
+    ! is an error, so use a large buffer for reading this data
+    ret = PIO_get_var(pio_file, pio_var, lgval);
+    PIO_TF_CHECK_ERR(ret, "Failed to get var:" // trim(filename))
+
+    PIO_TF_CHECK_VAL((lgval, lpval), "Get with large user buffer : Got wrong value")
+
+    ret = PIO_get_var(pio_file, pio_cvar, lgcval);
+    PIO_TF_CHECK_ERR(ret, "Failed to get char var:" // trim(filename))
+
+    ! Since the variable is written out with a smaller buffer (than the size of the
+    ! variable), the rest of the variable might contain invalid/uninitialized
+    ! values. Reset these values, that were not written out, before checking the
+    ! results
+    lgcval(DIM_SMALL_LEN+1:DIM_LARGE_LEN) = ''
+
+    PIO_TF_CHECK_VAL((lgcval, lpcval), "Get with large user buffer : Got wrong value")
+
+    call PIO_closefile(pio_file)
+    call PIO_deletefile(pio_tf_iosystem_, filename);
+  end do
+  if(allocated(iotypes)) then
+    deallocate(iotypes)
+    deallocate(iotype_descs)
+  end if
+
+PIO_TF_AUTO_TEST_SUB_END test_put_get_1dvar_ls_buf
+
 ! Write out a 1d var slice from a 2d var
 PIO_TF_TEMPLATE<PIO_TF_PREDEF_TYPENAME PIO_TF_DATA_TYPE, PIO_TF_PREDEF_TYPENAME PIO_TF_FC_DATA_TYPE>
 PIO_TF_AUTO_TEST_SUB_BEGIN test_put_get_1dvar_slice

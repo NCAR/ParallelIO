@@ -8,9 +8,9 @@ module pionfget_mod
 #ifdef TIMING
   use perf_mod, only : t_startf, t_stopf      ! _EXTERNAL
 #endif
-  use pio_kinds, only: i4,r4,r8
+  use pio_kinds, only: i4,r4,r8,pio_offset_kind
   use pio_types, only : file_desc_t, var_desc_t, pio_noerr
-  use pio_support, only : replace_c_null, get_text_var_sz, piodie
+  use pio_support, only : replace_c_null, get_text_var_sz, get_var_dim_sz, piodie
   implicit none
   private
 !>
@@ -466,6 +466,21 @@ CONTAINS
     type (File_desc_t), intent(in) :: File
     integer, intent(in) :: varid
     {VTYPE}, intent(out) :: ival{DIMSTR}
+    integer(PIO_OFFSET_KIND) :: var_sz
+
+    ierr = get_var_dim_sz(File, varid, var_sz)
+    if(ierr /= PIO_NOERR) then
+      print *, "WARNING: Getting variable dimensions failed, (varid = ", varid, ")"
+      ! Instead of aborting here let the internal/C APIs handle the error
+      ! based on the error handler chosen by the user
+      var_sz = INT(SIZE(ival), PIO_OFFSET_KIND)
+    end if
+
+    if(INT(SIZE(ival), PIO_OFFSET_KIND) < var_sz) then
+      print *, "ERROR: The size of the user buffer (", SIZE(ival), " elements) ",&
+                "is smaller than the size of the variable (", var_sz, " elements)"
+      call piodie(__PIO_FILE__, __LINE__, "Insufficient user buffer size")
+    end if
 
     ierr = get_var_{TYPE}_internal(File%fh, varid, ival)
 
@@ -556,6 +571,12 @@ CONTAINS
     max_flen= len(fstr(1))
     do j=1,fstr_dim_sz(1)
       cstr_copied = .false.
+      if(cstr_idx * max_clen + min(max_clen, max_flen) > cstr_sz) then
+        print *, "WARNING: The number of strings read (", cstr_idx, ") ",&
+                  "is less than the number of expected strings in the ",&
+                  "Fortran array (", fstr_dim_sz(1), " strings) "
+        exit
+      end if
       do i=1,min(max_clen, max_flen)
         fstr(j)(i:i) = cstr(cstr_idx * max_clen + i)
         if(fstr(j)(i:i) == C_NULL_CHAR) then
@@ -580,6 +601,12 @@ CONTAINS
     do k=1,fstr_dim_sz(2)
       do j=1,fstr_dim_sz(1)
         cstr_copied = .false.
+        if(cstr_idx * max_clen + min(max_clen, max_flen) > cstr_sz) then
+          print *, "WARNING: The number of strings read (", cstr_idx, ") ",&
+                    "is less than the number of expected strings in the ",&
+                    "Fortran array (", fstr_dim_sz(1) * fstr_dim_sz(2), " strings) "
+          exit
+        end if
         do i=1,min(max_clen, max_flen)
           fstr(j,k)(i:i) = cstr(cstr_idx * max_clen + i)
           if(fstr(j,k)(i:i) == C_NULL_CHAR) then
@@ -606,6 +633,13 @@ CONTAINS
       do k=1,fstr_dim_sz(2)
         do j=1,fstr_dim_sz(1)
           cstr_copied = .false.
+          if(cstr_idx * max_clen + min(max_clen, max_flen) > cstr_sz) then
+            print *, "WARNING: The number of strings read (", cstr_idx, ") ",&
+                      "is less than the number of expected strings in the ",&
+                      "Fortran array (",&
+                      fstr_dim_sz(1) * fstr_dim_sz(2) * fstr_dim_sz(3), " strings) "
+            exit
+          end if
           do i=1,min(max_clen, max_flen)
             fstr(j,k,m)(i:i) = cstr(cstr_idx * max_clen + i)
             if(fstr(j,k,m)(i:i) == C_NULL_CHAR) then
@@ -634,6 +668,14 @@ CONTAINS
         do k=1,fstr_dim_sz(2)
           do j=1,fstr_dim_sz(1)
             cstr_copied = .false.
+            if(cstr_idx * max_clen + min(max_clen, max_flen) > cstr_sz) then
+              print *, "WARNING: The number of strings read (", cstr_idx, ") ",&
+                        "is less than the number of expected strings in the ",&
+                        "Fortran array (",&
+                        fstr_dim_sz(1) * fstr_dim_sz(2) * fstr_dim_sz(3) * fstr_dim_sz(4),&
+                        " strings) "
+              exit
+            end if
             do i=1,min(max_clen, max_flen)
               fstr(j,k,m,n)(i:i) = cstr(cstr_idx * max_clen + i)
               if(fstr(j,k,m,n)(i:i) == C_NULL_CHAR) then
@@ -664,6 +706,14 @@ CONTAINS
           do k=1,fstr_dim_sz(2)
             do j=1,fstr_dim_sz(1)
               cstr_copied = .false.
+              if(cstr_idx * max_clen + min(max_clen, max_flen) > cstr_sz) then
+                print *, "WARNING: The number of strings read (", cstr_idx, ") ",&
+                          "is less than the number of expected strings in the ",&
+                          "Fortran array (",&
+                          fstr_dim_sz(1) * fstr_dim_sz(2) * fstr_dim_sz(3) * fstr_dim_sz(4) * fstr_dim_sz(5),&
+                          " strings) "
+                exit
+              end if
               do i=1,min(max_clen, max_flen)
                 fstr(j,k,m,n,q)(i:i) = cstr(cstr_idx * max_clen + i)
                 if(fstr(j,k,m,n,q)(i:i) == C_NULL_CHAR) then

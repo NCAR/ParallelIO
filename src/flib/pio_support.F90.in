@@ -22,6 +22,7 @@ module pio_support
   public :: pio_writedof
   public :: replace_c_null
   public :: get_text_var_sz
+  public :: get_var_dim_sz
 
   public :: Fstring2Cstring
 
@@ -185,6 +186,109 @@ contains
 
     get_text_var_sz = ierr
   end function get_text_var_sz
+
+!>
+!! @public
+!! @brief Get the dim size of a variable
+!! @details
+!! @param File : File containing the variable
+!! @param varid : Id of the queried variable
+!! @param var_sz : The total size of the variable is
+!!                      returned in this arg
+!! @param var_dim_sz : The dimension sizes of the variable is
+!!                      returned in this optional arg
+!! @retval ierr
+!<
+  integer function get_var_dim_sz(File, varid, var_sz, var_dim_sz)
+    type (File_desc_t), intent(in) :: File
+    integer, intent(in) :: varid
+    integer(PIO_OFFSET_KIND), intent(out) :: var_sz
+    integer(PIO_OFFSET_KIND), intent(inout), allocatable, optional :: var_dim_sz(:)
+
+    integer :: ndims = 0
+    integer, allocatable :: dimids(:)
+    integer(C_SIZE_T), allocatable :: dim_sz(:)
+    integer :: i, ierr = PIO_NOERR
+
+    interface
+       integer(C_INT) function PIOc_inq_varndims(ncid       ,varid,ndims) &
+            bind(C                                          ,name="PIOc_inq_varndims")
+         use iso_c_binding
+         integer(C_INT)                                     , value :: ncid
+         integer(C_INT)                                     , value :: varid
+         integer(C_INT) :: ndims
+       end function PIOc_inq_varndims
+    end interface
+    interface
+       integer(C_INT) function PIOc_inq_vardimid(ncid       ,varid,dimids) &
+            bind(C                                          ,name="PIOc_inq_vardimid")
+         use iso_c_binding
+         integer(C_INT)                                     , value :: ncid
+         integer(C_INT)                                     , value :: varid
+         integer(C_INT) :: dimids(*)
+       end function PIOc_inq_vardimid
+    end interface
+    interface
+       integer(C_INT) function PIOc_inq_dimlen(ncid         ,dimid,len) &
+            bind(C                                          ,name="PIOc_inq_dimlen")
+         use iso_c_binding
+         integer(C_INT)                                     , value :: ncid
+         integer(c_int)                                     , value :: dimid
+         integer(c_size_t) :: len
+       end function PIOc_inq_dimlen
+    end interface
+
+    var_sz = 0
+    ! Get the number of dimensions in variable
+    ierr = PIOc_inq_varndims(File%fh, varid-1, ndims)
+    if(ierr /= PIO_NOERR) then
+      ! Since we don't handle error handlers in the Fortran wrapper
+      ! issue a warning and return an error code (instead of abort)
+      print *, "WARNING: Inquiring number of dims of variable failed.",&
+                __PIO_FILE__, ":", __LINE__
+      return
+    end if
+    if(ndims == 0) then
+      ! A scalar variable
+      var_sz = 1
+
+      if(present(var_dim_sz)) then
+        allocate(var_dim_sz(1))
+        var_dim_sz(1) = 1
+      end if
+
+      get_var_dim_sz = PIO_NOERR
+      return
+    end if
+
+    ! Get the dimension ids for the variable
+    allocate(dimids(ndims))
+    ierr = PIOc_inq_vardimid(File%fh, varid-1, dimids)
+    if(ierr /= PIO_NOERR) then
+      call piodie(__PIO_FILE__, __LINE__, "Inquiring the variable dimension ids for the variable failed")
+    end if
+
+    allocate(dim_sz(ndims))
+    if(present(var_dim_sz)) then
+      allocate(var_dim_sz(ndims))
+    end if
+    var_sz = 1
+    do i=1,ndims
+      ierr = PIOc_inq_dimlen(File%fh, dimids(i), dim_sz(i))
+      if(ierr /= PIO_NOERR) then
+        call piodie(__PIO_FILE__, __LINE__, "Inquiring the lengths of dimension for the variable failed")
+      end if
+      var_sz = var_sz * INT(dim_sz(i), PIO_OFFSET_KIND)
+      if(present(var_dim_sz)) then
+        var_dim_sz(ndims - i + 1) = INT(dim_sz(i), PIO_OFFSET_KIND)
+      end if
+    end do
+
+    deallocate(dim_sz)
+    deallocate(dimids)
+
+    get_var_dim_sz = ierr
+  end function get_var_dim_sz
 
 !>
 !! @public

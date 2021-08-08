@@ -8,9 +8,9 @@ module pionfput_mod
   use perf_mod, only : t_startf, t_stopf      ! _EXTERNAL
 #endif
   use iso_c_binding
-  use pio_kinds, only: i4,r4,r8
+  use pio_kinds, only: i4,r4,r8,pio_offset_kind
   use pio_types, only : file_desc_t, var_desc_t, pio_noerr
-  use pio_support, only : piodie, get_text_var_sz
+  use pio_support, only : piodie, get_text_var_sz, get_var_dim_sz
   use pio_support, only : Fstring2Cstring
 
   implicit none
@@ -327,13 +327,41 @@ contains
     type (File_desc_t), intent(inout) :: File
     integer, intent(in) :: varid
     {VTYPE}, intent(in) :: ival{DIMSTR}
-    {VTYPE}, allocatable :: cval(:)
-    integer :: clen
+
+    {VTYPE}, allocatable :: cval(:), tmp_cval(:)
+    integer(PIO_OFFSET_KIND) :: var_sz
+    integer :: i, clen
+
     clen = size(ival)
     if (clen > 0) then
         allocate(cval(clen))
         cval = reshape(ival,(/clen/))
-        ierr = put_var_internal_{TYPE} (File%fh, varid, cval)
+
+        ierr = get_var_dim_sz(File, varid, var_sz)
+        if(ierr /= PIO_NOERR) then
+            print *, "WARNING: Getting variable dimensions failed (varid = ", varid, ")"
+            ! Instead of aborting here let the internal/C APIs handle
+            ! the error using the error handler chosen by the user
+            var_sz = INT(clen, PIO_OFFSET_KIND)
+        end if
+
+        if(INT(clen, PIO_OFFSET_KIND) >= var_sz) then
+            ierr = put_var_internal_{TYPE} (File%fh, varid, cval)
+        else
+            print *,  "PIO: WARNING: The user buffer passed to PIO_put_var ",&
+                      "is smaller (total size of user buffer = ", size(ival),&
+                      " elements) than the size of the variable (total size ",&
+                      "of the variable = ", var_sz, " elements). Only part ",&
+                      "of the variable will be written out"
+            allocate(tmp_cval(var_sz))
+            tmp_cval = 0
+            do i=1,clen
+                tmp_cval(i) = cval(i)
+            end do
+            ierr = put_var_internal_{TYPE} (File%fh, varid, tmp_cval)
+            deallocate(tmp_cval)
+        end if
+
         deallocate(cval)
     else
         print *, "PIO: WARNING: Empty {DIMS}d {TYPE} data passed to PIO_put_var",&
