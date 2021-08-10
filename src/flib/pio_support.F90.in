@@ -31,6 +31,34 @@ module pio_support
     module procedure Fstring2Cstring_{DIMS}d
   end interface
 
+  interface
+     integer(C_INT) function PIOc_inq_varndims(ncid       ,varid,ndims) &
+          bind(C                                          ,name="PIOc_inq_varndims")
+       use iso_c_binding
+       integer(C_INT)                                     , value :: ncid
+       integer(C_INT)                                     , value :: varid
+       integer(C_INT) :: ndims
+     end function PIOc_inq_varndims
+  end interface
+  interface
+     integer(C_INT) function PIOc_inq_vardimid(ncid       ,varid,dimids) &
+          bind(C                                          ,name="PIOc_inq_vardimid")
+       use iso_c_binding
+       integer(C_INT)                                     , value :: ncid
+       integer(C_INT)                                     , value :: varid
+       integer(C_INT) :: dimids(*)
+     end function PIOc_inq_vardimid
+  end interface
+  interface
+     integer(C_INT) function PIOc_inq_dimlen(ncid         ,dimid,len) &
+          bind(C                                          ,name="PIOc_inq_dimlen")
+       use iso_c_binding
+       integer(C_INT)                                     , value :: ncid
+       integer(c_int)                                     , value :: dimid
+       integer(c_size_t) :: len
+     end function PIOc_inq_dimlen
+  end interface
+
   logical, public :: Debug=.FALSE.
   logical, public :: DebugIO=.FALSE.
   logical, public :: DebugAsync=.FALSE.
@@ -86,34 +114,6 @@ contains
     integer, allocatable :: dimids(:)
     integer(C_SIZE_T) :: dim_sz
     integer :: i, ierr = PIO_NOERR
-
-    interface
-       integer(C_INT) function PIOc_inq_varndims(ncid       ,varid,ndims) &
-            bind(C                                          ,name="PIOc_inq_varndims")
-         use iso_c_binding
-         integer(C_INT)                                     , value :: ncid
-         integer(C_INT)                                     , value :: varid
-         integer(C_INT) :: ndims
-       end function PIOc_inq_varndims
-    end interface
-    interface
-       integer(C_INT) function PIOc_inq_vardimid(ncid       ,varid,dimids) &
-            bind(C                                          ,name="PIOc_inq_vardimid")
-         use iso_c_binding
-         integer(C_INT)                                     , value :: ncid
-         integer(C_INT)                                     , value :: varid
-         integer(C_INT) :: dimids(*)
-       end function PIOc_inq_vardimid
-    end interface
-    interface
-       integer(C_INT) function PIOc_inq_dimlen(ncid         ,dimid,len) &
-            bind(C                                          ,name="PIOc_inq_dimlen")
-         use iso_c_binding
-         integer(C_INT)                                     , value :: ncid
-         integer(c_int)                                     , value :: dimid
-         integer(c_size_t) :: len
-       end function PIOc_inq_dimlen
-    end interface
 
     if(present(var_nstrs)) then
       var_nstrs = 0
@@ -209,34 +209,6 @@ contains
     integer, allocatable :: dimids(:)
     integer(C_SIZE_T), allocatable :: dim_sz(:)
     integer :: i, ierr = PIO_NOERR
-
-    interface
-       integer(C_INT) function PIOc_inq_varndims(ncid       ,varid,ndims) &
-            bind(C                                          ,name="PIOc_inq_varndims")
-         use iso_c_binding
-         integer(C_INT)                                     , value :: ncid
-         integer(C_INT)                                     , value :: varid
-         integer(C_INT) :: ndims
-       end function PIOc_inq_varndims
-    end interface
-    interface
-       integer(C_INT) function PIOc_inq_vardimid(ncid       ,varid,dimids) &
-            bind(C                                          ,name="PIOc_inq_vardimid")
-         use iso_c_binding
-         integer(C_INT)                                     , value :: ncid
-         integer(C_INT)                                     , value :: varid
-         integer(C_INT) :: dimids(*)
-       end function PIOc_inq_vardimid
-    end interface
-    interface
-       integer(C_INT) function PIOc_inq_dimlen(ncid         ,dimid,len) &
-            bind(C                                          ,name="PIOc_inq_dimlen")
-         use iso_c_binding
-         integer(C_INT)                                     , value :: ncid
-         integer(c_int)                                     , value :: dimid
-         integer(c_size_t) :: len
-       end function PIOc_inq_dimlen
-    end interface
 
     var_sz = 0
     ! Get the number of dimensions in variable
