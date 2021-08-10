@@ -1592,6 +1592,7 @@ int PIOc_inq_varid(int ncid, const char *name, int *varidp)
             return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
         }
 
+    file->varlist[*varidp].varid = *varidp;
 #ifdef PIO_MICRO_TIMING
     /* Create timers for the variable
       * - Assuming that we don't reuse varids
@@ -3117,6 +3118,7 @@ int PIOc_def_var(int ncid, const char *name, nc_type xtype, int ndims,
             return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
         }
 
+    file->varlist[*varidp].varid = *varidp;
     strncpy(file->varlist[*varidp].vname, name, PIO_MAX_NAME);
     file->varlist[*varidp].pio_type = xtype;
     if(file->num_unlim_dimids > 0)
