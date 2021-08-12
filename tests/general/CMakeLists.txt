@@ -50,7 +50,7 @@ foreach (SRC_FILE IN LISTS GENERATED_SRCS)
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${SRC_FILE}.in)
 endforeach ()
 
-set(DEF_SPIO_TIMING_DIR ${CMAKE_BINARY_DIR}/spio_stats)
+set(DEF_SPIO_TIMING_DIR ${CMAKE_CURRENT_BINARY_DIR}/spio_stats)
 file(MAKE_DIRECTORY ${DEF_SPIO_TIMING_DIR})
 
 # The PIO library is written using C, C++ and Fortran languages
