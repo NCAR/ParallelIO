@@ -16,6 +16,7 @@ var searchData=
   ['get_5fvar1_5fvdesc_5ftext',['get_var1_vdesc_text',['../group___p_i_o__get__var.html#ga3c3d43cf5d95afd04f6d2568e7fd604e',1,'pionfget_mod']]],
   ['get_5fvar_5fchunk_5fcache_5fdesc',['get_var_chunk_cache_desc',['../classpio__nf.html#aa7922aa02b9d386e533f0ff4f2d2d5a8',1,'pio_nf']]],
   ['get_5fvar_5fchunk_5fcache_5fid',['get_var_chunk_cache_id',['../classpio__nf.html#a1b8b8cb1f5145b73692f5077f94e4ecf',1,'pio_nf']]],
+  ['get_5fvar_5fdim_5fsz',['get_var_dim_sz',['../classpio__support.html#a77f5896ee2b9313533dde1f7d463b409',1,'pio_support']]],
   ['get_5fvar_5fvdesc_5f0d_5ftext',['get_var_vdesc_0d_text',['../group___p_i_o__get__var.html#gaf0fe9ff4680d853dba15d048274147c8',1,'pionfget_mod']]],
   ['get_5fvara_5f1d_5fdouble',['get_vara_1d_double',['../group___p_i_o__get__var.html#ga1d566a42183be8c700df8d408dbb08c5',1,'pionfget_mod']]],
   ['get_5fvara_5f1d_5fint',['get_vara_1d_int',['../group___p_i_o__get__var.html#ga60eb7cb68cbd0f56c8dcc5152e75299f',1,'pionfget_mod']]],
