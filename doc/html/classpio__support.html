@@ -24,7 +24,7 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">SCORPIO
-   &#160;<span id="projectnumber">1.2.1</span>
+   &#160;<span id="projectnumber">1.2.2</span>
    </div>
   </td>
  </tr>
@@ -84,6 +84,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="header">
   <div class="summary">
 <a href="modulepio__support-members.html">List of all members</a> &#124;
+<a href="#nested-classes">Data Types</a> &#124;
 <a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="#pub-attribs">Public Attributes</a>  </div>
   <div class="headertitle">
@@ -91,6 +92,13 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!--header-->
 <div class="contents">
 <table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Data Types</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfacepio__support_1_1_p_i_oc__inq__dimlen.html">PIOc_inq_dimlen</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfacepio__support_1_1_p_i_oc__inq__vardimid.html">PIOc_inq_vardimid</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:abcbf3a9d77e36435f9110d1efe8fb19a"><td class="memItemLeft" align="right" valign="top">subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpio__support.html#abcbf3a9d77e36435f9110d1efe8fb19a">replace_c_null</a> (istr, ilen)</td></tr>
@@ -99,6 +107,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a1f69cb29f775b014101ae45aadf2e193"><td class="memItemLeft" align="right" valign="top">integer function, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpio__support.html#a1f69cb29f775b014101ae45aadf2e193">get_text_var_sz</a> (File, varid, var_slen, var_nstrs, var_dim_sz)</td></tr>
 <tr class="memdesc:a1f69cb29f775b014101ae45aadf2e193"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the size of a text/character variable (Each element of a text variable is a string)  <a href="#a1f69cb29f775b014101ae45aadf2e193">More...</a><br/></td></tr>
 <tr class="separator:a1f69cb29f775b014101ae45aadf2e193"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a77f5896ee2b9313533dde1f7d463b409"><td class="memItemLeft" align="right" valign="top">integer function, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpio__support.html#a77f5896ee2b9313533dde1f7d463b409">get_var_dim_sz</a> (File, varid, var_sz, var_dim_sz)</td></tr>
+<tr class="memdesc:a77f5896ee2b9313533dde1f7d463b409"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the dim size of a variable.  <a href="#a77f5896ee2b9313533dde1f7d463b409">More...</a><br/></td></tr>
+<tr class="separator:a77f5896ee2b9313533dde1f7d463b409"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a13fac82014192fcf782a95c3be4e9a66"><td class="memItemLeft" align="right" valign="top">subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpio__support.html#a13fac82014192fcf782a95c3be4e9a66">piodie</a> (file, line, msg, ival1, msg2, ival2, msg3, ival3, mpirank)</td></tr>
 <tr class="memdesc:a13fac82014192fcf782a95c3be4e9a66"><td class="mdescLeft">&#160;</td><td class="mdescRight">Abort the model for abnormal termination.  <a href="#a13fac82014192fcf782a95c3be4e9a66">More...</a><br/></td></tr>
 <tr class="separator:a13fac82014192fcf782a95c3be4e9a66"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -111,6 +122,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:aa6b9b98ebf5a85c45dfc0f108f453fba"><td class="memItemLeft" align="right" valign="top">subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpio__support.html#aa6b9b98ebf5a85c45dfc0f108f453fba">pio_readdof</a> (file, ndims, gdims, DOF, comm, punit)</td></tr>
 <tr class="memdesc:aa6b9b98ebf5a85c45dfc0f108f453fba"><td class="mdescLeft">&#160;</td><td class="mdescRight">Fortran interface to read a mapping file.  <a href="#aa6b9b98ebf5a85c45dfc0f108f453fba">More...</a><br/></td></tr>
 <tr class="separator:aa6b9b98ebf5a85c45dfc0f108f453fba"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab876ceabd5a82f3ecc019a07c51a1a30"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab876ceabd5a82f3ecc019a07c51a1a30"></a>
+subroutine&#160;</td><td class="memItemRight" valign="bottom"><b>fstring2cstring_0d</b> (fstr, cstr, cstr_sz, max_clen, cstr_add_null)</td></tr>
+<tr class="separator:ab876ceabd5a82f3ecc019a07c51a1a30"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
@@ -224,6 +238,61 @@ logical, public&#160;</td><td class="memItemRight" valign="bottom"><b>debugasync
     <tr><td class="paramname">var_slen</td><td>: The length of each string in the variable is returned in this arg </td></tr>
     <tr><td class="paramname">var_nstrs</td><td>: The number of strings in the variable is returned in this arg (OPTIONAL) </td></tr>
     <tr><td class="paramname">var_dim_sz</td><td>: The dimension sizes of the variable is returned in this arg (OPTIONAL) </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="retval"><dt>Return values</dt><dd>
+  <table class="retval">
+    <tr><td class="paramname">ierr</td><td></td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="a77f5896ee2b9313533dde1f7d463b409"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">integer function, public pio_support::get_var_dim_sz </td>
+          <td>(</td>
+          <td class="paramtype">type (<a class="el" href="structfile__desc__t.html">file_desc_t</a>), intent(in)&#160;</td>
+          <td class="paramname"><em>File</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer, intent(in)&#160;</td>
+          <td class="paramname"><em>varid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(pio_offset_kind), intent(out)&#160;</td>
+          <td class="paramname"><em>var_sz</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(pio_offset_kind), dimension(:), intent(inout), optional, allocatable&#160;</td>
+          <td class="paramname"><em>var_dim_sz</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get the dim size of a variable. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">File</td><td>: File containing the variable </td></tr>
+    <tr><td class="paramname">varid</td><td>: Id of the queried variable </td></tr>
+    <tr><td class="paramname">var_sz</td><td>: The total size of the variable is returned in this arg </td></tr>
+    <tr><td class="paramname">var_dim_sz</td><td>: The dimension sizes of the variable is returned in this optional arg </td></tr>
   </table>
   </dd>
 </dl>
@@ -467,7 +536,7 @@ logical, public&#160;</td><td class="memItemRight" valign="bottom"><b>debugasync
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Mar 12 2021 11:08:42 for SCORPIO by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Aug 12 2021 10:43:50 for SCORPIO by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

@@ -19,6 +19,8 @@ var searchData=
   ['pioc_5fget_5fvara_5ffloat',['PIOc_get_vara_float',['../interfacepionfget__mod_1_1_p_i_oc__get__vara__float.html',1,'pionfget_mod']]],
   ['pioc_5fget_5fvara_5fint',['PIOc_get_vara_int',['../interfacepionfget__mod_1_1_p_i_oc__get__vara__int.html',1,'pionfget_mod']]],
   ['pioc_5fget_5fvara_5ftext',['PIOc_get_vara_text',['../interfacepionfget__mod_1_1_p_i_oc__get__vara__text.html',1,'pionfget_mod']]],
+  ['pioc_5finq_5fdimlen',['PIOc_inq_dimlen',['../interfacepio__support_1_1_p_i_oc__inq__dimlen.html',1,'pio_support']]],
+  ['pioc_5finq_5fvardimid',['PIOc_inq_vardimid',['../interfacepio__support_1_1_p_i_oc__inq__vardimid.html',1,'pio_support']]],
   ['pioc_5fput_5fatt_5fdouble',['PIOc_put_att_double',['../interfacepionfatt__mod_1_1_p_i_oc__put__att__double.html',1,'pionfatt_mod']]],
   ['pioc_5fput_5fatt_5ffloat',['PIOc_put_att_float',['../interfacepionfatt__mod_1_1_p_i_oc__put__att__float.html',1,'pionfatt_mod']]],
   ['pioc_5fput_5fatt_5fint',['PIOc_put_att_int',['../interfacepionfatt__mod_1_1_p_i_oc__put__att__int.html',1,'pionfatt_mod']]],
