@@ -200,18 +200,22 @@ int PIOc_put_att_tc(int ncid, int varid, const char *name, nc_type atttype,
     {
         LOG((2, "ADIOS define attribute %s, varid %d, type %d", name, varid, atttype));
 
+        ierr = ADIOS2_BEGIN_STEP(file, ios);
+        if (ierr != PIO_NOERR)
+            return ierr;
+
         adios2_type adios_type = PIOc_get_adios_type(atttype);
 
         char path[PIO_MAX_NAME];
         if (varid != PIO_GLOBAL)
         {
-            adios_var_desc_t *av = &(file->adios_vars[varid]);
-            strncpy(path, av->name, sizeof(path));
+            assert((strlen("/__pio__/var/") + strlen(file->adios_vars[varid].name)) < PIO_MAX_NAME);
+            snprintf(path, PIO_MAX_NAME, "/__pio__/var/%s", file->adios_vars[varid].name);
             ++file->adios_vars[varid].nattrs;
         }
         else
         {
-            strncpy(path, "pio_global", sizeof(path));
+            snprintf(path, PIO_MAX_NAME, "/__pio__/global");
             file->num_gattrs++;
         }
 
@@ -238,7 +242,7 @@ int PIOc_put_att_tc(int ncid, int varid, const char *name, nc_type atttype,
         file->adios_attrs[num_attrs].adios_type = adios_type;
         file->num_attrs++;
 
-        if (file->adios_iomaster == MPI_ROOT)
+        if (file->myrank == MPI_ROOT)
         {
             ios->io_fstats->wb += len * atttype_len;
             file->io_fstats->wb += len * atttype_len;
@@ -264,8 +268,11 @@ int PIOc_put_att_tc(int ncid, int varid, const char *name, nc_type atttype,
                 spio_ltimer_stop(file->io_fstats->tot_timer_name);
                 GPTLstop("PIO:PIOc_put_att_tc_adios");
                 GPTLstop("PIO:write_total_adios");
-                return pio_err(ios, file, PIO_EADIOS2ERR, __FILE__, __LINE__, "Defining (ADIOS) attribute (name=%s) failed for file (%s, ncid=%d)", att_name, pio_get_fname_from_file(file), file->pio_ncid);
+                return pio_err(ios, file, PIO_EADIOS2ERR, __FILE__, __LINE__,
+                               "Defining (ADIOS) attribute (name=%s) failed for file (%s, ncid=%d)",
+                                att_name, pio_get_fname_from_file(file), file->pio_ncid);
             }
+            file->num_written_blocks += 1;
         }
 
         GPTLstop("PIO:PIOc_put_att_tc");
@@ -1532,8 +1539,13 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
             GPTLstop("PIO:PIOc_put_vars_tc_adios");
             GPTLstop("PIO:write_total_adios");
             return pio_err(ios, file, PIO_EBADID, __FILE__, __LINE__,
-                            "Writing variable to file (%s, ncid=%d) failed. Invalid variable id (varid=%d, expected >=0 and < number of variables in the file, %d) provided", pio_get_fname_from_file(file), ncid, varid, file->num_vars);
+                           "Writing variable to file (%s, ncid=%d) failed. Invalid variable id (varid=%d, expected >=0 and < number of variables in the file, %d) provided",
+                           pio_get_fname_from_file(file), ncid, varid, file->num_vars);
         }
+
+        ierr = ADIOS2_BEGIN_STEP(file, ios);
+        if (ierr != PIO_NOERR)
+            return ierr;
 
         adios2_error adiosErr = adios2_error_none;
 
@@ -1555,16 +1567,18 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                 xtype = PIO_INT64;
         }
 
-        if (xtype != vartype)
-            av->adios_type = PIOc_get_adios_type(xtype);
-        av->adios_type_size = adios2_type_size(av->adios_type, NULL);
+        /* No conversion to vartype will be made. Use the in-memory type of the data buffer */
+        av->adios_type = PIOc_get_adios_type(xtype);
+        av->adios_type_size = get_adios2_type_size(av->adios_type, NULL);
+
+        char vname[PIO_MAX_NAME];
 
         /* Scalars have to be handled differently. */
         if (av->ndims == 0)
         {
             /* Only the IO master does the IO, so we are not really
              * getting parallel IO here. */
-            if (file->adios_iomaster == MPI_ROOT)
+            if (file->myrank == 0)
             {
                 if (start)
                 {
@@ -1594,10 +1608,12 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                 ios->io_fstats->wb += num_elem * typelen;
                 file->io_fstats->wb += num_elem * typelen;
 
-                av->adios_varid = adios2_inquire_variable(file->ioH, av->name);
+                assert((strlen("/__pio__/var/") + strlen(av->name)) < PIO_MAX_NAME);
+                snprintf(vname, PIO_MAX_NAME, "/__pio__/var/%s", av->name);
+                av->adios_varid = adios2_inquire_variable(file->ioH, vname);
                 if (av->adios_varid == NULL)
                 {
-                    av->adios_varid = adios2_define_variable(file->ioH, av->name, av->adios_type,
+                    av->adios_varid = adios2_define_variable(file->ioH, vname, av->adios_type,
                                                              0, NULL, NULL, NULL,
                                                              adios2_constant_dims_false);
                     if (av->adios_varid == NULL)
@@ -1610,7 +1626,9 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                         spio_ltimer_stop(file->io_fstats->tot_timer_name);
                         GPTLstop("PIO:PIOc_put_vars_tc_adios");
                         GPTLstop("PIO:write_total_adios");
-                        return pio_err(NULL, file, PIO_EADIOS2ERR, __FILE__, __LINE__, "Defining (ADIOS) variable (name=%s) failed for file (%s, ncid=%d)", av->name, pio_get_fname_from_file(file), file->pio_ncid);
+                        return pio_err(NULL, file, PIO_EADIOS2ERR, __FILE__, __LINE__,
+                                    "Defining (ADIOS) variable (name=%s) failed for file (%s, ncid=%d)",
+                                    vname, pio_get_fname_from_file(file), file->pio_ncid);
                     }
                 }
 
@@ -1625,8 +1643,11 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                     spio_ltimer_stop(file->io_fstats->tot_timer_name);
                     GPTLstop("PIO:PIOc_put_vars_tc_adios");
                     GPTLstop("PIO:write_total_adios");
-                    return pio_err(ios, file, PIO_EADIOS2ERR, __FILE__, __LINE__, "Putting (ADIOS) variable (name=%s) failed (adios2_error=%s) for file (%s, ncid=%d)", av->name, adios2_error_to_string(adiosErr), pio_get_fname_from_file(file), file->pio_ncid);
+                    return pio_err(ios, file, PIO_EADIOS2ERR, __FILE__, __LINE__,
+                                   "Putting (ADIOS) variable (name=%s) failed (adios2_error=%s) for file (%s, ncid=%d)",
+                                   av->name, adios2_error_to_string(adiosErr), pio_get_fname_from_file(file), file->pio_ncid);
                 }
+                (file->num_written_blocks)++;
             }
         }
         else
@@ -1638,65 +1659,70 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                 LOG((2, "ADIOS does not support striding %s:%s\n"
                         "Variable %s will be corrupted in the output"
                         , __FILE__, __func__, av->name));
+                GPTLstop("PIO:PIOc_put_vars_tc");
+                GPTLstop("PIO:write_total");
+                spio_ltimer_stop(ios->io_fstats->wr_timer_name);
+                spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+                spio_ltimer_stop(file->io_fstats->wr_timer_name);
+                spio_ltimer_stop(file->io_fstats->tot_timer_name);
+                GPTLstop("PIO:PIOc_put_vars_tc_adios");
+                GPTLstop("PIO:write_total_adios");
+                return pio_err(ios, file, PIO_EADIOS2ERR, __FILE__, __LINE__,
+                               "ADIOS does not support striding. Variable %s file (%s, ncid=%d)",
+                               av->name, pio_get_fname_from_file(file), file->pio_ncid);
             }
 
             /* Only the IO master actually does these ADIOS calls. */
-            if (file->adios_iomaster == MPI_ROOT)
+            if (file->myrank == 0)
             {
-                int d_start = 0;
-                if (file->dim_values[av->gdimids[0]] == PIO_UNLIMITED)
-                {
-                    d_start = 1; // omit the unlimited time dimension from the adios variable definition
-                }
-
-                /* This is a scalar variable over time */
-                if (av->ndims == 1 && file->dim_values[av->gdimids[0]] == PIO_UNLIMITED)
-                {
-                    d_start = 0;
-                }
-
+                /* Write start and count arrays to be able to reconstruct the variable during conversion. */
                 int64_t pio_var_start[PIO_MAX_DIMS], pio_var_count[PIO_MAX_DIMS];
-                for (int d = 0; d < av->ndims; d++)
+                if (start)
                 {
-                    if (start)
+                    for (int d = 0; d < av->ndims; d++)
                     {
                         pio_var_start[d] = (int64_t)start[d];
                     }
-                    else
-                    {
-                        pio_var_start[d] = -1; /* start is NULL */
-                    }
+                }
+                else
+                {
+                    pio_var_start[0] = -1; /* if start is NULL */
+                }
 
-                    if (count)
+                if (count)
+                {
+                    for (int d = 0; d < av->ndims; d++)
                     {
                         pio_var_count[d] = (int64_t)count[d];
                     }
-                    else
-                    {
-                        /* count is NULL. set pio_var_count to -1 * (dim_values[] + 1) to capture it. */
-                        /* dim_values[] + 1 so that pio_var_count[0] < 0, even if dim_values[0] is 0 */
-                        pio_var_count[d] = (int64_t)(-1 * (file->dim_values[av->gdimids[d]] + 1));
-                    }
                 }
-
-                size_t av_count[PIO_MAX_DIMS];
-                for (int d = d_start; d < av->ndims; d++)
+                else
                 {
-                    if (count)
-                    {
-                        av_count[d - d_start] = (size_t)count[d];
-                    }
-                    else
-                    {
-                        av_count[d - d_start] = (size_t)file->dim_values[av->gdimids[d]];
-                    }
+                    pio_var_count[0] = -1; /* if count is NULL */
                 }
 
                 /* Create a one-dimensional byte array to combine start, count and buf */
-                size_t av_size = av->ndims * 2 * sizeof(int64_t);
+                size_t av_size  = 2 * av->ndims * sizeof(int64_t); /* pio_var_start and pio_var_count */
                 size_t buf_size = 1;
-                for (int d = 0; d < (av->ndims - d_start); d++) {
-                    buf_size *= av_count[d];
+                if (count)
+                {
+                    for (int d = 0; d < av->ndims; d++)
+                    {
+                        if (file->dim_values[av->gdimids[d]] != PIO_UNLIMITED)
+                        {
+                            buf_size *= (size_t)count[d];
+                        }
+                    }
+                }
+                else
+                {
+                    for (int d = 0; d < av->ndims; d++)
+                    {
+                        if (file->dim_values[av->gdimids[d]] != PIO_UNLIMITED)
+                        {
+                            buf_size *= (size_t)file->dim_values[av->gdimids[d]];
+                        }
+                    }
                 }
                 buf_size *= av->adios_type_size;
                 av_size += buf_size;
@@ -1707,11 +1733,12 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                 /* PIOc_put_var may be called multiple times with different start/count values
                  * for a variable. ADIOS should output data for each of those calls not just
                  * when the variable is not defined */
-                av->adios_varid = adios2_inquire_variable(file->ioH, av->name);
+                assert((strlen("/__pio__/var/") + strlen(av->name)) < PIO_MAX_NAME);
+                snprintf(vname, PIO_MAX_NAME, "/__pio__/var/%s", av->name);
+                av->adios_varid = adios2_inquire_variable(file->ioH, vname);
                 if (av->adios_varid == NULL)
                 {
-                    /* av->ndims - d_start --> only the variable dimensions for the data buffer to be written out */
-                    av->adios_varid = adios2_define_variable(file->ioH, av->name, adios2_type_uint8_t,
+                    av->adios_varid = adios2_define_variable(file->ioH, vname, adios2_type_uint8_t,
                                                              1, NULL, NULL, &av_size,
                                                              adios2_constant_dims_false);
                     if (av->adios_varid == NULL)
@@ -1724,7 +1751,9 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                         spio_ltimer_stop(file->io_fstats->tot_timer_name);
                         GPTLstop("PIO:PIOc_put_vars_tc_adios");
                         GPTLstop("PIO:write_total_adios");
-                        return pio_err(ios, file, PIO_EADIOS2ERR, __FILE__, __LINE__, "Defining (ADIOS) variable (name=%s) failed for file (%s, ncid=%d)", av->name, pio_get_fname_from_file(file), file->pio_ncid);
+                        return pio_err(ios, file, PIO_EADIOS2ERR, __FILE__, __LINE__,
+                                       "Defining (ADIOS) variable (name=%s) failed for file (%s, ncid=%d)",
+                                       vname, pio_get_fname_from_file(file), file->pio_ncid);
                     }
                 }
                 else
@@ -1740,11 +1769,13 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                         spio_ltimer_stop(file->io_fstats->tot_timer_name);
                         GPTLstop("PIO:PIOc_put_vars_tc_adios");
                         GPTLstop("PIO:write_total_adios");
-                        return pio_err(ios, file, PIO_EADIOS2ERR, __FILE__, __LINE__, "Setting (ADIOS) selection to variable (name=%s) failed (adios2_error=%s) for file (%s, ncid=%d)", av->name, adios2_error_to_string(adiosErr), pio_get_fname_from_file(file), file->pio_ncid);
+                        return pio_err(ios, file, PIO_EADIOS2ERR, __FILE__, __LINE__,
+                                       "Setting (ADIOS) selection to variable (name=%s) failed (adios2_error=%s) for file (%s, ncid=%d)",
+                                       av->name, adios2_error_to_string(adiosErr), pio_get_fname_from_file(file), file->pio_ncid);
                     }
                 }
 
-                unsigned char *mem_buffer = (unsigned char*)malloc(av_size * sizeof(unsigned char));
+                char *mem_buffer = (char*)calloc(av_size, sizeof(char));
                 if (mem_buffer == NULL)
                 {
                     GPTLstop("PIO:PIOc_put_vars_tc");
@@ -1756,9 +1787,10 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                     GPTLstop("PIO:PIOc_put_vars_tc_adios");
                     GPTLstop("PIO:write_total_adios");
                     return pio_err(ios, file, PIO_ENOMEM, __FILE__, __LINE__,
-                                    "Writing variable (%s, varid=%d) to file (%s, ncid=%d) failed. Out of memory, allocating memory (%lld bytes) for putting ADIOS variable (name = %s)", pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid, (long long int) (av_size * sizeof(unsigned char)), av->name);
+                                   "Writing variable (%s, varid=%d) to file (%s, ncid=%d) failed. Out of memory, allocating memory (%lld bytes) for putting ADIOS variable (name = %s)",
+                                   pio_get_vname_from_file(file, varid), varid, pio_get_fname_from_file(file), ncid, (long long int) (av_size * sizeof(unsigned char)), av->name);
                 }
-                unsigned char *tmp_buf = mem_buffer;
+                char *tmp_buf = mem_buffer;
                 memcpy(tmp_buf, pio_var_start, av->ndims * sizeof(int64_t));
                 tmp_buf += (av->ndims * sizeof(int64_t));
                 memcpy(tmp_buf, pio_var_count, av->ndims * sizeof(int64_t));
@@ -1777,7 +1809,9 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                     spio_ltimer_stop(file->io_fstats->tot_timer_name);
                     GPTLstop("PIO:PIOc_put_vars_tc_adios");
                     GPTLstop("PIO:write_total_adios");
-                    return pio_err(ios, file, PIO_EADIOS2ERR, __FILE__, __LINE__, "Putting (ADIOS) variable (name=%s) failed (adios2_error=%s) for file (%s, ncid=%d)", av->name, adios2_error_to_string(adiosErr), pio_get_fname_from_file(file), file->pio_ncid);
+                    return pio_err(ios, file, PIO_EADIOS2ERR, __FILE__, __LINE__,
+                                   "Putting (ADIOS) variable (name=%s) failed (adios2_error=%s) for file (%s, ncid=%d)",
+                                   av->name, adios2_error_to_string(adiosErr), pio_get_fname_from_file(file), file->pio_ncid);
                 }
 
                 char* dimnames[PIO_MAX_DIMS];
@@ -1790,7 +1824,8 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                 }
 
                 char att_name[PIO_MAX_NAME];
-                snprintf(att_name, PIO_MAX_NAME, "%s/__pio__/dims", av->name);
+                assert((strlen("/__pio__/var/") + strlen("/def/dims") + strlen(av->name)) < PIO_MAX_NAME);
+                snprintf(att_name, PIO_MAX_NAME, "/__pio__/var/%s/def/dims", av->name);
                 adios2_attribute *attributeH = adios2_inquire_attribute(file->ioH, att_name);
                 if (attributeH == NULL)
                 {
@@ -1805,17 +1840,21 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                         spio_ltimer_stop(file->io_fstats->tot_timer_name);
                         GPTLstop("PIO:PIOc_put_vars_tc_adios");
                         GPTLstop("PIO:write_total_adios");
-                        return pio_err(ios, file, PIO_EADIOS2ERR, __FILE__, __LINE__, "Defining (ADIOS) attribute array (name=%s, size=%d) failed for file (%s, ncid=%d)", att_name, av->ndims, pio_get_fname_from_file(file), file->pio_ncid);
+                        return pio_err(ios, file, PIO_EADIOS2ERR, __FILE__, __LINE__,
+                                       "Defining (ADIOS) attribute array (name=%s, size=%d) failed for file (%s, ncid=%d)",
+                                       att_name, av->ndims, pio_get_fname_from_file(file), file->pio_ncid);
                     }
                 }
+                file->num_written_blocks += 2;
             }
         }
 
         /* Only the IO master actually does these ADIOS calls. */
-        if (file->adios_iomaster == MPI_ROOT)
+        if (file->myrank == 0)
         {
             char att_name[PIO_MAX_NAME];
-            snprintf(att_name, PIO_MAX_NAME, "%s/__pio__/ndims", av->name);
+            assert((strlen("/__pio__/var/") + strlen("/def/ndims") + strlen(av->name)) < PIO_MAX_NAME);
+            snprintf(att_name, PIO_MAX_NAME, "/__pio__/var/%s/def/ndims", av->name);
             adios2_attribute *attributeH = adios2_inquire_attribute(file->ioH, att_name);
             if (attributeH == NULL)
             {
@@ -1830,11 +1869,14 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                     spio_ltimer_stop(file->io_fstats->tot_timer_name);
                     GPTLstop("PIO:PIOc_put_vars_tc_adios");
                     GPTLstop("PIO:write_total_adios");
-                    return pio_err(ios, file, PIO_EADIOS2ERR, __FILE__, __LINE__, "Defining (ADIOS) attribute (name=%s) failed for file (%s, ncid=%d)", att_name, pio_get_fname_from_file(file), file->pio_ncid);
+                    return pio_err(ios, file, PIO_EADIOS2ERR, __FILE__, __LINE__,
+                                   "Defining (ADIOS) attribute (name=%s) failed for file (%s, ncid=%d)",
+                                   att_name, pio_get_fname_from_file(file), file->pio_ncid);
                 }
             }
 
-            snprintf(att_name, PIO_MAX_NAME, "%s/__pio__/nctype", av->name);
+            assert((strlen("/__pio__/var/") + strlen("/def/nctype") + strlen(av->name)) < PIO_MAX_NAME);
+            snprintf(att_name, PIO_MAX_NAME, "/__pio__/var/%s/def/nctype", av->name);
             attributeH = adios2_inquire_attribute(file->ioH, att_name);
             if (attributeH == NULL)
             {
@@ -1849,12 +1891,15 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                     spio_ltimer_stop(file->io_fstats->tot_timer_name);
                     GPTLstop("PIO:PIOc_put_vars_tc_adios");
                     GPTLstop("PIO:write_total_adios");
-                    return pio_err(ios, file, PIO_EADIOS2ERR, __FILE__, __LINE__, "Defining (ADIOS) attribute (name=%s) failed for file (%s, ncid=%d)", att_name, pio_get_fname_from_file(file), file->pio_ncid);
+                    return pio_err(ios, file, PIO_EADIOS2ERR, __FILE__, __LINE__,
+                                   "Defining (ADIOS) attribute (name=%s) failed for file (%s, ncid=%d)",
+                                   att_name, pio_get_fname_from_file(file), file->pio_ncid);
                 }
             }
 
             /* Need to save adios type for conversion, since we merge blocks as char arrays */
-            snprintf(att_name, PIO_MAX_NAME, "%s/__pio__/adiostype", av->name);
+            assert((strlen("/__pio__/var/") + strlen("/def/adiostype") + strlen(av->name)) < PIO_MAX_NAME);
+            snprintf(att_name, PIO_MAX_NAME, "/__pio__/var/%s/def/adiostype", av->name);
             attributeH = adios2_inquire_attribute(file->ioH, att_name);
             if (attributeH == NULL)
             {
@@ -1870,11 +1915,14 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                     spio_ltimer_stop(file->io_fstats->tot_timer_name);
                     GPTLstop("PIO:PIOc_put_vars_tc_adios");
                     GPTLstop("PIO:write_total_adios");
-                    return pio_err(ios, file, PIO_EADIOS2ERR, __FILE__, __LINE__, "Defining (ADIOS) attribute (name=%s) failed for file (%s, ncid=%d)", att_name, pio_get_fname_from_file(file), file->pio_ncid);
+                    return pio_err(ios, file, PIO_EADIOS2ERR, __FILE__, __LINE__,
+                                   "Defining (ADIOS) attribute (name=%s) failed for file (%s, ncid=%d)",
+                                   att_name, pio_get_fname_from_file(file), file->pio_ncid);
                 }
             }
 
-            snprintf(att_name, PIO_MAX_NAME, "%s/__pio__/ncop", av->name);
+            assert((strlen("/__pio__/var/") + strlen("/def/ncop") + strlen(av->name)) < PIO_MAX_NAME);
+            snprintf(att_name, PIO_MAX_NAME, "/__pio__/var/%s/def/ncop", av->name);
             attributeH = adios2_inquire_attribute(file->ioH, att_name);
             if (attributeH == NULL)
             {
@@ -1889,9 +1937,12 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                     spio_ltimer_stop(file->io_fstats->tot_timer_name);
                     GPTLstop("PIO:PIOc_put_vars_tc_adios");
                     GPTLstop("PIO:write_total_adios");
-                    return pio_err(ios, file, PIO_EADIOS2ERR, __FILE__, __LINE__, "Defining (ADIOS) attribute (name=%s) failed for file (%s, ncid=%d)", att_name, pio_get_fname_from_file(file), file->pio_ncid);
+                    return pio_err(ios, file, PIO_EADIOS2ERR, __FILE__, __LINE__,
+                                   "Defining (ADIOS) attribute (name=%s) failed for file (%s, ncid=%d)",
+                                   att_name, pio_get_fname_from_file(file), file->pio_ncid);
                 }
             }
+            file->num_written_blocks += 4;
         }
 
         GPTLstop("PIO:PIOc_put_vars_tc");

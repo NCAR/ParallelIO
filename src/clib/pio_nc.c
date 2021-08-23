@@ -23,7 +23,7 @@
 #include "spio_io_summary.h"
 
 #ifdef _ADIOS2
-int adios2_type_size(adios2_type type, const void *var)
+int get_adios2_type_size(adios2_type type, const void *var)
 {
     switch (type)
     {
@@ -536,7 +536,7 @@ int PIOc_inq_type(int ncid, nc_type xtype, char *name, PIO_Offset *sizep)
         if (sizep)
         {
             adios2_type atype = PIOc_get_adios_type(xtype);
-            int asize = adios2_type_size(atype, NULL);
+            int asize = get_adios2_type_size(atype, NULL);
             *sizep = (PIO_Offset) asize;
         }
 
@@ -667,14 +667,6 @@ int PIOc_inq_format(int ncid, int *formatp)
         if (file->iotype == PIO_IOTYPE_PNETCDF)
             ierr = ncmpi_inq_format(file->fh, formatp);
 #endif /* _PNETCDF */
-
-#ifdef _ADIOS2
-        if (file->iotype == PIO_IOTYPE_ADIOS)
-        {
-            LOG((2, "ADIOS missing %s:%s", __FILE__, __func__));
-            ierr = PIO_NOERR;
-        }
-#endif
 
 #ifdef _NETCDF
         if (file->iotype != PIO_IOTYPE_PNETCDF && file->iotype != PIO_IOTYPE_ADIOS && file->do_io)
@@ -1720,7 +1712,6 @@ int PIOc_inq_att(int ncid, int varid, const char *name, nc_type *xtypep,
 #ifdef _ADIOS2
     if (file->iotype == PIO_IOTYPE_ADIOS)
     {
-        /* LOG((2, "ADIOS missing %s:%s", __FILE__, __func__)); */
         /* Track attributes */
         ierr = PIO_ENOTATT;
         for (int i = 0; i < file->num_attrs; i++)
@@ -2698,6 +2689,10 @@ int PIOc_def_dim(int ncid, const char *name, PIO_Offset len, int *idp)
         LOG((2, "ADIOS define dimension %s with size %llu, id = %d",
                 name, (unsigned long long)len, file->num_dim_vars));
 
+        ierr = ADIOS2_BEGIN_STEP(file, ios);
+        if (ierr != PIO_NOERR)
+            return ierr;
+
         char dimname[PIO_MAX_NAME];
         snprintf(dimname, PIO_MAX_NAME, "/__pio__/dim/%s", name);
         adios2_variable *variableH = adios2_inquire_variable(file->ioH, dimname);
@@ -2720,6 +2715,7 @@ int PIOc_def_dim(int ncid, const char *name, PIO_Offset len, int *idp)
         *idp = file->num_dim_vars;
         ++file->num_dim_vars;
         adios2_error adiosErr = adios2_put(file->engineH, variableH, &len, adios2_mode_sync);
+        file->num_written_blocks += file->num_all_procs;
         if (adiosErr != adios2_error_none)
         {
             spio_ltimer_stop(ios->io_fstats->tot_timer_name);
@@ -2928,21 +2924,34 @@ int PIOc_def_var(int ncid, const char *name, nc_type xtype, int ndims,
     {
         LOG((2, "ADIOS pre-define variable %s (%d dimensions, type %d)", name, ndims, xtype));
 
+        ierr = ADIOS2_BEGIN_STEP(file, ios);
+        if (ierr != PIO_NOERR)
+            return ierr;
+
         assert(file->num_vars < PIO_MAX_VARS);
         file->adios_vars[file->num_vars].name = strdup(name);
         file->adios_vars[file->num_vars].nc_type = xtype;
         file->adios_vars[file->num_vars].adios_type = PIOc_get_adios_type(xtype);
-        file->adios_vars[file->num_vars].adios_type_size = adios2_type_size(file->adios_vars[file->num_vars].adios_type, NULL);
+        file->adios_vars[file->num_vars].adios_type_size = get_adios2_type_size(file->adios_vars[file->num_vars].adios_type, NULL);
         file->adios_vars[file->num_vars].nattrs = 0;
         file->adios_vars[file->num_vars].ndims = ndims;
-        file->adios_vars[file->num_vars].adios_varid = 0;
-        file->adios_vars[file->num_vars].decomp_varid = 0;
-        file->adios_vars[file->num_vars].frame_varid = 0;
-        file->adios_vars[file->num_vars].fillval_varid = 0;
+        file->adios_vars[file->num_vars].adios_varid = NULL;
+        file->adios_vars[file->num_vars].decomp_varid = NULL;
+        file->adios_vars[file->num_vars].frame_varid = NULL;
+        file->adios_vars[file->num_vars].fillval_varid = NULL;
+        file->adios_vars[file->num_vars].decomp_buffer = NULL;
+        file->adios_vars[file->num_vars].frame_buffer = NULL;
+        file->adios_vars[file->num_vars].fillval_buffer = NULL;
+        file->adios_vars[file->num_vars].fillval_size = file->adios_vars[file->num_vars].adios_type_size;
+        file->adios_vars[file->num_vars].decomp_cnt = 0;
+        file->adios_vars[file->num_vars].frame_cnt = 0;
+        file->adios_vars[file->num_vars].fillval_cnt = 0;
+        file->adios_vars[file->num_vars].num_wb_buffer = NULL;
+        file->adios_vars[file->num_vars].num_wb_cnt = 0;
+        file->adios_vars[file->num_vars].max_buffer_cnt = MAX_ADIOS_BUFFER_COUNT;
 
-        /* to handle multi-dimensional temporal variables */
-        file->adios_vars[file->num_vars].start_varid = 0;
-        file->adios_vars[file->num_vars].count_varid = 0;
+        /* Block merge */
+        file->adios_vars[file->num_vars].elem_size = 0;
 
         file->adios_vars[file->num_vars].gdimids = (int*) malloc(ndims * sizeof(int));
         if (file->adios_vars[file->num_vars].gdimids == NULL)
@@ -2951,41 +2960,46 @@ int PIOc_def_var(int ncid, const char *name, nc_type xtype, int ndims,
             spio_ltimer_stop(ios->io_fstats->tot_timer_name);
             spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return pio_err(ios, file, PIO_ENOMEM, __FILE__, __LINE__,
-                            "Defining variable %s in file %s (ncid=%d) using ADIOS iotype failed. Out of memory allocating %lld bytes for global dimensions", vname, pio_get_fname_from_file(file), ncid, (unsigned long long) (ndims * sizeof(int)));
+                           "Defining variable %s in file %s (ncid=%d) using ADIOS iotype failed. Out of memory allocating %lld bytes for global dimensions",
+                           vname, pio_get_fname_from_file(file), ncid, (unsigned long long) (ndims * sizeof(int)));
         }
         memcpy(file->adios_vars[file->num_vars].gdimids, dimidsp, ndims * sizeof(int));
         *varidp = file->num_vars;
         file->num_vars++;
 
         /* Some codes moved from pio_darray.c */
+        /* Define the attributes of a variable even if the variable may not be written out */
+        /* This is needed to reconstruct the variable during conversion from BP to NetCDF */
         {
             adios_var_desc_t *av = &(file->adios_vars[*varidp]);
-            if (file->adios_iomaster == MPI_ROOT)
+            if (file->myrank == 0)
             {
                 char att_name[PIO_MAX_NAME];
-                snprintf(att_name, PIO_MAX_NAME, "%s/__pio__/ndims", av->name);
+                assert((strlen("/__pio__/var/") + strlen(av->name) + strlen("/def/ndims")) < PIO_MAX_NAME);
+                snprintf(att_name, PIO_MAX_NAME, "/__pio__/var/%s/def/ndims", av->name);
                 adios2_attribute *attributeH = adios2_inquire_attribute(file->ioH, att_name);
                 if (attributeH == NULL)
                 {
                     attributeH = adios2_define_attribute(file->ioH, att_name, adios2_type_int32_t, &av->ndims);
                     if (attributeH == NULL)
                     {
-                        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
-                        spio_ltimer_stop(file->io_fstats->tot_timer_name);
-                        return pio_err(ios, file, PIO_EADIOS2ERR, __FILE__, __LINE__, "Defining (ADIOS) attribute (name=%s) failed for file (%s, ncid=%d)", att_name, pio_get_fname_from_file(file), file->pio_ncid);
+                        return pio_err(ios, file, PIO_EADIOS2ERR, __FILE__, __LINE__,
+                                       "Defining (ADIOS) attribute (name=%s) failed for file (%s, ncid=%d)",
+                                       att_name, pio_get_fname_from_file(file), file->pio_ncid);
                     }
                 }
 
-                snprintf(att_name, PIO_MAX_NAME, "%s/__pio__/nctype", av->name);
+                assert((strlen("/__pio__/var/") + strlen(av->name) + strlen("/def/nctype")) < PIO_MAX_NAME);
+                snprintf(att_name, PIO_MAX_NAME, "/__pio__/var/%s/def/nctype", av->name);
                 attributeH = adios2_inquire_attribute(file->ioH, att_name);
                 if (attributeH == NULL)
                 {
                     attributeH = adios2_define_attribute(file->ioH, att_name, adios2_type_int32_t, &av->nc_type);
                     if (attributeH == NULL)
                     {
-                        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
-                        spio_ltimer_stop(file->io_fstats->tot_timer_name);
-                        return pio_err(ios, file, PIO_EADIOS2ERR, __FILE__, __LINE__, "Defining (ADIOS) attribute (name=%s) failed for file (%s, ncid=%d)", att_name, pio_get_fname_from_file(file), file->pio_ncid);
+                        return pio_err(ios, file, PIO_EADIOS2ERR, __FILE__, __LINE__,
+                                       "Defining (ADIOS) attribute (name=%s) failed for file (%s, ncid=%d)",
+                                       att_name, pio_get_fname_from_file(file), file->pio_ncid);
                     }
                 }
 
@@ -2996,19 +3010,21 @@ int PIOc_def_var(int ncid, const char *name, nc_type xtype, int ndims,
                     for (int i = 0; i < av->ndims; i++)
                         dimnames[i] = file->dim_names[av->gdimids[i]];
 
-                    snprintf(att_name, PIO_MAX_NAME, "%s/__pio__/dims", av->name);
+                    assert((strlen("/__pio__/var/") + strlen(av->name) + strlen("/def/dims")) < PIO_MAX_NAME);
+                    snprintf(att_name, PIO_MAX_NAME, "/__pio__/var/%s/def/dims", av->name);
                     attributeH = adios2_inquire_attribute(file->ioH, att_name);
                     if (attributeH == NULL)
                     {
                         attributeH = adios2_define_attribute_array(file->ioH, att_name, adios2_type_string, dimnames, av->ndims);
                         if (attributeH == NULL)
                         {
-                            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
-                            spio_ltimer_stop(file->io_fstats->tot_timer_name);
-                            return pio_err(ios, file, PIO_EADIOS2ERR, __FILE__, __LINE__, "Defining (ADIOS) attribute array (name=%s, size=%d) failed for file (%s, ncid=%d)", att_name, av->ndims, pio_get_fname_from_file(file), file->pio_ncid);
+                            return pio_err(ios, file, PIO_EADIOS2ERR, __FILE__, __LINE__,
+                                           "Defining (ADIOS) attribute array (name=%s, size=%d) failed for file (%s, ncid=%d)",
+                                           att_name, av->ndims, pio_get_fname_from_file(file), file->pio_ncid);
                         }
                     }
                 }
+                file->num_written_blocks += 3;
             }
         }
 

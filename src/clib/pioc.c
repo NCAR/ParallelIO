@@ -245,6 +245,22 @@ int PIOc_setframe(int ncid, int varid, int frame)
      * used by the write_darray functions. */
     file->varlist[varid].record = frame;
 
+#ifdef _ADIOS2
+    /* Add end_step here. Check for frame value of the ncid. */
+    if (file->iotype == PIO_IOTYPE_ADIOS)
+    {
+        if (file->current_frame < 0)
+        {
+            file->current_frame = frame;
+        }
+        else if (file->current_frame != frame)
+        {
+            ADIOS2_END_STEP(file, ios);
+            file->current_frame = frame;
+        }
+    }
+#endif
+
     return PIO_NOERR;
 }
 

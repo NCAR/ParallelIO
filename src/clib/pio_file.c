@@ -283,7 +283,9 @@ static int sync_file(int ncid)
 
 #ifdef _ADIOS2
     if (file->iotype == PIO_IOTYPE_ADIOS)
-        return PIO_NOERR;
+    {
+        return ADIOS2_END_STEP(file, ios);
+    }
 #endif
 
     if(file->mode & PIO_WRITE)
@@ -553,6 +555,10 @@ int PIOc_closefile(int ncid)
         {
             LOG((2, "ADIOS close file %s", file->filename));
 
+            ierr = ADIOS2_BEGIN_STEP(file, NULL);
+            if (ierr != PIO_NOERR)
+                return ierr;
+
             adios2_attribute *attributeH = adios2_inquire_attribute(file->ioH, "/__pio__/fillmode");
             if (attributeH == NULL)
             {
@@ -588,6 +594,36 @@ int PIOc_closefile(int ncid)
                     return pio_err(ios, file, PIO_EADIOS2ERR, __FILE__, __LINE__, "Defining (ADIOS) attribute (name=/__pio__/fillmode) failed for file (%s, ncid=%d)", pio_get_fname_from_file(file), file->pio_ncid);
                 }
             }
+
+            /* This is needed to write out the attribute /__pio__/fillmode */
+            {
+                adios2_variable *variableH = adios2_inquire_variable(file->ioH, "/__pio__/info/testing");
+                if (variableH == NULL)
+                {
+                    variableH = adios2_define_variable(file->ioH,
+                                                       "/__pio__/info/testing", adios2_type_int32_t,
+                                                       0, NULL, NULL, NULL,
+                                                       adios2_constant_dims_true);
+                    if (variableH == NULL)
+                    {
+                        return pio_err(ios, NULL, PIO_EADIOS2ERR, __FILE__, __LINE__,
+                                       "Defining (ADIOS) variable (name=/__pio__/info/testing) failed for file (%s)",
+                                       pio_get_fname_from_file(file));
+                    }
+                }
+
+                adios2_error adiosErr = adios2_put(file->engineH, variableH, &ios->num_uniontasks, adios2_mode_sync);
+                if (adiosErr != adios2_error_none)
+                {
+                    return pio_err(ios, NULL, PIO_EADIOS2ERR, __FILE__, __LINE__,
+                                   "Putting (ADIOS) variable (name=/__pio__/info/testing) failed (adios2_error=%s) for file (%s)",
+                                   adios2_error_to_string(adiosErr), pio_get_fname_from_file(file));
+                }
+            }
+
+            ierr = ADIOS2_END_STEP(file, ios);
+            if (ierr != PIO_NOERR)
+                return ierr;
 
             adios2_error adiosErr = adios2_close(file->engineH);
             if (adiosErr != adios2_error_none)
@@ -642,9 +678,32 @@ int PIOc_closefile(int ncid)
             file->adios_vars[i].frame_varid = NULL;
             file->adios_vars[i].fillval_varid = NULL;
 
-            /* to handle multi-dimensional temporal variables */
-            file->adios_vars[i].start_varid = NULL;
-            file->adios_vars[i].count_varid = NULL;
+            if (file->adios_vars[i].fillval_buffer != NULL)
+            {
+                free(file->adios_vars[i].fillval_buffer);
+                file->adios_vars[i].fillval_buffer = NULL;
+                file->adios_vars[i].fillval_cnt = 0;
+            }
+            if (file->adios_vars[i].decomp_buffer != NULL)
+            {
+                free(file->adios_vars[i].decomp_buffer);
+                file->adios_vars[i].decomp_buffer = NULL;
+                file->adios_vars[i].decomp_cnt = 0;
+            }
+            if (file->adios_vars[i].frame_buffer != NULL)
+            {
+                free(file->adios_vars[i].frame_buffer);
+                file->adios_vars[i].frame_buffer = NULL;
+                file->adios_vars[i].frame_cnt = 0;
+            }
+            if (file->adios_vars[i].num_wb_buffer != NULL)
+            {
+                free(file->adios_vars[i].num_wb_buffer);
+                file->adios_vars[i].num_wb_buffer = NULL;
+                file->adios_vars[i].num_wb_cnt = 0;
+            }
+
+            file->adios_vars[i].elem_size = 0;
         }
 
         file->num_vars = 0;
@@ -657,6 +716,37 @@ int PIOc_closefile(int ncid)
         }
 
         file->num_attrs = 0;
+
+        /* Block merging */
+        if (file->block_myrank == 0)
+        {
+            if (file->block_array != NULL)
+            {
+                free(file->block_array);
+                file->block_array = NULL;
+                file->block_array_size = 0;
+            }
+            if (file->array_counts != NULL)
+            {
+                free(file->array_counts);
+                file->array_counts = NULL;
+                file->array_counts_size = 0;
+            }
+            if (file->array_disp != NULL)
+            {
+                free(file->array_disp);
+                file->array_disp = NULL;
+                file->array_disp_size = 0;
+            }
+            if (file->block_list != NULL)
+            {
+                free(file->block_list);
+                file->block_list = NULL;
+            }
+        }
+
+        MPI_Comm_free(&(file->node_comm));
+        MPI_Comm_free(&(file->block_comm));
 
 #ifdef _ADIOS_BP2NC_TEST /* Comment out for large scale run */
 #ifdef _PNETCDF
