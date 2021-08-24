@@ -1,0 +1,80 @@
+MODULE ncdf_eh_tgv
+  use pio_tutil
+  implicit none
+
+  ! tgv = test global vars
+  character(len=PIO_TF_MAX_STR_LEN), parameter :: tgv_fname = "pio_ncdf_test_file.nc"
+  integer :: tgv_iotype
+END MODULE ncdf_eh_tgv
+
+PIO_TF_AUTO_TEST_SUB_BEGIN test_clob_then_no_clob
+  use ncdf_eh_tgv
+  Implicit none
+  type(file_desc_t) :: pio_file
+  character(len=PIO_TF_MAX_STR_LEN), parameter :: clob_fname = "pio_clob_test_file.nc"
+  integer :: ret
+
+  ret = PIO_createfile(pio_tf_iosystem_, pio_file, tgv_iotype, clob_fname, PIO_CLOBBER)
+  PIO_TF_CHECK_ERR(ret, "Failed to create:" // trim(clob_fname))
+
+  call PIO_closefile(pio_file)
+
+  ret = PIO_createfile(pio_tf_iosystem_, pio_file, tgv_iotype, clob_fname, PIO_NOCLOBBER)
+  PIO_TF_PASSERT(ret /= PIO_NOERR, "Create file with clobber then no clobber did not fail as expected")
+
+  ! No close since createfile should fail
+  call PIO_deletefile(pio_tf_iosystem_, clob_fname)
+
+PIO_TF_AUTO_TEST_SUB_END test_clob_then_no_clob
+
+PIO_TF_TEST_DRIVER_BEGIN
+  use ncdf_eh_tgv
+  Implicit none
+  type(file_desc_t) :: pio_file
+  integer :: ret, i
+  ! iotypes = valid NC types
+  integer, dimension(:), allocatable :: iotypes
+  character(len=PIO_TF_MAX_STR_LEN), dimension(:), allocatable :: iotype_descs
+  logical :: iotype_specified
+  character(len=PIO_TF_MAX_STR_LEN) :: user_iotype_str
+  integer :: user_iotype, num_iotypes
+
+  num_iotypes = 0
+
+  iotype_specified = PIO_TF_Get_test_arg("--pio-tf-targ-iotype", user_iotype_str)
+  ! If the user specified an iotype test it, otherwise test all supported iotypes
+  ! Note: The iotype specified by the user could be an unsupported iotype, however
+  ! since we are testing error handlers here using an unsupported iotype would
+  ! just generate another error
+  if(iotype_specified) then
+    num_iotypes = 1
+    allocate(iotypes(num_iotypes))
+    allocate(iotype_descs(num_iotypes))
+
+    user_iotype = PIO_TF_Iotype_from_str(user_iotype_str)
+    iotypes(1) = user_iotype
+    iotype_descs(1) = user_iotype_str
+  else
+    call PIO_TF_Get_nc_iotypes(iotypes, iotype_descs, num_iotypes)
+  end if
+
+  do i=1,num_iotypes
+    tgv_iotype = iotypes(i)
+    ret = PIO_createfile(pio_tf_iosystem_, pio_file, tgv_iotype, tgv_fname)
+    PIO_TF_CHECK_ERR(ret,&
+      "Failed to create:"//trim(iotype_descs(i))//":"//trim(tgv_fname))
+
+    call PIO_closefile(pio_file)
+
+    ! Make sure that global variables are set correctly before running the tests
+    PIO_TF_AUTO_TESTS_RUN(trim(iotype_descs(i)))
+
+    call PIO_deletefile(pio_tf_iosystem_, tgv_fname)
+  end do
+
+  if(allocated(iotypes)) then
+    deallocate(iotypes)
+    deallocate(iotype_descs)
+  end if
+
+PIO_TF_TEST_DRIVER_END
