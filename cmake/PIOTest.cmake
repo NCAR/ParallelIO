@@ -20,6 +20,7 @@ include (LibMPI)
 #   testname_np[8,16]_nio[1,2,4]_st[1,2,4] tests
 #
 # Syntax:  add_pio_test (<TESTNAME>
+#                        WILLFAIL
 #                        EXECUTABLE <command>
 #                        ARGUMENTS <arg1> <arg2> ...
 #                        MINNUMPROCS <min_num_procs>
@@ -32,7 +33,7 @@ include (LibMPI)
 function (add_pio_test TESTNAME)
 
     # Parse the input arguments
-    set (options)
+    set (options WILLFAIL)
     set (oneValueArgs EXECUTABLE MINNUMPROCS MAXNUMPROCS MINNUMIOPROCS MAXNUMIOPROCS MINSTRIDE MAXSTRIDE TIMEOUT)
     set (multiValueArgs ARGUMENTS)
     cmake_parse_arguments (${TESTNAME} "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
@@ -47,6 +48,11 @@ function (add_pio_test TESTNAME)
     set (min_stride ${${TESTNAME}_MINSTRIDE})
     set (max_stride ${${TESTNAME}_MAXSTRIDE})
     set (timeout ${${TESTNAME}_TIMEOUT})
+    if (${TESTNAME}_WILLFAIL)
+      set (will_fail true)
+    else()
+      set (will_fail false)
+    endif()
 
     # Sanity checks on the user args
     if (min_num_procs GREATER max_num_procs)
@@ -68,6 +74,11 @@ function (add_pio_test TESTNAME)
       
       # Adjust the test timeout
       set_tests_properties (${TESTNAME}_1proc PROPERTIES TIMEOUT ${timeout})
+
+      # Set the will fail (test will fail) flag if needed
+      if (${will_fail})
+        set_tests_properties (${TESTNAME}_1proc PROPERTIES WILL_FAIL true)
+      endif()
 
     else () # if (PIO_USE_MPISERIAL)
 
@@ -122,6 +133,11 @@ function (add_pio_test TESTNAME)
               ARGUMENTS ${exec_args} --pio-tf-num-io-tasks=${inioprocs} --pio-tf-stride=${istride}
               NUMPROCS ${inprocs}
               TIMEOUT ${timeout})
+
+              # Set the will fail (test will fail) flag if needed
+              if (${will_fail})
+                set_tests_properties (${TESTNAME}_np${inprocs}_nio${inioprocs}_st${istride} PROPERTIES WILL_FAIL true)
+              endif()
 
             math (EXPR istride "${istride} * 2")
           endwhile () # while ((istride ...)
