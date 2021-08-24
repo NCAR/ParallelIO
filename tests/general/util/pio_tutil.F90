@@ -78,6 +78,7 @@ MODULE pio_tutil
   PUBLIC  :: PIO_TF_Get_data_types
   PUBLIC  :: PIO_TF_Check_val_
   PUBLIC  :: PIO_TF_Get_test_arg
+  PUBLIC  :: PIO_TF_Iotype_from_str
   ! Private functions
   PRIVATE :: PIO_TF_Check_int_arr_arr_
   PRIVATE :: PIO_TF_Check_int_arr_val, PIO_TF_Check_int_arr_arr
@@ -1187,6 +1188,44 @@ CONTAINS
       PRINT *, "PIO_TF: Invalid error handler specified, resetting to PIO_BCAST_ERROR..."
     END IF
   END FUNCTION
+
+  ! Convert iotype string to internal type (integer)
+  INTEGER FUNCTION PIO_TF_Iotype_from_str(iotype_str)
+    CHARACTER(LEN=*), INTENT(IN) :: iotype_str
+    CHARACTER(LEN=PIO_TF_MAX_STR_LEN) :: str
+
+    str = trim(iotype_str)
+
+    PIO_TF_Iotype_from_str = PIO_IOTYPE_PNETCDF
+    IF((str == "PIO_IOTYPE_PNETCDF") .OR.&
+        (str == "pio_iotype_pnetcdf") .OR.&
+        (str == "pnetcdf") .OR.&
+        (str == "PNETCDF")) THEN
+      PIO_TF_Iotype_from_str = PIO_IOTYPE_PNETCDF
+    ELSE IF((str == "PIO_IOTYPE_NETCDF") .OR.&
+        (str == "pio_iotype_netcdf") .OR.&
+        (str == "netcdf") .OR.&
+        (str == "NETCDF")) THEN
+      PIO_TF_Iotype_from_str = PIO_IOTYPE_NETCDF
+    ELSE IF((str == "PIO_IOTYPE_NETCDF4C") .OR.&
+        (str == "pio_iotype_netcdf4c") .OR.&
+        (str == "netcdf4c") .OR.&
+        (str == "NETCDF4C")) THEN
+      PIO_TF_Iotype_from_str = PIO_IOTYPE_NETCDF4C
+    ELSE IF((str == "PIO_IOTYPE_NETCDF4P") .OR.&
+        (str == "pio_iotype_netcdf4p") .OR.&
+        (str == "netcdf4p") .OR.&
+        (str == "NETCDF4P")) THEN
+      PIO_TF_Iotype_from_str = PIO_IOTYPE_NETCDF4P
+    ELSE IF((str == "PIO_IOTYPE_ADIOS") .OR.&
+        (str == "pio_iotype_adios") .OR.&
+        (str == "adios") .OR.&
+        (str == "ADIOS")) THEN
+      PIO_TF_Iotype_from_str = PIO_IOTYPE_ADIOS
+    ELSE
+      PRINT *, "PIO_TF: Invalid iotype specified,", trim(iotype_str), "), resetting to PIO_IOTYPE_PNETCDF..."
+    END IF
+  END FUNCTION PIO_TF_Iotype_from_str
 
   ! This function is be used by unit tests to get args for the unit test
   ! All unit test args start with "--pio-tf-targ" e.g. "--pio-tf-targ-uarg1=uarg_val"
