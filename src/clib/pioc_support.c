@@ -544,7 +544,7 @@ int check_netcdf(iosystem_desc_t *ios, file_desc_t *file, int status,
             int ret = PIOc_strerror(status, errmsg);
             assert(ret == PIO_NOERR);
             LOG((1, "check_netcdf errmsg = %s", errmsg));
-            piodie(fname, line, "FATAL ERROR: %s", errmsg);
+            piodie(fname, line, "FATAL ERROR: %s (file = %s)", errmsg, (file)?(file->fname):"UNKNOWN");
         }
     }
 
@@ -2697,7 +2697,7 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
         }
     }
 
-    ierr = check_netcdf(ios, NULL, ierr, __FILE__, __LINE__);
+    ierr = check_netcdf(ios, file, ierr, __FILE__, __LINE__);
     /* If there was an error, free the memory we allocated and handle error. */
     if(ierr != PIO_NOERR){
 #ifdef _ADIOS2
@@ -3125,7 +3125,7 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
         }
     }
 
-    ierr = check_netcdf(ios, NULL, ierr, __FILE__, __LINE__);
+    ierr = check_netcdf(ios, file, ierr, __FILE__, __LINE__);
     /* If there was an error, free allocated memory and deal with the error. */
     if(ierr != PIO_NOERR){
         int tmp_iotype = file->iotype;
