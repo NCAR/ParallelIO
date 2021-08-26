@@ -9,17 +9,32 @@ END MODULE ncdf_eh_tgv
 
 PIO_TF_AUTO_TEST_SUB_BEGIN test_clob_then_no_clob
   use ncdf_eh_tgv
+  use mpi
   Implicit none
   type(file_desc_t) :: pio_file
   character(len=PIO_TF_MAX_STR_LEN), parameter :: clob_fname = "pio_clob_test_file.nc"
-  integer :: ret
+  integer :: cur_err_handler
+  integer :: ret, ierr
 
   ret = PIO_createfile(pio_tf_iosystem_, pio_file, tgv_iotype, clob_fname, PIO_CLOBBER)
   PIO_TF_CHECK_ERR(ret, "Failed to create:" // trim(clob_fname))
 
   call PIO_closefile(pio_file)
 
+  ! Get the current error handler
+  call PIO_seterrorhandling(pio_tf_iosystem_, PIO_BCAST_ERROR, cur_err_handler)
+  call PIO_seterrorhandling(pio_tf_iosystem_, cur_err_handler)
+
   ret = PIO_createfile(pio_tf_iosystem_, pio_file, tgv_iotype, clob_fname, PIO_NOCLOBBER)
+  if(cur_err_handler == PIO_RETURN_ERROR) then
+    ! If the error handler is set to PIO_RETURN_ERROR the error code from the current process
+    ! is returned back to the user
+    ! So some processes, the non I/O processes, will not see the error code from other
+    ! processes, the I/O processes
+    ! Reduce the return value to find if any process received an error
+    call MPI_Allreduce(MPI_IN_PLACE, ret, 1, MPI_INTEGER, MPI_MIN, pio_tf_comm_, ierr)
+    PIO_TF_CHECK_ERR(ierr, "MPI Allreduce on return value failed (error handler = PIO_RETURN_ERROR)")
+  end if
   PIO_TF_PASSERT(ret /= PIO_NOERR, "Create file with clobber then no clobber did not fail as expected")
 
   ! No close since createfile should fail
