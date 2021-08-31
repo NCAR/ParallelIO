@@ -5,48 +5,48 @@
     <avg_rtput(MB/s)>1.5</avg_rtput(MB/s)>
     <tot_wb(bytes)>1024</tot_wb(bytes)>
     <tot_rb(bytes)>1024</tot_rb(bytes)>
-    <tot_wtime(s)>234</tot_wtime(s)>
-    <tot_rtime(s)>234</tot_rtime(s)>
-    <tot_time(s)>512</tot_time(s)>
+    <tot_wtime(s)>0.4</tot_wtime(s)>
+    <tot_rtime(s)>0.67</tot_rtime(s)>
+    <tot_time(s)>1.07</tot_time(s)>
   </OverallModelIOStatistics>
   <ModelComponentIOStatistics>
-    <name>"EAM"</name>
+    <name>"COMP_CPL: CPL"</name>
     <avg_wtput(MB/s)>2.5</avg_wtput(MB/s)>
     <avg_rtput(MB/s)>1.5</avg_rtput(MB/s)>
-    <tot_wb(bytes)>1024</tot_wb(bytes)>
-    <tot_rb(bytes)>1024</tot_rb(bytes)>
-    <tot_wtime(s)>234</tot_wtime(s)>
-    <tot_rtime(s)>234</tot_rtime(s)>
-    <tot_time(s)>512</tot_time(s)>
+    <tot_wb(bytes)>512</tot_wb(bytes)>
+    <tot_rb(bytes)>512</tot_rb(bytes)>
+    <tot_wtime(s)>0.2</tot_wtime(s)>
+    <tot_rtime(s)>0.34</tot_rtime(s)>
+    <tot_time(s)>0.54</tot_time(s)>
   </ModelComponentIOStatistics>
   <ModelComponentIOStatistics>
-    <name>"LND"</name>
+    <name>"COMP_ATM: EAM"</name>
     <avg_wtput(MB/s)>2.5</avg_wtput(MB/s)>
     <avg_rtput(MB/s)>1.5</avg_rtput(MB/s)>
-    <tot_wb(bytes)>1024</tot_wb(bytes)>
-    <tot_rb(bytes)>1024</tot_rb(bytes)>
-    <tot_wtime(s)>234</tot_wtime(s)>
-    <tot_rtime(s)>234</tot_rtime(s)>
-    <tot_time(s)>512</tot_time(s)>
+    <tot_wb(bytes)>512</tot_wb(bytes)>
+    <tot_rb(bytes)>512</tot_rb(bytes)>
+    <tot_wtime(s)>0.2</tot_wtime(s)>
+    <tot_rtime(s)>0.34</tot_rtime(s)>
+    <tot_time(s)>0.54</tot_time(s)>
   </ModelComponentIOStatistics>
   <FileIOStatistics>
     <name>"file1.nc"</name>
     <avg_wtput(MB/s)>2.5</avg_wtput(MB/s)>
     <avg_rtput(MB/s)>1.5</avg_rtput(MB/s)>
-    <tot_wb(bytes)>1024</tot_wb(bytes)>
-    <tot_rb(bytes)>1024</tot_rb(bytes)>
-    <tot_wtime(s)>234</tot_wtime(s)>
-    <tot_rtime(s)>234</tot_rtime(s)>
-    <tot_time(s)>512</tot_time(s)>
+    <tot_wb(bytes)>512</tot_wb(bytes)>
+    <tot_rb(bytes)>512</tot_rb(bytes)>
+    <tot_wtime(s)>0.2</tot_wtime(s)>
+    <tot_rtime(s)>0.34</tot_rtime(s)>
+    <tot_time(s)>0.54</tot_time(s)>
   </FileIOStatistics>
   <FileIOStatistics>
     <name>"file2.nc"</name>
     <avg_wtput(MB/s)>2.5</avg_wtput(MB/s)>
     <avg_rtput(MB/s)>1.5</avg_rtput(MB/s)>
-    <tot_wb(bytes)>1024</tot_wb(bytes)>
-    <tot_rb(bytes)>1024</tot_rb(bytes)>
-    <tot_wtime(s)>234</tot_wtime(s)>
-    <tot_rtime(s)>234</tot_rtime(s)>
-    <tot_time(s)>512</tot_time(s)>
+    <tot_wb(bytes)>512</tot_wb(bytes)>
+    <tot_rb(bytes)>512</tot_rb(bytes)>
+    <tot_wtime(s)>0.2</tot_wtime(s)>
+    <tot_rtime(s)>0.34</tot_rtime(s)>
+    <tot_time(s)>0.54</tot_time(s)>
   </FileIOStatistics>
 </ScorpioIOSummaryStatistics>
