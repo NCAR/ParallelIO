@@ -2701,7 +2701,10 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
     if ((mpierr = MPI_Bcast(&file->mode, 1, MPI_INT, ios->ioroot, ios->union_comm)))
     {
 #ifdef _ADIOS2
-        free(file->filename);
+        if(file->iotype == PIO_IOTYPE_ADIOS)
+        {
+            free(file->filename);
+        }
 #endif
         spio_ltimer_stop(file->io_fstats->wr_timer_name);
         spio_ltimer_stop(file->io_fstats->tot_timer_name);
@@ -2714,7 +2717,10 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
     /* If there was an error, free the memory we allocated and handle error. */
     if(ierr != PIO_NOERR){
 #ifdef _ADIOS2
-        free(file->filename);
+        if(file->iotype == PIO_IOTYPE_ADIOS)
+        {
+            free(file->filename);
+        }
 #endif
         spio_ltimer_stop(file->io_fstats->wr_timer_name);
         spio_ltimer_stop(file->io_fstats->tot_timer_name);
