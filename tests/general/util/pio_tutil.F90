@@ -15,16 +15,29 @@ MODULE pio_tutil
     ENUMERATOR  ::  IARG_NUM_AGGREGATORS_SIDX
     ENUMERATOR  ::  IARG_LOG_LEVEL_SIDX
     ENUMERATOR  ::  IARG_ERR_HANDLER_SIDX
+    ENUMERATOR  ::  IARG_NUM_TEST_ARGS_SIDX
     ! Unfortunately since fortran starts with index 1 we need the
     ! hack below. Don't forget to update when adding more argvs
-    ENUMERATOR  ::  NUM_IARGS = IARG_ERR_HANDLER_SIDX
+    ENUMERATOR  ::  NUM_IARGS = IARG_NUM_TEST_ARGS_SIDX
     ENUMERATOR  ::  IARG_MAX_SIDX = NUM_IARGS
   END ENUM
+
+  ! Misc constants
+  INTEGER, PARAMETER :: PIO_TF_MAX_STR_LEN=128
 
   ! PIO specific info
   INTEGER :: pio_tf_stride_, pio_tf_num_io_tasks_, pio_tf_num_aggregators_
   INTEGER :: pio_tf_err_handler_
   TYPE(iosystem_desc_t), save :: pio_tf_iosystem_
+
+  ! Arguments that start with "--pio-tf-targ" are cached and eventually
+  ! used by the unit tests
+  INTEGER, PARAMETER :: PIO_TF_MAX_CACHED_TEST_ARGS = 10
+  ! Caching arg in the ith index and the corresponding val in (i+1)
+  ! Packing the cached test args into a simple array (instead of a type) makes
+  ! it easy to send to other procs
+  CHARACTER(LEN=PIO_TF_MAX_STR_LEN) :: pio_tf_cached_test_args_(PIO_TF_MAX_CACHED_TEST_ARGS * 2)
+  INTEGER :: pio_tf_num_cached_test_args_
 
   ! MPI info
   INTEGER ::  pio_tf_world_rank_, pio_tf_world_sz_
@@ -34,9 +47,6 @@ MODULE pio_tutil
   ! REAL types
   INTEGER, PARAMETER, PUBLIC :: fc_real   = selected_real_kind(6)
   INTEGER, PARAMETER, PUBLIC :: fc_double = selected_real_kind(13)
-
-  ! Misc constants
-  INTEGER, PARAMETER :: PIO_TF_MAX_STR_LEN=128
 
   ! Logging
   INTEGER :: pio_tf_log_level_
@@ -67,6 +77,8 @@ MODULE pio_tutil
   PUBLIC  :: PIO_TF_Get_iotypes, PIO_TF_Get_undef_iotypes
   PUBLIC  :: PIO_TF_Get_data_types
   PUBLIC  :: PIO_TF_Check_val_
+  PUBLIC  :: PIO_TF_Get_test_arg
+  PUBLIC  :: PIO_TF_Iotype_from_str
   ! Private functions
   PRIVATE :: PIO_TF_Check_int_arr_arr_
   PRIVATE :: PIO_TF_Check_int_arr_val, PIO_TF_Check_int_arr_arr
@@ -1177,12 +1189,74 @@ CONTAINS
     END IF
   END FUNCTION
 
+  ! Convert iotype string to internal type (integer)
+  INTEGER FUNCTION PIO_TF_Iotype_from_str(iotype_str)
+    CHARACTER(LEN=*), INTENT(IN) :: iotype_str
+    CHARACTER(LEN=PIO_TF_MAX_STR_LEN) :: str
+
+    str = trim(iotype_str)
+
+    PIO_TF_Iotype_from_str = PIO_IOTYPE_PNETCDF
+    IF((str == "PIO_IOTYPE_PNETCDF") .OR.&
+        (str == "pio_iotype_pnetcdf") .OR.&
+        (str == "pnetcdf") .OR.&
+        (str == "PNETCDF")) THEN
+      PIO_TF_Iotype_from_str = PIO_IOTYPE_PNETCDF
+    ELSE IF((str == "PIO_IOTYPE_NETCDF") .OR.&
+        (str == "pio_iotype_netcdf") .OR.&
+        (str == "netcdf") .OR.&
+        (str == "NETCDF")) THEN
+      PIO_TF_Iotype_from_str = PIO_IOTYPE_NETCDF
+    ELSE IF((str == "PIO_IOTYPE_NETCDF4C") .OR.&
+        (str == "pio_iotype_netcdf4c") .OR.&
+        (str == "netcdf4c") .OR.&
+        (str == "NETCDF4C")) THEN
+      PIO_TF_Iotype_from_str = PIO_IOTYPE_NETCDF4C
+    ELSE IF((str == "PIO_IOTYPE_NETCDF4P") .OR.&
+        (str == "pio_iotype_netcdf4p") .OR.&
+        (str == "netcdf4p") .OR.&
+        (str == "NETCDF4P")) THEN
+      PIO_TF_Iotype_from_str = PIO_IOTYPE_NETCDF4P
+    ELSE IF((str == "PIO_IOTYPE_ADIOS") .OR.&
+        (str == "pio_iotype_adios") .OR.&
+        (str == "adios") .OR.&
+        (str == "ADIOS")) THEN
+      PIO_TF_Iotype_from_str = PIO_IOTYPE_ADIOS
+    ELSE
+      PRINT *, "PIO_TF: Invalid iotype specified,", trim(iotype_str), "), resetting to PIO_IOTYPE_PNETCDF..."
+    END IF
+  END FUNCTION PIO_TF_Iotype_from_str
+
+  ! This function is be used by unit tests to get args for the unit test
+  ! All unit test args start with "--pio-tf-targ" e.g. "--pio-tf-targ-uarg1=uarg_val"
+  LOGICAL FUNCTION PIO_TF_Get_test_arg(arg, val)
+    CHARACTER(LEN=*), INTENT(IN)  :: arg
+    CHARACTER(LEN=*), INTENT(OUT)  :: val
+    INTEGER :: i
+    LOGICAL :: ret = .FALSE.
+
+    DO i=1,pio_tf_num_cached_test_args_,2
+      ! pio_tf_cached_test_args_(i) contains the arg and
+      ! pio_tf_cached_test_args_(i+1) contains the corresponding
+      ! val
+      IF(trim(pio_tf_cached_test_args_(i)) == trim(arg)) THEN
+        val = pio_tf_cached_test_args_(i+1)
+        ret = .TRUE.
+        EXIT
+      END IF
+    END DO
+
+    PIO_TF_Get_test_arg = ret
+  END FUNCTION PIO_TF_Get_test_arg
+
   ! Parse and process input arguments like "--pio-tf-stride=2" passed
   ! to the unit tests - PRIVATE function
   ! FIXME: Do we need to move input argument processing to a new module?
   SUBROUTINE Parse_and_process_input(argv)
     CHARACTER(LEN=*), INTENT(IN)  :: argv
+
     CHARACTER(LEN=PIO_TF_MAX_STR_LEN) :: err_handler_str
+    CHARACTER(LEN=*), PARAMETER :: PIO_TF_TARG_PREFIX = "--pio-tf-targ"
     INTEGER :: pos
 
     ! All input arguments are of the form <INPUT_ARG_NAME>=<INPUT_ARG>
@@ -1190,10 +1264,13 @@ CONTAINS
     pos = INDEX(argv, "=")
     IF (pos == 0) THEN
       ! Ignore unrecognized args
-      RETURN
+      PRINT *, "PIO_TF: WARNING: Ignoring unrecognized arg (", trim(argv), ")"
     ELSE
       ! Check if it an input to PIO testing framework
-      IF (argv(:pos) == "--pio-tf-num-io-tasks=") THEN
+      IF (LEN_TRIM(argv(pos:)) == 1) THEN
+        ! Argument is of the form "--pio-tf-arg=" i.e., no value for the arg
+        PRINT *, "PIO_TF: WARNING: Ignoring unrecognized arg (", trim(argv), ")"
+      ELSE IF (argv(:pos) == "--pio-tf-num-io-tasks=") THEN
         READ(argv(pos+1:), *) pio_tf_num_io_tasks_
       ELSE IF (argv(:pos) == "--pio-tf-num-aggregators=") THEN
         READ(argv(pos+1:), *) pio_tf_num_aggregators_
@@ -1205,7 +1282,25 @@ CONTAINS
         READ(argv(pos+1:), *) err_handler_str
         pio_tf_err_handler_ = Error_handler_from_str(err_handler_str)
       ELSE IF (argv(:pos) == "--pio-tf-input-file=") THEN
-        PRINT *, "This option is not implemented yet"
+        PRINT *, "PIO_TF: WARNING: This option is not implemented yet"
+      ELSE IF (pos > LEN(PIO_TF_TARG_PREFIX)) THEN
+        IF (argv(:LEN(PIO_TF_TARG_PREFIX)) == PIO_TF_TARG_PREFIX) THEN
+          IF (pio_tf_num_cached_test_args_ < PIO_TF_MAX_CACHED_TEST_ARGS) THEN
+            pio_tf_num_cached_test_args_ = pio_tf_num_cached_test_args_ + 1
+            ! Argument value
+            READ(argv(pos+1:), *) pio_tf_cached_test_args_(pio_tf_num_cached_test_args_ * 2)
+            ! Argument
+            READ(argv(:pos-1), *) pio_tf_cached_test_args_(pio_tf_num_cached_test_args_ * 2 - 1)
+          ELSE
+            PRINT *, "PIO_TF: WARNING: Exceeded buffer space for caching args. Ignoring unrecognized arg (", trim(argv), ")"
+          END IF
+        ELSE
+          ! Ignore unrecognized args
+          PRINT *, "PIO_TF: WARNING: Ignoring unrecognized arg (", trim(argv), ")"
+        END IF
+      ELSE
+        ! Ignore unrecognized args
+        PRINT *, "PIO_TF: WARNING: Ignoring unrecognized arg (", trim(argv), ")"
       END IF
     END IF
 
@@ -1225,6 +1320,7 @@ CONTAINS
     ! Need to send pio_tf_stride_, pio_tf_num_io_tasks_, pio_tf_num_aggregators_
     INTEGER :: send_buf(NUM_IARGS)
 
+    pio_tf_num_cached_test_args_ = 0
     IF (pio_tf_world_rank_ == 0) THEN
       nargs = COMMAND_ARGUMENT_COUNT()
       DO i=1, nargs
@@ -1236,9 +1332,16 @@ CONTAINS
       send_buf(IARG_NUM_AGGREGATORS_SIDX) = pio_tf_num_aggregators_
       send_buf(IARG_LOG_LEVEL_SIDX) = pio_tf_log_level_
       send_buf(IARG_ERR_HANDLER_SIDX) = pio_tf_err_handler_
+      send_buf(IARG_NUM_TEST_ARGS_SIDX) = pio_tf_num_cached_test_args_
     END IF
     ! Make sure all processes get the input args
     CALL MPI_BCAST(send_buf, NUM_IARGS, MPI_INTEGER, 0, pio_tf_comm_, ierr)
+
+    pio_tf_num_cached_test_args_ = send_buf(IARG_NUM_TEST_ARGS_SIDX)
+    IF (pio_tf_num_cached_test_args_ > 0) THEN
+      CALL MPI_BCAST(pio_tf_cached_test_args_, PIO_TF_MAX_STR_LEN * pio_tf_num_cached_test_args_ * 2, MPI_CHARACTER, 0, pio_tf_comm_, ierr)
+    END IF
+
     pio_tf_stride_ = send_buf(IARG_STRIDE_SIDX)
     pio_tf_num_io_tasks_ = send_buf(IARG_NUM_IO_TASKS_SIDX)
     pio_tf_num_aggregators_ = send_buf(IARG_NUM_AGGREGATORS_SIDX)

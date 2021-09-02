@@ -14,6 +14,7 @@ SET(GENERATED_SRCS pio_file_simple_tests.F90
   ncdf_simple_tests.F90
   ncdf_get_put.F90
   ncdf_fail.F90
+  ncdf_eh_one_test.F90
   ncdf_inq.F90
   pio_copy.F90
   pio_set_hint.F90
@@ -317,6 +318,120 @@ add_pio_test(ncdf_fail_reduce
   MINSTRIDE 1
   MAXSTRIDE ${PIO_TF_C2_MAXSTRIDE}
   TIMEOUT ${DEFAULT_TEST_TIMEOUT})
+
+add_pio_test(ncdf_fail_intrnl
+  EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/ncdf_fail
+  ARGUMENTS --pio-tf-err-handler=PIO_INTERNAL_ERROR
+  MINNUMPROCS 4
+  MAXNUMPROCS ${PIO_TF_MAXNUMPROCS}
+  MINNUMIOPROCS 2
+  MAXNUMIOPROCS ${PIO_TF_C2_MAXNUMIOPROCS}
+  MINSTRIDE 1
+  MAXSTRIDE ${PIO_TF_C2_MAXSTRIDE}
+  TIMEOUT ${DEFAULT_TEST_TIMEOUT}
+  WILLFAIL)
+
+# Error handler tests
+#===== ncdf_eh_one_test =====
+add_executable (ncdf_eh_one_test EXCLUDE_FROM_ALL
+  ncdf_eh_one_test.F90)
+set_property(TARGET ncdf_eh_one_test PROPERTY LINKER_LANGUAGE ${PIO_LINKER_LANGUAGE})
+target_link_libraries (ncdf_eh_one_test pio_tutil piof)
+add_dependencies (ncdf_eh_one_test pio_tutil)
+add_dependencies (tests ncdf_eh_one_test)
+
+add_pio_test(ncdf_eh_one_test_bcast
+  EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/ncdf_eh_one_test
+  ARGUMENTS --pio-tf-err-handler=PIO_BCAST_ERROR
+  MINNUMPROCS 4
+  MAXNUMPROCS ${PIO_TF_MAXNUMPROCS}
+  MINNUMIOPROCS 2
+  MAXNUMIOPROCS ${PIO_TF_C2_MAXNUMIOPROCS}
+  MINSTRIDE 1
+  MAXSTRIDE ${PIO_TF_C2_MAXSTRIDE}
+  TIMEOUT ${DEFAULT_TEST_TIMEOUT})
+
+add_pio_test(ncdf_eh_one_test_reduce
+  EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/ncdf_eh_one_test
+  ARGUMENTS --pio-tf-err-handler=PIO_REDUCE_ERROR
+  MINNUMPROCS 4
+  MAXNUMPROCS ${PIO_TF_MAXNUMPROCS}
+  MINNUMIOPROCS 2
+  MAXNUMIOPROCS ${PIO_TF_C2_MAXNUMIOPROCS}
+  MINSTRIDE 1
+  MAXSTRIDE ${PIO_TF_C2_MAXSTRIDE}
+  TIMEOUT ${DEFAULT_TEST_TIMEOUT})
+
+add_pio_test(ncdf_eh_one_test_ret
+  EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/ncdf_eh_one_test
+  ARGUMENTS --pio-tf-err-handler=PIO_RETURN_ERROR
+  MINNUMPROCS 4
+  MAXNUMPROCS ${PIO_TF_MAXNUMPROCS}
+  MINNUMIOPROCS 2
+  MAXNUMIOPROCS ${PIO_TF_C2_MAXNUMIOPROCS}
+  MINSTRIDE 1
+  MAXSTRIDE ${PIO_TF_C2_MAXSTRIDE}
+  TIMEOUT ${DEFAULT_TEST_TIMEOUT})
+
+add_pio_test(ncdf_eh_one_test_intrnl_pnet
+  EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/ncdf_eh_one_test
+  ARGUMENTS --pio-tf-err-handler=PIO_INTERNAL_ERROR --pio-tf-targ-iotype=PNETCDF
+  MINNUMPROCS 4
+  MAXNUMPROCS ${PIO_TF_MAXNUMPROCS}
+  MINNUMIOPROCS 2
+  MAXNUMIOPROCS ${PIO_TF_C2_MAXNUMIOPROCS}
+  MINSTRIDE 1
+  MAXSTRIDE ${PIO_TF_C2_MAXSTRIDE}
+  TIMEOUT ${DEFAULT_TEST_TIMEOUT}
+  WILLFAIL)
+
+add_pio_test(ncdf_eh_one_test_intrnl_net
+  EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/ncdf_eh_one_test
+  ARGUMENTS --pio-tf-err-handler=PIO_INTERNAL_ERROR --pio-tf-targ-iotype=NETCDF
+  MINNUMPROCS 4
+  MAXNUMPROCS ${PIO_TF_MAXNUMPROCS}
+  MINNUMIOPROCS 2
+  MAXNUMIOPROCS ${PIO_TF_C2_MAXNUMIOPROCS}
+  MINSTRIDE 1
+  MAXSTRIDE ${PIO_TF_C2_MAXSTRIDE}
+  TIMEOUT ${DEFAULT_TEST_TIMEOUT}
+  WILLFAIL)
+
+add_pio_test(ncdf_eh_one_test_intrnl_net4c
+  EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/ncdf_eh_one_test
+  ARGUMENTS --pio-tf-err-handler=PIO_INTERNAL_ERROR --pio-tf-targ-iotype=NETCDF4C
+  MINNUMPROCS 4
+  MAXNUMPROCS ${PIO_TF_MAXNUMPROCS}
+  MINNUMIOPROCS 2
+  MAXNUMIOPROCS ${PIO_TF_C2_MAXNUMIOPROCS}
+  MINSTRIDE 1
+  MAXSTRIDE ${PIO_TF_C2_MAXSTRIDE}
+  TIMEOUT ${DEFAULT_TEST_TIMEOUT}
+  WILLFAIL)
+
+add_pio_test(ncdf_eh_one_test_intrnl_net4p
+  EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/ncdf_eh_one_test
+  ARGUMENTS --pio-tf-err-handler=PIO_INTERNAL_ERROR --pio-tf-targ-iotype=NETCDF4P
+  MINNUMPROCS 4
+  MAXNUMPROCS ${PIO_TF_MAXNUMPROCS}
+  MINNUMIOPROCS 2
+  MAXNUMIOPROCS ${PIO_TF_C2_MAXNUMIOPROCS}
+  MINSTRIDE 1
+  MAXSTRIDE ${PIO_TF_C2_MAXSTRIDE}
+  TIMEOUT ${DEFAULT_TEST_TIMEOUT}
+  WILLFAIL)
+
+add_pio_test(ncdf_eh_one_test_intrnl_ad
+  EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/ncdf_eh_one_test
+  ARGUMENTS --pio-tf-err-handler=PIO_INTERNAL_ERROR --pio-tf-targ-iotype=ADIOS
+  MINNUMPROCS 4
+  MAXNUMPROCS ${PIO_TF_MAXNUMPROCS}
+  MINNUMIOPROCS 2
+  MAXNUMIOPROCS ${PIO_TF_C2_MAXNUMIOPROCS}
+  MINSTRIDE 1
+  MAXSTRIDE ${PIO_TF_C2_MAXSTRIDE}
+  TIMEOUT ${DEFAULT_TEST_TIMEOUT}
+  WILLFAIL)
 
 #===== ncdf_inq =====
 add_executable (ncdf_inq EXCLUDE_FROM_ALL

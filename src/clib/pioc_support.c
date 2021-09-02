@@ -544,7 +544,7 @@ int check_netcdf(iosystem_desc_t *ios, file_desc_t *file, int status,
             int ret = PIOc_strerror(status, errmsg);
             assert(ret == PIO_NOERR);
             LOG((1, "check_netcdf errmsg = %s", errmsg));
-            piodie(fname, line, "FATAL ERROR: %s", errmsg);
+            piodie(fname, line, "FATAL ERROR: %s (file = %s)", errmsg, (file)?(file->fname):"UNKNOWN");
         }
     }
 
@@ -2697,11 +2697,30 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
         }
     }
 
-    ierr = check_netcdf(ios, NULL, ierr, __FILE__, __LINE__);
+    /* Broadcast mode to all tasks. */
+    if ((mpierr = MPI_Bcast(&file->mode, 1, MPI_INT, ios->ioroot, ios->union_comm)))
+    {
+#ifdef _ADIOS2
+        if(file->iotype == PIO_IOTYPE_ADIOS)
+        {
+            free(file->filename);
+        }
+#endif
+        spio_ltimer_stop(file->io_fstats->wr_timer_name);
+        spio_ltimer_stop(file->io_fstats->tot_timer_name);
+        free(file->io_fstats);
+        free(file);
+        return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+    }
+
+    ierr = check_netcdf(ios, file, ierr, __FILE__, __LINE__);
     /* If there was an error, free the memory we allocated and handle error. */
     if(ierr != PIO_NOERR){
 #ifdef _ADIOS2
-        free(file->filename);
+        if(file->iotype == PIO_IOTYPE_ADIOS)
+        {
+            free(file->filename);
+        }
 #endif
         spio_ltimer_stop(file->io_fstats->wr_timer_name);
         spio_ltimer_stop(file->io_fstats->tot_timer_name);
@@ -2709,14 +2728,6 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
         free(file);
         return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
                         "Creating file (%s) failed. Internal error", filename);
-    }
-
-    /* Broadcast mode to all tasks. */
-    if ((mpierr = MPI_Bcast(&file->mode, 1, MPI_INT, ios->ioroot, ios->union_comm)))
-    {
-        spio_ltimer_stop(file->io_fstats->wr_timer_name);
-        spio_ltimer_stop(file->io_fstats->tot_timer_name);
-        return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
     }
 
     /* This flag is implied by netcdf create functions but we need
@@ -3125,7 +3136,19 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
         }
     }
 
-    ierr = check_netcdf(ios, NULL, ierr, __FILE__, __LINE__);
+    /* Broadcast open mode to all tasks. */
+    if ((mpierr = MPI_Bcast(&file->mode, 1, MPI_INT, ios->ioroot, ios->my_comm)))
+    {
+        spio_ltimer_stop(ios->io_fstats->rd_timer_name);
+        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+        spio_ltimer_stop(file->io_fstats->rd_timer_name);
+        spio_ltimer_stop(file->io_fstats->tot_timer_name);
+        free(file->io_fstats);
+        free(file);
+        return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+    }
+
+    ierr = check_netcdf(ios, file, ierr, __FILE__, __LINE__);
     /* If there was an error, free allocated memory and deal with the error. */
     if(ierr != PIO_NOERR){
         int tmp_iotype = file->iotype;
@@ -3138,16 +3161,6 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
         LOG((1, "PIOc_openfile_retry failed, ierr = %d", ierr));
         return pio_err(ios, NULL, ierr, __FILE__, __LINE__,
                         "Opening file (%s) with iotype %d (%s) failed. The low level I/O library call failed", filename, tmp_iotype, pio_iotype_to_string(tmp_iotype));;
-    }
-
-    /* Broadcast open mode to all tasks. */
-    if ((mpierr = MPI_Bcast(&file->mode, 1, MPI_INT, ios->ioroot, ios->my_comm)))
-    {
-        spio_ltimer_stop(ios->io_fstats->rd_timer_name);
-        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
-        spio_ltimer_stop(file->io_fstats->rd_timer_name);
-        spio_ltimer_stop(file->io_fstats->tot_timer_name);
-        return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
     }
 
     /* Add this file to the list of currently open files. */
