@@ -1,9 +1,14 @@
 ! Split comm world into two comms (one with even procs and the other
 ! with odd procs
 SUBROUTINE split_world_odd_even(new_comm, new_rank, new_size, is_even)
-  use mpi
   use pio_tutil
+#ifndef NO_MPIMOD
+  use mpi
   implicit none
+#else
+  implicit none
+  include 'mpif.h'
+#endif
   integer, intent(inout) :: new_comm
   integer, intent(inout) :: new_rank
   integer, intent(inout) :: new_size
@@ -31,9 +36,14 @@ SUBROUTINE split_world_odd_even(new_comm, new_rank, new_size, is_even)
 END SUBROUTINE split_world_odd_even
 
 SUBROUTINE split_world_only_even(new_comm, new_rank, new_size, is_even)
-  use mpi
   use pio_tutil
+#ifndef NO_MPIMOD
+  use mpi
   implicit none
+#else
+  implicit none
+  include 'mpif.h'
+#endif
   integer, intent(inout) :: new_comm
   integer, intent(inout) :: new_rank
   integer, intent(inout) :: new_size
