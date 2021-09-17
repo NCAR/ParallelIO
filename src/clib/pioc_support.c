@@ -345,6 +345,11 @@ void pio_log(int severity, const char *fmt, ...)
     rem_len = MAX_LOG_MSG - strlen(msg);
     strncpy(ptr, "\n\0", (rem_len > 0) ? rem_len : 0);
 
+    /* Add string delimiter to handle the case where the buffer
+     * is completely filled up
+     */
+    msg[MAX_LOG_MSG - 1] = '\0';
+
     /* Send message to log file. */
     if (LOG_FILE)
     {
