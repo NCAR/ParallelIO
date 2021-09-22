@@ -73,7 +73,8 @@ MODULE pio_tutil
   ! Public functions
   PUBLIC  :: PIO_TF_Init_, PIO_TF_Finalize_, PIO_TF_Passert_
   PUBLIC  :: PIO_TF_Is_netcdf
-  PUBLIC  :: PIO_TF_Get_nc_iotypes, PIO_TF_Get_undef_nc_iotypes
+  PUBLIC  :: PIO_TF_Get_nc_iotypes, PIO_TF_Get_nc4_iotypes
+  PUBLIC  :: PIO_TF_Get_undef_nc_iotypes
   PUBLIC  :: PIO_TF_Get_iotypes, PIO_TF_Get_undef_iotypes
   PUBLIC  :: PIO_TF_Get_data_types
   PUBLIC  :: PIO_TF_Check_val_
@@ -367,6 +368,42 @@ CONTAINS
       ! netcdf
       iotypes(i) = PIO_iotype_netcdf
       iotype_descs(i) = "NETCDF"
+      i = i + 1
+#endif
+  END SUBROUTINE
+
+  ! Returns a list of defined netcdf4 iotypes
+  ! iotypes : After the routine returns contains a list of defined
+  !             netcdf4 types
+  ! iotype_descs : After the routine returns contains description of
+  !                 the netcdf4 types returned in iotypes
+  ! num_iotypes : After the routine returns contains the number of
+  !                 of defined netcdf4 types, i.e., size of iotypes and
+  !                 iotype_descs arrays
+  SUBROUTINE PIO_TF_Get_nc4_iotypes(iotypes, iotype_descs, num_iotypes)
+    INTEGER, DIMENSION(:), ALLOCATABLE, INTENT(OUT) :: iotypes
+    CHARACTER(LEN=*), DIMENSION(:), ALLOCATABLE, INTENT(OUT) :: iotype_descs
+    INTEGER, INTENT(OUT) :: num_iotypes
+    INTEGER :: i
+
+    num_iotypes = 0
+    ! First find the number of io types
+#ifdef _NETCDF4
+      ! netcdf4p, netcdf4c
+      num_iotypes = num_iotypes + 2
+#endif
+
+    ALLOCATE(iotypes(num_iotypes))
+    ALLOCATE(iotype_descs(num_iotypes))
+
+    i = 1
+#ifdef _NETCDF4
+      ! netcdf4p, netcdf4c
+      iotypes(i) = PIO_iotype_netcdf4c
+      iotype_descs(i) = "NETCDF4C"
+      i = i + 1
+      iotypes(i) = PIO_iotype_netcdf4p
+      iotype_descs(i) = "NETCDF4P"
       i = i + 1
 #endif
   END SUBROUTINE

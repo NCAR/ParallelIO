@@ -54,4 +54,15 @@ module global_vars
 
     End Function is_netcdf
 
+    Function is_netcdf4(iotype)
+
+      integer, intent(in) :: iotype
+      logical             :: is_netcdf4
+
+      is_netcdf4 =  &
+           (iotype.eq.PIO_iotype_netcdf4p) .or. &
+           (iotype.eq.PIO_iotype_netcdf4c)
+
+    End Function is_netcdf4
+
 end module global_vars
