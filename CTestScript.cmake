@@ -87,6 +87,10 @@ elseif (HOSTNAME MATCHES "^compute001" OR
         HOSTNAME MATCHES "^thrash" OR
         HOSTNAME MATCHES "^vanquish")
     set (HOSTNAME_ID "anlworkstation")
+# Argonne General Compute Environment (GCE)
+elseif (HOSTNAME MATCHES "^compute-240" OR
+        HOSTNAME MATCHES "^compute-386")
+    set (HOSTNAME_ID "anlgce")
 else ()
      if (CMAKE_SYSTEM_NAME MATCHES "Catamount")
         set (HOSTNAME_ID "ncsa")
