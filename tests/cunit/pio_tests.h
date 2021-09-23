@@ -66,11 +66,11 @@
 /** Global err buffer for MPI. When there is an MPI error, this buffer
  * is used to store the error message that is associated with the MPI
  * error. */
-char err_buffer[MPI_MAX_ERROR_STRING];
+static char err_buffer[MPI_MAX_ERROR_STRING];
 
 /** This is the length of the most recent MPI error message, stored
  * int the global error string. */
-int resultlen;
+static int resultlen;
 
 /* Function prototypes. */
 int pio_test_init(int argc, char **argv, int *my_rank, int *ntasks, int target_ntasks, MPI_Comm *test_comm);

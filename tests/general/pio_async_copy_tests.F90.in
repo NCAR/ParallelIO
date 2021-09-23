@@ -4,9 +4,14 @@
 ! Note: The function assumes that there are atleast ncomms
 ! procs
 SUBROUTINE split_world_ncomms(ncomms, new_comm, new_rank, new_size, gcomm_idx)
-  use mpi
   use pio_tutil
+#ifndef NO_MPIMOD
+  use mpi
   implicit none
+#else
+  implicit none
+  include 'mpif.h'
+#endif
   integer, intent(inout) :: ncomms
   integer, intent(inout) :: new_comm
   integer, intent(inout) :: new_rank
@@ -50,9 +55,14 @@ END SUBROUTINE split_world_ncomms
 
 ! Create union comm of all the procs that set join flag true
 SUBROUTINE create_ucomm(gcomm, join_ucomm, ucomm)
-  use mpi
   use pio_tutil
+#ifndef NO_MPIMOD
+  use mpi
   implicit none
+#else
+  implicit none
+  include 'mpif.h'
+#endif
   integer, intent(in) :: gcomm
   logical, intent(in) :: join_ucomm
   integer, intent(out) :: ucomm
@@ -97,8 +107,13 @@ END SUBROUTINE create_ucomm
 ! i.e., comp(i) verifies attributes copied by comp(n-i+1)
 PIO_TF_TEMPLATE<PIO_TF_PREDEF_TYPENAME PIO_TF_DATA_TYPE, PIO_TF_PREDEF_TYPENAME PIO_TF_FC_DATA_TYPE>
 PIO_TF_AUTO_TEST_SUB_BEGIN async_copy_att
+#ifndef NO_MPIMOD
   use mpi
   implicit none
+#else
+  implicit none
+  include 'mpif.h'
+#endif
   ! Number of compute components
   integer, parameter :: NUM_COMPONENTS = 2
   ! Total number of comms = comms for each of NUM_COMPONENTS + io comm

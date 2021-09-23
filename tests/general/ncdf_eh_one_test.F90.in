@@ -9,8 +9,13 @@ END MODULE ncdf_eh_tgv
 
 PIO_TF_AUTO_TEST_SUB_BEGIN test_clob_then_no_clob
   use ncdf_eh_tgv
+#ifndef NO_MPIMOD
   use mpi
   Implicit none
+#else
+  Implicit none
+  include 'mpif.h'
+#endif
   type(file_desc_t) :: pio_file
   character(len=PIO_TF_MAX_STR_LEN), parameter :: clob_fname = "pio_clob_test_file.nc"
   integer :: cur_err_handler
