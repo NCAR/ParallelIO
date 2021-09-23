@@ -49,6 +49,9 @@
 /** Handle MPI errors. This should only be used with MPI library
  * function calls. */
 #define MPIERR(e) do {                                                  \
+        char err_buffer[MPI_MAX_ERROR_STRING];                          \
+        int resultlen;                                                  \
+                                                                        \
         MPI_Error_string(e, err_buffer, &resultlen);                    \
         fprintf(stderr, "MPI error, line %d, file %s: %s\n", __LINE__, __FILE__, err_buffer); \
         MPI_Finalize();                                                 \
@@ -62,15 +65,6 @@
         MPI_Finalize();                                                 \
         return e;                                                       \
     } while (0)
-
-/** Global err buffer for MPI. When there is an MPI error, this buffer
- * is used to store the error message that is associated with the MPI
- * error. */
-static char err_buffer[MPI_MAX_ERROR_STRING];
-
-/** This is the length of the most recent MPI error message, stored
- * int the global error string. */
-static int resultlen;
 
 /* Function prototypes. */
 int pio_test_init(int argc, char **argv, int *my_rank, int *ntasks, int target_ntasks, MPI_Comm *test_comm);
