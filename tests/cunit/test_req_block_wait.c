@@ -498,7 +498,6 @@ int test_misc_file_req_blocks(MPI_Comm comm, int rank, int sz)
   int *req_block_ranges = NULL;
   int nreq_blocks = 0;
   int enreq_blocks = 0;
-  int ereq_one_block_ranges[1 * 2];
   int ereq_two_block_ranges[2 * 2];
   int ereq_three_block_ranges[3 * 2];
   int ereq_four_block_ranges[4 * 2];
