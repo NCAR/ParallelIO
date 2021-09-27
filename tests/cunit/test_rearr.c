@@ -347,7 +347,7 @@ int test_compute_maxIObuffersize(MPI_Comm test_comm, int my_rank)
         /* Run the function. */
         if ((ret = compute_maxIObuffersize(test_comm, &iodesc)))
             return ret;
-        printf("iodesc.maxiobuflen = %d\n", iodesc.maxiobuflen);
+        printf("iodesc.maxiobuflen = %lld\n", (unsigned long long) (iodesc.maxiobuflen));
         if (iodesc.maxiobuflen != 520)
             return ERR_WRONG;
 

@@ -321,7 +321,7 @@ int test_decomp_read_write(int iosysid, int ioid, int num_flavors, int *flavor, 
                         return ERR_WRONG;
                 if (iodesc->dimlen[0] != X_DIM_LEN || iodesc->dimlen[1] != Y_DIM_LEN)
                     return ERR_WRONG;
-                printf("%d in my test iodesc->maxiobuflen = %d\n", my_rank, iodesc->maxiobuflen);
+                printf("%d in my test iodesc->maxiobuflen = %lld\n", my_rank, (unsigned long long) (iodesc->maxiobuflen));
             }
         
 
