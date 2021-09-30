@@ -184,6 +184,21 @@ execute_process (COMMAND ${CTEST_EXTRA_SCRIPT_PATH}/runctest-${HOSTNAME_ID}.sh
                          ${CTEST_EXTRA_SCRIPT_PATH} ${CTEST_SCRIPT_ARG}
                  WORKING_DIRECTORY ${CTEST_BINARY_DIRECTORY})
 
+## -- COVERAGE
+if (DEFINED ENV{ENABLE_COVERAGE})
+  message (" -- Generate and upload coverage report - ${CTEST_BUILD_NAME} --")
+  execute_process (
+    COMMAND bash -c "lcov -c -d . -o coverage_full.info --rc lcov_branch_coverage=1; \
+                     lcov -e coverage_full.info \
+                     \"`echo $PIO_DASHBOARD_SOURCE_DIR`/src/*\" \"`echo $PIO_DASHBOARD_BINARY_DIR`/src/*\" \
+                     -o coverage_extract.info --rc lcov_branch_coverage=1; \
+                     genhtml coverage_extract.info -o coverage_report --rc lcov_branch_coverage=1 --demangle-cpp;
+                     tar -czvf scorpio_coverage.tar.gz coverage_report"
+    WORKING_DIRECTORY ${CTEST_BINARY_DIRECTORY})
+
+  ctest_upload (FILES "${CTEST_BINARY_DIRECTORY}/scorpio_coverage.tar.gz")
+endif ()
+
 ## -- SUBMIT
 message (" -- Submit to dashboard - ${CTEST_BUILD_NAME} --")
 message ("** -- PIO_DASHBOARD_SITE=$ENV{PIO_DASHBOARD_SITE}")
