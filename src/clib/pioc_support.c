@@ -696,7 +696,7 @@ int pio_err(iosystem_desc_t *ios, file_desc_t *file,
     if (err_handler == PIO_INTERNAL_ERROR)
     {
         /* For debugging only, this will print a traceback of the call tree.  */
-        piodie(fname, line, "An error occured, %s. err=%d. Aborting since the error handler was set to PIO_INTERNAL_ERROR...", uerr_msg, err_num);
+        piodie(fname, line, "An error occured, %s. %s (err=%d). Aborting since the error handler was set to PIO_INTERNAL_ERROR...", uerr_msg, err_msg, err_num);
     }
     else if (err_handler != PIO_RETURN_ERROR)
     {
