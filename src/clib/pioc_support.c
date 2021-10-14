@@ -147,10 +147,10 @@ int PIOc_strerror(int pioerr, char *errmsg)
             break;
 #ifdef _ADIOS2
         case PIO_EADIOSREAD:
-            strcpy(errmsg, "ADIOS IO type does not support read operations");
+            strcpy(errmsg, "ADIOS Read failed. ADIOS IO type does not support read operations");
             break;
         case PIO_EADIOS2ERR:
-            strcpy(errmsg, "Some error occurs when calling an ADIOS2 API");
+            strcpy(errmsg, "ADIOS2 API failed. Unknown error occured when calling an ADIOS2 API");
             break;
 #endif
         default:
