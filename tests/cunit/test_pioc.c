@@ -469,7 +469,7 @@ int check_error_strings(int my_rank, int num_tries, int *errcode,
         char errstr[PIO_MAX_NAME + 1];
 
         /* Get the error string for this errcode. */
-        if ((ret = PIOc_strerror(errcode[try], errstr)))
+        if ((ret = PIOc_strerror(errcode[try], errstr, PIO_MAX_NAME)))
             return ret;
 
         printf("%d for errcode = %d message = %s\n", my_rank, errcode[try], errstr);

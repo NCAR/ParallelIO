@@ -1016,7 +1016,7 @@ enum PIO_ERROR_HANDLERS
 extern "C" {
 #endif
     /* Error handling. */
-    int PIOc_strerror(int pioerr, char *errstr);
+    int PIOc_strerror(int pioerr, char *errmsg, size_t errmsg_sz);
     int PIOc_set_log_level(int level);
 
     /* Decomposition. */
