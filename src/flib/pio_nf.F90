@@ -3,7 +3,7 @@ module pio_nf
   use perf_mod           , only : t_startf, t_stopf      ! _EXTERNAL
 #endif
   use pio_kinds           , only :  pio_offset_kind
-  use pio_types           , only : file_desc_t, var_desc_t, PIO_MAX_VAR_DIMS, PIO_NOERR
+  use pio_types           , only : file_desc_t, var_desc_t, PIO_MAX_VAR_DIMS, PIO_NOERR, PIO_MAX_NAME
   use iso_c_binding
   use pio_support        , only : replace_c_null
   implicit none
@@ -697,24 +697,26 @@ contains
   !<
   !>
   !! @ingroup PIO_strerror
-  !! Returns a descriptive string for an error code.
+  !! Get a descriptive string for an error code.
   !!
   !! @param errcode the error code
-  !! @retval a description of the error
+  !! @param errmsg a description of the error is returned in this argument
+  !! @retval ierr @copydoc error_return
   !<
   integer function strerror(errcode, errmsg) result(ierr)
     integer, intent(in) :: errcode
     character(len=*), intent(out) :: errmsg
     interface
-       integer(C_INT) function PIOc_strerror(errcode, errmsg) &
+       integer(C_INT) function PIOc_strerror(errcode, errmsg, errmsg_sz) &
             bind(C, name="PIOc_strerror")
          use iso_c_binding
          integer(C_INT), value :: errcode
          character(C_CHAR) :: errmsg(*)
+         integer(C_SIZE_T), value :: errmsg_sz
        end function PIOc_strerror
     end interface
     errmsg = C_NULL_CHAR
-    ierr = PIOc_strerror(errcode, errmsg)
+    ierr = PIOc_strerror(errcode, errmsg, INT(LEN(errmsg),C_SIZE_T))
     call replace_c_null(errmsg)
 
   end function strerror

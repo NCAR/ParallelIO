@@ -104,58 +104,68 @@ int remove_directory(const char *path)
 #endif
 
 /**
- * Return a string description of an error code. If zero is passed,
- * the errmsg will be "No error".
+ * Return a string description of an error code.
  *
  * @param pioerr the error code returned by a PIO function call.
- * @param errmsg Pointer that will get the error message. The message
- * will be PIO_MAX_NAME chars or less.
+ * @param errmsg Pointer that will get the error message.
  * @return 0 on success.
  */
-int PIOc_strerror(int pioerr, char *errmsg)
+int PIOc_strerror(int pioerr, char *errmsg, size_t errmsg_sz)
 {
     LOG((1, "PIOc_strerror pioerr = %d", pioerr));
 
     /* Caller must provide this. */
     pioassert(errmsg, "pointer to errmsg string must be provided", __FILE__, __LINE__);
 
-    /* System error? NetCDF and pNetCDF errors are always negative. */
+    /* System error, i.e., pioerr == errno */
     if (pioerr > 0)
     {
         const char *cp = (const char *)strerror(pioerr);
         if (cp)
-            strncpy(errmsg, cp, PIO_MAX_NAME);
+        {
+            strncpy(errmsg, cp, errmsg_sz);
+        }
         else
-            strcpy(errmsg, "Unknown Error");
+        {
+            snprintf(errmsg, errmsg_sz, "Unknown system error (err = %d)", pioerr);
+        }
     }
     else if (pioerr == PIO_NOERR)
-        strcpy(errmsg, "No error");
+    {
+        strncpy(errmsg, "No error", errmsg_sz);
+    }
 #if defined(_NETCDF)
-    else if (pioerr <= NC2_ERR && pioerr >= NC4_LAST_ERROR)     /* NetCDF error? */
-        strncpy(errmsg, nc_strerror(pioerr), PIO_MAX_NAME);
+    else if (pioerr <= NC2_ERR && pioerr >= NC4_LAST_ERROR)     /* NetCDF error */
+    {
+        strncpy(errmsg, nc_strerror(pioerr), errmsg_sz);
+    }
 #endif /* endif defined(_NETCDF) */
 #if defined(_PNETCDF)
-    else if (pioerr > PIO_FIRST_ERROR_CODE)     /* pNetCDF error? */
-        strncpy(errmsg, ncmpi_strerror(pioerr), PIO_MAX_NAME);
+    else if (pioerr > PIO_FIRST_ERROR_CODE)     /* PnetCDF error */
+    {
+        strncpy(errmsg, ncmpi_strerror(pioerr), errmsg_sz);
+    }
 #endif /* defined( _PNETCDF) */
     else
+    {
         /* Handle PIO errors. */
         switch(pioerr)
         {
         case PIO_EBADIOTYPE:
-            strcpy(errmsg, "Bad IO type");
+            strncpy(errmsg, "Bad IO type", errmsg_sz);
             break;
 #ifdef _ADIOS2
         case PIO_EADIOSREAD:
-            strcpy(errmsg, "ADIOS IO type does not support read operations");
+            strncpy(errmsg, "ADIOS Read failed. ADIOS IO type does not support read operations", errmsg_sz);
             break;
         case PIO_EADIOS2ERR:
-            strcpy(errmsg, "Some error occurs when calling an ADIOS2 API");
+            strncpy(errmsg, "ADIOS2 API failed. Unknown error occured when calling an ADIOS2 API", errmsg_sz);
             break;
 #endif
         default:
-            strcpy(errmsg, "Unknown Error: Unrecognized error code");
+            snprintf(errmsg, errmsg_sz, "Unknown Error: Unrecognized error code (err = %d)", pioerr);
         }
+    }
 
     return PIO_NOERR;
 }
@@ -546,7 +556,7 @@ int check_netcdf(iosystem_desc_t *ios, file_desc_t *file, int status,
     /* Get an error message. */
     if(status != PIO_NOERR){
         if(eh == PIO_INTERNAL_ERROR){
-            int ret = PIOc_strerror(status, errmsg);
+            int ret = PIOc_strerror(status, errmsg, PIO_MAX_NAME);
             assert(ret == PIO_NOERR);
             LOG((1, "check_netcdf errmsg = %s", errmsg));
             piodie(fname, line, "FATAL ERROR: %s (file = %s)", errmsg, (file)?(file->fname):"UNKNOWN");
@@ -604,7 +614,7 @@ int check_netcdf(iosystem_desc_t *ios, file_desc_t *file, int status,
                 for(int i=1; i<err_info_sz; i++){
                     if(err_info[i] != prev_err){
                         /* Log prev range error and start new range */
-                        int ret = PIOc_strerror(prev_err, errmsg);
+                        int ret = PIOc_strerror(prev_err, errmsg, PIO_MAX_NAME);
                         assert(ret == PIO_NOERR);
                         LOG((1, "ERROR: ranks[%d-%d] = %d (%s)",
                               start_rank, end_rank, prev_err, errmsg));
@@ -615,7 +625,7 @@ int check_netcdf(iosystem_desc_t *ios, file_desc_t *file, int status,
                 }
                 /* The last range */
                 if(err_info[end_rank] == prev_err){
-                    int ret = PIOc_strerror(prev_err, errmsg);
+                    int ret = PIOc_strerror(prev_err, errmsg, PIO_MAX_NAME);
                     assert(ret == PIO_NOERR);
                     LOG((1, "ERROR: ranks[%d-%d] = %d (%s)",
                           start_rank, end_rank, prev_err, errmsg));
@@ -664,7 +674,7 @@ int pio_err(iosystem_desc_t *ios, file_desc_t *file,
         return PIO_NOERR;
 
     /* Get the error message. */
-    if ((ret = PIOc_strerror(err_num, err_msg)))
+    if ((ret = PIOc_strerror(err_num, err_msg, PIO_MAX_NAME)))
         return ret;
 
     /* PIO_MAX_NAME may not be enough to store the entire user error
@@ -696,7 +706,7 @@ int pio_err(iosystem_desc_t *ios, file_desc_t *file,
     if (err_handler == PIO_INTERNAL_ERROR)
     {
         /* For debugging only, this will print a traceback of the call tree.  */
-        piodie(fname, line, "An error occured, %s. err=%d. Aborting since the error handler was set to PIO_INTERNAL_ERROR...", uerr_msg, err_num);
+        piodie(fname, line, "An error occured, %s. %s (err=%d). Aborting since the error handler was set to PIO_INTERNAL_ERROR...", uerr_msg, err_msg, err_num);
     }
     else if (err_handler != PIO_RETURN_ERROR)
     {
@@ -3119,7 +3129,7 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
                 {
                     char errmsg[PIO_MAX_NAME];
 
-                    ierr2 = PIOc_strerror(ierr, errmsg);
+                    ierr2 = PIOc_strerror(ierr, errmsg, PIO_MAX_NAME);
                     printf("PIO: WARNING: Opening file (%s) with iotype=%d (%s) failed (ierr=%d, %s). Retrying with iotype=PIO_IOTYPE_NETCDF\n", filename, *iotype, pio_iotype_to_string(*iotype), ierr, ((ierr2 == PIO_NOERR) ? errmsg : ""));
                     ierr = nc_open(filename, file->mode, &file->fh);
                     if(ierr == NC_NOERR)

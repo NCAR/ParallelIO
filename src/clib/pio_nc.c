@@ -3047,7 +3047,7 @@ int PIOc_def_var(int ncid, const char *name, nc_type xtype, int ndims,
             if (ierr != PIO_NOERR)
             {
                 char errmsg[PIO_MAX_NAME];
-                ierr2 = PIOc_strerror(ierr, errmsg);
+                ierr2 = PIOc_strerror(ierr, errmsg, PIO_MAX_NAME);
                 ierr = pio_err(ios, file, ierr, __FILE__, __LINE__,
                                 "Defining variable %s (ndims = %d) in file %s (ncid=%d, iotype=%s) failed. %s", name, ndims, pio_get_fname_from_file(file), ncid, pio_iotype_to_string(file->iotype), ((ierr2 == PIO_NOERR) ? errmsg : ""));
             }
@@ -3061,7 +3061,7 @@ int PIOc_def_var(int ncid, const char *name, nc_type xtype, int ndims,
             if (ierr != PIO_NOERR)
             {
                 char errmsg[PIO_MAX_NAME];
-                ierr2 = PIOc_strerror(ierr, errmsg);
+                ierr2 = PIOc_strerror(ierr, errmsg, PIO_MAX_NAME);
                 ierr = pio_err(ios, file, ierr, __FILE__, __LINE__,
                                 "Defining variable %s (ndims = %d) in file %s (ncid=%d, iotype=%s) failed. %s", name, ndims, pio_get_fname_from_file(file), ncid, pio_iotype_to_string(file->iotype), ((ierr2 == PIO_NOERR) ? errmsg : ""));
             }
@@ -3078,7 +3078,7 @@ int PIOc_def_var(int ncid, const char *name, nc_type xtype, int ndims,
             if (ierr != PIO_NOERR)
             {
                 char errmsg[PIO_MAX_NAME];
-                ierr2 = PIOc_strerror(ierr, errmsg);
+                ierr2 = PIOc_strerror(ierr, errmsg, PIO_MAX_NAME);
                 ierr = pio_err(ios, file, ierr, __FILE__, __LINE__,
                                 "Defining variable %s (varid = %d, ndims = %d) in file %s (ncid=%d, iotype=%s) failed. Turning on compression on the variable failed. %s", name, *varidp, ndims, pio_get_fname_from_file(file), ncid, pio_iotype_to_string(file->iotype), ((ierr2 == PIO_NOERR) ? errmsg : ""));
             }
@@ -3091,7 +3091,7 @@ int PIOc_def_var(int ncid, const char *name, nc_type xtype, int ndims,
             if (ierr != PIO_NOERR)
             {
                 char errmsg[PIO_MAX_NAME];
-                ierr2 = PIOc_strerror(ierr, errmsg);
+                ierr2 = PIOc_strerror(ierr, errmsg, PIO_MAX_NAME);
                 ierr = pio_err(ios, file, ierr, __FILE__, __LINE__,
                                 "Defining variable %s (varid = %d, ndims = %d) in file %s (ncid=%d, iotype=%s) failed. Setting parallel access for the variable failed. %s", name, *varidp, ndims, pio_get_fname_from_file(file), ncid, pio_iotype_to_string(file->iotype), ((ierr2 == PIO_NOERR) ? errmsg : ""));
             }
