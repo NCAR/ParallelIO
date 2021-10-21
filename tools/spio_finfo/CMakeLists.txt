@@ -3,6 +3,63 @@
 ###-------------------------------------------------------------------------###
 
 #==============================================================================
+#  HELPER MACROS
+#==============================================================================
+macro (add_exe_with_libs_and_deps EXE_NAME)
+  add_executable(${EXE_NAME} ${ARGN})
+  target_link_libraries(${EXE_NAME} PRIVATE pioc)
+  if (GPTL_C_FOUND)
+    target_include_directories (${EXE_NAME}
+      PUBLIC ${GPTL_C_INCLUDE_DIRS})
+    target_link_libraries (${EXE_NAME} PRIVATE ${GPTL_C_LIBRARIES})
+  else ()
+    message (STATUS "Using internal GPTL C library for timing")
+    target_link_libraries (${EXE_NAME} PRIVATE gptl)
+  endif ()
+  target_compile_definitions (${EXE_NAME} PUBLIC TIMING)
+  if (PIO_ENABLE_INTERNAL_TIMING)
+    target_compile_definitions (${EXE_NAME} PUBLIC TIMING_INTERNAL)
+  endif ()
+endmacro ()
+
+#==============================================================================
+#  FIND EXTERNAL LIBRARIES/DEPENDENCIES
+#==============================================================================
+#===== MPI =====
+if (PIO_USE_MPISERIAL)
+  find_package (MPISERIAL COMPONENTS C REQUIRED)
+  if (MPISERIAL_C_FOUND)
+    set (CMAKE_REQUIRED_INCLUDES ${MPISERIAL_C_INCLUDE_DIRS})
+  endif ()
+else ()
+  find_package (MPI REQUIRED)
+  set (CMAKE_REQUIRED_INCLUDES ${MPI_INCLUDE_PATH})
+endif ()
+
+#===== GPTL =====
+if (PIO_ENABLE_TIMING)
+  find_package (GPTL COMPONENTS C QUIET)
+  if (GPTL_C_FOUND)
+    message (STATUS "Found GPTL C: ${GPTL_C_LIBRARIES}")
+  else ()
+    message (STATUS "Using internal GPTL C library for timing")
+  endif ()
+endif ()
+
+#===== NetCDF-C =====
+if (WITH_NETCDF)
+  find_package (NetCDF "4.3.3" COMPONENTS C)
+endif ()
+#===== PnetCDF-C =====
+if (WITH_PNETCDF)
+  find_package (PnetCDF "1.8.1" COMPONENTS C)
+endif ()
+#===== ADIOS-C =====
+if (WITH_ADIOS)
+  find_package (ADIOS "1.10.0")
+endif ()
+
+#==============================================================================
 #  DEFINE THE TARGET
 #==============================================================================
 set(SRC ${SCORPIO_SOURCE_DIR}/tools/util/argparser.cxx
@@ -11,7 +68,7 @@ set(SRC ${SCORPIO_SOURCE_DIR}/tools/util/argparser.cxx
     spio_file_test_utils.cxx
     spio_finfo.cxx
     spio_finfo_tool.cxx)
-add_executable(spio_finfo.exe ${SRC})
+add_exe_with_libs_and_deps(spio_finfo.exe ${SRC})
 
 #==============================================================================
 #  SET THE COMPILER OPTIONS
@@ -45,34 +102,12 @@ target_include_directories(spio_finfo.exe PRIVATE
   ${PnetCDF_C_INCLUDE_DIRS} 
   ${PIO_C_EXTRA_INCLUDE_DIRS})
 
-target_link_libraries(spio_finfo.exe
-                      PRIVATE pioc)
-
 target_compile_definitions (spio_finfo.exe
   PUBLIC MPICH_SKIP_MPICXX)
 target_compile_definitions (spio_finfo.exe
   PUBLIC OMPI_SKIP_MPICXX)
 
-# Adding extra (user-specified) compile/link options
-target_include_directories (spio_finfo.exe
-  PRIVATE ${PIO_C_EXTRA_INCLUDE_DIRS})
-target_link_libraries (spio_finfo.exe
-  PRIVATE ${PIO_C_EXTRA_LIBRARIES})
-target_compile_options (spio_finfo.exe
-  PRIVATE ${PIO_C_EXTRA_COMPILE_OPTIONS})
-target_compile_definitions (spio_finfo.exe
-  PRIVATE ${PIO_C_EXTRA_COMPILE_DEFINITIONS})
-if (PIO_C_EXTRA_LINK_FLAGS)
-  set_target_properties(spio_finfo.exe PROPERTIES
-    LINK_FLAGS ${PIO_C_EXTRA_LINK_FLAGS})
-endif ()
-#==============================================================================
-#  FIND EXTERNAL LIBRARIES/DEPENDENCIES
-#==============================================================================
-#===== NetCDF-C =====
-if (WITH_NETCDF)
-find_package (NetCDF "4.3.3" COMPONENTS C)
-endif ()
+# Add external lib compile/link flags
 if (NetCDF_C_FOUND)
   target_include_directories (spio_finfo.exe
     PRIVATE ${NetCDF_C_INCLUDE_DIRS})
@@ -89,10 +124,6 @@ else ()
     PRIVATE _NONETCDF)
 endif ()
 
-#===== PnetCDF-C =====
-if (WITH_PNETCDF)
-  find_package (PnetCDF "1.8.1" COMPONENTS C)
-endif ()
 if (PnetCDF_C_FOUND)
   target_include_directories (spio_finfo.exe
     PRIVATE ${PnetCDF_C_INCLUDE_DIRS})
@@ -105,10 +136,6 @@ else ()
     PRIVATE _NOPNETCDF)
 endif ()
 
-#===== ADIOS-C =====
-if (WITH_ADIOS)
-  find_package (ADIOS "1.10.0")
-endif ()
 if (ADIOS_FOUND)
   target_include_directories (spio_finfo.exe
     PRIVATE ${ADIOS_INCLUDE_DIRS})
@@ -121,6 +148,19 @@ else ()
     PRIVATE _NOADIOS)
 endif ()
 
+# Adding extra (user-specified) compile/link options
+target_include_directories (spio_finfo.exe
+  PRIVATE ${PIO_C_EXTRA_INCLUDE_DIRS})
+target_link_libraries (spio_finfo.exe
+  PRIVATE ${PIO_C_EXTRA_LIBRARIES})
+target_compile_options (spio_finfo.exe
+  PRIVATE ${PIO_C_EXTRA_COMPILE_OPTIONS})
+target_compile_definitions (spio_finfo.exe
+  PRIVATE ${PIO_C_EXTRA_COMPILE_DEFINITIONS})
+if (PIO_C_EXTRA_LINK_FLAGS)
+  set_target_properties(spio_finfo.exe PROPERTIES
+    LINK_FLAGS ${PIO_C_EXTRA_LINK_FLAGS})
+endif ()
 #==============================================================================
 #  INSTALL
 #==============================================================================

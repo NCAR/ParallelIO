@@ -56,6 +56,20 @@ option (PIO_VALGRIND_CHECK  "Enable memory leak check using valgrind"       OFF)
 include(CMakeDependentOption)
 cmake_dependent_option (PIO_TEST_CLOSE_OPEN_FOR_SYNC  "SCORPIO fortran tests will close+open for sync" ON "WITH_ADIOS2" OFF)
 
+# Backwards Compatibility - allow users to define [NETCDF|PNETCDF]_DIR instead
+# of [NetCDF|PnetCDF]_PATH
+# Old NETCDF_DIR variable --> NetCDF_PATH
+if (DEFINED NETCDF_DIR)
+  set (NetCDF_PATH ${NETCDF_DIR}
+    CACHE STRING "Location of the NetCDF library installation")
+endif ()
+
+# Old PNETCDF_DIR variable --> PnetCDF_PATH
+if (DEFINED PNETCDF_DIR)
+  set (PnetCDF_PATH ${PNETCDF_DIR}
+    CACHE STRING "Location of the PnetCDF library installation")
+endif ()
+
 #==============================================================================
 #  SET VARIABLES FOR pio_config.h (generated from pio_config.h.in)
 #==============================================================================
@@ -153,42 +167,8 @@ else()
   endif()
 endif()
 
-INCLUDE (CheckTypeSize)
-
 #===== Library Variables =====
 set (PIO_FILESYSTEM_HINTS IGNORE CACHE STRING "Filesystem hints (lustre or gpfs)")
-
-#==============================================================================
-#  FIND EXTERNAL LIBRARIES
-#==============================================================================
-#===== MPI =====
-if (PIO_USE_MPISERIAL)
-  find_package (MPISERIAL COMPONENTS C REQUIRED)
-  if (MPISERIAL_C_FOUND)
-    set (CMAKE_REQUIRED_INCLUDES ${MPISERIAL_C_INCLUDE_DIRS})
-  endif ()
-else ()
-  find_package (MPI REQUIRED)
-  set (CMAKE_REQUIRED_INCLUDES ${MPI_INCLUDE_PATH})
-endif ()
-
-SET(CMAKE_EXTRA_INCLUDE_FILES "mpi.h")
-check_type_size("MPI_Offset" SIZEOF_MPI_OFFSET)
-SET(CMAKE_EXTRA_INCLUDE_FILES)
-
-# Backwards Compatibility - allow users to define [NETCDF|PNETCDF]_DIR instead
-# of [NetCDF|PnetCDF]_PATH
-# Old NETCDF_DIR variable --> NetCDF_PATH
-if (DEFINED NETCDF_DIR)
-  set (NetCDF_PATH ${NETCDF_DIR}
-    CACHE STRING "Location of the NetCDF library installation")
-endif ()
-
-# Old PNETCDF_DIR variable --> PnetCDF_PATH
-if (DEFINED PNETCDF_DIR)
-  set (PnetCDF_PATH ${PNETCDF_DIR}
-    CACHE STRING "Location of the PnetCDF library installation")
-endif ()
 
 #==============================================================================
 #  DETECT SYSTEM/COMPILERS (and set compiler specific options)

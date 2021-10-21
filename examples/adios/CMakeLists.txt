@@ -1,6 +1,48 @@
 ###-------------------------------------------------------------------------###
 ### CMakeList.txt for examples using pio
 ###-------------------------------------------------------------------------###
+#==============================================================================
+#  HELPER MACROS
+#==============================================================================
+macro (add_exe_with_libs_and_deps EXE_NAME IS_C_SRC)
+  add_executable(${EXE_NAME} ${ARGN})
+  if (IS_C_SRC)
+    target_link_libraries(${EXE_NAME} PRIVATE pioc)
+  else ()
+    # Assume Fortran executable
+    target_link_libraries(${EXE_NAME} PRIVATE piof)
+  endif ()
+  if (PIO_USE_MPISERIAL)
+    if (MPISERIAL_Fortran_FOUND)
+      target_compile_definitions (${EXE_NAME} PRIVATE _MPISERIAL)
+      target_include_directories (${EXE_NAME} PUBLIC ${MPISERIAL_Fortran_INCLUDE_DIRS})
+      target_link_libraries (${EXE_NAME} PRIVATE ${MPISERIAL_Fortran_LIBRARIES})
+      set (WITH_PNETCDF FALSE)
+      set (MPI_Fortran_INCLUDE_PATH ${MPISERIAL_Fortran_INCLUDE_DIRS})
+    endif ()
+  endif ()
+  if (NOT ${MPI_HAS_Fortran_MOD})
+    target_compile_definitions (${EXE_NAME} PUBLIC NO_MPIMOD)
+  endif ()
+  if (GPTL_C_FOUND AND IS_C_SRC)
+    target_include_directories (${EXE_NAME}
+      PUBLIC ${GPTL_C_INCLUDE_DIRS})
+    target_link_libraries (${EXE_NAME} PRIVATE ${GPTL_C_LIBRARIES})
+  elseif (IS_C_SRC)
+    target_link_libraries (${EXE_NAME} PRIVATE gptl)
+  elseif (GPTL_Fortran_Perf_FOUND)
+    # NOT IS_C_SRC
+    target_include_directories (${EXE_NAME} PUBLIC ${GPTL_Fortran_INCLUDE_DIRS})
+    target_link_libraries (${EXE_NAME} PRIVATE ${GPTL_Fortran_LIBRARIES})
+  else ()
+    # (NOT IS_C_SRC) AND (NOT GPTL_Fortran_Perf_FOUND)
+    target_link_libraries (${EXE_NAME} PRIVATE gptl)
+  endif ()
+  target_compile_definitions (${EXE_NAME} PUBLIC TIMING)
+  if (PIO_ENABLE_INTERNAL_TIMING)
+    target_compile_definitions (${EXE_NAME} PUBLIC TIMING_INTERNAL)
+  endif ()
+endmacro ()
 
 #==============================================================================
 #  SET THE COMPILER OPTIONS
@@ -32,23 +74,60 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -O0")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0")
 
 #==============================================================================
+#  FIND EXTERNAL LIBRARIES/DEPENDENCIES
+#==============================================================================
+#===== MPI =====
+if (PIO_USE_MPISERIAL)
+  find_package (MPISERIAL COMPONENTS C Fortran REQUIRED)
+  if (MPISERIAL_C_FOUND)
+    set (CMAKE_REQUIRED_INCLUDES ${MPISERIAL_C_INCLUDE_DIRS})
+  endif ()
+else ()
+  find_package (MPI REQUIRED)
+  set (CMAKE_REQUIRED_INCLUDES ${MPI_INCLUDE_PATH})
+endif ()
+
+# Check for MPI Fortran module
+find_path(MPIMOD_PATH
+  NAMES mpi.mod MPI.mod
+  HINTS ${MPI_Fortran_INCLUDE_PATH})
+if (PIO_ENABLE_TIMING)
+  find_package (GPTL COMPONENTS Fortran_Perf QUIET)
+endif ()
+
+check_macro (MPI_HAS_Fortran_MOD
+  NAME TryMPIMod.f90
+  HINTS ${CMAKE_MODULE_PATH}
+  DEFINITIONS -I${MPIMOD_PATH}
+  COMMENT "whether MPI Fortran module is supported")
+if (${MPI_HAS_Fortran_MOD})
+  message (STATUS "MPI Fortran module verified and enabled.")
+else ()
+  message (STATUS "MPI Fortran module failed verification and therefore disabled.")
+endif ()
+
+#===== GPTL Library =====
+if (PIO_ENABLE_TIMING)
+  find_package (GPTL COMPONENTS C Fortran_Perf QUIET)
+  if (GPTL_C_FOUND)
+    message (STATUS "Found GPTL C: ${GPTL_C_LIBRARIES}")
+  else ()
+    message (STATUS "Using internal GPTL C library for timing")
+  endif ()
+  if (GPTL_Fortran_Perf_FOUND)
+    message (STATUS "Found GPTL Fortran Perf: ${GPTL_Fortran_Perf_LIBRARIES}")
+  else ()
+    message (STATUS "Using internal GPTL Fortran library for timing")
+  endif ()
+endif ()
+
+#==============================================================================
 #  DEFINE THE TARGETS AND TESTS
 #==============================================================================
-ADD_EXECUTABLE(example3 example3.c)
-TARGET_LINK_LIBRARIES(example3 pioc)
-add_dependencies(tests example3)
-
-ADD_EXECUTABLE(timesteps timesteps.c)
-TARGET_LINK_LIBRARIES(timesteps pioc)
-add_dependencies(tests timesteps)
-
-ADD_EXECUTABLE(timesteps_double timesteps_double.c)
-TARGET_LINK_LIBRARIES(timesteps_double pioc)
-add_dependencies(tests timesteps_double)
-
-ADD_EXECUTABLE(example_num_frames example_num_frames.c)
-TARGET_LINK_LIBRARIES(example_num_frames pioc)
-add_dependencies(tests example_num_frames)
+add_exe_with_libs_and_deps(example3 TRUE example3.c)
+add_exe_with_libs_and_deps(timesteps TRUE timesteps.c)
+add_exe_with_libs_and_deps(timesteps_double TRUE timesteps_double.c)
+add_exe_with_libs_and_deps(example_num_frames TRUE example_num_frames.c)
 
 if (PIO_ENABLE_FORTRAN)
   if (WITH_ADIOS)
@@ -60,12 +139,7 @@ if (PIO_ENABLE_FORTRAN)
     INCLUDE_DIRECTORIES(${PIO_INCLUDE_DIRS})
     LINK_DIRECTORIES(${PIO_LIB_DIR})
 
-    set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -g -O0")
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -O0")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0")
-    SET(SRC examplePioADIOS.f90)
-    ADD_EXECUTABLE(examplePioADIOS_f90 ${SRC})
-    TARGET_LINK_LIBRARIES(examplePioADIOS_f90 piof pioc)
+    add_exe_with_libs_and_deps(examplePioADIOS_f90 FALSE examplePioADIOS.f90)
   endif(WITH_ADIOS)
 
 endif(PIO_ENABLE_FORTRAN)

@@ -3,16 +3,6 @@ include (CheckFunctionExists)
 project (PIOC C CXX)
 
 #==============================================================================
-#  CONFIGURE CHECKS
-#==============================================================================
-include(CheckTypeSize)
-check_type_size("size_t" SIZEOF_SIZE_T)
-CHECK_TYPE_SIZE("long long" SIZEOF_LONG_LONG)
-if (NOT ${SIZEOF_SIZE_T} EQUAL ${SIZEOF_LONG_LONG})
-  message (FATAL_ERROR "size_t and long long must be the same size!")
-endif ()
-
-#==============================================================================
 #  DEFINE THE TARGET LIBRARY
 #==============================================================================
 
@@ -124,6 +114,17 @@ endif ()
 #==============================================================================
 #  FIND EXTERNAL LIBRARIES/DEPENDENCIES
 #==============================================================================
+#===== MPI =====
+if (PIO_USE_MPISERIAL)
+  find_package (MPISERIAL COMPONENTS C REQUIRED)
+  if (MPISERIAL_C_FOUND)
+    set (CMAKE_REQUIRED_INCLUDES ${MPISERIAL_C_INCLUDE_DIRS})
+  endif ()
+else ()
+  find_package (MPI REQUIRED)
+  set (CMAKE_REQUIRED_INCLUDES ${MPI_INCLUDE_PATH})
+endif ()
+
 #===== GPTL =====
 if (PIO_ENABLE_TIMING)
   find_package (GPTL COMPONENTS C QUIET)
@@ -212,6 +213,22 @@ endif ()
 if (NOT PnetCDF_C_FOUND AND NOT NetCDF_C_FOUND)
   message (FATAL_ERROR "Must have PnetCDF and/or NetCDF C libraries")
 endif ()
+
+#==============================================================================
+#  CONFIGURE CHECKS
+#==============================================================================
+include(CheckTypeSize)
+check_type_size("size_t" SIZEOF_SIZE_T)
+CHECK_TYPE_SIZE("long long" SIZEOF_LONG_LONG)
+if (NOT ${SIZEOF_SIZE_T} EQUAL ${SIZEOF_LONG_LONG})
+  message (FATAL_ERROR "size_t and long long must be the same size!")
+endif ()
+
+# Note: This check needs to happen after the MPI library is found
+INCLUDE (CheckTypeSize)
+SET(CMAKE_EXTRA_INCLUDE_FILES "mpi.h")
+check_type_size("MPI_Offset" SIZEOF_MPI_OFFSET)
+SET(CMAKE_EXTRA_INCLUDE_FILES)
 
 #==============================================================================
 #  INSTALL

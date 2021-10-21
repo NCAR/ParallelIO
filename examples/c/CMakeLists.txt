@@ -1,6 +1,24 @@
 ###-------------------------------------------------------------------------###
 ### CMakeList.txt for examples using pio
 ###-------------------------------------------------------------------------###
+#==============================================================================
+#  HELPER MACROS
+#==============================================================================
+macro (add_exe_with_libs_and_deps EXE_NAME)
+  add_executable(${EXE_NAME} ${ARGN})
+  target_link_libraries(${EXE_NAME} PRIVATE pioc)
+  if (GPTL_C_FOUND)
+    target_include_directories (${EXE_NAME}
+      PUBLIC ${GPTL_C_INCLUDE_DIRS})
+    target_link_libraries (${EXE_NAME} PRIVATE ${GPTL_C_LIBRARIES})
+  else ()
+    target_link_libraries (${EXE_NAME} PRIVATE gptl)
+  endif ()
+  target_compile_definitions (${EXE_NAME} PUBLIC TIMING)
+  if (PIO_ENABLE_INTERNAL_TIMING)
+    target_compile_definitions (${EXE_NAME} PUBLIC TIMING_INTERNAL)
+  endif ()
+endmacro ()
 
 #==============================================================================
 #  SET THE COMPILER OPTIONS
@@ -34,42 +52,45 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0")
 #==============================================================================
 #  FIND EXTERNAL LIBRARIES/DEPENDENCIES
 #==============================================================================
+#===== MPI =====
+if (PIO_USE_MPISERIAL)
+  find_package (MPISERIAL COMPONENTS C REQUIRED)
+  if (MPISERIAL_C_FOUND)
+    set (CMAKE_REQUIRED_INCLUDES ${MPISERIAL_C_INCLUDE_DIRS})
+  endif ()
+else ()
+  find_package (MPI REQUIRED)
+  set (CMAKE_REQUIRED_INCLUDES ${MPI_INCLUDE_PATH})
+endif ()
+
 #===== MPE =====
 find_package (MPE ${MPE_MIN_VER_REQD} COMPONENTS C)
+
+#===== GPTL =====
+if (PIO_ENABLE_TIMING)
+  find_package (GPTL COMPONENTS C QUIET)
+  if (GPTL_C_FOUND)
+    message (STATUS "Found GPTL C: ${GPTL_C_LIBRARIES}")
+  else ()
+    message (STATUS "Using internal GPTL C library for timing")
+  endif ()
+endif ()
 
 #==============================================================================
 #  DEFINE THE TARGETS AND TESTS
 #==============================================================================
-ADD_EXECUTABLE(examplePio EXCLUDE_FROM_ALL examplePio.c)
-TARGET_LINK_LIBRARIES(examplePio pioc)
-add_dependencies(tests examplePio)
-
-ADD_EXECUTABLE(example1 example1.c)
-TARGET_LINK_LIBRARIES(example1 pioc)
-add_dependencies(tests example1)
-
-ADD_EXECUTABLE(darray_no_async darray_no_async.c)
-TARGET_LINK_LIBRARIES(darray_no_async pioc)
-add_dependencies(tests darray_no_async)
-
-ADD_EXECUTABLE(darray_async darray_async.c)
-TARGET_LINK_LIBRARIES(darray_async pioc)
-add_dependencies(tests darray_async)
-
-ADD_EXECUTABLE(put_var put_var.c)
-TARGET_LINK_LIBRARIES(put_var pioc)
-add_dependencies(tests put_var)
+add_exe_with_libs_and_deps(examplePio examplePio.c)
+add_exe_with_libs_and_deps(example1 example1.c)
+add_exe_with_libs_and_deps(darray_no_async darray_no_async.c)
+add_exe_with_libs_and_deps(darray_async darray_async.c)
+add_exe_with_libs_and_deps(put_var put_var.c)
 
 if (PIO_ENABLE_FORTRAN)
   if (MPE_C_FOUND)
-    SET(SRC example2.c)
-    ADD_EXECUTABLE(example2 ${SRC})
-    TARGET_LINK_LIBRARIES(example2 pioc)
-    target_include_directories (example2
-      PUBLIC ${MPE_C_INCLUDE_DIRS})
-    target_compile_definitions (example2
-      PUBLIC HAVE_MPE)
-    target_link_libraries (example2 pioc lmpe mpe pthread m)
+    add_exe_with_libs_and_deps(example2 example2.c)
+    target_include_directories (example2 PUBLIC ${MPE_C_INCLUDE_DIRS})
+    target_compile_definitions (example2 PUBLIC HAVE_MPE)
+    target_link_libraries (example2 PRIVATE lmpe mpe pthread m)
   endif ()
 endif ()
 

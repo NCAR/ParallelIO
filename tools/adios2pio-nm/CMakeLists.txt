@@ -6,6 +6,71 @@
 list (APPEND CMAKE_MODULE_PATH ${SCORPIO_SOURCE_DIR}/cmake)
 
 #==============================================================================
+#  HELPER MACROS
+#==============================================================================
+macro (add_exe_with_libs_and_deps EXE_NAME)
+  add_executable(${EXE_NAME} ${ARGN})
+  target_link_libraries(${EXE_NAME} pioc)
+  if (GPTL_C_FOUND)
+    target_include_directories (${EXE_NAME}
+      PUBLIC ${GPTL_C_INCLUDE_DIRS})
+    target_link_libraries (${EXE_NAME}
+      PUBLIC ${GPTL_C_LIBRARIES})
+  else ()
+    message (STATUS "Using internal GPTL C library for timing")
+    target_link_libraries (${EXE_NAME} PUBLIC gptl)
+  endif ()
+  target_compile_definitions (${EXE_NAME} PUBLIC TIMING)
+  if (PIO_ENABLE_INTERNAL_TIMING)
+    target_compile_definitions (${EXE_NAME} PUBLIC TIMING_INTERNAL)
+  endif ()
+endmacro ()
+
+#==============================================================================
+#  FIND EXTERNAL LIBRARIES/DEPENDENCIES
+#==============================================================================
+#===== MPI =====
+if (PIO_USE_MPISERIAL)
+  find_package (MPISERIAL COMPONENTS C REQUIRED)
+  if (MPISERIAL_C_FOUND)
+    set (CMAKE_REQUIRED_INCLUDES ${MPISERIAL_C_INCLUDE_DIRS})
+  endif ()
+else ()
+  find_package (MPI REQUIRED)
+  set (CMAKE_REQUIRED_INCLUDES ${MPI_INCLUDE_PATH})
+endif ()
+
+#===== GPTL =====
+if (PIO_ENABLE_TIMING)
+  find_package (GPTL COMPONENTS C QUIET)
+  if (GPTL_C_FOUND)
+    message (STATUS "Found GPTL C: ${GPTL_C_LIBRARIES}")
+  else ()
+    message (STATUS "Using internal GPTL C library for timing")
+  endif ()
+endif ()
+
+#===== PnetCDF-C =====
+if (WITH_PNETCDF)
+  find_package (PnetCDF ${PNETCDF_MIN_VER_REQD} COMPONENTS C)
+endif ()
+
+#===== NetCDF-C =====
+if (WITH_NETCDF)
+find_package (NetCDF ${NETCDF_C_MIN_VER_REQD} COMPONENTS C)
+endif ()
+
+#===== ADIOS-C =====
+if ((WITH_ADIOS2) AND (NOT ADIOS2_FOUND))
+  find_package (ADIOS2 ${ADIOS_MIN_VER_REQD})
+endif ()
+
+# We assume that either PnetCDF or NetCDF is available
+if (NOT PnetCDF_C_FOUND AND NOT NetCDF_C_FOUND)
+  message (FATAL_ERROR "Must have PnetCDF and/or NetCDF C libraries")
+endif ()
+
+#==============================================================================
 #  DEFINE THE TARGET LIBRARY
 #==============================================================================
 SET(SRC ${SCORPIO_SOURCE_DIR}/tools/util/argparser.cxx adios2pio-nm.cxx)
@@ -13,7 +78,7 @@ add_library(adios2pio-nm-lib adios2pio-nm-lib.cxx)
 include_directories(
   "${PROJECT_SOURCE_DIR}"   # to find foo/foo.h
   "${PROJECT_BINARY_DIR}")  # to find foo/config.h
-ADD_EXECUTABLE(adios2pio-nm.exe ${SRC})
+add_exe_with_libs_and_deps(adios2pio-nm.exe ${SRC})
 
 #==============================================================================
 #  SET THE COMPILER OPTIONS
@@ -53,29 +118,7 @@ target_compile_definitions (adios2pio-nm-lib
 target_compile_definitions (adios2pio-nm-lib
   PUBLIC OMPI_SKIP_MPICXX)
 
-# Add the extra (user-specified) compile/link options
-target_include_directories (adios2pio-nm-lib
-  PUBLIC ${PIO_C_EXTRA_INCLUDE_DIRS})
-target_link_libraries (adios2pio-nm-lib
-  PUBLIC ${PIO_C_EXTRA_LIBRARIES})
-target_compile_options (adios2pio-nm-lib
-  PRIVATE ${PIO_C_EXTRA_COMPILE_OPTIONS})
-target_compile_definitions (adios2pio-nm-lib
-  PUBLIC ${PIO_C_EXTRA_COMPILE_DEFINITIONS})
-if (PIO_C_EXTRA_LINK_FLAGS)
-  set_target_properties(adios2pio-nm-lib PROPERTIES
-    LINK_FLAGS ${PIO_C_EXTRA_LINK_FLAGS})
-endif ()
-
-TARGET_LINK_LIBRARIES(adios2pio-nm.exe adios2pio-nm-lib pioc)
-
-#==============================================================================
-#  FIND EXTERNAL LIBRARIES/DEPENDENCIES
-#==============================================================================
-#===== PnetCDF-C =====
-if (WITH_PNETCDF)
-  find_package (PnetCDF ${PNETCDF_MIN_VER_REQD} COMPONENTS C)
-endif ()
+# Set external lib compiler/link flags
 if (PnetCDF_C_FOUND)
   target_include_directories (adios2pio-nm-lib
     PUBLIC ${PnetCDF_C_INCLUDE_DIRS})
@@ -97,10 +140,6 @@ else ()
     PUBLIC _NOPNETCDF)
 endif ()
 
-#===== NetCDF-C =====
-if (WITH_NETCDF)
-find_package (NetCDF ${NETCDF_C_MIN_VER_REQD} COMPONENTS C)
-endif ()
 if (NetCDF_C_FOUND)
   target_include_directories (adios2pio-nm-lib
     PUBLIC ${NetCDF_C_INCLUDE_DIRS})
@@ -124,10 +163,6 @@ else ()
     PUBLIC _NONETCDF)
 endif ()
 
-#===== ADIOS-C =====
-if ((WITH_ADIOS2) AND (NOT ADIOS2_FOUND))
-  find_package (ADIOS2 ${ADIOS_MIN_VER_REQD})
-endif ()
 if (ADIOS2_FOUND)
   target_compile_definitions (adios2pio-nm-lib
     PUBLIC _ADIOS2)
@@ -138,10 +173,21 @@ else ()
     PUBLIC _NOADIOS)
 endif ()
 
-# We assume that either PnetCDF or NetCDF is available
-if (NOT PnetCDF_C_FOUND AND NOT NetCDF_C_FOUND)
-  message (FATAL_ERROR "Must have PnetCDF and/or NetCDF C libraries")
+# Add the extra (user-specified) compile/link options
+target_include_directories (adios2pio-nm-lib
+  PUBLIC ${PIO_C_EXTRA_INCLUDE_DIRS})
+target_link_libraries (adios2pio-nm-lib
+  PUBLIC ${PIO_C_EXTRA_LIBRARIES})
+target_compile_options (adios2pio-nm-lib
+  PRIVATE ${PIO_C_EXTRA_COMPILE_OPTIONS})
+target_compile_definitions (adios2pio-nm-lib
+  PUBLIC ${PIO_C_EXTRA_COMPILE_DEFINITIONS})
+if (PIO_C_EXTRA_LINK_FLAGS)
+  set_target_properties(adios2pio-nm-lib PROPERTIES
+    LINK_FLAGS ${PIO_C_EXTRA_LINK_FLAGS})
 endif ()
+
+TARGET_LINK_LIBRARIES(adios2pio-nm.exe adios2pio-nm-lib pioc)
 
 #==============================================================================
 #  INSTALL
