@@ -1,5 +1,8 @@
 include (LibMPI)
 
+#==============================================================================
+#  SET THE COMPILER OPTIONS
+#==============================================================================
 include_directories("${SCORPIO_SOURCE_DIR}/tests/cunit" "${SCORPIO_BINARY_DIR}/src/clib")
 
 # Compiler-specific compiler options
@@ -25,10 +28,10 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -O0")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0")
 
 #==============================================================================
-#  PREPARE FOR TESTING
+#  DEFINE THE TARGETS AND TESTS
 #==============================================================================
 
-# Don't run these tests if we are using MPI SERIAL.
+# Exclude tests that require more than 1 procs when using the MPI serial library
 if (NOT PIO_USE_MPISERIAL)
   add_executable (test_intercomm2 EXCLUDE_FROM_ALL test_intercomm2.c test_common.c)
   target_link_libraries (test_intercomm2 pioc)

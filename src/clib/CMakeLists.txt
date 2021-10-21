@@ -3,9 +3,20 @@ include (CheckFunctionExists)
 project (PIOC C CXX)
 
 #==============================================================================
-#  DEFINE THE TARGET
+#  CONFIGURE CHECKS
+#==============================================================================
+include(CheckTypeSize)
+check_type_size("size_t" SIZEOF_SIZE_T)
+CHECK_TYPE_SIZE("long long" SIZEOF_LONG_LONG)
+if (NOT ${SIZEOF_SIZE_T} EQUAL ${SIZEOF_LONG_LONG})
+  message (FATAL_ERROR "size_t and long long must be the same size!")
+endif ()
+
+#==============================================================================
+#  DEFINE THE TARGET LIBRARY
 #==============================================================================
 
+# Add sources for libpioc.a
 add_library (pioc topology.c pio_mpi_timer.c pio_timer.c pio_file.c
   pioc_support.c pio_lists.c pio_print.c
   pioc.c pioc_sc.c pio_spmd.c pio_rearrange.c pio_nc4.c bget.c
@@ -13,6 +24,9 @@ add_library (pioc topology.c pio_mpi_timer.c pio_timer.c pio_file.c
   pio_darray.c pio_darray_int.c pio_sdecomps_regex.cpp spio_io_summary.cpp
   spio_ltimer.cpp spio_serializer.cpp)
 
+#==============================================================================
+#  SET THE COMPILER OPTIONS
+#==============================================================================
 # set up include-directories
 include_directories(
   "${PROJECT_SOURCE_DIR}"   # to find foo/foo.h
@@ -33,6 +47,20 @@ target_compile_definitions (pioc
   PUBLIC MPICH_SKIP_MPICXX)
 target_compile_definitions (pioc
   PUBLIC OMPI_SKIP_MPICXX)
+
+# Add user-specified include/libs/compiler/link options
+target_include_directories (pioc
+  PUBLIC ${PIO_C_EXTRA_INCLUDE_DIRS})
+target_link_libraries (pioc
+  PUBLIC ${PIO_C_EXTRA_LIBRARIES})
+target_compile_options (pioc
+  PRIVATE ${PIO_C_EXTRA_COMPILE_OPTIONS})
+target_compile_definitions (pioc
+  PUBLIC ${PIO_C_EXTRA_COMPILE_DEFINITIONS})
+if (PIO_C_EXTRA_LINK_FLAGS)
+  set_target_properties(pioc PROPERTIES
+    LINK_FLAGS ${PIO_C_EXTRA_LINK_FLAGS})
+endif ()
 
 # At least on Titan + Cray MPI, MPI_Irsends are buggy
 # causing hangs during I/O
@@ -60,20 +88,12 @@ else ()
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 endif ()
 
-#==============================================================================
-#  DEFINE THE INSTALL
-#==============================================================================
+if (ADIOS_BP2NC_TEST)
+  target_compile_definitions (pioc
+    PUBLIC _ADIOS_BP2NC_TEST)
+endif ()
 
-# Library
-install (TARGETS pioc DESTINATION lib)
-
-# Include/Header File
-install (FILES ${CMAKE_CURRENT_SOURCE_DIR}/pio.h DESTINATION include)
-
-#==============================================================================
-#  DEFINE THE DEPENDENCIES
-#==============================================================================
-# MPI test done at top level
+# The MPI library detection was done in the top level
 if (MPISERIAL_C_FOUND)
     target_compile_definitions (pioc
       PRIVATE MPI_SERIAL)
@@ -84,8 +104,26 @@ if (MPISERIAL_C_FOUND)
     set (WITH_PNETCDF FALSE)
 endif ()
 
+# Hack to circumvent IBM XL (16.1.1-3) internal compiler error by
+# disabling optimization for pioc_support.c
+cmake_host_system_information (RESULT FQDN_SITENAME QUERY FQDN)
+if (FQDN_SITENAME MATCHES "^.*[.]olcf")
+  if (CMAKE_C_COMPILER_NAME STREQUAL "XL")
+    set_source_files_properties(pioc_support.c PROPERTIES COMPILE_FLAGS "-qnoopt -qnosmp")
+  endif()
+endif()
 
+# Set variables to be written out in pio_config.h (generated from pio_config.h.in)
+#====== PIO_MICRO_TIMING ======
+if (PIO_MICRO_TIMING)
+  set(USE_MICRO_TIMING 1)
+else ()
+  set(USE_MICRO_TIMING 0)
+endif ()
 
+#==============================================================================
+#  FIND EXTERNAL LIBRARIES/DEPENDENCIES
+#==============================================================================
 #===== GPTL =====
 if (PIO_ENABLE_TIMING)
   find_package (GPTL COMPONENTS C QUIET)
@@ -106,13 +144,6 @@ if (PIO_ENABLE_TIMING)
     target_compile_definitions (pioc
       PUBLIC TIMING_INTERNAL)
   endif ()
-endif ()
-
-#====== PIO_MICRO_TIMING ======
-if (PIO_MICRO_TIMING)
-  set(USE_MICRO_TIMING 1)
-else ()
-  set(USE_MICRO_TIMING 0)
 endif ()
 
 #===== NetCDF-C =====
@@ -177,8 +208,22 @@ else ()
   set(PIO_USE_ADIOS 0)
 endif ()
 
-# configure a header file to pass some of the CMake settings
-# to the source code
+# We expect PnetCDF or NetCDF to be available
+if (NOT PnetCDF_C_FOUND AND NOT NetCDF_C_FOUND)
+  message (FATAL_ERROR "Must have PnetCDF and/or NetCDF C libraries")
+endif ()
+
+#==============================================================================
+#  INSTALL
+#==============================================================================
+
+# Install libpioc.a
+install (TARGETS pioc DESTINATION lib)
+
+# Install the header file
+install (FILES ${CMAKE_CURRENT_SOURCE_DIR}/pio.h DESTINATION include)
+
+# Generate and install pio_config.h
 configure_file (
   "${PROJECT_SOURCE_DIR}/pio_config.h.in"
   "${PROJECT_BINARY_DIR}/pio_config.h"
@@ -187,42 +232,3 @@ configure_file (
 # Install PIO config Include/Header File
 install (FILES ${PROJECT_BINARY_DIR}/pio_config.h DESTINATION include)
 
-if (ADIOS_BP2NC_TEST)
-  target_compile_definitions (pioc
-    PUBLIC _ADIOS_BP2NC_TEST)
-endif ()
-
-#===== Add EXTRAs =====
-target_include_directories (pioc
-  PUBLIC ${PIO_C_EXTRA_INCLUDE_DIRS})
-target_link_libraries (pioc
-  PUBLIC ${PIO_C_EXTRA_LIBRARIES})
-target_compile_options (pioc
-  PRIVATE ${PIO_C_EXTRA_COMPILE_OPTIONS})
-target_compile_definitions (pioc
-  PUBLIC ${PIO_C_EXTRA_COMPILE_DEFINITIONS})
-if (PIO_C_EXTRA_LINK_FLAGS)
-  set_target_properties(pioc PROPERTIES
-    LINK_FLAGS ${PIO_C_EXTRA_LINK_FLAGS})
-endif ()
-
-#===== Check for necessities =====
-if (NOT PnetCDF_C_FOUND AND NOT NetCDF_C_FOUND)
-  message (FATAL_ERROR "Must have PnetCDF and/or NetCDF C libraries")
-endif ()
-
-include(CheckTypeSize)
-check_type_size("size_t" SIZEOF_SIZE_T)
-CHECK_TYPE_SIZE("long long" SIZEOF_LONG_LONG)
-if (NOT ${SIZEOF_SIZE_T} EQUAL ${SIZEOF_LONG_LONG})
-  message (FATAL_ERROR "size_t and long long must be the same size!")
-endif ()
-
-# Hack to circumvent IBM XL (16.1.1-3) internal compiler error by
-# disabling optimization for pioc_support.c
-cmake_host_system_information (RESULT FQDN_SITENAME QUERY FQDN)
-if (FQDN_SITENAME MATCHES "^.*[.]olcf")
-  if (CMAKE_C_COMPILER_NAME STREQUAL "XL")
-    set_source_files_properties(pioc_support.c PROPERTIES COMPILE_FLAGS "-qnoopt -qnosmp")
-  endif()
-endif()

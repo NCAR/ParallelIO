@@ -9,6 +9,20 @@ set(VERSION_PATCH   2   CACHE STRING "Project patch version number.")
 mark_as_advanced(VERSION_MAJOR VERSION_MINOR VERSION_PATCH)
 
 #==============================================================================
+#  ADD CMAKE MODULES IN SCORPIO TO CMAKE MODULE PATH
+#==============================================================================
+
+#===== Local modules =====
+list (APPEND CMAKE_MODULE_PATH ${SCORPIO_SOURCE_DIR}/cmake)
+
+#===== External modules =====
+if (DEFINED USER_CMAKE_MODULE_PATH)
+  set (USER_CMAKE_MODULE_PATH ${USER_CMAKE_MODULE_PATH}
+    CACHE STRING "Location of the CMake_Fortran_utils")
+  list (APPEND CMAKE_MODULE_PATH ${USER_CMAKE_MODULE_PATH})
+endif ()
+
+#==============================================================================
 #  USER-DEFINED OPTIONS (set with "-DOPT=VAL" from command line)
 #==============================================================================
 
@@ -18,11 +32,11 @@ option (PIO_ENABLE_TIMING    "Enable the use of the GPTL timing library"    ON)
 option (PIO_ENABLE_INTERNAL_TIMING    "Gather and print GPTL timing stats"  OFF)
 option (PIO_ENABLE_IO_STATS  "Gather and print I/O performance stats"       ON)
 option (PIO_ENABLE_LOGGING   "Enable debug logging (large output possible)" OFF)
-option (PIO_ENABLE_DOC       "Enable building SCORPIO documentation"            ON)
+option (PIO_ENABLE_DOC       "Enable building SCORPIO documentation"        ON)
 option (PIO_ENABLE_COVERAGE  "Enable code coverage"                         OFF)
 option (PIO_ENABLE_TOOLS     "Enable SCORPIO tools"                         ON)
-option (PIO_ENABLE_EXAMPLES  "Enable SCORPIO examples"                          ON)
-option (PIO_INTERNAL_DOC     "Enable SCORPIO developer documentation"           OFF)
+option (PIO_ENABLE_EXAMPLES  "Enable SCORPIO examples"                      ON)
+option (PIO_INTERNAL_DOC     "Enable SCORPIO developer documentation"       OFF)
 option (PIO_TEST_BIG_ENDIAN  "Enable test to see if machine is big endian"  ON)
 option (PIO_USE_MPIIO        "Enable support for MPI-IO auto detect"        ON)
 option (PIO_USE_MPISERIAL    "Enable mpi-serial support (instead of MPI)"   OFF)
@@ -34,7 +48,17 @@ option (WITH_PNETCDF         "Require the use of PnetCDF"                   ON)
 option (WITH_NETCDF          "Require the use of NetCDF"                    ON)
 option (WITH_ADIOS2          "Require the use of ADIOS 2.x"                 OFF)
 option (ADIOS_BP2NC_TEST     "Enable testing of BP to NetCDF conversion"    OFF)
+#===== Testing Options =====
+option (PIO_ENABLE_TESTS  "Enable the testing builds"                       OFF)
+option (PIO_ENABLE_LARGE_TESTS  "Enable large (file, processes) tests"      OFF)
+option (PIO_VALGRIND_CHECK  "Enable memory leak check using valgrind"       OFF)
+#===== Dependent Options =====
+include(CMakeDependentOption)
+cmake_dependent_option (PIO_TEST_CLOSE_OPEN_FOR_SYNC  "SCORPIO fortran tests will close+open for sync" ON "WITH_ADIOS2" OFF)
 
+#==============================================================================
+#  SET VARIABLES FOR pio_config.h (generated from pio_config.h.in)
+#==============================================================================
 # The tools and examples do not build with the MPI serial library
 if(PIO_USE_MPISERIAL)
   if(PIO_ENABLE_TOOLS)
@@ -54,14 +78,12 @@ else()
   set(ENABLE_IO_STATS 0)
 endif()
 
-# Set a variable that appears in the pio_config.h.in file.
 if(PIO_USE_MALLOC)
   set(USE_MALLOC 1)
 else()
   set(USE_MALLOC 0)
 endif()
 
-# Set a variable that appears in the pio_config.h.in file.
 if(PIO_ENABLE_LOGGING)
   set(ENABLE_LOGGING 1)
 else()
@@ -131,22 +153,14 @@ else()
   endif()
 endif()
 
-#==============================================================================
-#  PREPEND TO CMAKE MODULE PATH
-#==============================================================================
-
-#===== Local modules =====
-list (APPEND CMAKE_MODULE_PATH ${SCORPIO_SOURCE_DIR}/cmake)
-
-#===== External modules =====
-if (DEFINED USER_CMAKE_MODULE_PATH)
-  set (USER_CMAKE_MODULE_PATH ${USER_CMAKE_MODULE_PATH}
-    CACHE STRING "Location of the CMake_Fortran_utils")
-  list (APPEND CMAKE_MODULE_PATH ${USER_CMAKE_MODULE_PATH})
-endif ()
-
 INCLUDE (CheckTypeSize)
 
+#===== Library Variables =====
+set (PIO_FILESYSTEM_HINTS IGNORE CACHE STRING "Filesystem hints (lustre or gpfs)")
+
+#==============================================================================
+#  FIND EXTERNAL LIBRARIES
+#==============================================================================
 #===== MPI =====
 if (PIO_USE_MPISERIAL)
   find_package (MPISERIAL COMPONENTS C REQUIRED)
@@ -162,20 +176,8 @@ SET(CMAKE_EXTRA_INCLUDE_FILES "mpi.h")
 check_type_size("MPI_Offset" SIZEOF_MPI_OFFSET)
 SET(CMAKE_EXTRA_INCLUDE_FILES)
 
-#===== Library Variables =====
-set (PIO_FILESYSTEM_HINTS IGNORE CACHE STRING "Filesystem hints (lustre or gpfs)")
-
-#===== Testing Options =====
-option (PIO_ENABLE_TESTS  "Enable the testing builds"                           OFF)
-option (PIO_ENABLE_LARGE_TESTS  "Enable large (file, processes) tests"         OFF)
-option (PIO_VALGRIND_CHECK  "Enable memory leak check using valgrind"           OFF)
-include(CMakeDependentOption)
-cmake_dependent_option (PIO_TEST_CLOSE_OPEN_FOR_SYNC  "SCORPIO fortran tests will close+open for sync" ON "WITH_ADIOS2" OFF)
-
-#==============================================================================
-#  BACKWARDS COMPATIBILITY
-#==============================================================================
-
+# Backwards Compatibility - allow users to define [NETCDF|PNETCDF]_DIR instead
+# of [NetCDF|PnetCDF]_PATH
 # Old NETCDF_DIR variable --> NetCDF_PATH
 if (DEFINED NETCDF_DIR)
   set (NetCDF_PATH ${NETCDF_DIR}
@@ -189,7 +191,7 @@ if (DEFINED PNETCDF_DIR)
 endif ()
 
 #==============================================================================
-#  HELPFUL GLOBAL VARIABLES
+#  DETECT SYSTEM/COMPILERS (and set compiler specific options)
 #==============================================================================
 
 # System Name
@@ -197,6 +199,7 @@ string (TOUPPER "${CMAKE_SYSTEM_NAME}" CMAKE_SYSTEM_NAME_CAPS)
 set (CMAKE_SYSTEM_DIRECTIVE "${CMAKE_SYSTEM_NAME_CAPS}"
   CACHE STRING "System name preprocessor directive")
 
+# Set compiler options as global variables
 # C Compiler Name
 string (TOUPPER "${CMAKE_C_COMPILER_ID}" CMAKE_C_COMPILER_NAME)
 if (CMAKE_C_COMPILER_NAME STREQUAL "XL")
@@ -213,9 +216,7 @@ endif ()
 set (CMAKE_Fortran_COMPILER_DIRECTIVE "CPR${CMAKE_Fortran_COMPILER_NAME}"
   CACHE STRING "Fortran compiler name preprocessor directive")
 
-#==============================================================================
-#  CHECK MIN VERSION OF COMPILERS REQD
-#==============================================================================
+# Check Min version of compilers required
 # Regex is only available in GCC 4.9+ (>= 4.9)
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
   if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS "4.9")
@@ -235,20 +236,14 @@ if ((CMAKE_CXX_COMPILER_NAME STREQUAL "XL") OR
   add_definitions(-DSPIO_NO_CXX_REGEX)
 endif()
 
-#==============================================================================
-#  MIN VERSION OF LIBRARIES REQD
-#==============================================================================
+# Min versions of libraries required
 set (MPE_MIN_VER_REQD "2.4.8")
 set (NETCDF_C_MIN_VER_REQD "4.3.3")
 set (NETCDF_FORTRAN_MIN_VER_REQD "4.3.3")
 set (PNETCDF_MIN_VER_REQD "1.8.1")
 set (ADIOS_MIN_VER_REQD "2.6.0")
 
-#==============================================================================
-#  SET CODE COVERAGE COMPILER FLAGS
-#==============================================================================
-
-# Only support GNU compilers at this time
+# Setting code coverage compiler flags (only GNU is supported for now)
 if (PIO_ENABLE_COVERAGE)
   if (CMAKE_C_COMPILER_ID STREQUAL "GNU")
     set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fprofile-arcs -ftest-coverage")
@@ -268,20 +263,20 @@ if (PIO_ENABLE_COVERAGE)
 endif ()
 
 #==============================================================================
-#  INCLUDE SOURCE DIRECTORIES
+# ADDING SOURCE & TOOLS
 #==============================================================================
 
 # Libraries
 add_subdirectory (src)
 
-#==============================================================================
-#  TESTING TARGET
-#==============================================================================
-
 # Tools
 if (PIO_ENABLE_TOOLS)
   add_subdirectory(tools)
 endif ()
+
+#==============================================================================
+#  TESTING TARGET
+#==============================================================================
 
 # Tests
 if (PIO_ENABLE_TESTS)
@@ -300,7 +295,10 @@ if (PIO_ENABLE_TESTS)
   endif ()
 endif ()
 
-# Documentation
+#==============================================================================
+#  DOCUMENTATION
+#==============================================================================
+
 if (PIO_ENABLE_DOC)
   add_subdirectory (doc)
 endif ()

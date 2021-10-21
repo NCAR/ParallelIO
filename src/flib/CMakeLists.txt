@@ -5,7 +5,37 @@ include (ExternalProject)
 include (LibCheck)
 
 #==============================================================================
-#  DEFINE THE TARGET
+#  CONFIGURE CHECKS
+#==============================================================================
+# Check if c_sizeof is available
+check_macro (Fortran_CSIZEOF
+  NAME TryCSizeOf.f90
+  HINTS ${CMAKE_MODULE_PATH}
+  COMMENT "whether Fortran compiler supports c_sizeof")
+
+# The genf90 tool generates *.F90 from *.F90.in
+if (NOT DEFINED GENF90_PATH)
+  set (GENF90_PATH ${SCORPIO_SOURCE_DIR}/src/genf90)
+endif ()
+add_custom_target(genf90
+  DEPENDS ${GENF90_PATH}/genf90.pl)
+
+set (PIO_GenF90_SRCS pionfatt_mod.F90
+  pionfput_mod.F90
+  pionfget_mod.F90
+  pio_support.F90
+  piodarray.F90)
+
+# Generate Fortran source from template files using genf90
+foreach (SRC_FILE IN LISTS PIO_GenF90_SRCS)
+  add_custom_command (OUTPUT ${SRC_FILE}
+    COMMAND ${GENF90_PATH}/genf90.pl
+    ${CMAKE_CURRENT_SOURCE_DIR}/${SRC_FILE}.in > ${SRC_FILE}
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${SRC_FILE}.in genf90)
+endforeach ()
+
+#==============================================================================
+#  DEFINE THE TARGET LIBRARY
 #==============================================================================
 
 set (PIO_Fortran_SRCS pio_nf.F90
@@ -15,28 +45,15 @@ set (PIO_Fortran_SRCS pio_nf.F90
   piolib_mod.F90
   pio_nf_utils.F90)
 
-set (PIO_GenF90_SRCS pionfatt_mod.F90
-  pionfput_mod.F90
-  pionfget_mod.F90
-  pio_support.F90
-  piodarray.F90)
-
-set (PIO_Fortran_MODS ${CMAKE_CURRENT_BINARY_DIR}/pio.mod
-  ${CMAKE_CURRENT_BINARY_DIR}/pio_nf.mod
-  ${CMAKE_CURRENT_BINARY_DIR}/pio_types.mod
-  ${CMAKE_CURRENT_BINARY_DIR}/piolib_mod.mod
-  ${CMAKE_CURRENT_BINARY_DIR}/pionfget_mod.mod
-  ${CMAKE_CURRENT_BINARY_DIR}/pio_kinds.mod
-  ${CMAKE_CURRENT_BINARY_DIR}/pio_support.mod
-  ${CMAKE_CURRENT_BINARY_DIR}/piodarray.mod
-  ${CMAKE_CURRENT_BINARY_DIR}/pionfatt_mod.mod
-  ${CMAKE_CURRENT_BINARY_DIR}/pionfput_mod.mod)
-
 add_library (piof ${PIO_Fortran_SRCS} ${PIO_GenF90_SRCS})
 if (NOT PIO_ENABLE_FORTRAN)
   set_target_properties(piof PROPERTIES EXCLUDE_FROM_ALL TRUE)
 endif ()
+add_dependencies (piof genf90)
 
+#==============================================================================
+#  SET THE COMPILER OPTIONS
+#==============================================================================
 # Include flib source and binary directories (for Fortran modules)
 target_include_directories (piof
   PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
@@ -58,17 +75,12 @@ elseif (CMAKE_Fortran_COMPILER_ID STREQUAL "NAG")
   #        PRIVATE -mismatch_all)
 endif()
 
-# Look for c_sizeof capability
-check_macro (Fortran_CSIZEOF
-  NAME TryCSizeOf.f90
-  HINTS ${CMAKE_MODULE_PATH}
-  COMMENT "whether Fortran compiler supports c_sizeof")
 if (NOT Fortran_CSIZEOF)
   target_compile_definitions (piof
     PUBLIC NO_C_SIZEOF)
 endif()
 
-# Look for filesystem hints
+# Add filesystem hints
 if (PIO_FILESYSTEM_HINTS)
   if (PIO_FILESYSTEM_HINTS STREQUAL lustre)
     message (STATUS "PIO will use lustre filesystem hints")
@@ -83,37 +95,25 @@ if (PIO_FILESYSTEM_HINTS)
   endif ()
 endif ()
 
-#==============================================================================
-#  DEFINE THE INSTALL
-#==============================================================================
-
-# Library
-install (TARGETS piof DESTINATION lib)
-
-# Fortran Modules
-install (FILES ${PIO_Fortran_MODS} DESTINATION include)
-
-#==============================================================================
-#  DEFINE THE DEPENDENCIES
-#==============================================================================
-
-#===== genf90 =====
-if (NOT DEFINED GENF90_PATH)
-  set (GENF90_PATH ${SCORPIO_SOURCE_DIR}/src/genf90)
+# Add user-specified include/libs/compiler/link options
+target_include_directories (piof
+  PUBLIC ${PIO_Fortran_EXTRA_INCLUDE_DIRS})
+target_link_libraries (piof
+  PUBLIC ${PIO_Fortran_EXTRA_LIBRARIES})
+target_compile_options (piof
+  PRIVATE ${PIO_Fortran_EXTRA_COMPILE_OPTIONS})
+target_compile_definitions (piof
+  PUBLIC ${PIO_Fortran_EXTRA_COMPILE_DEFINITIONS})
+if (PIO_Fortran_EXTRA_LINK_FLAGS)
+  set_target_properties(piof PROPERTIES
+    LINK_FLAGS ${PIO_Fortran_EXTRA_LINK_FLAGS})
 endif ()
-add_custom_target(genf90
-  DEPENDS ${GENF90_PATH}/genf90.pl)
-add_dependencies (piof genf90)
 
-#===== Fortran Source Generation with GenF90 =====
-foreach (SRC_FILE IN LISTS PIO_GenF90_SRCS)
-  add_custom_command (OUTPUT ${SRC_FILE}
-    COMMAND ${GENF90_PATH}/genf90.pl
-    ${CMAKE_CURRENT_SOURCE_DIR}/${SRC_FILE}.in > ${SRC_FILE}
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${SRC_FILE}.in genf90)
-endforeach ()
+#==============================================================================
+#  FIND EXTERNAL LIBRARIES/DEPENDENCIES
+#==============================================================================
 
-#===== MPI =====
+# Find the MPI library
 if (PIO_USE_MPISERIAL)
   find_package (MPISERIAL COMPONENTS Fortran REQUIRED)
   if (MPISERIAL_Fortran_FOUND)
@@ -131,7 +131,7 @@ else ()
   find_package (MPI REQUIRED)
 endif ()
 
-# Check MPI I/O capabilities
+# Check if MPI I/O is enabled
 find_path(MPIF_H_PATH
   NAMES mpif.h
   PATHS ${MPI_Fortran_INCLUDE_PATH}
@@ -236,25 +236,32 @@ else ()
     PUBLIC _NOPNETCDF)
 endif ()
 
-#===== Add EXTRAs =====
-target_include_directories (piof
-  PUBLIC ${PIO_Fortran_EXTRA_INCLUDE_DIRS})
-target_link_libraries (piof
-  PUBLIC ${PIO_Fortran_EXTRA_LIBRARIES})
-target_compile_options (piof
-  PRIVATE ${PIO_Fortran_EXTRA_COMPILE_OPTIONS})
-target_compile_definitions (piof
-  PUBLIC ${PIO_Fortran_EXTRA_COMPILE_DEFINITIONS})
-if (PIO_Fortran_EXTRA_LINK_FLAGS)
-  set_target_properties(piof PROPERTIES
-    LINK_FLAGS ${PIO_Fortran_EXTRA_LINK_FLAGS})
-endif ()
-
-#===== pioc =====
+# Link with libpioc.a
 target_link_libraries(piof
   PUBLIC pioc)
 
-#===== Check for necessities =====
+# We expect PnetCDF or NetCDF to be available
 if (NOT PnetCDF_Fortran_FOUND AND NOT NetCDF_Fortran_FOUND)
   message (FATAL_ERROR "Must have PnetCDF and/or NetCDF Fortran libraries")
 endif ()
+
+#==============================================================================
+#  INSTALL
+#==============================================================================
+set (PIO_Fortran_MODS ${CMAKE_CURRENT_BINARY_DIR}/pio.mod
+  ${CMAKE_CURRENT_BINARY_DIR}/pio_nf.mod
+  ${CMAKE_CURRENT_BINARY_DIR}/pio_types.mod
+  ${CMAKE_CURRENT_BINARY_DIR}/piolib_mod.mod
+  ${CMAKE_CURRENT_BINARY_DIR}/pionfget_mod.mod
+  ${CMAKE_CURRENT_BINARY_DIR}/pio_kinds.mod
+  ${CMAKE_CURRENT_BINARY_DIR}/pio_support.mod
+  ${CMAKE_CURRENT_BINARY_DIR}/piodarray.mod
+  ${CMAKE_CURRENT_BINARY_DIR}/pionfatt_mod.mod
+  ${CMAKE_CURRENT_BINARY_DIR}/pionfput_mod.mod)
+
+# Install libpiof.a
+install (TARGETS piof DESTINATION lib)
+
+# Install the Fortran modules
+install (FILES ${PIO_Fortran_MODS} DESTINATION include)
+

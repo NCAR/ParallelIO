@@ -2,7 +2,22 @@
 ### CMakeList.txt for adios2pio 
 ###-------------------------------------------------------------------------###
 
+# Add CMake modules in Scorpio
 list (APPEND CMAKE_MODULE_PATH ${SCORPIO_SOURCE_DIR}/cmake)
+
+#==============================================================================
+#  DEFINE THE TARGET LIBRARY
+#==============================================================================
+SET(SRC ${SCORPIO_SOURCE_DIR}/tools/util/argparser.cxx adios2pio-nm.cxx)
+add_library(adios2pio-nm-lib adios2pio-nm-lib.cxx)
+include_directories(
+  "${PROJECT_SOURCE_DIR}"   # to find foo/foo.h
+  "${PROJECT_BINARY_DIR}")  # to find foo/config.h
+ADD_EXECUTABLE(adios2pio-nm.exe ${SRC})
+
+#==============================================================================
+#  SET THE COMPILER OPTIONS
+#==============================================================================
 
 # Adding PIO definitions - defined in the root directory
 ADD_DEFINITIONS(${PIO_DEFINITIONS})
@@ -19,12 +34,6 @@ if (CMAKE_CXX_COMPILER_NAME STREQUAL "CRAY")
 else ()
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 endif ()
-
-SET(SRC ${SCORPIO_SOURCE_DIR}/tools/util/argparser.cxx adios2pio-nm.cxx)
-add_library(adios2pio-nm-lib adios2pio-nm-lib.cxx)
-include_directories(
-  "${PROJECT_SOURCE_DIR}"   # to find foo/foo.h
-  "${PROJECT_BINARY_DIR}")  # to find foo/config.h
 
 target_include_directories(adios2pio-nm-lib PUBLIC 
   ${SCORPIO_SOURCE_DIR}/src/clib
@@ -44,18 +53,25 @@ target_compile_definitions (adios2pio-nm-lib
 target_compile_definitions (adios2pio-nm-lib
   PUBLIC OMPI_SKIP_MPICXX)
 
-ADD_EXECUTABLE(adios2pio-nm.exe ${SRC})
+# Add the extra (user-specified) compile/link options
+target_include_directories (adios2pio-nm-lib
+  PUBLIC ${PIO_C_EXTRA_INCLUDE_DIRS})
+target_link_libraries (adios2pio-nm-lib
+  PUBLIC ${PIO_C_EXTRA_LIBRARIES})
+target_compile_options (adios2pio-nm-lib
+  PRIVATE ${PIO_C_EXTRA_COMPILE_OPTIONS})
+target_compile_definitions (adios2pio-nm-lib
+  PUBLIC ${PIO_C_EXTRA_COMPILE_DEFINITIONS})
+if (PIO_C_EXTRA_LINK_FLAGS)
+  set_target_properties(adios2pio-nm-lib PROPERTIES
+    LINK_FLAGS ${PIO_C_EXTRA_LINK_FLAGS})
+endif ()
+
 TARGET_LINK_LIBRARIES(adios2pio-nm.exe adios2pio-nm-lib pioc)
 
-# Library
-install (TARGETS adios2pio-nm-lib DESTINATION lib)
-
-# Include/Header File
-install (FILES ${CMAKE_CURRENT_SOURCE_DIR}/adios2pio-nm-lib.h DESTINATION include)
-
-# Binary utilities
-install (TARGETS adios2pio-nm.exe DESTINATION bin)
-
+#==============================================================================
+#  FIND EXTERNAL LIBRARIES/DEPENDENCIES
+#==============================================================================
 #===== PnetCDF-C =====
 if (WITH_PNETCDF)
   find_package (PnetCDF ${PNETCDF_MIN_VER_REQD} COMPONENTS C)
@@ -122,21 +138,20 @@ else ()
     PUBLIC _NOADIOS)
 endif ()
 
-#===== Add EXTRAs =====
-target_include_directories (adios2pio-nm-lib
-  PUBLIC ${PIO_C_EXTRA_INCLUDE_DIRS})
-target_link_libraries (adios2pio-nm-lib
-  PUBLIC ${PIO_C_EXTRA_LIBRARIES})
-target_compile_options (adios2pio-nm-lib
-  PRIVATE ${PIO_C_EXTRA_COMPILE_OPTIONS})
-target_compile_definitions (adios2pio-nm-lib
-  PUBLIC ${PIO_C_EXTRA_COMPILE_DEFINITIONS})
-if (PIO_C_EXTRA_LINK_FLAGS)
-  set_target_properties(adios2pio-nm-lib PROPERTIES
-    LINK_FLAGS ${PIO_C_EXTRA_LINK_FLAGS})
-endif ()
-
-#===== Check for necessities =====
+# We assume that either PnetCDF or NetCDF is available
 if (NOT PnetCDF_C_FOUND AND NOT NetCDF_C_FOUND)
   message (FATAL_ERROR "Must have PnetCDF and/or NetCDF C libraries")
 endif ()
+
+#==============================================================================
+#  INSTALL
+#==============================================================================
+# Install libadios2pio-nm-lib.a
+install (TARGETS adios2pio-nm-lib DESTINATION lib)
+
+# Install the header File
+install (FILES ${CMAKE_CURRENT_SOURCE_DIR}/adios2pio-nm-lib.h DESTINATION include)
+
+# Install the ADIOS to NetCDF conversion tool
+install (TARGETS adios2pio-nm.exe DESTINATION bin)
+

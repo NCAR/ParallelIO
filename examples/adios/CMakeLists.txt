@@ -2,6 +2,9 @@
 ### CMakeList.txt for examples using pio
 ###-------------------------------------------------------------------------###
 
+#==============================================================================
+#  SET THE COMPILER OPTIONS
+#==============================================================================
 # Include PIO include and lib directories
 INCLUDE_DIRECTORIES(${PIO_INCLUDE_DIRS})
 include_directories("${SCORPIO_SOURCE_DIR}/examples/adios")
@@ -28,6 +31,9 @@ set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -g -O0")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -O0")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0")
 
+#==============================================================================
+#  DEFINE THE TARGETS AND TESTS
+#==============================================================================
 ADD_EXECUTABLE(example3 example3.c)
 TARGET_LINK_LIBRARIES(example3 pioc)
 add_dependencies(tests example3)
@@ -43,10 +49,6 @@ add_dependencies(tests timesteps_double)
 ADD_EXECUTABLE(example_num_frames example_num_frames.c)
 TARGET_LINK_LIBRARIES(example_num_frames pioc)
 add_dependencies(tests example_num_frames)
-
-###-------------------------------------------------------------------------###
-### CMakeList.txt for examples using pio
-###-------------------------------------------------------------------------###
 
 if (PIO_ENABLE_FORTRAN)
   if (WITH_ADIOS)
