@@ -130,28 +130,6 @@ else ()
   find_package (MPI REQUIRED)
 endif ()
 
-# Check if MPI I/O is enabled
-find_path(MPIF_H_PATH
-  NAMES mpif.h
-  PATHS ${MPI_Fortran_INCLUDE_PATH}
-  NO_DEFAULT_PATH)
-if (MPIF_H_PATH)
-  check_macro (MPI_HAS_MPIIO
-    NAME TryMPIIO.f90
-    HINTS ${CMAKE_MODULE_PATH}
-    DEFINITIONS -I{MPIF_H_PATH}
-    COMMENT "whether MPIIO is supported")
-  if (${MPI_HAS_MPIIO})
-    message (STATUS "MPIIO verified and enabled.")
-    target_compile_definitions (piof
-      PUBLIC USEMPIIO)
-  else ()
-    message (STATUS "MPIIO failed verification and therefore disabled.")
-  endif ()
-else ()
-  message (STATUS "MPIIO not detected and therefore disabled.")
-endif ()
-
 # Check for MPI Fortran module
 find_path(MPIMOD_PATH
   NAMES mpi.mod MPI.mod
