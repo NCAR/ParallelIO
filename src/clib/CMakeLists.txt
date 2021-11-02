@@ -4,6 +4,25 @@ project (PIOC C CXX)
 
 message(STATUS "===== Configuring SCORPIO C library... =====")
 #==============================================================================
+#  CONFIGURE CHECKS
+#==============================================================================
+include(CheckTypeSize)
+check_type_size("size_t" SIZEOF_SIZE_T)
+message(STATUS "sizeof(size_t) = ${SIZEOF_SIZE_T} bytes")
+CHECK_TYPE_SIZE("long long" SIZEOF_LONG_LONG)
+message(STATUS "sizeof(long long) = ${SIZEOF_LONG_LONG} bytes")
+if (NOT ${SIZEOF_SIZE_T} EQUAL ${SIZEOF_LONG_LONG})
+  message (FATAL_ERROR "size_t and long long must be the same size!")
+endif ()
+
+# Note: This check needs to happen after the MPI library is found
+INCLUDE (CheckTypeSize)
+SET(CMAKE_EXTRA_INCLUDE_FILES "mpi.h")
+check_type_size("MPI_Offset" SIZEOF_MPI_OFFSET)
+message(STATUS "sizeof(MPI_Offset) = ${SIZEOF_MPI_OFFSET} bytes")
+SET(CMAKE_EXTRA_INCLUDE_FILES)
+
+#==============================================================================
 #  DEFINE THE TARGET LIBRARY
 #==============================================================================
 
@@ -14,107 +33,6 @@ add_library (pioc topology.c pio_mpi_timer.c pio_timer.c pio_file.c
   pio_nc.c pio_put_nc.c pio_get_nc.c pio_getput_int.c pio_msg.c pio_varm.c
   pio_darray.c pio_darray_int.c pio_sdecomps_regex.cpp spio_io_summary.cpp
   spio_ltimer.cpp spio_serializer.cpp)
-
-#==============================================================================
-#  SET THE COMPILER OPTIONS
-#==============================================================================
-# set up include-directories
-include_directories(
-  "${PROJECT_SOURCE_DIR}"   # to find foo/foo.h
-  "${PROJECT_BINARY_DIR}")  # to find foo/config.h
-
-# Include the clib source and binary directory
-target_include_directories (pioc
-  PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_include_directories (pioc
-  PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
-
-# System and compiler CPP directives
-target_compile_definitions (pioc
-  PRIVATE ${CMAKE_SYSTEM_DIRECTIVE})
-target_compile_definitions (pioc
-  PUBLIC ${CMAKE_C_COMPILER_DIRECTIVE})
-target_compile_definitions (pioc
-  PUBLIC MPICH_SKIP_MPICXX)
-target_compile_definitions (pioc
-  PUBLIC OMPI_SKIP_MPICXX)
-
-# Add user-specified include/libs/compiler/link options
-target_include_directories (pioc
-  PUBLIC ${PIO_C_EXTRA_INCLUDE_DIRS})
-target_link_libraries (pioc
-  PUBLIC ${PIO_C_EXTRA_LIBRARIES})
-target_compile_options (pioc
-  PRIVATE ${PIO_C_EXTRA_COMPILE_OPTIONS})
-target_compile_definitions (pioc
-  PUBLIC ${PIO_C_EXTRA_COMPILE_DEFINITIONS})
-if (PIO_C_EXTRA_LINK_FLAGS)
-  set_target_properties(pioc PROPERTIES
-    LINK_FLAGS ${PIO_C_EXTRA_LINK_FLAGS})
-endif ()
-
-# At least on Titan + Cray MPI, MPI_Irsends are buggy
-# causing hangs during I/O
-# Force Scorpio to use MPI_Isends instead of the default
-# MPI_Irsends
-target_compile_definitions (pioc
-  PRIVATE USE_MPI_ISEND_FOR_FC)
-
-# Compiler-specific compiler options
-string (TOUPPER "${CMAKE_C_COMPILER_ID}" CMAKE_C_COMPILER_NAME)
-if (CMAKE_C_COMPILER_NAME STREQUAL "CRAY")
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -h std=c99")
-elseif (CMAKE_C_COMPILER_NAME STREQUAL "PGI")
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -c99")
-elseif (CMAKE_C_COMPILER_NAME STREQUAL "NVHPC")
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -c99")
-else ()
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99")
-endif ()
-
-string (TOUPPER "${CMAKE_CXX_COMPILER_ID}" CMAKE_CXX_COMPILER_NAME)
-if (CMAKE_CXX_COMPILER_NAME STREQUAL "CRAY")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -h std=c++11")
-else ()
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-endif ()
-
-if (ADIOS_BP2NC_TEST)
-  message(STATUS "Building ADIOS to NetCDF conversion tool")
-  target_compile_definitions (pioc
-    PUBLIC _ADIOS_BP2NC_TEST)
-endif ()
-
-# The MPI library detection was done in the top level
-if (MPISERIAL_C_FOUND)
-  target_compile_definitions (pioc
-    PRIVATE MPI_SERIAL)
-  target_include_directories (pioc
-    PUBLIC ${MPISERIAL_C_INCLUDE_DIRS})
-  target_link_libraries (pioc
-    PUBLIC ${MPISERIAL_C_LIBRARIES})
-  set (WITH_PNETCDF FALSE)
-endif ()
-
-# Hack to circumvent IBM XL (16.1.1-3) internal compiler error by
-# disabling optimization for pioc_support.c
-cmake_host_system_information (RESULT FQDN_SITENAME QUERY FQDN)
-if (FQDN_SITENAME MATCHES "^.*[.]olcf")
-  if (CMAKE_C_COMPILER_NAME STREQUAL "XL")
-    message(STATUS "Disabling compiler optimization for pioc_support.c (to prevent internal compiler error with the XL compiler)")
-    set_source_files_properties(pioc_support.c PROPERTIES COMPILE_FLAGS "-qnoopt -qnosmp")
-  endif()
-endif()
-
-# Set variables to be written out in pio_config.h (generated from pio_config.h.in)
-#====== PIO_MICRO_TIMING ======
-if (PIO_MICRO_TIMING)
-  message(STATUS "Enabling Micro timers...")
-  set(USE_MICRO_TIMING 1)
-else ()
-  message(VERBOSE "Disabling Micro timers... (default, use -DPIO_MICRO_TIMING:BOOL=ON to enable micro timers)")
-  set(USE_MICRO_TIMING 0)
-endif ()
 
 #==============================================================================
 #  FIND EXTERNAL LIBRARIES/DEPENDENCIES
@@ -239,23 +157,105 @@ if (NOT PnetCDF_C_FOUND AND NOT NetCDF_C_FOUND)
 endif ()
 
 #==============================================================================
-#  CONFIGURE CHECKS
+#  SET THE COMPILER OPTIONS
 #==============================================================================
-include(CheckTypeSize)
-check_type_size("size_t" SIZEOF_SIZE_T)
-message(STATUS "sizeof(size_t) = ${SIZEOF_SIZE_T} bytes")
-CHECK_TYPE_SIZE("long long" SIZEOF_LONG_LONG)
-message(STATUS "sizeof(long long) = ${SIZEOF_LONG_LONG} bytes")
-if (NOT ${SIZEOF_SIZE_T} EQUAL ${SIZEOF_LONG_LONG})
-  message (FATAL_ERROR "size_t and long long must be the same size!")
+# set up include-directories
+include_directories(
+  "${PROJECT_SOURCE_DIR}"   # to find foo/foo.h
+  "${PROJECT_BINARY_DIR}")  # to find foo/config.h
+
+# Include the clib source and binary directory
+target_include_directories (pioc
+  PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories (pioc
+  PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
+
+# System and compiler CPP directives
+target_compile_definitions (pioc
+  PRIVATE ${CMAKE_SYSTEM_DIRECTIVE})
+target_compile_definitions (pioc
+  PUBLIC ${CMAKE_C_COMPILER_DIRECTIVE})
+target_compile_definitions (pioc
+  PUBLIC MPICH_SKIP_MPICXX)
+target_compile_definitions (pioc
+  PUBLIC OMPI_SKIP_MPICXX)
+
+# Add user-specified include/libs/compiler/link options
+target_include_directories (pioc
+  PUBLIC ${PIO_C_EXTRA_INCLUDE_DIRS})
+target_link_libraries (pioc
+  PUBLIC ${PIO_C_EXTRA_LIBRARIES})
+target_compile_options (pioc
+  PRIVATE ${PIO_C_EXTRA_COMPILE_OPTIONS})
+target_compile_definitions (pioc
+  PUBLIC ${PIO_C_EXTRA_COMPILE_DEFINITIONS})
+if (PIO_C_EXTRA_LINK_FLAGS)
+  set_target_properties(pioc PROPERTIES
+    LINK_FLAGS ${PIO_C_EXTRA_LINK_FLAGS})
 endif ()
 
-# Note: This check needs to happen after the MPI library is found
-INCLUDE (CheckTypeSize)
-SET(CMAKE_EXTRA_INCLUDE_FILES "mpi.h")
-check_type_size("MPI_Offset" SIZEOF_MPI_OFFSET)
-message(STATUS "sizeof(MPI_Offset) = ${SIZEOF_MPI_OFFSET} bytes")
-SET(CMAKE_EXTRA_INCLUDE_FILES)
+# At least on Titan + Cray MPI, MPI_Irsends are buggy
+# causing hangs during I/O
+# Force Scorpio to use MPI_Isends instead of the default
+# MPI_Irsends
+target_compile_definitions (pioc
+  PRIVATE USE_MPI_ISEND_FOR_FC)
+
+# Compiler-specific compiler options
+string (TOUPPER "${CMAKE_C_COMPILER_ID}" CMAKE_C_COMPILER_NAME)
+if (CMAKE_C_COMPILER_NAME STREQUAL "CRAY")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -h std=c99")
+elseif (CMAKE_C_COMPILER_NAME STREQUAL "PGI")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -c99")
+elseif (CMAKE_C_COMPILER_NAME STREQUAL "NVHPC")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -c99")
+else ()
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99")
+endif ()
+
+string (TOUPPER "${CMAKE_CXX_COMPILER_ID}" CMAKE_CXX_COMPILER_NAME)
+if (CMAKE_CXX_COMPILER_NAME STREQUAL "CRAY")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -h std=c++11")
+else ()
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+endif ()
+
+if (ADIOS_BP2NC_TEST)
+  message(STATUS "Building ADIOS to NetCDF conversion tool")
+  target_compile_definitions (pioc
+    PUBLIC _ADIOS_BP2NC_TEST)
+endif ()
+
+# The MPI library detection was done in the top level
+if (MPISERIAL_C_FOUND)
+  target_compile_definitions (pioc
+    PRIVATE MPI_SERIAL)
+  target_include_directories (pioc
+    PUBLIC ${MPISERIAL_C_INCLUDE_DIRS})
+  target_link_libraries (pioc
+    PUBLIC ${MPISERIAL_C_LIBRARIES})
+  set (WITH_PNETCDF FALSE)
+endif ()
+
+# Hack to circumvent IBM XL (16.1.1-3) internal compiler error by
+# disabling optimization for pioc_support.c
+cmake_host_system_information (RESULT FQDN_SITENAME QUERY FQDN)
+if (FQDN_SITENAME MATCHES "^.*[.]olcf")
+  if (CMAKE_C_COMPILER_NAME STREQUAL "XL")
+    message(STATUS "Disabling compiler optimization for pioc_support.c (to prevent internal compiler error with the XL compiler)")
+    set_source_files_properties(pioc_support.c PROPERTIES COMPILE_FLAGS "-qnoopt -qnosmp")
+  endif()
+endif()
+
+# Set variables to be written out in pio_config.h (generated from pio_config.h.in)
+#====== PIO_MICRO_TIMING ======
+if (PIO_MICRO_TIMING)
+  message(STATUS "Enabling Micro timers...")
+  set(USE_MICRO_TIMING 1)
+else ()
+  message(VERBOSE "Disabling Micro timers... (default, use -DPIO_MICRO_TIMING:BOOL=ON to enable micro timers)")
+  set(USE_MICRO_TIMING 0)
+endif ()
 
 #==============================================================================
 #  INSTALL
