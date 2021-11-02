@@ -91,21 +91,6 @@ if (NOT Fortran_CSIZEOF)
     PUBLIC NO_C_SIZEOF)
 endif()
 
-# Add filesystem hints
-if (PIO_FILESYSTEM_HINTS)
-  if (PIO_FILESYSTEM_HINTS STREQUAL lustre)
-    message (STATUS "PIO will use lustre filesystem hints")
-    target_compile_definitions (piof
-      PUBLIC PIO_LUSTRE_HINTS)
-  elseif (PIO_FILESYSTEM_HINTS STREQUAL gpfs)
-    message (STATUS "PIO will use gpfs filesystem hints")
-    target_compile_definitions (piof
-      PUBLIC PIO_GPFS_HINTS)
-  else ()
-    message (WARNING "${PIO_FILESYSTEM_HINTS} not valid option for PIO_FILESYSTEM_HINTS; use gpfs or lustre.")
-  endif ()
-endif ()
-
 # Add user-specified include/libs/compiler/link options
 target_include_directories (piof
   PUBLIC ${PIO_Fortran_EXTRA_INCLUDE_DIRS})

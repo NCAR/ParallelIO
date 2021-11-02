@@ -180,9 +180,6 @@ else()
   endif()
 endif()
 
-#===== Library Variables =====
-set (PIO_FILESYSTEM_HINTS IGNORE CACHE STRING "Filesystem hints (lustre or gpfs)")
-
 #==============================================================================
 #  DETECT SYSTEM/COMPILERS (and set compiler specific options)
 #==============================================================================
