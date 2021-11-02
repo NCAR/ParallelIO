@@ -6,34 +6,7 @@ message(STATUS "===== Configuring SCORPIO legacy Fortran tests... =====")
 #==============================================================================
 #  HELPER MACROS
 #==============================================================================
-macro (add_exe_with_libs_and_deps EXE_NAME)
-  add_executable(${EXE_NAME} EXCLUDE_FROM_ALL ${ARGN})
-  target_link_libraries(${EXE_NAME} PRIVATE piof)
-  add_dependencies (tests ${EXE_NAME})
-  if (PIO_USE_MPISERIAL)
-    if (MPISERIAL_Fortran_FOUND)
-      target_compile_definitions (${EXE_NAME} PRIVATE _MPISERIAL)
-      target_include_directories (${EXE_NAME} PUBLIC ${MPISERIAL_Fortran_INCLUDE_DIRS})
-      target_link_libraries (${EXE_NAME} PRIVATE ${MPISERIAL_Fortran_LIBRARIES})
-      set (WITH_PNETCDF FALSE)
-      set (MPI_Fortran_INCLUDE_PATH ${MPISERIAL_Fortran_INCLUDE_DIRS})
-    endif ()
-  endif ()
-  if (NOT ${MPI_HAS_Fortran_MOD})
-    target_compile_definitions (${EXE_NAME} PUBLIC NO_MPIMOD)
-  endif ()
-  if (GPTL_Fortran_Perf_FOUND)
-    target_include_directories (${EXE_NAME} PUBLIC ${GPTL_Fortran_INCLUDE_DIRS})
-    target_link_libraries (${EXE_NAME} PRIVATE ${GPTL_Fortran_LIBRARIES})
-  else ()
-    target_link_libraries (${EXE_NAME} PRIVATE gptl)
-  endif ()
-  target_compile_definitions (${EXE_NAME} PUBLIC TIMING)
-  if (PIO_ENABLE_INTERNAL_TIMING)
-    target_compile_definitions (${EXE_NAME} PUBLIC TIMING_INTERNAL)
-  endif ()
-  SET_PROPERTY(TARGET ${EXE_NAME} PROPERTY LINKER_LANGUAGE ${PIO_LINKER_LANGUAGE})
-endmacro ()
+include(SPIOUtils)
 
 #==============================================================================
 #  TEST SETUP
@@ -116,7 +89,8 @@ set (SRCS basic_tests.F90
   global_vars.F90
   ncdf_tests.F90)
 
-add_exe_with_libs_and_deps (pio_unit_test ${SRCS})
+add_spio_executable (pio_unit_test FALSE ${PIO_LINKER_LANGUAGE} ${SRCS})
+add_dependencies (tests pio_unit_test)
 
 #==============================================================================
 #  SET TARGET SPECIFIC COMPILER OPTIONS

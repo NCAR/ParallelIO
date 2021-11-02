@@ -5,35 +5,13 @@ message(STATUS "===== Configuring SCORPIO Fortran tests... =====")
 #==============================================================================
 #  HELPER MACROS
 #==============================================================================
-macro (add_exe_with_libs_and_deps EXE_NAME)
-  add_executable(${EXE_NAME} EXCLUDE_FROM_ALL ${ARGN})
-  target_link_libraries(${EXE_NAME} PRIVATE pio_tutil piof)
+include(SPIOUtils)
+macro (add_spio_test_executable EXE_NAME IS_C_SRC EXE_LINKER_LANGUAGE)
+  add_spio_executable(${EXE_NAME} ${IS_C_SRC} ${EXE_LINKER_LANGUAGE} ${ARGN})
+  target_link_libraries(${EXE_NAME} PRIVATE pio_tutil)
   add_dependencies (${EXE_NAME} pio_tutil)
   add_dependencies (tests ${EXE_NAME})
-  if (PIO_USE_MPISERIAL)
-    if (MPISERIAL_Fortran_FOUND)
-      target_compile_definitions (${EXE_NAME} PRIVATE _MPISERIAL)
-      target_include_directories (${EXE_NAME} PUBLIC ${MPISERIAL_Fortran_INCLUDE_DIRS})
-      target_link_libraries (${EXE_NAME} PRIVATE ${MPISERIAL_Fortran_LIBRARIES})
-      set (WITH_PNETCDF FALSE)
-      set (MPI_Fortran_INCLUDE_PATH ${MPISERIAL_Fortran_INCLUDE_DIRS})
-    endif ()
-  endif ()
-  if (NOT ${MPI_HAS_Fortran_MOD})
-    target_compile_definitions (${EXE_NAME} PUBLIC NO_MPIMOD)
-  endif ()
-  if (GPTL_Fortran_Perf_FOUND)
-    target_include_directories (${EXE_NAME} PUBLIC ${GPTL_Fortran_INCLUDE_DIRS})
-    target_link_libraries (${EXE_NAME} PRIVATE ${GPTL_Fortran_LIBRARIES})
-  else ()
-    target_link_libraries (${EXE_NAME} PRIVATE gptl)
-  endif ()
-  target_compile_definitions (${EXE_NAME} PUBLIC TIMING)
-  if (PIO_ENABLE_INTERNAL_TIMING)
-    target_compile_definitions (${EXE_NAME} PUBLIC TIMING_INTERNAL)
-  endif ()
-  SET_PROPERTY(TARGET ${EXE_NAME} PROPERTY LINKER_LANGUAGE ${PIO_LINKER_LANGUAGE})
-endmacro ()
+endmacro()
 
 #==============================================================================
 #  GENERATE TARGET SOURCES
@@ -228,7 +206,9 @@ add_library(pio_tutil EXCLUDE_FROM_ALL
 target_link_libraries (pio_tutil piof)
 
 #===== pio_init_finalize =====
-add_exe_with_libs_and_deps(pio_init_finalize pio_init_finalize.F90)
+add_spio_test_executable(pio_init_finalize FALSE ${PIO_LINKER_LANGUAGE} pio_init_finalize.F90)
+target_link_libraries(pio_init_finalize PRIVATE pio_tutil)
+add_dependencies (pio_init_finalize pio_tutil)
 
 add_pio_test(init_finalize
   EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_init_finalize
@@ -241,7 +221,7 @@ add_pio_test(init_finalize
   TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== pio_async_init_finalize =====
-add_exe_with_libs_and_deps(pio_async_init_finalize pio_async_init_finalize.F90)
+add_spio_test_executable(pio_async_init_finalize FALSE ${PIO_LINKER_LANGUAGE} pio_async_init_finalize.F90)
 
 # Note: Async tests don't use ioprocs/stride specified by user
 add_pio_test(async_init_finalize
@@ -255,7 +235,7 @@ add_pio_test(async_init_finalize
   TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== pio_file_simple_tests =====
-add_exe_with_libs_and_deps(pio_file_simple_tests pio_file_simple_tests.F90)
+add_spio_test_executable(pio_file_simple_tests FALSE ${PIO_LINKER_LANGUAGE} pio_file_simple_tests.F90)
 
 # The number of io procs/stride doesn't significantly impact this test
 add_pio_test(pio_file_simple_tests
@@ -270,7 +250,7 @@ add_pio_test(pio_file_simple_tests
 
 #===== pio_large_file_tests =====
 if (PIO_ENABLE_LARGE_TESTS)
-  add_exe_with_libs_and_deps(pio_large_file_tests pio_large_file_tests.F90)
+  add_spio_test_executable(pio_large_file_tests FALSE ${PIO_LINKER_LANGUAGE} pio_large_file_tests.F90)
 
   # Costly test only test with 2 I/O procs
   add_pio_test(pio_large_file_tests
@@ -285,7 +265,7 @@ if (PIO_ENABLE_LARGE_TESTS)
 endif ()
 
 #===== pio_file_fail =====
-add_exe_with_libs_and_deps(pio_file_fail pio_file_fail.F90)
+add_spio_test_executable(pio_file_fail FALSE ${PIO_LINKER_LANGUAGE} pio_file_fail.F90)
 
 # The number of io procs/stride doesn't significantly impact this test
 add_pio_test(pio_file_fail
@@ -299,7 +279,7 @@ add_pio_test(pio_file_fail
   TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== ncdf_simple_tests =====
-add_exe_with_libs_and_deps(ncdf_simple_tests ncdf_simple_tests.F90)
+add_spio_test_executable(ncdf_simple_tests FALSE ${PIO_LINKER_LANGUAGE} ncdf_simple_tests.F90)
 
 add_pio_test(ncdf_simple_tests
   EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/ncdf_simple_tests
@@ -312,7 +292,7 @@ add_pio_test(ncdf_simple_tests
   TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== ncdf_get_put =====
-add_exe_with_libs_and_deps(ncdf_get_put ncdf_get_put.F90)
+add_spio_test_executable(ncdf_get_put FALSE ${PIO_LINKER_LANGUAGE} ncdf_get_put.F90)
 
 add_pio_test(ncdf_get_put
   EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/ncdf_get_put
@@ -325,7 +305,7 @@ add_pio_test(ncdf_get_put
   TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== ncdf_fail =====
-add_exe_with_libs_and_deps(ncdf_fail ncdf_fail.F90)
+add_spio_test_executable(ncdf_fail FALSE ${PIO_LINKER_LANGUAGE} ncdf_fail.F90)
 
 add_pio_test(ncdf_fail_bcast
   EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/ncdf_fail
@@ -362,7 +342,7 @@ add_pio_test(ncdf_fail_intrnl
 
 # Error handler tests
 #===== ncdf_eh_one_test =====
-add_exe_with_libs_and_deps(ncdf_eh_one_test ncdf_eh_one_test.F90)
+add_spio_test_executable(ncdf_eh_one_test FALSE ${PIO_LINKER_LANGUAGE} ncdf_eh_one_test.F90)
 
 add_pio_test(ncdf_eh_one_test_bcast
   EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/ncdf_eh_one_test
@@ -458,7 +438,7 @@ add_pio_test(ncdf_eh_one_test_intrnl_ad
   WILLFAIL)
 
 #===== ncdf_inq =====
-add_exe_with_libs_and_deps(ncdf_inq ncdf_inq.F90)
+add_spio_test_executable(ncdf_inq FALSE ${PIO_LINKER_LANGUAGE} ncdf_inq.F90)
 
 add_pio_test(ncdf_inq
   EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/ncdf_inq
@@ -471,7 +451,7 @@ add_pio_test(ncdf_inq
   TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== pio_copy =====
-add_exe_with_libs_and_deps(pio_copy pio_copy.F90)
+add_spio_test_executable(pio_copy FALSE ${PIO_LINKER_LANGUAGE} pio_copy.F90)
 
 add_pio_test(pio_copy
   EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_copy
@@ -484,7 +464,7 @@ add_pio_test(pio_copy
   TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== pio_set_hint =====
-add_exe_with_libs_and_deps(pio_set_hint pio_set_hint.F90)
+add_spio_test_executable(pio_set_hint FALSE ${PIO_LINKER_LANGUAGE} pio_set_hint.F90)
 
 add_pio_test(pio_set_hint
   EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_set_hint
@@ -497,7 +477,7 @@ add_pio_test(pio_set_hint
   TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== pio_rearr =====
-add_exe_with_libs_and_deps(pio_rearr pio_rearr.F90)
+add_spio_test_executable(pio_rearr FALSE ${PIO_LINKER_LANGUAGE} pio_rearr.F90)
 
 # Costly test
 add_pio_test(pio_rearr
@@ -511,7 +491,7 @@ add_pio_test(pio_rearr
   TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== pio_async_file_tests =====
-add_exe_with_libs_and_deps(pio_async_file_tests pio_async_file_tests.F90)
+add_spio_test_executable(pio_async_file_tests FALSE ${PIO_LINKER_LANGUAGE} pio_async_file_tests.F90)
 
 # Async file tests don't use ioprocs/stride set by user
 add_pio_test(pio_async_file_tests
@@ -525,7 +505,7 @@ add_pio_test(pio_async_file_tests
   TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== pio_async_copy_tests =====
-add_exe_with_libs_and_deps(pio_async_copy_tests pio_async_copy_tests.F90)
+add_spio_test_executable(pio_async_copy_tests FALSE ${PIO_LINKER_LANGUAGE} pio_async_copy_tests.F90)
 
 # Async file tests don't use ioprocs/stride set by user
 add_pio_test(pio_async_copy_tests
@@ -539,7 +519,7 @@ add_pio_test(pio_async_copy_tests
   TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== pio_rearr_opts =====
-add_exe_with_libs_and_deps(pio_rearr_opts pio_rearr_opts.F90)
+add_spio_test_executable(pio_rearr_opts FALSE ${PIO_LINKER_LANGUAGE} pio_rearr_opts.F90)
 
 # PIO rearr opts is a costly test
 add_pio_test(pio_rearr_opts
@@ -553,7 +533,7 @@ add_pio_test(pio_rearr_opts
   TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== pio_rearr_opts2 =====
-add_exe_with_libs_and_deps(pio_rearr_opts2 pio_rearr_opts2.F90)
+add_spio_test_executable(pio_rearr_opts2 FALSE ${PIO_LINKER_LANGUAGE} pio_rearr_opts2.F90)
 
 # This is a costly test
 add_pio_test(pio_rearr_opts2
@@ -567,7 +547,7 @@ add_pio_test(pio_rearr_opts2
   TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== pio_decomp_tests =====
-add_exe_with_libs_and_deps(pio_decomp_tests pio_decomp_tests.F90)
+add_spio_test_executable(pio_decomp_tests FALSE ${PIO_LINKER_LANGUAGE} pio_decomp_tests.F90)
 
 add_pio_test(pio_decomp_tests
   EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_tests
@@ -580,7 +560,7 @@ add_pio_test(pio_decomp_tests
   TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== pio_async_decomp_tests =====
-add_exe_with_libs_and_deps(pio_async_decomp_tests pio_async_decomp_tests.F90)
+add_spio_test_executable(pio_async_decomp_tests FALSE ${PIO_LINKER_LANGUAGE} pio_async_decomp_tests.F90)
 
 # Async tests don't use ioprocs/stride set by the user
 add_pio_test(pio_async_decomp_tests
@@ -594,7 +574,7 @@ add_pio_test(pio_async_decomp_tests
   TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== pio_decomp_tests_1d =====
-add_exe_with_libs_and_deps(pio_decomp_tests_1d pio_decomp_tests_1d.F90)
+add_spio_test_executable(pio_decomp_tests_1d FALSE ${PIO_LINKER_LANGUAGE} pio_decomp_tests_1d.F90)
 
 # Costly test
 add_pio_test(pio_decomp_tests_1d
@@ -608,7 +588,7 @@ add_pio_test(pio_decomp_tests_1d
   TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== pio_decomp_tests2_1d =====
-add_exe_with_libs_and_deps(pio_decomp_tests2_1d pio_decomp_tests2_1d.F90)
+add_spio_test_executable(pio_decomp_tests2_1d FALSE ${PIO_LINKER_LANGUAGE} pio_decomp_tests2_1d.F90)
 
 add_pio_test(pio_decomp_tests2_1d
   EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_tests2_1d
@@ -621,7 +601,7 @@ add_pio_test(pio_decomp_tests2_1d
   TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== pio_async_decomp_tests_1d =====
-add_exe_with_libs_and_deps(pio_async_decomp_tests_1d pio_async_decomp_tests_1d.F90)
+add_spio_test_executable(pio_async_decomp_tests_1d FALSE ${PIO_LINKER_LANGUAGE} pio_async_decomp_tests_1d.F90)
 
 # Async tests don't use ioprocs/stride set by the user
 add_pio_test(pio_async_decomp_tests_1d
@@ -635,7 +615,7 @@ add_pio_test(pio_async_decomp_tests_1d
   TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== pio_decomp_tests_2d =====
-add_exe_with_libs_and_deps(pio_decomp_tests_2d pio_decomp_tests_2d.F90)
+add_spio_test_executable(pio_decomp_tests_2d FALSE ${PIO_LINKER_LANGUAGE} pio_decomp_tests_2d.F90)
 
 add_pio_test(pio_decomp_tests_2d
   EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_tests_2d
@@ -648,7 +628,7 @@ add_pio_test(pio_decomp_tests_2d
   TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== pio_decomp_tests_3d =====
-add_exe_with_libs_and_deps(pio_decomp_tests_3d pio_decomp_tests_3d.F90)
+add_spio_test_executable(pio_decomp_tests_3d FALSE ${PIO_LINKER_LANGUAGE} pio_decomp_tests_3d.F90)
 
 add_pio_test(pio_decomp_tests_3d
   EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_tests_3d
@@ -661,7 +641,7 @@ add_pio_test(pio_decomp_tests_3d
   TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== pio_sync_tests =====
-add_exe_with_libs_and_deps(pio_sync_tests pio_sync_tests.F90)
+add_spio_test_executable(pio_sync_tests FALSE ${PIO_LINKER_LANGUAGE} pio_sync_tests.F90)
 
 # Costly test
 add_pio_test(pio_sync_tests
@@ -675,7 +655,7 @@ add_pio_test(pio_sync_tests
   TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== pio_buf_lim_tests =====
-add_exe_with_libs_and_deps(pio_buf_lim_tests pio_buf_lim_tests.F90)
+add_spio_test_executable(pio_buf_lim_tests FALSE ${PIO_LINKER_LANGUAGE} pio_buf_lim_tests.F90)
 
 add_pio_test(pio_buf_lim_tests
   EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_buf_lim_tests
@@ -688,7 +668,7 @@ add_pio_test(pio_buf_lim_tests
   TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== pio_iodesc_tests =====
-add_exe_with_libs_and_deps(pio_iodesc_tests pio_iodesc_tests.F90)
+add_spio_test_executable(pio_iodesc_tests FALSE ${PIO_LINKER_LANGUAGE} pio_iodesc_tests.F90)
 
 add_pio_test(pio_iodesc_tests
   EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_iodesc_tests
@@ -701,7 +681,7 @@ add_pio_test(pio_iodesc_tests
   TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== pio_decomp_frame_tests =====
-add_exe_with_libs_and_deps(pio_decomp_frame_tests pio_decomp_frame_tests.F90)
+add_spio_test_executable(pio_decomp_frame_tests FALSE ${PIO_LINKER_LANGUAGE} pio_decomp_frame_tests.F90)
 
 add_pio_test(pio_decomp_frame_tests
   EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_frame_tests
@@ -714,7 +694,7 @@ add_pio_test(pio_decomp_frame_tests
   TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== pio_decomp_fillval =====
-add_exe_with_libs_and_deps(pio_decomp_fillval pio_decomp_fillval.F90)
+add_spio_test_executable(pio_decomp_fillval FALSE ${PIO_LINKER_LANGUAGE} pio_decomp_fillval.F90)
 
 # Costly test
 add_pio_test(pio_decomp_fillval
@@ -728,7 +708,7 @@ add_pio_test(pio_decomp_fillval
   TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== pio_decomp_fillval2 =====
-add_exe_with_libs_and_deps(pio_decomp_fillval2 pio_decomp_fillval2.F90)
+add_spio_test_executable(pio_decomp_fillval2 FALSE ${PIO_LINKER_LANGUAGE} pio_decomp_fillval2.F90)
 
 add_pio_test(pio_decomp_fillval2
   EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_fillval2
@@ -741,7 +721,7 @@ add_pio_test(pio_decomp_fillval2
   TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== pio_decomp_extra_dims =====
-add_exe_with_libs_and_deps(pio_decomp_extra_dims pio_decomp_extra_dims.F90)
+add_spio_test_executable(pio_decomp_extra_dims FALSE ${PIO_LINKER_LANGUAGE} pio_decomp_extra_dims.F90)
 
 # This is a costly test
 add_pio_test(pio_decomp_extra_dims
@@ -755,7 +735,7 @@ add_pio_test(pio_decomp_extra_dims
   TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== pio_iosystems_test =====
-add_exe_with_libs_and_deps(pio_iosystem_tests pio_iosystem_tests.F90)
+add_spio_test_executable(pio_iosystem_tests FALSE ${PIO_LINKER_LANGUAGE} pio_iosystem_tests.F90)
 
 add_pio_test(pio_iosystem_tests
   EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_iosystem_tests
@@ -768,7 +748,7 @@ add_pio_test(pio_iosystem_tests
   TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== pio_iosystems_test2 =====
-add_exe_with_libs_and_deps(pio_iosystem_tests2 pio_iosystem_tests2.F90)
+add_spio_test_executable(pio_iosystem_tests2 FALSE ${PIO_LINKER_LANGUAGE} pio_iosystem_tests2.F90)
 
 add_pio_test(pio_iosystem_tests2
   EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_iosystem_tests2
@@ -781,7 +761,7 @@ add_pio_test(pio_iosystem_tests2
   TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== pio_iosystems_test3 =====
-add_exe_with_libs_and_deps(pio_iosystem_tests3 pio_iosystem_tests3.F90)
+add_spio_test_executable(pio_iosystem_tests3 FALSE ${PIO_LINKER_LANGUAGE} pio_iosystem_tests3.F90)
 
 add_pio_test(pio_iosystem_tests3
   EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_iosystem_tests3

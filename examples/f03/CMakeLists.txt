@@ -4,33 +4,7 @@
 #==============================================================================
 #  HELPER MACROS
 #==============================================================================
-macro (add_exe_with_libs_and_deps EXE_NAME)
-  add_executable(${EXE_NAME} ${ARGN})
-  target_link_libraries(${EXE_NAME} PRIVATE piof)
-  if (PIO_USE_MPISERIAL)
-    if (MPISERIAL_Fortran_FOUND)
-      target_compile_definitions (${EXE_NAME} PRIVATE _MPISERIAL)
-      target_include_directories (${EXE_NAME} PUBLIC ${MPISERIAL_Fortran_INCLUDE_DIRS})
-      target_link_libraries (${EXE_NAME} PRIVATE ${MPISERIAL_Fortran_LIBRARIES})
-      set (WITH_PNETCDF FALSE)
-      set (MPI_Fortran_INCLUDE_PATH ${MPISERIAL_Fortran_INCLUDE_DIRS})
-    endif ()
-  endif ()
-  if (NOT ${MPI_HAS_Fortran_MOD})
-    target_compile_definitions (${EXE_NAME} PUBLIC NO_MPIMOD)
-  endif ()
-  if (GPTL_Fortran_Perf_FOUND)
-    target_include_directories (${EXE_NAME} PUBLIC ${GPTL_Fortran_INCLUDE_DIRS})
-    target_link_libraries (${EXE_NAME} PRIVATE ${GPTL_Fortran_LIBRARIES})
-  else ()
-    target_link_libraries (${EXE_NAME} PRIVATE gptl)
-  endif ()
-  target_compile_definitions (${EXE_NAME} PUBLIC TIMING)
-  if (PIO_ENABLE_INTERNAL_TIMING)
-    target_compile_definitions (${EXE_NAME} PUBLIC TIMING_INTERNAL)
-  endif ()
-  SET_PROPERTY(TARGET ${EXE_NAME} PROPERTY LINKER_LANGUAGE ${PIO_LINKER_LANGUAGE})
-endmacro ()
+include(SPIOUtils)
 
 #==============================================================================
 #  SET THE COMPILER OPTIONS
@@ -98,4 +72,4 @@ endif ()
 #==============================================================================
 #  BUILD EXECUTABLE
 #==============================================================================
-add_exe_with_libs_and_deps(examplePio_f90 examplePio.f90)
+add_spio_executable(examplePio_f90 FALSE ${PIO_LINKER_LANGUAGE} examplePio.f90)

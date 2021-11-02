@@ -4,45 +4,7 @@
 #==============================================================================
 #  HELPER MACROS
 #==============================================================================
-macro (add_exe_with_libs_and_deps EXE_NAME IS_C_SRC)
-  add_executable(${EXE_NAME} ${ARGN})
-  if (IS_C_SRC)
-    target_link_libraries(${EXE_NAME} PRIVATE pioc)
-  else ()
-    # Assume Fortran executable
-    target_link_libraries(${EXE_NAME} PRIVATE piof)
-  endif ()
-  if (PIO_USE_MPISERIAL)
-    if (MPISERIAL_Fortran_FOUND)
-      target_compile_definitions (${EXE_NAME} PRIVATE _MPISERIAL)
-      target_include_directories (${EXE_NAME} PUBLIC ${MPISERIAL_Fortran_INCLUDE_DIRS})
-      target_link_libraries (${EXE_NAME} PRIVATE ${MPISERIAL_Fortran_LIBRARIES})
-      set (WITH_PNETCDF FALSE)
-      set (MPI_Fortran_INCLUDE_PATH ${MPISERIAL_Fortran_INCLUDE_DIRS})
-    endif ()
-  endif ()
-  if (NOT ${MPI_HAS_Fortran_MOD})
-    target_compile_definitions (${EXE_NAME} PUBLIC NO_MPIMOD)
-  endif ()
-  if (GPTL_C_FOUND AND IS_C_SRC)
-    target_include_directories (${EXE_NAME}
-      PUBLIC ${GPTL_C_INCLUDE_DIRS})
-    target_link_libraries (${EXE_NAME} PRIVATE ${GPTL_C_LIBRARIES})
-  elseif (IS_C_SRC)
-    target_link_libraries (${EXE_NAME} PRIVATE gptl)
-  elseif (GPTL_Fortran_Perf_FOUND)
-    # NOT IS_C_SRC
-    target_include_directories (${EXE_NAME} PUBLIC ${GPTL_Fortran_INCLUDE_DIRS})
-    target_link_libraries (${EXE_NAME} PRIVATE ${GPTL_Fortran_LIBRARIES})
-  else ()
-    # (NOT IS_C_SRC) AND (NOT GPTL_Fortran_Perf_FOUND)
-    target_link_libraries (${EXE_NAME} PRIVATE gptl)
-  endif ()
-  target_compile_definitions (${EXE_NAME} PUBLIC TIMING)
-  if (PIO_ENABLE_INTERNAL_TIMING)
-    target_compile_definitions (${EXE_NAME} PUBLIC TIMING_INTERNAL)
-  endif ()
-endmacro ()
+include(SPIOUtils)
 
 #==============================================================================
 #  SET THE COMPILER OPTIONS
@@ -124,10 +86,10 @@ endif ()
 #==============================================================================
 #  DEFINE THE TARGETS AND TESTS
 #==============================================================================
-add_exe_with_libs_and_deps(example3 TRUE example3.c)
-add_exe_with_libs_and_deps(timesteps TRUE timesteps.c)
-add_exe_with_libs_and_deps(timesteps_double TRUE timesteps_double.c)
-add_exe_with_libs_and_deps(example_num_frames TRUE example_num_frames.c)
+add_spio_executable(example3 TRUE "" example3.c)
+add_spio_executable(timesteps TRUE "" timesteps.c)
+add_spio_executable(timesteps_double TRUE "" timesteps_double.c)
+add_spio_executable(example_num_frames TRUE "" example_num_frames.c)
 
 if (PIO_ENABLE_FORTRAN)
   if (WITH_ADIOS)
@@ -139,7 +101,7 @@ if (PIO_ENABLE_FORTRAN)
     INCLUDE_DIRECTORIES(${PIO_INCLUDE_DIRS})
     LINK_DIRECTORIES(${PIO_LIB_DIR})
 
-    add_exe_with_libs_and_deps(examplePioADIOS_f90 FALSE examplePioADIOS.f90)
+    add_spio_executable(examplePioADIOS_f90 FALSE "" examplePioADIOS.f90)
   endif(WITH_ADIOS)
 
 endif(PIO_ENABLE_FORTRAN)

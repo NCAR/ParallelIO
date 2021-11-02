@@ -4,21 +4,7 @@
 #==============================================================================
 #  HELPER MACROS
 #==============================================================================
-macro (add_exe_with_libs_and_deps EXE_NAME)
-  add_executable(${EXE_NAME} ${ARGN})
-  target_link_libraries(${EXE_NAME} PRIVATE pioc)
-  if (GPTL_C_FOUND)
-    target_include_directories (${EXE_NAME}
-      PUBLIC ${GPTL_C_INCLUDE_DIRS})
-    target_link_libraries (${EXE_NAME} PRIVATE ${GPTL_C_LIBRARIES})
-  else ()
-    target_link_libraries (${EXE_NAME} PRIVATE gptl)
-  endif ()
-  target_compile_definitions (${EXE_NAME} PUBLIC TIMING)
-  if (PIO_ENABLE_INTERNAL_TIMING)
-    target_compile_definitions (${EXE_NAME} PUBLIC TIMING_INTERNAL)
-  endif ()
-endmacro ()
+include(SPIOUtils)
 
 #==============================================================================
 #  SET THE COMPILER OPTIONS
@@ -79,15 +65,15 @@ endif ()
 #==============================================================================
 #  DEFINE THE TARGETS AND TESTS
 #==============================================================================
-add_exe_with_libs_and_deps(examplePio examplePio.c)
-add_exe_with_libs_and_deps(example1 example1.c)
-add_exe_with_libs_and_deps(darray_no_async darray_no_async.c)
-add_exe_with_libs_and_deps(darray_async darray_async.c)
-add_exe_with_libs_and_deps(put_var put_var.c)
+add_spio_executable(examplePio TRUE "" examplePio.c)
+add_spio_executable(example1 TRUE "" example1.c)
+add_spio_executable(darray_no_async TRUE "" darray_no_async.c)
+add_spio_executable(darray_async TRUE "" darray_async.c)
+add_spio_executable(put_var TRUE "" put_var.c)
 
 if (PIO_ENABLE_FORTRAN)
   if (MPE_C_FOUND)
-    add_exe_with_libs_and_deps(example2 example2.c)
+    add_spio_executable(example2 TRUE "" example2.c)
     target_include_directories (example2 PUBLIC ${MPE_C_INCLUDE_DIRS})
     target_compile_definitions (example2 PUBLIC HAVE_MPE)
     target_link_libraries (example2 PRIVATE lmpe mpe pthread m)

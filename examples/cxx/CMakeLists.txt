@@ -5,22 +5,7 @@
 #==============================================================================
 #  HELPER MACROS
 #==============================================================================
-macro (add_exe_with_libs_and_deps EXE_NAME)
-  add_executable(${EXE_NAME} ${ARGN})
-  target_link_libraries(${EXE_NAME} PRIVATE pioc)
-  if (GPTL_C_FOUND)
-    target_include_directories (${EXE_NAME}
-      PUBLIC ${GPTL_C_INCLUDE_DIRS})
-    target_link_libraries (${EXE_NAME} PRIVATE ${GPTL_C_LIBRARIES})
-  else ()
-    message (STATUS "Using internal GPTL C library for timing")
-    target_link_libraries (${EXE_NAME} PRIVATE gptl)
-  endif ()
-  target_compile_definitions (${EXE_NAME} PUBLIC TIMING)
-  if (PIO_ENABLE_INTERNAL_TIMING)
-    target_compile_definitions (${EXE_NAME} PUBLIC TIMING_INTERNAL)
-  endif ()
-endmacro ()
+include(SPIOUtils)
 
 #==============================================================================
 #  FIND EXTERNAL LIBRARIES/DEPENDENCIES
@@ -59,4 +44,4 @@ LINK_DIRECTORIES(${PIO_LIB_DIR})
 #  BUILD EXECUTABLE
 #==============================================================================
 SET(SRC examplePio.cxx)
-add_exe_with_libs_and_deps(examplePio_cxx ${SRC})
+add_spio_executable(examplePio_cxx TRUE "" ${SRC})

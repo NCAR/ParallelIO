@@ -6,22 +6,7 @@ message(STATUS "===== Configuring SCORPIO File info tool... =====")
 #==============================================================================
 #  HELPER MACROS
 #==============================================================================
-macro (add_exe_with_libs_and_deps EXE_NAME)
-  add_executable(${EXE_NAME} ${ARGN})
-  target_link_libraries(${EXE_NAME} PRIVATE pioc)
-  if (GPTL_C_FOUND)
-    target_include_directories (${EXE_NAME}
-      PUBLIC ${GPTL_C_INCLUDE_DIRS})
-    target_link_libraries (${EXE_NAME} PRIVATE ${GPTL_C_LIBRARIES})
-  else ()
-    message (STATUS "Using internal GPTL C library for timing")
-    target_link_libraries (${EXE_NAME} PRIVATE gptl)
-  endif ()
-  target_compile_definitions (${EXE_NAME} PUBLIC TIMING)
-  if (PIO_ENABLE_INTERNAL_TIMING)
-    target_compile_definitions (${EXE_NAME} PUBLIC TIMING_INTERNAL)
-  endif ()
-endmacro ()
+include(SPIOUtils)
 
 #==============================================================================
 #  FIND EXTERNAL LIBRARIES/DEPENDENCIES
@@ -69,7 +54,7 @@ set(SRC ${SCORPIO_SOURCE_DIR}/tools/util/argparser.cxx
     spio_file_test_utils.cxx
     spio_finfo.cxx
     spio_finfo_tool.cxx)
-add_exe_with_libs_and_deps(spio_finfo.exe ${SRC})
+add_spio_executable(spio_finfo.exe TRUE "" ${SRC})
 
 #==============================================================================
 #  SET THE COMPILER OPTIONS

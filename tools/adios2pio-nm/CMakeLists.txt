@@ -10,23 +10,7 @@ list (APPEND CMAKE_MODULE_PATH ${SCORPIO_SOURCE_DIR}/cmake)
 #==============================================================================
 #  HELPER MACROS
 #==============================================================================
-macro (add_exe_with_libs_and_deps EXE_NAME)
-  add_executable(${EXE_NAME} ${ARGN})
-  target_link_libraries(${EXE_NAME} pioc)
-  if (GPTL_C_FOUND)
-    target_include_directories (${EXE_NAME}
-      PUBLIC ${GPTL_C_INCLUDE_DIRS})
-    target_link_libraries (${EXE_NAME}
-      PUBLIC ${GPTL_C_LIBRARIES})
-  else ()
-    message (STATUS "Using internal GPTL C library for timing")
-    target_link_libraries (${EXE_NAME} PUBLIC gptl)
-  endif ()
-  target_compile_definitions (${EXE_NAME} PUBLIC TIMING)
-  if (PIO_ENABLE_INTERNAL_TIMING)
-    target_compile_definitions (${EXE_NAME} PUBLIC TIMING_INTERNAL)
-  endif ()
-endmacro ()
+include(SPIOUtils)
 
 #==============================================================================
 #  FIND EXTERNAL LIBRARIES/DEPENDENCIES
@@ -80,7 +64,7 @@ add_library(adios2pio-nm-lib adios2pio-nm-lib.cxx)
 include_directories(
   "${PROJECT_SOURCE_DIR}"   # to find foo/foo.h
   "${PROJECT_BINARY_DIR}")  # to find foo/config.h
-add_exe_with_libs_and_deps(adios2pio-nm.exe ${SRC})
+add_spio_executable(adios2pio-nm.exe TRUE "" ${SRC})
 
 #==============================================================================
 #  SET THE COMPILER OPTIONS
