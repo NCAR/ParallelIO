@@ -4,6 +4,8 @@
 #
 #==============================================================================
 
+message(STATUS "===== Configuring SCORPIO Documentation... =====")
+
 find_package(Doxygen)
 
 if(DOXYGEN_FOUND)

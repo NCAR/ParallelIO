@@ -4,6 +4,7 @@ include (CheckFunctionExists)
 include (ExternalProject)
 include (LibCheck)
 
+message(STATUS "===== Configuring SCORPIO Fortran interface... =====")
 #==============================================================================
 #  CONFIGURE CHECKS
 #==============================================================================
@@ -11,12 +12,22 @@ include (LibCheck)
 check_macro (Fortran_CSIZEOF
   NAME TryCSizeOf.f90
   HINTS ${CMAKE_MODULE_PATH}
-  COMMENT "whether Fortran compiler supports c_sizeof")
+  COMMENT "whether the Fortran compiler supports c_sizeof")
 
 # The genf90 tool generates *.F90 from *.F90.in
 if (NOT DEFINED GENF90_PATH)
+  message(STATUS "Using internal version of genf90 tool")
   set (GENF90_PATH ${SCORPIO_SOURCE_DIR}/src/genf90)
+else ()
+  if (exists "${GENF90_PATH}/genf90.pl")
+    message(STATUS "Using user-specified version of genf90 tool : ${GENF90_PATH}/genf90.pl")
+  else ()
+    message(WARNING "Could not find genf90.pl at user-specified path, GENF90_PATH = ${GENF90_PATH}")
+    message(WARNING "Resetting to using internal version of genf90.pl (${SCORPIO_SOURCE_DIR}/src/genf90)")
+    set (GENF90_PATH ${SCORPIO_SOURCE_DIR}/src/genf90)
+  endif ()
 endif ()
+
 add_custom_target(genf90
   DEPENDS ${GENF90_PATH}/genf90.pl)
 
@@ -117,6 +128,7 @@ endif ()
 if (PIO_USE_MPISERIAL)
   find_package (MPISERIAL COMPONENTS Fortran REQUIRED)
   if (MPISERIAL_Fortran_FOUND)
+    message(STATUS "MPI serial Fortran library dependencies : ${MPISERIAL_Fortran_LIBRARIES}")
     target_compile_definitions (piof
       PRIVATE _MPISERIAL)
     target_include_directories (piof
@@ -126,6 +138,8 @@ if (PIO_USE_MPISERIAL)
 
     set (WITH_PNETCDF FALSE)
     set (MPI_Fortran_INCLUDE_PATH ${MPISERIAL_Fortran_INCLUDE_DIRS})
+  else ()
+    message(WARNING "Could not find MPI serial library")
   endif ()
 else ()
   find_package (MPI REQUIRED)
@@ -157,6 +171,7 @@ endif ()
 find_path(MPIMOD_PATH
   NAMES mpi.mod MPI.mod
   HINTS ${MPI_Fortran_INCLUDE_PATH})
+
 if (PIO_ENABLE_TIMING)
   find_package (GPTL COMPONENTS Fortran_Perf QUIET)
 endif ()
@@ -178,9 +193,9 @@ endif ()
 
 #===== GPTL =====
 if (PIO_ENABLE_TIMING)
-  find_package (GPTL COMPONENTS Fortran_Perf QUIET)
+  find_package (GPTL COMPONENTS Fortran_Perf)
   if (GPTL_Fortran_Perf_FOUND)
-    message (STATUS "Found GPTL Fortran Perf: ${GPTL_Fortran_Perf_LIBRARIES}")
+    message (STATUS "GPTL Fortran library dependencies: ${GPTL_Fortran_Perf_LIBRARIES}")
     target_include_directories (piof
       PUBLIC ${GPTL_Fortran_INCLUDE_DIRS})
     target_link_libraries (piof
@@ -195,46 +210,56 @@ endif ()
 #===== NetCDF-Fortran =====
 if (WITH_NETCDF)
   find_package (NetCDF ${NETCDF_FORTRAN_MIN_VER_REQD} COMPONENTS Fortran)
-endif ()
-if (NetCDF_Fortran_FOUND)
-  target_include_directories (piof
-    PUBLIC ${NetCDF_Fortran_INCLUDE_DIRS})
-  target_compile_definitions (piof
-    PUBLIC _NETCDF)
-  target_link_libraries (piof
-    PUBLIC ${NetCDF_Fortran_LIBRARIES})
-  if (EXISTS ${NetCDF_Fortran_INCLUDE_DIR}/netcdf_par.h)
+  if (NetCDF_Fortran_FOUND)
+    message(STATUS "NetCDF Fortran library dependencies: ${NetCDF_Fortran_LIBRARIES}")
+    target_include_directories (piof
+      PUBLIC ${NetCDF_Fortran_INCLUDE_DIRS})
     target_compile_definitions (piof
-      PUBLIC _NETCDF4)
+      PUBLIC _NETCDF)
+    target_link_libraries (piof
+      PUBLIC ${NetCDF_Fortran_LIBRARIES})
+    if (EXISTS ${NetCDF_Fortran_INCLUDE_DIR}/netcdf_par.h)
+      target_compile_definitions (piof
+        PUBLIC _NETCDF4)
+    endif ()
+  else ()
+    message(STATUS "NetCDF Fortran library not found. Disabling support for NetCDF")
+    target_compile_definitions (piof
+      PUBLIC _NONETCDF)
   endif ()
 else ()
-  target_compile_definitions (piof
-    PUBLIC _NONETCDF)
+  message(STATUS "Disabling support for NetCDF")
+  target_compile_definitions (piof PUBLIC _NONETCDF)
 endif ()
 
 #===== PnetCDF =====
 if (WITH_PNETCDF)
   find_package (PnetCDF ${PNETCDF_MIN_VER_REQD} COMPONENTS Fortran)
-endif ()
-if (PnetCDF_FOUND)
-  target_include_directories (piof
-    PUBLIC ${PnetCDF_Fortran_INCLUDE_DIRS})
-  target_compile_definitions (piof
-    PUBLIC _PNETCDF)
-  target_link_libraries (piof
-    PUBLIC ${PnetCDF_Fortran_LIBRARIES})
+  if (PnetCDF_FOUND)
+    message(STATUS "PnetCDF Fortran library dependencies: ${PnetCDF_Fortran_LIBRARIES}")
+    target_include_directories (piof
+      PUBLIC ${PnetCDF_Fortran_INCLUDE_DIRS})
+    target_compile_definitions (piof
+      PUBLIC _PNETCDF)
+    target_link_libraries (piof
+      PUBLIC ${PnetCDF_Fortran_LIBRARIES})
 
-  # Check library for varn functions
-  set (CMAKE_REQUIRED_LIBRARIES ${PnetCDF_Fortran_LIBRARY})
-  check_function_exists (ncmpi_get_varn PnetCDF_Fortran_HAS_VARN)
-  if (PnetCDF_Fortran_HAS_VARN)
-    target_compile_definitions(piof
-      PUBLIC USE_PNETCDF_VARN
-      PUBLIC USE_PNETCDF_VARN_ON_READ)
-  endif()
+    # Check library for varn functions
+    set (CMAKE_REQUIRED_LIBRARIES ${PnetCDF_Fortran_LIBRARY})
+    check_function_exists (ncmpi_get_varn PnetCDF_Fortran_HAS_VARN)
+    if (PnetCDF_Fortran_HAS_VARN)
+      target_compile_definitions(piof
+        PUBLIC USE_PNETCDF_VARN
+        PUBLIC USE_PNETCDF_VARN_ON_READ)
+    endif()
+  else ()
+    message(STATUS "PnetCDF Fortran library not found. Disabling support for PnetCDF")
+    target_compile_definitions (piof
+      PUBLIC _NOPNETCDF)
+  endif ()
 else ()
-  target_compile_definitions (piof
-    PUBLIC _NOPNETCDF)
+  message(STATUS "Disabling support for PnetCDF")
+  target_compile_definitions (piof PUBLIC _NOPNETCDF)
 endif ()
 
 # Link with libpioc.a
@@ -243,7 +268,7 @@ target_link_libraries(piof
 
 # We expect PnetCDF or NetCDF to be available
 if (NOT PnetCDF_Fortran_FOUND AND NOT NetCDF_Fortran_FOUND)
-  message (FATAL_ERROR "Must have PnetCDF and/or NetCDF Fortran libraries")
+  message (FATAL_ERROR "SCORPIO requires PnetCDF and/or NetCDF Fortran libraries")
 endif ()
 
 #==============================================================================

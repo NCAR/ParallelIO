@@ -2,6 +2,7 @@ include (LibMPI)
 
 include_directories("${SCORPIO_SOURCE_DIR}/tests/unit")
 
+message(STATUS "===== Configuring SCORPIO legacy Fortran tests... =====")
 #==============================================================================
 #  HELPER MACROS
 #==============================================================================

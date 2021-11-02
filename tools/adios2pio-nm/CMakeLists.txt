@@ -2,6 +2,8 @@
 ### CMakeList.txt for adios2pio 
 ###-------------------------------------------------------------------------###
 
+message(STATUS "===== Configuring ADIOS to NetCDF Conversion tool... =====")
+
 # Add CMake modules in Scorpio
 list (APPEND CMAKE_MODULE_PATH ${SCORPIO_SOURCE_DIR}/cmake)
 
