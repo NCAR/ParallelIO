@@ -24,7 +24,7 @@ endif ()
 
 #===== GPTL =====
 if (PIO_ENABLE_TIMING)
-  find_package (GPTL COMPONENTS C QUIET)
+  find_package (GPTL COMPONENTS C)
   if (GPTL_C_FOUND)
     message (STATUS "Found GPTL C: ${GPTL_C_LIBRARIES}")
   else ()
@@ -84,7 +84,7 @@ target_include_directories(spio_finfo.exe PRIVATE
   ${SCORPIO_BINARY_DIR}/src/clib
   ${SCORPIO_SOURCE_DIR}/src/clib
   ${SCORPIO_SOURCE_DIR}/tools/util
-  ${NETCDF_C_INCLUDE_DIRS} 
+  ${NetCDF_C_INCLUDE_DIRS}
   ${PnetCDF_C_INCLUDE_DIRS} 
   ${PIO_C_EXTRA_INCLUDE_DIRS})
 
