@@ -1,27 +1,9 @@
 cmake_minimum_required (VERSION 2.8.12)
 include (CheckFunctionExists)
+include(CheckTypeSize)
 project (PIOC C CXX)
 
 message(STATUS "===== Configuring SCORPIO C library... =====")
-#==============================================================================
-#  CONFIGURE CHECKS
-#==============================================================================
-include(CheckTypeSize)
-check_type_size("size_t" SIZEOF_SIZE_T)
-message(STATUS "sizeof(size_t) = ${SIZEOF_SIZE_T} bytes")
-CHECK_TYPE_SIZE("long long" SIZEOF_LONG_LONG)
-message(STATUS "sizeof(long long) = ${SIZEOF_LONG_LONG} bytes")
-if (NOT ${SIZEOF_SIZE_T} EQUAL ${SIZEOF_LONG_LONG})
-  message (FATAL_ERROR "size_t and long long must be the same size!")
-endif ()
-
-# Note: This check needs to happen after the MPI library is found
-INCLUDE (CheckTypeSize)
-SET(CMAKE_EXTRA_INCLUDE_FILES "mpi.h")
-check_type_size("MPI_Offset" SIZEOF_MPI_OFFSET)
-message(STATUS "sizeof(MPI_Offset) = ${SIZEOF_MPI_OFFSET} bytes")
-SET(CMAKE_EXTRA_INCLUDE_FILES)
-
 #==============================================================================
 #  DEFINE THE TARGET LIBRARY
 #==============================================================================
@@ -42,13 +24,11 @@ if (PIO_USE_MPISERIAL)
   find_package (MPISERIAL COMPONENTS C REQUIRED)
   if (MPISERIAL_C_FOUND)
     message(STATUS "Found MPI serial library: ${MPISERIAL_C_INCLUDE_DIRS}")
-    set (CMAKE_REQUIRED_INCLUDES ${MPISERIAL_C_INCLUDE_DIRS})
   else ()
     message(WARNING "Unable to find the MPI serial library (SCORPIO was configured to use the MPI serial library)")
   endif ()
 else ()
   find_package (MPI REQUIRED)
-  set (CMAKE_REQUIRED_INCLUDES ${MPI_INCLUDE_PATH})
 endif ()
 
 #===== GPTL =====
@@ -155,6 +135,34 @@ endif ()
 if (NOT PnetCDF_C_FOUND AND NOT NetCDF_C_FOUND)
   message (FATAL_ERROR "Could not find PnetCDF and NetCDF libraries. SCORPIO requires PnetCDF and/or NetCDF C libraries")
 endif ()
+
+#==============================================================================
+#  CONFIGURE TYPE CHECKS
+#==============================================================================
+check_type_size("size_t" SIZEOF_SIZE_T)
+message(STATUS "sizeof(size_t) = ${SIZEOF_SIZE_T} bytes")
+CHECK_TYPE_SIZE("long long" SIZEOF_LONG_LONG)
+message(STATUS "sizeof(long long) = ${SIZEOF_LONG_LONG} bytes")
+if (NOT ${SIZEOF_SIZE_T} EQUAL ${SIZEOF_LONG_LONG})
+  message (FATAL_ERROR "size_t and long long must be the same size!")
+endif ()
+
+# Note: This check needs to happen after the MPI library is found
+# Add paths to MPI headers in the include path before calling
+# check_type_size
+if (PIO_USE_MPISERIAL)
+  if (MPISERIAL_C_FOUND)
+    set (CMAKE_REQUIRED_INCLUDES ${MPISERIAL_C_INCLUDE_DIRS})
+  endif ()
+else ()
+  set (CMAKE_REQUIRED_INCLUDES ${MPI_INCLUDE_PATH})
+endif ()
+# Add mpi.h into the list of standard headers, so that we can
+# check the size of MPI_Offset
+SET(CMAKE_EXTRA_INCLUDE_FILES "mpi.h")
+check_type_size("MPI_Offset" SIZEOF_MPI_OFFSET)
+message(STATUS "sizeof(MPI_Offset) = ${SIZEOF_MPI_OFFSET} bytes")
+SET(CMAKE_EXTRA_INCLUDE_FILES)
 
 #==============================================================================
 #  SET THE COMPILER OPTIONS
