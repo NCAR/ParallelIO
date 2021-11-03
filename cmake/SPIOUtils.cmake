@@ -10,7 +10,7 @@
 # prior to invoking this macro to add SCORPIO applications
 macro (add_spio_executable EXE_NAME IS_C_SRC EXE_LINKER_LANGUAGE)
   add_executable(${EXE_NAME} ${ARGN})
-  if (IS_C_SRC)
+  if (${IS_C_SRC})
     target_link_libraries(${EXE_NAME} PRIVATE pioc)
   else ()
     # Assume Fortran executable
@@ -28,11 +28,11 @@ macro (add_spio_executable EXE_NAME IS_C_SRC EXE_LINKER_LANGUAGE)
   if (NOT ${MPI_HAS_Fortran_MOD})
     target_compile_definitions (${EXE_NAME} PUBLIC NO_MPIMOD)
   endif ()
-  if (GPTL_C_FOUND AND IS_C_SRC)
+  if (GPTL_C_FOUND AND ${IS_C_SRC})
     target_include_directories (${EXE_NAME}
       PUBLIC ${GPTL_C_INCLUDE_DIRS})
     target_link_libraries (${EXE_NAME} PRIVATE ${GPTL_C_LIBRARIES})
-  elseif (IS_C_SRC)
+  elseif (${IS_C_SRC})
     target_link_libraries (${EXE_NAME} PRIVATE gptl)
   elseif (GPTL_Fortran_Perf_FOUND)
     # NOT IS_C_SRC
