@@ -160,11 +160,12 @@ if (PIO_ENABLE_TIMING)
   if (GPTL_Fortran_Perf_FOUND)
     message (STATUS "GPTL Fortran library dependencies: ${GPTL_Fortran_Perf_LIBRARIES}")
     target_include_directories (piof
-      PUBLIC ${GPTL_Fortran_INCLUDE_DIRS})
+      PUBLIC ${GPTL_Fortran_Perf_INCLUDE_DIRS})
     target_link_libraries (piof
-      PUBLIC ${GPTL_Fortran_LIBRARIES})
+      PUBLIC ${GPTL_Fortran_Perf_LIBRARIES})
   else ()
     message (STATUS "Using internal GPTL Fortran library for timing")
+    message (STATUS "GPTL Fortran library dependencies: -lgptl")
     target_link_libraries (piof
       PUBLIC gptl)
   endif ()
