@@ -1,11 +1,13 @@
 cmake_minimum_required (VERSION 2.8.12)
 project (GPTL C Fortran)
 include (CheckFunctionExists)
+include(CheckSymbolExists)
 include (FortranCInterface)
 FortranCInterface_HEADER(cmake_fortran_c_interface.h
   MACRO_NAMESPACE "FCI_")
 include (LibCheck)
 
+message(STATUS "===== Configuring GPTL library... =====")
 #==============================================================================
 #  DEFINE THE TARGET
 #==============================================================================
@@ -125,11 +127,22 @@ else ()
 endif ()
 
 # Check MPI library for Comm_f2c function
-set (CMAKE_REQUIRED_LIBRARIES ${MPI_C_LIBRARIES})
-check_function_exists (MPI_Comm_f2c MPI_HAS_COMM_F2C)
+if (PIO_USE_MPISERIAL)
+  if (MPISERIAL_C_FOUND)
+    set (CMAKE_REQUIRED_INCLUDES ${MPISERIAL_C_INCLUDE_DIRS})
+    set (CMAKE_REQUIRED_LIBRARIES ${MPISERIAL_C_LIBRARIES})
+  endif ()
+else ()
+  set (CMAKE_REQUIRED_INCLUDES ${MPI_INCLUDE_PATH})
+  set (CMAKE_REQUIRED_LIBRARIES ${MPI_C_LIBRARIES})
+endif ()
+check_symbol_exists (MPI_Comm_f2c "mpi.h" MPI_HAS_COMM_F2C)
 if (NOT MPI_HAS_COMM_F2C)
+  message(STATUS "Could not find symbol 'MPI_Comm_f2c'")
   target_compile_definitions(gptl
     PRIVATE NO_COMM_F2C)
+else ()
+  message(STATUS "Found symbol 'MPI_Comm_f2c' in mpi.h")
 endif ()
 
 # Check for MPI Fortran module
