@@ -173,7 +173,7 @@ if (PIO_C_EXTRA_LINK_FLAGS)
     LINK_FLAGS ${PIO_C_EXTRA_LINK_FLAGS})
 endif ()
 
-TARGET_LINK_LIBRARIES(adios2pio-nm.exe adios2pio-nm-lib pioc)
+TARGET_LINK_LIBRARIES(adios2pio-nm.exe PRIVATE adios2pio-nm-lib pioc)
 
 #==============================================================================
 #  INSTALL
