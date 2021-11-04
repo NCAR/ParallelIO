@@ -27,6 +27,6 @@ add_subdirectory (clib)
 
 # Add the Fortran library
 if (PIO_ENABLE_FORTRAN)
-  message(VERBOSE "Enabling the Fortran interface...")
+  message(STATUS "Enabling the Fortran interface...")
   add_subdirectory (flib)
 endif ()

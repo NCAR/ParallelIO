@@ -261,7 +261,7 @@ if (PIO_MICRO_TIMING)
   message(STATUS "Enabling Micro timers...")
   set(USE_MICRO_TIMING 1)
 else ()
-  message(VERBOSE "Disabling Micro timers... (default, use -DPIO_MICRO_TIMING:BOOL=ON to enable micro timers)")
+  message(STATUS "Disabling Micro timers... (default, use -DPIO_MICRO_TIMING:BOOL=ON to enable micro timers)")
   set(USE_MICRO_TIMING 0)
 endif ()
 
