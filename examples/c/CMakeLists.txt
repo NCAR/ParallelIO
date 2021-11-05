@@ -1,7 +1,14 @@
 ###-------------------------------------------------------------------------###
 ### CMakeList.txt for examples using pio
 ###-------------------------------------------------------------------------###
+#==============================================================================
+#  HELPER MACROS
+#==============================================================================
+include(SPIOUtils)
 
+#==============================================================================
+#  SET THE COMPILER OPTIONS
+#==============================================================================
 # Include PIO include and lib directories
 INCLUDE_DIRECTORIES(${PIO_INCLUDE_DIRS})
 include_directories("${SCORPIO_SOURCE_DIR}/examples/c")
@@ -28,25 +35,50 @@ set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -g -O0")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -O0")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0")
 
-ADD_EXECUTABLE(examplePio EXCLUDE_FROM_ALL examplePio.c)
-TARGET_LINK_LIBRARIES(examplePio pioc)
-add_dependencies(tests examplePio)
+#==============================================================================
+#  FIND EXTERNAL LIBRARIES/DEPENDENCIES
+#==============================================================================
+#===== MPI =====
+if (PIO_USE_MPISERIAL)
+  find_package (MPISERIAL COMPONENTS C REQUIRED)
+  if (MPISERIAL_C_FOUND)
+    set (CMAKE_REQUIRED_INCLUDES ${MPISERIAL_C_INCLUDE_DIRS})
+  endif ()
+else ()
+  find_package (MPI REQUIRED)
+  set (CMAKE_REQUIRED_INCLUDES ${MPI_INCLUDE_PATH})
+endif ()
 
-ADD_EXECUTABLE(example1 example1.c)
-TARGET_LINK_LIBRARIES(example1 pioc)
-add_dependencies(tests example1)
+#===== MPE =====
+find_package (MPE ${MPE_MIN_VER_REQD} COMPONENTS C)
 
-ADD_EXECUTABLE(darray_no_async darray_no_async.c)
-TARGET_LINK_LIBRARIES(darray_no_async pioc)
-add_dependencies(tests darray_no_async)
+#===== GPTL =====
+if (PIO_ENABLE_TIMING)
+  find_package (GPTL COMPONENTS C QUIET)
+  if (GPTL_C_FOUND)
+    message (STATUS "Found GPTL C: ${GPTL_C_LIBRARIES}")
+  else ()
+    message (STATUS "Using internal GPTL C library for timing")
+  endif ()
+endif ()
 
-ADD_EXECUTABLE(darray_async darray_async.c)
-TARGET_LINK_LIBRARIES(darray_async pioc)
-add_dependencies(tests darray_async)
+#==============================================================================
+#  DEFINE THE TARGETS AND TESTS
+#==============================================================================
+add_spio_executable(examplePio TRUE "" examplePio.c)
+add_spio_executable(example1 TRUE "" example1.c)
+add_spio_executable(darray_no_async TRUE "" darray_no_async.c)
+add_spio_executable(darray_async TRUE "" darray_async.c)
+add_spio_executable(put_var TRUE "" put_var.c)
 
-ADD_EXECUTABLE(put_var put_var.c)
-TARGET_LINK_LIBRARIES(put_var pioc)
-add_dependencies(tests put_var)
+if (PIO_ENABLE_FORTRAN)
+  if (MPE_C_FOUND)
+    add_spio_executable(example2 TRUE "" example2.c)
+    target_include_directories (example2 PUBLIC ${MPE_C_INCLUDE_DIRS})
+    target_compile_definitions (example2 PUBLIC HAVE_MPE)
+    target_link_libraries (example2 PRIVATE lmpe mpe pthread m)
+  endif ()
+endif ()
 
 if (PIO_USE_MPISERIAL)
   add_test(NAME examplePio COMMAND examplePio)
@@ -58,20 +90,4 @@ else ()
   add_mpi_test(put_var EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/put_var NUMPROCS 4 TIMEOUT 60)
   #add_mpi_test(darray_async EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/darray_async NUMPROCS 5 TIMEOUT 60)
   add_mpi_test(darray_no_async EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/darray_no_async NUMPROCS 4 TIMEOUT 60)
-endif ()
-
-
-#===== MPE =====
-find_package (MPE ${MPE_MIN_VER_REQD} COMPONENTS C)
-if (PIO_ENABLE_FORTRAN)
-  if (MPE_C_FOUND)
-    SET(SRC example2.c)
-    ADD_EXECUTABLE(example2 ${SRC})
-    TARGET_LINK_LIBRARIES(example2 pioc)
-    target_include_directories (example2
-      PUBLIC ${MPE_C_INCLUDE_DIRS})
-    target_compile_definitions (example2
-      PUBLIC HAVE_MPE)
-    target_link_libraries (example2 pioc lmpe mpe pthread m)
-  endif ()
 endif ()

@@ -1,7 +1,14 @@
 ###-------------------------------------------------------------------------###
 ### CMakeList.txt for examples using pio
 ###-------------------------------------------------------------------------###
+#==============================================================================
+#  HELPER MACROS
+#==============================================================================
+include(SPIOUtils)
 
+#==============================================================================
+#  SET THE COMPILER OPTIONS
+#==============================================================================
 # Include PIO include and lib directories
 INCLUDE_DIRECTORIES(${PIO_INCLUDE_DIRS})
 include_directories("${SCORPIO_SOURCE_DIR}/examples/adios")
@@ -28,25 +35,61 @@ set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -g -O0")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -O0")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0")
 
-ADD_EXECUTABLE(example3 example3.c)
-TARGET_LINK_LIBRARIES(example3 pioc)
-add_dependencies(tests example3)
+#==============================================================================
+#  FIND EXTERNAL LIBRARIES/DEPENDENCIES
+#==============================================================================
+#===== MPI =====
+if (PIO_USE_MPISERIAL)
+  find_package (MPISERIAL COMPONENTS C Fortran REQUIRED)
+  if (MPISERIAL_C_FOUND)
+    set (CMAKE_REQUIRED_INCLUDES ${MPISERIAL_C_INCLUDE_DIRS})
+  endif ()
+else ()
+  find_package (MPI REQUIRED)
+  set (CMAKE_REQUIRED_INCLUDES ${MPI_INCLUDE_PATH})
+endif ()
 
-ADD_EXECUTABLE(timesteps timesteps.c)
-TARGET_LINK_LIBRARIES(timesteps pioc)
-add_dependencies(tests timesteps)
+# Check for MPI Fortran module
+find_path(MPIMOD_PATH
+  NAMES mpi.mod MPI.mod
+  HINTS ${MPI_Fortran_INCLUDE_PATH})
+if (PIO_ENABLE_TIMING)
+  find_package (GPTL COMPONENTS Fortran_Perf QUIET)
+endif ()
 
-ADD_EXECUTABLE(timesteps_double timesteps_double.c)
-TARGET_LINK_LIBRARIES(timesteps_double pioc)
-add_dependencies(tests timesteps_double)
+check_macro (MPI_HAS_Fortran_MOD
+  NAME TryMPIMod.f90
+  HINTS ${CMAKE_MODULE_PATH}
+  DEFINITIONS -I${MPIMOD_PATH}
+  COMMENT "whether MPI Fortran module is supported")
+if (${MPI_HAS_Fortran_MOD})
+  message (STATUS "MPI Fortran module verified and enabled.")
+else ()
+  message (STATUS "MPI Fortran module failed verification and therefore disabled.")
+endif ()
 
-ADD_EXECUTABLE(example_num_frames example_num_frames.c)
-TARGET_LINK_LIBRARIES(example_num_frames pioc)
-add_dependencies(tests example_num_frames)
+#===== GPTL Library =====
+if (PIO_ENABLE_TIMING)
+  find_package (GPTL COMPONENTS C Fortran_Perf QUIET)
+  if (GPTL_C_FOUND)
+    message (STATUS "Found GPTL C: ${GPTL_C_LIBRARIES}")
+  else ()
+    message (STATUS "Using internal GPTL C library for timing")
+  endif ()
+  if (GPTL_Fortran_Perf_FOUND)
+    message (STATUS "Found GPTL Fortran Perf: ${GPTL_Fortran_Perf_LIBRARIES}")
+  else ()
+    message (STATUS "Using internal GPTL Fortran library for timing")
+  endif ()
+endif ()
 
-###-------------------------------------------------------------------------###
-### CMakeList.txt for examples using pio
-###-------------------------------------------------------------------------###
+#==============================================================================
+#  DEFINE THE TARGETS AND TESTS
+#==============================================================================
+add_spio_executable(example3 TRUE "" example3.c)
+add_spio_executable(timesteps TRUE "" timesteps.c)
+add_spio_executable(timesteps_double TRUE "" timesteps_double.c)
+add_spio_executable(example_num_frames TRUE "" example_num_frames.c)
 
 if (PIO_ENABLE_FORTRAN)
   if (WITH_ADIOS)
@@ -58,12 +101,7 @@ if (PIO_ENABLE_FORTRAN)
     INCLUDE_DIRECTORIES(${PIO_INCLUDE_DIRS})
     LINK_DIRECTORIES(${PIO_LIB_DIR})
 
-    set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -g -O0")
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -O0")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0")
-    SET(SRC examplePioADIOS.f90)
-    ADD_EXECUTABLE(examplePioADIOS_f90 ${SRC})
-    TARGET_LINK_LIBRARIES(examplePioADIOS_f90 piof pioc)
+    add_spio_executable(examplePioADIOS_f90 FALSE "" examplePioADIOS.f90)
   endif(WITH_ADIOS)
 
 endif(PIO_ENABLE_FORTRAN)

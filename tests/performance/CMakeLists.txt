@@ -1,5 +1,6 @@
+message(STATUS "===== Configuring SCORPIO Performance tests/tools ... =====")
 #==============================================================================
-#  DEFINE THE TARGETS AND TESTS
+#  SET THE LINKER LANGUAGE
 #==============================================================================
 string (TOUPPER "${CMAKE_Fortran_COMPILER_ID}" CMAKE_FORTRAN_COMPILER_NAME)
 # The PIO library is written using C, C++ and Fortran languages
@@ -12,6 +13,9 @@ else ()
   SET(PIO_LINKER_LANGUAGE Fortran)
 endif ()
 
+#==============================================================================
+#  DEFINE THE TARGETS
+#==============================================================================
 add_executable (pioperf EXCLUDE_FROM_ALL
   pioperformance.F90)
 set_property(TARGET pioperf PROPERTY LINKER_LANGUAGE ${PIO_LINKER_LANGUAGE})
@@ -24,18 +28,22 @@ set_property(TARGET pioperf_rearr PROPERTY LINKER_LANGUAGE ${PIO_LINKER_LANGUAGE
 target_link_libraries (pioperf_rearr piof)
 add_dependencies (tests pioperf_rearr)
 
+#==============================================================================
+#  SET THE COMPILER OPTIONS
+#==============================================================================
+if (CMAKE_Fortran_COMPILER_ID STREQUAL "NAG")
+  set ( CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -mismatch_all" )
+  #    target_compile_options (gptl
+  #        PRIVATE -mismatch_all)
+endif ()
+
+# Add compiler-specifc options for the tools
 if ("${CMAKE_Fortran_COMPILER_ID}" STREQUAL "GNU")
   target_compile_options (pioperf
     PRIVATE -ffree-line-length-none)
   target_compile_options (pioperf_rearr
     PRIVATE -ffree-line-length-none)
 endif()
-
-if (CMAKE_Fortran_COMPILER_ID STREQUAL "NAG")
-  set ( CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -mismatch_all" )
-  #    target_compile_options (gptl
-  #        PRIVATE -mismatch_all)
-endif ()
 
 if (PIO_HDF5_LOGGING)
   target_compile_definitions (pioperf

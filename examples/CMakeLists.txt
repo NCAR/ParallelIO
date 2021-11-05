@@ -2,6 +2,7 @@
 ### CMakeList.txt for examples using pio
 ###-------------------------------------------------------------------------###
 
+message(STATUS "===== Configuring SCORPIO Examples... =====")
 if (PIO_ENABLE_FORTRAN)
   if ("${PLATFORM}" STREQUAL "goldbach" )
     ADD_SUBDIRECTORY(f03)

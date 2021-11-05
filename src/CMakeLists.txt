@@ -1,19 +1,6 @@
 #==============================================================================
-#  PRELIMINARIES
+#  FIND EXTERNAL LIBRARIES
 #==============================================================================
-
-# Test for big-endian nature
-if (PIO_TEST_BIG_ENDIAN)
-  include (TestBigEndian)
-  test_big_endian (PIO_BIG_ENDIAN_TEST_RESULT)
-  if (PIO_BIG_ENDIAN_TEST_RESULT)
-    set (PIO_BIG_ENDIAN ON  CACHE BOOL "Whether machine is big endian")
-  else ()
-    set (PIO_BIG_ENDIAN OFF CACHE BOOL "Whether machine is big endian")
-  endif ()
-else ()
-  set (PIO_BIG_ENDIAN OFF CACHE BOOL "Whether machine is big endian")
-endif ()
 
 # Look for GPTL
 if (PIO_ENABLE_TIMING)
@@ -25,17 +12,21 @@ endif ()
 #  INCLUDE SOURCE DIRECTORIES
 #==============================================================================
 
-# Build GPTL only if necessary
+# Build the internal GPTL library if its not available
 if (PIO_ENABLE_TIMING)
   if (NOT GPTL_C_FOUND OR NOT GPTL_Fortran_Perf_FOUND)
+    message(STATUS "Could not find external GPTL library, using the internal GPTL library instead")
     add_subdirectory (gptl)
+  else ()
+    message(STATUS "Found external GPTL library")
   endif ()
 endif ()
 
-# Build the C library
+# Add the C library
 add_subdirectory (clib)
 
-# Build the Fortran library
+# Add the Fortran library
 if (PIO_ENABLE_FORTRAN)
+  message(STATUS "Enabling the Fortran interface...")
   add_subdirectory (flib)
 endif ()

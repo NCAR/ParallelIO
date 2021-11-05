@@ -1,6 +1,18 @@
 include (LibMPI)
 include (PIOTest)
 
+message(STATUS "===== Configuring SCORPIO Fortran tests... =====")
+#==============================================================================
+#  HELPER MACROS
+#==============================================================================
+include(SPIOUtils)
+macro (add_spio_test_executable EXE_NAME IS_C_SRC EXE_LINKER_LANGUAGE)
+  add_spio_executable(${EXE_NAME} ${IS_C_SRC} ${EXE_LINKER_LANGUAGE} ${ARGN})
+  target_link_libraries(${EXE_NAME} PRIVATE pio_tutil)
+  add_dependencies (${EXE_NAME} pio_tutil)
+  add_dependencies (tests ${EXE_NAME})
+endmacro()
+
 #==============================================================================
 #  GENERATE TARGET SOURCES
 #==============================================================================
@@ -76,6 +88,45 @@ endif ()
 if (PIO_TEST_CLOSE_OPEN_FOR_SYNC)
   add_definitions(-DPIO_TEST_CLOSE_OPEN_FOR_SYNC)
 endif()
+
+#==============================================================================
+#  FIND EXTERNAL LIBRARIES/DEPENDENCIES
+#==============================================================================
+#===== MPI =====
+if (PIO_USE_MPISERIAL)
+  find_package (MPISERIAL COMPONENTS Fortran REQUIRED)
+else ()
+  find_package (MPI REQUIRED)
+endif ()
+
+# Check for MPI Fortran module
+find_path(MPIMOD_PATH
+  NAMES mpi.mod MPI.mod
+  HINTS ${MPI_Fortran_INCLUDE_PATH})
+if (PIO_ENABLE_TIMING)
+  find_package (GPTL COMPONENTS Fortran_Perf QUIET)
+endif ()
+
+check_macro (MPI_HAS_Fortran_MOD
+  NAME TryMPIMod.f90
+  HINTS ${CMAKE_MODULE_PATH}
+  DEFINITIONS -I${MPIMOD_PATH}
+  COMMENT "whether MPI Fortran module is supported")
+if (${MPI_HAS_Fortran_MOD})
+  message (STATUS "MPI Fortran module verified and enabled.")
+else ()
+  message (STATUS "MPI Fortran module failed verification and therefore disabled.")
+endif ()
+
+#===== GPTL =====
+if (PIO_ENABLE_TIMING)
+  find_package (GPTL COMPONENTS Fortran_Perf QUIET)
+  if (GPTL_Fortran_Perf_FOUND)
+    message (STATUS "Found GPTL Fortran Perf: ${GPTL_Fortran_Perf_LIBRARIES}")
+  else ()
+    message (STATUS "Using internal GPTL Fortran library for timing")
+  endif ()
+endif ()
 
 #==============================================================================
 #  DEFINE THE TARGETS AND TESTS
@@ -155,12 +206,9 @@ add_library(pio_tutil EXCLUDE_FROM_ALL
 target_link_libraries (pio_tutil piof)
 
 #===== pio_init_finalize =====
-add_executable (pio_init_finalize EXCLUDE_FROM_ALL
-  pio_init_finalize.F90)
-set_property(TARGET pio_init_finalize PROPERTY LINKER_LANGUAGE ${PIO_LINKER_LANGUAGE})
-target_link_libraries (pio_init_finalize pio_tutil piof)
+add_spio_test_executable(pio_init_finalize FALSE ${PIO_LINKER_LANGUAGE} pio_init_finalize.F90)
+target_link_libraries(pio_init_finalize PRIVATE pio_tutil)
 add_dependencies (pio_init_finalize pio_tutil)
-add_dependencies (tests pio_init_finalize)
 
 add_pio_test(init_finalize
   EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_init_finalize
@@ -173,12 +221,7 @@ add_pio_test(init_finalize
   TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== pio_async_init_finalize =====
-add_executable (pio_async_init_finalize EXCLUDE_FROM_ALL
-  pio_async_init_finalize.F90)
-set_property(TARGET pio_async_init_finalize PROPERTY LINKER_LANGUAGE ${PIO_LINKER_LANGUAGE})
-target_link_libraries (pio_async_init_finalize pio_tutil piof)
-add_dependencies (pio_async_init_finalize pio_tutil)
-add_dependencies (tests pio_async_init_finalize)
+add_spio_test_executable(pio_async_init_finalize FALSE ${PIO_LINKER_LANGUAGE} pio_async_init_finalize.F90)
 
 # Note: Async tests don't use ioprocs/stride specified by user
 add_pio_test(async_init_finalize
@@ -192,12 +235,7 @@ add_pio_test(async_init_finalize
   TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== pio_file_simple_tests =====
-add_executable (pio_file_simple_tests EXCLUDE_FROM_ALL
-  pio_file_simple_tests.F90)
-set_property(TARGET pio_file_simple_tests PROPERTY LINKER_LANGUAGE ${PIO_LINKER_LANGUAGE})
-target_link_libraries (pio_file_simple_tests pio_tutil piof)
-add_dependencies (pio_file_simple_tests pio_tutil)
-add_dependencies (tests pio_file_simple_tests)
+add_spio_test_executable(pio_file_simple_tests FALSE ${PIO_LINKER_LANGUAGE} pio_file_simple_tests.F90)
 
 # The number of io procs/stride doesn't significantly impact this test
 add_pio_test(pio_file_simple_tests
@@ -212,12 +250,7 @@ add_pio_test(pio_file_simple_tests
 
 #===== pio_large_file_tests =====
 if (PIO_ENABLE_LARGE_TESTS)
-  add_executable (pio_large_file_tests EXCLUDE_FROM_ALL
-    pio_large_file_tests.F90
-    ${CMAKE_CURRENT_SOURCE_DIR}/util/pio_tutil.F90)
-  set_property(TARGET pio_large_file_tests PROPERTY LINKER_LANGUAGE ${PIO_LINKER_LANGUAGE})
-  target_link_libraries (pio_large_file_tests pio_tutil piof)
-  add_dependencies (tests pio_large_file_tests)
+  add_spio_test_executable(pio_large_file_tests FALSE ${PIO_LINKER_LANGUAGE} pio_large_file_tests.F90)
 
   # Costly test only test with 2 I/O procs
   add_pio_test(pio_large_file_tests
@@ -232,16 +265,7 @@ if (PIO_ENABLE_LARGE_TESTS)
 endif ()
 
 #===== pio_file_fail =====
-add_executable (pio_file_fail EXCLUDE_FROM_ALL
-  pio_file_fail.F90)
-set_property(TARGET pio_file_fail PROPERTY LINKER_LANGUAGE ${PIO_LINKER_LANGUAGE})
-target_link_libraries (pio_file_fail pio_tutil piof)
-if ("${CMAKE_Fortran_COMPILER_ID}" STREQUAL "GNU")
-  target_compile_options (pio_init_finalize
-    PRIVATE -ffree-line-length-none)
-endif()
-add_dependencies (pio_file_fail pio_tutil)
-add_dependencies (tests pio_file_fail)
+add_spio_test_executable(pio_file_fail FALSE ${PIO_LINKER_LANGUAGE} pio_file_fail.F90)
 
 # The number of io procs/stride doesn't significantly impact this test
 add_pio_test(pio_file_fail
@@ -255,12 +279,7 @@ add_pio_test(pio_file_fail
   TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== ncdf_simple_tests =====
-add_executable (ncdf_simple_tests EXCLUDE_FROM_ALL
-  ncdf_simple_tests.F90)
-set_property(TARGET ncdf_simple_tests PROPERTY LINKER_LANGUAGE ${PIO_LINKER_LANGUAGE})
-target_link_libraries (ncdf_simple_tests pio_tutil piof)
-add_dependencies (ncdf_simple_tests pio_tutil)
-add_dependencies (tests ncdf_simple_tests)
+add_spio_test_executable(ncdf_simple_tests FALSE ${PIO_LINKER_LANGUAGE} ncdf_simple_tests.F90)
 
 add_pio_test(ncdf_simple_tests
   EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/ncdf_simple_tests
@@ -273,12 +292,7 @@ add_pio_test(ncdf_simple_tests
   TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== ncdf_get_put =====
-add_executable (ncdf_get_put EXCLUDE_FROM_ALL
-  ncdf_get_put.F90)
-set_property(TARGET ncdf_get_put PROPERTY LINKER_LANGUAGE ${PIO_LINKER_LANGUAGE})
-target_link_libraries (ncdf_get_put pio_tutil piof)
-add_dependencies (ncdf_get_put pio_tutil)
-add_dependencies (tests ncdf_get_put)
+add_spio_test_executable(ncdf_get_put FALSE ${PIO_LINKER_LANGUAGE} ncdf_get_put.F90)
 
 add_pio_test(ncdf_get_put
   EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/ncdf_get_put
@@ -291,12 +305,7 @@ add_pio_test(ncdf_get_put
   TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== ncdf_fail =====
-add_executable (ncdf_fail EXCLUDE_FROM_ALL
-  ncdf_fail.F90)
-set_property(TARGET ncdf_fail PROPERTY LINKER_LANGUAGE ${PIO_LINKER_LANGUAGE})
-target_link_libraries (ncdf_fail pio_tutil piof)
-add_dependencies (ncdf_fail pio_tutil)
-add_dependencies (tests ncdf_fail)
+add_spio_test_executable(ncdf_fail FALSE ${PIO_LINKER_LANGUAGE} ncdf_fail.F90)
 
 add_pio_test(ncdf_fail_bcast
   EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/ncdf_fail
@@ -333,12 +342,7 @@ add_pio_test(ncdf_fail_intrnl
 
 # Error handler tests
 #===== ncdf_eh_one_test =====
-add_executable (ncdf_eh_one_test EXCLUDE_FROM_ALL
-  ncdf_eh_one_test.F90)
-set_property(TARGET ncdf_eh_one_test PROPERTY LINKER_LANGUAGE ${PIO_LINKER_LANGUAGE})
-target_link_libraries (ncdf_eh_one_test pio_tutil piof)
-add_dependencies (ncdf_eh_one_test pio_tutil)
-add_dependencies (tests ncdf_eh_one_test)
+add_spio_test_executable(ncdf_eh_one_test FALSE ${PIO_LINKER_LANGUAGE} ncdf_eh_one_test.F90)
 
 add_pio_test(ncdf_eh_one_test_bcast
   EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/ncdf_eh_one_test
@@ -434,12 +438,7 @@ add_pio_test(ncdf_eh_one_test_intrnl_ad
   WILLFAIL)
 
 #===== ncdf_inq =====
-add_executable (ncdf_inq EXCLUDE_FROM_ALL
-  ncdf_inq.F90)
-set_property(TARGET ncdf_inq PROPERTY LINKER_LANGUAGE ${PIO_LINKER_LANGUAGE})
-target_link_libraries (ncdf_inq pio_tutil piof)
-add_dependencies (ncdf_inq pio_tutil)
-add_dependencies (tests ncdf_inq)
+add_spio_test_executable(ncdf_inq FALSE ${PIO_LINKER_LANGUAGE} ncdf_inq.F90)
 
 add_pio_test(ncdf_inq
   EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/ncdf_inq
@@ -452,12 +451,7 @@ add_pio_test(ncdf_inq
   TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== pio_copy =====
-add_executable (pio_copy EXCLUDE_FROM_ALL
-  pio_copy.F90)
-set_property(TARGET pio_copy PROPERTY LINKER_LANGUAGE ${PIO_LINKER_LANGUAGE})
-target_link_libraries (pio_copy pio_tutil piof)
-add_dependencies (pio_copy pio_tutil)
-add_dependencies (tests pio_copy)
+add_spio_test_executable(pio_copy FALSE ${PIO_LINKER_LANGUAGE} pio_copy.F90)
 
 add_pio_test(pio_copy
   EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_copy
@@ -470,12 +464,7 @@ add_pio_test(pio_copy
   TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== pio_set_hint =====
-add_executable (pio_set_hint EXCLUDE_FROM_ALL
-  pio_set_hint.F90)
-set_property(TARGET pio_set_hint PROPERTY LINKER_LANGUAGE ${PIO_LINKER_LANGUAGE})
-target_link_libraries (pio_set_hint pio_tutil piof)
-add_dependencies (pio_set_hint pio_tutil)
-add_dependencies (tests pio_set_hint)
+add_spio_test_executable(pio_set_hint FALSE ${PIO_LINKER_LANGUAGE} pio_set_hint.F90)
 
 add_pio_test(pio_set_hint
   EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_set_hint
@@ -488,12 +477,7 @@ add_pio_test(pio_set_hint
   TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== pio_rearr =====
-add_executable (pio_rearr EXCLUDE_FROM_ALL
-    pio_rearr.F90)
-set_property(TARGET pio_rearr PROPERTY LINKER_LANGUAGE ${PIO_LINKER_LANGUAGE})
-target_link_libraries (pio_rearr pio_tutil piof)
-add_dependencies (pio_rearr pio_tutil)
-add_dependencies (tests pio_rearr)
+add_spio_test_executable(pio_rearr FALSE ${PIO_LINKER_LANGUAGE} pio_rearr.F90)
 
 # Costly test
 add_pio_test(pio_rearr
@@ -507,12 +491,7 @@ add_pio_test(pio_rearr
   TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== pio_async_file_tests =====
-add_executable (pio_async_file_tests EXCLUDE_FROM_ALL
-  pio_async_file_tests.F90)
-set_property(TARGET pio_async_file_tests PROPERTY LINKER_LANGUAGE ${PIO_LINKER_LANGUAGE})
-target_link_libraries (pio_async_file_tests pio_tutil piof)
-add_dependencies (pio_async_file_tests pio_tutil)
-add_dependencies (tests pio_async_file_tests)
+add_spio_test_executable(pio_async_file_tests FALSE ${PIO_LINKER_LANGUAGE} pio_async_file_tests.F90)
 
 # Async file tests don't use ioprocs/stride set by user
 add_pio_test(pio_async_file_tests
@@ -526,12 +505,7 @@ add_pio_test(pio_async_file_tests
   TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== pio_async_copy_tests =====
-add_executable (pio_async_copy_tests EXCLUDE_FROM_ALL
-  pio_async_copy_tests.F90)
-set_property(TARGET pio_async_copy_tests PROPERTY LINKER_LANGUAGE ${PIO_LINKER_LANGUAGE})
-target_link_libraries (pio_async_copy_tests pio_tutil piof)
-add_dependencies (pio_async_copy_tests pio_tutil)
-add_dependencies (tests pio_async_copy_tests)
+add_spio_test_executable(pio_async_copy_tests FALSE ${PIO_LINKER_LANGUAGE} pio_async_copy_tests.F90)
 
 # Async file tests don't use ioprocs/stride set by user
 add_pio_test(pio_async_copy_tests
@@ -545,12 +519,7 @@ add_pio_test(pio_async_copy_tests
   TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== pio_rearr_opts =====
-add_executable (pio_rearr_opts EXCLUDE_FROM_ALL
-    pio_rearr_opts.F90)
-set_property(TARGET pio_rearr_opts PROPERTY LINKER_LANGUAGE ${PIO_LINKER_LANGUAGE})
-target_link_libraries (pio_rearr_opts pio_tutil piof)
-add_dependencies (pio_rearr_opts pio_tutil)
-add_dependencies (tests pio_rearr_opts)
+add_spio_test_executable(pio_rearr_opts FALSE ${PIO_LINKER_LANGUAGE} pio_rearr_opts.F90)
 
 # PIO rearr opts is a costly test
 add_pio_test(pio_rearr_opts
@@ -564,12 +533,7 @@ add_pio_test(pio_rearr_opts
   TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== pio_rearr_opts2 =====
-add_executable (pio_rearr_opts2 EXCLUDE_FROM_ALL
-    pio_rearr_opts2.F90)
-set_property(TARGET pio_rearr_opts2 PROPERTY LINKER_LANGUAGE ${PIO_LINKER_LANGUAGE})
-target_link_libraries (pio_rearr_opts2 pio_tutil piof)
-add_dependencies (pio_rearr_opts2 pio_tutil)
-add_dependencies (tests pio_rearr_opts2)
+add_spio_test_executable(pio_rearr_opts2 FALSE ${PIO_LINKER_LANGUAGE} pio_rearr_opts2.F90)
 
 # This is a costly test
 add_pio_test(pio_rearr_opts2
@@ -583,12 +547,7 @@ add_pio_test(pio_rearr_opts2
   TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== pio_decomp_tests =====
-add_executable (pio_decomp_tests EXCLUDE_FROM_ALL
-  pio_decomp_tests.F90)
-set_property(TARGET pio_decomp_tests PROPERTY LINKER_LANGUAGE ${PIO_LINKER_LANGUAGE})
-target_link_libraries (pio_decomp_tests pio_tutil piof)
-add_dependencies (pio_decomp_tests pio_tutil)
-add_dependencies (tests pio_decomp_tests)
+add_spio_test_executable(pio_decomp_tests FALSE ${PIO_LINKER_LANGUAGE} pio_decomp_tests.F90)
 
 add_pio_test(pio_decomp_tests
   EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_tests
@@ -601,12 +560,7 @@ add_pio_test(pio_decomp_tests
   TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== pio_async_decomp_tests =====
-add_executable (pio_async_decomp_tests EXCLUDE_FROM_ALL
-  pio_async_decomp_tests.F90)
-set_property(TARGET pio_async_decomp_tests PROPERTY LINKER_LANGUAGE ${PIO_LINKER_LANGUAGE})
-target_link_libraries (pio_async_decomp_tests pio_tutil piof)
-add_dependencies (pio_async_decomp_tests pio_tutil)
-add_dependencies (tests pio_async_decomp_tests)
+add_spio_test_executable(pio_async_decomp_tests FALSE ${PIO_LINKER_LANGUAGE} pio_async_decomp_tests.F90)
 
 # Async tests don't use ioprocs/stride set by the user
 add_pio_test(pio_async_decomp_tests
@@ -620,12 +574,7 @@ add_pio_test(pio_async_decomp_tests
   TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== pio_decomp_tests_1d =====
-add_executable (pio_decomp_tests_1d EXCLUDE_FROM_ALL
-  pio_decomp_tests_1d.F90)
-set_property(TARGET pio_decomp_tests_1d PROPERTY LINKER_LANGUAGE ${PIO_LINKER_LANGUAGE})
-target_link_libraries (pio_decomp_tests_1d pio_tutil piof)
-add_dependencies (pio_decomp_tests_1d pio_tutil)
-add_dependencies (tests pio_decomp_tests_1d)
+add_spio_test_executable(pio_decomp_tests_1d FALSE ${PIO_LINKER_LANGUAGE} pio_decomp_tests_1d.F90)
 
 # Costly test
 add_pio_test(pio_decomp_tests_1d
@@ -639,12 +588,7 @@ add_pio_test(pio_decomp_tests_1d
   TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== pio_decomp_tests2_1d =====
-add_executable (pio_decomp_tests2_1d EXCLUDE_FROM_ALL
-  pio_decomp_tests2_1d.F90)
-set_property(TARGET pio_decomp_tests2_1d PROPERTY LINKER_LANGUAGE ${PIO_LINKER_LANGUAGE})
-target_link_libraries (pio_decomp_tests2_1d pio_tutil piof)
-add_dependencies (pio_decomp_tests2_1d pio_tutil)
-add_dependencies (tests pio_decomp_tests2_1d)
+add_spio_test_executable(pio_decomp_tests2_1d FALSE ${PIO_LINKER_LANGUAGE} pio_decomp_tests2_1d.F90)
 
 add_pio_test(pio_decomp_tests2_1d
   EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_tests2_1d
@@ -657,12 +601,7 @@ add_pio_test(pio_decomp_tests2_1d
   TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== pio_async_decomp_tests_1d =====
-add_executable (pio_async_decomp_tests_1d EXCLUDE_FROM_ALL
-  pio_async_decomp_tests_1d.F90)
-set_property(TARGET pio_async_decomp_tests_1d PROPERTY LINKER_LANGUAGE ${PIO_LINKER_LANGUAGE})
-target_link_libraries (pio_async_decomp_tests_1d pio_tutil piof)
-add_dependencies (pio_async_decomp_tests_1d pio_tutil)
-add_dependencies (tests pio_async_decomp_tests_1d)
+add_spio_test_executable(pio_async_decomp_tests_1d FALSE ${PIO_LINKER_LANGUAGE} pio_async_decomp_tests_1d.F90)
 
 # Async tests don't use ioprocs/stride set by the user
 add_pio_test(pio_async_decomp_tests_1d
@@ -676,12 +615,7 @@ add_pio_test(pio_async_decomp_tests_1d
   TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== pio_decomp_tests_2d =====
-add_executable (pio_decomp_tests_2d EXCLUDE_FROM_ALL
-  pio_decomp_tests_2d.F90)
-set_property(TARGET pio_decomp_tests_2d PROPERTY LINKER_LANGUAGE ${PIO_LINKER_LANGUAGE})
-target_link_libraries (pio_decomp_tests_2d pio_tutil piof)
-add_dependencies (pio_decomp_tests_2d pio_tutil)
-add_dependencies (tests pio_decomp_tests_2d)
+add_spio_test_executable(pio_decomp_tests_2d FALSE ${PIO_LINKER_LANGUAGE} pio_decomp_tests_2d.F90)
 
 add_pio_test(pio_decomp_tests_2d
   EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_tests_2d
@@ -694,12 +628,7 @@ add_pio_test(pio_decomp_tests_2d
   TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== pio_decomp_tests_3d =====
-add_executable (pio_decomp_tests_3d EXCLUDE_FROM_ALL
-  pio_decomp_tests_3d.F90)
-set_property(TARGET pio_decomp_tests_3d PROPERTY LINKER_LANGUAGE ${PIO_LINKER_LANGUAGE})
-target_link_libraries (pio_decomp_tests_3d pio_tutil piof)
-add_dependencies (pio_decomp_tests_3d pio_tutil)
-add_dependencies (tests pio_decomp_tests_3d)
+add_spio_test_executable(pio_decomp_tests_3d FALSE ${PIO_LINKER_LANGUAGE} pio_decomp_tests_3d.F90)
 
 add_pio_test(pio_decomp_tests_3d
   EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_tests_3d
@@ -712,12 +641,7 @@ add_pio_test(pio_decomp_tests_3d
   TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== pio_sync_tests =====
-add_executable (pio_sync_tests EXCLUDE_FROM_ALL
-  pio_sync_tests.F90)
-set_property(TARGET pio_sync_tests PROPERTY LINKER_LANGUAGE ${PIO_LINKER_LANGUAGE})
-target_link_libraries (pio_sync_tests pio_tutil piof)
-add_dependencies (pio_sync_tests pio_tutil)
-add_dependencies (tests pio_sync_tests)
+add_spio_test_executable(pio_sync_tests FALSE ${PIO_LINKER_LANGUAGE} pio_sync_tests.F90)
 
 # Costly test
 add_pio_test(pio_sync_tests
@@ -731,12 +655,7 @@ add_pio_test(pio_sync_tests
   TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== pio_buf_lim_tests =====
-add_executable (pio_buf_lim_tests EXCLUDE_FROM_ALL
-  pio_buf_lim_tests.F90)
-set_property(TARGET pio_buf_lim_tests PROPERTY LINKER_LANGUAGE ${PIO_LINKER_LANGUAGE})
-target_link_libraries (pio_buf_lim_tests pio_tutil piof)
-add_dependencies (pio_buf_lim_tests pio_tutil)
-add_dependencies (tests pio_buf_lim_tests)
+add_spio_test_executable(pio_buf_lim_tests FALSE ${PIO_LINKER_LANGUAGE} pio_buf_lim_tests.F90)
 
 add_pio_test(pio_buf_lim_tests
   EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_buf_lim_tests
@@ -749,12 +668,7 @@ add_pio_test(pio_buf_lim_tests
   TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== pio_iodesc_tests =====
-add_executable (pio_iodesc_tests EXCLUDE_FROM_ALL
-  pio_iodesc_tests.F90)
-set_property(TARGET pio_iodesc_tests PROPERTY LINKER_LANGUAGE ${PIO_LINKER_LANGUAGE})
-target_link_libraries (pio_iodesc_tests pio_tutil piof)
-add_dependencies (pio_iodesc_tests pio_tutil)
-add_dependencies (tests pio_iodesc_tests)
+add_spio_test_executable(pio_iodesc_tests FALSE ${PIO_LINKER_LANGUAGE} pio_iodesc_tests.F90)
 
 add_pio_test(pio_iodesc_tests
   EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_iodesc_tests
@@ -767,12 +681,7 @@ add_pio_test(pio_iodesc_tests
   TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== pio_decomp_frame_tests =====
-add_executable (pio_decomp_frame_tests EXCLUDE_FROM_ALL
-  pio_decomp_frame_tests.F90)
-set_property(TARGET pio_decomp_frame_tests PROPERTY LINKER_LANGUAGE ${PIO_LINKER_LANGUAGE})
-target_link_libraries (pio_decomp_frame_tests pio_tutil piof)
-add_dependencies (pio_decomp_frame_tests pio_tutil)
-add_dependencies (tests pio_decomp_frame_tests)
+add_spio_test_executable(pio_decomp_frame_tests FALSE ${PIO_LINKER_LANGUAGE} pio_decomp_frame_tests.F90)
 
 add_pio_test(pio_decomp_frame_tests
   EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_frame_tests
@@ -785,12 +694,7 @@ add_pio_test(pio_decomp_frame_tests
   TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== pio_decomp_fillval =====
-add_executable (pio_decomp_fillval EXCLUDE_FROM_ALL
-  pio_decomp_fillval.F90)
-set_property(TARGET pio_decomp_fillval PROPERTY LINKER_LANGUAGE ${PIO_LINKER_LANGUAGE})
-target_link_libraries (pio_decomp_fillval pio_tutil piof)
-add_dependencies (pio_decomp_fillval pio_tutil)
-add_dependencies (tests pio_decomp_fillval)
+add_spio_test_executable(pio_decomp_fillval FALSE ${PIO_LINKER_LANGUAGE} pio_decomp_fillval.F90)
 
 # Costly test
 add_pio_test(pio_decomp_fillval
@@ -804,12 +708,7 @@ add_pio_test(pio_decomp_fillval
   TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== pio_decomp_fillval2 =====
-add_executable (pio_decomp_fillval2 EXCLUDE_FROM_ALL
-  pio_decomp_fillval2.F90)
-set_property(TARGET pio_decomp_fillval2 PROPERTY LINKER_LANGUAGE ${PIO_LINKER_LANGUAGE})
-target_link_libraries (pio_decomp_fillval2 pio_tutil piof)
-add_dependencies (pio_decomp_fillval2 pio_tutil)
-add_dependencies (tests pio_decomp_fillval2)
+add_spio_test_executable(pio_decomp_fillval2 FALSE ${PIO_LINKER_LANGUAGE} pio_decomp_fillval2.F90)
 
 add_pio_test(pio_decomp_fillval2
   EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_fillval2
@@ -822,12 +721,7 @@ add_pio_test(pio_decomp_fillval2
   TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== pio_decomp_extra_dims =====
-add_executable (pio_decomp_extra_dims EXCLUDE_FROM_ALL
-  pio_decomp_extra_dims.F90)
-set_property(TARGET pio_decomp_extra_dims PROPERTY LINKER_LANGUAGE ${PIO_LINKER_LANGUAGE})
-target_link_libraries (pio_decomp_extra_dims pio_tutil piof)
-add_dependencies (pio_decomp_extra_dims pio_tutil)
-add_dependencies (tests pio_decomp_extra_dims)
+add_spio_test_executable(pio_decomp_extra_dims FALSE ${PIO_LINKER_LANGUAGE} pio_decomp_extra_dims.F90)
 
 # This is a costly test
 add_pio_test(pio_decomp_extra_dims
@@ -841,12 +735,7 @@ add_pio_test(pio_decomp_extra_dims
   TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== pio_iosystems_test =====
-add_executable (pio_iosystem_tests EXCLUDE_FROM_ALL
-  pio_iosystem_tests.F90)
-set_property(TARGET pio_iosystem_tests PROPERTY LINKER_LANGUAGE ${PIO_LINKER_LANGUAGE})
-target_link_libraries (pio_iosystem_tests pio_tutil piof)
-add_dependencies (pio_iosystem_tests pio_tutil)
-add_dependencies (tests pio_iosystem_tests)
+add_spio_test_executable(pio_iosystem_tests FALSE ${PIO_LINKER_LANGUAGE} pio_iosystem_tests.F90)
 
 add_pio_test(pio_iosystem_tests
   EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_iosystem_tests
@@ -859,12 +748,7 @@ add_pio_test(pio_iosystem_tests
   TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== pio_iosystems_test2 =====
-add_executable (pio_iosystem_tests2 EXCLUDE_FROM_ALL
-  pio_iosystem_tests2.F90)
-set_property(TARGET pio_iosystem_tests2 PROPERTY LINKER_LANGUAGE ${PIO_LINKER_LANGUAGE})
-target_link_libraries (pio_iosystem_tests2 pio_tutil piof)
-add_dependencies (pio_iosystem_tests2 pio_tutil)
-add_dependencies (tests pio_iosystem_tests2)
+add_spio_test_executable(pio_iosystem_tests2 FALSE ${PIO_LINKER_LANGUAGE} pio_iosystem_tests2.F90)
 
 add_pio_test(pio_iosystem_tests2
   EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_iosystem_tests2
@@ -877,12 +761,7 @@ add_pio_test(pio_iosystem_tests2
   TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
 #===== pio_iosystems_test3 =====
-add_executable (pio_iosystem_tests3 EXCLUDE_FROM_ALL
-  pio_iosystem_tests3.F90)
-set_property(TARGET pio_iosystem_tests3 PROPERTY LINKER_LANGUAGE ${PIO_LINKER_LANGUAGE})
-target_link_libraries (pio_iosystem_tests3 pio_tutil piof)
-add_dependencies (pio_iosystem_tests3 pio_tutil)
-add_dependencies (tests pio_iosystem_tests3)
+add_spio_test_executable(pio_iosystem_tests3 FALSE ${PIO_LINKER_LANGUAGE} pio_iosystem_tests3.F90)
 
 add_pio_test(pio_iosystem_tests3
   EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_iosystem_tests3
