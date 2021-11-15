@@ -9,7 +9,7 @@ For complete documentation, see the HTML documentation in the docs/html director
 ## Nightly Tests
 
 The results of our nightly tests on multiple platforms can be found on our
-cdash site at [http://my.cdash.org/index.php?project=ACME_PIO](http://my.cdash.org/index.php?project=ACME_PIO).
+cdash site at [http://my.cdash.org/index.php?project=E3SM_SCORPIO](http://my.cdash.org/index.php?project=E3SM_SCORPIO).
 
 ## Dependencies
 
