@@ -6,7 +6,7 @@
 ##   ENABLE_TESTING()
 ##   INCLUDE(CTest)
 
-set (CTEST_PROJECT_NAME "PIO")
+set (CTEST_PROJECT_NAME "SCORPIO")
 set (CTEST_NIGHTLY_START_TIME "00:00:00 EST")
 
 set (CTEST_DROP_METHOD "http")
@@ -18,7 +18,7 @@ endif ()
 if (DEFINED ENV{PIO_DASHBOARD_PROJECT_NAME})
     set (CTEST_DROP_LOCATION "/submit.php?project=$ENV{PIO_DASHBOARD_PROJECT_NAME}")
 else ()
-    set (CTEST_DROP_LOCATION "/submit.php?project=PIO")
+    set (CTEST_DROP_LOCATION "/submit.php?project=E3SM_SCORPIO")
 endif ()
 set (CTEST_DROP_SITE_CDASH TRUE)
 
