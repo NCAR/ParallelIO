@@ -248,11 +248,12 @@ int get_vard_mpidatatype(io_desc_t *iodesc, MPI_Offset gdim0, PIO_Offset unlimdi
         }
 
 #if PIO_ENABLE_LOGGING
-        PLOG((3,"vard: blocklengths[%d]=%d displacement[%d]=%ld unlimdimoffset=%ld",rc,blocklengths[rc], rc, displacements[rc], unlimdimoffset));
+        PLOG((3,"vard: blocklengths[%d]=%d displacement[%d]=%ld unlimdimoffset=%ld true_rrcnt %d isContig %d mpitype %d",rc,blocklengths[rc], rc, displacements[rc], unlimdimoffset, true_rrcnt, isContig, iodesc->mpitype));
 #endif
 
     }
     true_rrcnt++;
+    if (true_rrcnt == 1) subarray[0] = iodesc->mpitype;
 
     /* concatenate all MPI datatypes into filetype */
     if((mpierr = MPI_Type_create_struct(true_rrcnt, blocklengths, displacements, subarray, filetype)))
@@ -1337,14 +1338,20 @@ pio_read_darray_nc(file_desc_t *file, io_desc_t *iodesc, int vid, void *iobuf)
                     ierr = get_vard_mpidatatype(iodesc, gdim0, unlimdimoffset,
                                                 rrlen, ndims, fndims,
                                                 vdesc->record, startlist, countlist, &filetype);
-                    ierr = ncmpi_get_vard_all(file->fh, vid, filetype, iobuf, iodesc->llen, iodesc->mpitype);
+                    if(ierr) PLOG((0, "get_vard_mpidatatype ierr = %d", ierr));
+                    ierr = ncmpi_get_vard_all(file->fh, vid, filetype, iobuf, iodesc->llen, iodesc->mpitype); 
                     if(filetype != MPI_DATATYPE_NULL && (mpierr = MPI_Type_free(&filetype)))
                         return check_mpi(NULL, NULL, mpierr, __FILE__, __LINE__);
 
 #else
                     /* Read a list of subarrays. */
-                    ierr = ncmpi_get_varn_all(file->fh, vid, rrlen, startlist,
-                                              countlist, iobuf, iodesc->llen, iodesc->mpitype);
+                    if(iodesc->mpitype == MPI_BYTE){
+                        ierr = ncmpi_get_varn_uchar_all(file->fh, vid, rrlen, startlist,
+                                                        countlist, iobuf);
+                    }else{
+                        ierr = ncmpi_get_varn_all(file->fh, vid, rrlen, startlist,
+                                                  countlist, iobuf, iodesc->llen, iodesc->mpitype);
+                    }
 #endif
                     /* Release the start and count arrays. */
                     for (int i = 0; i < rrlen; i++)
