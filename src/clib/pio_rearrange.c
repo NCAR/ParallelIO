@@ -2091,9 +2091,8 @@ subset_rearrange_create(iosystem_desc_t *ios, int maplen, PIO_Offset *compmap,
      * compmap. */
     for (i = 0; i < iodesc->ndof; i++)
     {
-        /*  turns out this can be allowed in some cases
-            pioassert(compmap[i]>=0 && compmap[i]<=totalgridsize, "Compmap value out of bounds",
-            __FILE__,__LINE__); */
+        pioassert(compmap[i]>=-1 && compmap[i]<=totalgridsize, "Compmap value out of bounds",
+            __FILE__,__LINE__); 
         if (compmap[i] > 0)
             (iodesc->scount[0])++;
     }
@@ -2137,9 +2136,6 @@ subset_rearrange_create(iosystem_desc_t *ios, int maplen, PIO_Offset *compmap,
         {
             if (!(srcindex = calloc(iodesc->llen, sizeof(PIO_Offset))))
                 return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__);
-
-            for (i = 0; i < iodesc->llen; i++)
-                srcindex[i] = 0;
         }
     }
     else
@@ -2219,7 +2215,7 @@ subset_rearrange_create(iosystem_desc_t *ios, int maplen, PIO_Offset *compmap,
 
         /* sort the mapping, this will transpose the data into IO order */
         qsort(map, iodesc->llen, sizeof(mapsort), compare_offsets);
-
+        
         if (!(iodesc->rindex = calloc(1, iodesc->llen * sizeof(PIO_Offset))))
             return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__);
 
@@ -2235,15 +2231,20 @@ subset_rearrange_create(iosystem_desc_t *ios, int maplen, PIO_Offset *compmap,
 
     /* For IO tasks init rfrom and rindex arrays (compute tasks have
      * llen of 0). */
-    for (i = 0; i < iodesc->llen; i++)
+    int rllen;
+    for (i = 0, rllen=0; i < iodesc->llen; i++)
     {
         mapsort *mptr = &map[i];
         iodesc->rfrom[i] = mptr->rfrom;
         iodesc->rindex[i] = i;
-        iomap[i] = mptr->iomap;
+        if(i==0)
+            iomap[0] = mptr->iomap;
+        else if(mptr->iomap > iomap[j])
+            iomap[rllen++] = mptr->iomap;
+        
         srcindex[(cnt[iodesc->rfrom[i]])++] = mptr->soffset;
     }
-
+    
     /* Handle fill values if needed. */
     PLOG((4, "ios->ioproc %d iodesc->needsfill %d", ios->ioproc, iodesc->needsfill));
     if (ios->ioproc && iodesc->needsfill)
@@ -2277,7 +2278,7 @@ subset_rearrange_create(iosystem_desc_t *ios, int maplen, PIO_Offset *compmap,
                 PLOG((4, "nio %d thisgridsize[nio] %d thisgridmin[nio] %d thisgridmax[nio] %d",
                       nio, thisgridsize[nio], thisgridmin[nio], thisgridmax[nio]));
             }
-            for (int i = 0; i < iodesc->llen; i++)
+            for (int i = 0; i < rllen; i++)
             {
                 if (iomap[i] >= thisgridmin[nio] && iomap[i] <= thisgridmax[nio])
                 {
@@ -2400,7 +2401,7 @@ subset_rearrange_create(iosystem_desc_t *ios, int maplen, PIO_Offset *compmap,
     if (ios->ioproc)
     {
         iodesc->maxregions = 0;
-        if ((ret = get_regions(iodesc->ndims, gdimlen, iodesc->llen, iomap,
+        if ((ret = get_regions(iodesc->ndims, gdimlen, rllen, iomap,
                                &iodesc->maxregions, iodesc->firstregion)))
             return pio_err(ios, NULL, ret, __FILE__, __LINE__);
         maxregions = iodesc->maxregions;
