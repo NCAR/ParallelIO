@@ -945,6 +945,7 @@ malloc_iodesc(iosystem_desc_t *ios, int piotype, int ndims,
     (*iodesc)->maxregions = 1;
     (*iodesc)->ioid = -1;
     (*iodesc)->ndims = ndims;
+    (*iodesc)->readonly = 0;
 
     /* Allocate space for, and initialize, the first region. */
     if ((ret = alloc_region2(ios, ndims, &((*iodesc)->firstregion))))
@@ -1668,6 +1669,7 @@ pioc_read_nc_decomp_int(int iosysid, const char *filename, int *ndims, int **glo
     int ncid;
     int ret;
     int peh;
+
     /* Get the IO system info. */
     if (!(ios = pio_get_iosystem_from_id(iosysid)))
 	return pio_err(NULL, NULL, PIO_EBADID, __FILE__, __LINE__);
@@ -1677,7 +1679,8 @@ pioc_read_nc_decomp_int(int iosysid, const char *filename, int *ndims, int **glo
 	return pio_err(ios, NULL, PIO_EINVAL, __FILE__, __LINE__);
 
     PLOG((1, "pioc_read_nc_decomp_int iosysid = %d filename = %s", iosysid, filename));
-
+    
+    
     /* Open the netCDF decomp file. */
     if ((ret = PIOc_open(iosysid, filename, NC_WRITE, &ncid)))
 	return pio_err(ios, NULL, ret, __FILE__, __LINE__);
@@ -1749,14 +1752,24 @@ pioc_read_nc_decomp_int(int iosysid, const char *filename, int *ndims, int **glo
     }
     else
 	return pio_err(ios, NULL, ret, __FILE__, __LINE__);
-    PIOc_Set_File_Error_Handling(ncid, peh);
+
     /* Read source attribute. */
     char source_in[PIO_MAX_NAME + 1];
-    if ((ret = PIOc_get_att_text(ncid, NC_GLOBAL, DECOMP_SOURCE_ATT_NAME, source_in)))
+    ret = PIOc_get_att_text(ncid, NC_GLOBAL, DECOMP_SOURCE_ATT_NAME, source_in);
+    if (ret == PIO_NOERR)
+    {
+        if (source)
+            strncpy(source, source_in, PIO_MAX_NAME + 1);
+    }
+    else if (ret == PIO_ENOTATT)
+    {
+        if (source)
+            source[0] = '\0';
+    }
+    else
 	return pio_err(ios, NULL, ret, __FILE__, __LINE__);
-    if (source)
-	strncpy(source, source_in, PIO_MAX_NAME + 1);
 
+    PIOc_Set_File_Error_Handling(ncid, peh);
     /* Read dimension for the dimensions in the data. (Example: for 4D
      * data we will need to store 4 dimension IDs.) */
     int dim_dimid;

@@ -394,7 +394,7 @@ create_mpi_datatypes(MPI_Datatype mpitype, int msgcnt,
 
 #if PIO_ENABLE_LOGGING
 	    for (int j = 0; j < 8; j++)
-		PLOG((2, "displace[%d] = %d mfrom[%d] %d", j, displace[j], j, mfrom[j]));
+		PLOG((2, "displace[%d] = %d", j, displace[j]));
 #endif /* PIO_ENABLE_LOGGING */
 
 	    PLOG((2, "calling MPI_Type_create_indexed_block len = %d blocksize = %d "
