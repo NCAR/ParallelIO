@@ -3241,3 +3241,69 @@ determine_procs(int num_io_procs, int component_count, int *num_procs_per_comp,
     }
     return PIO_NOERR;
 }
+
+int offsetsort(const void *a,const void *b)
+{
+    return (*(PIO_Offset *)a - *(PIO_Offset *)b);
+}
+
+bool check_compmap(iosystem_desc_t *ios, io_desc_t *iodesc,const PIO_Offset *compmap)
+{
+    int ierr;
+    bool readonly = 0;
+
+    if(ios->compproc) 
+    {
+        int *gmaplen;
+        if(ios->compmaster)
+            gmaplen = malloc(ios->num_comptasks * sizeof(int));
+        else
+            gmaplen = NULL;
+        /* First gather the array lengths from all compute tasks */
+        if ((ierr = MPI_Gather(&(iodesc->maplen), 1, MPI_INT, gmaplen, 1, MPI_INT, 0, ios->comp_comm)))
+            return check_mpi(ios, NULL, ierr, __FILE__,__LINE__);
+
+        int *displs;
+        int gcompmaplen;
+        int *gcompmaps;
+        if(ios->compmaster)
+        {
+            displs = malloc(ios->num_comptasks * sizeof(int));
+            displs[0] = 0;
+            for(int i=1; i<ios->num_comptasks; i++)
+            {
+                displs[i] = displs[i-1] + gmaplen[i-1];
+            }
+            gcompmaplen = displs[ios->num_comptasks-1] + gmaplen[ios->num_comptasks-1];
+            gcompmaps = malloc(gcompmaplen * sizeof(PIO_Offset)); 
+            printf("gcompmaplen %d\n",gcompmaplen);
+            for(int i=0;i<ios->num_comptasks; i++)
+                printf("gmaplen=%d displs[%d]=%d\n",gmaplen[i], i,displs[i]);
+        }
+        
+        /* next gather the compmap arrays */
+        if ((ierr = MPI_Gatherv(compmap, iodesc->maplen, MPI_OFFSET, gcompmaps, gmaplen, displs, MPI_OFFSET, 0, ios->comp_comm)))
+            return check_mpi(ios, NULL, ierr, __FILE__,__LINE__);
+
+        if(ios->compmaster)
+        {
+            /* sort */
+            qsort(gcompmaps, gcompmaplen, sizeof(MPI_OFFSET), offsetsort);
+            /* look for duplicate values > 0 (0 dups are okay) */
+            for(int i=1; i < gcompmaplen; i++)
+            {
+                if(gcompmaps[i] > 0 && gcompmaps[i] == gcompmaps[i-1])
+                {
+                    readonly = 1;
+                    break;
+                }
+            }
+            free(gmaplen);
+            free(displs);
+            free(gcompmaps);
+        }
+        
+    }
+    MPI_Bcast(&readonly, 1, MPI_CHAR, ios->compmaster, ios->intercomm);
+    return readonly;
+}
