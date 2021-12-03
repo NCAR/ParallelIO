@@ -3242,10 +3242,34 @@ determine_procs(int num_io_procs, int component_count, int *num_procs_per_comp,
     return PIO_NOERR;
 }
 
+/**
+ * Used in check_compmap to sort the compmap in accending order.
+ * 
+ * @param a pointer to an offset
+ * @param b pointer to another offset
+ * @returns 0 if offsets are the same or if either pointer is NULL
+ * @author Jim Edwards
+ */
+
 int offsetsort(const void *a,const void *b)
 {
     return (*(PIO_Offset *)a - *(PIO_Offset *)b);
 }
+
+/**
+ * check_compmap gathers the entire compmap to comp task 0, sorts it into accending order
+ * then looks for repeated values > 0.  If any repeated values are found the iodesc is marked 
+ * read only.
+ *
+ * @param ios pointer to the iosystem_desc_t struct.
+ * @param iodesc a pointer to the io_desc_t struct.
+ * @param compmap a 1 based array of offsets into the array record on
+ * file. A 0 in this array indicates a value which should not be
+ * transfered.
+ * @returns True if a repeated value is found, False otherwise.
+ * @author Jim Edwards
+ */
+
 
 bool check_compmap(iosystem_desc_t *ios, io_desc_t *iodesc,const PIO_Offset *compmap)
 {
