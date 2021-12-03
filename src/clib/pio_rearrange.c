@@ -373,10 +373,8 @@ create_mpi_datatypes(MPI_Datatype mpitype, int msgcnt,
                     /* Subset rearranger. */
                     int k = 0;
                     for (int j = 0; j < numinds; j++)
-                    {
                         if (mfrom[j] == i)
                             displace[k++] = (int)(lindex[j]);
-                    }
                 }
 
             }
@@ -391,13 +389,10 @@ create_mpi_datatypes(MPI_Datatype mpitype, int msgcnt,
 
 #if PIO_ENABLE_LOGGING
             for (int j = 0; j < len; j++)
-            {
-                
-                PLOG((2, "displace[%d] = %d", j, displace[j]));
-            }
+                PLOG((3, "displace[%d] = %d", j, displace[j]));
 #endif /* PIO_ENABLE_LOGGING */
 
-            PLOG((2, "calling MPI_Type_create_indexed_block len = %d blocksize = %d "
+            PLOG((3, "calling MPI_Type_create_indexed_block len = %d blocksize = %d "
                   "mpitype = %d", len, blocksize, mpitype));
             /* Create an indexed datatype with constant-sized blocks. */
             mpierr = MPI_Type_create_indexed_block(len, blocksize, displace,
@@ -2098,8 +2093,9 @@ subset_rearrange_create(iosystem_desc_t *ios, int maplen, PIO_Offset *compmap,
      * compmap. */
     for (i = 0; i < iodesc->ndof; i++)
     {
-//      pioassert(compmap[i]>=-1 && compmap[i]<=totalgridsize, "Compmap value out of bounds",
-//          __FILE__,__LINE__);
+        // This is allowed in some cases
+        //      pioassert(compmap[i]>=-1 && compmap[i]<=totalgridsize, "Compmap value out of bounds",
+        //          __FILE__,__LINE__);
         if (compmap[i] > 0)
             (iodesc->scount[0])++;
     }
@@ -2263,7 +2259,7 @@ subset_rearrange_create(iosystem_desc_t *ios, int maplen, PIO_Offset *compmap,
     }
 
     /* Handle fill values if needed. */
-    PLOG((2, "ios->ioproc %d iodesc->needsfill %d iodesc->rllen %d", ios->ioproc, iodesc->needsfill, iodesc->rllen));
+    PLOG((3, "ios->ioproc %d iodesc->needsfill %d iodesc->rllen %d", ios->ioproc, iodesc->needsfill, iodesc->rllen));
     if (ios->ioproc && iodesc->needsfill)
     {
         /* we need the list of offsets which are not in the union of iomap */
@@ -2417,9 +2413,6 @@ subset_rearrange_create(iosystem_desc_t *ios, int maplen, PIO_Offset *compmap,
 
     if (ios->ioproc)
     {
-//        for(i=0; i < iodesc->llen; i++)
-//            printf("rindex[%d]=%d rfrom=%d\n",i,iodesc->rindex[i], iodesc->rfrom[i]);
-
         iodesc->maxregions = 0;
         if ((ret = get_regions(iodesc->ndims, gdimlen, iodesc->rllen, iomap,
                                &iodesc->maxregions, iodesc->firstregion)))
