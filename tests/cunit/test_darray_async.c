@@ -245,7 +245,7 @@ int run_darray_async_test(int iosysid, int my_rank, MPI_Comm test_comm, MPI_Comm
         PBAIL(ret);
 
     /* Write the decomp file (on appropriate tasks). */
-    if ((ret = PIOc_write_nc_decomp(iosysid, decomp_filename, 0, ioid, NULL, NULL, 0)))
+    if ((ret = PIOc_write_nc_decomp(iosysid, decomp_filename, 0, ioid, "test_darray_async", " short history", 0)))
         return ret;
 
     int fortran_order;

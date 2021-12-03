@@ -217,8 +217,8 @@ int test_read_darray(int iosys,const char decomp_file[], int rank)
     ierr = PIOc_closefile(ncid);
     if(ierr || debug) printf("%d %d\n",__LINE__,ierr);
 
-    for(int i=0; i < maplen[rank]; i++)
-        printf("%d: varr[%d] = %f\n",rank, i, varr[i]);
+//    for(int i=0; i < maplen[rank]; i++)
+//        printf("%d: varr[%d] = %f\n",rank, i, varr[i]);
 
 
     return ierr;
@@ -243,22 +243,22 @@ int main(int argc, char *argv[])
 
     mpi_argp_parse(rank, &argp, argc, argv, 0, 0, &arguments);
 
-    if(! arguments.wdecomp_file){
-        argp_usage(0);
-        MPI_Abort(MPI_COMM_WORLD, ierr);
-    }
     if(! arguments.rdecomp_file)
         arguments.rdecomp_file = arguments.wdecomp_file;
 
-    ierr = PIOc_Init_Intracomm(MPI_COMM_WORLD, 1, 1, 0, PIO_REARR_BOX, &iosys);
-    if(ierr || debug) printf("%d %d\n",__LINE__,ierr);
-    
-//    ierr = test_write_darray(iosys, arguments.wdecomp_file, rank);
-//    if(ierr || debug) printf("%d %d\n",__LINE__,ierr);
-
-    ierr = test_read_darray(iosys, arguments.rdecomp_file, rank);
+    ierr = PIOc_Init_Intracomm(MPI_COMM_WORLD, 1, 1, 0, PIO_REARR_SUBSET, &iosys);
     if(ierr || debug) printf("%d %d\n",__LINE__,ierr);
 
+    if(arguments.wdecomp_file)
+    {
+        ierr = test_write_darray(iosys, arguments.wdecomp_file, rank);
+        if(ierr || debug) printf("%d %d\n",__LINE__,ierr);
+    }
+    if(arguments.rdecomp_file)
+    {
+        ierr = test_read_darray(iosys, arguments.rdecomp_file, rank);
+        if(ierr || debug) printf("%d %d\n",__LINE__,ierr);
+    }
     MPI_Finalize();
 
 }

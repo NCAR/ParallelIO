@@ -110,7 +110,6 @@ expand_region(int dim, const int *gdimlen, int maplen, const PIO_Offset *map,
 	    if (test_idx >= maplen || map[test_idx] != map[j] + i * region_stride)
 	    {
 		expansion_done = 1;
-		printf("test_idx %d maplen %d map[test_idx] %d i %d stride %d\n",test_idx, maplen, map[test_idx],i, region_stride);
 		break;
 	    }
 	}
@@ -191,9 +190,6 @@ find_region(int ndims, const int *gdimlen, int maplen, const PIO_Offset *map,
     for (int dim = 0; dim < ndims; dim++)
 	*regionlen *= count[dim];
 
-    printf("regionlen = %d\n",*regionlen);
-//    int ierr;
-//    MPI_Abort(MPI_COMM_WORLD, ierr);
     return PIO_NOERR;
 }
 
@@ -463,11 +459,9 @@ define_iodesc_datatypes(iosystem_desc_t *ios, io_desc_t *iodesc)
 	  "iodesc->nrecvs %d", ios->ioproc, iodesc->rtype ? "not " : "",
 	  iodesc->nrecvs));
 
-    if(ios->comp_rank==1) PIOc_set_log_level(3);
     /* Set up the to transfer data to and from the IO tasks. */
     if (ios->ioproc)
     {
-        PIOc_set_log_level(3);
 	/* If the types for the IO tasks have not been created, then
 	 * create them. */
 	if (!iodesc->rtype)
@@ -525,7 +519,6 @@ define_iodesc_datatypes(iosystem_desc_t *ios, io_desc_t *iodesc)
 	    if ((ret = create_mpi_datatypes(iodesc->mpitype, ntypes, iodesc->sindex,
 					    iodesc->scount, NULL, iodesc->stype)))
 		return pio_err(ios, NULL, ret, __FILE__, __LINE__);
-            PIOc_set_log_level(0);
 
 	}
     }
@@ -1355,7 +1348,7 @@ box_rearrange_create(iosystem_desc_t *ios, int maplen, const PIO_Offset *compmap
 
     /* Set the iomaplen in the sc_info msg */
     sc_info_msg_send[0] = iodesc->llen;
-
+    iodesc->rllen = iodesc->llen;
     /* start/count array to be sent: 1st half for start, 2nd half for count */
     for (int j = 0; j < ndims; j++)
     {
@@ -2105,8 +2098,8 @@ subset_rearrange_create(iosystem_desc_t *ios, int maplen, PIO_Offset *compmap,
      * compmap. */
     for (i = 0; i < iodesc->ndof; i++)
     {
-	pioassert(compmap[i]>=-1 && compmap[i]<=totalgridsize, "Compmap value out of bounds",
-	    __FILE__,__LINE__);
+//	pioassert(compmap[i]>=-1 && compmap[i]<=totalgridsize, "Compmap value out of bounds",
+//	    __FILE__,__LINE__);
 	if (compmap[i] > 0)
 	    (iodesc->scount[0])++;
     }
@@ -2268,12 +2261,6 @@ subset_rearrange_create(iosystem_desc_t *ios, int maplen, PIO_Offset *compmap,
         iodesc->rllen = rllen+1;
     
     }
-
-    if(ios->ioproc)
-        for(int i=0;i<iodesc->llen;i++)
-            printf("srcindex[%d]=%d\n",i,srcindex[i]);
-
-
 
     /* Handle fill values if needed. */
     PLOG((2, "ios->ioproc %d iodesc->needsfill %d iodesc->rllen %d", ios->ioproc, iodesc->needsfill, iodesc->rllen));
