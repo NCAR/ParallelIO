@@ -636,7 +636,6 @@ write_darray_multi_par(file_desc_t *file, int nvars, int fndims, const int *vari
                                 if((mpierr = MPI_Type_free(&filetype)))
                                     return check_mpi(NULL, NULL, mpierr, __FILE__, __LINE__);
                             }
-fg
                             vard_llen = 0; /* reset request size to 0 */
                             numReqs = 0;
                         }
