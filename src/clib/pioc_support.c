@@ -1242,7 +1242,7 @@ PIOc_readmap_from_f90(const char *file, int *ndims, int **gdims, PIO_Offset *map
  * @param filename the filename to be used.
  * @param cmode for PIOc_create(). Will be bitwise or'd with NC_WRITE.
  * @param ioid the ID of the IO description.
- * @param title optial title attribute for the file. Must be less than
+ * @param title optional title attribute for the file. Must be less than
  * PIO_MAX_NAME + 1 if provided. Ignored if NULL.
  * @param history optial history attribute for the file. Must be less
  * than PIO_MAX_NAME + 1 if provided. Ignored if NULL.
