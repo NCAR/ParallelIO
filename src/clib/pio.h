@@ -331,6 +331,9 @@ typedef struct io_desc_t
      * nodes), each io task contains data from the compmap of one or
      * more compute tasks in the iomap array. */
     PIO_Offset llen;
+
+    /** Actual length of the iobuffer on this task for a case where values
+        are repeated in the compmap - used for darray read only. */
     PIO_Offset rllen;
 
     /** Maximum llen participating. */
