@@ -430,6 +430,7 @@ static int cache_or_print_stats(iosystem_desc_t *ios, int root_proc,
    */
   if((niosys == 1) && (cached_ios_gio_sstats.size() > 0)){
     const std::string model_name = "Scorpio";
+    const std::string spio_stats_version = "1.0.0";
     const std::size_t ONE_MB = 1024 * 1024;
     long long int pid = static_cast<long long int>(getpid());
     /* The summary file name is : "io_perf_summary_<PID>.[txt|json]" */
@@ -453,6 +454,7 @@ static int cache_or_print_stats(iosystem_desc_t *ios, int root_proc,
     /* Add Overall I/O performance statistics */
     std::vector<std::pair<std::string, std::string> > overall_comp_vals;
     PIO_Util::Serializer_Utils::serialize_pack("name", model_name, overall_comp_vals);
+    PIO_Util::Serializer_Utils::serialize_pack("spio_stats_version", spio_stats_version, overall_comp_vals);
     PIO_Util::Serializer_Utils::serialize_pack("avg_wtput(MB/s)",
       (cached_overall_gio_sstats.wtime_max > 0.0) ?
       (cached_overall_gio_sstats.wb_total / (ONE_MB * cached_overall_gio_sstats.wtime_max)) : 0.0,
