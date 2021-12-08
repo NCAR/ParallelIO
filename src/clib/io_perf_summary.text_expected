@@ -1,6 +1,7 @@
   "ScorpioIOSummaryStatistics":
     "OverallModelIOStatistics":
       "name" : "E3SM",
+      "spio_stats_version" : "1.0.0",
       "avg_wtput(MB/s)" : 2.5,
       "avg_rtput(MB/s)" : 1.5,
       "tot_wb(bytes)" : 1024,
