@@ -193,7 +193,7 @@ int PIOc_set_log_level(int level)
     /* Set the log level. */
     pio_log_level = level;
 
-#if NETCDF_C_LOGGING_ENABLED
+#ifdef NETCDF_C_LOGGING_ENABLED
     int ret;
     
     /* If netcdf logging is available turn it on starting at level = 4. */
@@ -3419,6 +3419,7 @@ int pioc_change_def(int ncid, int is_enddef)
                 LOG((3, "pioc_change_def calling nc_enddef file->fh = %d", file->fh));
                 if (file->iotype == PIO_IOTYPE_NETCDF)
                 {
+#ifdef NETCDF_C_NC__ENDDEF_EXISTS
                     /* Sets the pad at the end of the "header" section. */
                     const size_t h_minfree = 10 * 1024; /* The recommended size by Charlie Zender (NCO developer) is 10 KB */
 
@@ -3431,6 +3432,10 @@ int pioc_change_def(int ncid, int is_enddef)
 
                     /* nc__enddef has been available since NetCDF 3.x (NETCDF_C_MIN_VER_REQD is currently 4.3.3) */
                     ierr = nc__enddef(file->fh, h_minfree, v_align, v_minfree, r_align);
+#else
+                    /* CAUTION: nc__enddef may not be available on future NetCDF implementations, switch back to nc_enddef. */
+                    ierr = nc_enddef(file->fh);
+#endif
                 }
                 else
                 {

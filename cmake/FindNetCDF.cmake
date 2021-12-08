@@ -80,6 +80,9 @@ foreach (NCDFcomp IN LISTS NetCDF_FIND_VALID_COMPONENTS)
 		 set(CMAKE_REQUIRED_LIBRARIES ${NetCDF_C_LIBRARIES})
 		 CHECK_FUNCTION_EXISTS(nc_set_log_level NetCDF_C_LOGGING_ENABLED)
 
+                 # Check if nc__enddef is still available on future NetCDF implementations
+                 CHECK_FUNCTION_EXISTS(nc__enddef NetCDF_C_NC__ENDDEF_EXISTS)
+
             endif ()
 
             # Dependencies
