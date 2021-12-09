@@ -75,14 +75,6 @@ foreach (NCDFcomp IN LISTS NetCDF_FIND_VALID_COMPONENTS)
                              DEFINITIONS -I${NetCDF_C_INCLUDE_DIR}
                              COMMENT "whether NetCDF has parallel support")
 
-                 # Check if logging enabled
-		 set(CMAKE_REQUIRED_INCLUDES ${NetCDF_C_INCLUDE_DIR})
-		 set(CMAKE_REQUIRED_LIBRARIES ${NetCDF_C_LIBRARIES})
-		 CHECK_FUNCTION_EXISTS(nc_set_log_level NetCDF_C_LOGGING_ENABLED)
-
-                 # Check if nc__enddef is still available on future NetCDF implementations
-                 CHECK_FUNCTION_EXISTS(nc__enddef NetCDF_C_NC__ENDDEF_EXISTS)
-
             endif ()
 
             # Dependencies
@@ -141,6 +133,18 @@ foreach (NCDFcomp IN LISTS NetCDF_FIND_VALID_COMPONENTS)
                     list (APPEND NetCDF_Fortran_LIBRARIES ${NetCDF_C_LIBRARIES})
                 endif ()
 
+            endif ()
+
+            # Additional checks after all dependencies are appended
+            if (NCDFcomp STREQUAL C)
+                set(CMAKE_REQUIRED_INCLUDES ${NetCDF_C_INCLUDE_DIR})
+                set(CMAKE_REQUIRED_LIBRARIES ${NetCDF_C_LIBRARIES})
+
+                # Check if logging enabled
+                CHECK_FUNCTION_EXISTS(nc_set_log_level NetCDF_C_LOGGING_ENABLED)
+
+                # Check if nc__enddef is still available on future NetCDF implementations
+                CHECK_FUNCTION_EXISTS(nc__enddef NetCDF_C_NC__ENDDEF_EXISTS)
             endif ()
 
         endif ()
