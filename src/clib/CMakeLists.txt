@@ -75,6 +75,10 @@ if (WITH_NETCDF)
       target_compile_definitions (pioc
         PUBLIC LOGGING)
     endif()
+    if (${NetCDF_C_NC__ENDDEF_EXISTS})
+      target_compile_definitions (pioc
+        PUBLIC NETCDF_C_NC__ENDDEF_EXISTS)
+    endif()
   else ()
     message(STATUS "Could not find NetCDF C library, disabling support for NetCDF")
     set(PIO_USE_NETCDF 0)

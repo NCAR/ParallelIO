@@ -144,6 +144,10 @@ if (NetCDF_C_FOUND)
     target_compile_definitions (adios2pio-nm-lib
       PUBLIC LOGGING)
   endif()
+  if (${NetCDF_C_NC__ENDDEF_EXISTS})
+    target_compile_definitions (pioc
+      PUBLIC NETCDF_C_NC__ENDDEF_EXISTS)
+  endif()
 else ()
   target_compile_definitions (adios2pio-nm-lib
     PUBLIC _NONETCDF)

@@ -193,7 +193,7 @@ int PIOc_set_log_level(int level)
     /* Set the log level. */
     pio_log_level = level;
 
-#if NETCDF_C_LOGGING_ENABLED
+#ifdef NETCDF_C_LOGGING_ENABLED
     int ret;
     
     /* If netcdf logging is available turn it on starting at level = 4. */
@@ -3375,11 +3375,38 @@ int pioc_change_def(int ncid, int is_enddef)
     {
         LOG((3, "pioc_change_def calling netcdf function file->fh = %d file->do_io = %d iotype = %d",
              file->fh, file->do_io, file->iotype));
+
+        /* NetCDF and PnetCDF by default do not reserve any extra space in
+         * the NetCDF file headers (compactness etc). However this can be a
+         * problem (performance related) when renaming variables etc since
+         * this information is stored in the NetCDF header. Adding more
+         * information into the header requires the libraries to resize the
+         * file, extend the header space and copy the contents of the file
+         * (similar to realloc).
+         *
+         * The solution for the performance issue is to reserve some extra
+         * space in the header when creating NetCDF files. The current calls
+         * to nc_enddef()/ncmpi_enddef() need to be replaced with nc__enddef
+         * ()/ncmpi__enddef() (note the double underscore).
+         */
 #ifdef _PNETCDF
         if (file->iotype == PIO_IOTYPE_PNETCDF)
         {
             if (is_enddef)
-                ierr = ncmpi_enddef(file->fh);
+            {
+                /* Sets the pad at the end of the "header" section. */
+                const MPI_Offset h_minfree = 10 * 1024; /* The recommended size by Charlie Zender (NCO developer) is 10 KB */
+
+                /* Controls the alignment of the beginning of the data section for fixed-size/record variables. */
+                const MPI_Offset v_align = 4; /* For fixed-size variables, needs to be left as the default (4 bytes) */
+                const MPI_Offset r_align = 4; /* For record variables, needs to be left as the default (4 bytes) */
+
+                /* Sets the pad at the end of the data section for fixed-size variables. */
+                const MPI_Offset v_minfree = 0; /* This can be left as default (0) */
+
+                /* ncmpi__enddef has been available since PnetCDF 1.5.0 (PNETCDF_MIN_VER_REQD is currently 1.8.1) */
+                ierr = ncmpi__enddef(file->fh, h_minfree, v_align, v_minfree, r_align);
+            }
             else
                 ierr = ncmpi_redef(file->fh);
         }
@@ -3390,7 +3417,33 @@ int pioc_change_def(int ncid, int is_enddef)
             if (is_enddef)
             {
                 LOG((3, "pioc_change_def calling nc_enddef file->fh = %d", file->fh));
-                ierr = nc_enddef(file->fh);
+                if (file->iotype == PIO_IOTYPE_NETCDF)
+                {
+#ifdef NETCDF_C_NC__ENDDEF_EXISTS
+                    /* Sets the pad at the end of the "header" section. */
+                    const size_t h_minfree = 10 * 1024; /* The recommended size by Charlie Zender (NCO developer) is 10 KB */
+
+                    /* Controls the alignment of the beginning of the data section for fixed-size/record variables. */
+                    const size_t v_align = 4; /* For fixed-size variables, needs to be left as the default (4 bytes) */
+                    const size_t r_align = 4; /* For record variables, needs to be left as the default (4 bytes) */
+
+                    /* Sets the pad at the end of the data section for fixed-size variables. */
+                    const size_t v_minfree = 0; /* This can be left as default (0) */
+
+                    /* nc__enddef has been available since NetCDF 3.x (NETCDF_C_MIN_VER_REQD is currently 4.3.3) */
+                    ierr = nc__enddef(file->fh, h_minfree, v_align, v_minfree, r_align);
+#else
+                    /* CAUTION: nc__enddef may not be available on future NetCDF implementations, switch back to nc_enddef. */
+                    ierr = nc_enddef(file->fh);
+#endif
+                }
+                else
+                {
+                    /* We still call nc_enddef for NetCDF4 type. According to NCO user guide, nc__enddef will improve speed of
+                     * future metadata expansion with classic and 64bit NetCDF files, though not necessarily with NetCDF4 files.
+                     */
+                    ierr = nc_enddef(file->fh);
+                }
             }
             else
                 ierr = nc_redef(file->fh);
