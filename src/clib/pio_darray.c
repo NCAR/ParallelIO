@@ -842,7 +842,7 @@ static int PIOc_write_decomp_adios(file_desc_t *file, int ioid)
     int elem_size = file->pio_offset_size;
     adios2_type type = file->pio_offset_type;
 
-    int ierr = ADIOS2_BEGIN_STEP(file, NULL);
+    int ierr = begin_adios2_step(file, NULL);
     if (ierr != PIO_NOERR)
         return ierr;
 
@@ -978,7 +978,7 @@ static int PIOc_write_decomp_adios(file_desc_t *file, int ioid)
             {
                 return pio_err(NULL, file, PIO_EADIOS2ERR, __FILE__, __LINE__,
                                "Putting (ADIOS) variable (name=%s) failed (adios2_error=%s) for file (%s, ncid=%d)",
-                               name, adios2_error_to_string(adiosErr), pio_get_fname_from_file(file), file->pio_ncid);
+                               name, convert_adios2_error_to_string(adiosErr), pio_get_fname_from_file(file), file->pio_ncid);
             }
             (file->num_written_blocks)++;
         }
@@ -993,7 +993,7 @@ static int PIOc_write_decomp_adios(file_desc_t *file, int ioid)
         {
             return pio_err(NULL, file, PIO_EADIOS2ERR, __FILE__, __LINE__,
                            "Putting (ADIOS) variable (name=%s) failed (adios2_error=%s) for file (%s, ncid=%d)",
-                           name, adios2_error_to_string(adiosErr), pio_get_fname_from_file(file), file->pio_ncid);
+                           name, convert_adios2_error_to_string(adiosErr), pio_get_fname_from_file(file), file->pio_ncid);
         }
         num_decomp_block_writers = file->block_nprocs;
         (file->num_written_blocks)++;
@@ -1007,7 +1007,7 @@ static int PIOc_write_decomp_adios(file_desc_t *file, int ioid)
         {
             return pio_err(NULL, file, PIO_EADIOS2ERR, __FILE__, __LINE__,
                            "Putting (ADIOS) variable (name=%s) failed (adios2_error=%s) for file (%s, ncid=%d)",
-                           name, adios2_error_to_string(adiosErr), pio_get_fname_from_file(file), file->pio_ncid);
+                           name, convert_adios2_error_to_string(adiosErr), pio_get_fname_from_file(file), file->pio_ncid);
         }
         (file->num_written_blocks)++;
     }
@@ -1131,7 +1131,7 @@ static int define_adios_darray(file_desc_t *file, adios_var_desc_t *av, int inp_
 
     /* Different decompositions at different frames */
     char name_varid[PIO_MAX_NAME];
-    if (file->myrank == file->WRITE_DECOMP_ID)
+    if (file->myrank == file->write_decomp_id)
     {
         assert((strlen("/__pio__/track/decomp_id/") + strlen(av->name)) < PIO_MAX_NAME);
         snprintf(name_varid, PIO_MAX_NAME, "/__pio__/track/decomp_id/%s", av->name);
@@ -1154,7 +1154,7 @@ static int define_adios_darray(file_desc_t *file, adios_var_desc_t *av, int inp_
         }
     }
 
-    if (file->myrank == file->WRITE_FRAME_ID)
+    if (file->myrank == file->write_frame_id)
     {
         assert((strlen("/__pio__/track/frame_id/") + strlen(av->name)) < PIO_MAX_NAME);
         snprintf(name_varid, PIO_MAX_NAME, "/__pio__/track/frame_id/%s", av->name);
@@ -1177,7 +1177,7 @@ static int define_adios_darray(file_desc_t *file, adios_var_desc_t *av, int inp_
         }
     }
 
-    if (file->myrank == file->WRITE_FILLVAL_ID)
+    if (file->myrank == file->write_fillval_id)
     {
         assert((strlen("/__pio__/track/fillval_id/") + strlen(av->name)) < PIO_MAX_NAME);
         snprintf(name_varid, PIO_MAX_NAME, "/__pio__/track/fillval_id/%s", av->name);
@@ -1264,7 +1264,7 @@ static int define_adios_darray(file_desc_t *file, adios_var_desc_t *av, int inp_
     return ierr;
 }
 
-static int ADIOS2_check_need_to_flush(file_desc_t *file, adios_var_desc_t *av)
+static int check_adios2_need_to_flush(file_desc_t *file, adios_var_desc_t *av)
 {
     int ierr = PIO_NOERR;
     adios2_error adiosErr = adios2_error_none;
@@ -1281,14 +1281,14 @@ static int ADIOS2_check_need_to_flush(file_desc_t *file, adios_var_desc_t *av)
             {
                 return pio_err(NULL, file, PIO_EADIOS2ERR, __FILE__, __LINE__,
                                "Putting (ADIOS) variable (name=decomp_id/%s) failed (adios2_error=%s) for file (%s, ncid=%d)",
-                               av->name, adios2_error_to_string(adiosErr), pio_get_fname_from_file(file), file->pio_ncid);
+                               av->name, convert_adios2_error_to_string(adiosErr), pio_get_fname_from_file(file), file->pio_ncid);
             }
             (file->num_written_blocks)++;
             av->num_wb_cnt = 0;
         }
     }
 
-    if (file->myrank == file->WRITE_FILLVAL_ID)
+    if (file->myrank == file->write_fillval_id)
     {
         if (av->fillval_cnt >= av->max_buffer_cnt)
         {
@@ -1299,14 +1299,14 @@ static int ADIOS2_check_need_to_flush(file_desc_t *file, adios_var_desc_t *av)
             {
                 return pio_err(NULL, file, PIO_EADIOS2ERR, __FILE__, __LINE__,
                                "Putting (ADIOS) variable (name=fillval_id/%s) failed (adios2_error=%s) for file (%s, ncid=%d)",
-                               av->name, adios2_error_to_string(adiosErr), pio_get_fname_from_file(file), file->pio_ncid);
+                               av->name, convert_adios2_error_to_string(adiosErr), pio_get_fname_from_file(file), file->pio_ncid);
             }
             (file->num_written_blocks)++;
             av->fillval_cnt = 0;
         }
     }
 
-    if (file->myrank == file->WRITE_DECOMP_ID)
+    if (file->myrank == file->write_decomp_id)
     {
         if (av->decomp_cnt >= av->max_buffer_cnt)
         {
@@ -1317,14 +1317,14 @@ static int ADIOS2_check_need_to_flush(file_desc_t *file, adios_var_desc_t *av)
             {
                 return pio_err(NULL, file, PIO_EADIOS2ERR, __FILE__, __LINE__,
                                "Putting (ADIOS) variable (name=decomp_id/%s) failed (adios2_error=%s) for file (%s, ncid=%d)",
-                               av->name, adios2_error_to_string(adiosErr), pio_get_fname_from_file(file), file->pio_ncid);
+                               av->name, convert_adios2_error_to_string(adiosErr), pio_get_fname_from_file(file), file->pio_ncid);
             }
             (file->num_written_blocks)++;
             av->decomp_cnt = 0;
         }
     }
 
-    if (file->myrank == file->WRITE_FRAME_ID)
+    if (file->myrank == file->write_frame_id)
     {
         if (av->frame_cnt >= av->max_buffer_cnt)
         {
@@ -1335,7 +1335,7 @@ static int ADIOS2_check_need_to_flush(file_desc_t *file, adios_var_desc_t *av)
             {
                 return pio_err(NULL, file, PIO_EADIOS2ERR, __FILE__, __LINE__,
                                "Putting (ADIOS) variable (name=frame_id/%s) failed (adios2_error=%s) for file (%s, ncid=%d)",
-                               av->name, adios2_error_to_string(adiosErr), pio_get_fname_from_file(file), file->pio_ncid);
+                               av->name, convert_adios2_error_to_string(adiosErr), pio_get_fname_from_file(file), file->pio_ncid);
             }
             (file->num_written_blocks)++;
             av->frame_cnt = 0;
@@ -1504,7 +1504,7 @@ static int PIOc_write_darray_adios(file_desc_t *file, int varid, int ioid,
         }
     }
 
-    ierr = ADIOS2_BEGIN_STEP(file, NULL);
+    ierr = begin_adios2_step(file, NULL);
     if (ierr != PIO_NOERR)
         return ierr;
 
@@ -1638,14 +1638,14 @@ static int PIOc_write_darray_adios(file_desc_t *file, int varid, int ioid,
             {
                 return pio_err(NULL, file, PIO_EADIOS2ERR, __FILE__, __LINE__,
                                "Putting (ADIOS) variable (name=decomp_id/%s) failed (adios2_error=%s) for file (%s, ncid=%d)",
-                               av->name, adios2_error_to_string(adiosErr), pio_get_fname_from_file(file), file->pio_ncid);
+                               av->name, convert_adios2_error_to_string(adiosErr), pio_get_fname_from_file(file), file->pio_ncid);
             }
             adiosErr = adios2_put(file->engineH, av->adios_varid, file->block_array, adios2_mode_sync);
             if (adiosErr != adios2_error_none)
             {
                 return pio_err(NULL, file, PIO_EADIOS2ERR, __FILE__, __LINE__,
                                "Putting (ADIOS) variable (name=decomp_id/%s) failed (adios2_error=%s) for file (%s, ncid=%d)",
-                               av->name, adios2_error_to_string(adiosErr), pio_get_fname_from_file(file), file->pio_ncid);
+                               av->name, convert_adios2_error_to_string(adiosErr), pio_get_fname_from_file(file), file->pio_ncid);
             }
             (file->num_written_blocks)++;
         }
@@ -1659,14 +1659,14 @@ static int PIOc_write_darray_adios(file_desc_t *file, int varid, int ioid,
         {
             return pio_err(NULL, file, PIO_EADIOS2ERR, __FILE__, __LINE__,
                            "Putting (ADIOS) variable (name=decomp_id/%s) failed (adios2_error=%s) for file (%s, ncid=%d)",
-                           av->name, adios2_error_to_string(adiosErr), pio_get_fname_from_file(file), file->pio_ncid);
+                           av->name, convert_adios2_error_to_string(adiosErr), pio_get_fname_from_file(file), file->pio_ncid);
         }
         adiosErr = adios2_put(file->engineH, av->adios_varid, databuf, adios2_mode_sync);
         if (adiosErr != adios2_error_none)
         {
             return pio_err(NULL, file, PIO_EADIOS2ERR, __FILE__, __LINE__,
                            "Putting (ADIOS) variable (name=decomp_id/%s) failed (adios2_error=%s) for file (%s, ncid=%d)",
-                           av->name, adios2_error_to_string(adiosErr), pio_get_fname_from_file(file), file->pio_ncid);
+                           av->name, convert_adios2_error_to_string(adiosErr), pio_get_fname_from_file(file), file->pio_ncid);
         }
         (file->num_written_blocks)++;
         num_block_writers = file->block_nprocs;
@@ -1685,7 +1685,7 @@ static int PIOc_write_darray_adios(file_desc_t *file, int varid, int ioid,
     {
         ioid = -ioid;
     }
-    if (file->myrank == file->WRITE_FILLVAL_ID)
+    if (file->myrank == file->write_fillval_id)
     {
         if (fillbuf)
         {
@@ -1694,19 +1694,19 @@ static int PIOc_write_darray_adios(file_desc_t *file, int varid, int ioid,
         }
     }
 
-    if (file->myrank == file->WRITE_DECOMP_ID)
+    if (file->myrank == file->write_decomp_id)
     {
         av->decomp_buffer[av->decomp_cnt] = ioid;
         (av->decomp_cnt)++;
     }
 
-    if (file->myrank == file->WRITE_FRAME_ID)
+    if (file->myrank == file->write_frame_id)
     {
         av->frame_buffer[av->frame_cnt] = file->varlist[varid].record;
         (av->frame_cnt)++;
     }
 
-    ierr = ADIOS2_check_need_to_flush(file, av);
+    ierr = check_adios2_need_to_flush(file, av);
     if (ierr != PIO_NOERR)
     {
         return pio_err(NULL, file, PIO_EADIOS2ERR, __FILE__, __LINE__,

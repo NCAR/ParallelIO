@@ -2689,7 +2689,7 @@ int PIOc_def_dim(int ncid, const char *name, PIO_Offset len, int *idp)
         LOG((2, "ADIOS define dimension %s with size %llu, id = %d",
                 name, (unsigned long long)len, file->num_dim_vars));
 
-        ierr = ADIOS2_BEGIN_STEP(file, ios);
+        ierr = begin_adios2_step(file, ios);
         if (ierr != PIO_NOERR)
             return ierr;
 
@@ -2924,7 +2924,7 @@ int PIOc_def_var(int ncid, const char *name, nc_type xtype, int ndims,
     {
         LOG((2, "ADIOS pre-define variable %s (%d dimensions, type %d)", name, ndims, xtype));
 
-        ierr = ADIOS2_BEGIN_STEP(file, ios);
+        ierr = begin_adios2_step(file, ios);
         if (ierr != PIO_NOERR)
             return ierr;
 

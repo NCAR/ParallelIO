@@ -255,7 +255,7 @@ int PIOc_setframe(int ncid, int varid, int frame)
         }
         else if (file->current_frame != frame)
         {
-            ADIOS2_END_STEP(file, ios);
+            end_adios2_step(file, ios);
             file->current_frame = frame;
         }
     }
@@ -1471,7 +1471,7 @@ int PIOc_finalize(int iosysid)
         if (adiosErr != adios2_error_none)
         {
             GPTLstop("PIO:PIOc_finalize");
-            return pio_err(ios, NULL, PIO_EADIOS2ERR, __FILE__, __LINE__, "Finalizing ADIOS failed (adios2_error=%s) on iosystem (%d)", adios2_error_to_string(adiosErr), iosysid);
+            return pio_err(ios, NULL, PIO_EADIOS2ERR, __FILE__, __LINE__, "Finalizing ADIOS failed (adios2_error=%s) on iosystem (%d)", convert_adios2_error_to_string(adiosErr), iosysid);
         }
 
         ios->adiosH = NULL;

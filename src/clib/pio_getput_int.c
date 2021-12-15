@@ -200,7 +200,7 @@ int PIOc_put_att_tc(int ncid, int varid, const char *name, nc_type atttype,
     {
         LOG((2, "ADIOS define attribute %s, varid %d, type %d", name, varid, atttype));
 
-        ierr = ADIOS2_BEGIN_STEP(file, ios);
+        ierr = begin_adios2_step(file, ios);
         if (ierr != PIO_NOERR)
             return ierr;
 
@@ -1543,7 +1543,7 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                            pio_get_fname_from_file(file), ncid, varid, file->num_vars);
         }
 
-        ierr = ADIOS2_BEGIN_STEP(file, ios);
+        ierr = begin_adios2_step(file, ios);
         if (ierr != PIO_NOERR)
             return ierr;
 
@@ -1645,7 +1645,7 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                     GPTLstop("PIO:write_total_adios");
                     return pio_err(ios, file, PIO_EADIOS2ERR, __FILE__, __LINE__,
                                    "Putting (ADIOS) variable (name=%s) failed (adios2_error=%s) for file (%s, ncid=%d)",
-                                   av->name, adios2_error_to_string(adiosErr), pio_get_fname_from_file(file), file->pio_ncid);
+                                   av->name, convert_adios2_error_to_string(adiosErr), pio_get_fname_from_file(file), file->pio_ncid);
                 }
                 (file->num_written_blocks)++;
             }
@@ -1771,7 +1771,7 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                         GPTLstop("PIO:write_total_adios");
                         return pio_err(ios, file, PIO_EADIOS2ERR, __FILE__, __LINE__,
                                        "Setting (ADIOS) selection to variable (name=%s) failed (adios2_error=%s) for file (%s, ncid=%d)",
-                                       av->name, adios2_error_to_string(adiosErr), pio_get_fname_from_file(file), file->pio_ncid);
+                                       av->name, convert_adios2_error_to_string(adiosErr), pio_get_fname_from_file(file), file->pio_ncid);
                     }
                 }
 
@@ -1811,7 +1811,7 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                     GPTLstop("PIO:write_total_adios");
                     return pio_err(ios, file, PIO_EADIOS2ERR, __FILE__, __LINE__,
                                    "Putting (ADIOS) variable (name=%s) failed (adios2_error=%s) for file (%s, ncid=%d)",
-                                   av->name, adios2_error_to_string(adiosErr), pio_get_fname_from_file(file), file->pio_ncid);
+                                   av->name, convert_adios2_error_to_string(adiosErr), pio_get_fname_from_file(file), file->pio_ncid);
                 }
 
                 char* dimnames[PIO_MAX_DIMS];

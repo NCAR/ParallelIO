@@ -906,9 +906,9 @@ typedef struct file_desc_t
      */
     unsigned int num_written_blocks;
 
-    int WRITE_DECOMP_ID;
-    int WRITE_FRAME_ID;
-    int WRITE_FILLVAL_ID;
+    int write_decomp_id;
+    int write_frame_id;
+    int write_fillval_id;
 
     /** Handler for ADIOS group (of variables) */
     adios2_io *ioH;
@@ -1531,13 +1531,10 @@ extern "C" {
 #ifdef _ADIOS2
     adios2_type PIOc_get_adios_type(nc_type xtype);
     int get_adios2_type_size(adios2_type type, const void *var);
-    int ADIOS2_flush_tracking_data(file_desc_t *file);
-    int ADIOS2_check_block_limit(iosystem_desc_t *ios, file_desc_t *file);
-    const char *adios2_error_to_string(adios2_error error);
-    adios2_adios *get_adios2_adios();
+    const char *convert_adios2_error_to_string(adios2_error error);
     unsigned long get_adios2_io_cnt();
-    int ADIOS2_BEGIN_STEP(file_desc_t *file, iosystem_desc_t *ios);
-    int ADIOS2_END_STEP(file_desc_t *file, iosystem_desc_t *ios);
+    int begin_adios2_step(file_desc_t *file, iosystem_desc_t *ios);
+    int end_adios2_step(file_desc_t *file, iosystem_desc_t *ios);
 #ifndef strdup
     char *strdup(const char *str);
 #endif

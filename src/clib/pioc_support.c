@@ -49,7 +49,7 @@ extern bool fortran_order;
 /**
  * Utility function to remove a directory and all its contents.
  */
-int remove_directory(const char *path)
+static int remove_directory(const char *path)
 {
     DIR *d = opendir(path);
     size_t path_len = strlen(path);
@@ -103,45 +103,65 @@ int remove_directory(const char *path)
     return r;
 }
 
-int ADIOS2_BEGIN_STEP(file_desc_t *file, iosystem_desc_t *ios)
+static int flush_adios2_tracking_data(file_desc_t *file)
 {
-    if (0 == file->begin_step_called)
+    adios2_error adiosErr = adios2_error_none;
+    for (int i = 0; i < file->num_vars; i++)
     {
-        adios2_step_status step_status;
-        adios2_error adiosStepErr = adios2_begin_step(file->engineH, adios2_step_mode_append, 100.0, &step_status);
-        if (adiosStepErr != adios2_error_none)
+        adios_var_desc_t *av = &(file->adios_vars[i]);
+        if (av->decomp_cnt > 0)
         {
-            return pio_err(ios, NULL, PIO_EADIOS2ERR, __FILE__, __LINE__,
-                           "adios2_begin_step failed (adios2_error=%s) for file (%s)",
-                           adios2_error_to_string(adiosStepErr), pio_get_fname_from_file(file));
+            if (file->myrank == file->write_decomp_id)
+            {
+                size_t count_val = (size_t)av->decomp_cnt;
+                adiosErr = adios2_set_selection(av->decomp_varid, 1, NULL, &count_val);
+                adiosErr = adios2_put(file->engineH, av->decomp_varid, av->decomp_buffer, adios2_mode_sync);
+                av->decomp_cnt = 0;
+                file->num_written_blocks += 1;
+            }
         }
-        file->begin_step_called = 1;
+
+        if (av->frame_cnt > 0)
+        {
+            if (file->myrank == file->write_frame_id)
+            {
+                size_t count_val = (size_t)av->frame_cnt;
+                adiosErr = adios2_set_selection(av->frame_varid, 1, NULL, &count_val);
+                adiosErr = adios2_put(file->engineH, av->frame_varid, av->frame_buffer, adios2_mode_sync);
+                av->frame_cnt = 0;
+                file->num_written_blocks += 1;
+            }
+        }
+
+        if (av->fillval_cnt > 0)
+        {
+            if (file->myrank == file->write_fillval_id)
+            {
+                size_t count_val = (size_t)av->fillval_cnt;
+                adiosErr = adios2_set_selection(av->fillval_varid, 1, NULL, &count_val);
+                adiosErr = adios2_put(file->engineH, av->fillval_varid, av->fillval_buffer, adios2_mode_sync);
+                av->fillval_cnt = 0;
+                file->num_written_blocks += 1;
+            }
+        }
+
+        if (av->num_wb_cnt > 0)
+        {
+            if (file->block_myrank == 0)
+            {
+                size_t count_val = (size_t)av->num_wb_cnt;
+                adiosErr = adios2_set_selection(av->num_block_writers_varid, 1, NULL, &count_val);
+                adiosErr = adios2_put(file->engineH, av->num_block_writers_varid, av->num_wb_buffer, adios2_mode_sync);
+                av->num_wb_cnt = 0;
+                file->num_written_blocks += 1;
+            }
+        }
     }
 
-    return PIO_NOERR;
+    return 0;
 }
 
-int ADIOS2_END_STEP(file_desc_t *file, iosystem_desc_t *ios)
-{
-    ADIOS2_flush_tracking_data(file);
-    if (1 == file->begin_step_called)
-    {
-        adios2_error adiosStepErr = adios2_end_step(file->engineH);
-        if (adiosStepErr != adios2_error_none)
-        {
-            return pio_err(ios, NULL, PIO_EADIOS2ERR, __FILE__, __LINE__,
-                           "adios2_end_step failed (adios2_error=%s) for file (%s)",
-                           adios2_error_to_string(adiosStepErr), pio_get_fname_from_file(file));
-        }
-        file->begin_step_called = 0;
-        file->num_step_calls = 0;
-        file->num_written_blocks = 0;
-    }
-
-    return PIO_NOERR;
-}
-
-int ADIOS2_initialize_for_block_merging(iosystem_desc_t *ios, file_desc_t *file)
+static int initialize_adios2_for_block_merging(iosystem_desc_t *ios, file_desc_t *file)
 {
     /**** Group processes for block merging ****/
     MPI_Comm nodeComm;
@@ -201,7 +221,7 @@ int ADIOS2_initialize_for_block_merging(iosystem_desc_t *ios, file_desc_t *file)
         {
             return pio_err(ios, NULL, PIO_EADIOS2ERR, __FILE__, __LINE__,
                         "Setting (ADIOS) parameter (InitialBufferSize) failed (adios2_error=%s) for file (%s)",
-                        adios2_error_to_string(adiosErr), pio_get_fname_from_file(file));
+                        convert_adios2_error_to_string(adiosErr), pio_get_fname_from_file(file));
         }
 #endif
 
@@ -222,7 +242,7 @@ int ADIOS2_initialize_for_block_merging(iosystem_desc_t *ios, file_desc_t *file)
     return PIO_NOERR;
 }
 
-int ADIOS2_initialize_variables(iosystem_desc_t *ios, file_desc_t *file)
+static int initialize_adios2_variables(iosystem_desc_t *ios, file_desc_t *file)
 {
     /* ADIOS MPI Aggregator */
     snprintf(file->params, PIO_MAX_NAME, "%d", ios->num_iotasks);
@@ -231,7 +251,7 @@ int ADIOS2_initialize_variables(iosystem_desc_t *ios, file_desc_t *file)
     {
         return pio_err(ios, NULL, PIO_EADIOS2ERR, __FILE__, __LINE__,
                 "Setting (ADIOS) parameter (substreams=%s) failed (adios2_error=%s) for file (%s)",
-                file->params, adios2_error_to_string(adiosErr), pio_get_fname_from_file(file));
+                file->params, convert_adios2_error_to_string(adiosErr), pio_get_fname_from_file(file));
     }
 
     adiosErr = adios2_set_parameter(file->ioH, "CollectiveMetadata", "ON"); /* ON for BP4 */
@@ -239,7 +259,7 @@ int ADIOS2_initialize_variables(iosystem_desc_t *ios, file_desc_t *file)
     {
         return pio_err(ios, NULL, PIO_EADIOS2ERR, __FILE__, __LINE__,
                 "Setting (ADIOS) parameter (CollectiveMetadata=ON) failed (adios2_error=%s) for file (%s)",
-                adios2_error_to_string(adiosErr), pio_get_fname_from_file(file));
+                convert_adios2_error_to_string(adiosErr), pio_get_fname_from_file(file));
     }
 
     adiosErr = adios2_set_parameter(file->ioH, "StatsLevel", "0");
@@ -247,7 +267,7 @@ int ADIOS2_initialize_variables(iosystem_desc_t *ios, file_desc_t *file)
     {
         return pio_err(ios, NULL, PIO_EADIOS2ERR, __FILE__, __LINE__,
                 "Setting (ADIOS) parameter (StatsLevel=0) failed (adios2_error=%s) for file (%s)",
-                adios2_error_to_string(adiosErr), pio_get_fname_from_file(file));
+                convert_adios2_error_to_string(adiosErr), pio_get_fname_from_file(file));
     }
 
     /* Call adios end step in PIOc_setframe(), if num_step_calls>max_step_calls */
@@ -297,13 +317,133 @@ int ADIOS2_initialize_variables(iosystem_desc_t *ios, file_desc_t *file)
     file->num_all_procs = ios->num_uniontasks;
 
     /* Writers for specific variables in pio_write_darray */
-    file->WRITE_DECOMP_ID = file->num_all_procs - 1;
-    file->WRITE_FRAME_ID = (file->WRITE_DECOMP_ID * 2) / 3;
-    file->WRITE_FILLVAL_ID = file->WRITE_DECOMP_ID / 3;
+    file->write_decomp_id = file->num_all_procs - 1;
+    file->write_frame_id = (file->write_decomp_id * 2) / 3;
+    file->write_fillval_id = file->write_decomp_id / 3;
 
     return PIO_NOERR;
 }
+
+adios2_type PIOc_get_adios_type(nc_type xtype)
+{
+    adios2_type t;
+    switch (xtype)
+    {
+    case NC_BYTE:
+        t = adios2_type_int8_t;
+        break;
+    case NC_CHAR:
+        t = adios2_type_int8_t;
+        break;
+    case NC_SHORT:
+        t = adios2_type_int16_t;
+        break;
+    case NC_INT:
+        t = adios2_type_int32_t;
+        break;
+    case NC_FLOAT:
+        t = adios2_type_float;
+        break;
+    case NC_DOUBLE:
+        t = adios2_type_double;
+        break;
+    case NC_UBYTE:
+        t = adios2_type_uint8_t;
+        break;
+    case NC_USHORT:
+        t = adios2_type_uint16_t;
+        break;
+    case NC_UINT:
+        t = adios2_type_uint32_t;
+        break;
+    case NC_INT64:
+        t = adios2_type_int64_t;
+        break;
+    case NC_UINT64:
+        t = adios2_type_uint64_t;
+        break;
+    case NC_STRING:
+        t = adios2_type_string;
+        break;
+    default:
+        t = adios2_type_int8_t;
+        break;
+    }
+
+    return t;
+}
+
+const char *convert_adios2_error_to_string(adios2_error error)
+{
+    switch (error)
+    {
+        case adios2_error_none:
+            return "adios2_error_none (success)";
+        case adios2_error_invalid_argument:
+            return "adios2_error_invalid_argument (user input error)";
+        case adios2_error_system_error:
+            return "adios2_error_system_error (low-level system error, e.g. system IO error)";
+        case adios2_error_runtime_error:
+            return "adios2_error_runtime_error (runtime errors other than system errors, e.g. memory overflow)";
+        case adios2_error_exception:
+            return "adios2_error_exception (any other error exception)";
+        default:
+            return "UNKNOWN adios2_error";
+    }
+}
+
+int begin_adios2_step(file_desc_t *file, iosystem_desc_t *ios)
+{
+    if (0 == file->begin_step_called)
+    {
+        adios2_step_status step_status;
+        adios2_error adiosStepErr = adios2_begin_step(file->engineH, adios2_step_mode_append, 100.0, &step_status);
+        if (adiosStepErr != adios2_error_none)
+        {
+            return pio_err(ios, NULL, PIO_EADIOS2ERR, __FILE__, __LINE__,
+                           "adios2_begin_step failed (adios2_error=%s) for file (%s)",
+                           convert_adios2_error_to_string(adiosStepErr), pio_get_fname_from_file(file));
+        }
+        file->begin_step_called = 1;
+    }
+
+    return PIO_NOERR;
+}
+
+int end_adios2_step(file_desc_t *file, iosystem_desc_t *ios)
+{
+    flush_adios2_tracking_data(file);
+    if (1 == file->begin_step_called)
+    {
+        adios2_error adiosStepErr = adios2_end_step(file->engineH);
+        if (adiosStepErr != adios2_error_none)
+        {
+            return pio_err(ios, NULL, PIO_EADIOS2ERR, __FILE__, __LINE__,
+                           "adios2_end_step failed (adios2_error=%s) for file (%s)",
+                           convert_adios2_error_to_string(adiosStepErr), pio_get_fname_from_file(file));
+        }
+        file->begin_step_called = 0;
+        file->num_step_calls = 0;
+        file->num_written_blocks = 0;
+    }
+
+    return PIO_NOERR;
+}
+
+#ifndef strdup
+char *strdup(const char *str)
+{
+    int n = strlen(str) + 1;
+    char *dup = (char*)malloc(n);
+    if (dup)
+    {
+        strcpy(dup, str);
+    }
+
+    return dup;
+}
 #endif
+#endif /* _ADIOS2 */
 
 /**
  * Return a string description of an error code.
@@ -2615,11 +2755,11 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
             spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return pio_err(ios, NULL, PIO_EADIOS2ERR, __FILE__, __LINE__,
                            "Setting (ADIOS) engine (type=BP4) failed (adios2_error=%s) for file (%s)",
-                           adios2_error_to_string(adiosErr), pio_get_fname_from_file(file));
+                           convert_adios2_error_to_string(adiosErr), pio_get_fname_from_file(file));
         }
 
         /* Initialize adios I/O related parameters */
-        ierr = ADIOS2_initialize_variables(ios, file);
+        ierr = initialize_adios2_variables(ios, file);
         if (ierr != PIO_NOERR)
         {
             spio_ltimer_stop(file->io_fstats->wr_timer_name);
@@ -2630,7 +2770,7 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
         }
 
         /* Initialize for block merging in pio_write_darray */
-        ierr = ADIOS2_initialize_for_block_merging(ios, file);
+        ierr = initialize_adios2_for_block_merging(ios, file);
         if (ierr != PIO_NOERR)
         {
             spio_ltimer_stop(file->io_fstats->wr_timer_name);
@@ -2650,7 +2790,7 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
                            pio_get_fname_from_file(file));
         }
 
-        ierr = ADIOS2_BEGIN_STEP(file, ios);
+        ierr = begin_adios2_step(file, ios);
         if (ierr != PIO_NOERR)
             return ierr;
 
@@ -2680,7 +2820,7 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
                 spio_ltimer_stop(file->io_fstats->tot_timer_name);
                 return pio_err(ios, NULL, PIO_EADIOS2ERR, __FILE__, __LINE__,
                                "Putting (ADIOS) variable (name=/__pio__/info/nproc) failed (adios2_error=%s) for file (%s)",
-                               adios2_error_to_string(adiosErr), pio_get_fname_from_file(file));
+                               convert_adios2_error_to_string(adiosErr), pio_get_fname_from_file(file));
             }
             (file->num_written_blocks)++;
         }
@@ -2713,7 +2853,7 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
                 spio_ltimer_stop(file->io_fstats->tot_timer_name);
                 return pio_err(ios, NULL, PIO_EADIOS2ERR, __FILE__, __LINE__,
                                "Putting (ADIOS) variable (name=/__pio__/info/block_nprocs) failed (adios2_error=%s) for file (%s)",
-                               adios2_error_to_string(adiosErr), pio_get_fname_from_file(file));
+                               convert_adios2_error_to_string(adiosErr), pio_get_fname_from_file(file));
             }
 
             /* Write the list of processes in each block */
@@ -2741,7 +2881,7 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
                 spio_ltimer_stop(file->io_fstats->tot_timer_name);
                 return pio_err(ios, NULL, PIO_EADIOS2ERR, __FILE__, __LINE__,
                                "Putting (ADIOS) variable (name=/__pio__/info/block_list) failed (adios2_error=%s) for file (%s)",
-                               adios2_error_to_string(adiosErr), pio_get_fname_from_file(file));
+                               convert_adios2_error_to_string(adiosErr), pio_get_fname_from_file(file));
             }
             file->num_written_blocks += 2;
         }
@@ -4278,163 +4418,3 @@ int __wrap_ADIOI_Type_create_hindexed_x(int count,
     return ret;
 }
 #endif
-
-#ifdef _ADIOS2
-adios2_type PIOc_get_adios_type(nc_type xtype)
-{
-    adios2_type t;
-    switch (xtype)
-    {
-    case NC_BYTE:
-        t = adios2_type_int8_t;
-        break;
-    case NC_CHAR:
-        t = adios2_type_int8_t;
-        break;
-    case NC_SHORT:
-        t = adios2_type_int16_t;
-        break;
-    case NC_INT:
-        t = adios2_type_int32_t;
-        break;
-    case NC_FLOAT:
-        t = adios2_type_float;
-        break;
-    case NC_DOUBLE:
-        t = adios2_type_double;
-        break;
-    case NC_UBYTE:
-        t = adios2_type_uint8_t;
-        break;
-    case NC_USHORT:
-        t = adios2_type_uint16_t;
-        break;
-    case NC_UINT:
-        t = adios2_type_uint32_t;
-        break;
-    case NC_INT64:
-        t = adios2_type_int64_t;
-        break;
-    case NC_UINT64:
-        t = adios2_type_uint64_t;
-        break;
-    case NC_STRING:
-        t = adios2_type_string;
-        break;
-    default:
-        t = adios2_type_int8_t;
-        break;
-    }
-
-    return t;
-}
-
-#ifndef strdup
-char *strdup(const char *str)
-{
-    int n = strlen(str) + 1;
-    char *dup = (char*)malloc(n);
-    if (dup)
-    {
-        strcpy(dup, str);
-    }
-
-    return dup;
-}
-#endif
-
-const char *adios2_error_to_string(adios2_error error)
-{
-    switch (error)
-    {
-        case adios2_error_none:
-            return "adios2_error_none (success)";
-        case adios2_error_invalid_argument:
-            return "adios2_error_invalid_argument (user input error)";
-        case adios2_error_system_error:
-            return "adios2_error_system_error (low-level system error, e.g. system IO error)";
-        case adios2_error_runtime_error:
-            return "adios2_error_runtime_error (runtime errors other than system errors, e.g. memory overflow)";
-        case adios2_error_exception:
-            return "adios2_error_exception (any other error exception)";
-        default:
-            return "UNKNOWN adios2_error";
-    }
-}
-
-int ADIOS2_flush_tracking_data(file_desc_t *file)
-{
-    adios2_error adiosErr = adios2_error_none;
-    for (int i = 0; i < file->num_vars; i++)
-    {
-        adios_var_desc_t *av = &(file->adios_vars[i]);
-        if (av->decomp_cnt > 0)
-        {
-            if (file->myrank == file->WRITE_DECOMP_ID)
-            {
-                size_t count_val = (size_t)av->decomp_cnt;
-                adiosErr = adios2_set_selection(av->decomp_varid, 1, NULL, &count_val);
-                adiosErr = adios2_put(file->engineH, av->decomp_varid, av->decomp_buffer, adios2_mode_sync);
-                av->decomp_cnt = 0;
-                file->num_written_blocks += 1;
-            }
-        }
-
-        if (av->frame_cnt > 0)
-        {
-            if (file->myrank == file->WRITE_FRAME_ID)
-            {
-                size_t count_val = (size_t)av->frame_cnt;
-                adiosErr = adios2_set_selection(av->frame_varid, 1, NULL, &count_val);
-                adiosErr = adios2_put(file->engineH, av->frame_varid, av->frame_buffer, adios2_mode_sync);
-                av->frame_cnt = 0;
-                file->num_written_blocks += 1;
-            }
-        }
-
-        if (av->fillval_cnt > 0)
-        {
-            if (file->myrank == file->WRITE_FILLVAL_ID)
-            {
-                size_t count_val = (size_t)av->fillval_cnt;
-                adiosErr = adios2_set_selection(av->fillval_varid, 1, NULL, &count_val);
-                adiosErr = adios2_put(file->engineH, av->fillval_varid, av->fillval_buffer, adios2_mode_sync);
-                av->fillval_cnt = 0;
-                file->num_written_blocks += 1;
-            }
-        }
-
-        if (av->num_wb_cnt > 0)
-        {
-            if (file->block_myrank == 0)
-            {
-                size_t count_val = (size_t)av->num_wb_cnt;
-                adiosErr = adios2_set_selection(av->num_block_writers_varid, 1, NULL, &count_val);
-                adiosErr = adios2_put(file->engineH, av->num_block_writers_varid, av->num_wb_buffer, adios2_mode_sync);
-                av->num_wb_cnt = 0;
-                file->num_written_blocks += 1;
-            }
-        }
-    }
-
-    return 0;
-}
-
-int ADIOS2_check_block_limit(iosystem_desc_t *ios, file_desc_t *file)
-{
-    int total_num_written_blocks;
-    MPI_Allreduce(&(file->num_written_blocks), &total_num_written_blocks, 1, MPI_INT, MPI_SUM, file->all_comm);
-    if (((unsigned long)total_num_written_blocks) * BLOCK_METADATA_SIZE >= BLOCK_COUNT_THRESHOLD)
-    {
-        int ierr = ADIOS2_END_STEP(file, ios);
-        if (ierr != PIO_NOERR)
-            return ierr;
-
-        file->num_step_calls = 0;
-        file->num_written_blocks = 0;
-    }
-
-    return 0;
-}
-
-#endif /* _ADIOS2 */

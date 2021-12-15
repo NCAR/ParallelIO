@@ -284,7 +284,7 @@ static int sync_file(int ncid)
 #ifdef _ADIOS2
     if (file->iotype == PIO_IOTYPE_ADIOS)
     {
-        return ADIOS2_END_STEP(file, ios);
+        return end_adios2_step(file, ios);
     }
 #endif
 
@@ -555,7 +555,7 @@ int PIOc_closefile(int ncid)
         {
             LOG((2, "ADIOS close file %s", file->filename));
 
-            ierr = ADIOS2_BEGIN_STEP(file, NULL);
+            ierr = begin_adios2_step(file, NULL);
             if (ierr != PIO_NOERR)
                 return ierr;
 
@@ -617,11 +617,11 @@ int PIOc_closefile(int ncid)
                 {
                     return pio_err(ios, NULL, PIO_EADIOS2ERR, __FILE__, __LINE__,
                                    "Putting (ADIOS) variable (name=/__pio__/info/testing) failed (adios2_error=%s) for file (%s)",
-                                   adios2_error_to_string(adiosErr), pio_get_fname_from_file(file));
+                                   convert_adios2_error_to_string(adiosErr), pio_get_fname_from_file(file));
                 }
             }
 
-            ierr = ADIOS2_END_STEP(file, ios);
+            ierr = end_adios2_step(file, ios);
             if (ierr != PIO_NOERR)
                 return ierr;
 
@@ -653,7 +653,7 @@ int PIOc_closefile(int ncid)
                       spio_ltimer_stop(ios->io_fstats->tot_timer_name);
                       spio_ltimer_stop(file->io_fstats->tot_timer_name);
                   }
-                return pio_err(ios, file, PIO_EADIOS2ERR, __FILE__, __LINE__, "Closing (ADIOS) file (%s, ncid=%d) failed (adios2_error=%s)", pio_get_fname_from_file(file), file->pio_ncid, adios2_error_to_string(adiosErr));
+                return pio_err(ios, file, PIO_EADIOS2ERR, __FILE__, __LINE__, "Closing (ADIOS) file (%s, ncid=%d) failed (adios2_error=%s)", pio_get_fname_from_file(file), file->pio_ncid, convert_adios2_error_to_string(adiosErr));
             }
 
             file->engineH = NULL;
