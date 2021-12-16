@@ -973,6 +973,12 @@ static int PIOc_write_decomp_adios(file_desc_t *file, int ioid)
         {
             size_t count_val = (size_t)buffer_count;
             adiosErr = adios2_set_selection(variableH, 1, NULL, &count_val);
+            if (adiosErr != adios2_error_none)
+            {
+                return pio_err(NULL, file, PIO_EADIOS2ERR, __FILE__, __LINE__,
+                               "Setting (ADIOS) selection to variable (name=%s) failed (adios2_error=%s) for file (%s, ncid=%d)",
+                               name, convert_adios2_error_to_string(adiosErr), pio_get_fname_from_file(file), file->pio_ncid);
+            }
             adiosErr = adios2_put(file->engineH, variableH, file->block_array, adios2_mode_sync);
             if (adiosErr != adios2_error_none)
             {
@@ -988,6 +994,12 @@ static int PIOc_write_decomp_adios(file_desc_t *file, int ioid)
     {
         size_t count_val = (size_t)inp_count;
         adiosErr = adios2_set_selection(variableH, 1, NULL, &count_val);
+        if (adiosErr != adios2_error_none)
+        {
+            return pio_err(NULL, file, PIO_EADIOS2ERR, __FILE__, __LINE__,
+                           "Setting (ADIOS) selection to variable (name=%s) failed (adios2_error=%s) for file (%s, ncid=%d)",
+                           name, convert_adios2_error_to_string(adiosErr), pio_get_fname_from_file(file), file->pio_ncid);
+        }
         adiosErr = adios2_put(file->engineH, variableH, mapbuf, adios2_mode_sync);
         if (adiosErr != adios2_error_none)
         {
@@ -1276,11 +1288,17 @@ static int check_adios2_need_to_flush(file_desc_t *file, adios_var_desc_t *av)
         {
             size_t count_val = (size_t)av->num_wb_cnt;
             adiosErr = adios2_set_selection(av->num_block_writers_varid, 1, NULL, &count_val);
+            if (adiosErr != adios2_error_none)
+            {
+                return pio_err(NULL, file, PIO_EADIOS2ERR, __FILE__, __LINE__,
+                               "Setting (ADIOS) selection to variable (name=num_data_block_writers/%s) failed (adios2_error=%s) for file (%s, ncid=%d)",
+                               av->name, convert_adios2_error_to_string(adiosErr), pio_get_fname_from_file(file), file->pio_ncid);
+            }
             adiosErr = adios2_put(file->engineH, av->num_block_writers_varid, av->num_wb_buffer, adios2_mode_sync);
             if (adiosErr != adios2_error_none)
             {
                 return pio_err(NULL, file, PIO_EADIOS2ERR, __FILE__, __LINE__,
-                               "Putting (ADIOS) variable (name=decomp_id/%s) failed (adios2_error=%s) for file (%s, ncid=%d)",
+                               "Putting (ADIOS) variable (name=num_data_block_writers/%s) failed (adios2_error=%s) for file (%s, ncid=%d)",
                                av->name, convert_adios2_error_to_string(adiosErr), pio_get_fname_from_file(file), file->pio_ncid);
             }
             (file->num_written_blocks)++;
@@ -1294,6 +1312,12 @@ static int check_adios2_need_to_flush(file_desc_t *file, adios_var_desc_t *av)
         {
             size_t count_val = (size_t)av->fillval_cnt;
             adiosErr = adios2_set_selection(av->fillval_varid, 1, NULL, &count_val);
+            if (adiosErr != adios2_error_none)
+            {
+                return pio_err(NULL, file, PIO_EADIOS2ERR, __FILE__, __LINE__,
+                               "Setting (ADIOS) selection to variable (name=fillval_id/%s) failed (adios2_error=%s) for file (%s, ncid=%d)",
+                               av->name, convert_adios2_error_to_string(adiosErr), pio_get_fname_from_file(file), file->pio_ncid);
+            }
             adiosErr = adios2_put(file->engineH, av->fillval_varid, av->fillval_buffer, adios2_mode_sync);
             if (adiosErr != adios2_error_none)
             {
@@ -1312,6 +1336,12 @@ static int check_adios2_need_to_flush(file_desc_t *file, adios_var_desc_t *av)
         {
             size_t count_val = (size_t)av->decomp_cnt;
             adiosErr = adios2_set_selection(av->decomp_varid, 1, NULL, &count_val);
+            if (adiosErr != adios2_error_none)
+            {
+                return pio_err(NULL, file, PIO_EADIOS2ERR, __FILE__, __LINE__,
+                               "Setting (ADIOS) selection to variable (name=decomp_id/%s) failed (adios2_error=%s) for file (%s, ncid=%d)",
+                               av->name, convert_adios2_error_to_string(adiosErr), pio_get_fname_from_file(file), file->pio_ncid);
+            }
             adiosErr = adios2_put(file->engineH, av->decomp_varid, av->decomp_buffer, adios2_mode_sync);
             if (adiosErr != adios2_error_none)
             {
@@ -1330,6 +1360,12 @@ static int check_adios2_need_to_flush(file_desc_t *file, adios_var_desc_t *av)
         {
             size_t count_val = (size_t)av->frame_cnt;
             adiosErr = adios2_set_selection(av->frame_varid, 1, NULL, &count_val);
+            if (adiosErr != adios2_error_none)
+            {
+                return pio_err(NULL, file, PIO_EADIOS2ERR, __FILE__, __LINE__,
+                               "Setting (ADIOS) selection to variable (name=frame_id/%s) failed (adios2_error=%s) for file (%s, ncid=%d)",
+                               av->name, convert_adios2_error_to_string(adiosErr), pio_get_fname_from_file(file), file->pio_ncid);
+            }
             adiosErr = adios2_put(file->engineH, av->frame_varid, av->frame_buffer, adios2_mode_sync);
             if (adiosErr != adios2_error_none)
             {
@@ -1637,7 +1673,7 @@ static int PIOc_write_darray_adios(file_desc_t *file, int varid, int ioid,
             if (adiosErr != adios2_error_none)
             {
                 return pio_err(NULL, file, PIO_EADIOS2ERR, __FILE__, __LINE__,
-                               "Putting (ADIOS) variable (name=decomp_id/%s) failed (adios2_error=%s) for file (%s, ncid=%d)",
+                               "Setting (ADIOS) selection to variable (name=decomp_id/%s) failed (adios2_error=%s) for file (%s, ncid=%d)",
                                av->name, convert_adios2_error_to_string(adiosErr), pio_get_fname_from_file(file), file->pio_ncid);
             }
             adiosErr = adios2_put(file->engineH, av->adios_varid, file->block_array, adios2_mode_sync);
@@ -1658,7 +1694,7 @@ static int PIOc_write_darray_adios(file_desc_t *file, int varid, int ioid,
         if (adiosErr != adios2_error_none)
         {
             return pio_err(NULL, file, PIO_EADIOS2ERR, __FILE__, __LINE__,
-                           "Putting (ADIOS) variable (name=decomp_id/%s) failed (adios2_error=%s) for file (%s, ncid=%d)",
+                           "Setting (ADIOS) selection to variable (name=decomp_id/%s) failed (adios2_error=%s) for file (%s, ncid=%d)",
                            av->name, convert_adios2_error_to_string(adiosErr), pio_get_fname_from_file(file), file->pio_ncid);
         }
         adiosErr = adios2_put(file->engineH, av->adios_varid, databuf, adios2_mode_sync);

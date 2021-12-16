@@ -1645,7 +1645,7 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
                     GPTLstop("PIO:write_total_adios");
                     return pio_err(ios, file, PIO_EADIOS2ERR, __FILE__, __LINE__,
                                    "Putting (ADIOS) variable (name=%s) failed (adios2_error=%s) for file (%s, ncid=%d)",
-                                   av->name, convert_adios2_error_to_string(adiosErr), pio_get_fname_from_file(file), file->pio_ncid);
+                                   vname, convert_adios2_error_to_string(adiosErr), pio_get_fname_from_file(file), file->pio_ncid);
                 }
                 (file->num_written_blocks)++;
             }

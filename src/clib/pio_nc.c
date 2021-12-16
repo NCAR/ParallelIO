@@ -2720,7 +2720,9 @@ int PIOc_def_dim(int ncid, const char *name, PIO_Offset len, int *idp)
         {
             spio_ltimer_stop(ios->io_fstats->tot_timer_name);
             spio_ltimer_stop(file->io_fstats->tot_timer_name);
-            return pio_err(ios, file, ierr, __FILE__, __LINE__, "adios2_put failed, error code = %d", adiosErr);
+            return pio_err(ios, file, PIO_EADIOS2ERR, __FILE__, __LINE__,
+                           "Putting (ADIOS) variable (name=%s) failed (adios2_error=%s) for file (%s, ncid=%d)",
+                           dimname, convert_adios2_error_to_string(adiosErr), pio_get_fname_from_file(file), file->pio_ncid);
         }
 
         if (len == PIO_UNLIMITED)
