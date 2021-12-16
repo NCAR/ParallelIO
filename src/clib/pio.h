@@ -950,12 +950,12 @@ typedef struct file_desc_t
     MPI_Comm all_comm;
 
     /* Buffers for merging distributed array blocks */
-    int *array_counts;
-    int array_counts_size;
-    int *array_disp;
-    int array_disp_size;
+    unsigned int *array_counts;
+    unsigned int array_counts_size;
+    unsigned int *array_disp;
+    unsigned int array_disp_size;
     char *block_array;
-    uint64_t block_array_size;
+    unsigned int block_array_size;
 
     /* Track attributes */
     /** attribute information. Allow PIO_MAX_VARS for now. */

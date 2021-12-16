@@ -225,16 +225,16 @@ static int initialize_adios2_for_block_merging(iosystem_desc_t *ios, file_desc_t
         }
 #endif
 
-        file->array_counts = (int*)calloc(file->block_nprocs, sizeof(int));
-        file->array_disp   = (int*)calloc(file->block_nprocs, sizeof(int));
+        file->array_counts = (unsigned int*)calloc(file->block_nprocs, sizeof(unsigned int));
+        file->array_disp   = (unsigned int*)calloc(file->block_nprocs, sizeof(unsigned int));
         if (file->array_counts == NULL || file->array_disp == NULL)
         {
             return pio_err(NULL, file, PIO_ENOMEM, __FILE__, __LINE__,
                         "Out of memory allocating %lld bytes for a buffer",
-                        (long long) (file->block_nprocs * sizeof(int)));
+                        (long long) (file->block_nprocs * sizeof(unsigned int)));
         }
-        file->array_counts_size = file->block_nprocs * sizeof(int);
-        file->array_disp_size   = file->block_nprocs * sizeof(int);
+        file->array_counts_size = file->block_nprocs * sizeof(unsigned int);
+        file->array_disp_size   = file->block_nprocs * sizeof(unsigned int);
     }
 
     MPI_Info_free(&info);

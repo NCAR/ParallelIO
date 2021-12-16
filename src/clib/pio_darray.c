@@ -846,7 +846,7 @@ static int PIOc_write_decomp_adios(file_desc_t *file, int ioid)
     if (ierr != PIO_NOERR)
         return ierr;
 
-    int maplen = (int)(iodesc->maplen);
+    int maplen = iodesc->maplen;
     void *mapbuf = iodesc->map;
     char need_to_free_mapbuf = 0;
     if (iodesc->maplen < 1)
@@ -895,7 +895,7 @@ static int PIOc_write_decomp_adios(file_desc_t *file, int ioid)
     unsigned int inp_count = (unsigned int)maplen;
     uint64_t buffer_count = 0;
     size_t av_count;
-    MPI_Gather(&inp_count, 1, MPI_INT, file->array_counts, 1, MPI_INT, 0, file->block_comm);
+    MPI_Gather(&inp_count, 1, MPI_UNSIGNED, file->array_counts, 1, MPI_UNSIGNED, 0, file->block_comm);
 
     if (file->block_myrank == 0)
     {
@@ -1557,7 +1557,7 @@ static int PIOc_write_darray_adios(file_desc_t *file, int varid, int ioid,
 
     unsigned int inp_count = (unsigned int)arraylen;
     uint64_t buffer_count = 0;
-    MPI_Gather(&inp_count, 1, MPI_INT, file->array_counts, 1, MPI_INT, 0, file->block_comm);
+    MPI_Gather(&inp_count, 1, MPI_UNSIGNED, file->array_counts, 1, MPI_UNSIGNED, 0, file->block_comm);
 
     if (file->block_myrank == 0)
     {
