@@ -1161,7 +1161,12 @@ static int define_adios_darray(file_desc_t *file, adios_var_desc_t *av, int inp_
                                name_varid, pio_get_fname_from_file(file), file->pio_ncid);
             }
             av->decomp_buffer = (int32_t*)calloc(av->max_buffer_cnt, sizeof(int32_t));
-            assert(av->decomp_buffer != NULL);
+            if (av->decomp_buffer == NULL)
+            {
+                return pio_err(NULL, file, PIO_ENOMEM, __FILE__, __LINE__,
+                               "Writing (ADIOS) variable (%s, varid=%d) to file (%s, ncid=%d) failed. Out of memory allocating %lld bytes for decomp id buffer",
+                               av->name, varid, pio_get_fname_from_file(file), file->pio_ncid, (long long) (av->max_buffer_cnt * sizeof(int32_t)));
+            }
             av->decomp_cnt = 0;
         }
     }
@@ -1184,7 +1189,12 @@ static int define_adios_darray(file_desc_t *file, adios_var_desc_t *av, int inp_
                                name_varid, pio_get_fname_from_file(file), file->pio_ncid);
             }
             av->frame_buffer = (int32_t*)calloc(av->max_buffer_cnt, sizeof(int32_t));
-            assert(av->frame_buffer != NULL);
+            if (av->frame_buffer == NULL)
+            {
+                return pio_err(NULL, file, PIO_ENOMEM, __FILE__, __LINE__,
+                               "Writing (ADIOS) variable (%s, varid=%d) to file (%s, ncid=%d) failed. Out of memory allocating %lld bytes for frame id buffer",
+                               av->name, varid, pio_get_fname_from_file(file), file->pio_ncid, (long long) (av->max_buffer_cnt * sizeof(int32_t)));
+            }
             av->frame_cnt = 0;
         }
     }
@@ -1208,7 +1218,12 @@ static int define_adios_darray(file_desc_t *file, adios_var_desc_t *av, int inp_
             }
             av->fillval_size   = get_adios2_type_size(atype, NULL);
             av->fillval_buffer = (char*)calloc(av->max_buffer_cnt, sizeof(char)*av->fillval_size);
-            assert(av->fillval_buffer != NULL);
+            if (av->fillval_buffer == NULL)
+            {
+                return pio_err(NULL, file, PIO_ENOMEM, __FILE__, __LINE__,
+                               "Writing (ADIOS) variable (%s, varid=%d) to file (%s, ncid=%d) failed. Out of memory allocating %lld bytes for fill value buffer",
+                               av->name, varid, pio_get_fname_from_file(file), file->pio_ncid, (long long) (av->max_buffer_cnt * sizeof(int32_t)));
+            }
             av->fillval_cnt = 0;
         }
     }
@@ -1232,7 +1247,12 @@ static int define_adios_darray(file_desc_t *file, adios_var_desc_t *av, int inp_
                                name_varid, pio_get_fname_from_file(file), file->pio_ncid);
             }
             av->num_wb_buffer = (int32_t*)calloc(av->max_buffer_cnt, sizeof(int32_t));
-            assert(av->num_wb_buffer != NULL);
+            if (av->num_wb_buffer == NULL)
+            {
+                return pio_err(NULL, file, PIO_ENOMEM, __FILE__, __LINE__,
+                               "Writing (ADIOS) variable (%s, varid=%d) to file (%s, ncid=%d) failed. Out of memory allocating %lld bytes for writer blocks buffer",
+                               av->name, varid, pio_get_fname_from_file(file), file->pio_ncid, (long long) (av->max_buffer_cnt * sizeof(int32_t)));
+            }
             av->num_wb_cnt = 0;
         }
     }
