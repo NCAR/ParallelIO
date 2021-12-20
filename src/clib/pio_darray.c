@@ -806,8 +806,8 @@ static int register_decomp(file_desc_t *file, int ioid)
     assert(file != NULL);
     if (file->n_written_ioids >= ADIOS_PIO_MAX_DECOMPS)
     {
-        return pio_err(NULL, NULL, PIO_EINVAL, __FILE__, __LINE__,
-                       "Registering (ADIOS) I/O decomposition (id = %d) failed for file (%s, ncid=%d). I/O decompositions registered (%d) is more than allowed for the file (%d)",
+        return pio_err(NULL, file, PIO_EINVAL, __FILE__, __LINE__,
+                       "Registering (ADIOS) I/O decomposition (id = %d) failed for file (%s, ncid=%d). I/O decompositions registered (%d) exceeds the maximum decompositions (%d) allowed for the file",
                        ioid, pio_get_fname_from_file(file), file->pio_ncid, file->n_written_ioids, ADIOS_PIO_MAX_DECOMPS);
     }
 
@@ -825,18 +825,8 @@ static int PIOc_write_decomp_adios(file_desc_t *file, int ioid)
 
     if (file->block_myrank == 0)
     {
-        if (file->array_counts == NULL)
-        {
-           return pio_err(NULL, NULL, PIO_ENOMEM, __FILE__, __LINE__,
-                          "Writing (ADIOS) I/O decomposition (id = %d) failed for file (%s, ncid=%d). file->array_counts is NULL.",
-                          ioid, pio_get_fname_from_file(file), file->pio_ncid);
-        }
-        if (file->array_disp == NULL)
-        {
-           return pio_err(NULL, NULL, PIO_ENOMEM, __FILE__, __LINE__,
-                          "Writing (ADIOS) I/O decomposition (id = %d) failed for file (%s, ncid=%d). file->array_disp is NULL.",
-                          ioid, pio_get_fname_from_file(file), file->pio_ncid);
-        }
+        assert(file->array_counts != NULL);
+        assert(file->array_disp != NULL);
     }
 
     int elem_size = file->pio_offset_size;
@@ -853,7 +843,12 @@ static int PIOc_write_decomp_adios(file_desc_t *file, int ioid)
     {
         maplen = 2;
         mapbuf = (long*)calloc(2, sizeof(long));
-        assert(mapbuf != NULL);
+        if (mapbuf == NULL)
+        {
+            return pio_err(NULL, file, PIO_ENOMEM, __FILE__, __LINE__,
+                           "Writing (ADIOS) decomposition (ioid=%d) to file (%s, ncid=%d) failed. Out of memory allocating %lld bytes for map buffer",
+                           ioid, pio_get_fname_from_file(file), file->pio_ncid, (long long) (2 * sizeof(long)));
+        }
         ((long*)mapbuf)[0] = 0;
         ((long*)mapbuf)[1] = 0;
         need_to_free_mapbuf = 1;
@@ -864,28 +859,48 @@ static int PIOc_write_decomp_adios(file_desc_t *file, int ioid)
         if (type == adios2_type_int32_t || type == adios2_type_uint32_t)
         {
             mapbuf = (int32_t*)calloc(maplen, sizeof(int32_t));
-            assert(mapbuf != NULL);
+            if (mapbuf == NULL)
+            {
+                return pio_err(NULL, file, PIO_ENOMEM, __FILE__, __LINE__,
+                               "Writing (ADIOS) decomposition (ioid=%d) to file (%s, ncid=%d) failed. Out of memory allocating %lld bytes for map buffer",
+                               ioid, pio_get_fname_from_file(file), file->pio_ncid, (long long) (maplen * sizeof(int32_t)));
+            }
             ((int32_t*)mapbuf)[0] = (int32_t) (iodesc->map[0]);
             ((int32_t*)mapbuf)[1] = 0;
         }
         else if (type == adios2_type_int64_t || type == adios2_type_uint64_t)
         {
             mapbuf = (int64_t*)calloc(maplen, sizeof(int64_t));
-            assert(mapbuf != NULL);
+            if (mapbuf == NULL)
+            {
+                return pio_err(NULL, file, PIO_ENOMEM, __FILE__, __LINE__,
+                               "Writing (ADIOS) decomposition (ioid=%d) to file (%s, ncid=%d) failed. Out of memory allocating %lld bytes for map buffer",
+                               ioid, pio_get_fname_from_file(file), file->pio_ncid, (long long) (maplen * sizeof(int64_t)));
+            }
             ((int64_t*)mapbuf)[0] = (int64_t) (iodesc->map[0]);
             ((int64_t*)mapbuf)[1] = 0;
         }
         else if (type == adios2_type_int16_t || type == adios2_type_uint16_t)
         {
             mapbuf = (int16_t*)calloc(maplen, sizeof(int16_t));
-            assert(mapbuf != NULL);
+            if (mapbuf == NULL)
+            {
+                return pio_err(NULL, file, PIO_ENOMEM, __FILE__, __LINE__,
+                               "Writing (ADIOS) decomposition (ioid=%d) to file (%s, ncid=%d) failed. Out of memory allocating %lld bytes for map buffer",
+                               ioid, pio_get_fname_from_file(file), file->pio_ncid, (long long) (maplen * sizeof(int16_t)));
+            }
             ((int16_t*)mapbuf)[0] = (int16_t) (iodesc->map[0]);
             ((int16_t*)mapbuf)[1] = 0;
         }
         else if (type == adios2_type_int8_t || type == adios2_type_uint8_t)
         {
             mapbuf = (int8_t*)calloc(maplen, sizeof(int8_t));
-            assert(mapbuf != NULL);
+            if (mapbuf == NULL)
+            {
+                return pio_err(NULL, file, PIO_ENOMEM, __FILE__, __LINE__,
+                               "Writing (ADIOS) decomposition (ioid=%d) to file (%s, ncid=%d) failed. Out of memory allocating %lld bytes for map buffer",
+                               ioid, pio_get_fname_from_file(file), file->pio_ncid, (long long) (maplen * sizeof(int8_t)));
+            }
             ((int8_t*)mapbuf)[0] = (int8_t) (iodesc->map[0]);
             ((int8_t*)mapbuf)[1] = 0;
         }
@@ -933,7 +948,7 @@ static int PIOc_write_decomp_adios(file_desc_t *file, int ioid)
     }
 
     /* Variable to store the number of writer blocks, in case buffer merging doesn't happen */
-    adios2_variable *num_decomp_block_writers_varid;
+    adios2_variable *num_decomp_block_writers_varid = NULL;
     if (file->block_myrank == 0)
     {
         char name_varid[PIO_MAX_NAME];

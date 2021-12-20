@@ -255,7 +255,9 @@ int PIOc_setframe(int ncid, int varid, int frame)
         }
         else if (file->current_frame != frame)
         {
-            end_adios2_step(file, ios);
+            ret = end_adios2_step(file, ios);
+            if (ret != PIO_NOERR)
+                return ret;
             file->current_frame = frame;
         }
     }

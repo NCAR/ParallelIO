@@ -1570,6 +1570,7 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
         /* No conversion to vartype will be made. Use the in-memory type of the data buffer */
         av->adios_type = PIOc_get_adios_type(xtype);
         av->adios_type_size = get_adios2_type_size(av->adios_type, NULL);
+        assert(av->adios_type_size > 0);
 
         char vname[PIO_MAX_NAME];
 

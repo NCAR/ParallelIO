@@ -206,7 +206,7 @@ static int flush_adios2_tracking_data(file_desc_t *file)
         }
     }
 
-    return 0;
+    return PIO_NOERR;
 }
 
 static int initialize_adios2_for_block_merging(iosystem_desc_t *ios, file_desc_t *file)
@@ -243,7 +243,12 @@ static int initialize_adios2_for_block_merging(iosystem_desc_t *ios, file_desc_t
     if (file->block_myrank == 0)
     {
         file->block_list = (int*)calloc(file->block_nprocs, sizeof(int));
-        assert(file->block_list != NULL);
+        if (file->block_list == NULL)
+        {
+            return pio_err(ios, file, PIO_ENOMEM, __FILE__, __LINE__,
+                           "Initializing (ADIOS) for block merging on file (%s, ncid=%d) failed. Out of memory allocating %lld bytes for block list",
+                           pio_get_fname_from_file(file), file->pio_ncid, (long long) (file->block_nprocs * sizeof(int)));
+        }
     }
     MPI_Gather(&(file->myrank), 1, MPI_INT, file->block_list, 1, MPI_INT, 0, file->block_comm);
     /**** Group processes for block merging ****/
@@ -258,18 +263,22 @@ static int initialize_adios2_for_block_merging(iosystem_desc_t *ios, file_desc_t
     if (file->block_myrank == 0)
     {
         file->block_array = (char*)calloc(BLOCK_MAX_BUFFER, sizeof(char));
-        if (file->block_array != NULL)
+        if (file->block_array == NULL)
         {
-            file->block_array_size = BLOCK_MAX_BUFFER;
+            return pio_err(ios, file, PIO_ENOMEM, __FILE__, __LINE__,
+                           "Initializing (ADIOS) for block merging on file (%s, ncid=%d) failed. Out of memory allocating %lld bytes for block array",
+                           pio_get_fname_from_file(file), file->pio_ncid, (long long) (BLOCK_MAX_BUFFER * sizeof(char)));
         }
+
+        file->block_array_size = BLOCK_MAX_BUFFER;
 
 #ifndef _ADIOS_BP2NC_TEST /* Initializing buffer to 1Gb takes about 1 sec. Don't do it for unit tests */
         adios2_error adiosErr = adios2_set_parameter(file->ioH, "InitialBufferSize", "1Gb");
         if (adiosErr != adios2_error_none)
         {
-            return pio_err(ios, NULL, PIO_EADIOS2ERR, __FILE__, __LINE__,
-                        "Setting (ADIOS) parameter (InitialBufferSize) failed (adios2_error=%s) for file (%s)",
-                        convert_adios2_error_to_string(adiosErr), pio_get_fname_from_file(file));
+            return pio_err(ios, file, PIO_EADIOS2ERR, __FILE__, __LINE__,
+                           "Setting (ADIOS) parameter (InitialBufferSize) failed (adios2_error=%s) for file (%s)",
+                           convert_adios2_error_to_string(adiosErr), pio_get_fname_from_file(file));
         }
 #endif
 
@@ -277,9 +286,9 @@ static int initialize_adios2_for_block_merging(iosystem_desc_t *ios, file_desc_t
         file->array_disp   = (unsigned int*)calloc(file->block_nprocs, sizeof(unsigned int));
         if (file->array_counts == NULL || file->array_disp == NULL)
         {
-            return pio_err(NULL, file, PIO_ENOMEM, __FILE__, __LINE__,
-                        "Out of memory allocating %lld bytes for a buffer",
-                        (long long) (file->block_nprocs * sizeof(unsigned int)));
+            return pio_err(ios, file, PIO_ENOMEM, __FILE__, __LINE__,
+                           "Initializing (ADIOS) for block merging on file (%s, ncid=%d) failed. Out of memory allocating %lld bytes for internal buffers used for merging distributed data blocks",
+                           pio_get_fname_from_file(file), file->pio_ncid, (long long) (file->block_nprocs * sizeof(unsigned int)));
         }
         file->array_counts_size = file->block_nprocs * sizeof(unsigned int);
         file->array_disp_size   = file->block_nprocs * sizeof(unsigned int);
@@ -297,25 +306,25 @@ static int initialize_adios2_variables(iosystem_desc_t *ios, file_desc_t *file)
     adios2_error adiosErr = adios2_set_parameter(file->ioH, "SubStreams", file->params);
     if (adiosErr != adios2_error_none)
     {
-        return pio_err(ios, NULL, PIO_EADIOS2ERR, __FILE__, __LINE__,
-                "Setting (ADIOS) parameter (substreams=%s) failed (adios2_error=%s) for file (%s)",
-                file->params, convert_adios2_error_to_string(adiosErr), pio_get_fname_from_file(file));
+        return pio_err(ios, file, PIO_EADIOS2ERR, __FILE__, __LINE__,
+                       "Setting (ADIOS) parameter (substreams=%s) failed (adios2_error=%s) for file (%s)",
+                       file->params, convert_adios2_error_to_string(adiosErr), pio_get_fname_from_file(file));
     }
 
     adiosErr = adios2_set_parameter(file->ioH, "CollectiveMetadata", "ON"); /* ON for BP4 */
     if (adiosErr != adios2_error_none)
     {
-        return pio_err(ios, NULL, PIO_EADIOS2ERR, __FILE__, __LINE__,
-                "Setting (ADIOS) parameter (CollectiveMetadata=ON) failed (adios2_error=%s) for file (%s)",
-                convert_adios2_error_to_string(adiosErr), pio_get_fname_from_file(file));
+        return pio_err(ios, file, PIO_EADIOS2ERR, __FILE__, __LINE__,
+                       "Setting (ADIOS) parameter (CollectiveMetadata=ON) failed (adios2_error=%s) for file (%s)",
+                       convert_adios2_error_to_string(adiosErr), pio_get_fname_from_file(file));
     }
 
     adiosErr = adios2_set_parameter(file->ioH, "StatsLevel", "0");
     if (adiosErr != adios2_error_none)
     {
-        return pio_err(ios, NULL, PIO_EADIOS2ERR, __FILE__, __LINE__,
-                "Setting (ADIOS) parameter (StatsLevel=0) failed (adios2_error=%s) for file (%s)",
-                convert_adios2_error_to_string(adiosErr), pio_get_fname_from_file(file));
+        return pio_err(ios, file, PIO_EADIOS2ERR, __FILE__, __LINE__,
+                       "Setting (ADIOS) parameter (StatsLevel=0) failed (adios2_error=%s) for file (%s)",
+                       convert_adios2_error_to_string(adiosErr), pio_get_fname_from_file(file));
     }
 
     /* Call adios end step in PIOc_setframe(), if num_step_calls>max_step_calls */
@@ -354,9 +363,9 @@ static int initialize_adios2_variables(iosystem_desc_t *ios, file_desc_t *file)
     }
     else
     {
-        return pio_err(ios, NULL, PIO_EADIOS2ERR, __FILE__, __LINE__,
-                "PIO_Offet size (%d) is not supported for file (%s)",
-                file->pio_offset_size, pio_get_fname_from_file(file));
+        return pio_err(ios, file, PIO_EADIOS2ERR, __FILE__, __LINE__,
+                       "PIO_Offet size (%d) is not supported for file (%s)",
+                       file->pio_offset_size, pio_get_fname_from_file(file));
     }
 
     /* Set communicator for all adios processes, process rank, and I/O master node */
@@ -2814,7 +2823,7 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
             spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return pio_err(ios, NULL, PIO_EADIOS2ERR, __FILE__, __LINE__,
                            "Initializing parameters failed for file (%s)",
-                           declare_name, pio_get_fname_from_file(file));
+                           pio_get_fname_from_file(file));
         }
 
         /* Initialize for block merging in pio_write_darray */
@@ -2825,7 +2834,7 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
             spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return pio_err(ios, NULL, PIO_EADIOS2ERR, __FILE__, __LINE__,
                            "Initializing block merge failed for file (%s)",
-                           declare_name, pio_get_fname_from_file(file));
+                           pio_get_fname_from_file(file));
         }
 
         file->engineH = adios2_open(file->ioH, file->filename, adios2_mode_write);
