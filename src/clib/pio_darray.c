@@ -821,8 +821,9 @@ PIOc_write_darray(int ncid, int varid, int ioid, PIO_Offset arraylen, void *arra
     bufptr = (void *)((char *)wmb->data + arraylen * iodesc->mpitype_size * wmb->num_arrays);
     if (arraylen > 0)
     {
+        PLOG((3, "copying %ld bytes of user data %d", arraylen * iodesc->mpitype_size, iodesc->mpitype_size));
+        printf(( "copying %ld bytes of user data %d num_arrays %d bufptr %x array %x\n", arraylen * iodesc->mpitype_size, iodesc->mpitype_size, wmb->num_arrays, bufptr, array));
         memcpy(bufptr, array, arraylen * iodesc->mpitype_size);
-        PLOG((3, "copied %ld bytes of user data", arraylen * iodesc->mpitype_size));
     }
 
     /* Add the unlimited dimension value of this variable to the frame

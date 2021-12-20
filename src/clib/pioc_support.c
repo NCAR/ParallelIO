@@ -557,7 +557,7 @@ piodie(const char *msg, const char *fname, int line)
             msg ? msg : "_", fname ? fname : "_", line);
 
     print_trace(stderr);
-#ifdef MPI_SERIAL
+#ifdef _MPISERIAL
     abort();
 #else
     MPI_Abort(MPI_COMM_WORLD, -1);
@@ -825,7 +825,11 @@ find_mpi_type(int pio_type, MPI_Datatype *mpi_type, int *type_size)
     switch(pio_type)
     {
     case PIO_BYTE:
+#ifdef _MPISERIAL
+        my_mpi_type = MPI_BYTE;
+#else
         my_mpi_type = MPI_SIGNED_CHAR;
+#endif
         my_type_size = NETCDF_CHAR_SIZE;
         break;
     case PIO_CHAR:

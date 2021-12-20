@@ -1413,9 +1413,10 @@ PIOc_free_iosystem(int iosysid)
         ios->my_comm = MPI_COMM_NULL;
 
     /* Free the MPI Info object. */
+#ifndef _MPISERIAL
     if (ios->info != MPI_INFO_NULL)
         MPI_Info_free(&ios->info);
-
+#endif
     /* Delete the iosystem_desc_t data associated with this id. */
     PLOG((2, "About to delete iosysid %d.", iosysid));
     if ((ierr = pio_delete_iosystem_from_list(iosysid)))

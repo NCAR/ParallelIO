@@ -13,6 +13,7 @@ static char doc[] =
 static struct argp_option options[] = {
     {"wdecomp", 'w', "FILE", 0, "Decomposition file for write"},
     {"rdecomp", 'r', "FILE", 0, "Decomposition file for read (same as write if not provided)"},
+    {"variable", 'v', "NAME", 0, "Variable name to write and/or read"},
     { 0 }
 };
 
@@ -21,6 +22,7 @@ struct arguments
     char *args[2];
     char *wdecomp_file;
     char *rdecomp_file;
+    char *varname;
 };
 
 static error_t
@@ -35,6 +37,9 @@ parse_opt (int key, char *arg, struct argp_state *state)
         break;
     case 'r':
         arguments->rdecomp_file = arg;
+        break;
+    case 'v':
+        arguments->varname = arg;
         break;
     case ARGP_KEY_ARG:
         if (state->arg_num >= 2)
@@ -60,9 +65,12 @@ error_t mpi_argp_parse(const int rank,
 
 static int debug = 0;
 
-double *varw, *varr;
+double *dvarw, *dvarr;
+float *fvarw, *fvarr;
+int *ivarw, *ivarr;
+char *cvarw, *cvarr;
 
-int test_write_darray(int iosys, const char decomp_file[], int rank)
+int test_write_darray(int iosys, const char decomp_file[], int rank, const char myvarname[])
 {
     int ierr;
     int comm_size;
@@ -107,7 +115,11 @@ int test_write_darray(int iosys, const char decomp_file[], int rank)
         if(ierr || debug) printf("%d %d\n",__LINE__,ierr);
     }
     /* TODO: support multiple variables and types*/
-    sprintf(varname,"var%4.4d",0);
+    if(myvarname != NULL)
+        sprintf(varname,"%s",myvarname);        
+    else
+        sprintf(varname,"var%4.4d",0);
+
     ierr = PIOc_def_var(ncid, varname, PIO_DOUBLE, ndims, dimid, &varid);
     if(ierr || debug) printf("%d %d\n",__LINE__,ierr);
 
@@ -121,18 +133,18 @@ int test_write_darray(int iosys, const char decomp_file[], int rank)
         return PIO_ENOMEM;
 
     /* Copy array into PIO_Offset array. */
-    varw = malloc(sizeof(double)*maplen[rank]);
+    dvarw = malloc(sizeof(double)*maplen[rank]);
     for (int e = 0; e < maplen[rank]; e++)
     {
         dofmap[e] = full_map[rank * maxmaplen + e]+1;
-        varw[e] = dofmap[e];
+        dvarw[e] = dofmap[e];
     }
 
     ierr = PIOc_InitDecomp(iosys, PIO_DOUBLE, ndims, global_dimlen, maplen[rank],
                            dofmap, &ioid, NULL, NULL, NULL);
 
 
-    ierr = PIOc_write_darray(ncid, varid, ioid, maplen[rank], varw, NULL);
+    ierr = PIOc_write_darray(ncid, varid, ioid, maplen[rank], dvarw, NULL);
 
     ierr = PIOc_closefile(ncid);
     if(ierr || debug) printf("%d %d\n",__LINE__,ierr);
@@ -141,7 +153,7 @@ int test_write_darray(int iosys, const char decomp_file[], int rank)
 }
 
 
-int test_read_darray(int iosys,const char decomp_file[], int rank)
+int test_read_darray(int iosys,const char decomp_file[], int rank, const char myvarname[])
 {
     int ierr;
     int comm_size;
@@ -157,6 +169,7 @@ int test_read_darray(int iosys,const char decomp_file[], int rank)
     int varid;
     int globalsize;
     int ioid;
+    int pio_type;
     char dimname[PIO_MAX_NAME];
     char varname[PIO_MAX_NAME];
 
@@ -179,11 +192,17 @@ int test_read_darray(int iosys,const char decomp_file[], int rank)
     if(ierr || debug) printf("%d %d\n",__LINE__,ierr);
     
     /* TODO: support multiple variables and types*/
-    sprintf(varname,"var%4.4d",0);
+    if(myvarname != NULL)
+        sprintf(varname,"%s",myvarname);        
+    else
+        sprintf(varname,"var%4.4d",0);
     ierr = PIOc_inq_varid(ncid, varname, &varid);
     if(ierr || debug) printf("%d %d\n",__LINE__,ierr);
 
     ierr = PIOc_inq_varndims(ncid, varid, &ndims);
+    if(ierr || debug) printf("%d %d\n",__LINE__,ierr);
+
+    ierr = PIOc_inq_vartype(ncid, varid, &pio_type);
     if(ierr || debug) printf("%d %d\n",__LINE__,ierr);
 
     dimid = calloc(ndims,sizeof(int));
@@ -203,23 +222,53 @@ int test_read_darray(int iosys,const char decomp_file[], int rank)
     if (!(dofmap = malloc(sizeof(PIO_Offset) * maplen[rank])))
         return PIO_ENOMEM;
 
-    varr = malloc(sizeof(double)*maplen[rank]);
     for (int e = 0; e < maplen[rank]; e++)
     {
         dofmap[e] = full_map[rank * maxmaplen + e] + 1;
     }
-
-    ierr = PIOc_InitDecomp(iosys, PIO_DOUBLE, ndims, global_dimlen, maplen[rank],
+//    PIOc_set_log_level(3);
+    ierr = PIOc_InitDecomp(iosys, pio_type, ndims, global_dimlen, maplen[rank],
                            dofmap, &ioid, NULL, NULL, NULL);
-
-    ierr = PIOc_read_darray(ncid, varid, ioid, maplen[rank], varr);
+    switch(pio_type)
+    {
+    case PIO_DOUBLE:
+        dvarr = malloc(sizeof(double)*maplen[rank]);
+        ierr = PIOc_read_darray(ncid, varid, ioid, maplen[rank], dvarr);
+        break;
+    case PIO_INT:
+        ivarr = malloc(sizeof(int)*maplen[rank]);
+        ierr = PIOc_read_darray(ncid, varid, ioid, maplen[rank], ivarr);
+        int isum=0;
+        for(int i=0; i < maplen[rank]; i++)
+            isum += ivarr[i];
+        printf("%d: isum = %d\n",rank, isum);
+        break;
+    case PIO_FLOAT:
+        fvarr = malloc(sizeof(float)*maplen[rank]);
+        ierr = PIOc_read_darray(ncid, varid, ioid, maplen[rank], fvarr);
+        float fsum=0;
+        for(int i=0; i < maplen[rank]; i++)
+            fsum += fvarr[i];
+        printf("%d: fsum = %f\n",rank, fsum);
+        break;
+    case PIO_BYTE:
+        cvarr = malloc(sizeof(char)*maplen[rank]);
+        ierr = PIOc_read_darray(ncid, varid, ioid, maplen[rank], cvarr);
+        int csum=0;
+        for(int i=0; i < maplen[rank]; i++)
+            csum += (int) cvarr[i];
+        printf("%d: csum = %d\n",rank, csum);
+        break;
+    }
 
     ierr = PIOc_closefile(ncid);
     if(ierr || debug) printf("%d %d\n",__LINE__,ierr);
 
-//    for(int i=0; i < maplen[rank]; i++)
-//        printf("%d: varr[%d] = %f\n",rank, i, varr[i]);
-
+    if(rank == 1)
+    {
+        for(int i=0; i < maplen[rank]; i+=2)
+            printf("dvarr[%d] = (%f, %f)\n",i/2, dvarr[i], dvarr[i+1]);
+    }
 
     return ierr;
 
@@ -232,11 +281,14 @@ int main(int argc, char *argv[])
     struct arguments arguments;
     int ierr;
     int rank;
+    int comm_size;
     int iosys;
-
+    int iotasks;
     MPI_Init(&argc, &argv);
 
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+    MPI_Comm_size(MPI_COMM_WORLD, &comm_size);
 
     arguments.wdecomp_file = NULL;
     arguments.rdecomp_file = NULL;
@@ -246,17 +298,19 @@ int main(int argc, char *argv[])
     if(! arguments.rdecomp_file)
         arguments.rdecomp_file = arguments.wdecomp_file;
 
-    ierr = PIOc_Init_Intracomm(MPI_COMM_WORLD, 1, 1, 0, PIO_REARR_SUBSET, &iosys);
+    iotasks = comm_size/36;
+
+    ierr = PIOc_Init_Intracomm(MPI_COMM_WORLD, iotasks, 36, 0, PIO_REARR_SUBSET, &iosys);
     if(ierr || debug) printf("%d %d\n",__LINE__,ierr);
 
     if(arguments.wdecomp_file)
     {
-        ierr = test_write_darray(iosys, arguments.wdecomp_file, rank);
+        ierr = test_write_darray(iosys, arguments.wdecomp_file, rank, arguments.varname);
         if(ierr || debug) printf("%d %d\n",__LINE__,ierr);
     }
     if(arguments.rdecomp_file)
     {
-        ierr = test_read_darray(iosys, arguments.rdecomp_file, rank);
+        ierr = test_read_darray(iosys, arguments.rdecomp_file, rank, arguments.varname);
         if(ierr || debug) printf("%d %d\n",__LINE__,ierr);
     }
     MPI_Finalize();
