@@ -971,12 +971,13 @@ PIOc_Init_Intracomm(MPI_Comm comp_comm, int num_iotasks, int stride, int base,
     if ((mpierr = MPI_Comm_size(comp_comm, &num_comptasks)))
         return check_mpi(NULL, NULL, mpierr, __FILE__, __LINE__);
 
+    PLOG((1, "PIOc_Init_Intracomm comp_comm = %d num_iotasks = %d stride = %d base = %d "
+          "rearr = %d", comp_comm, num_iotasks, stride, base, rearr));
+
     /* Check the inputs. */
     if (!iosysidp || num_iotasks < 1 || num_iotasks * stride > num_comptasks)
         return pio_err(NULL, NULL, PIO_EINVAL, __FILE__, __LINE__);
 
-    PLOG((1, "PIOc_Init_Intracomm comp_comm = %d num_iotasks = %d stride = %d base = %d "
-          "rearr = %d", comp_comm, num_iotasks, stride, base, rearr));
 
     /* Allocate memory for the iosystem info. */
     if (!(ios = calloc(1, sizeof(iosystem_desc_t))))
