@@ -39,9 +39,4 @@ else ()
   set (DEFAULT_TEST_TIMEOUT 600)
 endif ()
 
-if (NOT PIO_USE_MPISERIAL)
-  add_test(NAME piodecomptest
-    COMMAND piodecomptest
-    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-endif ()
 MESSAGE("CMAKE_EXE_LINKER_FLAGS ${CMAKE_EXE_LINKER_FLAGS}")
