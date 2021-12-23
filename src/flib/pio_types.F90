@@ -34,9 +34,9 @@
 !! @defgroup error_return Error Return Codes
 !! The error return code (see @ref PIO_seterrorhandling).
 !!
-!! @defgroup PIO_kinds PIO Fortran Type Kinds
-!! PIO supports different kinds of Fortran types.
-!!  - PIO_doauble : 8-byte reals or double precision
+!> @defgroup PIO_kinds PIO Fortran Type Kinds
+!> PIO supports different kinds of Fortran types.
+!!  - PIO_double : 8-byte reals
 !!  - PIO_real : 4-byte reals
 !!  - PIO_int :  4-byte integers
 !!  - PIO_short : 2-byte integers

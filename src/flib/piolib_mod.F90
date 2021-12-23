@@ -735,7 +735,6 @@ contains
   !!
   !! @param iosystem a defined PIO system descriptor, see pio_types
   !! @param basepiotype The type of variable(s) associated with this iodesc.
-  !! @copydoc PIO_kinds
   !! @param dims an array of the global length of each dimesion of the variable(s)
   !! @param lenblocks
   !! @param compdof mapping of the storage order of the variable to its memory order
@@ -767,8 +766,7 @@ contains
   !! A deprecated interface to the PIO_initdecomp method.
   !!
   !! @param iosystem a defined PIO system descriptor, see pio_types
-  !! @param basepiotype The type of variable(s) associated with this iodesc.
-  !! @copydoc PIO_kinds
+  !! @param basepiotype The type of variable(s) associated with this iodesc. @copydoc PIO_kinds
   !! @param dims an array of the global length of each dimesion of the variable(s)
   !! @param lenblocks
   !! @param compdof mapping of the storage order of the variable to its memory order

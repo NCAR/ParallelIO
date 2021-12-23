@@ -5,8 +5,6 @@
 # Run doxygen, then confirm warning log file is empty.
 all:
 	doxygen Doxyfile
-	cat doxywarn.log
-	[ ! -s doxywarn.log ]
 
 check: all
 
