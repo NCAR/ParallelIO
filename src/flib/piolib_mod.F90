@@ -1462,10 +1462,12 @@ contains
   !! @param fname a filename
   !! @author Jim Edwards
   !<
-  subroutine pio_deletefile(ios, fname)
+  subroutine pio_deletefile(ios, fname, rc)
     type(iosystem_desc_t) :: ios
     character(len=*) :: fname
     integer :: ierr
+    integer, optional, intent(out) :: rc
+
     interface
        integer(c_int) function PIOc_deletefile(iosid, fname) &
             bind(C,name="PIOc_deletefile")
@@ -1476,7 +1478,7 @@ contains
     end interface
 
     ierr = PIOc_deletefile(ios%iosysid, trim(fname)//C_NULL_CHAR)
-
+    if(present(rc)) rc = ierr
   end subroutine pio_deletefile
 
   !>
