@@ -174,6 +174,32 @@ contains
   end subroutine pio_writedof
 
   !>
+  !! Fortran interface to write a netcdf format mapping file.
+  !!
+  !! @param iosystem : The iosystem structure
+  !! @param filename : The file where the decomp map will be written.
+  !! @param cmode : The netcdf creation mode.
+  !! @param iodesc : The io descriptor structure
+  !! @param title : An optional title to add to the netcdf attributes
+  !! @param history : An optional history to add to the netcdf attributes
+  !! @param ret : Return code 0 if success
+  !<
+
+  subroutine pio_write_nc_dof(iosystem, filename, cmode, iodesc, title, history, ret)
+    interface
+       integer(c_int) function PIOc_write_nc_decomp(iosystem, filename, cmode, &
+            ioid, title, history, fortran_order)
+         use iso_c_binding
+       end function PIOc_write_nc_decomp
+    end interface
+
+    
+
+  end subroutine pio_write_nc_dof
+
+
+
+  !>
   !! Fortran interface to read a mapping file.
   !!
   !! @param file The file from where the decomp map is read.
