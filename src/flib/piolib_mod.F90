@@ -1460,6 +1460,7 @@ contains
   !!
   !! @param ios a pio system handle
   !! @param fname a filename
+  !! @param rc an optional return code
   !! @author Jim Edwards
   !<
   subroutine pio_deletefile(ios, fname, rc)
