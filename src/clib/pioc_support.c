@@ -2907,7 +2907,7 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
          iosysid, *iotype, filename, mode, retry));
 
     /* Allocate space for the file info. */
-    if (!(file = calloc(sizeof(*file), 1)))
+    if (!(file = calloc(sizeof(file_desc_t), 1)))
     {
         spio_ltimer_stop(ios->io_fstats->rd_timer_name);
         spio_ltimer_stop(ios->io_fstats->tot_timer_name);
