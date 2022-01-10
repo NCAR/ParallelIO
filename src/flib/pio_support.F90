@@ -178,7 +178,7 @@ contains
   !>
   !! Fortran interface to write a netcdf format mapping file.
   !!
-  !! @param iosystem : The iosystem structure
+  !! @param ios : The iosystem structure
   !! @param filename : The file where the decomp map will be written.
   !! @param cmode : The netcdf creation mode.
   !! @param iodesc : The io descriptor structure
@@ -292,7 +292,7 @@ contains
   !>
   !! Fortran interface to read a netcdf format mapping file.
   !!
-  !! @param iosystem : The iosystem structure
+  !! @param ios : The iosystem structure
   !! @param filename : The file where the decomp map will be written.
   !! @param iodesc : The io descriptor structure returned
   !! @param ret : Return code 0 if success
