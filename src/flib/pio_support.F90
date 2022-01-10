@@ -184,6 +184,7 @@ contains
   !! @param iodesc : The io descriptor structure
   !! @param title : An optional title to add to the netcdf attributes
   !! @param history : An optional history to add to the netcdf attributes
+  !! @param fortran_order : Optional logical - Should multidimensional arrays be written in fortran order?
   !! @param ret : Return code 0 if success
   !<
 
@@ -196,7 +197,7 @@ contains
     integer :: ret
     character(len=*), optional :: title
     character(len=*), optional :: history
-    integer, optional :: fortran_order
+    logical, optional :: fortran_order
     
     interface
        integer(c_int) function PIOc_write_nc_decomp(iosysid, filename, cmode, &
@@ -231,9 +232,11 @@ contains
     endif
 
     if(present(fortran_order)) then
-       forder = fortran_order
-    else
-       forder = 0
+       if(fortran_order) then
+          forder = 1
+       else
+          forder = 0
+       endif
     endif
     nl = len_trim(filename)
     ret = PIOc_write_nc_decomp(ios%iosysid, filename(:nl)//C_NULL_CHAR, cmode, iodesc%ioid, ctitle, chistory, forder)
@@ -292,9 +295,10 @@ contains
   !! @param iosystem : The iosystem structure
   !! @param filename : The file where the decomp map will be written.
   !! @param iodesc : The io descriptor structure returned
+  !! @param ret : Return code 0 if success
   !! @param title : An optional title to add to the netcdf attributes
   !! @param history : An optional history to add to the netcdf attributes
-  !! @param ret : Return code 0 if success
+  !! @param fortran_order : An optional logical - should arrays be read in fortran order
   !<
 
   subroutine pio_read_nc_dof(ios, filename, iodesc, ret, title, history, fortran_order)
@@ -305,7 +309,7 @@ contains
     integer :: ret
     character(len=*), optional :: title
     character(len=*), optional :: history
-    integer, optional :: fortran_order
+    logical, optional :: fortran_order
     
     interface
        integer(c_int) function PIOc_read_nc_decomp(iosysid, filename, ioid, &
@@ -322,10 +326,17 @@ contains
     end interface
     character(len=:), allocatable :: ctitle, chistory
     integer :: nl
+    integer :: forder
 
     nl = len_trim(filename)
-    ret = PIOc_read_nc_decomp(ios%iosysid, filename(:nl)//C_NULL_CHAR, iodesc%ioid, title, history, fortran_order)
-    
+    ret = PIOc_read_nc_decomp(ios%iosysid, filename(:nl)//C_NULL_CHAR, iodesc%ioid, title, history, forder)
+    if(present(fortran_order)) then
+       if(forder /= 0) then
+          fortran_order = .true.
+       else
+          fortran_order = .true.
+       endif
+    endif
   end subroutine pio_read_nc_dof
 
 end module pio_support
