@@ -45,6 +45,7 @@ program dofcopy
      call PIO_InitDecomp(iosystem, PIO_INT, gdims, compmap, iodesc, rearr=rearr)
      write(outfile, *) trim(infile)//".nc"
      call PIO_write_nc_dof(iosystem, outfile, PIO_64BIT_DATA, iodesc, ierr) 
+     call PIO_finalize(iosystem, ierr)
   endif
 
 
