@@ -2760,6 +2760,7 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
 
     /* Initialize the multi-variable cache in the file that is used to cache
      * data from multiple variables before writing it out to the output file
+     * Note: The MVCache is not used by ADIOS
      */
     spio_file_mvcache_init(file);
 
@@ -3191,6 +3192,8 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
 
     /* Initialize the multi-variable cache used to cache data for
      * multiple variables before writing it to the output file
+     * Note: The MVCache is not used by ADIOS or a file opened
+     *       as "read only"
      */
     spio_file_mvcache_init(file);
 
