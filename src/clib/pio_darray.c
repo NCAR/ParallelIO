@@ -16,6 +16,7 @@
 #endif
 #include "pio_sdecomps_regex.h"
 #include "spio_io_summary.h"
+#include "spio_file_mvcache.h"
 
 /* uint64_t definition */
 #ifdef _ADIOS2
@@ -265,7 +266,7 @@ int PIOc_write_darray_multi(int ncid, const int *varids, int ioid, int nvars,
     }
 
     /* if the buffer is already in use in pnetcdf we need to flush first */
-    if (file->iotype == PIO_IOTYPE_PNETCDF && file->iobuf[ioid - PIO_IODESC_START_ID])
+    if (file->iotype == PIO_IOTYPE_PNETCDF && spio_file_mvcache_get(file, ioid))
     {
         ierr = flush_output_buffer(file, true, 0);
         if (ierr != PIO_NOERR)
@@ -280,7 +281,7 @@ int PIOc_write_darray_multi(int ncid, const int *varids, int ioid, int nvars,
         }
     }
 
-    pioassert(!file->iobuf[ioid - PIO_IODESC_START_ID], "buffer overwrite",__FILE__, __LINE__);
+    pioassert(!spio_file_mvcache_get(file, ioid), "buffer overwrite",__FILE__, __LINE__);
 
     /* Determine total size of aggregated data (all vars/records).
      * For netcdf serial writes we collect the data on io nodes and
@@ -333,10 +334,12 @@ int PIOc_write_darray_multi(int ncid, const int *varids, int ioid, int nvars,
 #endif
 
     /* Allocate iobuf. */
+    void *mv_iobuf = NULL;
     if (rlen > 0)
     {
         /* Allocate memory for the buffer for all vars/records. */
-        if (!(file->iobuf[ioid - PIO_IODESC_START_ID] = bget(iodesc->mpitype_size * rlen)))
+        mv_iobuf = spio_file_mvcache_alloc(file, ioid, iodesc->mpitype_size * rlen);
+        if (!mv_iobuf)
         {
             GPTLstop("PIO:PIOc_write_darray_multi");
             spio_ltimer_stop(ios->io_fstats->wr_timer_name);
@@ -356,7 +359,7 @@ int PIOc_write_darray_multi(int ncid, const int *varids, int ioid, int nvars,
             LOG((3, "inserting fill values iodesc->maxiobuflen = %lld, localiobuflen = %lld", iodesc->maxiobuflen, localiobuflen));
             for (int nv = 0; nv < nvars; nv++)
                 for (PIO_Offset i = 0; i < localiobuflen; i++)
-                    memcpy(&((char *)file->iobuf[ioid - PIO_IODESC_START_ID])[iodesc->mpitype_size * (i + nv * localiobuflen)],
+                    memcpy(&((char *)mv_iobuf)[iodesc->mpitype_size * (i + nv * localiobuflen)],
                            &((char *)fillvalue)[nv * iodesc->mpitype_size], iodesc->mpitype_size);
         }
     }
@@ -365,7 +368,8 @@ int PIOc_write_darray_multi(int ncid, const int *varids, int ioid, int nvars,
 	/* this assures that iobuf is allocated on all iotasks thus
 	 assuring that the flush_output_buffer call above is called
 	 collectively (from all iotasks) */
-        if (!(file->iobuf[ioid - PIO_IODESC_START_ID] = bget(1)))
+        mv_iobuf = spio_file_mvcache_alloc(file, ioid, 1);
+        if (!mv_iobuf)
         {
             GPTLstop("PIO:PIOc_write_darray_multi");
             spio_ltimer_stop(ios->io_fstats->wr_timer_name);
@@ -379,7 +383,7 @@ int PIOc_write_darray_multi(int ncid, const int *varids, int ioid, int nvars,
     }
 
     /* Move data from compute to IO tasks. */
-    if ((ierr = rearrange_comp2io(ios, iodesc, array, file->iobuf[ioid - PIO_IODESC_START_ID], nvars)))
+    if ((ierr = rearrange_comp2io(ios, iodesc, array, mv_iobuf, nvars)))
     {
         GPTLstop("PIO:PIOc_write_darray_multi");
         spio_ltimer_stop(ios->io_fstats->wr_timer_name);
@@ -546,11 +550,10 @@ int PIOc_write_darray_multi(int ncid, const int *varids, int ioid, int nvars,
     if (file->iotype != PIO_IOTYPE_PNETCDF)
     {
         /* Release resources. */
-        if (file->iobuf[ioid - PIO_IODESC_START_ID])
+        if (mv_iobuf)
         {
-	    LOG((3,"freeing variable buffer in pio_darray"));
-            brel(file->iobuf[ioid - PIO_IODESC_START_ID]);
-            file->iobuf[ioid - PIO_IODESC_START_ID] = NULL;
+            LOG((3,"freeing variable buffer in pio_darray"));
+            spio_file_mvcache_free(file, ioid);
         }
     }
 
