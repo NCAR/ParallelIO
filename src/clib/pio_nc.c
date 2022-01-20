@@ -2691,7 +2691,11 @@ int PIOc_def_dim(int ncid, const char *name, PIO_Offset len, int *idp)
 
         ierr = begin_adios2_step(file, ios);
         if (ierr != PIO_NOERR)
+        {
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return ierr;
+        }
 
         char dimname[PIO_MAX_NAME];
         snprintf(dimname, PIO_MAX_NAME, "/__pio__/dim/%s", name);
@@ -2928,7 +2932,11 @@ int PIOc_def_var(int ncid, const char *name, nc_type xtype, int ndims,
 
         ierr = begin_adios2_step(file, ios);
         if (ierr != PIO_NOERR)
+        {
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return ierr;
+        }
 
         assert(file->num_vars < PIO_MAX_VARS);
         file->adios_vars[file->num_vars].name = strdup(name);

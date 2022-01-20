@@ -202,7 +202,17 @@ int PIOc_put_att_tc(int ncid, int varid, const char *name, nc_type atttype,
 
         ierr = begin_adios2_step(file, ios);
         if (ierr != PIO_NOERR)
+        {
+            GPTLstop("PIO:PIOc_put_att_tc");
+            GPTLstop("PIO:write_total");
+            spio_ltimer_stop(ios->io_fstats->wr_timer_name);
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->wr_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
+            GPTLstop("PIO:PIOc_put_att_tc_adios");
+            GPTLstop("PIO:write_total_adios");
             return ierr;
+        }
 
         adios2_type adios_type = PIOc_get_adios_type(atttype);
 
@@ -1545,7 +1555,17 @@ int PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Off
 
         ierr = begin_adios2_step(file, ios);
         if (ierr != PIO_NOERR)
+        {
+            GPTLstop("PIO:PIOc_put_vars_tc");
+            GPTLstop("PIO:write_total");
+            spio_ltimer_stop(ios->io_fstats->wr_timer_name);
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->wr_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
+            GPTLstop("PIO:PIOc_put_vars_tc_adios");
+            GPTLstop("PIO:write_total_adios");
             return ierr;
+        }
 
         adios2_error adiosErr = adios2_error_none;
 

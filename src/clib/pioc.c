@@ -255,9 +255,27 @@ int PIOc_setframe(int ncid, int varid, int frame)
         }
         else if (file->current_frame != frame)
         {
+            if (file->mode & PIO_WRITE)
+            {
+                spio_ltimer_start(ios->io_fstats->wr_timer_name);
+                spio_ltimer_start(file->io_fstats->wr_timer_name);
+            }
+            spio_ltimer_start(ios->io_fstats->tot_timer_name);
+            spio_ltimer_start(file->io_fstats->tot_timer_name);
+
             ret = end_adios2_step(file, ios);
+
+            if (file->mode & PIO_WRITE)
+            {
+                spio_ltimer_stop(ios->io_fstats->wr_timer_name);
+                spio_ltimer_stop(file->io_fstats->wr_timer_name);
+            }
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
+
             if (ret != PIO_NOERR)
                 return ret;
+
             file->current_frame = frame;
         }
     }

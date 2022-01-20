@@ -2849,7 +2849,11 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
 
         ierr = begin_adios2_step(file, ios);
         if (ierr != PIO_NOERR)
+        {
+            spio_ltimer_stop(file->io_fstats->wr_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
             return ierr;
+        }
 
         if (file->myrank == 0)
         {
