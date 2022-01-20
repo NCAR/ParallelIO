@@ -2,11 +2,13 @@
 #include <vector>
 #include <string>
 #include <cassert>
+#include <cstring>
 
 extern "C"{
 #include "pio_config.h"
 #include "pio.h"
 #include "pio_tests.h"
+#include "spio_file_mvcache.h"
 }
 #include "spio_file_mvcache.hpp"
 
@@ -188,6 +190,74 @@ int test_multi_ioid_mvcache(int wrank)
   return PIO_NOERR;
 }
 
+/* Test the MVCache C interface */
+int test_cint_mvcache(int wrank)
+{
+  file_desc_t file;
+
+  std::memset(&file, 0, sizeof(file_desc_t));
+
+  /* Initialize the mvcache associated with this dummy file */
+  spio_file_mvcache_init(&file);
+
+  const std::vector<int> ioids = {1, 2, 4, 8, 9, 10, 512, 1024};
+  std::vector<void *> mvbufs;
+
+  /* Use multi-variable buffers of (mvbuf_init_sz + x * mvbuf_sz_scale) bytes each */
+  const int mvbuf_init_sz = 2;
+  const int mvbuf_sz_scale = 2;
+
+  /* Check that no multi-variable buffer is associated with the ioids */
+  for(std::vector<int>::const_iterator citer = ioids.cbegin(); citer != ioids.cend(); ++citer){
+    void *mvbuf = spio_file_mvcache_get(&file, *citer);
+    if(mvbuf){
+      LOG_RANK0(wrank, "test_cint_mvcache() failed : Unallocated Multi-variable buffer for ioid (%d) is not NULL, expected buffer to be NULL since its not allocated yet \n", *citer);
+      return PIO_EINTERNAL;
+    }
+  }
+
+  /* Allocate multi-variable buffer for the different ioids */
+  int i = 0;
+  for(std::vector<int>::const_iterator citer = ioids.cbegin(); citer != ioids.cend(); ++citer, i++){
+    std::size_t mvbuf_sz = mvbuf_init_sz + i * mvbuf_sz_scale;
+    void *mvbuf = spio_file_mvcache_alloc(&file, *citer, mvbuf_sz);
+    if(!mvbuf){
+      LOG_RANK0(wrank, "test_cint_mvcache() failed : Could not allocate multi-variable buffer (%llu bytes ) in the MVCache for ioid (%d)\n", static_cast<unsigned long long>(mvbuf_sz), *citer);
+      return PIO_EINTERNAL;
+    }
+    mvbufs.push_back(mvbuf);
+  }
+
+  /* Get multi-variable buffer for the different ioids */
+  assert(mvbufs.size() == ioids.size());
+  i = 0;
+  for(std::vector<int>::const_iterator citer = ioids.cbegin(); citer != ioids.cend(); ++citer, i++){
+    void *mvbuf = spio_file_mvcache_get(&file, *citer);
+    if(!mvbuf){
+      LOG_RANK0(wrank, "test_cint_mvcache() failed : Could not get multi-variable buffer associated with ioid (%d) in the MVCache \n", *citer);
+      return PIO_EINTERNAL;
+    }
+
+    if(mvbuf != mvbufs[i]){
+      LOG_RANK0(wrank, "test_cint_mvcache() failed : Multi-variable buffer associated with ioid (%d) retrieved using get (%p) is different from the one allocated using alloc (%p)\n", *citer, mvbuf, mvbufs[i]);
+      return PIO_EINTERNAL;
+    }
+  }
+
+  /* Free the multi-variable buffers associated with the ioids */
+  for(std::vector<int>::const_iterator citer = ioids.cbegin(); citer != ioids.cend(); ++citer){
+    spio_file_mvcache_free(&file, *citer);
+  }
+
+  /* Clearing an empty MVCache should not fail */
+  spio_file_mvcache_clear(&file);
+
+  /* Finalize the mvcache associated with this dummy file */
+  spio_file_mvcache_finalize(&file);
+
+  return PIO_NOERR;
+}
+
 int test_driver(MPI_Comm comm, int wrank, int wsz, int *num_errors)
 {
   int nerrs = 0, ret = PIO_NOERR;
@@ -251,6 +321,21 @@ int test_driver(MPI_Comm comm, int wrank, int wsz, int *num_errors)
   }
   else{
     LOG_RANK0(wrank, "test_multi_ioid_mvcache() PASSED\n");
+  }
+
+  /* Test the C interface for MVCache with multiple I/O decomposition ids */
+  try{
+    ret = test_cint_mvcache(wrank);
+  }
+  catch(...){
+    ret = PIO_EINTERNAL;
+  }
+  if(ret != PIO_NOERR){
+    LOG_RANK0(wrank, "test_cint_mvcache() FAILED, ret = %d\n", ret);
+    nerrs++;
+  }
+  else{
+    LOG_RANK0(wrank, "test_cint_mvcache() PASSED\n");
   }
 
   *num_errors += nerrs;
