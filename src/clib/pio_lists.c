@@ -10,6 +10,7 @@
 #endif
 #include <string.h>
 #include <stdio.h>
+#include "spio_file_mvcache.h"
 
 static io_desc_t *pio_iodesc_list = NULL;
 static io_desc_t *current_iodesc = NULL;
@@ -161,6 +162,7 @@ int pio_delete_file_from_list(int ncid)
 
             free(cfile->unlim_dimids);
             free(cfile->io_fstats);
+            spio_file_mvcache_finalize(cfile);
             /* Free the memory used for this file. */
             free(cfile);
             

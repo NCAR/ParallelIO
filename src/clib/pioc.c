@@ -755,19 +755,6 @@ int PIOc_InitDecomp(int iosysid, int pio_type, int ndims, const int *gdimlen, in
     }
     *ioidp = pio_add_to_iodesc_list(iodesc, comm);
 
-    /* Check whether we have exceeded the maximum number of ioids (PIO_IODESC_MAX_IDS).
-     * This limit is necessary since each file uses a sparse pointer array (with a fixed
-     * size of PIO_IODESC_MAX_IDS) to look up a data buffer per ioid.
-     * FIXME: Replace the sparse array with a map or hash map to get rid of this limit
-     */
-    if (*ioidp - PIO_IODESC_START_ID + 1 > PIO_IODESC_MAX_IDS)
-    {
-        GPTLstop("PIO:PIOc_initdecomp");
-        spio_ltimer_stop(ios->io_fstats->tot_timer_name);
-        return pio_err(ios, NULL, PIO_EINTERNAL, __FILE__, __LINE__,
-                       "Initializing the PIO decomposition failed. Maximum number of ioids (limit = %d) has been reached", PIO_IODESC_MAX_IDS);
-    }
-
 #if PIO_SAVE_DECOMPS
     if(pio_save_decomps_regex_match(*ioidp, NULL, NULL))
     {

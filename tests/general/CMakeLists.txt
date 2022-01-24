@@ -23,6 +23,7 @@ SET(GENERATED_SRCS pio_file_simple_tests.F90
   pio_fail.F90
   pio_file_fail.F90
   pio_large_file_tests.F90
+  pio_decomp_large_tests.F90
   ncdf_simple_tests.F90
   ncdf_get_put.F90
   ncdf_fail.F90
@@ -248,13 +249,27 @@ add_pio_test(pio_file_simple_tests
   MAXSTRIDE 1
   TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 
-#===== pio_large_file_tests =====
 if (PIO_ENABLE_LARGE_TESTS)
+  #===== pio_large_file_tests =====
   add_spio_test_executable(pio_large_file_tests FALSE ${PIO_LINKER_LANGUAGE} pio_large_file_tests.F90)
 
   # Costly test only test with 2 I/O procs
   add_pio_test(pio_large_file_tests
     EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_large_file_tests
+    MINNUMPROCS 2
+    MAXNUMPROCS ${PIO_TF_MAXNUMPROCS}
+    MINNUMIOPROCS 2
+    MAXNUMIOPROCS 2
+    MINSTRIDE 1
+    MAXSTRIDE 1
+    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
+
+  #===== pio_decomp_large_tests =====
+  add_spio_test_executable(pio_decomp_large_tests FALSE ${PIO_LINKER_LANGUAGE} pio_decomp_large_tests.F90)
+
+  # Costly test only test with 2 I/O procs
+  add_pio_test(pio_decomp_large_tests
+    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_decomp_large_tests
     MINNUMPROCS 2
     MAXNUMPROCS ${PIO_TF_MAXNUMPROCS}
     MINNUMIOPROCS 2

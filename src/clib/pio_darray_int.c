@@ -17,6 +17,7 @@
 #include "pio_timer.h"
 #endif
 #include "spio_io_summary.h"
+#include "spio_file_mvcache.h"
 
 /* 10MB default limit. */
 extern PIO_Offset pio_buffer_size_limit;
@@ -193,7 +194,7 @@ int write_darray_multi_par(file_desc_t *file, int nvars, int fndims, const int *
     int num_regions = fill ? iodesc->maxfillregions: iodesc->maxregions;
     io_region *region = fill ? iodesc->fillregion : iodesc->firstregion;
     PIO_Offset llen = fill ? iodesc->holegridsize : iodesc->llen;
-    void *iobuf = fill ? vdesc->fillbuf : file->iobuf[iodesc->ioid - PIO_IODESC_START_ID];
+    void *iobuf = fill ? vdesc->fillbuf : spio_file_mvcache_get(file, iodesc->ioid);
 
     /* If this is an IO task write the data. */
     if (ios->ioproc)
@@ -857,7 +858,7 @@ int write_darray_multi_serial(file_desc_t *file, int nvars, int fndims, const in
     int num_regions = fill ? iodesc->maxfillregions: iodesc->maxregions;
     io_region *region = fill ? iodesc->fillregion : iodesc->firstregion;
     PIO_Offset llen = fill ? iodesc->holegridsize : iodesc->llen;
-    void *iobuf = fill ? vdesc->fillbuf : file->iobuf[iodesc->ioid - PIO_IODESC_START_ID];
+    void *iobuf = fill ? vdesc->fillbuf : spio_file_mvcache_get(file, iodesc->ioid);
 
     /* Start timing this function. */
     GPTLstart("PIO:write_darray_multi_serial");
@@ -2082,15 +2083,7 @@ int flush_output_buffer(file_desc_t *file, bool force, PIO_Offset addsize)
 #endif
 
         /* Release resources. */
-        for (int i = 0; i < PIO_IODESC_MAX_IDS; i++)
-        {
-            if (file->iobuf[i])
-            {
-                LOG((3,"freeing variable buffer in flush_output_buffer"));
-                brel(file->iobuf[i]);
-                file->iobuf[i] = NULL;
-            }
-        }
+        spio_file_mvcache_clear(file);
         for (int i = 0; i < PIO_MAX_VARS; i++)
         {
             vdesc = file->varlist + i;

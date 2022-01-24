@@ -1,0 +1,23 @@
+PIO_TF_AUTO_TEST_SUB_BEGIN create_many_decomps
+  implicit none
+  integer, parameter :: VEC_LOCAL_SZ = 7
+  ! Try > 64K decomps
+  integer, parameter :: MAX_DECOMPS = 64 * 1024 + 1
+  type(io_desc_t) :: iodesc
+  integer, dimension(VEC_LOCAL_SZ) :: compdof, compdof_rel_disps
+  integer, dimension(1) :: dims
+  integer :: i, ierr
+
+  do i=1,VEC_LOCAL_SZ
+    compdof_rel_disps(i) = i
+  end do
+  dims(1) = VEC_LOCAL_SZ * pio_tf_world_sz_
+  compdof = VEC_LOCAL_SZ * pio_tf_world_rank_ + compdof_rel_disps
+
+  do i=1,MAX_DECOMPS
+    call PIO_initdecomp(pio_tf_iosystem_, PIO_int, dims, compdof, iodesc)
+
+    call PIO_freedecomp(pio_tf_iosystem_, iodesc)
+  end do
+PIO_TF_AUTO_TEST_SUB_END create_many_decomps
+

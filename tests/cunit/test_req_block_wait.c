@@ -186,9 +186,7 @@ int test_setup(MPI_Comm comm, int rank, int sz,
   /* Write multibuffer is not used by this test */
   file->rb_pend = 0;
   file->wb_pend = 0;
-  for(int i = 0; i < PIO_IODESC_MAX_IDS; i++){
-    file->iobuf[i] = NULL;
-  }
+  file->mvcache = NULL;
   file->next = NULL;
   file->do_io = true;
 

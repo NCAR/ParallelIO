@@ -945,7 +945,10 @@ typedef struct file_desc_t
     PIO_Offset wb_pend;
 
     /** Data buffer per IO decomposition for this file. */
-    void *iobuf[PIO_IODESC_MAX_IDS];
+    /** Cache for storing data corresponding to multiple
+     * variables binned on the I/O decomposition used by
+     * the variable */
+    void *mvcache;
 
     /** I/O statistics associated with this file */
     struct spio_io_fstats_summary *io_fstats;

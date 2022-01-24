@@ -17,6 +17,7 @@
 #include <dirent.h>
 #endif
 #include "spio_io_summary.h"
+#include "spio_file_mvcache.h"
 
 #define VERSNO 2001
 
@@ -2324,9 +2325,6 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
 
     LOG((2, "file->do_io = %d ios->async = %d", file->do_io, ios->async));
 
-    for (int i = 0; i < PIO_IODESC_MAX_IDS; i++)
-        file->iobuf[i] = NULL;
-
     /* If async is in use, and this is not an IO task, bcast the
      * parameters. */
     if (ios->async)
@@ -2759,6 +2757,13 @@ int PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filena
          */
         comm = ios->union_comm;
     }
+
+    /* Initialize the multi-variable cache in the file that is used to cache
+     * data from multiple variables before writing it out to the output file
+     * Note: The MVCache is not used by ADIOS
+     */
+    spio_file_mvcache_init(file);
+
     *ncidp = pio_add_to_file_list(file, comm);
 
     LOG((2, "Created file %s file->fh = %d file->pio_ncid = %d", filename,
@@ -2907,7 +2912,7 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
          iosysid, *iotype, filename, mode, retry));
 
     /* Allocate space for the file info. */
-    if (!(file = calloc(sizeof(*file), 1)))
+    if (!(file = calloc(sizeof(file_desc_t), 1)))
     {
         spio_ltimer_stop(ios->io_fstats->rd_timer_name);
         spio_ltimer_stop(ios->io_fstats->tot_timer_name);
@@ -2993,9 +2998,6 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
     if (file->iotype == PIO_IOTYPE_NETCDF4P || file->iotype == PIO_IOTYPE_PNETCDF ||
         ios->io_rank == 0)
         file->do_io = 1;
-
-    for (int i = 0; i < PIO_IODESC_MAX_IDS; i++)
-        file->iobuf[i] = NULL;
 
     /* If async is in use, bcast the parameters from compute to I/O procs. */
     if(ios->async)
@@ -3187,6 +3189,14 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
          */
         comm = ios->union_comm;
     }
+
+    /* Initialize the multi-variable cache used to cache data for
+     * multiple variables before writing it to the output file
+     * Note: The MVCache is not used by ADIOS or a file opened
+     *       as "read only"
+     */
+    spio_file_mvcache_init(file);
+
     *ncidp = pio_add_to_file_list(file, comm);
 
     LOG((2, "Opened file %s file->pio_ncid = %d file->fh = %d ierr = %d",
@@ -3202,6 +3212,7 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
         ierr = PIOc_inq_unlimdims(*ncidp, &(file->num_unlim_dimids), NULL);
         if(ierr != PIO_NOERR)
         {
+            spio_file_mvcache_finalize(file);
             return pio_err(ios, file, ierr, __FILE__, __LINE__,
                               "Opening file (%s) failed. Although the file was opened successfully, querying the number of unlimited dimensions in the file failed", filename);
         }
@@ -3210,12 +3221,14 @@ int PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filena
             file->unlim_dimids = (int *)malloc(file->num_unlim_dimids * sizeof(int));
             if(!file->unlim_dimids)
             {
+                spio_file_mvcache_finalize(file);
                 return pio_err(ios, file, PIO_ENOMEM, __FILE__, __LINE__,
                                 "Opening file (%s) failed. Out of memory allocating %lld bytes for caching the unlimited dimension ids", filename, (unsigned long long) (file->num_unlim_dimids * sizeof(int)));
             }
             ierr = PIOc_inq_unlimdims(*ncidp, NULL, file->unlim_dimids);
             if(ierr != PIO_NOERR)
             {
+                spio_file_mvcache_finalize(file);
                 return pio_err(ios, file, ierr, __FILE__, __LINE__,
                                 "Opening file (%s) failed. Although the file was opened successfully, querying the unlimited dimensions in the file failed", filename);
             }
