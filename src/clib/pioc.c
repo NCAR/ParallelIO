@@ -245,6 +245,42 @@ int PIOc_setframe(int ncid, int varid, int frame)
      * used by the write_darray functions. */
     file->varlist[varid].record = frame;
 
+#ifdef _ADIOS2
+    /* Add end_step here. Check for frame value of the ncid. */
+    if (file->iotype == PIO_IOTYPE_ADIOS)
+    {
+        if (file->current_frame < 0)
+        {
+            file->current_frame = frame;
+        }
+        else if (file->current_frame != frame)
+        {
+            if (file->mode & PIO_WRITE)
+            {
+                spio_ltimer_start(ios->io_fstats->wr_timer_name);
+                spio_ltimer_start(file->io_fstats->wr_timer_name);
+            }
+            spio_ltimer_start(ios->io_fstats->tot_timer_name);
+            spio_ltimer_start(file->io_fstats->tot_timer_name);
+
+            ret = end_adios2_step(file, ios);
+
+            if (file->mode & PIO_WRITE)
+            {
+                spio_ltimer_stop(ios->io_fstats->wr_timer_name);
+                spio_ltimer_stop(file->io_fstats->wr_timer_name);
+            }
+            spio_ltimer_stop(ios->io_fstats->tot_timer_name);
+            spio_ltimer_stop(file->io_fstats->tot_timer_name);
+
+            if (ret != PIO_NOERR)
+                return ret;
+
+            file->current_frame = frame;
+        }
+    }
+#endif
+
     return PIO_NOERR;
 }
 
@@ -1455,7 +1491,7 @@ int PIOc_finalize(int iosysid)
         if (adiosErr != adios2_error_none)
         {
             GPTLstop("PIO:PIOc_finalize");
-            return pio_err(ios, NULL, PIO_EADIOS2ERR, __FILE__, __LINE__, "Finalizing ADIOS failed (adios2_error=%s) on iosystem (%d)", adios2_error_to_string(adiosErr), iosysid);
+            return pio_err(ios, NULL, PIO_EADIOS2ERR, __FILE__, __LINE__, "Finalizing ADIOS failed (adios2_error=%s) on iosystem (%d)", convert_adios2_error_to_string(adiosErr), iosysid);
         }
 
         ios->adiosH = NULL;

@@ -48,9 +48,17 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <limits.h>
 #include <adios2_c.h>
-#define _ADIOS_ALL_PROCS 1 /* ADIOS: assume all procs are also IO tasks */
-#define ADIOS_PIO_MAX_DECOMPS 200 /* Maximum number of decomps */
+
+#define ADIOS_PIO_MAX_DECOMPS 1024 /* Maximum number of decomps */
+#define MAX_STEP_CALLS 512 /* Maximum number of application steps before adios end step is called */
+#define MAX_ADIOS_BUFFER_COUNT (MAX_STEP_CALLS + 16) /* Maximum buffer size for aggregating decomp_id, frame_id, and fillval_id values */
+#define BLOCK_MAX_BUFFER ((unsigned long)INT_MAX) /* 2GB limit of MPI_Gatherv */
+/* adios end step is called if the number of blocks written out exceeds BLOCK_COUNT_THRESHOLD */
+#define BLOCK_COUNT_THRESHOLD ((unsigned long)(1024 * 1024 * 1024 * 1.9))
+#define BLOCK_METADATA_SIZE 70 /* Size of adios block metadata */
+
 adios2_adios *get_adios2_adios();
 unsigned long get_adios2_io_cnt();
 #endif
@@ -822,10 +830,23 @@ typedef struct adios_var_desc_t
     adios2_variable* decomp_varid;
     adios2_variable* frame_varid;
     adios2_variable* fillval_varid;
+    adios2_variable* num_block_writers_varid;
 
     /* to handle multi-dimensional temporal variables */
     adios2_variable* start_varid;
     adios2_variable* count_varid;
+
+    /* to buffer decomp id, frame id, fill value, and writer blocks */
+    int32_t *decomp_buffer;
+    int32_t *frame_buffer;
+    char *fillval_buffer;
+    int32_t fillval_size;
+    int32_t *num_wb_buffer;
+    int32_t decomp_cnt, frame_cnt, fillval_cnt, num_wb_cnt;
+    int32_t max_buffer_cnt;
+
+    /* for merging blocks */
+    size_t elem_size;
 } adios_var_desc_t;
 
 /* Track attributes */
@@ -872,6 +893,23 @@ typedef struct file_desc_t
     /** ADIOS file handler is 64bit integer */
     adios2_engine *engineH;
 
+    /** Check if begin_step has been invoked. It is used to invoke end_step **/
+    int begin_step_called;
+    int num_step_calls;;
+    int max_step_calls;
+
+    /*
+     * Used to call adios2_end_step to avoid buffer overflow in MPI_Gatherv
+     * during ADIOS metadata write operation.
+     *
+     * if num_written_blocks * BLOCK_METADATA_SIZE >= BLOCK_COUNT_THRESHOLD, call adios2_end_step
+     */
+    unsigned int num_written_blocks;
+
+    int write_decomp_id;
+    int write_frame_id;
+    int write_fillval_id;
+
     /** Handler for ADIOS group (of variables) */
     adios2_io *ioH;
 
@@ -899,7 +937,25 @@ typedef struct file_desc_t
     int num_gattrs;
 
     /* ADIOS: assume all procs are also IO tasks */
-    int adios_iomaster;
+    int myrank;
+    int num_all_procs;
+
+    /* Merging distributed array blocks to reduce I/O overhead */
+    /* ADIOS: grouping of processes for block merging */
+    MPI_Comm node_comm;
+    int node_myrank, node_nprocs;
+    MPI_Comm block_comm;
+    int block_myrank, block_nprocs;
+    int *block_list;
+    MPI_Comm all_comm;
+
+    /* Buffers for merging distributed array blocks */
+    unsigned int *array_counts;
+    unsigned int array_counts_size;
+    unsigned int *array_disp;
+    unsigned int array_disp_size;
+    char *block_array;
+    unsigned int block_array_size;
 
     /* Track attributes */
     /** attribute information. Allow PIO_MAX_VARS for now. */
@@ -908,9 +964,16 @@ typedef struct file_desc_t
 
     int fillmode;
 
+    /* Handle PIO_Offset */
+    int pio_offset_size;
+    adios2_type pio_offset_type;
+
     /** Array for decompositions that has been written already (must write only once) */
     int n_written_ioids;
     int written_ioids[ADIOS_PIO_MAX_DECOMPS]; /* written_ioids[N] = ioid if that decomp has been already written, */
+
+    /** Store current frameid for end_step in PIO_setframe */
+    int current_frame;
 #endif /* _ADIOS2 */
 
     /* File name - cached */
@@ -1467,11 +1530,14 @@ extern "C" {
 
 #ifdef _ADIOS2
     adios2_type PIOc_get_adios_type(nc_type xtype);
-    int adios2_type_size(adios2_type type, const void *var);
+    int get_adios2_type_size(adios2_type type, const void *var);
+    const char *convert_adios2_error_to_string(adios2_error error);
+    unsigned long get_adios2_io_cnt();
+    int begin_adios2_step(file_desc_t *file, iosystem_desc_t *ios);
+    int end_adios2_step(file_desc_t *file, iosystem_desc_t *ios);
 #ifndef strdup
     char *strdup(const char *str);
 #endif
-    const char *adios2_error_to_string(adios2_error error);
 #endif
 
 #if defined(__cplusplus)
