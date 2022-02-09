@@ -17,8 +17,7 @@ set (GPTL_C_SRCS GPTLget_memusage.c
   GPTLutil.c
   f_wrappers.c
   gptl.c
-  gptl_papi.c
-  threadutil.c)
+  gptl_papi.c)
 
 set (GPTL_Fortran_SRCS perf_mod.F90
   perf_utils.F90)
