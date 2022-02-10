@@ -539,7 +539,6 @@ contains
 !
 !---------------------------Local workspace-----------------------------
 !
-   integer  ierr                  ! error return
 !-----------------------------------------------------------------------
    if ( .not. timing_initialized ) then
 

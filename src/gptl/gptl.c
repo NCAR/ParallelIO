@@ -875,6 +875,9 @@ int GPTLstart_instr (void *self)
   */
 
   if (ptr && ptr->onflg) {
+#ifdef GPTL_ASSERT_ON_RECURSION
+    assert(0);
+#endif
     ++ptr->recurselvl;
     return 0;
   }
@@ -989,6 +992,9 @@ int GPTLstart (const char *timername)                  /* timer name */
   */
 
   if (ptr && ptr->onflg) {
+#ifdef GPTL_ASSERT_ON_RECURSION
+    assert(0);
+#endif
     ++ptr->recurselvl;
 
     if (wallstats.enabled && profileovhd.enabled){
@@ -1120,6 +1126,9 @@ int GPTLstart_handle (const char *name,  /* timer name */
   */
 
   if (ptr && ptr->onflg) {
+#ifdef GPTL_ASSERT_ON_RECURSION
+    assert(0);
+#endif
     ++ptr->recurselvl;
 
     if (wallstats.enabled && profileovhd.enabled){
@@ -1260,6 +1269,9 @@ int GPTLstartf (const char *timername, const int namelen)    /* timer name and l
   */
 
   if (ptr && ptr->onflg) {
+#ifdef GPTL_ASSERT_ON_RECURSION
+    assert(0);
+#endif
     ++ptr->recurselvl;
 
     if (wallstats.enabled && profileovhd.enabled){
@@ -1400,6 +1412,9 @@ int GPTLstartf_handle (const char *name,  /* timer name */
   */
 
   if (ptr && ptr->onflg) {
+#ifdef GPTL_ASSERT_ON_RECURSION
+    assert(0);
+#endif
     ++ptr->recurselvl;
 
     if (wallstats.enabled && profileovhd.enabled){
@@ -3439,8 +3454,6 @@ int GPTLpr_summary_file (int comm,
 #ifdef HAVE_MPI
   int nproc;                                /* number of procs in MPI communicator */
 
-  char name[MAX_CHARS+1];                   /* timer name requested by master */
-
   if (((int) comm) == 0)
     comm = MPI_COMM_WORLD;
 
@@ -3826,7 +3839,6 @@ static int collect_data(const int iam,
   const int taga =  99;
   const int tagb = 100;
   const int tagc = 101;
-  MPI_Status status;
   MPI_Request rcvreq1;
   MPI_Request rcvreq2;
   MPI_Request rcvreq3;

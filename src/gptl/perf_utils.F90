@@ -105,7 +105,6 @@ SUBROUTINE shr_sys_abort(string)
 
    !----- local -----
    integer(SHR_KIND_IN) :: ierr
-   logical              :: flag
 
    !----- formats -----
    character(*),parameter :: subName =   '(shr_sys_abort) '
