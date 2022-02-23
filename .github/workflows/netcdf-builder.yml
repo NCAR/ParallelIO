@@ -11,7 +11,7 @@ jobs:
     uses: actions/cache@v2
     with:
       path: ~/netcdf-c
-      key: netcdf-c-${{ runner.os }}-${{ NETCDF_C_VERSION }}-openmpi-4.0.4-1
+      key: netcdf-c-${{ runner.os }}-${{ inputs.netcdf_c_version }}-openmpi-4.0.4-1
 
   - name: build-netcdf-c
     if: steps.cache-netcdf-c.outputs.cache-hit != 'true'
@@ -19,9 +19,9 @@ jobs:
       set -x
       export PATH="/home/runner/openmpi/bin:$PATH"
       export CC=/home/runner/openmpi/bin/mpicc
-      wget https://downloads.unidata.ucar.edu/netcdf-c/${{ env.NETCDF_C_VERSION }}/src/netcdf-c-${{ NETCDF_C_VERSION }}.tar.gz &> /dev/null
-      tar -xzf netcdf-c-${{ NETCDF_C_VERSION }}.tar.gz
-      pushd netcdf-c-${{ NETCDF_C_VERSION }}
+      wget https://downloads.unidata.ucar.edu/netcdf-c/${{ inputs.netcdf_c_version }}/src/netcdf-c-${{ inputs.netcdf_c_version }}.tar.gz &> /dev/null
+      tar -xzf netcdf-c-${{ inputs.netcdf_c_version }}.tar.gz
+      pushd netcdf-c-${{ inputs.netcdf_c_version }}
       ./configure --prefix=/home/runner/netcdf-c --disable-dap --disable-utilities
       make -j
       sudo make install
