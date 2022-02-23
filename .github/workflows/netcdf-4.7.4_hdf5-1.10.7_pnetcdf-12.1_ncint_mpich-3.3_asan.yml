@@ -22,6 +22,7 @@ jobs:
       run: |
         sudo apt-get install doxygen graphviz wget gfortran libjpeg-dev libz-dev
     - name: get-mpich
+      uses: actions/checkout@v2
       uses: ./.github/workflows/mpich-builder.yml
       with:
         mpich_version: ${{ env.MPICH_VERSION }}
