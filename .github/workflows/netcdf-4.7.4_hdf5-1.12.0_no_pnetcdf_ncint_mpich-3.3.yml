@@ -14,29 +14,18 @@ jobs:
     env:
       CPPFLAGS: "-I/home/runner/mpich/include -I/home/runner/hdf5/include -I/home/runner/netcdf-c/include -I/home/runner/netcdf-fortran/include"
       LDFLAGS: "-L/home/runner/mpich/lib -L/home/runner/hdf5/lib -L/home/runner/netcdf-c/lib -L/home/runner/netcdf-fortran/lib"
-
+      MPICH_VERSION: 4.0.1
     steps:
     - uses: actions/checkout@v2
     - name: Installs
       run: |
         sudo apt-get install doxygen graphviz wget gfortran libjpeg-dev libz-dev
-    - name: cache-mpich
-      id: cache-mpich
-      uses: actions/cache@v2
+    - name: get-mpich
+      uses: actions/checkout@v2
+      uses: ./.github/workflows/mpich-builder.yml
       with:
-        path: ~/mpich
-        key: mpich-${{ runner.os }}-3.3.2-1
+        mpich_version: ${{ env.MPICH_VERSION }}
 
-    - name: build-mpich
-      if: steps.cache-mpich.outputs.cache-hit != 'true'
-      run: |
-        wget http://www.mpich.org/static/downloads/3.3.2/mpich-3.3.2.tar.gz &> /dev/null
-        tar -xzf mpich-3.3.2.tar.gz
-        pushd mpich-3.3.2
-        ./configure --prefix=/home/runner/mpich
-        make
-        sudo make install
-        popd
     - name: cache-hdf5
       id: cache-hdf5
       uses: actions/cache@v2
