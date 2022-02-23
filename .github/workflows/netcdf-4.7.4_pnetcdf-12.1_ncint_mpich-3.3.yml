@@ -80,10 +80,12 @@ jobs:
         make
         sudo make install
         popd
-    - name: cmake build
+    - name: get-netcdf
       uses: ./.github/workflows/netcdf-builder.yml
       with:
         netcdf_c_version: ${{ env.NETCDF_C_VERSION }}
+
+    - name: cmake build
       run: |
         set -x
         gcc --version
