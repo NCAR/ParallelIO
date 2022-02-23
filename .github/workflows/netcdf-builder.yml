@@ -1,0 +1,28 @@
+name: netcdf-builder
+on:
+  workflow_call:
+    inputs:
+      netcdf_c_version:
+        required: true
+        type: string
+jobs:
+  - name: cache-netcdf-c
+    id: cache-netcdf-c
+    uses: actions/cache@v2
+    with:
+      path: ~/netcdf-c
+      key: netcdf-c-${{ runner.os }}-${{ NETCDF_C_VERSION }}-openmpi-4.0.4-1
+
+  - name: build-netcdf-c
+    if: steps.cache-netcdf-c.outputs.cache-hit != 'true'
+    run: |
+      set -x
+      export PATH="/home/runner/openmpi/bin:$PATH"
+      export CC=/home/runner/openmpi/bin/mpicc
+      wget https://downloads.unidata.ucar.edu/netcdf-c/${{ env.NETCDF_C_VERSION }}/src/netcdf-c-${{ NETCDF_C_VERSION }}.tar.gz &> /dev/null
+      tar -xzf netcdf-c-${{ NETCDF_C_VERSION }}.tar.gz
+      pushd netcdf-c-${{ NETCDF_C_VERSION }}
+      ./configure --prefix=/home/runner/netcdf-c --disable-dap --disable-utilities
+      make -j
+      sudo make install
+      popd

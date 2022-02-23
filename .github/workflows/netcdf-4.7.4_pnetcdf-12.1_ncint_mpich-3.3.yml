@@ -57,26 +57,6 @@ jobs:
         make
         sudo make install
         popd
-    - name: cache-netcdf-c
-      id: cache-netcdf-c
-      uses: actions/cache@v2
-      with:
-        path: ~/netcdf-c
-        key: netcdf-c-${{ runner.os }}-4.7.4-mpich-3.3.2-1
-
-    - name: build-netcdf-c
-      if: steps.cache-netcdf-c.outputs.cache-hit != 'true'
-      run: |
-        set -x
-        export PATH="/home/runner/mpich/bin:$PATH"
-        export CC=/home/runner/mpich/bin/mpicc
-        wget https://www.unidata.ucar.edu/downloads/netcdf/ftp/netcdf-c-4.7.4.tar.gz &> /dev/null
-        tar -xzf netcdf-c-4.7.4.tar.gz
-        pushd netcdf-c-4.7.4
-        ./configure --prefix=/home/runner/netcdf-c --disable-dap --disable-utilities
-        make -j
-        sudo make install
-        popd
     - name: cache-netcdf-fortran
       id: cache-netcdf-fortran
       uses: actions/cache@v2
@@ -118,6 +98,9 @@ jobs:
         sudo make install
         popd
     - name: cmake build
+      uses: ./.github/workflows/netcdf-builder.yml
+      with:
+        netcdf_c_version: ${{ env.NETCDF_C_VERSION }}
       run: |
         set -x
         gcc --version
