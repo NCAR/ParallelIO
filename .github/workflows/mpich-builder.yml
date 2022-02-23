@@ -6,20 +6,22 @@ on:
         required: true
         type: string
 jobs:
-  - name: cache-mpich
-    id: cache-mpich
-    uses: actions/cache@v2
-    with:
-      path: ~/mpich
-      key: mpich-${{ runner.os }}-${{ inputs.mpich_version }}
+  steps:
+    - name: cache-mpich
+      - uses: actions/checkout@v2
+        id: cache-mpich
+        uses: actions/cache@v2
+        with:
+          path: ~/mpich
+          key: mpich-${{ runner.os }}-${{ inputs.mpich_version }}
       
-  - name: build-mpich
-    if: steps.cache-mpich.outputs.cache-hit != 'true'
-    run: |
-      wget http://www.mpich.org/static/downloads/${{ inputs.mpich_version }}/mpich-${{ inputs.mpich_version }}.tar.gz &> /dev/null
-      tar -xzf mpich-${{ inputs.mpich_version }}.tar.gz
-      pushd mpich-${{ inputs.mpich_version }}
-      ./configure --prefix=/home/runner/mpich
-      make
-      sudo make install
-      popd
+    - name: build-mpich
+      if: steps.cache-mpich.outputs.cache-hit != 'true'
+      run: |
+        wget http://www.mpich.org/static/downloads/${{ inputs.mpich_version }}/mpich-${{ inputs.mpich_version }}.tar.gz &> /dev/null
+        tar -xzf mpich-${{ inputs.mpich_version }}.tar.gz
+        pushd mpich-${{ inputs.mpich_version }}
+        ./configure --prefix=/home/runner/mpich
+        make
+        sudo make install
+        popd
