@@ -71,7 +71,7 @@ jobs:
         set -x
         export PATH="/home/runner/mpich/bin:$PATH"
         export CC=/home/runner/mpich/bin/mpicc
-        wget https://downloads.unidata.ucar.edu/netcdf-c/${{ inputs.netcdf_c_version }}/src/netcdf-c-${{ inputs.netcdf_c_version }}.tar.gz &> /dev/null
+        wget https://downloads.unidata.ucar.edu/netcdf-c/${{ env.NETCDF_C_VERSION }}/src/netcdf-c-${{ env.NETCDF_C_VERSION }}.tar.gz &> /dev/null
         tar -xzf netcdf-c-${{ env.NETCDF_C_VERSION }}.tar.gz
         pushd netcdf-c-${{ env.NETCDF_C_VERSION }}
         ./configure --prefix=/home/runner/netcdf-c --disable-dap --disable-utilities
