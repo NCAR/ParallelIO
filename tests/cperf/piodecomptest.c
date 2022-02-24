@@ -144,6 +144,11 @@ int test_write_darray(int iosys, const char decomp_file[], int rank, const char 
                            dofmap, &ioid, NULL, NULL, NULL);
 
 
+    double dsum=0;
+    for(int i=0; i < maplen[rank]; i++)
+        dsum += dvarw[i];
+    printf("%d: dvarwsum = %d\n",rank, dsum);
+
     ierr = PIOc_write_darray(ncid, varid, ioid, maplen[rank], dvarw, NULL);
 
     ierr = PIOc_closefile(ncid);
@@ -234,6 +239,10 @@ int test_read_darray(int iosys,const char decomp_file[], int rank, const char my
     case PIO_DOUBLE:
         dvarr = malloc(sizeof(double)*maplen[rank]);
         ierr = PIOc_read_darray(ncid, varid, ioid, maplen[rank], dvarr);
+        double dsum=0;
+        for(int i=0; i < maplen[rank]; i++)
+            dsum += dvarr[i];
+        printf("%d: dsum = %d\n",rank, dsum);
         break;
     case PIO_INT:
         ivarr = malloc(sizeof(int)*maplen[rank]);
@@ -264,12 +273,12 @@ int test_read_darray(int iosys,const char decomp_file[], int rank, const char my
     ierr = PIOc_closefile(ncid);
     if(ierr || debug) printf("%d %d\n",__LINE__,ierr);
 
-    if(rank == 1)
+/*    if(rank == 1)
     {
         for(int i=0; i < maplen[rank]; i+=2)
             printf("dvarr[%d] = (%f, %f)\n",i/2, dvarr[i], dvarr[i+1]);
     }
-
+*/
     return ierr;
 
 }
@@ -292,7 +301,7 @@ int main(int argc, char *argv[])
 
     arguments.wdecomp_file = NULL;
     arguments.rdecomp_file = NULL;
-
+    arguments.varname = NULL;
     mpi_argp_parse(rank, &argp, argc, argv, 0, 0, &arguments);
 
     if(! arguments.rdecomp_file)

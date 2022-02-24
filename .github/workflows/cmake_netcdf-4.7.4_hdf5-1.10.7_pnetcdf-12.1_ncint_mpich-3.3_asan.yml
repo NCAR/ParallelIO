@@ -17,6 +17,8 @@ jobs:
       NETCDF_C_VERSION: 4.7.4
       NETCDF_F_VERSION: 4.5.4
       PNETCDF_VERSION: 1.12.3
+      HDF5_VERSION: 1.10.7
+      MPICH_VERSION: 3.3.2
     steps:
     - uses: actions/checkout@v2
     - name: Installs
@@ -27,14 +29,14 @@ jobs:
       uses: actions/cache@v2
       with:
         path: ~/mpich
-        key: mpich-${{ runner.os }}-3.3.2-1
+        key: mpich-${{ runner.os }}-${{ env.MPICH_VERSION }}
 
     - name: build-mpich
       if: steps.cache-mpich.outputs.cache-hit != 'true'
       run: |
-        wget http://www.mpich.org/static/downloads/3.3.2/mpich-3.3.2.tar.gz &> /dev/null
-        tar -xzf mpich-3.3.2.tar.gz
-        pushd mpich-3.3.2
+        wget http://www.mpich.org/static/downloads/${{ env.MPICH_VERSION }}/mpich-${{ env.MPICH_VERSION }}.tar.gz &> /dev/null
+        tar -xzf mpich-${{ env.MPICH_VERSION }}.tar.gz
+        pushd mpich-${{ env.MPICH_VERSION }}
         ./configure --prefix=/home/runner/mpich
         make
         sudo make install
@@ -44,7 +46,7 @@ jobs:
       uses: actions/cache@v2
       with:
         path: ~/hdf5
-        key: hdf5-${{ runner.os }}-1.10.7-mpich-3.3.2-1
+        key: hdf5-${{ runner.os }}-${{ env.HDF5_VERSION }}-mpich-${{ env.MPICH_VERSION }}
 
     - name: build-hdf5
       if: steps.cache-hdf5.outputs.cache-hit != 'true'
@@ -52,9 +54,9 @@ jobs:
         set -x
         export PATH="/home/runner/mpich/bin:$PATH"
         export CC=/home/runner/mpich/bin/mpicc
-        wget https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.10/hdf5-1.10.7/src/hdf5-1.10.7.tar.gz &> /dev/null
-        tar -xzf hdf5-1.10.7.tar.gz
-        pushd hdf5-1.10.7
+        wget https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.10/hdf5-${{ env.HDF5_VERSION }}/src/hdf5-${{ env.HDF5_VERSION }}.tar.gz &> /dev/null
+        tar -xzf hdf5-${{ env.HDF5_VERSION }}.tar.gz
+        pushd hdf5-${{ env.HDF5_VERSION }}
         ./configure --prefix=/home/runner/hdf5 --enable-parallel --disable-tools --disable-fortran --disable-cxx --enable-parallel-tests
         make
         sudo make install
@@ -65,7 +67,7 @@ jobs:
       uses: actions/cache@v2
       with:
         path: ~/netcdf-c
-        key: netcdf-c-${{ runner.os }}-${{ env.NETCDF_C_VERSION }}-mpich-3.3.2-1
+        key: netcdf-c-${{ runner.os }}-${{ env.NETCDF_C_VERSION }}-mpich-${{ env.MPICH_VERSION }}
 
     - name: build-netcdf-c
       if: steps.cache-netcdf-c.outputs.cache-hit != 'true'
@@ -85,7 +87,7 @@ jobs:
       uses: actions/cache@v2
       with:
         path: ~/netcdf-fortran
-        key: netcdf-fortran-${{ runner.os }}-${{ env.NETCDF_F_VERSION }}-mpich-3.3.2-1
+        key: netcdf-fortran-${{ runner.os }}-${{ env.NETCDF_F_VERSION }}-mpich-${{ env.MPICH_VERSION }}
 
     - name: build-netcdf-fortran
       if: steps.cache-netcdf-fortran.outputs.cache-hit != 'true'
@@ -106,7 +108,7 @@ jobs:
       uses: actions/cache@v2
       with:
         path: ~/pnetcdf
-        key: pnetcdf-${{ runner.os }}-${{ env.PNETCDF_VERSION }}-mpich-3.3.2-2
+        key: pnetcdf-${{ runner.os }}-${{ env.PNETCDF_VERSION }}-mpich-${{ env.MPICH_VERSION }}
 
     - name: build-pnetcdf
       if: steps.cache-pnetcdf.outputs.cache-hit != 'true'
