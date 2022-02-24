@@ -73,7 +73,7 @@ jobs:
         export PATH="/home/runner/mpich/bin:$PATH"
         export CC=/home/runner/mpich/bin/mpicc
         wget https://github.com/Unidata/netcdf-c/archive/refs/tags/v${{ env.NETCDF_C_VERSION }}.tar.gz
-        tar -xzf v${{ NETCDF_C_VERSION }}.tar.gz &> /dev/null
+        tar -xzf v${{ env.NETCDF_C_VERSION }}.tar.gz &> /dev/null
         #wget https://downloads.unidata.ucar.edu/netcdf-c/${{ env.NETCDF_C_VERSION }}/src/netcdf-c-${{ env.NETCDF_C_VERSION }}.tar.gz &> /dev/null
         #tar -xzf netcdf-c-${{ env.NETCDF_C_VERSION }}.tar.gz
         pushd netcdf-c-${{ env.NETCDF_C_VERSION }}
@@ -94,8 +94,8 @@ jobs:
         set -x
         export PATH="/home/runner/mpich/bin:$PATH"
         export CC=/home/runner/mpich/bin/mpicc
-        wget https://github.com/Unidata/netcdf-fortran/archive/refs/tags/v${{ NETCDF_F_VERSION }}.tar.gz
-        tar -zxf v${{ NETCDF_F_VERSION }}.tar.gz &> /dev/null
+        wget https://github.com/Unidata/netcdf-fortran/archive/refs/tags/v${{ env.NETCDF_F_VERSION }}.tar.gz
+        tar -zxf v${{ env.NETCDF_F_VERSION }}.tar.gz &> /dev/null
         #wget https://downloads.unidata.ucar.edu/netcdf-fortran/${{ env.NETCDF_F_VERSION }}/netcdf-fortran-${{ env.NETCDF_F_VERSION }}.tar.gz &> /dev/null
         #tar -xzf netcdf-fortran-${{ env.NETCDF_F_VERSION }}.tar.gz
         pushd netcdf-fortran-${{ env.NETCDF_F_VERSION }}
