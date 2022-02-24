@@ -20,7 +20,6 @@ jobs:
       CPPFLAGS: "-I/usr/include -I/usr/local/include -I/home/runner/pnetcdf/include"
       LDFLAGS: "-L/home/runner/pnetcdf/lib"
       LD_LIBRARY_PATH: "/home/runner/pnetcdf/lib"
-      NETCDF_C_VERSION: 4.8.1
       PNETCDF_VERSION: 1.12.3
     steps:
       - uses: actions/checkout@v2
