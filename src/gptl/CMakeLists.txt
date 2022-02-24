@@ -118,7 +118,7 @@ if (PIO_USE_MPISERIAL)
     set (MPI_Fortran_INCLUDE_PATH ${MPISERIAL_Fortran_INCLUDE_DIRS})
   endif ()
 else ()
-  find_package (MPI REQUIRED)
+  find_package (MPI REQUIRED COMPONENTS C Fortran)
   if (MPI_C_FOUND AND MPI_Fortran_FOUND)
     target_compile_definitions (gptl
       PUBLIC HAVE_MPI)

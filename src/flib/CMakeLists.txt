@@ -127,7 +127,7 @@ if (PIO_USE_MPISERIAL)
     message(WARNING "Could not find MPI serial library")
   endif ()
 else ()
-  find_package (MPI REQUIRED)
+  find_package (MPI REQUIRED COMPONENTS Fortran)
 endif ()
 
 # Check for MPI Fortran module

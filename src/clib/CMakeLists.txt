@@ -28,7 +28,7 @@ if (PIO_USE_MPISERIAL)
     message(WARNING "Unable to find the MPI serial library (SCORPIO was configured to use the MPI serial library)")
   endif ()
 else ()
-  find_package (MPI REQUIRED)
+  find_package (MPI REQUIRED COMPONENTS C)
 endif ()
 
 #===== GPTL =====
