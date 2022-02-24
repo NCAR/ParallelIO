@@ -18,7 +18,7 @@ jobs:
       LDFLAGS: "-L/home/runner/pnetcdf/lib"
       LD_LIBRARY_PATH: "/home/runner/pnetcdf/lib"
 
-    steps:
+  steps:
     - uses: actions/checkout@v2
     - name: Installs
       run: |
