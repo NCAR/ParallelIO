@@ -14,8 +14,9 @@ jobs:
     env:
       CPPFLAGS: "-I/home/runner/mpich/include -I/home/runner/hdf5/include -I/home/runner/netcdf-c/include -I/home/runner/netcdf-fortran/include -I/home/runner/pnetcdf/include"
       LDFLAGS: "-L/home/runner/mpich/lib -L/home/runner/hdf5/lib -L/home/runner/netcdf-c/lib -L/home/runner/netcdf-fortran/lib -L/home/runner/pnetcdf/lib"
-
-    steps:
+      NETCDF_C_VERSION: 4.8.1
+      NETCDF_F_VERSION: 4.5.4
+  steps:
     - uses: actions/checkout@v2
     - name: Installs
       run: |
@@ -62,7 +63,7 @@ jobs:
       uses: actions/cache@v2
       with:
         path: ~/netcdf-c
-        key: netcdf-c-${{ runner.os }}-4.7.4-mpich-3.3.2-1
+        key: netcdf-c-${{ runner.os }}-${{ env.NETCDF_C_VERSION }}-mpich-3.3.2-1
 
     - name: build-netcdf-c
       if: steps.cache-netcdf-c.outputs.cache-hit != 'true'
@@ -70,9 +71,9 @@ jobs:
         set -x
         export PATH="/home/runner/mpich/bin:$PATH"
         export CC=/home/runner/mpich/bin/mpicc
-        wget https://www.unidata.ucar.edu/downloads/netcdf/ftp/netcdf-c-4.7.4.tar.gz &> /dev/null
-        tar -xzf netcdf-c-4.7.4.tar.gz
-        pushd netcdf-c-4.7.4
+        wget https://downloads.unidata.ucar.edu/netcdf-c/${{ inputs.netcdf_c_version }}/src/netcdf-c-${{ inputs.netcdf_c_version }}.tar.gz &> /dev/null
+        tar -xzf netcdf-c-${{ env.NETCDF_C_VERSION }}.tar.gz
+        pushd netcdf-c-${{ env.NETCDF_C_VERSION }}
         ./configure --prefix=/home/runner/netcdf-c --disable-dap --disable-utilities
         make -j
         sudo make install
@@ -90,9 +91,9 @@ jobs:
         set -x
         export PATH="/home/runner/mpich/bin:$PATH"
         export CC=/home/runner/mpich/bin/mpicc
-        wget https://github.com/Unidata/netcdf-fortran/archive/v4.5.3.tar.gz &> /dev/null
-        tar -xzf v4.5.3.tar.gz
-        pushd netcdf-fortran-4.5.3
+        wget https://downloads.unidata.ucar.edu/netcdf-fortran/${{ env.NETCDF_F_VERSION }}/netcdf-fortran-${{ NETCDF_F_VERSION }}.tar.gz &> /dev/null
+        tar -xzf v${{ NETCDF_F_VERSION }}.tar.gz
+        pushd netcdf-fortran-${{ NETCDF_F_VERSION }}
         ./configure --prefix=/home/runner/netcdf-fortran
         make -j
         sudo make install
