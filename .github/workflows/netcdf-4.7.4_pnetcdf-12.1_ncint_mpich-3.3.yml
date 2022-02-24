@@ -92,7 +92,7 @@ jobs:
         export PATH="/home/runner/mpich/bin:$PATH"
         export CC=/home/runner/mpich/bin/mpicc
         wget https://downloads.unidata.ucar.edu/netcdf-fortran/${{ env.NETCDF_F_VERSION }}/netcdf-fortran-${{ env.NETCDF_F_VERSION }}.tar.gz &> /dev/null
-        tar -xzf v${{ env.NETCDF_F_VERSION }}.tar.gz
+        tar -xzf netcdf-fortran-${{ env.NETCDF_F_VERSION }}.tar.gz
         pushd netcdf-fortran-${{ env.NETCDF_F_VERSION }}
         ./configure --prefix=/home/runner/netcdf-fortran
         make -j
