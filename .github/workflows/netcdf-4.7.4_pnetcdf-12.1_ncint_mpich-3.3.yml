@@ -16,7 +16,7 @@ jobs:
       LDFLAGS: "-L/home/runner/mpich/lib -L/home/runner/hdf5/lib -L/home/runner/netcdf-c/lib -L/home/runner/netcdf-fortran/lib -L/home/runner/pnetcdf/lib"
       NETCDF_C_VERSION: 4.8.1
       NETCDF_F_VERSION: 4.5.4
-  steps:
+    steps:
     - uses: actions/checkout@v2
     - name: Installs
       run: |
@@ -91,9 +91,9 @@ jobs:
         set -x
         export PATH="/home/runner/mpich/bin:$PATH"
         export CC=/home/runner/mpich/bin/mpicc
-        wget https://downloads.unidata.ucar.edu/netcdf-fortran/${{ env.NETCDF_F_VERSION }}/netcdf-fortran-${{ NETCDF_F_VERSION }}.tar.gz &> /dev/null
-        tar -xzf v${{ NETCDF_F_VERSION }}.tar.gz
-        pushd netcdf-fortran-${{ NETCDF_F_VERSION }}
+        wget https://downloads.unidata.ucar.edu/netcdf-fortran/${{ env.NETCDF_F_VERSION }}/netcdf-fortran-${{ env.NETCDF_F_VERSION }}.tar.gz &> /dev/null
+        tar -xzf v${{ env.NETCDF_F_VERSION }}.tar.gz
+        pushd netcdf-fortran-${{ env.NETCDF_F_VERSION }}
         ./configure --prefix=/home/runner/netcdf-fortran
         make -j
         sudo make install
