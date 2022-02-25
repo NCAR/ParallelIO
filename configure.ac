@@ -11,7 +11,7 @@ AM_INIT_AUTOMAKE([foreign serial-tests])
 # AC_DEFINE_UNQUOTED for config.h.
 AC_SUBST([PIO_VERSION_MAJOR]) PIO_VERSION_MAJOR=2
 AC_SUBST([PIO_VERSION_MINOR]) PIO_VERSION_MINOR=5
-AC_SUBST([PIO_VERSION_PATCH]) PIO_VERSION_PATCH=5
+AC_SUBST([PIO_VERSION_PATCH]) PIO_VERSION_PATCH=4
 AC_DEFINE_UNQUOTED([PIO_VERSION_MAJOR], [$PIO_VERSION_MAJOR], [PIO major version])
 AC_DEFINE_UNQUOTED([PIO_VERSION_MINOR], [$PIO_VERSION_MINOR], [PIO minor version])
 AC_DEFINE_UNQUOTED([PIO_VERSION_PATCH], [$PIO_VERSION_PATCH], [PIO patch version])
@@ -108,7 +108,7 @@ AC_MSG_CHECKING([whether debug logging is enabled])
 AC_ARG_ENABLE([logging],
               [AS_HELP_STRING([--enable-logging],
                               [enable debug logging capability (will negatively impact performance). \
-                              This debugging feature is probably only of interest to PIO developers.])])
+			      This debugging feature is probably only of interest to PIO developers.])])
 test "x$enable_logging" = xyes || enable_logging=no
 AC_MSG_RESULT([$enable_logging])
 if test "x$enable_logging" = xyes; then
@@ -322,7 +322,7 @@ fi
 # Do we have the correct dispatch table version in netcdf-c for netcdf
 # integration?
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include "netcdf_meta.h"],
-[[#if NC_DISPATCH_VERSION < 2
+[[#if NC_DISPATCH_VERSION != 2
 # error
 #endif]
 ])], [have_dispatch2=yes], [have_dispatch2=no])
@@ -469,7 +469,7 @@ AC_SUBST([HAS_PIO_FORTRAN], [$enable_fortran])
 # Create the build summary file. 
 AC_CONFIG_FILES([libpio.settings
                  src/clib/pio_meta.h
-                 ])
+		 ])
 AC_CONFIG_LINKS([tests/unit/input.nl:tests/unit/input.nl])
 
 # Create the config.h file.
