@@ -6,7 +6,9 @@ jobs:
   fake_deploy_cache_multi:
     runs-on: ubuntu-latest
     steps:
+      # Gets the code for PIO
       - uses: actions/checkout@v2
+      # Gets the Docker container
       - uses: actions/checkout@v2
         with:
           repository: ESMCI/TestingTools
