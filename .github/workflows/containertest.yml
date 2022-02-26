@@ -1,4 +1,4 @@
-name: PIO testing with Dockerfile
+name: ParallelIO testing with Dockerfile
 on: [push]
 
 jobs:
