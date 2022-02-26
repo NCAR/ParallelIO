@@ -1,4 +1,4 @@
-name: Fake deploy with multi-stage Dockerfile
+name: PIO testing with Dockerfile
 on: [push]
 
 jobs:
