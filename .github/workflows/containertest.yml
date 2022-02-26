@@ -7,9 +7,9 @@ jobs:
     steps:
       - uses: actions/checkout@master
         with:
-          name: ESCOMP/ESCOMP-Containers
           repository: ESCOMP/ESCOMP-Containers
           ref: ''
+          path: ESCOMP-Containers
       - name: Prepare
         id: prep
         run: |
@@ -40,7 +40,7 @@ jobs:
         with:
           context: .
           builder: ${{ steps.buildx.outputs.name }}
-          file: ESCOMP-Containers/base/centos8/Dockerfile
+          file: ~/ESCOMP-Containers/base/centos8/Dockerfile
           # Set the desired build target here
           target: deploy
           push: false
