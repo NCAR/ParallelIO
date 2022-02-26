@@ -13,7 +13,7 @@ jobs:
       - name: Prepare
         id: prep
         run: |
-          TAG=$(echo $GITHUB_SHA | head -c7
+          TAG=$(echo $GITHUB_SHA | head -c7)
           IMAGE="my.docker.registry/base/centos8"
           echo ::set-output name=tagged_image::${IMAGE}:${TAG}
           echo ::set-output name=tag::${TAG}
@@ -40,7 +40,7 @@ jobs:
         with:
           context: .
           builder: ${{ steps.buildx.outputs.name }}
-          file: .dockerdev/Dockerfile.multi
+          file: ESCOMP-Containers/base/centos8/Dockerfile
           # Set the desired build target here
           target: deploy
           push: false
