@@ -1,4 +1,4 @@
-name: ParallelIO testing with Dockerfile
+name: ParallelIO testing with ubuntu Dockerfile
 on: [push]
 
 jobs:
