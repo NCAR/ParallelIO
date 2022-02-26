@@ -42,8 +42,6 @@ jobs:
           context: .
           builder: ${{ steps.buildx.outputs.name }}
           file: ./ESCOMP-Containers/base/centos8/Dockerfile
-          # Set the desired build target here
-          target: deploy
           push: false
           tags: ${{ steps.prep.outputs.tagged_image }}
           cache-from: type=local,src=/tmp/.buildx-cache
