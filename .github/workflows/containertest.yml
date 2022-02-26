@@ -5,7 +5,8 @@ jobs:
   fake_deploy_cache_multi:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@v2
+      - uses: actions/checkout@v2
         with:
           repository: ESCOMP/ESCOMP-Containers
           ref: ''
@@ -40,7 +41,7 @@ jobs:
         with:
           context: .
           builder: ${{ steps.buildx.outputs.name }}
-          file: ~/ESCOMP-Containers/base/centos8/Dockerfile
+          file: $GITHUB_WORKSPACE/ESCOMP-Containers/base/centos8/Dockerfile
           # Set the desired build target here
           target: deploy
           push: false
