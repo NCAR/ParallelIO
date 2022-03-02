@@ -5,9 +5,6 @@ on: [push]
 jobs:
   testwithmpich:
     runs-on: ubuntu-latest
-    uses: docker://jedwards4b/mpichbase:m3.4.3h1.12.1nc4.7.4nf4.5.4p1.12.3@latest
-    with:
-      entrypoint: /bin/bash
     env:
       CC: mpicc
       FC: mpifort
@@ -16,6 +13,10 @@ jobs:
       LD_LIBRARY_PATH: "/usr/local/lib"
     steps:
     - uses: actions/checkout@v2
+    - name: get Docker image
+      uses: docker://jedwards4b/mpichbase:m3.4.3h1.12.1nc4.7.4nf4.5.4p1.12.3@latest
+      with:
+        entrypoint: /bin/bash
     - name: cmake build
       run: |
         mkdir build
