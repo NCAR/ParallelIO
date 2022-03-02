@@ -3,12 +3,13 @@ name: ParallelIO testing with ubuntu Dockerfile
 on: [push]
 
 jobs:
-#
-#      The following can be used to ssh to the testnode for debugging
-#      see https://github.com/mxschmitt/action-tmate for details
+  #
+  #      The following can be used to ssh to the testnode for debugging
+  #      see https://github.com/mxschmitt/action-tmate for details
   debugcmake:
-    - name: Setup tmate session
-      uses: mxschmitt/action-tmate@v3
+    runs-on: ubuntu-latest
+    name: Setup tmate session
+    uses: mxschmitt/action-tmate@v3
   testwithmpich:
     runs-on: ubuntu-latest
     env:
