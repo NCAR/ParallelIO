@@ -26,7 +26,7 @@ jobs:
       - name: cmake build
         run: |
           echo $GITHUB_WORKSPACE
-	  ls $GITHUB_WORKSPACE
+          ls $GITHUB_WORKSPACE
           mkdir build
           cd build
           cmake -Wno-dev -DPIO_ENABLE_NETCDF_INTEGRATION=OFF \
