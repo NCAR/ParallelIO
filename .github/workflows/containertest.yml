@@ -16,7 +16,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-	path: ParallelIO
+        path: ParallelIO
       - name: checkout cmake_fortran_utils
         uses: actions/checkout@v3
         with:
