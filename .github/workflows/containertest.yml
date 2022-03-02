@@ -14,7 +14,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: get Docker image
-      uses: docker://jedwards4b/mpichbase:m3.4.3h1.12.1nc4.7.4nf4.5.4p1.12.3@latest
+      uses: docker://jedwards4b/mpichbase:@latest
       with:
         entrypoint: /bin/bash
     - name: cmake build
