@@ -8,8 +8,9 @@ jobs:
   #      see https://github.com/mxschmitt/action-tmate for details
   debugcmake:
     runs-on: ubuntu-latest
-    name: Setup tmate session
-    uses: mxschmitt/action-tmate@v3
+    steps:
+    - name: Setup tmate session
+      uses: mxschmitt/action-tmate@v3
   testwithmpich:
     runs-on: ubuntu-latest
     env:
