@@ -17,7 +17,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
         with:
-	  path: pio
+          path: pio
       - name: checkout cmake_fortran_utils
         uses: actions/checkout@v3
         with:
