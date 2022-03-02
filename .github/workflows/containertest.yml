@@ -20,14 +20,14 @@ jobs:
     - name: cmake build
       run: |
         echo "/usr/local/bin" >> $GITHUB_PATH
-	echo $PATH
+        echo $PATH
         mkdir build
         cd build
         cmake -Wno-dev -DPIO_ENABLE_NETCDF_INTEGRATION=OFF \
-        -DNetCDF_C_LIBRARY=/usr/local/libnetcdf.so \
-        -DNetCDF_C_INCLUDE_DIR=/usr/local/include -DPnetCDF_PATH='/usr/local' \
-          -DPIO_HDF5_LOGGING=On -DPIO_ENABLE_FORTRAN=ON -DPIO_USE_MALLOC=On \
-          -DPIO_ENABLE_LOGGING=On -DPIO_ENABLE_TIMING=Off ..
-          make VERBOSE=1
-          make tests VERBOSE=1
-          ctest -VV
+              -DNetCDF_C_LIBRARY=/usr/local/libnetcdf.so \
+              -DNetCDF_C_INCLUDE_DIR=/usr/local/include -DPnetCDF_PATH='/usr/local' \
+              -DPIO_HDF5_LOGGING=On -DPIO_ENABLE_FORTRAN=ON -DPIO_USE_MALLOC=On \
+              -DPIO_ENABLE_LOGGING=On -DPIO_ENABLE_TIMING=Off ..
+        make VERBOSE=1
+        make tests VERBOSE=1
+        ctest -VV
