@@ -16,6 +16,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+        with:
+	  path: pio
       - name: checkout cmake_fortran_utils
         uses: actions/checkout@v3
         with:
@@ -23,7 +25,8 @@ jobs:
           path: CMake_Fortran_utils
       - name: cmake build
         run: |
-          echo "/usr/local/bin" >> $GITHUB_PATH
+          echo $GITHUB_WORKSPACE
+	  ls $GITHUB_WORKSPACE
           mkdir build
           cd build
           cmake -Wno-dev -DPIO_ENABLE_NETCDF_INTEGRATION=OFF \
