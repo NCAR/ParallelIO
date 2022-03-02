@@ -5,7 +5,7 @@ on: [push]
 jobs:
   testwithmpich:
     runs-on: ubuntu-latest
-    uses: docker://jedwards4b/mpichbase:m3.4.3h1.12.1nc4.7.4nf4.5.4p1.12.3
+    uses: docker://jedwards4b/mpichbase:m3.4.3h1.12.1nc4.7.4nf4.5.4p1.12.3@latest
     with:
       entrypoint: /bin/bash
     env:
