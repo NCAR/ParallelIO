@@ -31,7 +31,7 @@ jobs:
               -DNetCDF_C_INCLUDE_DIR=/usr/local/include -DPnetCDF_PATH='/usr/local' \
               -DPIO_HDF5_LOGGING=On -DPIO_ENABLE_FORTRAN=ON -DPIO_USE_MALLOC=On \
               -DPIO_ENABLE_LOGGING=On -DPIO_ENABLE_TIMING=Off \
-              -DCMAKE_MODULE_PATH=~/CMake_Fortran_utils ..
+              -DCMAKE_MODULE_PATH=${{ env.GITHUB_WORKSPACE }}/CMake_Fortran_utils ..
           make VERBOSE=1
           make tests VERBOSE=1
           ctest -VV
