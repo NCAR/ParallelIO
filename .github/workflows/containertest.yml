@@ -33,7 +33,7 @@ jobs:
       - name: cmake build
         run: |
           cd build
-	  export PATH=/usr/local/bin:$PATH 
+          export PATH=/usr/local/bin:$PATH 
           cmake -Wno-dev -DPIO_ENABLE_NETCDF_INTEGRATION=OFF \
               -DNetCDF_PATH=/usr/local/ \
               -DPnetCDF_PATH=/usr/local \
