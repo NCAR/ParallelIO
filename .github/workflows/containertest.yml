@@ -14,18 +14,24 @@ jobs:
     container:
       image: jedwards4b/mpichbase:m3.4.3h1.12.1nc4.7.4nf4.5.4p1.12.3
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: checkout cmake_fortran_utils
+        uses: actions/checkout@v3
+	with:
+	  repository: CESM-Development/CMake_Fortran_utils
+	  path: CMake_Fortran_utils
       - name: cmake build
         run: |
           echo "/usr/local/bin" >> $GITHUB_PATH
-          ls /usr/local/bin
           mkdir build
           cd build
           cmake -Wno-dev -DPIO_ENABLE_NETCDF_INTEGRATION=OFF \
               -DNetCDF_C_LIBRARY=/usr/local/libnetcdf.so \
               -DNetCDF_C_INCLUDE_DIR=/usr/local/include -DPnetCDF_PATH='/usr/local' \
               -DPIO_HDF5_LOGGING=On -DPIO_ENABLE_FORTRAN=ON -DPIO_USE_MALLOC=On \
-              -DPIO_ENABLE_LOGGING=On -DPIO_ENABLE_TIMING=Off ..
+              -DPIO_ENABLE_LOGGING=On -DPIO_ENABLE_TIMING=Off \
+	      -DCMAKE_MODULE_PATH=~/CMake_Fortran_utils ..
           make VERBOSE=1
           make tests VERBOSE=1
           ctest -VV
