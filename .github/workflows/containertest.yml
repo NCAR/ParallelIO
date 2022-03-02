@@ -40,7 +40,7 @@ jobs:
           cd build
           export PATH=/usr/local/bin:$PATH 
           cmake -Wno-dev -DPIO_ENABLE_NETCDF_INTEGRATION=OFF \
-              -DGENF90_PATH=../genf90 \
+              -DGENF90_PATH=${GITHUB_WORKSPACE}/build/genf90 \
               -DNetCDF_PATH=/usr/local/ \
               -DPnetCDF_PATH=/usr/local \
               -DPIO_HDF5_LOGGING=On -DPIO_ENABLE_FORTRAN=ON -DPIO_USE_MALLOC=On \
