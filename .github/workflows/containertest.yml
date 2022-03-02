@@ -13,8 +13,6 @@ jobs:
       LD_LIBRARY_PATH: "/usr/local/lib"
     container:
       image: jedwards4b/mpichbase:m3.4.3h1.12.1nc4.7.4nf4.5.4p1.12.3
-      with:
-        entrypoint: /bin/bash
     steps:
       - uses: actions/checkout@v2
       - name: cmake build
