@@ -11,23 +11,23 @@ jobs:
       CPPFLAGS: "-I/usr/include -I/usr/local/include "
       LDFLAGS: "-L/usr/local/lib"
       LD_LIBRARY_PATH: "/usr/local/lib"
-    steps:
-    - uses: actions/checkout@v2
-    - name: get Docker image
-      uses: docker://jedwards4b/mpichbase:m3.4.3h1.12.1nc4.7.4nf4.5.4p1.12.3
+    container:
+      image: jedwards4b/mpichbase:m3.4.3h1.12.1nc4.7.4nf4.5.4p1.12.3
       with:
         entrypoint: /bin/bash
-    - name: cmake build
-      run: |
-        echo "/usr/local/bin" >> $GITHUB_PATH
-        ls /usr/local/bin
-        mkdir build
-        cd build
-        cmake -Wno-dev -DPIO_ENABLE_NETCDF_INTEGRATION=OFF \
+    steps:
+      - uses: actions/checkout@v2
+      - name: cmake build
+        run: |
+          echo "/usr/local/bin" >> $GITHUB_PATH
+          ls /usr/local/bin
+          mkdir build
+          cd build
+          cmake -Wno-dev -DPIO_ENABLE_NETCDF_INTEGRATION=OFF \
               -DNetCDF_C_LIBRARY=/usr/local/libnetcdf.so \
               -DNetCDF_C_INCLUDE_DIR=/usr/local/include -DPnetCDF_PATH='/usr/local' \
               -DPIO_HDF5_LOGGING=On -DPIO_ENABLE_FORTRAN=ON -DPIO_USE_MALLOC=On \
               -DPIO_ENABLE_LOGGING=On -DPIO_ENABLE_TIMING=Off ..
-        make VERBOSE=1
-        make tests VERBOSE=1
-        ctest -VV
+          make VERBOSE=1
+          make tests VERBOSE=1
+          ctest -VV
