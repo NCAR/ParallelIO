@@ -20,7 +20,7 @@ jobs:
     - name: cmake build
       run: |
         echo "/usr/local/bin" >> $GITHUB_PATH
-        echo $PATH
+        ls /usr/local/bin
         mkdir build
         cd build
         cmake -Wno-dev -DPIO_ENABLE_NETCDF_INTEGRATION=OFF \
