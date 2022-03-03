@@ -6,7 +6,7 @@ jobs:
   #
   #      The following can be used to ssh to the testnode for debugging
   #      see https://github.com/mxschmitt/action-tmate for details
-  #debugcmake:
+  # debugcmake:
   #  runs-on: ubuntu-latest
   #  steps:
   #  - name: Setup tmate session
@@ -52,3 +52,10 @@ jobs:
           make VERBOSE=1
           make tests VERBOSE=1
           ctest -VV
+      - name: autotools build
+        run: |
+          set -x
+          gcc --version
+          autoreconf -i
+          ./configure --enable-fortran
+          make -j check
