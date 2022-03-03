@@ -15,39 +15,39 @@ jobs:
     container:
       image: jedwards4b/mpichbase:m3.4.3h1.12.1nc4.7.4nf4.5.4p1.12.3
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: checkout cmake_fortran_utils
-        uses: actions/checkout@v3
-        with:
-          repository: CESM-Development/CMake_Fortran_utils
-          path: build/CMake_Fortran_utils
-      - name: checkout genf90
-        uses: actions/checkout@v3
-        with:
-          repository: ParallelIO/genf90
-          path: build/genf90
-      - name: cmake build
-        run: |
-          cd build
-          export PATH=/usr/local/bin:$PATH
-          cmake -Wno-dev -DPIO_ENABLE_NETCDF_INTEGRATION=OFF \
-              -DGENF90_PATH=${GITHUB_WORKSPACE}/build/genf90 \
-              -DNetCDF_PATH=/usr/local/ \
-              -DPnetCDF_PATH=/usr/local \
-              -DPIO_HDF5_LOGGING=On \
-              -DPIO_ENABLE_FORTRAN=ON \
-              -DPIO_USE_MALLOC=On \
-              -DPIO_ENABLE_LOGGING=On \
-              -DPIO_ENABLE_TIMING=Off \
-              ..
-          make VERBOSE=1
-          make tests VERBOSE=1
-          ctest -VV
-      - name: autotools build
-        run: |
-          set -x
-          gcc --version
-          autoreconf -i
-          ./configure --enable-fortran
-          make -j check
+    - name: Checkout
+      uses: actions/checkout@v3
+    - name: checkout cmake_fortran_utils
+      uses: actions/checkout@v3
+      with:
+        repository: CESM-Development/CMake_Fortran_utils
+        path: build/CMake_Fortran_utils
+    - name: checkout genf90
+      uses: actions/checkout@v3
+      with:
+        repository: ParallelIO/genf90
+        path: build/genf90
+    - name: cmake build
+      run: |
+        cd build
+        export PATH=/usr/local/bin:$PATH
+        cmake -Wno-dev -DPIO_ENABLE_NETCDF_INTEGRATION=OFF \
+            -DGENF90_PATH=${GITHUB_WORKSPACE}/build/genf90 \
+            -DNetCDF_PATH=/usr/local/ \
+            -DPnetCDF_PATH=/usr/local \
+            -DPIO_HDF5_LOGGING=On \
+            -DPIO_ENABLE_FORTRAN=ON \
+            -DPIO_USE_MALLOC=On \
+            -DPIO_ENABLE_LOGGING=On \
+            -DPIO_ENABLE_TIMING=Off \
+            ..
+        make VERBOSE=1
+        make tests VERBOSE=1
+        ctest -VV
+    - name: autotools build
+      run: |
+        set -x
+        gcc --version
+        autoreconf -i
+        ./configure --enable-fortran
+        make -j check
