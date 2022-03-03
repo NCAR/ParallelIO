@@ -3,7 +3,7 @@ name: ParallelIO testing with ubuntu Dockerfile
 on: [push]
 
 jobs:
-  testwithmpich:
+  build:
     runs-on: ubuntu-latest
     env:
       CC: mpicc
