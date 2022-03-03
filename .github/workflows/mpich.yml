@@ -54,7 +54,6 @@ jobs:
             -DPnetCDF_PATH=/usr/local \
             -DPIO_HDF5_LOGGING=On \
             -DPIO_ENABLE_FORTRAN=ON \
-            -DPIO_USE_MALLOC=On \
             -DPIO_ENABLE_LOGGING=On \
             -DPIO_ENABLE_TIMING=Off \
             -DPIO_ENABLE_NETCDF_INTEGRATION=${{ matrix.integration }} \

@@ -1110,8 +1110,7 @@ PIOc_freedecomp(int iosysid, int ioid)
  * @returns 0 for success, error code otherwise.
  * @author Jim Edwards
  */
-int
-PIOc_readmap(const char *file, int *ndims, int **gdims, PIO_Offset *fmaplen,
+int PIOc_readmap(const char *file, int *ndims, int **gdims, PIO_Offset *fmaplen,
              PIO_Offset **map, MPI_Comm comm)
 {
     int npes, myrank;
@@ -1231,8 +1230,7 @@ PIOc_readmap(const char *file, int *ndims, int **gdims, PIO_Offset *fmaplen,
  * @returns 0 for success, error code otherwise.
  * @author Jim Edwards
  */
-int
-PIOc_readmap_from_f90(const char *file, int *ndims, int **gdims, PIO_Offset *maplen,
+int PIOc_readmap_from_f90(const char *file, int *ndims, int **gdims, PIO_Offset *maplen,
                       PIO_Offset **map, int f90_comm)
 {
     return PIOc_readmap(file, ndims, gdims, maplen, map, MPI_Comm_f2c(f90_comm));
@@ -1867,8 +1865,7 @@ pioc_read_nc_decomp_int(int iosysid, const char *filename, int *ndims, int **glo
  * @returns 0 for success, error code otherwise.
  * @author Jim Edwards
  */
-int
-PIOc_write_decomp(const char *file, int iosysid, int ioid, MPI_Comm comm)
+int PIOc_write_decomp(const char *file, int iosysid, int ioid, MPI_Comm comm)
 {
     iosystem_desc_t *ios;
     io_desc_t *iodesc;
@@ -1897,8 +1894,7 @@ PIOc_write_decomp(const char *file, int iosysid, int ioid, MPI_Comm comm)
  * @returns 0 for success, error code otherwise.
  * @author Jim Edwards
  */
-int
-PIOc_writemap(const char *file, int ndims, const int *gdims, PIO_Offset maplen,
+int PIOc_writemap(const char *file, int ndims, const int *gdims, PIO_Offset maplen,
               PIO_Offset *map, MPI_Comm comm)
 {
     int npes, myrank;
@@ -1998,8 +1994,7 @@ PIOc_writemap(const char *file, int ndims, const int *gdims, PIO_Offset maplen,
  * @returns 0 for success, error code otherwise.
  * @author Jim Edwards
  */
-int
-PIOc_writemap_from_f90(const char *file, int ndims, const int *gdims,
+int PIOc_writemap_from_f90(const char *file, int ndims, const int *gdims,
                        PIO_Offset maplen, const PIO_Offset *map, int f90_comm)
 {
     return PIOc_writemap(file, ndims, gdims, maplen, (PIO_Offset *)map,
