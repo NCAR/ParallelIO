@@ -6,6 +6,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         mpich: [3.4.3, 4.0.1]
         # 1.10 needs to be a string or the trailing 0 is lost
