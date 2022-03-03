@@ -2246,7 +2246,7 @@ subset_rearrange_create(iosystem_desc_t *ios, int maplen, PIO_Offset *compmap,
     /* For IO tasks init rfrom and rindex arrays (compute tasks have
      * llen of 0). */
     int rllen;
-//    PIO_Offset soffset;
+    PIO_Offset soffset;
     /* we only want a single copy of each source point in the iobuffer but it may be sent to multiple destinations
        in a read operation */
     for (i = 0, rllen=0; i < iodesc->llen; i++)
@@ -2257,15 +2257,15 @@ subset_rearrange_create(iosystem_desc_t *ios, int maplen, PIO_Offset *compmap,
         {
             iodesc->rindex[i] = i;
             iomap[0] = mptr->iomap;
-//            soffset = mptr->soffset;            
+            soffset = mptr->soffset;            
         }
         else if(mptr->iomap > iomap[rllen])
         {
             iomap[++rllen] = mptr->iomap;
-//            soffset = mptr->soffset;
+            soffset = mptr->soffset;
         }
         iodesc->rindex[i] = rllen;
-        srcindex[(cnt[iodesc->rfrom[rllen]])++] = mptr->soffset;
+        srcindex[(cnt[iodesc->rfrom[rllen]])++] = soffset;
         iodesc->rllen = rllen+1;
 //        PLOG((2,"rfrom[%d]=%d rindex[%d]=%d iomap[%d]=%d",i,iodesc->rfrom[i],i,iodesc->rindex[i],rllen,iomap[rllen]));
     }
