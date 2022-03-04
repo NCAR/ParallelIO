@@ -31,7 +31,7 @@ jobs:
       LD_LIBRARY_PATH: "/usr/local/lib"
       CMAKE_PREFIX_PATH: "build/CMake_Fortran_utils"
     container:
-      image: jedwards4b/ms${{ matrix.mpich }}h${{ matrix.hdf5 }}nc${{ matrix.netcdfc }}nf${{ matrix.netcdff }}
+      image: jedwards4b/ms${{ matrix.mpi-serial }}h${{ matrix.hdf5 }}nc${{ matrix.netcdfc }}nf${{ matrix.netcdff }}
     steps:
     - name: Checkout
       uses: actions/checkout@v3
