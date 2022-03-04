@@ -57,6 +57,7 @@ jobs:
             -DPIO_ENABLE_LOGGING=On \
             -DPIO_ENABLE_TIMING=Off \
             -DPIO_USE_MPISERIAL=ON \
+            -DPIO_ENABLE_EXAMPLES=OFF \
             -DPIO_ENABLE_NETCDF_INTEGRATION=${{ matrix.integration }} \
             ..
         make VERBOSE=1
@@ -67,6 +68,6 @@ jobs:
         set -x
         gcc --version
         autoreconf -i
-        ./configure --enable-fortran --disable-pnetcdf \
+        ./configure --enable-fortran --disable-pnetcdf --disable-examples \
         --enable-netcdf-integration=${{ matrix.integration }}
         make -j check
