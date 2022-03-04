@@ -8,13 +8,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        mpich: [3.4.3, 4.0.1]
+        # 4.0.1 generates an error https://github.com/NCAR/ParallelIO/issues/1912
+        mpich: [3.4.3]
         # 1.10 needs to be a string or the trailing 0 is lost
         hdf5: ["1.10", "1.12"]
         netcdfc: [4.7.4, 4.8.1]
         netcdff: [4.5.4]
         pnetcdf: [1.12.3]
         integration: [OFF, ON]
+        # Integration needs fixed for 4.8.1 https://github.com/NCAR/ParallelIO/issues/1889
         exclude:
           - netcdfc: 4.8.1
             integration: ON
