@@ -317,7 +317,7 @@ PIO_TF_AUTO_TEST_SUB_END nc_wr_1d_bc_with_holes
 
 PIO_TF_TEMPLATE<PIO_TF_PREDEF_TYPENAME PIO_TF_DATA_TYPE, PIO_TF_PREDEF_TYPENAME PIO_TF_FC_DATA_TYPE>
 PIO_TF_AUTO_TEST_SUB_BEGIN nc_wr_1d_bc_random
-  use mpi, only : MPI_INT
+  use mpi, only : MPI_INTEGER
   implicit none
   type(var_desc_t)  :: pio_var1, pio_var2
   type(file_desc_t) :: pio_file
@@ -354,7 +354,7 @@ PIO_TF_AUTO_TEST_SUB_BEGIN nc_wr_1d_bc_random
      enddo
   endif
   allocate(compdof(count(1)))
-  call mpi_scatter(gcompdof, count(1), MPI_INT, compdof, 4, MPI_INT, 0, pio_tf_comm_, ierr)
+  call mpi_scatter(gcompdof, count(1), MPI_INTEGER, compdof, 4, MPI_INTEGER, 0, pio_tf_comm_, ierr)
   if(allocated(gcompdof)) deallocate(gcompdof)
   allocate(rbuf(count(1)))
   allocate(wbuf(count(1)))
