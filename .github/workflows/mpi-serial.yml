@@ -6,15 +6,13 @@ jobs:
   build:
     runs-on: ubuntu-latest
     strategy:
-      fail-fast: false
+#      fail-fast: false
       matrix:
-        # 4.0.1 generates an error https://github.com/NCAR/ParallelIO/issues/1912
-        mpich: [3.4.3]
+        mpi-serial: [2.3.0]
         # 1.10 needs to be a string or the trailing 0 is lost
         hdf5: ["1.10", "1.12"]
         netcdfc: [4.7.4, 4.8.1]
         netcdff: [4.5.4]
-        pnetcdf: [1.12.3]
         integration: [OFF, ON]
         # Integration needs fixed for 4.8.1 https://github.com/NCAR/ParallelIO/issues/1889
         exclude:
@@ -26,14 +24,14 @@ jobs:
           - hdf5: "1.12"
             hdf5m: 1
     env:
-      CC: mpicc
-      FC: mpifort
+#      CC: mpicc
+#      FC: mpifort
       CPPFLAGS: "-I/usr/include -I/usr/local/include "
       LDFLAGS: "-L/usr/local/lib"
       LD_LIBRARY_PATH: "/usr/local/lib"
       CMAKE_PREFIX_PATH: "build/CMake_Fortran_utils"
     container:
-      image: jedwards4b/m${{ matrix.mpich }}h${{ matrix.hdf5 }}nc${{ matrix.netcdfc }}nf${{ matrix.netcdff }}p${{ matrix.pnetcdf }}
+      image: jedwards4b/ms${{ matrix.mpich }}h${{ matrix.hdf5 }}nc${{ matrix.netcdfc }}nf${{ matrix.netcdff }}
     steps:
     - name: Checkout
       uses: actions/checkout@v3
@@ -54,11 +52,11 @@ jobs:
         cmake -Wno-dev \
             -DGENF90_PATH=${GITHUB_WORKSPACE}/build/genf90 \
             -DNetCDF_PATH=/usr/local/ \
-            -DPnetCDF_PATH=/usr/local \
             -DPIO_HDF5_LOGGING=On \
             -DPIO_ENABLE_FORTRAN=ON \
             -DPIO_ENABLE_LOGGING=On \
             -DPIO_ENABLE_TIMING=Off \
+            -DPIO_USE_MPISERIAL=ON \
             -DPIO_ENABLE_NETCDF_INTEGRATION=${{ matrix.integration }} \
             ..
         make VERBOSE=1
@@ -69,6 +67,6 @@ jobs:
         set -x
         gcc --version
         autoreconf -i
-        ./configure --enable-fortran \
+        ./configure --enable-fortran --disable-pnetcdf \
         --enable-netcdf-integration=${{ matrix.integration }}
         make -j check
