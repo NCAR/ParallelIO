@@ -1358,7 +1358,7 @@ pio_read_darray_nc(file_desc_t *file, io_desc_t *iodesc, int vid, void *iobuf)
                     /* Release the start and count arrays. */
                     for (int i = 0; i < rrlen; i++)
                     {
-                        PLOG((3,"startlist %d %d countlist %d %d",startlist[i][0],startlist[i][1],countlist[i][0],countlist[i][1]));
+//                        PLOG((3,"startlist %d %d countlist %d %d",startlist[i][0],startlist[i][1],countlist[i][0],countlist[i][1]));
                         free(startlist[i]);
                         free(countlist[i]);
                     }
