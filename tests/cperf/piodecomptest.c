@@ -139,18 +139,19 @@ int test_write_darray(int iosys, const char decomp_file[], int rank, const char 
         dofmap[e] = full_map[rank * maxmaplen + e]+1;
         dvarw[e] = dofmap[e];
     }
-
+    /* allocated in pioc_read_nc_decomp_int */
+    free(full_map);
     ierr = PIOc_InitDecomp(iosys, PIO_DOUBLE, ndims, global_dimlen, maplen[rank],
                            dofmap, &ioid, NULL, NULL, NULL);
 
-
+    free(global_dimlen);
     double dsum=0;
     for(int i=0; i < maplen[rank]; i++)
         dsum += dvarw[i];
     printf("%d: dvarwsum = %d\n",rank, dsum);
 
     ierr = PIOc_write_darray(ncid, varid, ioid, maplen[rank], dvarw, NULL);
-
+    free(maplen);
     ierr = PIOc_closefile(ncid);
     if(ierr || debug) printf("%d %d\n",__LINE__,ierr);
 
@@ -221,7 +222,7 @@ int test_read_darray(int iosys,const char decomp_file[], int rank, const char my
         
         pioassert(gdimlen == global_dimlen[i], "testfile.nc does not match decomposition file",__FILE__,__LINE__);
     }
-    
+    free(dimid);
     PIO_Offset *dofmap;
 
     if (!(dofmap = malloc(sizeof(PIO_Offset) * maplen[rank])))
@@ -231,9 +232,12 @@ int test_read_darray(int iosys,const char decomp_file[], int rank, const char my
     {
         dofmap[e] = full_map[rank * maxmaplen + e] + 1;
     }
+    free(full_map);
 //    PIOc_set_log_level(3);
     ierr = PIOc_InitDecomp(iosys, pio_type, ndims, global_dimlen, maplen[rank],
                            dofmap, &ioid, NULL, NULL, NULL);
+    free(dofmap);
+    free(global_dimlen);
     switch(pio_type)
     {
     case PIO_DOUBLE:
@@ -273,12 +277,12 @@ int test_read_darray(int iosys,const char decomp_file[], int rank, const char my
     ierr = PIOc_closefile(ncid);
     if(ierr || debug) printf("%d %d\n",__LINE__,ierr);
 
-/*    if(rank == 1)
+    if(rank == 3)
     {
-        for(int i=0; i < maplen[rank]; i+=2)
-            printf("dvarr[%d] = (%f, %f)\n",i/2, dvarr[i], dvarr[i+1]);
+        for(int i=0; i < maplen[rank]; i++)
+            printf("dvarr[%d] = %f\n",i, dvarr[i]);
     }
-*/
+    free(maplen);
     return ierr;
 
 }
@@ -309,7 +313,7 @@ int main(int argc, char *argv[])
 
     iotasks = comm_size/36;
 
-    ierr = PIOc_Init_Intracomm(MPI_COMM_WORLD, iotasks, 36, 0, PIO_REARR_SUBSET, &iosys);
+    ierr = PIOc_Init_Intracomm(MPI_COMM_WORLD, 4, 1, 0, PIO_REARR_SUBSET, &iosys);
     if(ierr || debug) printf("%d %d\n",__LINE__,ierr);
 
     if(arguments.wdecomp_file)
