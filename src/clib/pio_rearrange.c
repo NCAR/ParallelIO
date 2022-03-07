@@ -2267,16 +2267,13 @@ subset_rearrange_create(iosystem_desc_t *ios, int maplen, PIO_Offset *compmap,
        in a read operation */
     int k=0;
     PIO_Offset previomap[ntasks];
+    for (i = 0; i < ntasks; i++)
+        previomap[i] = -1;
     for (i = 0, rllen=0; i < iodesc->llen; i++)
     {
         mapsort *mptr = &map[i];
         iodesc->rfrom[i] = mptr->rfrom;
-        if(cnt[mptr->rfrom]==rdispls[mptr->rfrom])
-        {
-            iomap[rllen] = mptr->iomap;
-            soffset = mptr->soffset;            
-        }
-        else if(mptr->iomap > previomap[mptr->rfrom])
+        if(mptr->iomap > previomap[mptr->rfrom])
         {
             iomap[rllen] = mptr->iomap;
             soffset = mptr->soffset;
@@ -2285,13 +2282,11 @@ subset_rearrange_create(iosystem_desc_t *ios, int maplen, PIO_Offset *compmap,
         srcindex[(cnt[mptr->rfrom])++] = soffset;
         iodesc->rindex[i] = rllen++;
         iodesc->rllen = rllen;
-//        int j = cnt[mptr->rfrom] - 1;
-//        printf("rfrom[%d]=%d rindex[%d]=%d iomap[%d]=%d srcindex[%d]=%d\n",i,iodesc->rfrom[i],i,iodesc->rindex[i],rllen-1,iomap[rllen-1],j,srcindex[j]);
     }
 
 
     /* Handle fill values if needed. */
-//    PLOG((3, "ios->ioproc %d iodesc->needsfill %d iodesc->rllen %d", ios->ioproc, iodesc->needsfill, iodesc->rllen));
+    PLOG((3, "ios->ioproc %d iodesc->needsfill %d iodesc->rllen %d", ios->ioproc, iodesc->needsfill, iodesc->rllen));
     if (ios->ioproc && iodesc->needsfill)
     {
         /* we need the list of offsets which are not in the union of iomap */
