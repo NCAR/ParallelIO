@@ -72,7 +72,8 @@ jobs:
         CPPFLAGS="-I/usr/local/include -D_MPISERIAL " \
         LDFLAGS="-L/usr/local/lib -lmpi-serial" \
         ./configure --enable-fortran --disable-pnetcdf --disable-examples \
-        --enable-netcdf-integration=${{ matrix.integration }} --with-mpiexec=""
+        --enable-netcdf-integration=${{ matrix.integration }} --with-mpiexec="" && \
+        test $? -eq 0 || cat config.log
         make
         #make -j check
 # Serial testing doesn't work, just do the builds 
