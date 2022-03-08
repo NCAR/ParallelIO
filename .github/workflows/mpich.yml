@@ -34,6 +34,7 @@ jobs:
       CMAKE_PREFIX_PATH: "build/CMake_Fortran_utils"
     container:
       image: jedwards4b/m${{ matrix.mpich }}h${{ matrix.hdf5 }}nc${{ matrix.netcdfc }}nf${{ matrix.netcdff }}p${{ matrix.pnetcdf }}
+      options: --user 1001
     steps:
     - name: Checkout
       uses: actions/checkout@v3
