@@ -60,6 +60,7 @@ jobs:
             -DPIO_ENABLE_FORTRAN=ON \
             -DPIO_ENABLE_LOGGING=On \
             -DPIO_ENABLE_TIMING=Off \
+            -DMPIEXEC_PREFLAGS="--oversubscribe" \
             -DPIO_ENABLE_NETCDF_INTEGRATION=${{ matrix.integration }} \
             ..
         make VERBOSE=1
