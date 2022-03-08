@@ -69,6 +69,7 @@ jobs:
         set -x
         gcc --version
         autoreconf -i
+        export CPPFLAGS="-I/usr/local/include -D_MPISERIAL "
         ./configure --enable-fortran --disable-pnetcdf --disable-examples \
         --enable-netcdf-integration=${{ matrix.integration }}
         make
