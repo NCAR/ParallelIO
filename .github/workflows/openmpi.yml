@@ -9,7 +9,7 @@ jobs:
       fail-fast: false
       matrix:
         # 4.0.1 generates an error https://github.com/NCAR/ParallelIO/issues/1912
-        mpich: [3.4.3, 4.0.1]
+        openmpi: [3.1.6, 4.1.2]
         # 1.10 needs to be a string or the trailing 0 is lost
         hdf5: ["1.10", "1.12"]
         netcdfc: [4.7.4, 4.8.1]
@@ -33,7 +33,7 @@ jobs:
       LD_LIBRARY_PATH: "/usr/local/lib"
       CMAKE_PREFIX_PATH: "build/CMake_Fortran_utils"
     container:
-      image: jedwards4b/m${{ matrix.mpich }}h${{ matrix.hdf5 }}nc${{ matrix.netcdfc }}nf${{ matrix.netcdff }}p${{ matrix.pnetcdf }}
+      image: jedwards4b/o${{ matrix.openmpi }}h${{ matrix.hdf5 }}nc${{ matrix.netcdfc }}nf${{ matrix.netcdff }}p${{ matrix.pnetcdf }}
     steps:
     - name: Checkout
       uses: actions/checkout@v3
