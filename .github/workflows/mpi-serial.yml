@@ -70,6 +70,7 @@ jobs:
         gcc --version
         autoreconf -i
         export CPPFLAGS="-I/usr/local/include -D_MPISERIAL "
+        export LDFLAGS="-L/usr/local/lib -lmpi-serial"
         ./configure --enable-fortran --disable-pnetcdf --disable-examples \
         --enable-netcdf-integration=${{ matrix.integration }}
         make
