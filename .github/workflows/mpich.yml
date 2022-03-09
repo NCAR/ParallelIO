@@ -1,4 +1,9 @@
 # Author Jim Edwards
+# The mpich image has a serial build of netcdf installed in /usr/local/serial
+# and a parallel build of netcdf and pnetcdf in /usr/local/parallel
+# we will first build and test a minimal pio using only netcdf serial build
+# then we will do a complete build with the parallel versions
+#
 name: ParallelIO testing with ubuntu Dockerfile
 on: [push]
 
@@ -6,7 +11,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     strategy:
-      fail-fast: false
+#      fail-fast: false
       matrix:
         # 4.0.1 generates an error https://github.com/NCAR/ParallelIO/issues/1912
         mpich: [3.4.3, 4.0.1]
@@ -28,9 +33,9 @@ jobs:
     env:
       CC: mpicc
       FC: mpifort
-      CPPFLAGS: "-I/usr/include -I/usr/local/include "
-      LDFLAGS: "-L/usr/local/lib"
-      LD_LIBRARY_PATH: "/usr/local/lib"
+      CPPFLAGS: "-I/usr/include -I/usr/local/serial/include "
+      LDFLAGS: "-L/usr/local/serial/lib"
+      LD_LIBRARY_PATH: "/usr/local/serial/lib"
       CMAKE_PREFIX_PATH: "build/CMake_Fortran_utils"
     container:
       image: jedwards4b/m${{ matrix.mpich }}h${{ matrix.hdf5 }}nc${{ matrix.netcdfc }}nf${{ matrix.netcdff }}p${{ matrix.pnetcdf }}
@@ -48,14 +53,38 @@ jobs:
       with:
         repository: ParallelIO/genf90
         path: build/genf90
-    - name: cmake build
+    - name: cmake (serial netcdf) build
       run: |
         cd build
-        export PATH=/usr/local/bin:$PATH
+        export PATH=/usr/local/parallel/bin:$PATH
         cmake -Wno-dev \
             -DGENF90_PATH=${GITHUB_WORKSPACE}/build/genf90 \
-            -DNetCDF_PATH=/usr/local/ \
-            -DPnetCDF_PATH=/usr/local \
+            -DNetCDF_PATH=/usr/local/serial \
+            -DPIO_HDF5_LOGGING=On \
+            -DPIO_ENABLE_FORTRAN=OFF \
+            -DPIO_ENABLE_LOGGING=On \
+            -DPIO_ENABLE_TIMING=Off \
+            -DPIO_ENABLE_NETCDF_INTEGRATION=${{ matrix.integration }} \
+            ..
+        make VERBOSE=1
+        make tests VERBOSE=1
+        ctest -VV
+    - name: autotools (serial netcdf) build
+      run: |
+        set -x
+        gcc --version
+        autoreconf -i
+        ./configure  \
+        --enable-netcdf-integration=${{ matrix.integration }}
+        make -j check
+
+    - name: cmake (parallel netcdf + pnetcdf) build
+      run: |
+        cd build
+        export PATH=/usr/local/parallel/bin:$PATH
+        cmake -Wno-dev \
+            -DGENF90_PATH=${GITHUB_WORKSPACE}/build/genf90 \
+            -DNetCDF_PATH=/usr/local/parallel \
             -DPIO_HDF5_LOGGING=On \
             -DPIO_ENABLE_FORTRAN=ON \
             -DPIO_ENABLE_LOGGING=On \
@@ -65,11 +94,12 @@ jobs:
         make VERBOSE=1
         make tests VERBOSE=1
         ctest -VV
-    - name: autotools build
+    - name: autotools (parallel netcdf + pnetcdf) build
       run: |
         set -x
         gcc --version
         autoreconf -i
-        ./configure --enable-fortran \
+        LDFLAGS="-L/usr/local/parallel/lib "
+        ./configure  --enable-fortran \
         --enable-netcdf-integration=${{ matrix.integration }}
         make -j check
