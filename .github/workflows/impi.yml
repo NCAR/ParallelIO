@@ -33,7 +33,7 @@ jobs:
       CMAKE_PREFIX_PATH: "build/CMake_Fortran_utils"
     container:
       image: jedwards4b/impi_h${{ matrix.hdf5 }}nc${{ matrix.netcdfc }}nf${{ matrix.netcdff }}p${{ matrix.pnetcdf }}
-      options: --user 1001
+      options: --user ziggy:ziggy
     steps:
     - name: Checkout
       uses: actions/checkout@v3
@@ -68,7 +68,7 @@ jobs:
             ..
         make VERBOSE=1
         make tests VERBOSE=1
-        ctest -VV
+        ctest -VV --output-on-failure
     - name: autotools build
       run: |
         set -x
