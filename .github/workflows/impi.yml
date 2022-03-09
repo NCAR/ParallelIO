@@ -30,7 +30,6 @@ jobs:
       I_MPI_FC: ifort
       CPPFLAGS: "-I/usr/include -I/usr/local/include "
       LDFLAGS: "-L/usr/local/lib"
-      LD_LIBRARY_PATH: "/usr/local/lib:${LD_LIBRARY_PATH}"
       CMAKE_PREFIX_PATH: "build/CMake_Fortran_utils"
     container:
       image: jedwards4b/impi_h${{ matrix.hdf5 }}nc${{ matrix.netcdfc }}nf${{ matrix.netcdff }}p${{ matrix.pnetcdf }}
@@ -48,10 +47,14 @@ jobs:
       with:
         repository: ParallelIO/genf90
         path: build/genf90
+    - name: set environment
+      run: |
+        
     - name: cmake build
       run: |
         cd build
         export PATH=/usr/local/bin:$PATH
+        export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
         cmake -Wno-dev \
             -DGENF90_PATH=${GITHUB_WORKSPACE}/build/genf90 \
             -DNetCDF_PATH=/usr/local/ \
