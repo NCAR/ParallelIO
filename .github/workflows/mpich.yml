@@ -64,9 +64,9 @@ jobs:
             -DPIO_ENABLE_FORTRAN=OFF \
             -DPIO_ENABLE_LOGGING=On \
             -DPIO_ENABLE_TIMING=Off \
-        # Integration errors when using netcdf serial build: https://github.com/NCAR/ParallelIO/issues/1917
-#            -DPIO_ENABLE_NETCDF_INTEGRATION=${{ matrix.integration }} \
             ..
+            # Integration errors when using netcdf serial build: https://github.com/NCAR/ParallelIO/issues/1917
+            #            -DPIO_ENABLE_NETCDF_INTEGRATION=${{ matrix.integration }} \
         make VERBOSE=1
         make tests VERBOSE=1
         ctest -VV
@@ -75,9 +75,9 @@ jobs:
         set -x
         gcc --version
         autoreconf -i
-        ./configure  \
+        ./configure  
         # Integration errors when using netcdf serial build: https://github.com/NCAR/ParallelIO/issues/1917
-#        --enable-netcdf-integration=${{ matrix.integration }}
+        #        --enable-netcdf-integration=${{ matrix.integration }}
         make -j check
 
     - name: cmake (parallel netcdf + pnetcdf) build
