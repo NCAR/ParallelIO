@@ -33,7 +33,7 @@ jobs:
       CMAKE_PREFIX_PATH: "build/CMake_Fortran_utils"
     container:
       image: jedwards4b/impi_h${{ matrix.hdf5 }}nc${{ matrix.netcdfc }}nf${{ matrix.netcdff }}p${{ matrix.pnetcdf }}
-      options: --user ziggy:ziggy
+      options: --user 1001 --shm-size 256MB
     steps:
     - name: Checkout
       uses: actions/checkout@v3
