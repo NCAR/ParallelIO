@@ -47,9 +47,6 @@ jobs:
       with:
         repository: ParallelIO/genf90
         path: build/genf90
-    - name: set environment
-      run: |
-        
     - name: cmake build
       run: |
         cd build
