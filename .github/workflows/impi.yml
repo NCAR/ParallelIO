@@ -28,12 +28,13 @@ jobs:
       FC: mpifc
       I_MPI_CC: icc
       I_MPI_FC: ifort
+      I_MPI_FABRICS: shm
       CPPFLAGS: "-I/usr/include -I/usr/local/include "
       LDFLAGS: "-L/usr/local/lib"
       CMAKE_PREFIX_PATH: "build/CMake_Fortran_utils"
     container:
       image: jedwards4b/impi_h${{ matrix.hdf5 }}nc${{ matrix.netcdfc }}nf${{ matrix.netcdff }}p${{ matrix.pnetcdf }}
-      options: --user 1001 --shm-size 256MB
+      options: --user ziggy --shm-size 256MB
     steps:
     - name: Checkout
       uses: actions/checkout@v3
@@ -49,6 +50,8 @@ jobs:
         path: build/genf90
     - name: cmake build
       run: |
+        whoami
+        source /opt/intel/oneapi/setvars.sh --force
         cd build
         export PATH=/usr/local/bin:$PATH
         export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH

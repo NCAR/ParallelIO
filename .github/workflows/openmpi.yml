@@ -50,6 +50,7 @@ jobs:
         path: build/genf90
     - name: cmake build
       run: |
+        whoami 
         cd build
         export PATH=/usr/local/bin:$PATH
         cmake -Wno-dev \
@@ -65,7 +66,8 @@ jobs:
             ..
         make VERBOSE=1
         make tests VERBOSE=1
-        ctest -VV
+        /usr/local/bin/mpiexec -np 4 ./tests/cunit/test_pioc_fill
+#        ctest -VV
     - name: autotools build
       run: |
         set -x
