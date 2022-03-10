@@ -65,7 +65,7 @@ jobs:
             ..
         make VERBOSE=1
         make tests VERBOSE=1
-        /usr/local/bin/mpiexec -np 4 ./tests/cunit/test_pioc_fill
+        /usr/local/bin/mpiexec --oversubscribe -np 4 ./tests/cunit/test_pioc_fill
 #        ctest -VV
     - name: autotools build
       run: |
