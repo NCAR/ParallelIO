@@ -289,10 +289,7 @@ int putget_read_vara(int ncid, int *varid, PIO_Offset *start, PIO_Offset *count,
             if (short_array_in[x][y] != short_array[x][y])
                 ERR(ERR_WRONG);
             if (int_array_in[x][y] != int_array[x][y])
-            {
-                printf("int_array_in[%d][%d]=%d int_array=%d\n",x,y,int_array_in[x][y],int_array[x][y]);
                 ERR(ERR_WRONG);
-            }
             if (float_array_in[x][y] != float_array[x][y])
                 ERR(ERR_WRONG);
             if (double_array_in[x][y] != double_array[x][y])
