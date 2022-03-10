@@ -8,7 +8,7 @@ name: ParallelIO testing with ubuntu Dockerfile
 on: [push]
 
 jobs:
-  build:
+  build_mpich:
     runs-on: ubuntu-latest
     strategy:
 #      fail-fast: false
@@ -20,8 +20,9 @@ jobs:
         netcdfc: [4.7.4, 4.8.1]
         netcdff: [4.5.4]
         pnetcdf: [1.12.3]
-        integration: [OFF, ON]
-        # Integration needs fixed for 4.8.1 https://github.com/NCAR/ParallelIO/issues/1889
+        integration: [OFF]
+        # Integration needs fixed for netcdf 4.8.1 https://github.com/NCAR/ParallelIO/issues/1889
+        # and fails container tests in mpich
         exclude:
           - netcdfc: 4.8.1
             integration: ON

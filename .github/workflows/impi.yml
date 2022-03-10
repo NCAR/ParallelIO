@@ -3,7 +3,7 @@ name: ParallelIO testing with ubuntu Dockerfile
 on: [push]
 
 jobs:
-  build:
+  build_impi:
     runs-on: ubuntu-latest
     strategy:
 #      fail-fast: false

@@ -3,13 +3,12 @@ name: ParallelIO testing with ubuntu Dockerfile
 on: [push]
 
 jobs:
-  build:
+  build_openmpi:
     runs-on: ubuntu-latest
     strategy:
 #      fail-fast: false
       matrix:
-        # 4.0.1 generates an error https://github.com/NCAR/ParallelIO/issues/1912
-        openmpi: [3.1.6, 4.1.2]
+        openmpi: [4.1.2]
         # 1.10 needs to be a string or the trailing 0 is lost
         hdf5: ["1.10", "1.12"]
         netcdfc: [4.7.4, 4.8.1]
@@ -65,9 +64,9 @@ jobs:
             ..
         make VERBOSE=1
         make tests VERBOSE=1
-        # This test fails in workflow 
+        # This test fails in workflow with openmpi 3.1.6
         #        /usr/local/bin/mpiexec --tag-output --oversubscribe -np 4 ./tests/cunit/test_pioc_fill
-        ctest -VV -E test_pioc_fill
+        ctest -VV 
     - name: autotools build
       run: |
         set -x
