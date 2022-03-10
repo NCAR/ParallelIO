@@ -50,7 +50,6 @@ jobs:
         path: build/genf90
     - name: cmake build
       run: |
-        whoami
         source /opt/intel/oneapi/setvars.sh --force
         cd build
         export PATH=/usr/local/bin:$PATH
