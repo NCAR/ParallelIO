@@ -366,19 +366,13 @@ test_stop_mpe_log(int state, const char *msg)
 int pio_test_finalize(MPI_Comm *test_comm)
 {
     int ret = PIO_NOERR; /* Return value. */
-    int rank;
     /* Wait for all processes to arrive here. */
     if (MPI_Barrier(*test_comm))
-        return ERR_MPI;
-
-    if (MPI_Comm_rank(test_comm, &rank))
         return ERR_MPI;
 
     /* Free communicator. */
     if (MPI_Comm_free(test_comm))
         return ERR_MPI;
-
-    printf("Rank %d calling finalize\n",rank);
 
     /* Finalize MPI. */
     MPI_Finalize();
