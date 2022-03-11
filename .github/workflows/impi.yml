@@ -48,12 +48,10 @@ jobs:
       with:
         repository: ParallelIO/genf90
         path: build/genf90
-    - name: Install dependencies
-      run: |
-        $CONDA/bin/conda env update --file environment.yml --name base
     - name: cmake build
       shell: bash
       run: |
+        export PATH=/opt/intel/oneapi/intelpython/latest/bin/:$PATH
         export SETVARS_ARGS="--force"
         . /opt/intel/oneapi/setvars.sh
         cd build
