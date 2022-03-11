@@ -34,7 +34,7 @@ jobs:
       CMAKE_PREFIX_PATH: "build/CMake_Fortran_utils"
     container:
       image: jedwards4b/impi_h${{ matrix.hdf5 }}nc${{ matrix.netcdfc }}nf${{ matrix.netcdff }}p${{ matrix.pnetcdf }}
-      options: --user ziggy --shm-size 512MB
+      options: --user ziggy --shm-size 1GB
     steps:
     - name: Checkout
       uses: actions/checkout@v3
@@ -48,14 +48,9 @@ jobs:
       with:
         repository: ParallelIO/genf90
         path: build/genf90
-    - name: setup conda
-      run: |
-        /opt/intel/oneapi/intelpython/latest/bin/conda init bash
-        
     - name: cmake build
       shell: bash
       run: |
-        . /github/home/.bashrc
         export PATH=/opt/intel/oneapi/intelpython/latest/bin/:$PATH
         export SETVARS_ARGS="--force"
         . /opt/intel/oneapi/setvars.sh
