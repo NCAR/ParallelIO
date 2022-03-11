@@ -48,6 +48,10 @@ jobs:
       with:
         repository: ParallelIO/genf90
         path: build/genf90
+    - name: setup conda
+      run: |
+        /opt/intel/oneapi/intelpython/latest/bin/conda init bash
+        
     - name: cmake build
       shell: bash
       run: |
