@@ -55,6 +55,7 @@ jobs:
     - name: cmake build
       shell: bash
       run: |
+        . /github/home/.bashrc
         export PATH=/opt/intel/oneapi/intelpython/latest/bin/:$PATH
         export SETVARS_ARGS="--force"
         . /opt/intel/oneapi/setvars.sh
