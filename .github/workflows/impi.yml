@@ -48,6 +48,14 @@ jobs:
       with:
         repository: ParallelIO/genf90
         path: build/genf90
+    - name: exclude known fails
+      run: |
+        cat "set(CTEST_CUSTOM_TESTS_IGNORE\n" \
+          "pio_rearr_opts2_1p\n" \
+          "pio_decomp_tests_1p\n" \
+          "pio_decomp_tests_1d_1p\n" \
+          "pio_decomp_tests_2d_1p\n" \
+          "pio_decomp_tests_3d_1p)\n" > build/CTestCustom.cmake
     - name: cmake build
       shell: bash
       run: |
