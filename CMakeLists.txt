@@ -4,9 +4,8 @@
 
 # Jim Edwards
 
-cmake_minimum_required (VERSION 2.8.12)
+cmake_minimum_required (VERSION 3.9.1)
 project (PIO C)
-#cmake_policy(VERSION 3.5.2)
 
 # The project version number.
 set(VERSION_MAJOR   2   CACHE STRING "Project major version number.")
