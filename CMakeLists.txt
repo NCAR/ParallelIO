@@ -107,9 +107,6 @@ else()
 endif()
 
 # Set a variable that appears in the config.h.in file.
-set(USE_MALLOC 1)
-
-# Set a variable that appears in the config.h.in file.
 if(PIO_ENABLE_LOGGING)
   set(ENABLE_LOGGING 1)
   set(HAS_LOGGING "yes")
