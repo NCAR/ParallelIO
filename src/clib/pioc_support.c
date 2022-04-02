@@ -3292,9 +3292,9 @@ bool check_compmap(iosystem_desc_t *ios, io_desc_t *iodesc,const PIO_Offset *com
             return check_mpi(ios, NULL, ierr, __FILE__,__LINE__);
 
         int *displs;
-        int gcompmaplen;
+        int gcompmaplen=0;
         int *gcompmaps;
-        if(ios->compmaster)
+        if(ios->compmaster == MPI_ROOT)
         {
             displs = malloc(ios->num_comptasks * sizeof(int));
             displs[0] = 0;
@@ -3313,7 +3313,7 @@ bool check_compmap(iosystem_desc_t *ios, io_desc_t *iodesc,const PIO_Offset *com
         if ((ierr = MPI_Gatherv(compmap, iodesc->maplen, MPI_OFFSET, gcompmaps, gmaplen, displs, MPI_OFFSET, 0, ios->comp_comm)))
             return check_mpi(ios, NULL, ierr, __FILE__,__LINE__);
 
-        if(ios->compmaster)
+        if(ios->compmaster == MPI_ROOT)
         {
             /* sort */
             qsort(gcompmaps, gcompmaplen, sizeof(MPI_OFFSET), offsetsort);
