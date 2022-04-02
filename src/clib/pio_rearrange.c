@@ -2174,8 +2174,9 @@ subset_rearrange_create(iosystem_desc_t *ios, int maplen, PIO_Offset *compmap,
     }
 //    PLOG((2,"At line %d rdispls[%d]=%d rcount=%d",__LINE__,1,rdispls[0], iodesc->rcount[0]));
     /* Determine whether fill values will be needed. */
-    if ((ret = determine_fill(ios, iodesc, gdimlen, compmap)))
-        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+    if(! iodesc->readonly)
+        if ((ret = determine_fill(ios, iodesc, gdimlen, compmap)))
+            return pio_err(ios, NULL, ret, __FILE__, __LINE__);
 
     /* Pass the sindex from each compute task to its associated IO task. */
     if ((mpierr = MPI_Gatherv(iodesc->sindex, iodesc->scount[0], PIO_OFFSET,
