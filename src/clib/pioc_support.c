@@ -3304,9 +3304,9 @@ bool check_compmap(iosystem_desc_t *ios, io_desc_t *iodesc,const PIO_Offset *com
             }
             gcompmaplen = displs[ios->num_comptasks-1] + gmaplen[ios->num_comptasks-1];
             gcompmaps = malloc(gcompmaplen * sizeof(PIO_Offset)); 
-            printf("gcompmaplen %d\n",gcompmaplen);
-            for(int i=0;i<ios->num_comptasks; i++)
-                printf("gmaplen=%d displs[%d]=%d\n",gmaplen[i], i,displs[i]);
+//            printf("gcompmaplen %d\n",gcompmaplen);
+//            for(int i=0;i<ios->num_comptasks; i++)
+//                printf("gmaplen=%d displs[%d]=%d\n",gmaplen[i], i,displs[i]);
         }
         
         /* next gather the compmap arrays */
@@ -3332,6 +3332,6 @@ bool check_compmap(iosystem_desc_t *ios, io_desc_t *iodesc,const PIO_Offset *com
         }
         
     }
-    MPI_Bcast(&readonly, 1, MPI_CHAR, ios->compmaster, ios->intercomm);
+    MPI_Bcast(&readonly, 1, MPI_CHAR, ios->comproot, ios->my_comm);
     return readonly;
 }
