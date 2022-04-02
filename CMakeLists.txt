@@ -277,7 +277,11 @@ add_subdirectory (src)
 
 # Custom "piotests" target (builds the test executables)
 add_custom_target (tests)
-add_dependencies (tests pioc piof)
+if (PIO_ENABLE_FORTRAN)
+  add_dependencies (tests pioc piof)
+else()
+  add_dependencies (tests pioc)
+endif()
 
 # Custom "check" target that depends upon "tests"
 add_custom_target (check COMMAND ${CMAKE_CTEST_COMMAND})
