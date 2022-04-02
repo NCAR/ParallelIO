@@ -3283,7 +3283,7 @@ bool check_compmap(iosystem_desc_t *ios, io_desc_t *iodesc,const PIO_Offset *com
     if(ios->compproc) 
     {
         int *gmaplen;
-        if(ios->compmaster)
+        if(ios->compmaster == MPI_ROOT)
             gmaplen = malloc(ios->num_comptasks * sizeof(int));
         else
             gmaplen = NULL;
