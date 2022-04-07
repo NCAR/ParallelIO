@@ -146,7 +146,8 @@ int main(int argc, char **argv)
             ERR(ret);
 
         /* Test for each rearranger. */
-        for (int r = 0; r < NUM_REARRANGERS_TO_TEST; r++)
+//        for (int r = 0; r < NUM_REARRANGERS_TO_TEST; r++)
+        for (int r = 1; r < 2; r++)
         {
             /* Initialize the PIO IO system. This specifies how
              * many and which processors are involved in I/O. */
@@ -174,7 +175,7 @@ int main(int argc, char **argv)
                 for (int i = 0; i < MAPLEN; i++)
                 {
                     byte_data[i] = (i % 2) ? my_rank * MAPLEN + i + 1 : TEST_VAL_42;
-                    char_data[i] = (i % 2) ? my_rank * MAPLEN + i + 1 : TEST_VAL_42;
+                    char_data[i] = (i % 2) ? my_rank * MAPLEN + i + 48 : TEST_VAL_42;
                     short_data[i] = (i % 2) ? my_rank * MAPLEN + i + 1 : TEST_VAL_42;
                     int_data[i] = (i % 2) ? my_rank * MAPLEN + i + 1 : TEST_VAL_42;
                     float_data[i] = (i % 2) ? my_rank * MAPLEN + i + 1 : TEST_VAL_42;
@@ -194,7 +195,7 @@ int main(int argc, char **argv)
                 for (int i = 0; i < MAPLEN; i++)
                 {
                     byte_expected[i] = (i % 2) ? my_rank * MAPLEN + i + 1 : (fv ? byte_default_fill : byte_fill);
-                    char_expected[i] = (i % 2) ? my_rank * MAPLEN + i + 1 : (fv ? char_default_fill : char_fill);
+                    char_expected[i] = (i % 2) ? my_rank * MAPLEN + i + 48 : (fv ? char_default_fill : char_fill);
                     short_expected[i] = (i % 2) ? my_rank * MAPLEN + i + 1 : (fv ? short_default_fill : short_fill);
                     int_expected[i] = (i % 2) ? my_rank * MAPLEN + i + 1 : (fv ? int_default_fill : int_fill);
                     float_expected[i] = (i % 2) ? my_rank * MAPLEN + i + 1 : (fv ? float_default_fill : float_fill);
@@ -209,7 +210,7 @@ int main(int argc, char **argv)
                 }
 
                 /* Test for each available type. */
-                for (int t = 0; t < NUM_TYPES; t++)
+                for (int t = 1; t < 2; t++)
                 {
                     void *expected;
                     void *fill;
@@ -219,6 +220,7 @@ int main(int argc, char **argv)
 
                     switch (test_type[t])
                     {
+                        
                     case PIO_BYTE:
                         expected = byte_expected;
                         fill = fv ? &byte_default_fill : &byte_fill;
@@ -339,17 +341,23 @@ int main(int argc, char **argv)
                         /* Read the data. */
                         if ((ret = PIOc_read_darray(ncid, varid, rioid, MAPLEN, data_in)))
                             return ret;
+                        if(test_type[t] == 2)
+                            for(int i=0;i<MAPLEN;i++)
+                                printf("data_in[%d] = %c expected=%c\n",i,((char *)data_in)[i],((char *)expected)[i]);
 
+                        printf("%s %d %d %d %d\n",__FILE__,__LINE__, test_type[t], type_size, MAPLEN);
                         /* Check results. */
                         if (memcmp(data_in, expected, type_size * MAPLEN))
                             return ERR_AWFUL;
+                        printf("%s %d\n",__FILE__,__LINE__);
 
                         /* Release storage. */
                         free(data_in);
-
+                        printf("%s %d\n",__FILE__,__LINE__);
                         /* Close file. */
                         if ((ret = PIOc_closefile(ncid)))
                             return ret;
+                        printf("%s %d\n",__FILE__,__LINE__);
                     } /* next iotype */
 
                     /* Free decompositions. */

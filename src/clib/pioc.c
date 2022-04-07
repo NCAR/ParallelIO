@@ -9,6 +9,8 @@
 #include <config.h>
 #include <pio.h>
 #include <pio_internal.h>
+#include <parallel_sort.h>
+
 #ifdef NETCDF_INTEGRATION
 #include "ncintdispatch.h"
 #endif /* NETCDF_INTEGRATION */
@@ -658,12 +660,10 @@ PIOc_InitDecomp(int iosysid, int pio_type, int ndims, const int *gdimlen, int ma
     if (iodesc->rearranger == PIO_REARR_SUBSET)
     {
         /* check if the decomp is valid for write or is read-only */
-        /* this check is expensive and may be memory intensive on compute task 0 */
-        iodesc->readonly = check_compmap(ios, iodesc, compmap);
-
+        iodesc->readonly = (bool) run_unique_check(ios->comp_comm, (size_t) maplen, (PIO_Offset *) compmap);
         iodesc->num_aiotasks = ios->num_iotasks;
-        PLOG((2, "creating subset rearranger iodesc->num_aiotasks = %d",
-              iodesc->num_aiotasks));
+        PLOG((2, "creating subset rearranger iodesc->num_aiotasks = %d readonly = %d",
+              iodesc->num_aiotasks, iodesc->readonly));
         if ((ierr = subset_rearrange_create(ios, maplen, (PIO_Offset *)iodesc->map, gdimlen,
                                             ndims, iodesc)))
             return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
