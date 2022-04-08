@@ -26,7 +26,7 @@ bool is_unique(CVector v);
 
 CVector parallel_sort(MPI_Comm comm, CVector v);
 
-int run_unique_check(MPI_Comm comm, size_t N,datatype *v);
+int run_unique_check(MPI_Comm comm, size_t N,datatype *v, bool *has_dups);
 
 #ifdef __cplusplus
 }

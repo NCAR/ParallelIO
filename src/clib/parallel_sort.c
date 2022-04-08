@@ -24,7 +24,7 @@
 #include <time.h>
 #include <unistd.h>
 #include <assert.h>
-
+#include "pio_internal.h"
 
 
 void fill_random(CVector v) {
@@ -166,19 +166,29 @@ CVector parallel_sort(MPI_Comm comm, CVector v) {
 
 
 
-int run_unique_check(MPI_Comm comm, size_t N,datatype *v)
+int run_unique_check(MPI_Comm comm, size_t N,datatype *v, bool *has_dups)
 {
   int rank, size, i, r;
-  MPI_Comm_rank(comm, &rank);
-  MPI_Comm_size(comm, &size);
+  int mpierr=MPI_SUCCESS, mpierr2;
+
+  if ((mpierr = MPI_Comm_rank(comm, &rank)))
+    check_mpi(NULL, NULL, mpierr2, __FILE__, __LINE__);
+
+  if ((mpierr = MPI_Comm_size(comm, &size)))
+    check_mpi(NULL, NULL, mpierr2, __FILE__, __LINE__);
+    
   srand(time(NULL) * rank);
 
   CVector sorted = parallel_sort(comm, (CVector){v, N});
 
-  int i_have_dups = 0;
-//  int i_have_dups = is_unique(sorted) ? 0 : 1;
+  int i_have_dups = is_unique(sorted) ? 0:1;
   int global_dups;
   MPI_Allreduce(&i_have_dups, &global_dups, 1, MPI_INT, MPI_MAX, comm);
+  if(global_dups > 0)
+    *has_dups = true;
+  else
+    *has_dups = false;
+  
 #ifdef DEBUG_PARALLEL_SORT
   for (r=0; r<size; r++)
     {
@@ -214,5 +224,5 @@ int run_unique_check(MPI_Comm comm, size_t N,datatype *v)
 #endif
   free(sorted.data);
 
-  return global_dups;
+  return PIO_NOERR;
 }
