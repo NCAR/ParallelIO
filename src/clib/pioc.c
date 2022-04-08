@@ -662,6 +662,8 @@ PIOc_InitDecomp(int iosysid, int pio_type, int ndims, const int *gdimlen, int ma
       /* check if the decomp is valid for write or is read-only */
       PLOG((2,"bcompmap %d",compmap[5]));
       if(ios->compproc){
+	// It should be okay to use compmap here but test_darray_fill shows
+	// the compmap array modified by this call, TODO - investigate this.
 	PIO_Offset tmpmap[maplen];
 	memcpy(tmpmap, compmap, maplen*sizeof(PIO_Offset));
 	iodesc->readonly = (bool) run_unique_check(ios->comp_comm, (size_t) maplen, tmpmap);
