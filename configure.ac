@@ -336,12 +336,12 @@ fi
 AM_CONDITIONAL(BUILD_NETCDF4, [test "x$have_netcdf_par" = xyes])
 
 # Not working for some reason, so I will just set it...
-AC_CHECK_TYPE([MPI_Offset], [], [], [#include <mpi.h>])
-if test "x${ac_cv_type_MPI_Offset}" = xyes; then
-   AC_CHECK_SIZEOF([MPI_Offset], [], [#include <mpi.h>])
-else
-   AC_MSG_ERROR([Unable to find type MPI_Offset in mpi.h])
-fi
+#AC_CHECK_TYPE([MPI_Offset], [], [], [#include <mpi.h>])
+#if test "x${ac_cv_type_MPI_Offset}" = xyes; then
+#   AC_CHECK_SIZEOF([MPI_Offset], [], [#include <mpi.h>])
+#else
+#   AC_MSG_ERROR([Unable to find type MPI_Offset in mpi.h])
+#fi
 
 # If we want the timing library, we must find it.
 if test "x$enable_timing" = xyes; then

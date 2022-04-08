@@ -11,7 +11,7 @@
 #if PIO_USE_MPISERIAL
 #define MPI_Type_create_hvector MPI_Type_hvector
 #endif
-
+#define SIZEOF_MPI_OFFSET sizeof(MPI_Offset)
 /**
  * Convert a 1-D index into a coordinate value in an arbitrary
  * dimension space. E.g., for index 4 into a array defined as a[3][2],
@@ -312,7 +312,7 @@ create_mpi_datatypes(MPI_Datatype mpitype, int msgcnt,
     if (mindex)
     {
       for(int j=0; j<numinds; j++)
-	PLOG((3,"mindex[%d] = %d",j,mindex[j]));
+        PLOG((3,"mindex[%d] = %d",j,mindex[j]));
       if (!(lindex = malloc(numinds * sizeof(PIO_Offset))))
             return pio_err(NULL, NULL, PIO_ENOMEM, __FILE__, __LINE__);
         memcpy(lindex, mindex, (size_t)(numinds * sizeof(PIO_Offset)));
@@ -375,9 +375,9 @@ create_mpi_datatypes(MPI_Datatype mpitype, int msgcnt,
                     /* Subset rearranger. */
                     int k = 0;
                     for (int j = 0; j < numinds; j++)
-		      if (mfrom[j] == i){
+                      if (mfrom[j] == i){
                             displace[k++] = (int)(lindex[j]);
-		      }
+                      }
                 }
 
             }
@@ -393,7 +393,7 @@ create_mpi_datatypes(MPI_Datatype mpitype, int msgcnt,
 #if PIO_ENABLE_LOGGING
             int cnt=0;
             for (int j = 1; j < len; j++){
-	      PLOG((4, "displace[%d] = %d blocksize=%d mfrom %x", j, displace[j], blocksize, mfrom));
+              PLOG((4, "displace[%d] = %d blocksize=%d mfrom %x", j, displace[j], blocksize, mfrom));
             }
 
 #endif /* PIO_ENABLE_LOGGING */
@@ -2134,7 +2134,7 @@ subset_rearrange_create(iosystem_desc_t *ios, int maplen, PIO_Offset *compmap,
     for (i = 0; i < iodesc->ndof; i++){
       PLOG((4,"compmap[%d] = %d ",i, compmap[i]));
         if (compmap[i] > 0){
-	  PLOG((4,"sindex[%d] = %d ",j, i));
+          PLOG((4,"sindex[%d] = %d ",j, i));
             iodesc->sindex[j++] = i;
         }
     }
