@@ -75,11 +75,11 @@ bool is_unique(CVector v) {
     return true;
 
   for (i=1; i<v.N; i++) {
-      if (v.data[i] == 0)
-          continue;
-      assert (v.data[i] >= v.data[i-1]);
-      if (v.data[i] == v.data[i-1])
-          return false;
+    if (v.data[i] == 0)
+      continue;
+    assert (v.data[i] >= v.data[i-1]);
+    if (v.data[i] == v.data[i-1])
+      return false;
   }
 
   return true;

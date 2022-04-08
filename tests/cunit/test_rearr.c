@@ -137,7 +137,7 @@ int test_ceil2_pair()
 
 /* Test the create_mpi_datatypes() function.
  * @returns 0 for success, error code otherwise.*/
-int test_create_mpi_datatypes()
+int test_create_mpi_datatypes(int rearr)
 {
     MPI_Datatype basetype = MPI_INT;
     int *mfrom = NULL;
@@ -151,7 +151,7 @@ int test_create_mpi_datatypes()
         MPI_Datatype mtype;
 
         /* Create an MPI data type. */
-        if ((ret = create_mpi_datatypes(basetype, msgcnt, mindex, mcount, mfrom, &mtype)))
+        if ((ret = create_mpi_datatypes(basetype, msgcnt, mindex, mcount, mfrom, &mtype, rearr)))
             return ret;
 
         /* Free the type. */
@@ -166,7 +166,7 @@ int test_create_mpi_datatypes()
         MPI_Datatype mtype2[4];
 
         /* Create 4 MPI data types. */
-        if ((ret = create_mpi_datatypes(basetype, msgcnt, mindex, mcount, mfrom, mtype2)))
+        if ((ret = create_mpi_datatypes(basetype, msgcnt, mindex, mcount, mfrom, mtype2, rearr)))
             return ret;
 
         /* Check the size of the data types. It should be 4. */
@@ -1267,7 +1267,10 @@ int run_no_iosys_tests(int my_rank, MPI_Comm test_comm)
     if ((ret = test_get_regions(my_rank)))
         return ret;
 
-    if ((ret = test_create_mpi_datatypes()))
+    if ((ret = test_create_mpi_datatypes(1)))
+        return ret;
+
+    if ((ret = test_create_mpi_datatypes(2)))
         return ret;
 
     if ((ret = test_define_iodesc_datatypes(my_rank)))
