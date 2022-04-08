@@ -660,7 +660,8 @@ PIOc_InitDecomp(int iosysid, int pio_type, int ndims, const int *gdimlen, int ma
     if (iodesc->rearranger == PIO_REARR_SUBSET)
     {
         /* check if the decomp is valid for write or is read-only */
-        iodesc->readonly = (bool) run_unique_check(ios->comp_comm, (size_t) maplen, (PIO_Offset *) compmap);
+        if(ios->compproc)
+            iodesc->readonly = (bool) run_unique_check(ios->comp_comm, (size_t) maplen, (PIO_Offset *) compmap);
         iodesc->num_aiotasks = ios->num_iotasks;
         PLOG((2, "creating subset rearranger iodesc->num_aiotasks = %d readonly = %d",
               iodesc->num_aiotasks, iodesc->readonly));

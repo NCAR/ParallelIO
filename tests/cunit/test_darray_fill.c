@@ -345,7 +345,7 @@ int main(int argc, char **argv)
                             for(int i=0;i<MAPLEN;i++)
                                 printf("data_in[%d] = %c expected=%c\n",i,((char *)data_in)[i],((char *)expected)[i]);
 
-                        printf("%s %d %d %d %d\n",__FILE__,__LINE__, test_type[t], type_size, MAPLEN);
+                        printf("%s %d %d %lld %d\n",__FILE__,__LINE__, test_type[t], type_size, MAPLEN);
                         /* Check results. */
                         if (memcmp(data_in, expected, type_size * MAPLEN))
                             return ERR_AWFUL;
