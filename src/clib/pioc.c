@@ -667,10 +667,6 @@ PIOc_InitDecomp(int iosysid, int pio_type, int ndims, const int *gdimlen, int ma
 	memcpy(tmpmap, compmap, maplen*sizeof(PIO_Offset));
 	if((ierr = run_unique_check(ios->comp_comm, (size_t) maplen, tmpmap, &iodesc->readonly)))
             return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
-	if(iodesc->readonly)
-	  for(int i=0; i<maplen; i++)
-	    printf("%d: compmap[%d]=%d\n",ios->comp_rank, i,compmap[i]);
-	
       }
 	/*	printf("readonly: %d\n",iodesc->readonly);
 	for(int i=0;i<maplen;i++)

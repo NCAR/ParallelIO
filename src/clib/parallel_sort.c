@@ -183,7 +183,9 @@ int run_unique_check(MPI_Comm comm, size_t N,datatype *v, bool *has_dups)
 
   int i_have_dups = is_unique(sorted) ? 0:1;
   int global_dups;
-  MPI_Allreduce(&i_have_dups, &global_dups, 1, MPI_INT, MPI_MAX, comm);
+  if ((mpierr = MPI_Allreduce(&i_have_dups, &global_dups, 1, MPI_INT, MPI_MAX, comm)))
+    check_mpi(NULL, NULL, mpierr2, __FILE__, __LINE__);
+    
   if(global_dups > 0)
     *has_dups = true;
   else
