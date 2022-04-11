@@ -320,7 +320,7 @@ extern "C" {
     /* Create the derived MPI datatypes used for comp2io and io2comp
      * transfers. */
     int create_mpi_datatypes(MPI_Datatype basetype, int msgcnt, const PIO_Offset *mindex,
-                             const int *mcount, int *mfrom, MPI_Datatype *mtype, int rearranger);
+                             const int *mcount, int *mfrom, MPI_Datatype *mtype);
 
     /* Used by subset rearranger to sort map. */
     int compare_offsets(const void *a, const void *b) ;
