@@ -151,7 +151,7 @@ int test_create_mpi_datatypes(int rearr)
         MPI_Datatype mtype;
 
         /* Create an MPI data type. */
-        if ((ret = create_mpi_datatypes(basetype, msgcnt, mindex, mcount, mfrom, &mtype, rearr)))
+        if ((ret = create_mpi_datatypes(basetype, msgcnt, mindex, mcount, mfrom, &mtype)))
             return ret;
 
         /* Free the type. */
@@ -166,7 +166,7 @@ int test_create_mpi_datatypes(int rearr)
         MPI_Datatype mtype2[4];
 
         /* Create 4 MPI data types. */
-        if ((ret = create_mpi_datatypes(basetype, msgcnt, mindex, mcount, mfrom, mtype2, rearr)))
+        if ((ret = create_mpi_datatypes(basetype, msgcnt, mindex, mcount, mfrom, mtype2)))
             return ret;
 
         /* Check the size of the data types. It should be 4. */
