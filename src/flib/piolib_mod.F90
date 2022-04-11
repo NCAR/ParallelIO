@@ -1477,8 +1477,8 @@ contains
          character(kind=c_char) :: fname
        end function PIOc_deletefile
     end interface
-
-    ierr = PIOc_deletefile(ios%iosysid, trim(fname)//C_NULL_CHAR)
+    print *,__FILE__,__LINE__,trim(fname)
+!    ierr = PIOc_deletefile(ios%iosysid, trim(fname)//C_NULL_CHAR)
     if(present(rc)) rc = ierr
   end subroutine pio_deletefile
 

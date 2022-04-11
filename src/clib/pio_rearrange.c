@@ -284,7 +284,7 @@ compute_maxIObuffersize(MPI_Comm io_comm, io_desc_t *iodesc)
 int
 create_mpi_datatypes(MPI_Datatype mpitype, int msgcnt,
                      const PIO_Offset *mindex, const int *mcount, int *mfrom,
-                     MPI_Datatype *mtype, int rearranger)
+                     MPI_Datatype *mtype)
 {
     int blocksize;
     int numinds = 0;
@@ -325,8 +325,8 @@ create_mpi_datatypes(MPI_Datatype mpitype, int msgcnt,
     int ii = 0;
 
     /* Determine the blocksize. This is done differently for the
-     * rearrangers. (If mfrom is NULL, this is the box rearranger.) */
-    if (rearranger = PIO_REARR_BOX)
+     * rearrangers */
+    if(mfrom == NULL)
     {
         for (int i = 0; i < msgcnt; i++)
         {
@@ -364,7 +364,7 @@ create_mpi_datatypes(MPI_Datatype mpitype, int msgcnt,
                   mcount[i], len));
             if (blocksize == 1)
             {
-                if (rearranger == PIO_REARR_BOX)
+                if (!mfrom)
                 {
                     /* Box rearranger. */
                     for (int j = 0; j < len; j++)
@@ -493,7 +493,7 @@ define_iodesc_datatypes(iosystem_desc_t *ios, io_desc_t *iodesc)
                 /* Create the MPI datatypes. */
                 PLOG((2, "Calling create_mpi_datatypes at line %d ",__LINE__));
                 if ((ret = create_mpi_datatypes(iodesc->mpitype, iodesc->nrecvs, iodesc->rindex,
-                                                iodesc->rcount, mfrom, iodesc->rtype, iodesc->rearranger)))
+                                                iodesc->rcount, mfrom, iodesc->rtype)))
                     return pio_err(ios, NULL, ret, __FILE__, __LINE__);
             }
         }
@@ -527,7 +527,7 @@ define_iodesc_datatypes(iosystem_desc_t *ios, io_desc_t *iodesc)
             /* Create the MPI data types. */
             PLOG((2, "Calling create_mpi_datatypes at line %d",__LINE__));
             if ((ret = create_mpi_datatypes(iodesc->mpitype, ntypes, iodesc->sindex,
-                                            iodesc->scount, NULL, iodesc->stype, iodesc->rearranger)))
+                                            iodesc->scount, NULL, iodesc->stype)))
                 return pio_err(ios, NULL, ret, __FILE__, __LINE__);
 
         }
