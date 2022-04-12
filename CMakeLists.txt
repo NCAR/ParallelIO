@@ -172,9 +172,9 @@ else ()
   set (CMAKE_REQUIRED_INCLUDES ${MPI_INCLUDE_PATH})
 endif ()
 
-SET(CMAKE_EXTRA_INCLUDE_FILES "mpi.h")
-check_type_size("MPI_Offset" SIZEOF_MPI_OFFSET)
-SET(CMAKE_EXTRA_INCLUDE_FILES)
+#SET(CMAKE_EXTRA_INCLUDE_FILES "mpi.h")
+#check_type_size("MPI_Offset" SIZEOF_MPI_OFFSET)
+#SET(CMAKE_EXTRA_INCLUDE_FILES)
 
 #===== Library Variables =====
 set (PIO_FILESYSTEM_HINTS IGNORE CACHE STRING "Filesystem hints (lustre or gpfs)")
