@@ -660,18 +660,332 @@ PIOc_InitDecomp(int iosysid, int pio_type, int ndims, const int *gdimlen, int ma
     if (iodesc->rearranger == PIO_REARR_SUBSET)
     {
       /* check if the decomp is valid for write or is read-only */
-      if(ios->compproc){
+        iodesc->readonly = false;
+/*      if(ios->compproc){
         // It should be okay to use compmap here but test_darray_fill shows
         // the compmap array modified by this call, TODO - investigate this.
         PIO_Offset *tmpmap;
-	if (!(tmpmap = malloc(sizeof(PIO_Offset) * maplen)))
-	  return PIO_ENOMEM;
+        if (!(tmpmap = malloc(sizeof(PIO_Offset) * maplen)))
+          return PIO_ENOMEM;
         memcpy(tmpmap, compmap, maplen*sizeof(PIO_Offset));
         if((ierr = run_unique_check(ios->comp_comm, (size_t) maplen, tmpmap, &iodesc->readonly)))
             return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
-	free(tmpmap);
+        free(tmpmap);
       }
+*/
         /*      printf("readonly: %d\n",iodesc->readonly);
+        for(int i=0;i<maplen;i++)
+        printf("compmap[%d]=%d\n",i,compmap[i]); */
+        iodesc->num_aiotasks = ios->num_iotasks;
+        PLOG((2, "creating subset rearranger iodesc->num_aiotasks = %d readonly = %d",
+              iodesc->num_aiotasks, iodesc->readonly));
+        if ((ierr = subset_rearrange_create(ios, maplen, (PIO_Offset *)iodesc->map, gdimlen,
+                                            ndims, iodesc)))
+            return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
+
+    }
+    else /* box rearranger */
+    {
+        if (ios->ioproc)
+        {
+            /*  Unless the user specifies the start and count for each
+             *  IO task compute it. */
+            if (iostart && iocount)
+            {
+                PLOG((3, "iostart and iocount provided"));
+                for (int i = 0; i < ndims; i++)
+                {
+                    iodesc->firstregion->start[i] = iostart[i];
+                    iodesc->firstregion->count[i] = iocount[i];
+                }
+                iodesc->num_aiotasks = ios->num_iotasks;
+            }
+            else
+            {
+                /* Compute start and count values for each io task. */
+                PLOG((2, "about to call CalcStartandCount pio_type = %d ndims = %d", pio_type, ndims));
+                if ((ierr = CalcStartandCount(pio_type, ndims, gdimlen, ios->num_iotasks,
+                                              ios->io_rank, iodesc->firstregion->start,
+                                              iodesc->firstregion->count, &iodesc->num_aiotasks)))
+                    return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
+            }
+
+            /* Compute the max io buffer size needed for an iodesc. */
+            if ((ierr = compute_maxIObuffersize(ios->io_comm, iodesc)))
+                return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
+            PLOG((3, "compute_maxIObuffersize called iodesc->maxiobuflen = %d",
+                  iodesc->maxiobuflen));
+        }
+
+        /* Depending on array size and io-blocksize the actual number
+         * of io tasks used may vary. */
+        if ((mpierr = MPI_Bcast(&(iodesc->num_aiotasks), 1, MPI_INT, ios->ioroot,
+                                ios->my_comm)))
+            return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
+        PLOG((3, "iodesc->num_aiotasks = %d", iodesc->num_aiotasks));
+
+        /* Compute the communications pattern for this decomposition. */
+        if (iodesc->rearranger == PIO_REARR_BOX)
+            if ((ierr = box_rearrange_create(ios, maplen, iodesc->map, gdimlen, ndims, iodesc)))
+                return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
+    }
+
+    /* Broadcast next ioid to all tasks from io root.*/
+    if (ios->async)
+    {
+        PLOG((3, "initdecomp bcasting pio_next_ioid %d", pio_next_ioid));
+        if ((mpierr = MPI_Bcast(&pio_next_ioid, 1, MPI_INT, ios->ioroot, ios->my_comm)))
+            return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
+        PLOG((3, "initdecomp bcast pio_next_ioid %d", pio_next_ioid));
+    }
+
+    /* Set the decomposition ID. */
+    iodesc->ioid = pio_next_ioid++;
+    if (ioidp)
+        *ioidp = iodesc->ioid;
+
+    /* Add this IO description to the list. */
+    if ((ierr = pio_add_to_iodesc_list(iodesc)))
+        return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
+
+#if PIO_ENABLE_LOGGING
+    /* Log results. */
+    PLOG((2, "iodesc ioid = %d nrecvs = %d ndof = %d ndims = %d num_aiotasks = %d "
+          "rearranger = %d maxregions = %d needsfill = %d llen = %d maxiobuflen  = %d",
+          iodesc->ioid, iodesc->nrecvs, iodesc->ndof, iodesc->ndims, iodesc->num_aiotasks,
+          iodesc->rearranger, iodesc->maxregions, iodesc->needsfill, iodesc->llen,
+          iodesc->maxiobuflen));
+    if (iodesc->rindex)
+        for (int j = 0; j < iodesc->llen; j++)
+            PLOG((3, "rindex[%d] = %lld", j, iodesc->rindex[j]));
+#endif /* PIO_ENABLE_LOGGING */
+
+    /* This function only does something if pre-processor macro
+     * PERFTUNE is set. */
+    performance_tune_rearranger(ios, iodesc);
+
+#ifdef USE_MPE
+    pio_stop_mpe_log(DECOMP, __func__);
+#endif /* USE_MPE */
+
+    return PIO_NOERR;
+}
+
+/**
+ * Initialize the decomposition used with distributed arrays. The
+ * decomposition describes how the data will be distributed between
+ * tasks.
+ *
+ * Internally, this function will:
+ * <ul>
+ * <li>Allocate and initialize an iodesc struct for this
+ * decomposition. (This also allocates an io_region struct for the
+ * first region.)
+ * <li>(Box rearranger only) If iostart or iocount are NULL, call
+ * CalcStartandCount() to determine starts/counts. Then call
+ * compute_maxIObuffersize() to compute the max IO buffer size needed.
+ * <li>Create the rearranger.
+ * <li>Assign an ioid and add this decomposition to the list of open
+ * decompositions.
+ * </ul>
+ *
+ * @param iosysid the IO system ID.
+ * @param pio_type the basic PIO data type used.
+ * @param ndims the number of dimensions in the variable, not
+ * including the unlimited dimension.
+ * @param gdimlen an array length ndims with the sizes of the global
+ * dimensions.
+ * @param maplen the local length of the compmap array.
+ * @param compmap a 1 based array of offsets into the array record on
+ * file. A 0 in this array indicates a value which should not be
+ * transfered.
+ * @param ioidp pointer that will get the io description ID. Ignored
+ * if NULL.
+ * @param rearranger pointer to the rearranger to be used for this
+ * decomp or NULL to use the default.
+ * @param iostart An array of start values for block cyclic
+ * decompositions for the SUBSET rearranger. Ignored if block
+ * rearranger is used. If NULL and SUBSET rearranger is used, the
+ * iostarts are generated.
+ * @param iocount An array of count values for block cyclic
+ * decompositions for the SUBSET rearranger. Ignored if block
+ * rearranger is used. If NULL and SUBSET rearranger is used, the
+ * iostarts are generated.
+ * @returns 0 on success, error code otherwise
+ * @ingroup PIO_initdecomp_c
+ * @author Jim Edwards, Ed Hartnett
+ */
+int
+PIOc_InitDecomp_ReadOnly(int iosysid, int pio_type, int ndims, const int *gdimlen, int maplen,
+                const PIO_Offset *compmap, int *ioidp, const int *rearranger,
+                const PIO_Offset *iostart, const PIO_Offset *iocount)
+{
+    iosystem_desc_t *ios;  /* Pointer to io system information. */
+    io_desc_t *iodesc;     /* The IO description. */
+    int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI function calls. */
+    int ierr;              /* Return code. */
+
+    PLOG((1, "PIOc_InitDecomp iosysid = %d pio_type = %d ndims = %d maplen = %d",
+          iosysid, pio_type, ndims, maplen));
+
+#ifdef USE_MPE
+    pio_start_mpe_log(DECOMP);
+#endif /* USE_MPE */
+
+    /* Get IO system info. */
+    if (!(ios = pio_get_iosystem_from_id(iosysid)))
+        return pio_err(NULL, NULL, PIO_EBADID, __FILE__, __LINE__);
+
+    /* Caller must provide these. */
+    if (!gdimlen || !compmap || !ioidp)
+        return pio_err(ios, NULL, PIO_EINVAL, __FILE__, __LINE__);
+
+    /* Check the dim lengths. */
+    for (int i = 0; i < ndims; i++)
+        if (gdimlen[i] <= 0)
+            return pio_err(ios, NULL, PIO_EINVAL, __FILE__, __LINE__);
+
+    /* If async is in use, and this is not an IO task, bcast the parameters. */
+    if (ios->async)
+    {
+        if (!ios->ioproc)
+        {
+            int msg = PIO_MSG_INITDECOMP_DOF; /* Message for async notification. */
+            char rearranger_present = rearranger ? true : false;
+            char iostart_present = iostart ? true : false;
+            char iocount_present = iocount ? true : false;
+            if (ios->compmaster == MPI_ROOT){
+                PLOG((1, "about to sent msg %d union_comm %d",msg,ios->union_comm));
+                mpierr = MPI_Send(&msg, 1, MPI_INT, ios->ioroot, 1, ios->union_comm);
+            }
+            if (!mpierr)
+                mpierr = MPI_Bcast(&iosysid, 1, MPI_INT, ios->compmaster, ios->intercomm);
+            if (!mpierr)
+                mpierr = MPI_Bcast(&pio_type, 1, MPI_INT, ios->compmaster, ios->intercomm);
+            if (!mpierr)
+                mpierr = MPI_Bcast(&ndims, 1, MPI_INT, ios->compmaster, ios->intercomm);
+            if (!mpierr)
+                mpierr = MPI_Bcast((int *)gdimlen, ndims, MPI_INT, ios->compmaster, ios->intercomm);
+            if (!mpierr)
+                mpierr = MPI_Bcast(&maplen, 1, MPI_INT, ios->compmaster, ios->intercomm);
+            if (!mpierr)
+                mpierr = MPI_Bcast((PIO_Offset *)compmap, maplen, MPI_OFFSET, ios->compmaster, ios->intercomm);
+
+            if (!mpierr)
+                mpierr = MPI_Bcast(&rearranger_present, 1, MPI_CHAR, ios->compmaster, ios->intercomm);
+            if (rearranger_present && !mpierr)
+                mpierr = MPI_Bcast((int *)rearranger, 1, MPI_INT, ios->compmaster, ios->intercomm);
+
+            if (!mpierr)
+                mpierr = MPI_Bcast(&iostart_present, 1, MPI_CHAR, ios->compmaster, ios->intercomm);
+            if (iostart_present && !mpierr)
+                mpierr = MPI_Bcast((PIO_Offset *)iostart, ndims, MPI_OFFSET, ios->compmaster, ios->intercomm);
+
+            if (!mpierr)
+                mpierr = MPI_Bcast(&iocount_present, 1, MPI_CHAR, ios->compmaster, ios->intercomm);
+            if (iocount_present && !mpierr)
+                mpierr = MPI_Bcast((PIO_Offset *)iocount, ndims, MPI_OFFSET, ios->compmaster, ios->intercomm);
+            PLOG((2, "PIOc_InitDecomp iosysid = %d pio_type = %d ndims = %d maplen = %d rearranger_present = %d iostart_present = %d "
+                  "iocount_present = %d ", iosysid, pio_type, ndims, maplen, rearranger_present, iostart_present, iocount_present));
+        }
+
+        /* Handle MPI errors. */
+        if ((mpierr2 = MPI_Bcast(&mpierr, 1, MPI_INT, ios->comproot, ios->my_comm)))
+            return check_mpi(ios, NULL, mpierr2, __FILE__, __LINE__);
+        if (mpierr)
+            return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
+
+        if(rearranger && (*rearranger != ios->default_rearranger))
+            return pio_err(ios, NULL, PIO_EBADREARR, __FILE__,__LINE__);
+
+    }
+
+    /* Allocate space for the iodesc info. This also allocates the
+     * first region and copies the rearranger opts into this
+     * iodesc. */
+    PLOG((2, "allocating iodesc pio_type %d ndims %d", pio_type, ndims));
+    if ((ierr = malloc_iodesc(ios, pio_type, ndims, &iodesc)))
+        return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
+
+    /* Remember the maplen. */
+    iodesc->maplen = maplen;
+
+    /* Remember the map. */
+    if (!(iodesc->map = malloc(sizeof(PIO_Offset) * maplen)))
+        return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__);
+    iodesc->needssort = false;
+    iodesc->remap = NULL;
+    for (int m = 0; m < maplen; m++)
+    {
+        if(m > 0 && compmap[m] > 0 && compmap[m] < compmap[m-1])
+        {
+            iodesc->needssort = true;
+            PLOG((2, "compmap[%d] = %ld compmap[%d]= %ld", m, compmap[m], m-1, compmap[m-1]));
+            break;
+        }
+    }
+    if (iodesc->needssort)
+    {
+        struct sort_map *tmpsort;
+
+        if (!(tmpsort = malloc(sizeof(struct sort_map) * maplen)))
+            return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__);
+        if (!(iodesc->remap = malloc(sizeof(int) * maplen)))
+        {
+            free(tmpsort);
+            return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__);
+        }
+        for (int m=0; m < maplen; m++)
+        {
+            tmpsort[m].remap = m;
+            tmpsort[m].map = compmap[m];
+        }
+        qsort( tmpsort, maplen, sizeof(struct sort_map), compare );
+        for (int m=0; m < maplen; m++)
+        {
+            iodesc->map[m] = compmap[tmpsort[m].remap];
+            iodesc->remap[m] = tmpsort[m].remap;
+        }
+        free(tmpsort);
+    }
+    else
+    {
+        for (int m=0; m < maplen; m++)
+        {
+            iodesc->map[m] = compmap[m];
+        }
+    }
+
+    /* Remember the dim sizes. */
+    if (!(iodesc->dimlen = malloc(sizeof(int) * ndims)))
+        return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__);
+    for (int d = 0; d < ndims; d++)
+        iodesc->dimlen[d] = gdimlen[d];
+
+    /* Set the rearranger. */
+    if (!rearranger)
+        iodesc->rearranger = ios->default_rearranger;
+    else
+        iodesc->rearranger = *rearranger;
+    PLOG((2, "iodesc->rearranger = %d", iodesc->rearranger));
+
+    /* Is this the subset rearranger? */
+    if (iodesc->rearranger == PIO_REARR_SUBSET)
+    {
+        iodesc->readonly = true;
+      /* check if the decomp is valid for write or is read-only */
+/*      if(ios->compproc){
+        // It should be okay to use compmap here but test_darray_fill shows
+        // the compmap array modified by this call, TODO - investigate this.
+        PIO_Offset *tmpmap;
+        if (!(tmpmap = malloc(sizeof(PIO_Offset) * maplen)))
+          return PIO_ENOMEM;
+        memcpy(tmpmap, compmap, maplen*sizeof(PIO_Offset));
+        if((ierr = run_unique_check(ios->comp_comm, (size_t) maplen, tmpmap, &iodesc->readonly)))
+            return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
+        free(tmpmap);
+      }
+*/        /*      printf("readonly: %d\n",iodesc->readonly);
         for(int i=0;i<maplen;i++)
         printf("compmap[%d]=%d\n",i,compmap[i]); */
         iodesc->num_aiotasks = ios->num_iotasks;
