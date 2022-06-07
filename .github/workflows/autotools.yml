@@ -27,7 +27,16 @@ jobs:
         sudo apt-spy2 fix --commit
         # after selecting a specific mirror, we need to run 'apt-get update'
         sudo apt-get update
-        sudo apt-get install netcdf-bin libnetcdf-dev doxygen graphviz wget gfortran libjpeg-dev libz-dev openmpi-bin libopenmpi-dev
+        sudo apt-get install netcdf-bin 
+        sudo apt-get install libnetcdf-dev
+        sudo apt-get install doxygen
+        sudo apt-get install graphviz
+        sudo apt-get install wget
+        sudo apt-get install gfortran
+        sudo apt-get install libjpeg-dev
+        sudo apt-get install libz-dev
+        sudo apt-get install openmpi-bin
+        sudo apt-get install libopenmpi-dev
     - name: cache-pnetcdf
       id: cache-pnetcdf
       uses: actions/cache@v2
