@@ -89,6 +89,7 @@ expand_region(int dim, const int *gdimlen, int maplen, const PIO_Offset *map,
               "invalid input", __FILE__, __LINE__);
 
     /* Expand no greater than max_size along this dimension. */
+    PLOG((3,"expand_region: max_size[%d]=%d region_size=%d",dim, max_size[dim], region_size));
     for (int i = 1; i <= max_size[dim]; ++i)
     {
         /* Count so far is at least i. */
@@ -107,6 +108,7 @@ expand_region(int dim, const int *gdimlen, int maplen, const PIO_Offset *map,
 
             /* If we have exhausted the map, or the map no longer matches,
                we are done, break out of both loops. */
+            PLOG((3,"dim=%d maplen = %d map[%d]=%d map[%d]=%d i=%d region_stride=%d",dim, maplen, test_idx, map[test_idx], j, map[j],i,region_stride));
             if (test_idx >= maplen || map[test_idx] != map[j] + i * region_stride)
             {
                 expansion_done = 1;
@@ -117,7 +119,7 @@ expand_region(int dim, const int *gdimlen, int maplen, const PIO_Offset *map,
             break;
 
     }
-
+    PLOG((3,"expansion_done = %d count[%d]=%ld",expansion_done, dim, count[dim]));
     /* Move on to next outermost dimension if there are more left,
      * else return. */
     if (dim > 0)
@@ -1859,7 +1861,7 @@ compare_offsets(const void *a, const void *b)
  * @param gdimlen an array length ndims with the sizes of the global
  * dimensions.
  * @param maplen the length of the map
- * @param map may be NULL (when ???).
+ * @param map may be NULL (when maplen==0).
  * @param maxregions
  * @param firstregion pointer to the first region.
  * @returns 0 on success, error code otherwise.
@@ -2266,6 +2268,9 @@ subset_rearrange_create(iosystem_desc_t *ios, int maplen, PIO_Offset *compmap,
         cnt[i] = rdispls[i];
     }
 
+    for (i=0; i< iodesc->llen; i++)
+        iomap[i] = 0;
+
     /* For IO tasks init rfrom and rindex arrays (compute tasks have
      * llen of 0). */
     int rllen;
@@ -2282,12 +2287,14 @@ subset_rearrange_create(iosystem_desc_t *ios, int maplen, PIO_Offset *compmap,
         iodesc->rfrom[i] = mptr->rfrom;
         if(mptr->iomap > previomap[mptr->rfrom])
         {
-            iomap[rllen] = mptr->iomap;
-            soffset = mptr->soffset;
+            if(rllen == 0 || iomap[rllen-1] < mptr->iomap){
+                iomap[rllen] = mptr->iomap;
+                soffset = mptr->soffset;
+                iodesc->rindex[i] = rllen++;
+            }
         }
-        previomap[mptr->rfrom]=iomap[rllen];
+        previomap[mptr->rfrom]=iomap[rllen-1];
         srcindex[(cnt[mptr->rfrom])++] = soffset;
-        iodesc->rindex[i] = rllen++;
         iodesc->rllen = rllen;
     }
 
