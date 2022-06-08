@@ -392,16 +392,8 @@ create_mpi_datatypes(MPI_Datatype mpitype, int msgcnt,
                     displace[j] = ((lindex + pos)[j * blocksize] - 1);
             }
 
-#if PIO_ENABLE_LOGGING
-            int cnt=0;
-            for (int j = 1; j < len; j++){
-              PLOG((4, "displace[%d] = %d blocksize=%d mfrom %x", j, displace[j], blocksize, mfrom));
-            }
-
-#endif /* PIO_ENABLE_LOGGING */
-
             PLOG((2, "calling MPI_Type_create_indexed_block len = %d blocksize = %d "
-                  "mpitype = %d", len, blocksize, mpitype));
+                  "mpitype = %d displace[0]=%d", len, blocksize, mpitype, displace[0]));
             /* Create an indexed datatype with constant-sized blocks. */
             mpierr = MPI_Type_create_indexed_block(len, blocksize, displace,
                                                    mpitype, &mtype[i]);
@@ -418,13 +410,6 @@ create_mpi_datatypes(MPI_Datatype mpitype, int msgcnt,
             if ((mpierr = MPI_Type_commit(&mtype[i])))
                 return check_mpi(NULL, NULL, mpierr, __FILE__, __LINE__);
             pos += mcount[i];
-
-//                MPI_Aint ext, lb;
-//                int tsize;
-//                MPI_Type_get_extent(mtype[i], &lb, &ext);
-//                MPI_Type_size(mtype[i], &tsize);
-//                printf("%d lb %d extent %d tsize %d\n",__LINE__, lb, ext, tsize);
-
 
         }
     }
@@ -891,8 +876,6 @@ rearrange_comp2io(iosystem_desc_t *ios, io_desc_t *iodesc, void *sbuf,
         recvtypes[i] = PIO_DATATYPE_NULL;
         sendtypes[i] =  PIO_DATATYPE_NULL;
     }
-//    PLOG((3, "ntasks = %d iodesc->mpitype_size = %d niotasks = %d", ntasks,
-//          iodesc->mpitype_size, niotasks));
 
     /* If it has not already been done, define the MPI data types that
      * will be used for this io_desc_t. */
@@ -1130,11 +1113,10 @@ rearrange_io2comp(iosystem_desc_t *ios, io_desc_t *iodesc, void *sbuf,
 
     /* Data in sbuf on the ionodes is sent to rbuf on the compute
      * nodes. */
-
+    
     if ((ret = pio_swapm(sbuf, sendcounts, sdispls, sendtypes, rbuf, recvcounts,
                          rdispls, recvtypes, mycomm, &iodesc->rearr_opts.io2comp)))
         return pio_err(ios, NULL, ret, __FILE__, __LINE__);
-
 #ifdef TIMING
     if ((ret = pio_stop_timer("PIO:rearrange_io2comp")))
         return pio_err(ios, NULL, ret, __FILE__, __LINE__);
@@ -1913,7 +1895,8 @@ get_regions(int ndims, const int *gdimlen, int maplen, const PIO_Offset *map,
 
         nmaplen = nmaplen + regionlen;
         PLOG((2, "regionlen = %d nmaplen = %d", regionlen, nmaplen));
-
+        for (int i = 0; i < ndims; i++)
+            PLOG((3,"region start[%d]=%ld count[%d]=%ld",i,region->start[i], i, region->count[i]));
         /* If we need to, allocate the next region. */
         if (region->next == NULL && nmaplen < maplen)
         {
@@ -2278,26 +2261,37 @@ subset_rearrange_create(iosystem_desc_t *ios, int maplen, PIO_Offset *compmap,
     /* we only want a single copy of each source point in the iobuffer but it may be sent to multiple destinations
        in a read operation */
     int k=0;
-    PIO_Offset previomap[ntasks];
-    for (i = 0; i < ntasks; i++)
-        previomap[i] = -1;
+//    PIO_Offset previomap[ntasks];
+//    for (i = 0; i < ntasks; i++)
+//        previomap[i] = -1;
+    if(iodesc->llen > 0){
+    mapsort *mptr = &map[0];
+    iomap[0] = mptr->iomap;
+    soffset = mptr->soffset;
+    int increment;
+
     for (i = 0, rllen=0; i < iodesc->llen; i++)
     {
-        mapsort *mptr = &map[i];
+        mptr = &map[i];
+        increment = 0;
         iodesc->rfrom[i] = mptr->rfrom;
-        if(mptr->iomap > previomap[mptr->rfrom])
-        {
-            if(rllen == 0 || iomap[rllen-1] < mptr->iomap){
-                iomap[rllen] = mptr->iomap;
-                soffset = mptr->soffset;
-                iodesc->rindex[i] = rllen++;
-            }
+//        if(mptr->iomap > previomap[mptr->rfrom])
+//        {
+        if(i==iodesc->llen-1 || mptr->iomap < map[i+1].iomap){
+            iomap[rllen] = mptr->iomap;
+            increment = 1;
         }
-        previomap[mptr->rfrom]=iomap[rllen-1];
+        soffset = mptr->soffset;
+
+//        }
+//        previomap[mptr->rfrom]=iomap[rllen];
         srcindex[(cnt[mptr->rfrom])++] = soffset;
+        iodesc->rindex[i] = rllen;
+        printf("iodesc->rfrom[%d]=%d iomap=%ld srcindex[%d]=%d\n",i,iodesc->rfrom[i], mptr->iomap, srcindex[cnt[mptr->rfrom]-1],soffset);
+        rllen = rllen + increment;
         iodesc->rllen = rllen;
     }
-
+    }
 
     /* Handle fill values if needed. */
     PLOG((3, "ios->ioproc %d iodesc->needsfill %d iodesc->rllen %d", ios->ioproc, iodesc->needsfill, iodesc->rllen));
