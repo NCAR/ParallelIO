@@ -2287,7 +2287,6 @@ subset_rearrange_create(iosystem_desc_t *ios, int maplen, PIO_Offset *compmap,
 //        previomap[mptr->rfrom]=iomap[rllen];
         srcindex[(cnt[mptr->rfrom])++] = soffset;
         iodesc->rindex[i] = rllen;
-        printf("iodesc->rfrom[%d]=%d iomap=%ld srcindex[%d]=%d\n",i,iodesc->rfrom[i], mptr->iomap, srcindex[cnt[mptr->rfrom]-1],soffset);
         rllen = rllen + increment;
         iodesc->rllen = rllen;
     }

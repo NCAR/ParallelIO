@@ -313,7 +313,7 @@ int main(int argc, char *argv[])
 
     iotasks = comm_size/36;
 
-    ierr = PIOc_Init_Intracomm(MPI_COMM_WORLD, 4, 1, 0, PIO_REARR_SUBSET, &iosys);
+    ierr = PIOc_Init_Intracomm(MPI_COMM_WORLD, iotasks, 36, 0, PIO_REARR_SUBSET, &iosys);
     if(ierr || debug) printf("%d %d\n",__LINE__,ierr);
 
     if(arguments.wdecomp_file)
