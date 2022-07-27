@@ -14,5 +14,5 @@ endif
 SUBDIRS = src tests examples ${DOC} scripts cmake
 
 # Add these files to the distribution.
-EXTRA_DIST = CMakeLists.txt COPYRIGHT cmake_config.h.in	\
+EXTRA_DIST = CMakeLists.txt LICENSE cmake_config.h.in	\
 libpio.settings.in
