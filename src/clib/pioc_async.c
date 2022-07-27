@@ -30,6 +30,12 @@ extern int diosysid;
 #endif /* NETCDF_INTEGRATION */
 
 extern int default_error_handler; /* defined in pioc.c */
+/**
+ * @defgroup PIO_init_async Initialize an ASYNC IO System
+ * Initialize the IOSystem, including specifying number of IO and
+ * computation tasks in C.
+ *
+ */
 
 /**
  * Library initialization used when IO tasks are distinct from compute
@@ -704,7 +710,7 @@ PIOc_init_async_from_comms(MPI_Comm world, int component_count, MPI_Comm *comp_c
  * @param iosysidp pointer to array of length component_count that
  * gets the iosysid for each component.
  * @returns 0 for success, error code otherwise
- * @ingroup PIO_init_c
+ * @ingroup PIO_init_async
  * @author Jim Edwards
  */
 int
@@ -782,7 +788,7 @@ PIOc_init_async_from_F90(int f90_world_comm,
  * @param iosysidp pointer to array of length component_count that
  * gets the iosysid for each component.
  * @returns 0 for success, error code otherwise
- * @ingroup PIO_init_c
+ * @ingroup PIO_init_async
  * @author Jim Edwards
  */
 int

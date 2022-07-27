@@ -17,7 +17,7 @@
     - \ref PIO_read_darray_c
     - \ref PIO_write_darray_c
     - \ref PIO_setframe_c
-  \section utility_c Utility 
+  \section utility_c Utility
     - \ref PIO_set_hint_c
     - \ref PIO_error_method_c
     - \ref PIO_get_local_array_size_c
@@ -28,7 +28,7 @@
      \subsection utilnc_c File Operations
        - \ref PIO_enddef_c
        - \ref PIO_redef_c
-     \subsection write_metadata_c Writing Metadata   
+     \subsection write_metadata_c Writing Metadata
        - \ref PIO_def_dim_c
        - \ref PIO_def_var_c
        - \ref PIO_put_att_c
