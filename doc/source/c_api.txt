@@ -3,6 +3,7 @@
 
   \section api_system_c PIO Startup and Shutdown
      - \ref PIO_init_c
+     - \ref PIO_init_async
      - \ref PIO_finalize_c
   \section api_fileops_c PIO File Operations
      - \ref PIO_open_file_c
