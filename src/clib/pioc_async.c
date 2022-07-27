@@ -1,8 +1,8 @@
 /**
  * @file
- * Some initialization and support functions.
+ * Some initialization and support functions for async operations.
  * @author Jim Edwards
- * @date  2014
+ * @date  2022
  *
  * @see https://github.com/NCAR/ParallelIO
  */
@@ -107,8 +107,8 @@ extern int default_error_handler; /* defined in pioc.c */
  * gets the iosysid for each component.
  *
  * @return PIO_NOERR on success, error code otherwise.
- * @ingroup PIO_init_c
- * @author Ed Hartnett
+ * @ingroup PIO_init_async
+ * @author Ed Hartnett, Jim Edwards
  */
 int
 PIOc_init_async(MPI_Comm world, int num_io_procs, int *io_proc_list,
@@ -570,8 +570,8 @@ PIOc_init_async(MPI_Comm world, int num_io_procs, int *io_proc_list,
  * gets the iosysid for each component.
  *
  * @return PIO_NOERR on success, error code otherwise.
- * @ingroup PIO_init_c
- * @author Jim Edwards
+ * @ingroup PIO_init_async
+ * @author Jim Edwards, Ed Hartnet
  */
 int
 PIOc_init_async_from_comms(MPI_Comm world, int component_count, MPI_Comm *comp_comm,
