@@ -929,7 +929,7 @@ contains
   !! method. This is a decomposition that can not be easily described
   !! using a start and count method.  This version of initdecomp allows the
   !! decomposition to contain repeated values so that the same source point
-  !! may be mapped to multiple destinations.  
+  !! may be mapped to multiple destinations.
   !!
   !! Optional parameters for this subroutine allows for the
   !! specififcation of io decomposition using iostart and iocount
@@ -950,12 +950,11 @@ contains
   !! @param iocount The count for the block-cyclic io decomposition
   !! @author Jim Edwards
   !<
-  subroutine PIO_initdecomp_readonly(iosystem,basepiotype,dims,maplen, compdof, iodesc, rearr, iostart, iocount)
+  subroutine PIO_initdecomp_readonly(iosystem,basepiotype,dims, compdof, iodesc, rearr, iostart, iocount)
     type (iosystem_desc_t), intent(in) :: iosystem
     integer(i4), intent(in)           :: basepiotype
     integer(i4), intent(in)           :: dims(:)
-    integer, intent(in) :: maplen
-    integer (PIO_OFFSET_KIND), intent(in) :: compdof(maplen)   ! global degrees of freedom for computational decomposition
+    integer (PIO_OFFSET_KIND), intent(in) :: compdof(:)   ! global degrees of freedom for computational decomposition
     integer, optional, target :: rearr
     integer (PIO_OFFSET_KIND), optional :: iostart(:), iocount(:)
     type (io_desc_t), intent(inout)     :: iodesc
@@ -963,6 +962,7 @@ contains
     integer(c_int) :: ndims
     integer(c_int), dimension(:), allocatable, target :: cdims
     integer(PIO_OFFSET_KIND), dimension(:), allocatable, target :: cstart, ccount
+    integer :: maplen
 
     type(C_PTR) :: crearr
     interface
@@ -995,7 +995,7 @@ contains
     else
        crearr = C_NULL_PTR
     endif
-
+    maplen = size(compdof)
     if(present(iostart) .and. present(iocount)) then
        allocate(cstart(ndims), ccount(ndims))
        do i=1,ndims

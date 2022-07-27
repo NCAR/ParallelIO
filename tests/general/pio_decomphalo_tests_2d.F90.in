@@ -224,7 +224,7 @@ PIO_TF_AUTO_TEST_SUB_BEGIN nc_write_read_2d_halo_decomp
 
   compdof = reshape(exp_val, (/(nrows+2)*(ncols+2)/))
   ! Readonly decomp only supports subset rearranger
-  call PIO_initdecomp_readonly(pio_tf_iosystem_, PIO_TF_DATA_TYPE, dims, size(compdof), compdof, rd_iodesc,&
+  call PIO_initdecomp_readonly(pio_tf_iosystem_, PIO_TF_DATA_TYPE, dims, compdof, rd_iodesc,&
        PIO_REARR_SUBSET)
   deallocate(compdof)
 
