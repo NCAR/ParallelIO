@@ -205,6 +205,7 @@ PIO_TF_AUTO_TEST_SUB_BEGIN nc_write_read_2d_halo_decomp
   allocate(exp_val(nrows+2, ncols+2))
   rbuf = 0
   compdof = 0
+  exp_val = 0
   do j=1,ncols
     do i=1,nrows
       tmp_idx = j * (nrows+2) + i+1
