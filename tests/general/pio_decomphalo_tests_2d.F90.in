@@ -214,10 +214,10 @@ PIO_TF_AUTO_TEST_SUB_BEGIN nc_write_read_2d_halo_decomp
       exp_val(i+1,j+1) = (start(2) - 1 + j - 1) * nrows + i
     end do
   end do
-!  do i=1,nrows+2
-!     exp_val(i,1) = exp_val(i,ncols+1)
-!     exp_val(i,ncols+2) = exp_val(i,2)
-!  enddo
+  do i=1,nrows+2
+     exp_val(i,1) = exp_val(i,ncols+1)
+     exp_val(i,ncols+2) = exp_val(i,2)
+  enddo
 !  do j=1,ncols+2
 !     exp_val(1,j) = exp_val(nrows,j)
 !     exp_val(nrows+2,j) = exp_val(2,j)
