@@ -14,7 +14,7 @@ jobs:
     env:
       CPPFLAGS: "-I/home/runner/mpich/include -I/home/runner/hdf5/include -I/home/runner/netcdf-c/include -I/home/runner/netcdf-fortran/include -I/home/runner/pnetcdf/include"
       LDFLAGS: "-L/home/runner/mpich/lib -L/home/runner/hdf5/lib -L/home/runner/netcdf-c/lib -L/home/runner/netcdf-fortran/lib -L/home/runner/pnetcdf/lib"
-      NETCDF_C_VERSION: 4.9.0
+      NETCDF_C_VERSION: 4.7.4
       NETCDF_F_VERSION: 4.5.4
       PNETCDF_VERSION: 1.12.3
       MPICH_VERSION: 3.3.2
