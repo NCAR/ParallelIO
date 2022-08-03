@@ -59,6 +59,7 @@ jobs:
     - name: autoreconf
       run: autoreconf -i
     - name: configure
-      run: ./configure --enable-fortran --enable-docs  --with-mpiexec='mpiexec --oversubscribe'
+      run: ./configure --enable-fortran  --with-mpiexec='mpiexec --oversubscribe'
+      #run: ./configure --enable-fortran --enable-docs  --with-mpiexec='mpiexec --oversubscribe'
     - name: make check
       run: make -j check
