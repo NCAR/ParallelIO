@@ -5,7 +5,7 @@
 # Look in the m4 directory for autotools stuff.
 ACLOCAL_AMFLAGS= -I m4
 
-# Does the user want to build fortran?
+# Does the user want to build doxygen documentation?
 if BUILD_DOCS
 DOC = doc
 endif
