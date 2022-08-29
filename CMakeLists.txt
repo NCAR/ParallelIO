@@ -4,7 +4,7 @@
 
 # Jim Edwards
 
-cmake_minimum_required (VERSION 3.5.2)
+cmake_minimum_required (VERSION 3.7)
 project (PIO C)
 
 # The project version number.
@@ -242,6 +242,11 @@ if (PIO_ENABLE_COVERAGE)
     message (WARNING "The Fortran compiler is non-GNU: coverage of Fortran code could NOT be enabled")
   endif ()
 endif ()
+
+# Allow argument mismatch in gfortran versions > 10 for mpi library compatibility
+if ("${CMAKE_Fortran_COMPILER_VERSION}" VERSION_GREATER_EQUAL 10)
+   set (CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fallow-argument-mismatch")
+endif()
 
 # Include this so we can check values in netcdf_meta.h.
 INCLUDE(CheckCSourceCompiles)

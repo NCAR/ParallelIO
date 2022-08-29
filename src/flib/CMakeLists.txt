@@ -37,6 +37,9 @@ if (NETCDF_INTEGRATION)
 endif ()
 
 add_library (piof ${PIO_Fortran_SRCS} ${PIO_GenF90_SRCS})
+# Always use -fPIC
+set_property(TARGET piof PROPERTY POSITION_INDEPENDENT_CODE ON)
+
 if (NOT PIO_ENABLE_FORTRAN)
   set_target_properties(piof PROPERTIES EXCLUDE_FROM_ALL TRUE)
 endif ()
