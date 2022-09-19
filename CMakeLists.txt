@@ -244,10 +244,11 @@ if (PIO_ENABLE_COVERAGE)
 endif ()
 
 # Allow argument mismatch in gfortran versions > 10 for mpi library compatibility
-if ("${CMAKE_Fortran_COMPILER_VERSION}" VERSION_GREATER_EQUAL 10)
-   set (CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fallow-argument-mismatch")
+if (CMAKE_C_COMPILER_NAME STREQUAL "GNU")
+  if ("${CMAKE_Fortran_COMPILER_VERSION}" VERSION_GREATER_EQUAL 10)
+    set (CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fallow-argument-mismatch")
+  endif()
 endif()
-
 # Include this so we can check values in netcdf_meta.h.
 INCLUDE(CheckCSourceCompiles)
 INCLUDE(FindNetCDF)
