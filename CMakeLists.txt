@@ -4,7 +4,7 @@
 
 # Jim Edwards
 
-cmake_minimum_required (VERSION 3.5.2)
+cmake_minimum_required (VERSION 3.7)
 project (PIO C)
 
 # The project version number.
@@ -92,7 +92,7 @@ option (PIO_USE_MPIIO        "Enable support for MPI-IO auto detect"        ON)
 option (PIO_USE_MPISERIAL    "Enable mpi-serial support (instead of MPI)"   OFF)
 option (PIO_USE_PNETCDF_VARD       "Use pnetcdf put_vard "  OFF)
 option (WITH_PNETCDF         "Require the use of PnetCDF"                   ON)
-option (BUILD_SHARED_LIBS    "Build shared libraries"                       ON)
+option (BUILD_SHARED_LIBS    "Build shared libraries"                       OFF)
 
 if(APPLE)
   # The linker on macOS does not include `common symbols` by default
@@ -244,6 +244,12 @@ if (PIO_ENABLE_COVERAGE)
   endif ()
 endif ()
 
+# Allow argument mismatch in gfortran versions > 10 for mpi library compatibility
+if (CMAKE_C_COMPILER_NAME STREQUAL "GNU")
+  if ("${CMAKE_Fortran_COMPILER_VERSION}" VERSION_GREATER_EQUAL 10)
+    set (CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fallow-argument-mismatch")
+  endif()
+endif()
 # Include this so we can check values in netcdf_meta.h.
 INCLUDE(CheckCSourceCompiles)
 INCLUDE(FindNetCDF)
