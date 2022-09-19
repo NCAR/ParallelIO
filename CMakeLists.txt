@@ -92,7 +92,7 @@ option (PIO_USE_MPIIO        "Enable support for MPI-IO auto detect"        ON)
 option (PIO_USE_MPISERIAL    "Enable mpi-serial support (instead of MPI)"   OFF)
 option (PIO_USE_PNETCDF_VARD       "Use pnetcdf put_vard "  OFF)
 option (WITH_PNETCDF         "Require the use of PnetCDF"                   ON)
-option (BUILD_SHARED_LIBS    "Build shared libraries"                       ON)
+option (BUILD_SHARED_LIBS    "Build shared libraries"                       OFF)
 
 if(APPLE)
   # The linker on macOS does not include `common symbols` by default
