@@ -1,4 +1,4 @@
-run-name: netcdf-${{ env.NETCDF_C_VERSION }}_pnetcdf-${{ env.PNETCDF_VERSION }}_ncint_mpich-${{ env.MPICH_VERSION }}
+name: netcdf_pnetcdf_ncint_mpich
 on:
   push:
     branches: [ master ]

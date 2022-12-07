@@ -1,4 +1,4 @@
-run-name: cmake_netcdf-${{ env.NETCDF_C_VERSION }}_hdf5-${{ env.HDF5_VERSION }}_pnetcdf-{{ $env.PNETCDF_VERSION }}_ncint_mpich-${{ env.MPICH_VERSION }}
+name: cmake_netcdf_hdf5_pnetcdf_ncint_mpich
 
 on:
   push:
@@ -48,7 +48,7 @@ jobs:
         path: ~/hdf5
         key: hdf5-${{ runner.os }}-${{ env.HDF5_VERSION }}-mpich-${{ env.MPICH_VERSION }}
 
-    - name: build-hdf5
+    - name: build-hdf5-${{ env.HDF5_VERSION }}
       if: steps.cache-hdf5.outputs.cache-hit != 'true'
       run: |
         set -x
@@ -69,7 +69,7 @@ jobs:
         path: ~/netcdf-c
         key: netcdf-c-${{ runner.os }}-${{ env.NETCDF_C_VERSION }}-mpich-${{ env.MPICH_VERSION }}-hdf5-${{ env.HDF5_VERSION }}
 
-    - name: build-netcdf-c
+    - name: build-netcdf-c-${{ env.NETCDF_C_VERSION }}
       if: steps.cache-netcdf-c.outputs.cache-hit != 'true'
       run: |
         set -x
@@ -89,7 +89,7 @@ jobs:
         path: ~/netcdf-fortran
         key: netcdf-fortran-${{ runner.os }}-${{ env.NETCDF_F_VERSION }}-mpich-${{ env.MPICH_VERSION }}-hdf5-${{ env.HDF5_VERSION }}
 
-    - name: build-netcdf-fortran
+    - name: build-netcdf-fortran-${{ env.NETCDF_F_VERSION }}
       if: steps.cache-netcdf-fortran.outputs.cache-hit != 'true'
       run: |
         set -x
@@ -110,7 +110,7 @@ jobs:
         path: ~/pnetcdf
         key: pnetcdf-${{ runner.os }}-${{ env.PNETCDF_VERSION }}-mpich-${{ env.MPICH_VERSION }}
 
-    - name: build-pnetcdf
+    - name: build-pnetcdf-${{ env.PNETCDF_VERSION }}
       if: steps.cache-pnetcdf.outputs.cache-hit != 'true'
       run: |
         set -x
