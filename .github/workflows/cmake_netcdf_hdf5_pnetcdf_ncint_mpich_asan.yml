@@ -21,13 +21,13 @@ jobs:
       MPICH_VERSION: 3.3.2
       FCFLAGS: "-fallow-argument-mismatch"
   steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Installs
       run: |
         sudo apt-get install doxygen graphviz wget gfortran libjpeg-dev libz-dev cmake gfortran
     - name: cache-mpich
       id: cache-mpich
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         path: ~/mpich
         key: mpich-${{ runner.os }}-${{ env.MPICH_VERSION }}
@@ -44,7 +44,7 @@ jobs:
         popd
     - name: cache-hdf5
       id: cache-hdf5
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         path: ~/hdf5
         key: hdf5-${{ runner.os }}-${{ env.HDF5_VERSION }}-mpich-${{ env.MPICH_VERSION }}
@@ -65,7 +65,7 @@ jobs:
 
     - name: cache-netcdf-c
       id: cache-netcdf-c
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         path: ~/netcdf-c
         key: netcdf-c-${{ runner.os }}-${{ env.NETCDF_C_VERSION }}-mpich-${{ env.MPICH_VERSION }}-hdf5-${{ env.HDF5_VERSION }}
@@ -85,7 +85,7 @@ jobs:
         popd
     - name: cache-netcdf-fortran
       id: cache-netcdf-fortran
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         path: ~/netcdf-fortran
         key: netcdf-fortran-${{ runner.os }}-${{ env.NETCDF_F_VERSION }}-mpich-${{ env.MPICH_VERSION }}-hdf5-${{ env.HDF5_VERSION }}
@@ -106,7 +106,7 @@ jobs:
 
     - name: cache-pnetcdf
       id: cache-pnetcdf
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         path: ~/pnetcdf
         key: pnetcdf-${{ runner.os }}-${{ env.PNETCDF_VERSION }}-mpich-${{ env.MPICH_VERSION }}

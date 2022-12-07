@@ -18,7 +18,7 @@ jobs:
       LDFLAGS: "-L/home/runner/pnetcdf/lib"
       FCFLAGS: "-fallow-argument-mismatch"
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Installs
       run: |
         set -x
@@ -31,7 +31,7 @@ jobs:
 
     - name: cache-pnetcdf
       id: cache-pnetcdf
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         path: ~/pnetcdf
         key: pnetcdf-${{ runner.os }}-1.12.1-1
