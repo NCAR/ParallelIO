@@ -1,4 +1,4 @@
-name: netcdf-${{ NETCDF_C_VERSION}}_hdf5-${{ HDF5_VERSION }}_pnetcdf-${{ PNETCDF_VERSION }}_ncint_mpich-${{ MPICH_VERSION}}_asan
+#name: netcdf_hdf5_pnetcdf_ncint_mpich_asan
 run-name: netcdf-${{ NETCDF_C_VERSION}}_hdf5-${{ HDF5_VERSION }}_pnetcdf-${{ PNETCDF_VERSION }}_ncint_mpich-${{ MPICH_VERSION}}_asan
 on:
   push:
