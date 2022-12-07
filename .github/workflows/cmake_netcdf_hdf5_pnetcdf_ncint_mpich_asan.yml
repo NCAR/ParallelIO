@@ -13,12 +13,14 @@ jobs:
     env:
       CPPFLAGS: "-I/home/runner/mpich/include -I/home/runner/hdf5/include -I/home/runner/netcdf-c/include -I/home/runner/netcdf-fortran/include -I/home/runner/pnetcdf/include"
       LDFLAGS: "-L/home/runner/mpich/lib -L/home/runner/hdf5/lib -L/home/runner/netcdf-c/lib -L/home/runner/netcdf-fortran/lib -L/home/runner/pnetcdf/lib"
+      # Note issue https://github.com/NCAR/ParallelIO/issues/1889 netcdf integration only currently works with netcdf-c 4.7.4
       NETCDF_C_VERSION: 4.7.4
       NETCDF_F_VERSION: 4.5.4
       PNETCDF_VERSION: 1.12.3
-      HDF5_VERSION: 1.10.7
-      MPICH_VERSION: 3.3.2
+      HDF5_VERSION: 1.12.3
+      MPICH_VERSION: 4.0.3
       FFLAGS: "-fallow-argument-mismatch"
+      FCFLAGS: "-fallow-argument-mismatch"
     steps:
     - uses: actions/checkout@v3
     - name: Installs
@@ -48,7 +50,7 @@ jobs:
         path: ~/hdf5
         key: hdf5-${{ runner.os }}-${{ env.HDF5_VERSION }}-mpich-${{ env.MPICH_VERSION }}
 
-    - name: build-hdf5-${{ env.HDF5_VERSION }}
+    - run-name: build-hdf5-${{ env.HDF5_VERSION }}
       if: steps.cache-hdf5.outputs.cache-hit != 'true'
       run: |
         set -x
@@ -69,7 +71,7 @@ jobs:
         path: ~/netcdf-c
         key: netcdf-c-${{ runner.os }}-${{ env.NETCDF_C_VERSION }}-mpich-${{ env.MPICH_VERSION }}-hdf5-${{ env.HDF5_VERSION }}
 
-    - name: build-netcdf-c-${{ env.NETCDF_C_VERSION }}
+    - run-name: build-netcdf-c-${{ env.NETCDF_C_VERSION }}
       if: steps.cache-netcdf-c.outputs.cache-hit != 'true'
       run: |
         set -x
@@ -89,7 +91,7 @@ jobs:
         path: ~/netcdf-fortran
         key: netcdf-fortran-${{ runner.os }}-${{ env.NETCDF_F_VERSION }}-mpich-${{ env.MPICH_VERSION }}-hdf5-${{ env.HDF5_VERSION }}
 
-    - name: build-netcdf-fortran-${{ env.NETCDF_F_VERSION }}
+    - run-name: build-netcdf-fortran-${{ env.NETCDF_F_VERSION }}
       if: steps.cache-netcdf-fortran.outputs.cache-hit != 'true'
       run: |
         set -x
@@ -110,7 +112,7 @@ jobs:
         path: ~/pnetcdf
         key: pnetcdf-${{ runner.os }}-${{ env.PNETCDF_VERSION }}-mpich-${{ env.MPICH_VERSION }}
 
-    - name: build-pnetcdf-${{ env.PNETCDF_VERSION }}
+    - run-name: build-pnetcdf-${{ env.PNETCDF_VERSION }}
       if: steps.cache-pnetcdf.outputs.cache-hit != 'true'
       run: |
         set -x
