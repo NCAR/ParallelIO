@@ -1,4 +1,4 @@
-name: netcdf-4.7.4_pnetcdf-12.1_ncint_mpich-3.3
+name: cmake_netcdf_hdf5_pnetcdf_ncint_mpich
 
 on:
   push:
@@ -16,14 +16,15 @@ jobs:
       LDFLAGS: "-L/home/runner/mpich/lib -L/home/runner/hdf5/lib -L/home/runner/netcdf-c/lib -L/home/runner/netcdf-fortran/lib -L/home/runner/pnetcdf/lib"
       NETCDF_C_VERSION: 4.7.4
       NETCDF_F_VERSION: 4.5.4
-      MPICH_VERSION: 3.3.2
-      HDF5_VERSION: 1.10.6
       PNETCDF_VERSION: 1.12.3
-    steps:
+      HDF5_VERSION: 1.10.7
+      MPICH_VERSION: 3.3.2
+      FCFLAGS: "-fallow-argument-mismatch"
+  steps:
     - uses: actions/checkout@v2
     - name: Installs
       run: |
-        sudo apt-get install doxygen graphviz wget gfortran libjpeg-dev libz-dev
+        sudo apt-get install doxygen graphviz wget gfortran libjpeg-dev libz-dev cmake gfortran
     - name: cache-mpich
       id: cache-mpich
       uses: actions/cache@v2
@@ -61,6 +62,7 @@ jobs:
         make
         sudo make install
         popd
+
     - name: cache-netcdf-c
       id: cache-netcdf-c
       uses: actions/cache@v2
@@ -101,6 +103,7 @@ jobs:
         make -j
         sudo make install
         popd
+
     - name: cache-pnetcdf
       id: cache-pnetcdf
       uses: actions/cache@v2
@@ -124,28 +127,16 @@ jobs:
     - name: cmake build
       run: |
         set -x
-        gcc --version
+        ls -l
         echo 'export PATH=/home/runner/mpich/bin:$PATH' > .bashrc
         source .bashrc
         export CC=/home/runner/mpich/bin/mpicc
         export FC=/home/runner/mpich/bin/mpifort
-        export LD_LIBRARY_PATH="/home/runner/netcdf-c/lib:/home/runner/mpich/lib:/home/runner/hdf5/lib:/home/runner/netcdf-fortran/lib:/home/runner/pnetcdf/lib:$LD_LIBRARY_PATH"
-        mkdir build
-        cd build
-        cmake -Wno-dev -DNetCDF_C_LIBRARY=/home/runner/netcdf-c/lib/libnetcdf.so -DNetCDF_C_INCLUDE_DIR=/home/runner/netcdf-c/include -DPnetCDF_PATH='/home/runner/pnetcdf' -DPIO_ENABLE_FORTRAN=Off -DPIO_ENABLE_LOGGING=On -DPIO_ENABLE_TIMING=Off .. || (cat CMakeFiles/CMakeOutput.log && cat CMakeFiles/CMakeError.log)
+        export LD_LIBRARY_PATH=/home/runner/netcdf-c/lib:/home/runner/pnetcdf/lib:$LD_LIBRARY_PATH
+        rm -rf b1
+        mkdir b1
+        cd b1
+        cmake -Wno-dev -DPIO_ENABLE_NETCDF_INTEGRATION=On -DNetCDF_C_LIBRARY=/home/runner/netcdf-c/lib/libnetcdf.so -DNetCDF_C_INCLUDE_DIR=/home/runner/netcdf-c/include -DPnetCDF_PATH=/home/runner/pnetcdf -DPIO_ENABLE_FORTRAN=On -DPIO_ENABLE_LOGGING=On -DPIO_ENABLE_TIMING=Off -DNetCDF_Fortran_LIBRARY=/home/runner/netcdf-fortran/lib/libnetcdff.so -DNetCDF_Fortran_INCLUDE_DIR=/home/runner/netcdf-fortran/include ..
         make VERBOSE=1
         make tests VERBOSE=1
-#        ctest -VV
-    - name: autotools build
-      run: |
-        set -x
-        gcc --version
-        echo 'export PATH=/home/runner/mpich/bin:$PATH' > .bashrc
-        source .bashrc
-        export CC=/home/runner/mpich/bin/mpicc
-        export FC=/home/runner/mpich/bin/mpifort
-        autoreconf -i
-        ./configure --enable-fortran
-        make -j check
-        
-        
+        ctest -VV

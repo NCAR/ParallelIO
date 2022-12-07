@@ -18,6 +18,7 @@ jobs:
       LDFLAGS: "-L/home/runner/pnetcdf/lib"
       LD_LIBRARY_PATH: "/home/runner/pnetcdf/lib"
       PNETCDF_VERSION: 1.12.3
+      FCFLAGS: "-fallow-argument-mismatch"
     steps:
     - uses: actions/checkout@v2
     - name: Installs

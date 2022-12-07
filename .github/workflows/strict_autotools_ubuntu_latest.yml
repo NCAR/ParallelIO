@@ -16,7 +16,7 @@ jobs:
       FC: mpifort
       CPPFLAGS: "-I/usr/include -I/usr/local/include -I/home/runner/pnetcdf/include"
       LDFLAGS: "-L/home/runner/pnetcdf/lib"
-
+      FCFLAGS: "-fallow-argument-mismatch"
     steps:
     - uses: actions/checkout@v2
     - name: Installs
@@ -55,7 +55,7 @@ jobs:
         set -x
         export CFLAGS="-std=c99 -Wall"
         export FFLAGS="-Wall"
-        export FCFLAGS="-Wall"
+        export FCFLAGS="$FCFLAGS -Wall"
         export DISTCHECK_CONFIGURE_FLAGS="--enable-fortran --with-mpiexec='/usr/bin/mpiexec --oversubscribe'"
         ./configure
         make -j distcheck
