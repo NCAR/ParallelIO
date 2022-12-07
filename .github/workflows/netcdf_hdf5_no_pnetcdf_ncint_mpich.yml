@@ -1,3 +1,4 @@
+run-name: netcdf-${{ env.NETCDF_C_VERSION }}_hdf5-${{ env.HDF5_VERSION }}_no_pnetcdf_ncint_mpich-${{ env.MPICH_VERSION }}
 on:
   push:
     branches: [ master ]
@@ -8,7 +9,6 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
-    run_name: netcdf-${{ env.NETCDF_C_VERSION }}_hdf5-${{ env.HDF5_VERSION }}_no_pnetcdf_ncint_mpich-${{ env.MPICH_VERSION }}
 
     env:
       CPPFLAGS: "-I/home/runner/mpich/include -I/home/runner/hdf5/include -I/home/runner/netcdf-c/include -I/home/runner/netcdf-fortran/include"
