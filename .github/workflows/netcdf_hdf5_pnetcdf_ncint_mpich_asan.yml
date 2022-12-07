@@ -19,6 +19,7 @@ jobs:
       MPICH_VERSION: 4.0.3
       HDF5_VERSION: 1.12.3
       FCFLAGS: "-fallow-argument-mismatch"
+      FFLAGS: "-fallow-argument-mismatch"
     steps:
     - uses: actions/checkout@v3
     - name: Installs
