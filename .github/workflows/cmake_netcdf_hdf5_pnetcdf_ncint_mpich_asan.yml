@@ -50,7 +50,7 @@ jobs:
         path: ~/hdf5
         key: hdf5-${{ runner.os }}-${{ env.HDF5_VERSION }}-mpich-${{ env.MPICH_VERSION }}
 
-    - run-name: build-hdf5-${{ env.HDF5_VERSION }}
+    - name: build-hdf5
       if: steps.cache-hdf5.outputs.cache-hit != 'true'
       run: |
         set -x
@@ -71,7 +71,7 @@ jobs:
         path: ~/netcdf-c
         key: netcdf-c-${{ runner.os }}-${{ env.NETCDF_C_VERSION }}-mpich-${{ env.MPICH_VERSION }}-hdf5-${{ env.HDF5_VERSION }}
 
-    - run-name: build-netcdf-c-${{ env.NETCDF_C_VERSION }}
+    - name: build-netcdf-c
       if: steps.cache-netcdf-c.outputs.cache-hit != 'true'
       run: |
         set -x
@@ -91,7 +91,7 @@ jobs:
         path: ~/netcdf-fortran
         key: netcdf-fortran-${{ runner.os }}-${{ env.NETCDF_F_VERSION }}-mpich-${{ env.MPICH_VERSION }}-hdf5-${{ env.HDF5_VERSION }}
 
-    - run-name: build-netcdf-fortran-${{ env.NETCDF_F_VERSION }}
+    - name: build-netcdf-fortran
       if: steps.cache-netcdf-fortran.outputs.cache-hit != 'true'
       run: |
         set -x
@@ -112,7 +112,7 @@ jobs:
         path: ~/pnetcdf
         key: pnetcdf-${{ runner.os }}-${{ env.PNETCDF_VERSION }}-mpich-${{ env.MPICH_VERSION }}
 
-    - run-name: build-pnetcdf-${{ env.PNETCDF_VERSION }}
+    - name: build-pnetcdf
       if: steps.cache-pnetcdf.outputs.cache-hit != 'true'
       run: |
         set -x
