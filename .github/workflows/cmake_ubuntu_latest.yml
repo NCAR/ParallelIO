@@ -1,5 +1,5 @@
 ---   # cmake build without netcdf integration
-name: cmake_noncint
+name: cmake_ubuntu-latest
 
 on:
   push:

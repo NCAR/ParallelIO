@@ -18,7 +18,7 @@ jobs:
       NETCDF_F_VERSION: 4.5.4
       PNETCDF_VERSION: 1.12.3
       HDF5_VERSION_MAJOR: 1.12
-      HDF5_VERSION_PATCH: 3
+      HDF5_VERSION_PATCH: 2
       MPICH_VERSION: 4.0.3
       FFLAGS: "-fallow-argument-mismatch"
       FCFLAGS: "-fallow-argument-mismatch"
