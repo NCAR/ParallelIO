@@ -1,4 +1,4 @@
-name: cmake_netcdf_hdf5_pnetcdf_ncint_mpich
+run-name: cmake_netcdf-${{ env.NETCDF_C_VERSION }}_hdf5-${{ env.HDF5_VERSION }}_pnetcdf-{{ $env.PNETCDF_VERSION }}_ncint_mpich-${{ env.MPICH_VERSION }}
 
 on:
   push:
@@ -10,7 +10,6 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
-    run_name: cmake_netcdf-${{ env.NETCDF_C_VERSION }}_hdf5-${{ env.HDF5_VERSION }}_pnetcdf-{{ $env.PNETCDF_VERSION }}_ncint_mpich-${{ env.MPICH_VERSION }}
     env:
       CPPFLAGS: "-I/home/runner/mpich/include -I/home/runner/hdf5/include -I/home/runner/netcdf-c/include -I/home/runner/netcdf-fortran/include -I/home/runner/pnetcdf/include"
       LDFLAGS: "-L/home/runner/mpich/lib -L/home/runner/hdf5/lib -L/home/runner/netcdf-c/lib -L/home/runner/netcdf-fortran/lib -L/home/runner/pnetcdf/lib"
