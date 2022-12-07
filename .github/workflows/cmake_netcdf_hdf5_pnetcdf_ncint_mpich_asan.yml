@@ -1,4 +1,4 @@
-name: cmake_netcdf_hdf5_pnetcdf_ncint_mpich
+name: cmake_netcdf_hdf5_pnetcdf_ncint_mpich_asan
 
 on:
   push:
@@ -134,6 +134,9 @@ jobs:
         source .bashrc
         export CC=/home/runner/mpich/bin/mpicc
         export FC=/home/runner/mpich/bin/mpifort
+        export CFLAGS="-g -O0 -fsanitize=address -fno-omit-frame-pointer"
+        export FCFLAGS="$FCFLAGS -g -O0 -fsanitize=address -fno-omit-frame-pointer"
+        export ASAN_OPTIONS="detect_odr_violation=0"
         export LD_LIBRARY_PATH=/home/runner/netcdf-c/lib:/home/runner/pnetcdf/lib:$LD_LIBRARY_PATH
         rm -rf b1
         mkdir b1
