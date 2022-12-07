@@ -1,4 +1,4 @@
-run-name: netcdf-${{ env.NETCDF_C_VERSION }}_hdf5-${{ env.HDF5_VERSION }}_no_pnetcdf_ncint_mpich-${{ env.MPICH_VERSION }}
+name: netcdf_hdf5_no_pnetcdf_ncint_mpich
 on:
   push:
     branches: [ master ]
@@ -23,14 +23,14 @@ jobs:
     - name: Installs
       run: |
         sudo apt-get install doxygen graphviz wget gfortran libjpeg-dev libz-dev
-    - name: cache-mpich
+    - name: cache-mpich-${{ env.MPICH_VERSION }}
       id: cache-mpich
       uses: actions/cache@v3
       with:
         path: ~/mpich
         key: mpich-${{ runner.os }}-${{ env.MPICH_VERSION }}
 
-    - name: build-mpich
+    - name: build-mpich-${{ env.MPICH_VERSION }}
       if: steps.cache-mpich.outputs.cache-hit != 'true'
       run: |
         wget http://www.mpich.org/static/downloads/${{ env.MPICH_VERSION }}/mpich-${{ env.MPICH_VERSION }}.tar.gz &> /dev/null
