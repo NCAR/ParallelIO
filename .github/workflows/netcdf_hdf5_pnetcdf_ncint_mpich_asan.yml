@@ -1,5 +1,5 @@
-name: netcdf-4.7.4_hdf5-1.12.0_pnetcdf-12.2_ncint_mpich-3.3_asan
-
+name: netcdf-${{ NETCDF_C_VERSION}}_hdf5-${{ HDF5_VERSION }}_pnetcdf-${{ PNETCDF_VERSION }}_ncint_mpich-${{ MPICH_VERSION}}_asan
+run-name: netcdf-${{ NETCDF_C_VERSION}}_hdf5-${{ HDF5_VERSION }}_pnetcdf-${{ PNETCDF_VERSION }}_ncint_mpich-${{ MPICH_VERSION}}_asan
 on:
   push:
     branches: [ master ]
@@ -14,11 +14,11 @@ jobs:
     env:
       CPPFLAGS: "-I/home/runner/mpich/include -I/home/runner/hdf5/include -I/home/runner/netcdf-c/include -I/home/runner/netcdf-fortran/include -I/home/runner/pnetcdf/include"
       LDFLAGS: "-L/home/runner/mpich/lib -L/home/runner/hdf5/lib -L/home/runner/netcdf-c/lib -L/home/runner/netcdf-fortran/lib -L/home/runner/pnetcdf/lib"
-      NETCDF_C_VERSION: 4.7.4
-      NETCDF_F_VERSION: 4.5.4
+      NETCDF_C_VERSION: 4.9.0
+      NETCDF_F_VERSION: 4.6.0
       PNETCDF_VERSION: 1.12.3
-      MPICH_VERSION: 3.3.2
-      HDF5_VERSION: 1.12.0
+      MPICH_VERSION: 4.0.3
+      HDF5_VERSION: 1.12.3
       FCFLAGS: "-fallow-argument-mismatch"
     steps:
     - uses: actions/checkout@v2
