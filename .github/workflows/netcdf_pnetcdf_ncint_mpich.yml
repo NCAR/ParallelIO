@@ -1,4 +1,4 @@
-name: netcdf-4.7.4_pnetcdf-12.1_ncint_mpich-3.3
+name: netcdf-${{ env.NETCDF_C_VERSION }}_pnetcdf-${{ env.PNETCDF_VERSION }}_ncint_mpich-${{ env.MPICH_VERSION }}
 
 on:
   push:
@@ -19,7 +19,7 @@ jobs:
       MPICH_VERSION: 4.0.3
       HDF5_VERSION: 1.12.3
       PNETCDF_VERSION: 1.12.3
-      FCFLAGS: "-fallow-argument-mismatch"
+      FFLAGS: "-fallow-argument-mismatch"
     steps:
     - uses: actions/checkout@v3
     - name: Installs
