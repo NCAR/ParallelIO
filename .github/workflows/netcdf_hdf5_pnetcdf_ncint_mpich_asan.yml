@@ -148,7 +148,8 @@ jobs:
         export CC=/home/runner/mpich/bin/mpicc
         export FC=/home/runner/mpich/bin/mpifort
         export CFLAGS="-g -O0 -fsanitize=address -fno-omit-frame-pointer -static-libasan"
-        export FFLAGS="$FCFLAGS -g -O0 -fsanitize=address -fno-omit-frame-pointer -static-libasan"
+        export FCFLAGS="$FCFLAGS -g -O0 -fsanitize=address -fno-omit-frame-pointer -static-libasan"
+        export LDFLAGS="-static-libasan"
         export ASAN_OPTIONS="detect_odr_violation=0"
         autoreconf -i
         ./configure --enable-fortran --enable-netcdf-integration
