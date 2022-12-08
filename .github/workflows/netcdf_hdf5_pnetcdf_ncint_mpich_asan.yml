@@ -132,7 +132,11 @@ jobs:
         source .bashrc
         export CC=/home/runner/mpich/bin/mpicc
         export FC=/home/runner/mpich/bin/mpifort
+        export CFLAGS="-g -O0 -fsanitize=address -fno-omit-frame-pointer -static-libasan"
+        export FCFLAGS="$FCFLAGS -g -O0 -fsanitize=address -fno-omit-frame-pointer -static-libasan"
+        export LDFLAGS="$LDFLAGS -static-libasan"
         export LD_LIBRARY_PATH="/home/runner/netcdf-c/lib:/home/runner/mpich/lib:/home/runner/hdf5/lib:/home/runner/netcdf-fortran/lib:/home/runner/pnetcdf/lib:$LD_LIBRARY_PATH"
+        export ASAN_OPTIONS="detect_odr_violation=0"
         mkdir build
         cd build
         cmake -Wno-dev -DNetCDF_C_LIBRARY=/home/runner/netcdf-c/lib/libnetcdf.so -DNetCDF_C_INCLUDE_DIR=/home/runner/netcdf-c/include -DPnetCDF_PATH='/home/runner/pnetcdf' -DPIO_ENABLE_FORTRAN=Off -DPIO_ENABLE_LOGGING=On -DPIO_ENABLE_TIMING=Off .. || (cat CMakeFiles/CMakeOutput.log && cat CMakeFiles/CMakeError.log)
@@ -149,7 +153,7 @@ jobs:
         export FC=/home/runner/mpich/bin/mpifort
         export CFLAGS="-g -O0 -fsanitize=address -fno-omit-frame-pointer -static-libasan"
         export FCFLAGS="$FCFLAGS -g -O0 -fsanitize=address -fno-omit-frame-pointer -static-libasan"
-        export LDFLAGS="-static-libasan"
+        export LDFLAGS="$LDFLAGS -static-libasan"
         export ASAN_OPTIONS="detect_odr_violation=0"
         autoreconf -i
         ./configure --enable-fortran --enable-netcdf-integration
