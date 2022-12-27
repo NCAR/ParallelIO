@@ -52,7 +52,7 @@ jobs:
 
     - name: build-hdf5
       if: steps.cache-hdf5.outputs.cache-hit != 'true'
-      uses: .github/actions/buildhdf5
+      uses: ./.github/actions/buildhdf5
       with:
         install_prefix: $HOME/hdf5
         enable_parallel: True
