@@ -20,7 +20,11 @@ inputs:
     default: $HOME/hdf5
     required: False
     type: string
-    
+  mpi_path:
+    description: 'Path to mpi install'
+    default: /usr
+    required: False
+    type: string
 runs:
   using: composite
   steps:
@@ -35,6 +39,7 @@ runs:
         pushd hdf5-src
         mkdir hdf5-build
         pushd hdf5-build
+        export PATH=$PATH:${{ inputs.mpi_path }}/bin
         cmake -DCMAKE_INSTALL_PREFIX=${{ inputs.install_prefix }} -DHDF5_ENABLE_PARALLEL=${{ inputs.enable_parallel }} ../
         make
         make install

@@ -57,7 +57,7 @@ jobs:
         install_prefix: $HOME/hdf5
         enable_parallel: True
         hdf5_version: ${{ env.HDF5_VERSION }}
-
+        mpi_path: $HOME/mpich
     - name: cache-netcdf-c
       id: cache-netcdf-c
       uses: actions/cache@v3
