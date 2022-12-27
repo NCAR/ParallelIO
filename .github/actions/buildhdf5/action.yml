@@ -1,0 +1,40 @@
+description: 'Build the HDF5 library'
+inputs:
+  hdf5_version:
+    description: 'Tag in the HDF5 repository to use'
+    default: hdf5-1_12_2
+    required: False
+    type: string
+  enable_logging:
+    description: 'Enable hdf5 logging (for debugging)'
+    default: False
+    required: False
+    type: boolean
+  enable_parallel:
+    description: 'Enable hdf5 parallel build'
+    default: True
+    required: False
+    type: boolean
+  install_prefix:
+    description: 'Install path of hdf5'
+    default: $HOME/hdf5
+    required: False
+    type: string
+    
+runs:
+  using: composite
+  steps:
+    - uses: actions/checkout@v3
+      with:
+        repository: HDFGroup/hdf5
+        path: hdf5-src
+        ref: ${{ inputs.hdf5_version }}
+    - id: hdf5-build
+      shell: bash
+      run: |
+        pushd hdf5-src
+        mkdir hdf5-build
+        pushd hdf5-build
+        cmake -DCMAKE_INSTALL_PREFIX=${{ inputs.install_prefix }} -DHDF5_ENABLE_PARALLEL=${{ inputs.enable_parallel }} ../
+        make
+        make install

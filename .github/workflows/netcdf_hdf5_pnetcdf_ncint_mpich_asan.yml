@@ -18,8 +18,7 @@ jobs:
       NETCDF_F_VERSION: 4.5.4
       PNETCDF_VERSION: checkpoint.1.12.3
       MPICH_VERSION: 4.0.3
-      HDF5_VERSION_MAJOR: 1.12
-      HDF5_VERSION_PATCH: 2
+      HDF5_VERSION: hdf5_1_12_2
       FCFLAGS: "-fallow-argument-mismatch"
       FFLAGS: "-fallow-argument-mismatch"
     steps:
@@ -49,21 +48,16 @@ jobs:
       uses: actions/cache@v3
       with:
         path: ~/hdf5
-        key: hdf5-${{ runner.os }}-${{ env.HDF5_VERSION_MAJOR }}.${{ env.HDF5_VERSION_PATCH }}-mpich-${{ env.MPICH_VERSION }}
+        key: hdf5-${{ runner.os }}-${{ env.HDF5_VERSION }}-mpich-${{ env.MPICH_VERSION }}
 
     - name: build-hdf5
       if: steps.cache-hdf5.outputs.cache-hit != 'true'
-      run: |
-        set -x
-        export PATH="/home/runner/mpich/bin:$PATH"
-        export CC=/home/runner/mpich/bin/mpicc
-        wget https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-${{ env.HDF5_VERSION_MAJOR }}/hdf5-${{ env.HDF5_VERSION_MAJOR }}.${{ env.HDF5_VERSION_PATCH }}/src/hdf5-${{ env.HDF5_VERSION_MAJOR }}.${{ env.HDF5_VERSION_PATCH }}.tar.gz &> /dev/null
-        tar -xzf hdf5-${{ env.HDF5_VERSION_MAJOR }}.${{ env.HDF5_VERSION_PATCH }}.tar.gz
-        pushd hdf5-${{ env.HDF5_VERSION_MAJOR }}.${{ env.HDF5_VERSION_PATCH }}
-        ./configure --prefix=/home/runner/hdf5 --enable-parallel --disable-tools --disable-fortran --disable-cxx --enable-parallel-tests
-        make
-        sudo make install
-        popd
+      uses: .github/actions/buildhdf5
+      with:
+        install_prefix: $HOME/hdf5
+        enable_parallel: True
+        hdf5_version: ${{ env.HDF5_VERSION }}
+
     - name: cache-netcdf-c
       id: cache-netcdf-c
       uses: actions/cache@v3
@@ -91,19 +85,14 @@ jobs:
         path: ~/netcdf-fortran
         key: netcdf-fortran-${{ runner.os }}-${{ env.NETCDF_F_VERSION }}-mpich-${{ env.MPICH_VERSION }}-hdf5-${{ env.HDF5_VERSION_MAJOR }}.${{ env.HDF5_VERSION_PATCH }}
 
-    - name: build-netcdf-fortran
+    - name: Build NetCDF Fortran
       if: steps.cache-netcdf-fortran.outputs.cache-hit != 'true'
-      run: |
-        set -x
-        export PATH="/home/runner/mpich/bin:$PATH"
-        export CC=/home/runner/mpich/bin/mpicc
-        wget https://github.com/Unidata/netcdf-fortran/archive/refs/tags/v${{ env.NETCDF_F_VERSION }}.tar.gz
-        tar -xzf v${{ env.NETCDF_F_VERSION }}.tar.gz
-        pushd netcdf-fortran-${{ env.NETCDF_F_VERSION }}
-        ./configure --prefix=/home/runner/netcdf-fortran
-        make -j
-        sudo make install
-        popd
+      uses: ./.github/actions/buildnetcdff
+      with:
+        netcdf_fortran_version: ${{ env.NETCDF_FORTRAN_VERSION }}
+        install_prefix: $HOME/netcdf-fortran
+        netcdf_c_path: /usr
+
     - name: cache-pnetcdf
       id: cache-pnetcdf
       uses: actions/cache@v3
