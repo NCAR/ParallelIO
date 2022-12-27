@@ -16,7 +16,7 @@ jobs:
       # Note issue https://github.com/NCAR/ParallelIO/issues/1889 netcdf integration only currently works with netcdf-c 4.7.4
       NETCDF_C_VERSION: 4.7.4
       NETCDF_F_VERSION: 4.5.4
-      PNETCDF_VERSION: 1.12.3
+      PNETCDF_VERSION: checkpoint.1.12.3
       MPICH_VERSION: 4.0.3
       HDF5_VERSION_MAJOR: 1.12
       HDF5_VERSION_PATCH: 2
@@ -111,19 +111,13 @@ jobs:
         path: ~/pnetcdf
         key: pnetcdf-${{ runner.os }}-${{ env.PNETCDF_VERSION }}-mpich-${{ env.MPICH_VERSION }}
 
-    - name: build-pnetcdf
+    - name: Build PNetCDF
       if: steps.cache-pnetcdf.outputs.cache-hit != 'true'
-      run: |
-        set -x
-        export PATH="/home/runner/mpich/bin:$PATH"
-        export CC=/home/runner/mpich/bin/mpicc
-        wget https://parallel-netcdf.github.io/Release/pnetcdf-${{ env.PNETCDF_VERSION }}.tar.gz  &> /dev/null
-        tar -xzf pnetcdf-${{ env.PNETCDF_VERSION }}.tar.gz
-        pushd pnetcdf-${{ env.PNETCDF_VERSION }}
-        ./configure --prefix=/home/runner/pnetcdf --enable-shared --disable-cxx
-        make
-        sudo make install
-        popd
+      uses: ESCOMP/CDEPS/.github/actions/buildpnetcdf@e06246b560d3132170bb1a5443fa3d65dfbd2040
+      with:
+        pnetcdf_version: ${{ env.PNETCDF_VERSION }}
+        install_prefix: $HOME/pnetcdf
+
     - name: cmake build
       run: |
         set -x

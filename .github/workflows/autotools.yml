@@ -16,7 +16,7 @@ jobs:
       FC: mpifort
       CPPFLAGS: "-I/usr/include -I/usr/local/include -I/home/runner/pnetcdf/include"
       LDFLAGS: "-L/home/runner/pnetcdf/lib"
-      PNETCDF_VERSION: 1.12.3
+      PNETCDF_VERSION: checkpoint.1.12.3
       FCFLAGS: "-fallow-argument-mismatch"
     steps:
     - uses: actions/checkout@v3
@@ -44,19 +44,12 @@ jobs:
       with:
         path: ~/pnetcdf
         key: pnetcdf-${{ runner.os }}-${{ env.PNETCDF_VERSION }}
-
-    - name: build-pnetcdf
+    - name: Build PNetCDF
       if: steps.cache-pnetcdf.outputs.cache-hit != 'true'
-      run: |
-        set -x
-        wget https://parallel-netcdf.github.io/Release/pnetcdf-${{ env.PNETCDF_VERSION }}.tar.gz &> /dev/null
-        tar -xzvf pnetcdf-${{ env.PNETCDF_VERSION }}.tar.gz
-        pushd pnetcdf-${{ env.PNETCDF_VERSION }}
-        ./configure --prefix=/home/runner/pnetcdf --enable-shared --disable-cxx
-        make
-        sudo make install
-        popd
-
+      uses: ESCOMP/CDEPS/.github/actions/buildpnetcdf@e06246b560d3132170bb1a5443fa3d65dfbd2040
+      with:
+        pnetcdf_version: ${{ env.PNETCDF_VERSION }}
+        install_prefix: $HOME/pnetcdf
     - name: autoreconf
       run: autoreconf -i
     - name: configure
