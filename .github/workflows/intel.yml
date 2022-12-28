@@ -13,7 +13,7 @@ jobs:
 
     env:
       CC: mpicc
-      FC: mpifort
+      FC: mpiifort
       # Versions should match the github tag names
       PNETCDF_VERSION: checkpoint.1.12.3
       NETCDF_C_VERSION: v4.9.0
@@ -92,7 +92,7 @@ jobs:
       run: |
         export PATH=$HOME/netcdf-c/bin:$PATH
         export LDFLAGS="$LDFLAGS -L$HOME/netcdf-c/lib"
-        mpifort --version 
+        mpiifort --version 
         printenv >> $GITHUB_ENV
     - name: Build NetCDF Fortran
       if: steps.cache-netcdf-fortran.outputs.cache-hit != 'true'
