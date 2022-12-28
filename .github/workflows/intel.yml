@@ -39,6 +39,9 @@ jobs:
       uses: ./.github/actions/intelcompilers
     - name: Compile
       run: |
+        ls /opt/intel/oneapi
+        cat /opt/intel/oneapi/setvars.sh
+        source /opt/intel/oneapi/setvars.sh
         printenv >> $GITHUB_ENV
         ifort test.f90 -o test_program
         mpiifort test2.f90 -o mpitest
