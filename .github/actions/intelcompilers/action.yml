@@ -1,10 +1,4 @@
 description: 'Install Intel Compilers'
-inputs:
-  install_prefix:
-   description: 'Install path of intel compilers'
-    default: /opt/intel/oneapi
-    required: False
-    type: string
 runs:
   using: composite
   steps:
@@ -23,4 +17,4 @@ runs:
         sudo apt-get install -y intel-oneapi-mkl
         sudo apt-get install -y intel-oneapi-mpi
         sudo apt-get install -y intel-oneapi-mpi-devel
-      
+        source /opt/intel/oneapi/setvars.sh

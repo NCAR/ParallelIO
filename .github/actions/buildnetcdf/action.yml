@@ -49,7 +49,7 @@ runs:
       with:
         repository: Unidata/netcdf-c
         path: netcdf-c-src
-        ref: ${{ env.NETCDF_VERSION }}
+        ref: ${{ inputs.NETCDF_VERSION }}
     - id: netcdf-c-build
       shell: bash
       run: |

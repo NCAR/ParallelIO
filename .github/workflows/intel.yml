@@ -1,4 +1,4 @@
-name: autotools_ubuntu_latest
+name: Intel OneAPI
 
 on:
   push:
@@ -37,11 +37,8 @@ jobs:
     - name: Install Intel OneAPI
       if: steps.cache-intel.outputs.cache-hit != 'true'
       uses: ./.github/actions/intelcompilers
-      with:
-        install_prefix: /opt/intel/oneapi
     - name: Compile
       run: |
-        source /opt/intel/oneapi/setvars.sh
         printenv >> $GITHUB_ENV
         ifort test.f90 -o test_program
         mpiifort test2.f90 -o mpitest
