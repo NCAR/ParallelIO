@@ -70,8 +70,9 @@ jobs:
         key: netcdf-c-${{ runner.os }}-${{ env.NETCDF_C_VERSION }}-impi-hdf5-${{ env.HDF5_VERSION }}
 
     - name: prep netcdf-c
-      run: export PATH=$HOME/hdf5/bin:$PATH
-      
+      run: |
+        export PATH=$HOME/hdf5/bin:$PATH
+        export LDFLAGS="$LDFLAGS -L$HOME/hdf5/lib"
     - name: build-netcdf-c
       if: steps.cache-netcdf-c.outputs.cache-hit != 'true'
       uses: ./.github/actions/buildnetcdf
@@ -86,6 +87,10 @@ jobs:
         path: ~/netcdf-fortran
         key: netcdf-fortran-${{ runner.os }}-${{ env.NETCDF_FORTRAN_VERSION }}-impi-hdf5-${{ env.HDF5_VERSION }}
 
+    - name: prep netcdf-c
+      run: |
+        export PATH=$HOME/netcdf-c/bin:$PATH
+        export LDFLAGS="$LDFLAGS -L$HOME/netcdf-c/lib"
     - name: Build NetCDF Fortran
       if: steps.cache-netcdf-fortran.outputs.cache-hit != 'true'
       uses: ESCOMP/CDEPS/.github/actions/buildnetcdff@e06246b560d3132170bb1a5443fa3d65dfbd2040
