@@ -101,7 +101,7 @@ jobs:
         install_prefix: $HOME/pnetcdf
 
     - name: cmake build
-      uses ./.github/actions/parallelio_cmake
+      uses: ./.github/actions/parallelio_cmake
       with:
         parallelio_version: ${{ github.head_ref || github.ref_name }}
         with_pnetcdf: $HOME/pnetcdf
