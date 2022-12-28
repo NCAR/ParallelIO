@@ -69,6 +69,9 @@ jobs:
         path: ~/netcdf-c
         key: netcdf-c-${{ runner.os }}-${{ env.NETCDF_C_VERSION }}-impi-hdf5-${{ env.HDF5_VERSION }}
 
+    - name: prep netcdf-c
+      run: export PATH=$HOME/hdf5/bin:$PATH
+      
     - name: build-netcdf-c
       if: steps.cache-netcdf-c.outputs.cache-hit != 'true'
       uses: ./.github/actions/buildnetcdf
