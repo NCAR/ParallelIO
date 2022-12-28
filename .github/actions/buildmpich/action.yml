@@ -23,7 +23,6 @@ runs:
       shell: bash
       run: |
         pushd mpich-src
-        find . -name configure -print | xargs rm
         ./autogen.sh
         ./configure --prefix=${{ inputs.install_prefix }} 
         make -j4
