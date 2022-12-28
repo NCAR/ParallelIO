@@ -40,6 +40,9 @@ runs:
         mkdir hdf5-build
         pushd hdf5-build
         export PATH=$PATH:${{ inputs.mpi_path }}/bin
-        cmake -DCMAKE_INSTALL_PREFIX=${{ inputs.install_prefix }} -DHDF5_ENABLE_PARALLEL=${{ inputs.enable_parallel }} ../
+        cmake -DCMAKE_INSTALL_PREFIX=${{ inputs.install_prefix }} \
+        -DHDF5_ENABLE_PARALLEL=${{ inputs.enable_parallel }} \
+        -DHDF5_ENABLE_Z_LIB_SUPPORT=ON \
+        ../
         make
         make install
