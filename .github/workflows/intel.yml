@@ -41,6 +41,11 @@ jobs:
     - name: Install Intel OneAPI
       if: steps.cache-intel.outputs.cache-hit != 'true'
       uses: ./.github/actions/intelcompilers
+    - name: Prep Intel OneAPI
+      if: steps.cache-intel.outputs.cache-hit == 'true'
+      run: |
+        source /opt/intel/oneapi/setvars.sh
+        printenv >> $GITHUB_ENV
 
     - name: cache-hdf5
       id: cache-hdf5
