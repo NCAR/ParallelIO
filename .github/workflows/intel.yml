@@ -88,11 +88,6 @@ jobs:
         path: ~/netcdf-fortran
         key: netcdf-fortran-${{ runner.os }}-${{ env.NETCDF_FORTRAN_VERSION }}-impi-hdf5-${{ env.HDF5_VERSION }}
 
-    - name: prep netcdf-fortran
-      run: |
-        export PATH=$HOME/netcdf-c/bin:$PATH
-        export LDFLAGS=`nc-config --libs`
-        printenv >> $GITHUB_ENV
     - name: Build NetCDF Fortran
       if: steps.cache-netcdf-fortran.outputs.cache-hit != 'true'
       uses: ./.github/actions/buildnetcdff
