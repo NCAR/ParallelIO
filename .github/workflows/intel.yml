@@ -91,8 +91,7 @@ jobs:
     - name: prep netcdf-fortran
       run: |
         export PATH=$HOME/netcdf-c/bin:$PATH
-        export LDFLAGS="$LDFLAGS -L$HOME/netcdf-c/lib"
-        mpiifort --version 
+        export LDFLAGS=`nc-config --libs`
         printenv >> $GITHUB_ENV
     - name: Build NetCDF Fortran
       if: steps.cache-netcdf-fortran.outputs.cache-hit != 'true'
