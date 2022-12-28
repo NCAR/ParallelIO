@@ -18,12 +18,14 @@ runs:
         repository: pmodels/mpich
         path: mpich-src
         ref: ${{ inputs.mpich_version }}
+        submodules: 'recursive'
     - id: mpich-build
       shell: bash
       run: |
         pushd mpich-src
-        autoreconf -i
+        find . -name configure -print | xargs rm
+        ./autogen.sh
         ./configure --prefix=${{ inputs.install_prefix }} 
-        make
+        make -j4
         make install
         popd
