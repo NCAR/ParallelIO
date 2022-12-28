@@ -73,6 +73,7 @@ jobs:
       run: |
         export PATH=$HOME/hdf5/bin:$PATH
         export LDFLAGS="$LDFLAGS -L$HOME/hdf5/lib"
+        export CPPFLAGS="$CPPFLAGS -I$HOME/hdf5/include"
         printenv >> $GITHUB_ENV
     - name: build-netcdf-c
       if: steps.cache-netcdf-c.outputs.cache-hit != 'true'
