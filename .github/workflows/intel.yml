@@ -45,8 +45,7 @@ jobs:
         path: ~/hdf5
         key: hdf5-${{ runner.os }}-${{ env.HDF5_VERSION }}-impi
     - name: prep-intel
-      run: |
-        source /opt/intel/oneapi/setvars.sh
+      run: printenv
     - name: build-hdf5
       if: steps.cache-hdf5.outputs.cache-hit != 'true'
       uses: ./.github/actions/buildhdf5

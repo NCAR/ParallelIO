@@ -19,3 +19,5 @@ runs:
         sudo apt-get install -y intel-oneapi-mkl
         sudo apt-get install -y intel-oneapi-mpi
         sudo apt-get install -y intel-oneapi-mpi-devel
+        source /opt/intel/oneapi/setvars.sh
+        printenv >> $GITHUB_ENV
