@@ -95,7 +95,7 @@ jobs:
         printenv >> $GITHUB_ENV
     - name: Build NetCDF Fortran
       if: steps.cache-netcdf-fortran.outputs.cache-hit != 'true'
-      uses: ESCOMP/CDEPS/.github/actions/buildnetcdff@e06246b560d3132170bb1a5443fa3d65dfbd2040
+      uses: ./.github/actions/buildnetcdff
       with:
         netcdf_fortran_version: ${{ env.NETCDF_FORTRAN_VERSION }}
         install_prefix: $HOME/netcdf-fortran
@@ -123,3 +123,4 @@ jobs:
         with_netcdf: $HOME/netcdf-c
         with_netcdff: $HOME/netcdf-fortran
         enable_fortran: True
+        
