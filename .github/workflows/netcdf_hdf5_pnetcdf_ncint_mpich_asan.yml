@@ -11,8 +11,6 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      CPPFLAGS: "-I/home/runner/mpich/include -I/home/runner/hdf5/include -I/home/runner/netcdf-c/include -I/home/runner/netcdf-fortran/include -I/home/runner/pnetcdf/include"
-      LDFLAGS: "-L/home/runner/mpich/lib -L/home/runner/hdf5/lib -L/home/runner/netcdf-c/lib -L/home/runner/netcdf-fortran/lib -L/home/runner/pnetcdf/lib"
       # Note issue https://github.com/NCAR/ParallelIO/issues/1889 netcdf integration only currently works with netcdf-c 4.7.4
       NETCDF_C_VERSION: 4.7.4
       NETCDF_F_VERSION: 4.5.4
@@ -132,6 +130,8 @@ jobs:
         gcc --version
         echo 'export PATH=/home/runner/mpich/bin:$PATH' > .bashrc
         source .bashrc
+        export CPPFLAGS: "-I/home/runner/mpich/include -I/home/runner/hdf5/include -I/home/runner/netcdf-c/include -I/home/runner/netcdf-fortran/include -I/home/runner/pnetcdf/include"
+        export LDFLAGS: "-L/home/runner/mpich/lib -L/home/runner/hdf5/lib -L/home/runner/netcdf-c/lib -L/home/runner/netcdf-fortran/lib -L/home/runner/pnetcdf/lib"
         export CC=/home/runner/mpich/bin/mpicc
         export FC=/home/runner/mpich/bin/mpifort
         export CFLAGS="-g -O0 -fsanitize=address -fno-omit-frame-pointer -static-libasan"
