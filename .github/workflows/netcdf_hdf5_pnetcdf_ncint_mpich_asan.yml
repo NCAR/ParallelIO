@@ -15,7 +15,7 @@ jobs:
       NETCDF_C_VERSION: 4.7.4
       NETCDF_F_VERSION: 4.5.4
       PNETCDF_VERSION: checkpoint.1.12.3
-      MPICH_VERSION: 4.0.3
+      MPICH_VERSION: v4.0.3
       HDF5_VERSION: hdf5_1_12_2
       FCFLAGS: "-fallow-argument-mismatch"
       FFLAGS: "-fallow-argument-mismatch"
@@ -33,14 +33,11 @@ jobs:
 
     - name: build-mpich
       if: steps.cache-mpich.outputs.cache-hit != 'true'
-      run: |
-        wget http://www.mpich.org/static/downloads/${{ env.MPICH_VERSION }}/mpich-${{ env.MPICH_VERSION }}.tar.gz &> /dev/null
-        tar -xzf mpich-${{ env.MPICH_VERSION }}.tar.gz
-        pushd mpich-${{ env.MPICH_VERSION }}
-        ./configure --prefix=/home/runner/mpich
-        make
-        sudo make install
-        popd
+      uses: ./.github/actions/buildmpich
+      with:
+        install_prefix: $HOME/mpich
+        mpich_version: ${{ env.MPICH_VERSION }}
+        
     - name: cache-hdf5
       id: cache-hdf5
       uses: actions/cache@v3
