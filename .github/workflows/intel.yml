@@ -19,7 +19,7 @@ jobs:
       NETCDF_C_VERSION: v4.9.0
       NETCDF_FORTRAN_VERSION: v5.4.0
       HDF5_VERSION: hdf5_1_12_2
-  steps:
+    steps:
     - uses: actions/checkout@v3
     - name: Installs
       run: |
