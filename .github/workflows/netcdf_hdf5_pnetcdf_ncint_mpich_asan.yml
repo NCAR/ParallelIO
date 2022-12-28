@@ -62,17 +62,11 @@ jobs:
 
     - name: build-netcdf-c
       if: steps.cache-netcdf-c.outputs.cache-hit != 'true'
-      run: |
-        set -x
-        export PATH="/home/runner/mpich/bin:$PATH"
-        export CC=/home/runner/mpich/bin/mpicc
-        wget https://github.com/Unidata/netcdf-c/archive/refs/tags/v${{ env.NETCDF_C_VERSION }}.tar.gz
-        tar -xzf v${{ env.NETCDF_C_VERSION }}.tar.gz
-        pushd netcdf-c-${{ env.NETCDF_C_VERSION }}
-        ./configure --prefix=/home/runner/netcdf-c --disable-dap --disable-utilities
-        make -j
-        sudo make install
-        popd
+      uses: ./.github/actions/buildnetcdf
+      with:
+        netcdf_version: ${{ env.NETCDF_VERSION }}
+        install_prefix: $HOME/netcdf-c
+
     - name: cache-netcdf-fortran
       id: cache-netcdf-fortran
       uses: actions/cache@v3
@@ -82,11 +76,11 @@ jobs:
 
     - name: Build NetCDF Fortran
       if: steps.cache-netcdf-fortran.outputs.cache-hit != 'true'
-      uses: ./.github/actions/buildnetcdff
+      uses: ESCOMP/CDEPS/.github/actions/buildnetcdff@e06246b560d3132170bb1a5443fa3d65dfbd2040
       with:
         netcdf_fortran_version: ${{ env.NETCDF_FORTRAN_VERSION }}
         install_prefix: $HOME/netcdf-fortran
-        netcdf_c_path: /usr
+        netcdf_c_path: $HOME/netcdf-c
 
     - name: cache-pnetcdf
       id: cache-pnetcdf

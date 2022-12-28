@@ -1,0 +1,48 @@
+name: autotools_ubuntu_latest
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    env:
+      CC: mpiicc
+      FC: mpiifort
+      PNETCDF_VERSION: checkpoint.1.12.3
+    steps:
+    - uses: actions/checkout@v3
+    - name: Installs
+      run: |
+        set -x
+        #        sudo gem install apt-spy2
+        #        sudo apt-spy2 check
+        #        sudo apt-spy2 fix --commit
+        # after selecting a specific mirror, we need to run 'apt-get update'
+        sudo apt-get update 
+        sudo apt-get install wget
+        sudo apt-get install libjpeg-dev
+        sudo apt-get install libz-dev
+    - name: cache intel compiler
+      id: cache-intel
+      uses: actions/cache@v3
+      with:
+        path: /opt/intel/oneapi
+        key: intel-${{ runner.os }}
+    - name: Install Intel OneAPI
+      if: steps.cache-intel.outputs.cache-hit != 'true'
+      uses: ./.github/actions/intelcompilers
+      with:
+        install_prefix: /opt/intel/oneapi
+    - name: Compile
+      run: |
+        source /opt/intel/oneapi/setvars.sh
+        printenv >> $GITHUB_ENV
+        ifort test.f90 -o test_program
+        mpiifort test2.f90 -o mpitest
+                                            
