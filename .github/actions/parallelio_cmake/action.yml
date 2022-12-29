@@ -100,7 +100,7 @@ runs:
     - uses: actions/checkout@v3
       with:
         repository: NCAR/ParallelIO
-        path: $GITHUB_WORKSPACE/parallelio-src
+        path: parallelio-src
         ref: ${{ inputs.parallelio_version }}
     - id: parallelio-build
       shell: bash
