@@ -94,7 +94,7 @@ runs:
     - uses: actions/checkout@v3
       with:
         repository: NCAR/ParallelIO
-        path: ${{ env.HOME }}/parallelio-src
+        path: ${{ env.GITHUB_WORKSPACE }}/parallelio-src
         ref: ${{ inputs.parallelio_version }}
     - id: parallelio-build
       shell: bash
@@ -110,6 +110,6 @@ runs:
         -DNetCDF_C_PATH=${{ inputs.with_netcdf }} \
         -DNetCDF_Fortran_PATH=${{ inputs.with_netcdff }} \
         -DCMAKE_INSTALL_PREFIX=${{ inputs.install_prefix }} \
-        $HOME/parallelio-src
+        $GITHUB_WORKSPACE/parallelio-src
         make VERBOSE=1
         make install
