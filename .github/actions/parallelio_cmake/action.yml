@@ -101,8 +101,8 @@ runs:
       run: |
         mkdir build
         cd build
-        export CFLAGS=${{ inputs.extra_cflags }}
-        export FCFLAGS=${{ inputs.extra_fflags }}
+        export CFLAGS="$CFLAGS ${{ inputs.extra_cflags }}"
+        export FCFLAGS="$FCFLAGS ${{ inputs.extra_fflags }}"
         cmake -Wno-dev -DPIO_ENABLE_LOGGING=${{ inputs.enable_logging }} \
         -DPIO_ENABLE_FORTRAN=${{ inputs.enable_fortran }} \
         -DPIO_ENABLE_TIMING=${{ inputs.enable_timing }} \

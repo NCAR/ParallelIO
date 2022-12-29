@@ -31,5 +31,6 @@ runs:
         export CPPFLAGS="$CPPFLAGS -I${{ inputs.netcdf_c_path }}/include"
         export LDFLAGS="$LDFLAGS -L${{ inputs.netcdf_c_path }}/lib -lnetcdf"
         ./configure --prefix=${{ inputs.install_prefix }}
+        cat config.log
         make
         make install
