@@ -58,7 +58,7 @@ jobs:
       uses: actions/cache@v3
       with:
         path: ~/netcdf-c
-        key: netcdf-c-${{ runner.os }}-${{ env.NETCDF_C_VERSION }}-mpich-${{ env.MPICH_VERSION }}-hdf5-${{ env.HDF5_VERSION_MAJOR }}.${{ env.HDF5_VERSION_PATCH }}
+        key: netcdf-c-${{ runner.os }}-${{ env.NETCDF_C_VERSION }}-mpich-${{ env.MPICH_VERSION }}-hdf5-${{ env.HDF5_VERSION }}
 
     - name: build-netcdf-c
       if: steps.cache-netcdf-c.outputs.cache-hit != 'true'
@@ -76,7 +76,7 @@ jobs:
 
     - name: Build NetCDF Fortran
       if: steps.cache-netcdf-fortran.outputs.cache-hit != 'true'
-      uses: ESCOMP/CDEPS/.github/actions/buildnetcdff@e06246b560d3132170bb1a5443fa3d65dfbd2040
+      uses: ./.github/actions/buildnetcdff
       with:
         netcdf_fortran_version: ${{ env.NETCDF_FORTRAN_VERSION }}
         install_prefix: $HOME/netcdf-fortran
@@ -91,44 +91,50 @@ jobs:
 
     - name: Build PNetCDF
       if: steps.cache-pnetcdf.outputs.cache-hit != 'true'
-      uses: ESCOMP/CDEPS/.github/actions/buildpnetcdf@e06246b560d3132170bb1a5443fa3d65dfbd2040
+      uses: ./.github/actions/buildpnetcdf
       with:
         pnetcdf_version: ${{ env.PNETCDF_VERSION }}
         install_prefix: $HOME/pnetcdf
-
-    - name: cmake build
+    - name: prep for build
       run: |
-        set -x
-        gcc --version
-        echo 'export PATH=/home/runner/mpich/bin:$PATH' > .bashrc
-        source .bashrc
-        export CC=/home/runner/mpich/bin/mpicc
-        export FC=/home/runner/mpich/bin/mpifort
-        export CFLAGS="-g -O0 -fsanitize=address -fno-omit-frame-pointer -static-libasan"
-        export FCFLAGS="$FCFLAGS -g -O0 -fsanitize=address -fno-omit-frame-pointer -static-libasan"
-        export LDFLAGS="$LDFLAGS -static-libasan"
         export LD_LIBRARY_PATH="/home/runner/netcdf-c/lib:/home/runner/mpich/lib:/home/runner/hdf5/lib:/home/runner/netcdf-fortran/lib:/home/runner/pnetcdf/lib:$LD_LIBRARY_PATH"
         export ASAN_OPTIONS="detect_odr_violation=0"
-        mkdir build
-        cd build
-        cmake -Wno-dev -DNetCDF_C_LIBRARY=/home/runner/netcdf-c/lib/libnetcdf.so -DNetCDF_C_INCLUDE_DIR=/home/runner/netcdf-c/include -DPnetCDF_PATH='/home/runner/pnetcdf' -DPIO_ENABLE_FORTRAN=Off -DPIO_ENABLE_LOGGING=On -DPIO_ENABLE_TIMING=Off .. || (cat CMakeFiles/CMakeOutput.log && cat CMakeFiles/CMakeError.log)
-        make VERBOSE=1
-        make tests VERBOSE=1
-#        ctest -VV
+        export CC=/home/runner/mpich/bin/mpicc
+        export FC=/home/runner/mpich/bin/mpifort
+        export PATH=/home/runner/mpich/bin:$PATH
+        printenv >> $GITHUB_ENV
+    - name: cmake build
+      uses: ./.github/actions/parallelio_cmake
+      with:
+        parallelio_version: ${{ env.GITHUB_SHA }}
+        with_pnetcdf: $HOME/pnetcdf
+        with_netcdf: $HOME/netcdf-c
+        with_netcdff: $HOME/netcdf-fortran
+        enable_fortran: True
+        install_prefix: $HOME/parallelio
+        extra_cflags: "-g -O0 -fsanitize=address -fno-omit-frame-pointer -static-libasan"
+        extra_fflags: " -g -O0 -fsanitize=address -fno-omit-frame-pointer -static-libasan"
+        extra_ldflags: " -static-libasan"
+
+    - name: run tests
+      run: |
+        cd $GITHUB_WORKSPACE/parallelio-src
+        make -j check
+        
     - name: autotools build
       run: |
         set -x
         gcc --version
-        echo 'export PATH=/home/runner/mpich/bin:$PATH' > .bashrc
-        source .bashrc
-        export CPPFLAGS: "-I/home/runner/mpich/include -I/home/runner/hdf5/include -I/home/runner/netcdf-c/include -I/home/runner/netcdf-fortran/include -I/home/runner/pnetcdf/include"
-        export LDFLAGS: "-L/home/runner/mpich/lib -L/home/runner/hdf5/lib -L/home/runner/netcdf-c/lib -L/home/runner/netcdf-fortran/lib -L/home/runner/pnetcdf/lib"
-        export CC=/home/runner/mpich/bin/mpicc
-        export FC=/home/runner/mpich/bin/mpifort
-        export CFLAGS="-g -O0 -fsanitize=address -fno-omit-frame-pointer -static-libasan"
-        export FCFLAGS="$FCFLAGS -g -O0 -fsanitize=address -fno-omit-frame-pointer -static-libasan"
-        export LDFLAGS="$LDFLAGS -static-libasan"
-        export ASAN_OPTIONS="detect_odr_violation=0"
+#        echo 'export PATH=/home/runner/mpich/bin:$PATH' > .bashrc
+#        source .bashrc
+#        export CPPFLAGS: "-I/home/runner/mpich/include -I/home/runner/hdf5/include -I/home/runner/netcdf-c/include -I/home/runner/netcdf-fortran/include -I/home/runner/pnetcdf/include"
+#        export LDFLAGS: "-L/home/runner/mpich/lib -L/home/runner/hdf5/lib -L/home/runner/netcdf-c/lib -L/home/runner/netcdf-fortran/lib -L/home/runner/pnetcdf/lib"
+#        export CC=/home/runner/mpich/bin/mpicc
+#        export FC=/home/runner/mpich/bin/mpifort
+#        export CFLAGS="-g -O0 -fsanitize=address -fno-omit-frame-pointer -static-libasan"
+#        export FCFLAGS="$FCFLAGS -g -O0 -fsanitize=address -fno-omit-frame-pointer -static-libasan"
+#        export LDFLAGS="$LDFLAGS -static-libasan"
+#        export ASAN_OPTIONS="detect_odr_violation=0"
         autoreconf -i
         ./configure --enable-fortran --enable-netcdf-integration
         make -j check

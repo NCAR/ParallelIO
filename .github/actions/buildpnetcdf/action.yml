@@ -1,0 +1,30 @@
+description: 'Build the pnetcdf library'
+inputs:
+  pnetcdf_version:
+    description: 'Tag in the pnetcdf repository to use'
+    default: checkpoint.1.12.3
+    required: False
+    type: string
+  install_prefix:
+    description: 'Install path of pnetcdf'
+    default: $HOME/pnetcdf
+    required: False
+    type: string
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/checkout@v3
+      with:
+        repository: Parallel-NetCDF/PnetCDF
+        path: pnetcdf-src
+        ref: ${{ inputs.pnetcdf_version }}
+    - id: Build-PnetCDF
+      shell: bash
+      run: |
+        pushd pnetcdf-src
+        autoreconf -i
+        ./configure --prefix=${{ inputs.install_prefix }} --enable-shared --disable-cxx
+        make
+        make install
+        popd

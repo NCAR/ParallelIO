@@ -46,14 +46,18 @@ jobs:
         key: pnetcdf-${{ runner.os }}-${{ env.PNETCDF_VERSION }}
     - name: Build PNetCDF
       if: steps.cache-pnetcdf.outputs.cache-hit != 'true'
-      uses: ESCOMP/CDEPS/.github/actions/buildpnetcdf@e06246b560d3132170bb1a5443fa3d65dfbd2040
+      uses: ./.github/actions/buildpnetcdf
       with:
         pnetcdf_version: ${{ env.PNETCDF_VERSION }}
         install_prefix: $HOME/pnetcdf
-    - name: autoreconf
-      run: autoreconf -i
-    - name: configure
-      run: ./configure --enable-fortran  --with-mpiexec='mpiexec --oversubscribe'
-      #run: ./configure --enable-fortran --enable-docs  --with-mpiexec='mpiexec --oversubscribe'
+    - name: Build ParallelIO with autotools
+      uses: ./.github/actions/parallelio_autotools
+      with:
+        install_prefix: ~/parallelio
+        enable_fortran: True
+        with_mpiexec: 'mpiexec --oversubscribe'
+        parallelio_version: ${{ env.GITHUB_SHA }}
     - name: make check
-      run: make -j check
+      run: |
+        cd $GITHUB_WORKSPACE/parallelio-src   
+        make -j check

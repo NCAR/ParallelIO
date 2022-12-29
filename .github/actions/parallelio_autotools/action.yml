@@ -2,7 +2,7 @@ description: 'Build the parallelio library using cmake'
 inputs:
   parallelio_version:
     description: 'Tag in the parallelio repository to use'
-    default: pio2_5_9
+    default: pio2_5_10
     required: False
     type: string
   shared_libraries:
@@ -76,18 +76,16 @@ inputs:
     required: False
     type: string
     
-  extra_ldflags:
-    description: 'Additional ldflags to use'
-    default: 
-    required: False
-    type: string
-    
   extra_fflags:
     description: 'Additional fflags to use'
     default: 
     required: False
     type: string
-  
+  with_mpiexec:
+    description: 'alternate mpiexec command'
+    default: mpiexec
+    required: False
+    type: string
   install_prefix:
     description: 'Install path of parallelio'
     default: $HOME/parallelio
@@ -105,18 +103,12 @@ runs:
     - id: parallelio-build
       shell: bash
       run: |
-        mkdir build
-        cd build
-        export CFLAGS="$CFLAGS ${{ inputs.extra_cflags }}"
-        export FCFLAGS="$FCFLAGS ${{ inputs.extra_fflags }}"
-        export LDFLAGS="$LDFLAGS ${{ inputs.extra_ldflags }}"
-        cmake -Wno-dev -DPIO_ENABLE_LOGGING=${{ inputs.enable_logging }} \
-        -DPIO_ENABLE_FORTRAN=${{ inputs.enable_fortran }} \
-        -DPIO_ENABLE_TIMING=${{ inputs.enable_timing }} \
-        -DPnetCDF_PATH=${{ inputs.with_pnetcdf }} \
-        -DNetCDF_C_PATH=${{ inputs.with_netcdf }} \
-        -DNetCDF_Fortran_PATH=${{ inputs.with_netcdff }} \
-        -DCMAKE_INSTALL_PREFIX=${{ inputs.install_prefix }} \
-        $GITHUB_WORKSPACE/parallelio-src
-        make VERBOSE=1
+        cd $GITHUB_WORKSPACE/parallelio-src
+        autoreconf -i
+        ./configure --prefix=${{ inputs.install_prefix }} \
+        --enable-fortran=${{ inputs.enable_fortran }} \
+        --with-mpiexec=${{ inputs.with_mpiexec }}
+        
+        make -j 4 VERBOSE=1
         make install
+

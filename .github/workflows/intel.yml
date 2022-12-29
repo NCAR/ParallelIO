@@ -1,5 +1,5 @@
 name: Intel OneAPI
-
+# Tests ParallelIO using Intel Compiler and IMPI library.
 on:
   push:
     branches: [ master ]
@@ -24,10 +24,6 @@ jobs:
     - name: Installs
       run: |
         set -x
-        #        sudo gem install apt-spy2
-        #        sudo apt-spy2 check
-        #        sudo apt-spy2 fix --commit
-        # after selecting a specific mirror, we need to run 'apt-get update'
         sudo apt-get update 
         sudo apt-get install wget
         sudo apt-get install libjpeg-dev
@@ -124,7 +120,7 @@ jobs:
       run: |
         pushd $GITHUB_WORKSPACE/build
         make tests
-        ctest
+        ctest -VV
         #     the following can be used by developers to login to the github server in case of errors
     #     see https://github.com/marketplace/actions/debugging-with-tmate for further details
 #    - name: Setup tmate session

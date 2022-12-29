@@ -53,7 +53,8 @@ runs:
     - id: netcdf-c-build
       shell: bash
       run: |
-        pushd netcdf-c-src
+        pushd $GITHUB_WORKSPACE/netcdf-c-src
         ./configure --prefix=${{ inputs.install_prefix }}
         make
         make install
+        popd
