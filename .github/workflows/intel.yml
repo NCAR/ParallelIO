@@ -73,6 +73,7 @@ jobs:
         export PATH=$HOME/hdf5/bin:$PATH
         export LDFLAGS="$LDFLAGS -L$HOME/hdf5/lib"
         export CPPFLAGS="$CPPFLAGS -I$HOME/hdf5/include"
+        export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$HOME/hdf5/lib"
         printenv >> $GITHUB_ENV
     - name: build-netcdf-c
       if: steps.cache-netcdf-c.outputs.cache-hit != 'true'
@@ -121,6 +122,6 @@ jobs:
         
     #     the following can be used by developers to login to the github server in case of errors
     #     see https://github.com/marketplace/actions/debugging-with-tmate for further details
-    - name: Setup tmate session
-      if: ${{ failure() }}
-      uses: mxschmitt/action-tmate@v3
+#    - name: Setup tmate session
+#      if: ${{ failure() }}
+#      uses: mxschmitt/action-tmate@v3
