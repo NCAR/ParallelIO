@@ -67,9 +67,9 @@ jobs:
     - name: prep netcdf-c
       run: |
         export PATH=$HOME/hdf5/bin:$PATH
-        export LDFLAGS="$LDFLAGS -L$HOME/hdf5/lib"
+        export LDFLAGS="$LDFLAGS -L$HOME/hdf5/lib -L$HOME/netcdf/lib "
         export CPPFLAGS="$CPPFLAGS -I$HOME/hdf5/include"
-        export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$HOME/hdf5/lib"
+        export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$HOME/hdf5/lib:$HOME/netcdf/lib"
         printenv >> $GITHUB_ENV
     - name: build-netcdf-c
       if: steps.cache-netcdf.outputs.cache-hit != 'true'
@@ -116,7 +116,7 @@ jobs:
         export LDFLAGS="$LDFLAGS -L$HOME/netcdf/lib -lnetcdf"
         printenv >> $GITHUB_ENV
         make tests
-        ctest -VV
+        ctest -VV -E test_async_3proc
         popd
         #     the following can be used by developers to login to the github server in case of errors
     #     see https://github.com/marketplace/actions/debugging-with-tmate for further details

@@ -60,11 +60,11 @@ jobs:
         hdf5_version: ${{ env.HDF5_VERSION }}
         mpi_path: /home/runner/openmpi
 
-    - name: cache-netcdf-c
-      id: cache-netcdf-c
+    - name: cache-netcdf
+      id: cache-netcdf
       uses: actions/cache@v3
       with:
-        path: ~/netcdf-c
+        path: ~/netcdf
         key: netcdf-c-${{ runner.os }}-${{ env.NETCDF_C_VERSION }}-openmpi-${{ env.OPENMPI_VERSION_MAJOR }}.${{ env.OPENMPI_VERSION_PATCH }}-hdf5-${{ env.HDF5_VERSION_MAJOR }}.${{ env.HDF5_VERSION_PATCH }}
 
     - name: prep netcdf-c
@@ -72,33 +72,32 @@ jobs:
         export PATH=$HOME/openmpi/bin:$HOME/hdf5/bin:$PATH
         export LDFLAGS="$LDFLAGS -L$HOME/hdf5/lib "
         export CPPFLAGS="$CPPFLAGS -I$HOME/hdf5/include"
-        export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$HOME/hdf5/lib"
+        export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$HOME/hdf5/lib:/usr/lib"
         printenv >> $GITHUB_ENV
     - name: build-netcdf-c
-      if: steps.cache-netcdf-c.outputs.cache-hit != 'true'
+      if: steps.cache-netcdf.outputs.cache-hit != 'true'
       uses: ./.github/actions/buildnetcdf
       with:
         netcdf_version: ${{ env.NETCDF_C_VERSION }}
-        install_prefix: $HOME/netcdf-c
+        install_prefix: $HOME/netcdf
 
-    - name: Setup tmate session
-      if: ${{ failure() }}
-      uses: mxschmitt/action-tmate@v3
-
-    - name: cache-netcdf-fortran
-      id: cache-netcdf-fortran
-      uses: actions/cache@v3
-      with:
-        path: ~/netcdf-fortran
-        key: netcdf-fortran-${{ runner.os }}-${{ env.NETCDF_FORTRAN_VERSION }}-openmpi-${{ env.OPENMPI_VERSION_MAJOR }}.${{ env.OPENMPI_VERSION_PATCH }}-hdf5-${{ env.HDF5_VERSION}}
+#    - name: Setup tmate session
+#      if: ${{ failure() }}
+#      uses: mxschmitt/action-tmate@v3
+#    - name: cache-netcdf-fortran
+#      id: cache-netcdf-fortran
+#      uses: actions/cache@v3
+#      with:
+#        path: ~/netcdf-fortran
+#        key: netcdf-fortran-${{ runner.os }}-${{ env.NETCDF_FORTRAN_VERSION }}-openmpi-${{ env.OPENMPI_VERSION_MAJOR }}.${{ env.OPENMPI_VERSION_PATCH }}-hdf5-${{ env.HDF5_VERSION}}
 
     - name: Build NetCDF Fortran
-      if: steps.cache-netcdf-fortran.outputs.cache-hit != 'true'
+      if: steps.cache-netcdf.outputs.cache-hit != 'true'
       uses: ./.github/actions/buildnetcdff
       with:
         netcdf_fortran_version: ${{ env.NETCDF_FORTRAN_VERSION }}
-        install_prefix: $HOME/netcdf-fortran
-        netcdf_c_path: $HOME/netcdf-c
+        install_prefix: $HOME/netcdf
+        netcdf_c_path: $HOME/netcdf
 
     - name: cache-pnetcdf
       id: cache-pnetcdf
