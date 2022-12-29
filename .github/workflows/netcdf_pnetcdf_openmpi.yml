@@ -70,7 +70,7 @@ jobs:
     - name: prep netcdf-c
       run: |
         export PATH=$HOME/openmpi/bin:$HOME/hdf5/bin:$PATH
-        export LDFLAGS="$LDFLAGS -L$HOME/hdf5/lib"
+        export LDFLAGS="$LDFLAGS -L$HOME/hdf5/lib "
         export CPPFLAGS="$CPPFLAGS -I$HOME/hdf5/include"
         export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$HOME/hdf5/lib"
         printenv >> $GITHUB_ENV
@@ -80,6 +80,10 @@ jobs:
       with:
         netcdf_version: ${{ env.NETCDF_C_VERSION }}
         install_prefix: $HOME/netcdf-c
+
+    - name: Setup tmate session
+      if: ${{ failure() }}
+      uses: mxschmitt/action-tmate@v3
 
     - name: cache-netcdf-fortran
       id: cache-netcdf-fortran
