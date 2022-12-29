@@ -119,8 +119,10 @@ runs:
         -DPIO_ENABLE_FORTRAN=${{ inputs.enable_fortran }} \
         -DPIO_ENABLE_TIMING=${{ inputs.enable_timing }} \
         -DPnetCDF_PATH=${{ inputs.with_pnetcdf }} \
-        -DNetCDF_C_PATH=${{ inputs.with_netcdf }} \
-        -DNetCDF_Fortran_PATH=${{ inputs.with_netcdff }} \
+        -DNetCDF_C_INCLUDE_DIR=${{ inputs.with_netcdf }}/include \
+        -DNetCDF_Fortran_INCLUDE_DIR=${{ inputs.with_netcdff }}/include \
+        -DNetCDF_C_LIBRARY=${{ inputs.with_netcdf }}/lib \
+        -DNetCDF_Fortran_LIBRARY=${{ inputs.with_netcdff }}/lib \
         -DCMAKE_INSTALL_PREFIX=${{ inputs.install_prefix }} \
         -DWITH_MPIEXEC="${{ inputs.with_mpiexec }}" \
         $GITHUB_WORKSPACE/parallelio-src
