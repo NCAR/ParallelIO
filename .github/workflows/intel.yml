@@ -114,7 +114,7 @@ jobs:
     - name: cmake build
       uses: ./.github/actions/parallelio_cmake
       with:
-        parallelio_version: ${{ github.head_ref || github.ref_name }}
+        parallelio_version: ${{ env.GITHUB_SHA }}
         with_pnetcdf: $HOME/pnetcdf
         with_netcdf: $HOME/netcdf-c
         with_netcdff: $HOME/netcdf-fortran
