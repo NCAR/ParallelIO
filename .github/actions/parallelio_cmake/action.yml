@@ -84,7 +84,7 @@ inputs:
     
   install_prefix:
     description: 'Install path of parallelio'
-    default: ${{ env.HOME }}/parallelio
+    default: $HOME/parallelio
     required: False
     type: string
 
