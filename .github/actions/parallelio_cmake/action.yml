@@ -87,6 +87,11 @@ inputs:
     default: 
     required: False
     type: string
+  with_mpiexec:
+    description: 'alternate mpiexec command'
+    default: mpiexec
+    required: False
+    type: string
   
   install_prefix:
     description: 'Install path of parallelio'
@@ -117,6 +122,7 @@ runs:
         -DNetCDF_C_PATH=${{ inputs.with_netcdf }} \
         -DNetCDF_Fortran_PATH=${{ inputs.with_netcdff }} \
         -DCMAKE_INSTALL_PREFIX=${{ inputs.install_prefix }} \
+        -DWITH_MPIEXEC="${{ inputs.with_mpiexec }}" \
         $GITHUB_WORKSPACE/parallelio-src
         make VERBOSE=1
         make install
