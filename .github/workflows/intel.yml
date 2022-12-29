@@ -120,6 +120,7 @@ jobs:
       run: |
         pushd $GITHUB_WORKSPACE/build
         export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$HOME/netcdf-c/lib"
+        printenv >> $GITHUB_ENV
         make tests
         ctest -VV
         popd

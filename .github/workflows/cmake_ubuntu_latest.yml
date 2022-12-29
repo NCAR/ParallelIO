@@ -18,8 +18,8 @@ jobs:
       CC: mpicc
       FC: mpifort
       CPPFLAGS: "-I/usr/include -I/usr/local/include -I/home/runner/pnetcdf/include"
-      LDFLAGS: "-L/home/runner/pnetcdf/lib"
-      LD_LIBRARY_PATH: "/home/runner/pnetcdf/lib"
+      LDFLAGS: "-L/home/runner/pnetcdf/lib -L/usr/lib"
+      LD_LIBRARY_PATH: "/home/runner/pnetcdf/lib:/usr/lib"
       PNETCDF_VERSION: checkpoint.1.12.3
       FCFLAGS: "-fallow-argument-mismatch"
     steps:
