@@ -53,7 +53,6 @@ jobs:
     - name: Build ParallelIO with autotools
       uses: ./.github/actions/parallelio_autotools
       with:
-        install_prefix: ~/parallelio
         enable_fortran: True
         with_mpiexec: 'mpiexec --oversubscribe'
         parallelio_version: ${{ env.GITHUB_SHA }}

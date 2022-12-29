@@ -117,6 +117,7 @@ runs:
         export LDFLAGS="$LDFLAGS ${{ inputs.extra_ldflags }}"
         cmake -Wno-dev -DPIO_ENABLE_LOGGING=${{ inputs.enable_logging }} \
         -DPIO_ENABLE_FORTRAN=${{ inputs.enable_fortran }} \
+        -DPIO_ENABLE_EXAMPLES=${{ inputs.enable_examples }} \
         -DPIO_ENABLE_TIMING=${{ inputs.enable_timing }} \
         -DPnetCDF_PATH=${{ inputs.with_pnetcdf }} \
         -DNetCDF_C_INCLUDE_DIR=${{ inputs.with_netcdf }}/include \
