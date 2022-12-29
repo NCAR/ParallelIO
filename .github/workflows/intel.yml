@@ -57,11 +57,11 @@ jobs:
         enable_parallel: True
         hdf5_version: ${{ env.HDF5_VERSION }}
         mpi_path: /opt/intel/mpi
-    - name: cache-netcdf-c
-      id: cache-netcdf-c
+    - name: cache-netcdf
+      id: cache-netcdf
       uses: actions/cache@v3
       with:
-        path: ~/netcdf-c
+        path: ~/netcdf
         key: netcdf-c-${{ runner.os }}-${{ env.NETCDF_C_VERSION }}-impi-hdf5-${{ env.HDF5_VERSION }}
 
     - name: prep netcdf-c
@@ -72,26 +72,19 @@ jobs:
         export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$HOME/hdf5/lib"
         printenv >> $GITHUB_ENV
     - name: build-netcdf-c
-      if: steps.cache-netcdf-c.outputs.cache-hit != 'true'
+      if: steps.cache-netcdf.outputs.cache-hit != 'true'
       uses: ./.github/actions/buildnetcdf
       with:
         netcdf_version: ${{ env.NETCDF_C_VERSION }}
-        install_prefix: $HOME/netcdf-c
-
-    - name: cache-netcdf-fortran
-      id: cache-netcdf-fortran
-      uses: actions/cache@v3
-      with:
-        path: ~/netcdf-fortran
-        key: netcdf-fortran-${{ runner.os }}-${{ env.NETCDF_FORTRAN_VERSION }}-impi-hdf5-${{ env.HDF5_VERSION }}
+        install_prefix: $HOME/netcdf
 
     - name: Build NetCDF Fortran
-      if: steps.cache-netcdf-fortran.outputs.cache-hit != 'true'
+      if: steps.cache-netcdf.outputs.cache-hit != 'true'
       uses: ./.github/actions/buildnetcdff
       with:
         netcdf_fortran_version: ${{ env.NETCDF_FORTRAN_VERSION }}
-        install_prefix: $HOME/netcdf-fortran
-        netcdf_c_path: $HOME/netcdf-c
+        install_prefix: $HOME/netcdf
+        netcdf_c_path: $HOME/netcdf
 
     - name: cache-pnetcdf
       id: cache-pnetcdf
@@ -112,14 +105,15 @@ jobs:
       with:
         parallelio_version: ${{ env.GITHUB_SHA }}
         with_pnetcdf: $HOME/pnetcdf
-        with_netcdf: $HOME/netcdf-c
-        with_netcdff: $HOME/netcdf-fortran
+        with_netcdf: $HOME/netcdf
+        with_netcdff: $HOME/netcdf
         enable_fortran: True
         install_prefix: $HOME/parallelio
     - name: parallelio tests
       run: |
         pushd $GITHUB_WORKSPACE/build
-        export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$HOME/netcdf-c/lib"
+        export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$HOME/netcdf/lib"
+        export LDFLAGS="$LDFLAGS -L$HOME/netcdf/lib -lnetcdf"
         printenv >> $GITHUB_ENV
         make tests
         ctest -VV
