@@ -51,7 +51,7 @@ jobs:
       id: cache-hdf5
       uses: actions/cache@v3
       with:
-        path: $HOME/hdf5
+        path: ~/hdf5
         key: hdf5-${{ runner.os }}-${{ env.HDF5_VERSION }}-impi
     - name: build-hdf5
       if: steps.cache-hdf5.outputs.cache-hit != 'true'
@@ -120,7 +120,12 @@ jobs:
         with_netcdff: $HOME/netcdf-fortran
         enable_fortran: True
         install_prefix: $HOME/parallelio
-    #     the following can be used by developers to login to the github server in case of errors
+    - name: parallelio tests
+      run: |
+        pushd $GITHUB_WORKSPACE/build
+        make tests
+        ctest
+        #     the following can be used by developers to login to the github server in case of errors
     #     see https://github.com/marketplace/actions/debugging-with-tmate for further details
 #    - name: Setup tmate session
 #      if: ${{ failure() }}
