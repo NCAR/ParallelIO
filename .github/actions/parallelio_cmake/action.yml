@@ -122,9 +122,9 @@ runs:
         -DCMAKE_INSTALL_PREFIX=${{ inputs.install_prefix }} \
         -DWITH_MPIEXEC="${{ inputs.with_mpiexec }}" \
         -DNetCDF_C_INCLUDE_DIR=${{ inputs.netcdf_c_include_dir }} \
-        -DNetCDF_C_LIBRARY="-L${{ inputs.netcdf_c_library_path }} -lnetcdf" \
+        -DNetCDF_C_LIBRARY=" -L${{ inputs.netcdf_c_library_path }} " \
         -DPnetCDF_C_INCLUDE_DIR=${{ inputs.pnetcdf_include_dir }} \
-        -DPnetCDF_C_LIBRARY="-L${{ inputs.pnetcdf_library_path }} -lpnetcdf" \
+        -DPnetCDF_C_LIBRARY=" -L${{ inputs.pnetcdf_library_path }} " \
         $GITHUB_WORKSPACE/parallelio-src
         make VERBOSE=1
         make install
