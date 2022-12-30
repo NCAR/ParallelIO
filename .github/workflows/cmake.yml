@@ -42,7 +42,7 @@ jobs:
         enable_shared: False
     - name: prep step
       run: |
-        export LDFLAGS: "-L/usr/lib -lnetcdf -L${GITHUB_WORKSPACE}/pnetcdf/lib -lpnetcdf"
+        export LDFLAGS="-L/usr/lib -lnetcdf -L${GITHUB_WORKSPACE}/pnetcdf/lib -lpnetcdf"
 
         
     - name: cmake build

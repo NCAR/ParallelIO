@@ -7,12 +7,17 @@ inputs:
     type: string
   install_prefix:
     description: 'Install path of pnetcdf'
-    default: $HOME/pnetcdf
+    default: $GITHUB_WORKSPACE/pnetcdf
     required: False
     type: string
   enable_shared:
     description: 'Enable shared library build'
     default: True
+    required: False
+    type: boolean
+  enable_fortran:
+    description: "Build the fortran library"
+    default: False
     required: False
     type: boolean
 runs:
@@ -28,7 +33,10 @@ runs:
       run: |
         pushd pnetcdf-src
         autoreconf -i
-        ./configure --prefix=${{ inputs.install_prefix }} --enable-shared=${{ inputs.enable_shared }} --disable-cxx
+        ./configure --prefix=${{ inputs.install_prefix }} \
+        --enable-shared=${{ inputs.enable_shared }} \
+        --enable-fortran=${{ inputs.enable_fortran }} \
+        --disable-cxx
         make
         make install
         popd
