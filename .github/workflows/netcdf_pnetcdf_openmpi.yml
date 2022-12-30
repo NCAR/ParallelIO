@@ -73,7 +73,7 @@ jobs:
       uses: ./.github/actions/buildnetcdf
       with:
         netcdf_version: ${{ env.NETCDF_C_VERSION }}
-        install_prefix: netcdf
+        install_prefix: ${GITHUB_WORKSPACE}/netcdf
 
     # - name: Setup tmate session
     #   if: ${{ failure() }}
@@ -84,8 +84,8 @@ jobs:
       uses: ./.github/actions/buildnetcdff
       with:
         netcdf_fortran_version: ${{ env.NETCDF_FORTRAN_VERSION }}
-        install_prefix: netcdf
-        netcdf_c_path: netcdf
+        install_prefix: ${GITHUB_WORKSPACE}/netcdf
+        netcdf_c_path: ${GITHUB_WORKSPACE}/netcdf
 
     # - name: cache-pnetcdf
     #   id: cache-pnetcdf

@@ -47,13 +47,13 @@ jobs:
       id: cache-hdf5
       uses: actions/cache@v3
       with:
-        path: ~/hdf5
+        path: ~/work/ParallelIO/ParallelIO/hdf5
         key: hdf5-${{ runner.os }}-${{ env.HDF5_VERSION }}-impi
     - name: build-hdf5
       if: steps.cache-hdf5.outputs.cache-hit != 'true'
       uses: ./.github/actions/buildhdf5
       with:
-        install_prefix: $HOME/hdf5
+        install_prefix: ${GITHUB_WORKSPACE}/hdf5
         enable_parallel: True
         hdf5_version: ${{ env.HDF5_VERSION }}
         mpi_path: /opt/intel/mpi
@@ -76,29 +76,29 @@ jobs:
       uses: ./.github/actions/buildnetcdf
       with:
         netcdf_version: ${{ env.NETCDF_C_VERSION }}
-        install_prefix: $HOME/netcdf
+        install_prefix: ${GITHUB_WORKSPACE}/netcdf
 
     - name: Build NetCDF Fortran
       if: steps.cache-netcdf.outputs.cache-hit != 'true'
       uses: ./.github/actions/buildnetcdff
       with:
         netcdf_fortran_version: ${{ env.NETCDF_FORTRAN_VERSION }}
-        install_prefix: $HOME/netcdf
-        netcdf_c_path: $HOME/netcdf
+        install_prefix: ${GITHUB_WORKSPACE}/netcdf
+        netcdf_c_path: ${GITHUB_WORKSPACE}/netcdf
 
     - name: cache-pnetcdf
       id: cache-pnetcdf
       uses: actions/cache@v3
       with:
-        path: ~/pnetcdf
+        path: ~/work/ParallelIO/ParallelIO/pnetcdf
         key: pnetcdf-${{ runner.os }}-${{ env.PNETCDF_VERSION }}-impi
 
     - name: Build PNetCDF
       if: steps.cache-pnetcdf.outputs.cache-hit != 'true'
-      uses: ESCOMP/CDEPS/.github/actions/buildpnetcdf@e06246b560d3132170bb1a5443fa3d65dfbd2040
+      uses: ./.github/actions/buildpnetcdf
       with:
         pnetcdf_version: ${{ env.PNETCDF_VERSION }}
-        install_prefix: $HOME/pnetcdf
+        install_prefix: ${GITHUB_WORKSPACE}/pnetcdf
 
     - name: cmake build
       uses: ./.github/actions/parallelio_cmake
