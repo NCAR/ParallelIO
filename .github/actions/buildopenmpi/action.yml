@@ -1,13 +1,13 @@
-description: 'Build the MPICH library'
+description: 'Build the OPENMPI library'
 inputs:
-  mpich_version:
-    description: 'Tag in the MPICH repository to use'
-    default: v4.0.3
+  openmpi_version:
+    description: 'Tag in the OPENMPI repository to use'
+    default: v4.1.4
     required: False
     type: string
   install_prefix:
-    description: 'Install path of mpich'
-    default: $HOME/mpich
+    description: 'Install path of openmpi'
+    default: ${{ env.GITHUB_WORKSPACE }}/openmpi
     required: False
     type: string
 runs:
