@@ -45,21 +45,6 @@ inputs:
     default: 
     required: False
     type: string
-  with_pnetcdf:
-    description: 'Build with pnetcdf library'
-    default: 
-    required: False
-    type: string  
-  with_netcdf:
-    description: 'Build with netcdf library'
-    default: /usr
-    required: False
-    type: string  
-  with_netcdff:
-    description: 'Build with netcdff library'
-    default: 
-    required: False
-    type: string  
   with_valgrind:
     description: 'Build the parallelio valgrind leak check '
     default: False
@@ -119,11 +104,6 @@ runs:
         -DPIO_ENABLE_FORTRAN=${{ inputs.enable_fortran }} \
         -DPIO_ENABLE_EXAMPLES=${{ inputs.enable_examples }} \
         -DPIO_ENABLE_TIMING=${{ inputs.enable_timing }} \
-        -DPnetCDF_PATH=${{ inputs.with_pnetcdf }} \
-        -DNetCDF_C_INCLUDE_DIR=${{ inputs.with_netcdf }}/include \
-        -DNetCDF_Fortran_INCLUDE_DIR=${{ inputs.with_netcdff }}/include \
-        -DNetCDF_C_LIBRARY="${{ inputs.with_netcdf }}/lib/libnetcdf.a" \
-        -DNetCDF_Fortran_LIBRARY="${{ inputs.with_netcdff }}/lib/libnetcdff.a" \
         -DCMAKE_INSTALL_PREFIX=${{ inputs.install_prefix }} \
         -DWITH_MPIEXEC="${{ inputs.with_mpiexec }}" \
         $GITHUB_WORKSPACE/parallelio-src

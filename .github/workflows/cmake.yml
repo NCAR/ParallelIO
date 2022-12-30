@@ -14,10 +14,8 @@ jobs:
     env:
       CC: mpicc
       FC: mpifort
-      CPPFLAGS: "-I/usr/include -I/usr/local/include -I${GITHUB_WORKSPACE}/pnetcdf/include"
-      LDFLAGS: "-L/usr/lib -L${GITHUB_WORKSPACE}/pnetcdf/lib "
-      LD_LIBRARY_PATH: "/usr/lib:${GITHUB_WORKSPACE}/pnetcdf/lib"
-      PNETCDF_VERSION: checkpoint.1.12.3
+      CPPFLAGS: "-I/usr/include -I/usr/local/include "
+      LDFLAGS: "-L/usr/lib/x86_64-linux-gnu  "
       FCFLAGS: "-fallow-argument-mismatch"
     steps:
     - uses: actions/checkout@v3
@@ -25,32 +23,13 @@ jobs:
       run: |
         set -x
         sudo apt-get update
-        sudo apt-get install netcdf-bin libnetcdf-dev doxygen graphviz wget gfortran libjpeg-dev libz-dev openmpi-bin libopenmpi-dev cmake
-
-    - name: cache-pnetcdf
-      id: cache-pnetcdf
-      uses: actions/cache@v3
-      with:
-        path: ~/work/ParallelIO/ParallelIO/pnetcdf
-        key: pnetcdf-${{ runner.os }}-${{ env.PNETCDF_VERSION }}
-    - name: Build PNetCDF
-      if: steps.cache-pnetcdf.outputs.cache-hit != 'true'
-      uses: ./.github/actions/buildpnetcdf
-      with:
-        pnetcdf_version: ${{ env.PNETCDF_VERSION }}
-        install_prefix: ${GITHUB_WORKSPACE}/pnetcdf
-        enable_shared: False
-    - name: prep step
-      run: |
-        export LDFLAGS="-L/usr/lib -lnetcdf -L${GITHUB_WORKSPACE}/pnetcdf/lib -lpnetcdf"
-        printenv >> $GITHUB_ENV
+        sudo apt-get install netcdf-bin libnetcdf-dev doxygen graphviz wget gfortran \
+        libjpeg-dev libz-dev openmpi-bin libopenmpi-dev cmake pnetcdf-bin libpnetcdf-dev
         
     - name: cmake build
       uses: ./.github/actions/parallelio_cmake
       with:
         parallelio_version: ${{ env.GITHUB_SHA }}
-        with_pnetcdf: ${GITHUB_WORKSPACE}/pnetcdf
-        with_netcdf: /usr
         enable_fortran: False
         enable_logging: True
         install_prefix: ${GITHUB_WORKSPACE}/parallelio
