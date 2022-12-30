@@ -30,8 +30,8 @@ jobs:
       id: cache-openmpi
       uses: actions/cache@v3
       with:
-        path: ${{ env.GITHUB_WORKSPACE }}/openmpi
-        key: openmpi-${{ runner.os }}-${{ env.OPENMPI_VERSION }}1
+        path: ${GITHUB_WORKSPACE}/openmpi
+        key: openmpi-${{ runner.os }}-${{ env.OPENMPI_VERSION }}
 
     - name: build-openmpi
       if: steps.cache-openmpi.outputs.cache-hit != 'true'
