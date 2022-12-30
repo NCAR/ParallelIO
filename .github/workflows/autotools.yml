@@ -14,7 +14,7 @@ jobs:
     env:
       CC: mpicc
       FC: mpifort
-      CPPFLAGS: "-I/usr/include "
+      CPPFLAGS: "-I/usr/include -I/usr/lib/x86_64-linux-gnu/netcdf/mpi/include/ "
       LDFLAGS: "-L/usr/lib/x86_64-linux-gnu -lnetcdf_mpi -lpnetcdf"
       PNETCDF_VERSION: checkpoint.1.12.3
       FCFLAGS: "-fallow-argument-mismatch"
