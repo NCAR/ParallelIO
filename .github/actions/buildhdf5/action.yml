@@ -15,6 +15,12 @@ inputs:
     default: True
     required: False
     type: boolean
+  enable_testing:
+    description: 'Build HDF5 tests'
+    default: False
+    required: False
+    type: boolean
+    
   install_prefix:
     description: 'Install path of hdf5'
     default: $HOME/hdf5
@@ -43,6 +49,8 @@ runs:
         cmake -DCMAKE_INSTALL_PREFIX=${{ inputs.install_prefix }} \
         -DHDF5_ENABLE_PARALLEL=${{ inputs.enable_parallel }} \
         -DHDF5_ENABLE_Z_LIB_SUPPORT=ON \
+        -DBUILD_TESTING=${{ inputs.enable_testing }} \
+        -DHDF5_BUILD_TOOLS=OFF \
         ../
         make
         make install
