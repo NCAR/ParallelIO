@@ -1,4 +1,4 @@
-name: cmake
+name: cmake ubuntu latest
 
 on:
   push:
@@ -31,7 +31,7 @@ jobs:
         enable_fortran: False
         enable_logging: True
         install_prefix: ${GITHUB_WORKSPACE}/parallelio
-        with_mpiexec: /usr/bin/mpiexec --oversubscribe
+        mpiexec_flags: --oversubscribe
     - name: parallelio tests
       run: |
         pushd $GITHUB_WORKSPACE/build
