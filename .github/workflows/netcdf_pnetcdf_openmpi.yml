@@ -12,8 +12,8 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      CPPFLAGS: "-I${GITHUB_WORKSPACE}/openmpi/include -I${GITHUB_WORKSPACE}/hdf5/include -I${GITHUB_WORKSPACE}/netcdf/include -I${GITHUB_WORKSPACE}/pnetcdf/include"
-      LDFLAGS: "-L${GITHUB_WORKSPACE}/openmpi/lib -L${GITHUB_WORKSPACE}/hdf5/lib -L${GITHUB_WORKSPACE}/netcdf/lib -L${GITHUB_WORKSPACE}/pnetcdf/lib"
+#      CPPFLAGS: "-I${GITHUB_WORKSPACE}/openmpi/include -I${GITHUB_WORKSPACE}/hdf5/include -I${GITHUB_WORKSPACE}/netcdf/include -I${GITHUB_WORKSPACE}/pnetcdf/include"
+#      LDFLAGS: "-L${GITHUB_WORKSPACE}/openmpi/lib -L${GITHUB_WORKSPACE}/hdf5/lib -L${GITHUB_WORKSPACE}/netcdf/lib -L${GITHUB_WORKSPACE}/pnetcdf/lib"
       NETCDF_C_VERSION: v4.9.0
       NETCDF_FORTRAN_VERSION: v4.6.0
       OPENMPI_VERSION: v4.1.4
@@ -63,12 +63,7 @@ jobs:
         path: ~/work/ParallelIO/ParallelIO/netcdf
         key: netcdf-${{ runner.os }}-${{ env.NETCDF_C_VERSION }}-${{ env.NETCDF_FORTRAN_VERSION }}-openmpi-${{ env.OPENMPI_VERSION }}-hdf5-${{ env.HDF5_VERSION }}
 
-    - name: prep netcdf-c
-      run: |
-        export PATH=${GITHUB_WORKSPACE}/openmpi/bin:${GITHUB_WORKSPACE}/hdf5/bin:$PATH
-        export LD_LIBRARY_PATH="${GITHUB_WORKSPACE}/hdf5/lib:/usr/lib:$LD_LIBRARY_PATH"
-        export LDFLAGS="${LDFLAGS} -lhdf5"
-        printenv >> $GITHUB_ENV
+
     - name: build-netcdf-c
       if: steps.cache-netcdf.outputs.cache-hit != 'true'
       uses: ./.github/actions/buildnetcdf

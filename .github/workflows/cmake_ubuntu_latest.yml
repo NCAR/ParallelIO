@@ -17,9 +17,9 @@ jobs:
     env:
       CC: mpicc
       FC: mpifort
-      CPPFLAGS: "-I/usr/include -I/usr/local/include -I/home/runner/pnetcdf/include"
-      LDFLAGS: "-L/home/runner/pnetcdf/lib -L/usr/lib"
-      LD_LIBRARY_PATH: "/home/runner/pnetcdf/lib:/usr/lib"
+      CPPFLAGS: "-I/usr/include -I/usr/local/include -I${GITHUB_WORKSPACE}/pnetcdf/include"
+      LDFLAGS: "-L${GITHUB_WORKSPACE}/pnetcdf/lib -L/usr/lib"
+      LD_LIBRARY_PATH: "${GITHUB_WORKSPACE}/pnetcdf/lib:/usr/lib"
       PNETCDF_VERSION: checkpoint.1.12.3
       FCFLAGS: "-fallow-argument-mismatch"
     steps:
@@ -52,8 +52,10 @@ jobs:
         uses: ./.github/actions/parallelio_cmake
         with:
           parallelio_version: ${{ env.GITHUB_SHA }}
-          with_pnetcdf: $HOME/pnetcdf
-          with_netcdf: /usr
+          pnetcdf_include_dir: $GITHUB_WORKSPACE/pnetcdf/include
+          pnetcdf_library_path: $GITHUB_WORKSPACE/pnetcdf/lib
+          netcdf_include_dir: /usr/include
+          netcdf_library_path: /usr/lib/x86_64-linux-gnu
           install_prefix: $HOME/parallelio
       - name: run tests
         run: |
