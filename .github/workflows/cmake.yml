@@ -15,7 +15,7 @@ jobs:
       CC: mpicc
       FC: mpifort
       CPPFLAGS: "-I/usr/include -I/usr/local/include -I${GITHUB_WORKSPACE}/pnetcdf/include"
-      LDFLAGS: "-L/usr/lib -L${GITHUB_WORKSPACE}/pnetcdf/lib"
+      LDFLAGS: "-L/usr/lib -lnetcdf -L${GITHUB_WORKSPACE}/pnetcdf/lib -lpnetcdf"
       LD_LIBRARY_PATH: "/usr/lib:${GITHUB_WORKSPACE}/pnetcdf/lib"
       PNETCDF_VERSION: checkpoint.1.12.3
       FCFLAGS: "-fallow-argument-mismatch"

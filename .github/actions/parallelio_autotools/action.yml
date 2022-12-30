@@ -107,8 +107,8 @@ runs:
         autoreconf -i
         ./configure --prefix=${{ inputs.install_prefix }} \
         --enable-fortran=${{ inputs.enable_fortran }} \
-        --with-mpiexec="${{ inputs.with_mpiexec }}"
-        
+        --with-mpiexec="${{ inputs.with_mpiexec }}" \
+        --with-pnetcdf="${{ inputs.with_pnetcdf }}" \
         make -j 4 VERBOSE=1
         make install
 

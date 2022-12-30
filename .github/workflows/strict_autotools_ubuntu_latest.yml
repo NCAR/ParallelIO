@@ -44,6 +44,7 @@ jobs:
       with:
         enable_fortran: True
         with_mpiexec: 'mpiexec --oversubscribe'
+        with_pnetcdf: ${GITHUB_WORKSPACE}/pnetcdf
         parallelio_version: ${{ env.GITHUB_SHA }}
     - name: Run Tests
       run: |
