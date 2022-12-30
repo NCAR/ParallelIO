@@ -15,7 +15,7 @@ jobs:
       CC: mpicc
       FC: mpifort
       CPPFLAGS: "-I/usr/include -I/usr/local/include "
-      LDFLAGS: "-L/usr/lib/x86_64-linux-gnu  "
+      LDFLAGS: "-L/usr/lib/x86_64-linux-gnu  -lnetcdf -lpnetcdf"
       FCFLAGS: "-fallow-argument-mismatch"
     steps:
     - uses: actions/checkout@v3
