@@ -23,7 +23,7 @@ inputs:
     
   install_prefix:
     description: 'Install path of hdf5'
-    default: $HOME/hdf5
+    default: ${GITHUB_WORKSPACE}/hdf5
     required: False
     type: string
   mpi_path:

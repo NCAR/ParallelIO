@@ -44,17 +44,17 @@ jobs:
       id: cache-hdf5
       uses: actions/cache@v3
       with:
-        path: ${{ env.GITHUB_WORKSPACE }}/hdf5
+        path: ${GITHUB_WORKSPACE}/hdf5
         key: hdf5-${{ runner.os }}-${{ env.HDF5_VERSION }}-openmpi-${{ env.OPENMPI_VERSION }}
 
     - name: build-hdf5
       if: steps.cache-hdf5.outputs.cache-hit != 'true'
       uses: ./.github/actions/buildhdf5
       with:
-        install_prefix: ${{ env.GITHUB_WORKSPACE }}/hdf5
+        install_prefix: ${GITHUB_WORKSPACE}/hdf5
         enable_parallel: True
         hdf5_version: ${{ env.HDF5_VERSION }}
-        mpi_path: ${{ env.GITHUB_WORKSPACE }}/openmpi
+        mpi_path: ${GITHUB_WORKSPACE}/openmpi
 
     # - name: cache-netcdf
     #   id: cache-netcdf
