@@ -12,8 +12,8 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      CPPFLAGS: "-I/home/runner/openmpi/include -I/home/runner/hdf5/include -I/home/runner/netcdf/include -I/home/runner/pnetcdf/include"
-      LDFLAGS: "-L/home/runner/openmpi/lib -L/home/runner/hdf5/lib -L/home/runner/netcdf/lib -L/home/runner/pnetcdf/lib"
+      CPPFLAGS: "-I$GITHUB_WORKSPACE/openmpi/include -I$GITHUB_WORKSPACE/hdf5/include -I$GITHUB_WORKSPACE/netcdf/include -I$GITHUB_WORKSPACE/pnetcdf/include"
+      LDFLAGS: "-L$GITHUB_WORKSPACE/openmpi/lib -L$GITHUB_WORKSPACE/hdf5/lib -L$GITHUB_WORKSPACE/netcdf/lib -L$GITHUB_WORKSPACE/pnetcdf/lib"
       NETCDF_C_VERSION: v4.9.0
       NETCDF_FORTRAN_VERSION: v4.6.0
       OPENMPI_VERSION_MAJOR: 4.1
@@ -40,7 +40,7 @@ jobs:
         wget https://download.open-mpi.org/release/open-mpi/v${{ env.OPENMPI_VERSION_MAJOR }}/openmpi-${{ env.OPENMPI_VERSION_MAJOR }}.${{ env.OPENMPI_VERSION_PATCH}}.tar.gz &> /dev/null
         tar -xzf openmpi-${{ env.OPENMPI_VERSION_MAJOR }}.${{ env.OPENMPI_VERSION_PATCH }}.tar.gz
         pushd openmpi-${{ env.OPENMPI_VERSION_MAJOR }}.${{ env.OPENMPI_VERSION_PATCH }}
-        ./configure --prefix=/home/runner/openmpi
+        ./configure --prefix=$GITHUB_WORKSPACE/openmpi
         make
         sudo make install
         popd
@@ -55,10 +55,10 @@ jobs:
       if: steps.cache-hdf5.outputs.cache-hit != 'true'
       uses: ./.github/actions/buildhdf5
       with:
-        install_prefix: $HOME/hdf5
+        install_prefix: hdf5
         enable_parallel: True
         hdf5_version: ${{ env.HDF5_VERSION }}
-        mpi_path: /home/runner/openmpi
+        mpi_path: $GITHUB_WORKSPACE/openmpi
 
     - name: cache-netcdf
       id: cache-netcdf
@@ -77,7 +77,7 @@ jobs:
       uses: ./.github/actions/buildnetcdf
       with:
         netcdf_version: ${{ env.NETCDF_C_VERSION }}
-        install_prefix: $HOME/netcdf
+        install_prefix: netcdf
 
     - name: Setup tmate session
       if: ${{ failure() }}
@@ -94,8 +94,8 @@ jobs:
       uses: ./.github/actions/buildnetcdff
       with:
         netcdf_fortran_version: ${{ env.NETCDF_FORTRAN_VERSION }}
-        install_prefix: $HOME/netcdf
-        netcdf_c_path: $HOME/netcdf
+        install_prefix: netcdf
+        netcdf_c_path: netcdf
 
     - name: cache-pnetcdf
       id: cache-pnetcdf
@@ -109,7 +109,7 @@ jobs:
       uses: ./.github/actions/buildpnetcdf
       with:
         pnetcdf_version: ${{ env.PNETCDF_VERSION }}
-        install_prefix: $HOME/pnetcdf
+        install_prefix: pnetcdf
 
     - name: Build ParallelIO with autotools
       uses: ./.github/actions/parallelio_autotools
@@ -126,12 +126,12 @@ jobs:
       uses: ./.github/actions/parallelio_cmake
       with:
         parallelio_version: ${{ env.GITHUB_SHA }}
-        with_pnetcdf: $HOME/pnetcdf
-        with_netcdf: $HOME/netcdf-c
-        with_netcdff: $HOME/netcdf-fortran
+        with_pnetcdf: pnetcdf
+        with_netcdf: netcdf
+        with_netcdff: netcdf
         enable_fortran: True
-        install_prefix: $HOME/parallelio
-        with_mpiexec: "/home/runner/openmpi/bin/mpiexec --oversubscribe"
+        install_prefix: parallelio
+        with_mpiexec: "$GITHUB_WORKSPACE/openmpi/bin/mpiexec --oversubscribe"
     - name: run tests
       run: |
         pushd $GITHUB_WORKSPACE/build
