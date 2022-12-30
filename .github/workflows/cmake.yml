@@ -39,7 +39,7 @@ jobs:
       with:
         pnetcdf_version: ${{ env.PNETCDF_VERSION }}
         install_prefix: ${GITHUB_WORKSPACE}/pnetcdf
-
+        enable_shared: False
     - name: cmake build
       uses: ./.github/actions/parallelio_cmake
       with:

@@ -10,7 +10,11 @@ inputs:
     default: $HOME/pnetcdf
     required: False
     type: string
-
+  enable_shared:
+    description: 'Enable shared library build'
+    default: True
+    required: False
+    type: boolean
 runs:
   using: composite
   steps:
@@ -24,7 +28,7 @@ runs:
       run: |
         pushd pnetcdf-src
         autoreconf -i
-        ./configure --prefix=${{ inputs.install_prefix }} --enable-shared --disable-cxx
+        ./configure --prefix=${{ inputs.install_prefix }} --enable-shared=${{ inputs.enable_shared }} --disable-cxx
         make
         make install
         popd
