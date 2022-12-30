@@ -37,7 +37,7 @@ jobs:
       if: steps.cache-openmpi.outputs.cache-hit != 'true'
       uses: ./.github/actions/buildopenmpi
       with:
-        install_prefix: ${{ env.GITHUB_WORKSPACE }}/openmpi
+        install_prefix: ${GITHUB_WORKSPACE}/openmpi
         openmpi_version: ${{ env.OPENMPI_VERSION }}
 
     - name: cache-hdf5
