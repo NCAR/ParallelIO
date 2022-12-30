@@ -16,8 +16,7 @@ jobs:
       LDFLAGS: "-L$GITHUB_WORKSPACE/openmpi/lib -L$GITHUB_WORKSPACE/hdf5/lib -L$GITHUB_WORKSPACE/netcdf/lib -L$GITHUB_WORKSPACE/pnetcdf/lib"
       NETCDF_C_VERSION: v4.9.0
       NETCDF_FORTRAN_VERSION: v4.6.0
-      OPENMPI_VERSION_MAJOR: 4.1
-      OPENMPI_VERSION_PATCH: 4
+      OPENMPI_VERSION: v4.1.4
       PNETCDF_VERSION: checkpoint.1.12.3
       HDF5_VERSION: hdf5_1_12_2
       FCFLAGS: "-fallow-argument-mismatch"
@@ -31,26 +30,28 @@ jobs:
       id: cache-openmpi
       uses: actions/cache@v3
       with:
-        path: ~/openmpi
+        path: $GITHUB_WORKSPACE/openmpi
         key: openmpi-${{ runner.os }}-${{ env.OPENMPI_VERSION }}1
 
     - name: build-openmpi
       if: steps.cache-openmpi.outputs.cache-hit != 'true'
       uses: ./.github/actions/buildopenmpi
       with:
-        install_prefix: openmpi
+        install_prefix: $GITHUB_WORKSPACE/openmpi
+        openmpi_version: ${{ env.OPENMPI_VERSION }}
+
     - name: cache-hdf5
       id: cache-hdf5
       uses: actions/cache@v3
       with:
-        path: ~/hdf5
-        key: hdf5-${{ runner.os }}-${{ env.HDF5_VERSION }}-openmpi-${{ env.OPENMPI_VERSION_MAJOR }}.${{ env.OPENMPI_VERSION_PATCH }}
+        path: $GITHUB_WORKSPACE/hdf5
+        key: hdf5-${{ runner.os }}-${{ env.HDF5_VERSION }}-openmpi-${{ env.OPENMPI_VERSION }}
 
     - name: build-hdf5
       if: steps.cache-hdf5.outputs.cache-hit != 'true'
       uses: ./.github/actions/buildhdf5
       with:
-        install_prefix: hdf5
+        install_prefix: $GITHUB_WORKSPACE/hdf5
         enable_parallel: True
         hdf5_version: ${{ env.HDF5_VERSION }}
         mpi_path: $GITHUB_WORKSPACE/openmpi
