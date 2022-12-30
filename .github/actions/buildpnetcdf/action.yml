@@ -33,10 +33,17 @@ runs:
       run: |
         pushd pnetcdf-src
         autoreconf -i
-        ./configure --prefix=${{ inputs.install_prefix }} \
-        --enable-shared=${{ inputs.enable_shared }} \
-        --enable-fortran=${{ inputs.enable_fortran }} \
-        --disable-cxx
+        set config_opts="--prefix=${{ inputs.install_prefix }} --disable-cxx "
+        if [ ${{ inputs.enable_fortran }}==false ]
+        then
+          config_opts="$config_opts --disable-fortran"
+        fi
+        if [ ${{ inputs.enable_shared }}==false ]
+        then
+          config_opts="$config_opts --enable-shared=no"
+        fi
+        ./configure $config_opts
+
         make
         make install
         popd
