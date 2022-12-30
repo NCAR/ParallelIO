@@ -63,11 +63,12 @@ jobs:
         path: ~/work/ParallelIO/ParallelIO/netcdf
         key: netcdf-${{ runner.os }}-${{ env.NETCDF_C_VERSION }}-${{ env.NETCDF_FORTRAN_VERSION }}-openmpi-${{ env.OPENMPI_VERSION }}-hdf5-${{ env.HDF5_VERSION }}
 
-#    - name: prep netcdf-c
-#      run: |
-#        export PATH=${GITHUB_WORKSPACE}/openmpi/bin:${GITHUB_WORKSPACE}/hdf5/bin:$PATH
-#        export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${GITHUB_WORKSPACE}/hdf5/lib:/usr/lib"
-#        printenv >> $GITHUB_ENV
+    - name: prep netcdf-c
+      run: |
+        export PATH=${GITHUB_WORKSPACE}/openmpi/bin:${GITHUB_WORKSPACE}/hdf5/bin:$PATH
+        export LD_LIBRARY_PATH="${GITHUB_WORKSPACE}/hdf5/lib:/usr/lib:$LD_LIBRARY_PATH"
+        export LDFLAGS="${LDFLAGS} -lhdf5"
+        printenv >> $GITHUB_ENV
     - name: build-netcdf-c
       if: steps.cache-netcdf.outputs.cache-hit != 'true'
       uses: ./.github/actions/buildnetcdf
