@@ -53,10 +53,10 @@ jobs:
         with:
           parallelio_version: ${{ env.GITHUB_SHA }}
           pnetcdf_include_dir: $GITHUB_WORKSPACE/pnetcdf/include
-          pnetcdf_library_path: $GITHUB_WORKSPACE/pnetcdf/lib
+          pnetcdf_library: $GITHUB_WORKSPACE/pnetcdf/lib/libpnetcdf.so
           netcdf_include_dir: /usr/include
-          netcdf_library_path: /usr/lib/x86_64-linux-gnu
-          install_prefix: $HOME/parallelio
+          netcdf_library: /usr/lib/x86_64-linux-gnu/libnetcdf.so
+          install_prefix: $GITHUB_WORKSPACE/parallelio
       - name: run tests
         run: |
           pushd $GITHUB_WORKSPACE/parallelio-src

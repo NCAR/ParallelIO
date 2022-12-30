@@ -14,8 +14,6 @@ jobs:
     env:
       CC: mpicc
       FC: mpifort
-#      CPPFLAGS: "-I/usr/include -I/usr/local/include "
-#      LDFLAGS: "-L/usr/lib/x86_64-linux-gnu  -lnetcdf -lpnetcdf"
       FCFLAGS: "-fallow-argument-mismatch"
     steps:
     - uses: actions/checkout@v3
@@ -33,7 +31,7 @@ jobs:
         enable_fortran: False
         enable_logging: True
         install_prefix: ${GITHUB_WORKSPACE}/parallelio
-        with_mpiexec: mpiexec --oversubscribe
+        with_mpiexec: /usr/bin/mpiexec.openmpi --oversubscribe
     - name: parallelio tests
       run: |
         pushd $GITHUB_WORKSPACE/build
