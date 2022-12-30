@@ -66,10 +66,10 @@ jobs:
 
     - name: prep netcdf-c
       run: |
-        export PATH=$HOME/hdf5/bin:$PATH
-        export LDFLAGS="$LDFLAGS -L$HOME/hdf5/lib -L$HOME/netcdf/lib "
-        export CPPFLAGS="$CPPFLAGS -I$HOME/hdf5/include"
-        export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$HOME/hdf5/lib:$HOME/netcdf/lib"
+        export PATH=$GITHUB_WORKSPACE/hdf5/bin:$PATH
+        export LDFLAGS="$LDFLAGS -L$GITHUB_WORKSPACE/hdf5/lib -L$GITHUB_WORKSPACE/netcdf/lib "
+        export CPPFLAGS="$CPPFLAGS -I$GITHUB_WORKSPACE/hdf5/include"
+        export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$GITHUB_WORKSPACE/hdf5/lib:$GITHUB_WORKSPACE/netcdf/lib"
         printenv >> $GITHUB_ENV
     - name: build-netcdf-c
       if: steps.cache-netcdf.outputs.cache-hit != 'true'
@@ -104,17 +104,13 @@ jobs:
       uses: ./.github/actions/parallelio_cmake
       with:
         parallelio_version: ${{ env.GITHUB_SHA }}
-        with_pnetcdf: $HOME/pnetcdf
-        with_netcdf: $HOME/netcdf
-        with_netcdff: $HOME/netcdf
+        with_pnetcdf: $GITHUB_WORKSPACE/pnetcdf
+        with_netcdf: $GITHUB_WORKSPACE/netcdf
+        with_netcdff: $GITHUB_WORKSPACE/netcdf
         enable_fortran: True
-        install_prefix: $HOME/parallelio
+        install_prefix: $GITHUB_WORKSPACE/parallelio
     - name: parallelio tests
       run: |
-        pushd $GITHUB_WORKSPACE/build
-        export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$HOME/netcdf/lib"
-        export LDFLAGS="$LDFLAGS -L$HOME/netcdf/lib -lnetcdf"
-        printenv >> $GITHUB_ENV
         make tests
         ctest -VV -E test_async_3proc
         popd
