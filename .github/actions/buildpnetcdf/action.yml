@@ -36,12 +36,13 @@ runs:
         set config_opts="--prefix=${{ inputs.install_prefix }} --disable-cxx "
         if [ ${{ inputs.enable_fortran }}==false ]
         then
-          config_opts="$config_opts --disable-fortran"
+          set config_opts="$config_opts --disable-fortran"
         fi
         if [ ${{ inputs.enable_shared }}==false ]
         then
-          config_opts="$config_opts --enable-shared=no"
+          set config_opts="$config_opts --enable-shared=no"
         fi
+        echo "config_opts=$config_opts"
         ./configure $config_opts
 
         make
