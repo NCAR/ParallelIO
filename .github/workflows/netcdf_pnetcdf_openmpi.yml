@@ -12,8 +12,8 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      CPPFLAGS: "-I$GITHUB_WORKSPACE/openmpi/include -I$GITHUB_WORKSPACE/hdf5/include -I$GITHUB_WORKSPACE/netcdf/include -I$GITHUB_WORKSPACE/pnetcdf/include"
-      LDFLAGS: "-L$GITHUB_WORKSPACE/openmpi/lib -L$GITHUB_WORKSPACE/hdf5/lib -L$GITHUB_WORKSPACE/netcdf/lib -L$GITHUB_WORKSPACE/pnetcdf/lib"
+      CPPFLAGS: "-I${GITHUB_WORKSPACE}/openmpi/include -I${GITHUB_WORKSPACE}/hdf5/include -I${GITHUB_WORKSPACE}/netcdf/include -I${GITHUB_WORKSPACE}/pnetcdf/include"
+      LDFLAGS: "-L${GITHUB_WORKSPACE}/openmpi/lib -L${GITHUB_WORKSPACE}/hdf5/lib -L${GITHUB_WORKSPACE}/netcdf/lib -L${GITHUB_WORKSPACE}/pnetcdf/lib"
       NETCDF_C_VERSION: v4.9.0
       NETCDF_FORTRAN_VERSION: v4.6.0
       OPENMPI_VERSION: v4.1.4
@@ -109,7 +109,7 @@ jobs:
     #     parallelio_version: ${{ env.GITHUB_SHA }}
     # - name: make check
     #   run: |
-    #     cd $GITHUB_WORKSPACE/parallelio-src   
+    #     cd ${GITHUB_WORKSPACE}/parallelio-src   
     #     make -j check
     #     make distclean
     # - name: cmake build
@@ -124,7 +124,7 @@ jobs:
     #     with_mpiexec: "${{ env.GITHUB_WORKSPACE }}/openmpi/bin/mpiexec --oversubscribe"
     # - name: run tests
     #   run: |
-    #     pushd $GITHUB_WORKSPACE/build
+    #     pushd ${GITHUB_WORKSPACE}/build
     #     make tests VERBOSE=1
     #     ctest -VV
     #     popd
