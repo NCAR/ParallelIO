@@ -37,8 +37,6 @@ jobs:
         sudo apt-get install libz-dev
         sudo apt-get install openmpi-bin
         sudo apt-get install libopenmpi-dev
-        export CPPFLAGS="-I/usr/include"
-        export LDFLAGS="-L/usr/lib -L/usr/lib/x86_64-linux-gnu"
     - name: Build ParallelIO with autotools
       uses: ./.github/actions/parallelio_autotools
       with:
@@ -49,3 +47,7 @@ jobs:
       run: |
         cd $GITHUB_WORKSPACE/parallelio-src   
         make -j check
+
+    - name: Setup tmate session
+      if: ${{ failure() }}
+      uses: mxschmitt/action-tmate@v3
