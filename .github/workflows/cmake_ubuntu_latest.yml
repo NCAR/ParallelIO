@@ -4,10 +4,10 @@ name: cmake_ubuntu-latest
 on:
   push:
     branches:
-      - master
+      - masternot
   pull_request:
     branches:
-      - master
+      - masternot
 
 jobs:
   build:

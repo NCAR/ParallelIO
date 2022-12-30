@@ -2,9 +2,9 @@ name: Intel OneAPI
 # Tests ParallelIO using Intel Compiler and IMPI library.
 on:
   push:
-    branches: [ master ]
+    branches: [ mastertodo ]
   pull_request:
-    branches: [ master ]
+    branches: [ mastertodo ]
 
 jobs:
   build:

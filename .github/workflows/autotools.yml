@@ -23,13 +23,12 @@ jobs:
     - name: Installs
       run: |
         set -x
-        #        sudo gem install apt-spy2
-        #        sudo apt-spy2 check
-        #        sudo apt-spy2 fix --commit
-        # after selecting a specific mirror, we need to run 'apt-get update'
         sudo apt-get update 
         sudo apt-get install netcdf-bin 
-        sudo apt-get install libnetcdf-dev
+        sudo apt-get install libnetcdf-mpi-19
+        sudo apt-get install libnetcdf-mpi-dev
+        sudo apt-get install pnetcdf-bin
+        sudo apt-get install libpnetcdf-dev
         sudo apt-get install doxygen
         sudo apt-get install graphviz
         sudo apt-get install wget
@@ -38,18 +37,8 @@ jobs:
         sudo apt-get install libz-dev
         sudo apt-get install openmpi-bin
         sudo apt-get install libopenmpi-dev
-    - name: cache-pnetcdf
-      id: cache-pnetcdf
-      uses: actions/cache@v3
-      with:
-        path: ~/pnetcdf
-        key: pnetcdf-${{ runner.os }}-${{ env.PNETCDF_VERSION }}
-    - name: Build PNetCDF
-      if: steps.cache-pnetcdf.outputs.cache-hit != 'true'
-      uses: ./.github/actions/buildpnetcdf
-      with:
-        pnetcdf_version: ${{ env.PNETCDF_VERSION }}
-        install_prefix: $HOME/pnetcdf
+        export CPPFLAGS="-I/usr/include"
+        export LDFLAGS="-L/usr/lib -L/usr/lib/x86_64-linux-gnu"
     - name: Build ParallelIO with autotools
       uses: ./.github/actions/parallelio_autotools
       with:

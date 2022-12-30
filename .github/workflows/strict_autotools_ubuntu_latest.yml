@@ -2,9 +2,9 @@ name: strict_autotools_ubuntu_latest
 
 on:
   push:
-    branches: [ master ]
+    branches: [ mastertodo ]
   pull_request:
-    branches: [ master ]
+    branches: [ mastertodo ]
 
 jobs:
   build:
