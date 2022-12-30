@@ -122,8 +122,8 @@ runs:
         -DPnetCDF_PATH=${{ inputs.with_pnetcdf }} \
         -DNetCDF_C_INCLUDE_DIR=${{ inputs.with_netcdf }}/include \
         -DNetCDF_Fortran_INCLUDE_DIR=${{ inputs.with_netcdff }}/include \
-        -DNetCDF_C_LIBRARY="-L${{ inputs.with_netcdf }}/lib -lnetcdf" \
-        -DNetCDF_Fortran_LIBRARY="-L${{ inputs.with_netcdff }}/lib -lnetcdff" \
+        -DNetCDF_C_LIBRARY="netcdf" \
+        -DNetCDF_Fortran_LIBRARY="netcdff" \
         -DCMAKE_INSTALL_PREFIX=${{ inputs.install_prefix }} \
         -DWITH_MPIEXEC="${{ inputs.with_mpiexec }}" \
         $GITHUB_WORKSPACE/parallelio-src
