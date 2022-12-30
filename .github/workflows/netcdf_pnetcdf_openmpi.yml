@@ -32,18 +32,13 @@ jobs:
       uses: actions/cache@v3
       with:
         path: ~/openmpi
-        key: openmpi-${{ runner.os }}-${{ env.OPENMPI_VERSION }}
+        key: openmpi-${{ runner.os }}-${{ env.OPENMPI_VERSION }}1
 
     - name: build-openmpi
       if: steps.cache-openmpi.outputs.cache-hit != 'true'
-      run: |
-        wget https://download.open-mpi.org/release/open-mpi/v${{ env.OPENMPI_VERSION_MAJOR }}/openmpi-${{ env.OPENMPI_VERSION_MAJOR }}.${{ env.OPENMPI_VERSION_PATCH}}.tar.gz &> /dev/null
-        tar -xzf openmpi-${{ env.OPENMPI_VERSION_MAJOR }}.${{ env.OPENMPI_VERSION_PATCH }}.tar.gz
-        pushd openmpi-${{ env.OPENMPI_VERSION_MAJOR }}.${{ env.OPENMPI_VERSION_PATCH }}
-        ./configure --prefix=$GITHUB_WORKSPACE/openmpi
-        make
-        sudo make install
-        popd
+      uses: ./.github/actions/buildopenmpi
+      with:
+        install_prefix: openmpi
     - name: cache-hdf5
       id: cache-hdf5
       uses: actions/cache@v3
@@ -60,81 +55,75 @@ jobs:
         hdf5_version: ${{ env.HDF5_VERSION }}
         mpi_path: $GITHUB_WORKSPACE/openmpi
 
-    - name: cache-netcdf
-      id: cache-netcdf
-      uses: actions/cache@v3
-      with:
-        path: ~/netcdf
-        key: netcdf-${{ runner.os }}-${{ env.NETCDF_C_VERSION }}-${{ env.NETCDF_FORTRAN_VERSION }}-openmpi-${{ env.OPENMPI_VERSION_MAJOR }}.${{ env.OPENMPI_VERSION_PATCH }}-hdf5-${{ env.HDF5_VERSION }}
+    # - name: cache-netcdf
+    #   id: cache-netcdf
+    #   uses: actions/cache@v3
+    #   with:
+    #     path: ~/netcdf
+    #     key: netcdf-${{ runner.os }}-${{ env.NETCDF_C_VERSION }}-${{ env.NETCDF_FORTRAN_VERSION }}-openmpi-${{ env.OPENMPI_VERSION_MAJOR }}.${{ env.OPENMPI_VERSION_PATCH }}-hdf5-${{ env.HDF5_VERSION }}
 
-    - name: prep netcdf-c
-      run: |
-        export PATH=$HOME/openmpi/bin:$HOME/hdf5/bin:$PATH
-        export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$HOME/hdf5/lib:/usr/lib"
-        printenv >> $GITHUB_ENV
-    - name: build-netcdf-c
-      if: steps.cache-netcdf.outputs.cache-hit != 'true'
-      uses: ./.github/actions/buildnetcdf
-      with:
-        netcdf_version: ${{ env.NETCDF_C_VERSION }}
-        install_prefix: netcdf
+    # - name: prep netcdf-c
+    #   run: |
+    #     export PATH=$HOME/openmpi/bin:$HOME/hdf5/bin:$PATH
+    #     export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$HOME/hdf5/lib:/usr/lib"
+    #     printenv >> $GITHUB_ENV
+    # - name: build-netcdf-c
+    #   if: steps.cache-netcdf.outputs.cache-hit != 'true'
+    #   uses: ./.github/actions/buildnetcdf
+    #   with:
+    #     netcdf_version: ${{ env.NETCDF_C_VERSION }}
+    #     install_prefix: netcdf
 
-    - name: Setup tmate session
-      if: ${{ failure() }}
-      uses: mxschmitt/action-tmate@v3
-#    - name: cache-netcdf-fortran
-#      id: cache-netcdf-fortran
-#      uses: actions/cache@v3
-#      with:
-#        path: ~/netcdf-fortran
-#        key: netcdf-fortran-${{ runner.os }}-${{ env.NETCDF_FORTRAN_VERSION }}-openmpi-${{ env.OPENMPI_VERSION_MAJOR }}.${{ env.OPENMPI_VERSION_PATCH }}-hdf5-${{ env.HDF5_VERSION}}
+    # - name: Setup tmate session
+    #   if: ${{ failure() }}
+    #   uses: mxschmitt/action-tmate@v3
 
-    - name: Build NetCDF Fortran
-      if: steps.cache-netcdf.outputs.cache-hit != 'true'
-      uses: ./.github/actions/buildnetcdff
-      with:
-        netcdf_fortran_version: ${{ env.NETCDF_FORTRAN_VERSION }}
-        install_prefix: netcdf
-        netcdf_c_path: netcdf
+    # - name: Build NetCDF Fortran
+    #   if: steps.cache-netcdf.outputs.cache-hit != 'true'
+    #   uses: ./.github/actions/buildnetcdff
+    #   with:
+    #     netcdf_fortran_version: ${{ env.NETCDF_FORTRAN_VERSION }}
+    #     install_prefix: netcdf
+    #     netcdf_c_path: netcdf
 
-    - name: cache-pnetcdf
-      id: cache-pnetcdf
-      uses: actions/cache@v3
-      with:
-        path: ~/pnetcdf
-        key: pnetcdf-${{ runner.os }}-${{ env.PNETCDF_VERSION }}-openmpi-${{ env.OPENMPI_VERSION_MAJOR }}.${{ env.OPENMPI_VERSION_PATCH }}
+    # - name: cache-pnetcdf
+    #   id: cache-pnetcdf
+    #   uses: actions/cache@v3
+    #   with:
+    #     path: ~/pnetcdf
+    #     key: pnetcdf-${{ runner.os }}-${{ env.PNETCDF_VERSION }}-openmpi-${{ env.OPENMPI_VERSION_MAJOR }}.${{ env.OPENMPI_VERSION_PATCH }}
 
-    - name: Build PNetCDF
-      if: steps.cache-pnetcdf.outputs.cache-hit != 'true'
-      uses: ./.github/actions/buildpnetcdf
-      with:
-        pnetcdf_version: ${{ env.PNETCDF_VERSION }}
-        install_prefix: pnetcdf
+    # - name: Build PNetCDF
+    #   if: steps.cache-pnetcdf.outputs.cache-hit != 'true'
+    #   uses: ./.github/actions/buildpnetcdf
+    #   with:
+    #     pnetcdf_version: ${{ env.PNETCDF_VERSION }}
+    #     install_prefix: pnetcdf
 
-    - name: Build ParallelIO with autotools
-      uses: ./.github/actions/parallelio_autotools
-      with:
-        enable_fortran: True
-        with_mpiexec: 'mpiexec --oversubscribe'
-        parallelio_version: ${{ env.GITHUB_SHA }}
-    - name: make check
-      run: |
-        cd $GITHUB_WORKSPACE/parallelio-src   
-        make -j check
-        make distclean
-    - name: cmake build
-      uses: ./.github/actions/parallelio_cmake
-      with:
-        parallelio_version: ${{ env.GITHUB_SHA }}
-        with_pnetcdf: pnetcdf
-        with_netcdf: netcdf
-        with_netcdff: netcdf
-        enable_fortran: True
-        install_prefix: parallelio
-        with_mpiexec: "$GITHUB_WORKSPACE/openmpi/bin/mpiexec --oversubscribe"
-    - name: run tests
-      run: |
-        pushd $GITHUB_WORKSPACE/build
-        make tests VERBOSE=1
-        ctest -VV
-        popd
+    # - name: Build ParallelIO with autotools
+    #   uses: ./.github/actions/parallelio_autotools
+    #   with:
+    #     enable_fortran: True
+    #     with_mpiexec: 'mpiexec --oversubscribe'
+    #     parallelio_version: ${{ env.GITHUB_SHA }}
+    # - name: make check
+    #   run: |
+    #     cd $GITHUB_WORKSPACE/parallelio-src   
+    #     make -j check
+    #     make distclean
+    # - name: cmake build
+    #   uses: ./.github/actions/parallelio_cmake
+    #   with:
+    #     parallelio_version: ${{ env.GITHUB_SHA }}
+    #     with_pnetcdf: pnetcdf
+    #     with_netcdf: netcdf
+    #     with_netcdff: netcdf
+    #     enable_fortran: True
+    #     install_prefix: parallelio
+    #     with_mpiexec: "$GITHUB_WORKSPACE/openmpi/bin/mpiexec --oversubscribe"
+    # - name: run tests
+    #   run: |
+    #     pushd $GITHUB_WORKSPACE/build
+    #     make tests VERBOSE=1
+    #     ctest -VV
+    #     popd
