@@ -77,7 +77,18 @@ inputs:
     default: mpiexec
     required: False
     type: string
-  
+  netcdf_c_include_dir:
+    default: /usr/include
+    required: False
+    type: string
+  netcdf_c_library_path:
+    default: /usr/lib/x86_64-linux-gnu
+    required: False
+    type: string
+  pnetcdf_path:
+    default: /usr
+    required: False
+    type: string
   install_prefix:
     description: 'Install path of parallelio'
     default: ${GITHUB_WORKSPACE}/parallelio
@@ -106,6 +117,9 @@ runs:
         -DPIO_ENABLE_TIMING=${{ inputs.enable_timing }} \
         -DCMAKE_INSTALL_PREFIX=${{ inputs.install_prefix }} \
         -DWITH_MPIEXEC="${{ inputs.with_mpiexec }}" \
+        -DNetCDF_C_INCLUDE_DIR=${{ inputs.netcdf_c_include_dir }} \
+        -DNetCDF_C_LIBRARY="-L${{ inputs.netcdf_c_library_path }} -lnetcdf" \
+        -DPnetCDF_PATH=${{ inputs.pnetcdf_path }} \
         $GITHUB_WORKSPACE/parallelio-src
         make VERBOSE=1
         make install
