@@ -134,7 +134,7 @@ runs:
         -DNetCDF_FORTRAN_INCLUDE_DIR=${{ inputs.netcdf_fortran_include_dir }} \
         -DNetCDF_FORTRAN_LIBRARY=${{ inputs.netcdf_fortran_library }}  \
         -DPnetCDF_C_INCLUDE_DIR=${{ inputs.pnetcdf_include_dir }} \
-        -DPnetCDF_C_LIBRARY=${{ inputs.pnetcdf_library }} " \
+        -DPnetCDF_C_LIBRARY=${{ inputs.pnetcdf_library }}  \
         $GITHUB_WORKSPACE/parallelio-src
         make VERBOSE=1
         make install
