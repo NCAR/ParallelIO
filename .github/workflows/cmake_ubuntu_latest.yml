@@ -57,6 +57,7 @@ jobs:
           netcdf_include_dir: /usr/include
           netcdf_library: /usr/lib/x86_64-linux-gnu/libnetcdf.so
           install_prefix: $GITHUB_WORKSPACE/parallelio
+          with_mpiexec: /usr/bin/mpiexec --oversubscribe
       - name: run tests
         run: |
           pushd $GITHUB_WORKSPACE/parallelio-src
