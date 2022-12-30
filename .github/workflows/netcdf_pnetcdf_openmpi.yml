@@ -56,36 +56,36 @@ jobs:
         hdf5_version: ${{ env.HDF5_VERSION }}
         mpi_path: ${GITHUB_WORKSPACE}/openmpi
 
-    - name: cache-netcdf
-      id: cache-netcdf
-      uses: actions/cache@v3
-      with:
-        path: ~/work/ParallelIO/ParallelIO/netcdf
-        key: netcdf-${{ runner.os }}-${{ env.NETCDF_C_VERSION }}-${{ env.NETCDF_FORTRAN_VERSION }}-openmpi-${{ env.OPENMPI_VERSION }}-hdf5-${{ env.HDF5_VERSION }}
+    # - name: cache-netcdf
+    #   id: cache-netcdf
+    #   uses: actions/cache@v3
+    #   with:
+    #     path: ~/work/ParallelIO/ParallelIO/netcdf
+    #     key: netcdf-${{ runner.os }}-${{ env.NETCDF_C_VERSION }}-${{ env.NETCDF_FORTRAN_VERSION }}-openmpi-${{ env.OPENMPI_VERSION }}-hdf5-${{ env.HDF5_VERSION }}
 
-    - name: prep netcdf-c
-      run: |
-        export PATH=${GITHUB_WORKSPACE}/openmpi/bin:${GITHUB_WORKSPACE}/hdf5/bin:$PATH
-        export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${GITHUB_WORKSPACE}/hdf5/lib:/usr/lib"
-        printenv >> $GITHUB_ENV
-    - name: build-netcdf-c
-      if: steps.cache-netcdf.outputs.cache-hit != 'true'
-      uses: ./.github/actions/buildnetcdf
-      with:
-        netcdf_version: ${{ env.NETCDF_C_VERSION }}
-        install_prefix: ${GITHUB_WORKSPACE}/netcdf
+    # - name: prep netcdf-c
+    #   run: |
+    #     export PATH=${GITHUB_WORKSPACE}/openmpi/bin:${GITHUB_WORKSPACE}/hdf5/bin:$PATH
+    #     export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${GITHUB_WORKSPACE}/hdf5/lib:/usr/lib"
+    #     printenv >> $GITHUB_ENV
+    # - name: build-netcdf-c
+    #   if: steps.cache-netcdf.outputs.cache-hit != 'true'
+    #   uses: ./.github/actions/buildnetcdf
+    #   with:
+    #     netcdf_version: ${{ env.NETCDF_C_VERSION }}
+    #     install_prefix: ${GITHUB_WORKSPACE}/netcdf
 
-    # - name: Setup tmate session
-    #   if: ${{ failure() }}
-    #   uses: mxschmitt/action-tmate@v3
+    # # - name: Setup tmate session
+    # #   if: ${{ failure() }}
+    # #   uses: mxschmitt/action-tmate@v3
 
-    - name: Build NetCDF Fortran
-      if: steps.cache-netcdf.outputs.cache-hit != 'true'
-      uses: ./.github/actions/buildnetcdff
-      with:
-        netcdf_fortran_version: ${{ env.NETCDF_FORTRAN_VERSION }}
-        install_prefix: ${GITHUB_WORKSPACE}/netcdf
-        netcdf_c_path: ${GITHUB_WORKSPACE}/netcdf
+    # - name: Build NetCDF Fortran
+    #   if: steps.cache-netcdf.outputs.cache-hit != 'true'
+    #   uses: ./.github/actions/buildnetcdff
+    #   with:
+    #     netcdf_fortran_version: ${{ env.NETCDF_FORTRAN_VERSION }}
+    #     install_prefix: ${GITHUB_WORKSPACE}/netcdf
+    #     netcdf_c_path: ${GITHUB_WORKSPACE}/netcdf
 
     # - name: cache-pnetcdf
     #   id: cache-pnetcdf

@@ -88,7 +88,7 @@ inputs:
     type: string
   install_prefix:
     description: 'Install path of parallelio'
-    default: $HOME/parallelio
+    default: ${GITHUB_WORKSPACE}/parallelio
     required: False
     type: string
 
