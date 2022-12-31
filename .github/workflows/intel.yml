@@ -106,21 +106,21 @@ jobs:
         pnetcdf_version: ${{ env.PNETCDF_VERSION }}
         install_prefix: ${GITHUB_WORKSPACE}/pnetcdf
 
-    # - name: cmake build
-    #   uses: ./.github/actions/parallelio_cmake
-    #   with:
-    #     parallelio_version: ${{ env.GITHUB_SHA }}
-    #     with_pnetcdf: $GITHUB_WORKSPACE/pnetcdf
-    #     with_netcdf: $GITHUB_WORKSPACE/netcdf
-    #     with_netcdff: $GITHUB_WORKSPACE/netcdf
-    #     enable_fortran: True
-    #     install_prefix: $GITHUB_WORKSPACE/parallelio
-    # - name: parallelio tests
-    #   run: |
-    #     pushd  $GITHUB_WORKSPACE/parallelio
-    #     make tests
-    #     ctest -VV -E test_async_3proc
-    #     popd
+    - name: cmake build
+      uses: ./.github/actions/parallelio_cmake
+      with:
+        parallelio_version: ${{ env.GITHUB_SHA }}
+        with_pnetcdf: $GITHUB_WORKSPACE/pnetcdf
+        with_netcdf: $GITHUB_WORKSPACE/netcdf
+        with_netcdff: $GITHUB_WORKSPACE/netcdf
+        enable_fortran: True
+        install_prefix: $GITHUB_WORKSPACE/parallelio
+    - name: parallelio tests
+      run: |
+        pushd  $GITHUB_WORKSPACE/parallelio
+        make tests
+        ctest -VV -E test_async_3proc
+        popd
       #     the following can be used by developers to login to the github server in case of errors
       #     see https://github.com/marketplace/actions/debugging-with-tmate for further details
     - name: Setup tmate session
