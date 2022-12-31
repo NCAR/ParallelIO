@@ -57,12 +57,18 @@ jobs:
         enable_parallel: True
         hdf5_version: ${{ env.HDF5_VERSION }}
         mpi_path: /opt/intel/mpi
-    - name: cache-netcdf
+    - name: cache netcdf C
       id: cache-netcdf-c
       uses: actions/cache@v3
       with:
         path: ~/work/ParallelIO/ParallelIO/netcdf-c
         key: netcdf-c-${{ runner.os }}-${{ env.NETCDF_C_VERSION }}-impi-hdf5-${{ env.HDF5_VERSION }}
+    - name: cache netcdf Fortran
+      id: cache-netcdf-f
+      uses: actions/cache@v3
+      with:
+        path: ~/work/ParallelIO/ParallelIO/netcdf-f
+        key: netcdf-f-${{ runner.os }}-${{ env.NETCDF_FORTRAN_VERSION }}-impi-hdf5-${{ env.HDF5_VERSION }}
 
     - name: prep netcdf-c
       run: |
@@ -78,13 +84,13 @@ jobs:
         netcdf_version: ${{ env.NETCDF_C_VERSION }}
         install_prefix: ${GITHUB_WORKSPACE}/netcdf-c
 
-    # - name: Build NetCDF Fortran
-    #   if: steps.cache-netcdf.outputs.cache-hit != 'true'
-    #   uses: ./.github/actions/buildnetcdff
-    #   with:
-    #     netcdf_fortran_version: ${{ env.NETCDF_FORTRAN_VERSION }}
-    #     install_prefix: ${GITHUB_WORKSPACE}/netcdf
-    #     netcdf_c_path: ${GITHUB_WORKSPACE}/netcdf
+    - name: Build NetCDF Fortran
+      if: steps.cache-netcdf-f.outputs.cache-hit != 'true'
+      uses: ./.github/actions/buildnetcdff
+      with:
+        netcdf_fortran_version: ${{ env.NETCDF_FORTRAN_VERSION }}
+        install_prefix: ${GITHUB_WORKSPACE}/netcdf-f
+        netcdf_c_path: ${GITHUB_WORKSPACE}/netcdf-c
 
     # - name: cache-pnetcdf
     #   id: cache-pnetcdf
