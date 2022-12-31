@@ -20,6 +20,7 @@ jobs:
         sudo apt-get install wget
         sudo apt-get install libjpeg-dev
         sudo apt-get install libz-dev
+        sudo apt-get install gfortran
     - name: Get Spack
       uses: actions/checkout@v3
       with:
@@ -29,4 +30,5 @@ jobs:
     - name: Prep spack
       run: |
         source $GITHUB_WORKSPACE/spack/share/spack/setup-env.sh
-        printenv >> $GITHUB_ENV
+        #printenv >> $GITHUB_ENV
+        spack compiler find
