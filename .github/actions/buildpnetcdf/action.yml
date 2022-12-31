@@ -37,10 +37,15 @@ runs:
         then
           config_opts="${config_opts} --disable-fortran"
         fi
-        config_opts="${config_opts} --enable-shared=${{ inputs.enable_shared }} "
+        if [ "${{ inputs.enable_shared }}" = "true" ];
+        then
+          config_opts="${config_opts} --enable-shared=yes"
+        fi
+        
+        config_opts="${config_opts}"
         echo "config_opts=$config_opts"
-        autoreconf -i
         autoupdate
+        autoreconf -i
         ./configure $config_opts
 
         make
