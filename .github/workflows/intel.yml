@@ -58,7 +58,7 @@ jobs:
         hdf5_version: ${{ env.HDF5_VERSION }}
         mpi_path: /opt/intel/mpi
     - name: cache-netcdf
-      id: cache-netcdf
+      id: cache-netcdf-c
       uses: actions/cache@v3
       with:
         path: ~/work/ParallelIO/ParallelIO/netcdf-c
@@ -72,7 +72,7 @@ jobs:
         export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$GITHUB_WORKSPACE/hdf5/lib"
         printenv >> $GITHUB_ENV
     - name: build-netcdf-c
-      if: steps.cache-netcdf.outputs.cache-hit != 'true'
+      if: steps.cache-netcdf-c.outputs.cache-hit != 'true'
       uses: ./.github/actions/buildnetcdf
       with:
         netcdf_version: ${{ env.NETCDF_C_VERSION }}
