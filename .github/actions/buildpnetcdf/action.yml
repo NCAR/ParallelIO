@@ -44,7 +44,6 @@ runs:
         
         config_opts="${config_opts}"
         echo "config_opts=$config_opts"
-        autoupdate
         autoreconf -i
         ./configure $config_opts
 

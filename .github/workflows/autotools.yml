@@ -14,10 +14,10 @@ jobs:
     env:
       CC: mpicc
       FC: mpifort
-      CFLAGS: "-std=c99 -Wall"
+      CFLAGS: "-std=c99 -Wall -Werror"
       CPPFLAGS: "-I/usr/include -I/usr/lib/x86_64-linux-gnu/netcdf/mpi/include/ "
       LDFLAGS: "-L/usr/lib/x86_64-linux-gnu -lnetcdf_mpi -lpnetcdf"
-      FCFLAGS: "-Wall -fallow-argument-mismatch"
+      FCFLAGS: "-Wall -Werror -fallow-argument-mismatch"
     steps:
     - uses: actions/checkout@v3
     - name: Installs

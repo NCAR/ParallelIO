@@ -21,7 +21,17 @@ jobs:
         sudo apt-get install libjpeg-dev
         sudo apt-get install libz-dev
         sudo apt-get install gfortran
+
+    - name: cache spack
+      id: cache-spack
+      uses: actions/cache@v3
+      with:
+        path: |
+          $GITHUB_WORKSPACE/spack
+          $HOME/.spack
+        key: spack-${{ runner.os }}
     - name: Get Spack
+      if: steps.cache-spack.outputs.cache-hit != 'true'
       uses: actions/checkout@v3
       with:
         repository: spack/spack
@@ -31,5 +41,7 @@ jobs:
       run: |
         source $GITHUB_WORKSPACE/spack/share/spack/setup-env.sh
         spack compiler find
-        cat /home/runner/.spack/linux/compilers.yaml
-        spack install parallelio@master+pnetcdf+fortran %gcc@12.1.0 
+        # add a line for this SHA to the parallelio package so that this commit is available
+        sed 's/maintainers = ["jedwards4b"]/maintainers = ["jedwards4b"]\n    version("githubtest", sha256="$GITHUB_SHA")/' \
+         $GITHUB_WORKSPACE/spack/var/spack/repos/builtin/packages/parallelio/package.py 
+        spack install parallelio@${GITHUB_SHA}+pnetcdf+fortran %gcc@12.1.0 
