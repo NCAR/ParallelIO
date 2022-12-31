@@ -42,6 +42,7 @@ jobs:
       uses: ./.github/actions/parallelio_autotools
       with:
         enable_fortran: True
+        with_pnetcdf: /usr
         with_mpiexec: 'mpiexec --oversubscribe'
         parallelio_version: ${{ env.GITHUB_SHA }}
     - name: make check

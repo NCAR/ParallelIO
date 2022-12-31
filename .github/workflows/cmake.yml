@@ -24,13 +24,13 @@ jobs:
         set -x
         sudo apt-get update
         sudo apt-get install netcdf-bin libnetcdf-dev doxygen graphviz wget gfortran \
-        libjpeg-dev libz-dev openmpi-bin libopenmpi-dev cmake pnetcdf-bin libpnetcdf-dev
+        libjpeg-dev libz-dev openmpi-bin libopenmpi-dev cmake pnetcdf-bin libpnetcdf-dev libnetcdff-dev
         
     - name: cmake build
       uses: ./.github/actions/parallelio_cmake
       with:
         parallelio_version: ${{ env.GITHUB_SHA }}
-        enable_fortran: False
+        enable_fortran: True
         enable_logging: True
         install_prefix: ${GITHUB_WORKSPACE}/parallelio
         mpiexec_flags: --oversubscribe
