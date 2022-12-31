@@ -110,10 +110,13 @@ jobs:
       uses: ./.github/actions/parallelio_cmake
       with:
         parallelio_version: ${{ env.GITHUB_SHA }}
-        with_pnetcdf: $GITHUB_WORKSPACE/pnetcdf
-        with_netcdf: $GITHUB_WORKSPACE/netcdf
-        with_netcdff: $GITHUB_WORKSPACE/netcdf
         enable_fortran: True
+        netcdf_c_library: $GITHUB_WORKSPACE/netcdf-c/lib/libnetcdf.so
+        netcdf_c_include_dir: $GITHUB_WORKSPACE/netcdf-c/include
+        netcdf_fortran_library: $GITHUB_WORKSPACE/netcdf-f/lib/libnetcdff.so
+        netcdf_fortran_include_dir: $GITHUB_WORKSPACE/netcdf-f/include
+        pnetcdf_library: $GITHUB_WORKSPACE/pnetcdf/lib/libpnetcdf.so
+        pnetcdf_include_dir: $GITHUB_WORKSPACE/pnetcdf/include
         install_prefix: $GITHUB_WORKSPACE/parallelio
     - name: parallelio tests
       run: |
