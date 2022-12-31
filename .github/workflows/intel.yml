@@ -92,19 +92,19 @@ jobs:
         install_prefix: ${GITHUB_WORKSPACE}/netcdf-f
         netcdf_c_path: ${GITHUB_WORKSPACE}/netcdf-c
 
-    # - name: cache-pnetcdf
-    #   id: cache-pnetcdf
-    #   uses: actions/cache@v3
-    #   with:
-    #     path: ~/work/ParallelIO/ParallelIO/pnetcdf
-    #     key: pnetcdf-${{ runner.os }}-${{ env.PNETCDF_VERSION }}-impi
+    - name: cache-pnetcdf
+      id: cache-pnetcdf
+      uses: actions/cache@v3
+      with:
+        path: ~/work/ParallelIO/ParallelIO/pnetcdf
+        key: pnetcdf-${{ runner.os }}-${{ env.PNETCDF_VERSION }}-impi
 
-    # - name: Build PNetCDF
-    #   if: steps.cache-pnetcdf.outputs.cache-hit != 'true'
-    #   uses: ./.github/actions/buildpnetcdf
-    #   with:
-    #     pnetcdf_version: ${{ env.PNETCDF_VERSION }}
-    #     install_prefix: ${GITHUB_WORKSPACE}/pnetcdf
+    - name: Build PNetCDF
+      if: steps.cache-pnetcdf.outputs.cache-hit != 'true'
+      uses: ./.github/actions/buildpnetcdf
+      with:
+        pnetcdf_version: ${{ env.PNETCDF_VERSION }}
+        install_prefix: ${GITHUB_WORKSPACE}/pnetcdf
 
     # - name: cmake build
     #   uses: ./.github/actions/parallelio_cmake
