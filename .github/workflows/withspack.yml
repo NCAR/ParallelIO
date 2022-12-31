@@ -30,5 +30,6 @@ jobs:
     - name: Prep spack
       run: |
         source $GITHUB_WORKSPACE/spack/share/spack/setup-env.sh
-        #printenv >> $GITHUB_ENV
         spack compiler find
+        cat /home/runner/.spack/linux/compilers.yaml
+        spack install parallelio@${{ env.GITHUB_SHA }} %clang@14.0.0
