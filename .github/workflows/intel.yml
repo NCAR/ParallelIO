@@ -97,7 +97,7 @@ jobs:
       uses: actions/cache@v3
       with:
         path: ~/work/ParallelIO/ParallelIO/pnetcdf
-        key: pnetcdf-${{ runner.os }}-${{ env.PNETCDF_VERSION }}-impi-3
+        key: pnetcdf-${{ runner.os }}-${{ env.PNETCDF_VERSION }}-impi-4
 
     - name: Build PNetCDF
       if: steps.cache-pnetcdf.outputs.cache-hit != 'true'

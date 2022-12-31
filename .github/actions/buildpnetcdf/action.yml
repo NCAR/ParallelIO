@@ -33,11 +33,11 @@ runs:
       run: |
         pushd pnetcdf-src
         config_opts="--prefix=${{ inputs.install_prefix }} --disable-cxx "
-        if [[ "${{ inputs.enable_fortran }}"=="false" ]]
+        if [ "${{ inputs.enable_fortran }}" = "false" ];
         then
           config_opts="${config_opts} --disable-fortran"
         fi
-        if [[ "${{ inputs.enable_shared }}"=="false" ]]
+        if [ "${{ inputs.enable_shared }}" = "false" ];
         then
           config_opts="${config_opts} --enable-shared=no"
         fi
