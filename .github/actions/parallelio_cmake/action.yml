@@ -121,7 +121,7 @@ runs:
         mkdir build
         cd build
         export CFLAGS="$CFLAGS ${{ inputs.extra_cflags }}"
-        export FCFLAGS="$FCFLAGS ${{ inputs.extra_fflags }}"
+        export FFFLAGS="$FFFLAGS ${{ inputs.extra_fflags }}"
         export LDFLAGS="$LDFLAGS ${{ inputs.extra_ldflags }}"
         cmake -Wno-dev -DPIO_ENABLE_LOGGING=${{ inputs.enable_logging }} \
         -DPIO_ENABLE_FORTRAN=${{ inputs.enable_fortran }} \

@@ -120,7 +120,7 @@ jobs:
         install_prefix: $GITHUB_WORKSPACE/parallelio
     - name: parallelio tests
       run: |
-        pushd  $GITHUB_WORKSPACE/parallelio
+        pushd  $GITHUB_WORKSPACE/parallelio-src
         make tests
         ctest -VV -E test_async_3proc
         popd
