@@ -110,8 +110,8 @@ runs:
         then
           config_opts="${config_opts} --disable-pnetcdf "
         fi
-        echo "config_opts = ${config_opts}"
-        ./configure ${config_opts}
+        echo "config_opts = ${config_opts} --with-mpiexec=${{ inputs.with_mpiexec }}"
+        ./configure ${config_opts} --with-mpiexec="${{ inputs.with_mpiexec }}"
         make -j 4 VERBOSE=1
         make install
 

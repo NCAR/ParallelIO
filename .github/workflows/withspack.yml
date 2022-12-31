@@ -32,4 +32,4 @@ jobs:
         source $GITHUB_WORKSPACE/spack/share/spack/setup-env.sh
         spack compiler find
         cat /home/runner/.spack/linux/compilers.yaml
-        spack install parallelio@${GITHUB_SHA} %gcc@12.1.0 
+        spack install parallelio@master+pnetcdf+fortran %gcc@12.1.0 
