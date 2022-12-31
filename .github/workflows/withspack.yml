@@ -50,4 +50,4 @@ jobs:
           sed -i 's/    maintainers = ["jedwards4b"]/    maintainers = ["jedwards4b"]\n    version("githubtest", sha256="$GITHUB_SHA")/' \
           $GITHUB_WORKSPACE/spack/var/spack/repos/builtin/packages/parallelio/package.py
         fi
-        spack install parallelio@githubtest+pnetcdf+fortran %gcc@12.1.0 
+        spack install --no-checksum parallelio@githubtest+pnetcdf+fortran %gcc@12.1.0 
