@@ -97,7 +97,7 @@ jobs:
       uses: actions/cache@v3
       with:
         path: ~/work/ParallelIO/ParallelIO/pnetcdf
-        key: pnetcdf-${{ runner.os }}-${{ env.PNETCDF_VERSION }}-impi-1
+        key: pnetcdf-${{ runner.os }}-${{ env.PNETCDF_VERSION }}-impi
 
     - name: Build PNetCDF
       if: steps.cache-pnetcdf.outputs.cache-hit != 'true'
@@ -115,7 +115,7 @@ jobs:
         netcdf_c_include_dir: $GITHUB_WORKSPACE/netcdf-c/include
         netcdf_fortran_library: $GITHUB_WORKSPACE/netcdf-f/lib/libnetcdff.so
         netcdf_fortran_include_dir: $GITHUB_WORKSPACE/netcdf-f/include
-        pnetcdf_library: $GITHUB_WORKSPACE/pnetcdf/lib/libpnetcdf.so
+        pnetcdf_library: $GITHUB_WORKSPACE/pnetcdf/lib/libpnetcdf.a
         pnetcdf_include_dir: $GITHUB_WORKSPACE/pnetcdf/include
         install_prefix: $GITHUB_WORKSPACE/parallelio
     - name: parallelio tests
@@ -126,6 +126,6 @@ jobs:
         popd
       #     the following can be used by developers to login to the github server in case of errors
       #     see https://github.com/marketplace/actions/debugging-with-tmate for further details
-    - name: Setup tmate session
-      if: ${{ failure() }}
-      uses: mxschmitt/action-tmate@v3
+#    - name: Setup tmate session
+#      if: ${{ failure() }}
+#      uses: mxschmitt/action-tmate@v3

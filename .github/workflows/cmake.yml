@@ -1,4 +1,4 @@
-name: cmake ubuntu openmpi latest
+name: cmake ubuntu openmpi latest with AddressSanitizer
 
 on:
   push:

@@ -1,4 +1,4 @@
-name: autotools ubuntu openmpi latest
+name: autotools ubuntu openmpi latest with Wall
 
 on:
   push:
