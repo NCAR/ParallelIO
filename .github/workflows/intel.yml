@@ -2,9 +2,9 @@ name: Intel OneAPI
 # Tests ParallelIO using Intel Compiler and IMPI library.
 on:
   push:
-    branches: [ mastertodo ]
+    branches: [ master ]
   pull_request:
-    branches: [ mastertodo ]
+    branches: [ master ]
 
 jobs:
   build:
@@ -57,64 +57,64 @@ jobs:
         enable_parallel: True
         hdf5_version: ${{ env.HDF5_VERSION }}
         mpi_path: /opt/intel/mpi
-    - name: cache-netcdf
-      id: cache-netcdf
-      uses: actions/cache@v3
-      with:
-        path: ~/netcdf
-        key: netcdf-c-${{ runner.os }}-${{ env.NETCDF_C_VERSION }}-impi-hdf5-${{ env.HDF5_VERSION }}
+    # - name: cache-netcdf
+    #   id: cache-netcdf
+    #   uses: actions/cache@v3
+    #   with:
+    #     path: ~/netcdf
+    #     key: netcdf-c-${{ runner.os }}-${{ env.NETCDF_C_VERSION }}-impi-hdf5-${{ env.HDF5_VERSION }}
 
-    - name: prep netcdf-c
-      run: |
-        export PATH=$GITHUB_WORKSPACE/hdf5/bin:$PATH
-        export LDFLAGS="$LDFLAGS -L$GITHUB_WORKSPACE/hdf5/lib -L$GITHUB_WORKSPACE/netcdf/lib "
-        export CPPFLAGS="$CPPFLAGS -I$GITHUB_WORKSPACE/hdf5/include"
-        export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$GITHUB_WORKSPACE/hdf5/lib:$GITHUB_WORKSPACE/netcdf/lib"
-        printenv >> $GITHUB_ENV
-    - name: build-netcdf-c
-      if: steps.cache-netcdf.outputs.cache-hit != 'true'
-      uses: ./.github/actions/buildnetcdf
-      with:
-        netcdf_version: ${{ env.NETCDF_C_VERSION }}
-        install_prefix: ${GITHUB_WORKSPACE}/netcdf
+    # - name: prep netcdf-c
+    #   run: |
+    #     export PATH=$GITHUB_WORKSPACE/hdf5/bin:$PATH
+    #     export LDFLAGS="$LDFLAGS -L$GITHUB_WORKSPACE/hdf5/lib -L$GITHUB_WORKSPACE/netcdf/lib "
+    #     export CPPFLAGS="$CPPFLAGS -I$GITHUB_WORKSPACE/hdf5/include"
+    #     export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$GITHUB_WORKSPACE/hdf5/lib:$GITHUB_WORKSPACE/netcdf/lib"
+    #     printenv >> $GITHUB_ENV
+    # - name: build-netcdf-c
+    #   if: steps.cache-netcdf.outputs.cache-hit != 'true'
+    #   uses: ./.github/actions/buildnetcdf
+    #   with:
+    #     netcdf_version: ${{ env.NETCDF_C_VERSION }}
+    #     install_prefix: ${GITHUB_WORKSPACE}/netcdf
 
-    - name: Build NetCDF Fortran
-      if: steps.cache-netcdf.outputs.cache-hit != 'true'
-      uses: ./.github/actions/buildnetcdff
-      with:
-        netcdf_fortran_version: ${{ env.NETCDF_FORTRAN_VERSION }}
-        install_prefix: ${GITHUB_WORKSPACE}/netcdf
-        netcdf_c_path: ${GITHUB_WORKSPACE}/netcdf
+    # - name: Build NetCDF Fortran
+    #   if: steps.cache-netcdf.outputs.cache-hit != 'true'
+    #   uses: ./.github/actions/buildnetcdff
+    #   with:
+    #     netcdf_fortran_version: ${{ env.NETCDF_FORTRAN_VERSION }}
+    #     install_prefix: ${GITHUB_WORKSPACE}/netcdf
+    #     netcdf_c_path: ${GITHUB_WORKSPACE}/netcdf
 
-    - name: cache-pnetcdf
-      id: cache-pnetcdf
-      uses: actions/cache@v3
-      with:
-        path: ~/work/ParallelIO/ParallelIO/pnetcdf
-        key: pnetcdf-${{ runner.os }}-${{ env.PNETCDF_VERSION }}-impi
+    # - name: cache-pnetcdf
+    #   id: cache-pnetcdf
+    #   uses: actions/cache@v3
+    #   with:
+    #     path: ~/work/ParallelIO/ParallelIO/pnetcdf
+    #     key: pnetcdf-${{ runner.os }}-${{ env.PNETCDF_VERSION }}-impi
 
-    - name: Build PNetCDF
-      if: steps.cache-pnetcdf.outputs.cache-hit != 'true'
-      uses: ./.github/actions/buildpnetcdf
-      with:
-        pnetcdf_version: ${{ env.PNETCDF_VERSION }}
-        install_prefix: ${GITHUB_WORKSPACE}/pnetcdf
+    # - name: Build PNetCDF
+    #   if: steps.cache-pnetcdf.outputs.cache-hit != 'true'
+    #   uses: ./.github/actions/buildpnetcdf
+    #   with:
+    #     pnetcdf_version: ${{ env.PNETCDF_VERSION }}
+    #     install_prefix: ${GITHUB_WORKSPACE}/pnetcdf
 
-    - name: cmake build
-      uses: ./.github/actions/parallelio_cmake
-      with:
-        parallelio_version: ${{ env.GITHUB_SHA }}
-        with_pnetcdf: $GITHUB_WORKSPACE/pnetcdf
-        with_netcdf: $GITHUB_WORKSPACE/netcdf
-        with_netcdff: $GITHUB_WORKSPACE/netcdf
-        enable_fortran: True
-        install_prefix: $GITHUB_WORKSPACE/parallelio
-    - name: parallelio tests
-      run: |
-        pushd  $GITHUB_WORKSPACE/parallelio
-        make tests
-        ctest -VV -E test_async_3proc
-        popd
+    # - name: cmake build
+    #   uses: ./.github/actions/parallelio_cmake
+    #   with:
+    #     parallelio_version: ${{ env.GITHUB_SHA }}
+    #     with_pnetcdf: $GITHUB_WORKSPACE/pnetcdf
+    #     with_netcdf: $GITHUB_WORKSPACE/netcdf
+    #     with_netcdff: $GITHUB_WORKSPACE/netcdf
+    #     enable_fortran: True
+    #     install_prefix: $GITHUB_WORKSPACE/parallelio
+    # - name: parallelio tests
+    #   run: |
+    #     pushd  $GITHUB_WORKSPACE/parallelio
+    #     make tests
+    #     ctest -VV -E test_async_3proc
+    #     popd
       #     the following can be used by developers to login to the github server in case of errors
       #     see https://github.com/marketplace/actions/debugging-with-tmate for further details
     - name: Setup tmate session

@@ -1,4 +1,4 @@
-name: autotools ubuntu latest
+name: autotools ubuntu openmpi latest
 
 on:
   push:
@@ -16,7 +16,6 @@ jobs:
       FC: mpifort
       CPPFLAGS: "-I/usr/include -I/usr/lib/x86_64-linux-gnu/netcdf/mpi/include/ "
       LDFLAGS: "-L/usr/lib/x86_64-linux-gnu -lnetcdf_mpi -lpnetcdf"
-      PNETCDF_VERSION: checkpoint.1.12.3
       FCFLAGS: "-fallow-argument-mismatch"
     steps:
     - uses: actions/checkout@v3
