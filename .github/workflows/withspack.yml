@@ -1,0 +1,33 @@
+name: Build with Spack
+# Tests ParallelIO using Intel Compiler and IMPI library.
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    env:
+    steps:
+    - uses: actions/checkout@v3
+    - name: Installs
+      run: |
+        set -x
+        sudo apt-get update 
+        sudo apt-get install wget
+        sudo apt-get install libjpeg-dev
+        sudo apt-get install libz-dev
+    - name: Get Spack
+      uses: actions/checkout@v3
+      with:
+        repository: spack/spack
+        path: spack
+        ref: v0.19.0
+    - name: Prep spack
+      run: |
+        source $GITHUB_WORKSPACE/spack/share/spack/setup-env.sh
+        printenv >> $GITHUB_ENV
