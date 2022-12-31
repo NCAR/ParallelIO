@@ -14,9 +14,10 @@ jobs:
     env:
       CC: mpicc
       FC: mpifort
+      CFLAGS: "-std=c99 -Wall"
       CPPFLAGS: "-I/usr/include -I/usr/lib/x86_64-linux-gnu/netcdf/mpi/include/ "
       LDFLAGS: "-L/usr/lib/x86_64-linux-gnu -lnetcdf_mpi -lpnetcdf"
-      FCFLAGS: "-fallow-argument-mismatch"
+      FCFLAGS: "-Wall -fallow-argument-mismatch"
     steps:
     - uses: actions/checkout@v3
     - name: Installs
@@ -48,8 +49,8 @@ jobs:
     - name: make check
       run: |
         cd $GITHUB_WORKSPACE/parallelio-src   
-        make -j check
+        make  check
 
-    - name: Setup tmate session
-      if: ${{ failure() }}
-      uses: mxschmitt/action-tmate@v3
+#    - name: Setup tmate session
+#      if: ${{ failure() }}
+#      uses: mxschmitt/action-tmate@v3
