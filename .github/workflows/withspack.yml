@@ -42,6 +42,12 @@ jobs:
         source $GITHUB_WORKSPACE/spack/share/spack/setup-env.sh
         spack compiler find
         # add a line for this SHA to the parallelio package so that this commit is available
-        sed 's/maintainers = ["jedwards4b"]/maintainers = ["jedwards4b"]\n    version("githubtest", sha256="$GITHUB_SHA")/' \
-         $GITHUB_WORKSPACE/spack/var/spack/repos/builtin/packages/parallelio/package.py 
-        spack install parallelio@${GITHUB_SHA}+pnetcdf+fortran %gcc@12.1.0 
+        if grep -Fxq "githubtest"  $GITHUB_WORKSPACE/spack/var/spack/repos/builtin/packages/parallelio/package.py
+        then
+          sed -i 's/    version("githubtest", sha256=.*$/    version("githubtest", sha256="$GITHUB_SHA")/' \
+          $GITHUB_WORKSPACE/spack/var/spack/repos/builtin/packages/parallelio/package.py 
+        else
+          sed -i 's/    maintainers = ["jedwards4b"]/    maintainers = ["jedwards4b"]\n    version("githubtest", sha256="$GITHUB_SHA")/' \
+          $GITHUB_WORKSPACE/spack/var/spack/repos/builtin/packages/parallelio/package.py
+        fi
+        spack install parallelio@githubtest+pnetcdf+fortran %gcc@12.1.0 
