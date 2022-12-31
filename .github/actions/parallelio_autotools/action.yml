@@ -105,10 +105,12 @@ runs:
       run: |
         cd $GITHUB_WORKSPACE/parallelio-src
         autoreconf -i
-        ./configure --prefix=${{ inputs.install_prefix }} \
-        --enable-fortran=${{ inputs.enable_fortran }} \
-        --with-mpiexec="${{ inputs.with_mpiexec }}" \
-        --with-pnetcdf="${{ inputs.with_pnetcdf }}" 
+        config_opts="--prefix=${{ inputs.install_prefix }} --with-mpiexec="${{ inputs.with_mpiexec }} --enable-fortran=${{ inputs.enable_fortran }} "
+        if [ "${{ inputs.with_pnetcdf }}" ]
+        then
+          config_opts="${config_opts} --disable-pnetcdf "
+        fi
+        ./configure ${config_opts}
         make -j 4 VERBOSE=1
         make install
 
