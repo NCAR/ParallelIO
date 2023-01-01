@@ -55,7 +55,7 @@ jobs:
 
     - name: Test parallelio
       run: |
-        pushd spack-build-*
+        pushd spack-build-ntee64g
         make tests VERBOSE=1
         ctest
         popd
