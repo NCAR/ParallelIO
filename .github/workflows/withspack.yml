@@ -45,9 +45,9 @@ jobs:
         if grep -Fxq "githubtest"  $GITHUB_WORKSPACE/spack/var/spack/repos/builtin/packages/parallelio/package.py
         then
           sed -i 's/version("githubtest", commit=.*$/import os\n    version("githubtest", commit=os.environ["GITHUB_SHA"])/' \
-          cat $GITHUB_WORKSPACE/spack/var/spack/repos/builtin/packages/parallelio/package.py 
+          $GITHUB_WORKSPACE/spack/var/spack/repos/builtin/packages/parallelio/package.py 
         else
-          sed -i 's/maintainers = \["jedwards4b"\]/maintainers = ["jedwards4b"]\n    version("githubtest", commit=os.environ["GITHUB_SHA"])/' \
+          sed -i 's/maintainers = \["jedwards4b"\]/maintainers = ["jedwards4b"]\n    import os\n    version("githubtest", commit=os.environ["GITHUB_SHA"])/' \
           $GITHUB_WORKSPACE/spack/var/spack/repos/builtin/packages/parallelio/package.py
         fi
         cat $GITHUB_WORKSPACE/spack/var/spack/repos/builtin/packages/parallelio/package.py  
