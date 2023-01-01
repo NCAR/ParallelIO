@@ -38,7 +38,7 @@ jobs:
         path: spack
         ref: v0.19.0
 
-    - name: Prep spack
+    - name: Build with spack
       run: |
         source $GITHUB_WORKSPACE/spack/share/spack/setup-env.sh
         # Remove the patch for gfortran, we don't want it
@@ -47,7 +47,7 @@ jobs:
         pushd genf90
         ln -fs $GITHUB_WORKSPACE/scripts/genf90.pl .
         popd
-        spack dev-build -d $GITHUB_WORKSPACE parallelio@develop
+        spack dev-build -d $GITHUB_WORKSPACE parallelio@develop+pnetcdf+fortran ^mpich
 #    - name: Setup tmate session
 #      if: ${{ failure() }}
 #      uses: mxschmitt/action-tmate@v3

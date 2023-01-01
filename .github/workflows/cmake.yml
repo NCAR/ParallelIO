@@ -35,7 +35,7 @@ jobs:
         install_prefix: ${GITHUB_WORKSPACE}/parallelio
         mpiexec_flags: --oversubscribe
         extra_cflags: "-g -O0 -fsanitize=address -fno-omit-frame-pointer -static-libasan"
-        extra_fflags: "-g -O0 -fsanitize=address -fno-omit-frame-pointer -static-libasan"
+#        extra_fflags: "-g -O0 -fsanitize=address -fno-omit-frame-pointer -static-libasan"
     - name: parallelio tests
       run: |
         pushd $GITHUB_WORKSPACE/build
@@ -43,6 +43,6 @@ jobs:
         ctest -VV
         popd
 
-    - name: Setup tmate session
-      if: ${{ failure() }}
-      uses: mxschmitt/action-tmate@v3
+#    - name: Setup tmate session
+#      if: ${{ failure() }}
+#      uses: mxschmitt/action-tmate@v3
