@@ -41,7 +41,7 @@ jobs:
       run: |
         source $GITHUB_WORKSPACE/spack/share/spack/setup-env.sh
         spack compiler find
-        spack dev-build -d $GITHUB_WORKSPACE parallelio
+        spack dev-build -d $GITHUB_WORKSPACE parallelio@$GITHUB_SHA
         #    - name: Setup tmate session
 #      if: ${{ failure() }}
 #      uses: mxschmitt/action-tmate@v3
