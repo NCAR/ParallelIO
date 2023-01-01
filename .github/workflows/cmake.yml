@@ -19,8 +19,6 @@ jobs:
       ASAN_OPTIONS: "detect_odr_violation=0"
     steps:
     - uses: actions/checkout@v3
-      with:
-        path: parallelio-src
     - name: Installs
       run: |
         set -x
