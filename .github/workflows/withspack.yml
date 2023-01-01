@@ -13,6 +13,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+      with:
+        path: parallelio-src
     - name: Installs
       run: |
         set -x
@@ -40,8 +42,9 @@ jobs:
     - name: Prep spack
       run: |
         source $GITHUB_WORKSPACE/spack/share/spack/setup-env.sh
-        spack compiler find
-        spack dev-build -d $GITHUB_WORKSPACE parallelio@develop
-        #    - name: Setup tmate session
-#      if: ${{ failure() }}
-#      uses: mxschmitt/action-tmate@v3
+        # Remove the patch for gfortran, we don't want it
+        sed -i 's/patch(.*$//' $GITHUB_WORKSPACE/spack/var/spack/repos/builtin/packages/parallelio/package.py
+        spack dev-build -d $GITHUB_WORKSPACE/parallelio-src parallelio@develop
+    - name: Setup tmate session
+      if: ${{ failure() }}
+      uses: mxschmitt/action-tmate@v3

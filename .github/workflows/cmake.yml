@@ -1,5 +1,4 @@
-name: cmake ubuntu openmpi latest
-#with AddressSanitizer
+name: cmake ubuntu openmpi latest with AddressSanitizer
 
 on:
   push:
@@ -16,10 +15,12 @@ jobs:
       CC: mpicc
       FC: mpifort
       FCFLAGS: "-fallow-argument-mismatch"
-#      LDFLAGS: "-static-libasan"
-#      ASAN_OPTIONS: "detect_odr_violation=0"
+      LDFLAGS: "-static-libasan"
+      ASAN_OPTIONS: "detect_odr_violation=0"
     steps:
     - uses: actions/checkout@v3
+      with:
+        path: parallelio-src
     - name: Installs
       run: |
         set -x
@@ -35,8 +36,8 @@ jobs:
         enable_logging: True
         install_prefix: ${GITHUB_WORKSPACE}/parallelio
         mpiexec_flags: --oversubscribe
-#        extra_cflags: "-g -O0 -fsanitize=address -fno-omit-frame-pointer -static-libasan"
-#        extra_fflags: "-g -O0 -fsanitize=address -fno-omit-frame-pointer -static-libasan"
+        extra_cflags: "-g -O0 -fsanitize=address -fno-omit-frame-pointer -static-libasan"
+        extra_fflags: "-g -O0 -fsanitize=address -fno-omit-frame-pointer -static-libasan"
     - name: parallelio tests
       run: |
         pushd $GITHUB_WORKSPACE/build
