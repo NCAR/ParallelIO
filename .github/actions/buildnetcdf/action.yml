@@ -58,7 +58,7 @@ runs:
         config_args=--prefix=${{ inputs.install_prefix }}
         if [ ! ${{ inputs.enable_dap }} ];
         then
-          config_args="$config_args --disable-dap
+          config_args="$config_args --disable-dap"
         fi
         ./configure $config_args
         make
