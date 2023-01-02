@@ -11,8 +11,8 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      CPPFLAGS: "-I/home/runner/mpich/include"
-      LDFLAGS: "-L/home/runner/mpich/lib "
+      CPPFLAGS: "-I$GITHUB_WORKSPACE/mpich/include"
+      LDFLAGS: "-L$GITHUB_WORKSPACE/mpich/lib "
       # Note issue https://github.com/NCAR/ParallelIO/issues/1889 netcdf integration currently only works with netcdf 4.7.4
       NETCDF_C_VERSION: v4.7.4
       NETCDF_FORTRAN_VERSION: v4.5.4
