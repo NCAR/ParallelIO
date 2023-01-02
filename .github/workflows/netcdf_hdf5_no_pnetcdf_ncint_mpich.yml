@@ -11,8 +11,8 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      CPPFLAGS: "-I$GITHUB_WORKSPACE/mpich/include"
-      LDFLAGS: "-L$GITHUB_WORKSPACE/mpich/lib "
+      CPPFLAGS: "-I${GITHUB_WORKSPACE}/mpich/include"
+      LDFLAGS: "-L${GITHUB_WORKSPACE}/mpich/lib "
       # Note issue https://github.com/NCAR/ParallelIO/issues/1889 netcdf integration currently only works with netcdf 4.7.4
       NETCDF_C_VERSION: v4.7.4
       NETCDF_FORTRAN_VERSION: v4.5.4
@@ -29,21 +29,21 @@ jobs:
       id: cache-mpich
       uses: actions/cache@v3
       with:
-        path: $GITHUB_WORKSPACE/mpich
+        path: ~/work/ParallelIO/ParallelIO/mpich
         key: mpich-${{ runner.os }}-${{ env.MPICH_VERSION }}
 
     - name: build-mpich
       if: steps.cache-mpich.outputs.cache-hit != 'true'
       uses: ./.github/actions/buildmpich
       with:
-        install_prefix: $GITHUB_WORKSPACE/mpich
+        install_prefix: ${GITHUB_WORKSPACE}/mpich
         mpich_version: ${{ env.MPICH_VERSION }}
 
     - name: cache-hdf5
       id: cache-hdf5
       uses: actions/cache@v3
       with:
-        path: $GITHUB_WORKSPACE/hdf5
+        path: ${GITHUB_WORKSPACE}/hdf5
         key: hdf5-${{ runner.os }}-${{ env.HDF5_VERSION }}-mpich-${{ env.MPICH_VERSION }}
 
     - name: build-hdf5
