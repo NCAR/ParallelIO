@@ -55,19 +55,25 @@ jobs:
         hdf5_version: ${{ env.HDF5_VERSION }}
         mpi_path: $GITHUB_WORKSPACE/mpich
 
-    - name: cache-netcdf-c
-      id: cache-netcdf-c
+    - name: cache-netcdf
+      id: cache-netcdf
       uses: actions/cache@v3
       with:
-        path: ~/netcdf-c
-        key: netcdf-c-${{ runner.os }}-${{ env.NETCDF_C_VERSION }}-mpich-${{ env.MPICH_VERSION }}-hdf5-${{ env.HDF5_VERSION }}
-
-    # - name: build-netcdf-c
-    #   if: steps.cache-netcdf-c.outputs.cache-hit != 'true'
-    #   uses: ./.github/actions/buildnetcdf
-    #   with:
-    #     netcdf_version: ${{ env.NETCDF_VERSION }}
-    #     install_prefix: $HOME/netcdf-c
+        path: ~/netcdf
+        key: netcdf-${{ runner.os }}-${{ env.NETCDF_C_VERSION }}-${{ env.NETCDF_FORTRAN_VERSION }}-mpich-${{ env.MPICH_VERSION }}-hdf5-${{ env.HDF5_VERSION }}
+    - name: Prep Netcdf
+      run: |
+        export CPPFLAGS="$CPPFLAGS -I${GITHUB_WORKSPACE}/hdf5/include"
+        export LDFLAGS="$LDFLAGS -L${GITHUB_WORKSPACE}/hdf5/lib "
+        printenv >> $GITHUB_ENV
+      
+        
+    - name: build-netcdf-c
+      if: steps.cache-netcdf.outputs.cache-hit != 'true'
+      uses: ./.github/actions/buildnetcdf
+      with:
+        netcdf_version: ${{ env.NETCDF_VERSION }}
+        install_prefix: ${GITHUB_WORKSPACE}/netcdf
 
     # - name: cache-netcdf-fortran
     #   id: cache-netcdf-fortran
@@ -76,13 +82,13 @@ jobs:
     #     path: ~/netcdf-fortran
     #     key: netcdf-fortran-${{ runner.os }}-${{ env.NETCDF_FORTRAN_VERSION }}-mpich-${{ env.MPICH_VERSION }}-hdf5-${{ env.HDF5_VERSION }}
 
-    # - name: Build NetCDF Fortran
-    #   if: steps.cache-netcdf-fortran.outputs.cache-hit != 'true'
-    #   uses: ./.github/actions/buildnetcdff
-    #   with:
-    #     netcdf_fortran_version: ${{ env.NETCDF_FORTRAN_VERSION }}
-    #     install_prefix: $HOME/netcdf-fortran
-    #     netcdf_c_path: $HOME/netcdf-c
+    - name: Build NetCDF Fortran
+      if: steps.cache-netcdf-fortran.outputs.cache-hit != 'true'
+      uses: ./.github/actions/buildnetcdff
+      with:
+        netcdf_fortran_version: ${{ env.NETCDF_FORTRAN_VERSION }}
+        install_prefix: ${GITHUB_WORKSPACE}/netcdf
+        netcdf_c_path: ${GITHUB_WORKSPACE}/netcdf
 
     # - name: Build ParallelIO with autotools
     #   uses: ./.github/actions/parallelio_autotools
