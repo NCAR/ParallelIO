@@ -72,7 +72,7 @@ jobs:
       if: steps.cache-netcdf.outputs.cache-hit != 'true'
       uses: ./.github/actions/buildnetcdf
       with:
-        netcdf_version: ${{ env.NETCDF_VERSION }}
+        netcdf_version: ${{ env.NETCDF_C_VERSION }}
         install_prefix: ${GITHUB_WORKSPACE}/netcdf
 
     # - name: cache-netcdf-fortran
