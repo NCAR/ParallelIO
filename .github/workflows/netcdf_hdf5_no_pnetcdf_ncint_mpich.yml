@@ -64,7 +64,7 @@ jobs:
     - name: Prep Netcdf
       run: |
         export CPPFLAGS="$CPPFLAGS -I${GITHUB_WORKSPACE}/hdf5/include"
-        export LDFLAGS="$LDFLAGS -L${GITHUB_WORKSPACE}/hdf5/lib "
+        export LDFLAGS="$LDFLAGS -L${GITHUB_WORKSPACE}/hdf5/lib -lhdf5 "
         printenv >> $GITHUB_ENV
       
         
