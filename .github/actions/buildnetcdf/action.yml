@@ -54,6 +54,7 @@ runs:
       shell: bash
       run: |
         pushd $GITHUB_WORKSPACE/netcdf-c-src
+        autoreconf -i
         ./configure --prefix=${{ inputs.install_prefix }}
         make
         make install
