@@ -56,10 +56,11 @@ runs:
         pushd $GITHUB_WORKSPACE/netcdf-c-src
         autoreconf -i
         config_args=--prefix=${{ inputs.install_prefix }}
-        if [ ! ${{ inputs.enable_dap }} ];
+        if [ "${{ inputs.enable_dap }}" = "false" ];
         then
           config_args="$config_args --disable-dap"
         fi
+        echo "config_args=$config_args"
         ./configure $config_args
         make
         make install
