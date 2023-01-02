@@ -51,6 +51,7 @@ jobs:
         pushd genf90
         ln -fs $GITHUB_WORKSPACE/scripts/genf90.pl .
         popd
+        spack uninstall -y parallelio@develop+pnetcdf+fortran ^mpich
         spack dev-build -d $GITHUB_WORKSPACE parallelio@develop+pnetcdf+fortran ^mpich
 
     - name: Test parallelio
