@@ -53,12 +53,12 @@ jobs:
         popd
         spack dev-build -d $GITHUB_WORKSPACE parallelio@develop+pnetcdf+fortran ^mpich
 
-#    - name: Test parallelio
-#      run: |
-#        pushd spack-build-ntee64g
-#        make tests VERBOSE=1
-#        ctest
-#        popd
+    - name: Test parallelio
+      run: |
+        pushd spack-build-ntee64g
+        make tests VERBOSE=1
+        ctest
+        popd
         
 
 #    - name: Setup tmate session
