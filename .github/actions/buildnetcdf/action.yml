@@ -55,7 +55,12 @@ runs:
       run: |
         pushd $GITHUB_WORKSPACE/netcdf-c-src
         autoreconf -i
-        ./configure --prefix=${{ inputs.install_prefix }}
+        config_args=--prefix=${{ inputs.install_prefix }}
+        if [ ! ${{ inputs.enable_dap }} ];
+        then
+          config_args="$config_args --disable-dap
+        fi
+        ./configure $config_args
         make
         make install
         popd
