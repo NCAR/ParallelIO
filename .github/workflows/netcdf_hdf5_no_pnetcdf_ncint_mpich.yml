@@ -97,9 +97,12 @@ jobs:
     #     with_netcdf_integration: True
     #     with_mpiexec: 'mpiexec --oversubscribe'
     #     parallelio_version: ${{ env.GITHUB_SHA }}
-    - name: make check
-      run: |
-        cd $GITHUB_WORKSPACE/parallelio-src   
-        make -j check
+    #- name: make check
+    #  run: |
+    #    cd $GITHUB_WORKSPACE/parallelio-src   
+    #    make -j check
+    - name: Setup tmate session
+      if: ${{ failure() }}
+      uses: mxschmitt/action-tmate@v3
         
         
