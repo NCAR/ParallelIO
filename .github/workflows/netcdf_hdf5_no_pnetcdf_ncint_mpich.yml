@@ -70,7 +70,7 @@ jobs:
         printenv >> $GITHUB_ENV
       
         
-    - name: build-netcdf-c
+    - name: Build NetCDF C
       if: steps.cache-netcdf.outputs.cache-hit != 'true'
       uses: ./.github/actions/buildnetcdf
       with:

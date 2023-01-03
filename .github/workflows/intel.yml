@@ -72,9 +72,9 @@ jobs:
 
     - name: prep netcdf-c
       run: |
-        export PATH=$GITHUB_WORKSPACE/hdf5/bin:$PATH
+        export PATH=$GITHUB_WORKSPACE/hdf5/bin:$GITHUB_WORKSPACE/netcdf/bin:$PATH
         export LDFLAGS="$LDFLAGS -L$GITHUB_WORKSPACE/hdf5/lib  "
-        export CPPFLAGS="$CPPFLAGS -I$GITHUB_WORKSPACE/hdf5/include"
+        export CPPFLAGS="$CPPFLAGS -I$GITHUB_WORKSPACE/hdf5/include -I$GITHUB_WORKSPACE/netcdf/include"
         export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$GITHUB_WORKSPACE/hdf5/lib"
         printenv >> $GITHUB_ENV
     - name: build-netcdf-c
