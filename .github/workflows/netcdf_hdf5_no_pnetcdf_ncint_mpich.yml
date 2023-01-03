@@ -63,6 +63,8 @@ jobs:
         key: netcdf-${{ runner.os }}-${{ env.NETCDF_C_VERSION }}-${{ env.NETCDF_FORTRAN_VERSION }}-mpich-${{ env.MPICH_VERSION }}-hdf5-${{ env.HDF5_VERSION }}
     - name: Prep Netcdf
       run: |
+        export CC=mpicc
+        export PATH="${GITHUB_WORKSPACE}/hdf5/bin:${GITHUB_WORKSPACE}/mpich/bin:$PATH"
         export CPPFLAGS="$CPPFLAGS -I${GITHUB_WORKSPACE}/hdf5/include"
         export LDFLAGS="$LDFLAGS -L${GITHUB_WORKSPACE}/hdf5/lib -lhdf5 "
         printenv >> $GITHUB_ENV
