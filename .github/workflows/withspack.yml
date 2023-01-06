@@ -1,5 +1,5 @@
 name: Build with Spack
-# Tests ParallelIO using Intel Compiler and IMPI library.
+# Tests ParallelIO using spack tools
 on:
   push:
     branches: [ master ]
@@ -59,7 +59,7 @@ jobs:
         pushd spack-build-ntee64g
         make tests
         # Exclude two tests that are timing out.
-        ctest -VV -LE test_pioc_putget -LE test_darray_multivar 
+        ctest --timeout 1200
         popd
         
 
