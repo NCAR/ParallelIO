@@ -67,6 +67,7 @@ jobs:
         export FC=mpifort
         export PATH="${GITHUB_WORKSPACE}/hdf5/bin:${GITHUB_WORKSPACE}/mpich/bin:${GITHUB_WORKSPACE}/netcdf/bin:$PATH"
         export CPPFLAGS="$CPPFLAGS -I${GITHUB_WORKSPACE}/hdf5/include -I${GITHUB_WORKSPACE}/netcdf/include"
+        export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${GITHUB_WORKSPACE}/hdf5/lib"
         export LDFLAGS="$LDFLAGS -L${GITHUB_WORKSPACE}/hdf5/lib  -L${GITHUB_WORKSPACE}/netcdf/lib "
         printenv >> $GITHUB_ENV
       
