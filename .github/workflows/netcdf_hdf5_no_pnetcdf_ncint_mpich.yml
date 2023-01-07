@@ -57,7 +57,7 @@ jobs:
       id: cache-netcdf
       uses: actions/cache@v3
       with:
-        path: ~/sork/ParallelIO/ParallelIO/netcdf
+        path: ~/work/ParallelIO/ParallelIO/netcdf
         key: netcdf-${{ runner.os }}-${{ env.NETCDF_C_VERSION }}-${{ env.NETCDF_FORTRAN_VERSION }}-mpich-${{ env.MPICH_VERSION }}-hdf5-${{ env.HDF5_VERSION }}
     - name: Prep Netcdf
       run: |
