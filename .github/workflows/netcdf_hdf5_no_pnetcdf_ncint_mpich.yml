@@ -94,19 +94,19 @@ jobs:
         install_prefix: ${GITHUB_WORKSPACE}/netcdf
         netcdf_c_path: ${GITHUB_WORKSPACE}/netcdf
 
-    # - name: Build ParallelIO with autotools
-    #   uses: ./.github/actions/parallelio_autotools
-    #   with:
-    #     enable_fortran: True
-    #     with_netcdf_integration: True
-    #     with_mpiexec: 'mpiexec --oversubscribe'
-    #     parallelio_version: ${{ env.GITHUB_SHA }}
-    #- name: make check
-    #  run: |
-    #    cd $GITHUB_WORKSPACE/parallelio-src   
-    #    make -j check
-    - name: Setup tmate session
-      if: ${{ failure() }}
-      uses: mxschmitt/action-tmate@v3
+    - name: Build ParallelIO with autotools
+      uses: ./.github/actions/parallelio_autotools
+      with:
+        enable_fortran: True
+        with_netcdf_integration: True
+        with_mpiexec: 'mpiexec --oversubscribe'
+        parallelio_version: ${{ env.GITHUB_SHA }}
+    - name: make check
+     run: |
+       cd $GITHUB_WORKSPACE/parallelio-src   
+       make -j check
+#    - name: Setup tmate session
+#      if: ${{ failure() }}
+#      uses: mxschmitt/action-tmate@v3
         
         
