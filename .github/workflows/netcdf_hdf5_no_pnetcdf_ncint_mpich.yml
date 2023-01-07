@@ -97,7 +97,6 @@ jobs:
       with:
         enable_fortran: True
         with_netcdf_integration: True
-        with_mpiexec: 'mpiexec --oversubscribe'
         parallelio_version: ${{ env.GITHUB_SHA }}
     - name: make check
       run: |
