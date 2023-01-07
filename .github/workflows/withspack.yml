@@ -53,10 +53,11 @@ jobs:
       run: |
         source $GITHUB_WORKSPACE/spack/share/spack/setup-env.sh
         mkdir genf90
-        pushd genf90
+        pushd genf90    
         ln -fs $GITHUB_WORKSPACE/scripts/genf90.pl .
         popd
-        spack uninstall -y parallelio@develop+pnetcdf+fortran ^mpich
+        # the || true prevents a fail if parallelio is not installed
+        spack uninstall -y parallelio@develop+pnetcdf+fortran ^mpich || true
         spack dev-build -d $GITHUB_WORKSPACE parallelio@develop+pnetcdf+fortran ^mpich
 
     - name: Test parallelio
