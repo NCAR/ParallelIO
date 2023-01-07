@@ -22,6 +22,10 @@ jobs:
         sudo apt-get install libz-dev
         sudo apt-get install gfortran
 
+    - name: Get latest spack release tag
+        run: |
+          export SPACK_LATEST="$(curl -sL https://github.com/spack/spack/releases/latest |grep '<title>Release' | awk '{print $2}')"
+          printenv >> $GITHUB_ENV
     - name: cache spack
       id: cache-spack
       uses: actions/cache@v3
@@ -29,20 +33,21 @@ jobs:
         path: |
           ~/work/ParallelIO/ParallelIO/spack
           ~/.spack
-        key: spack-${{ runner.os }}-1
+        key: spack-${{ runner.os }}-${{ env.SPACK_LATEST }}
     - name: Get Spack
       if: steps.cache-spack.outputs.cache-hit != 'true'
       uses: actions/checkout@v3
       with:
         repository: spack/spack
         path: spack
-        ref: v0.19.0
+        ref: ${{ env.SPACK_LATEST }}
 
     - name: Prep spack
       run: |
         source $GITHUB_WORKSPACE/spack/share/spack/setup-env.sh
         spack compiler find
         # Remove the patch for gfortran, we don't want it
+        # 
         sed -i 's/patch(.*$//' $GITHUB_WORKSPACE/spack/var/spack/repos/builtin/packages/parallelio/package.py
     - name: Build with spack
       run: |
