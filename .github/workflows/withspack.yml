@@ -23,9 +23,9 @@ jobs:
         sudo apt-get install gfortran
 
     - name: Get latest spack release tag
-        run: |
-          export SPACK_LATEST="$(curl -sL https://github.com/spack/spack/releases/latest |grep '<title>Release' | awk '{print $2}')"
-          printenv >> $GITHUB_ENV
+      run: |
+        export SPACK_LATEST="$(curl -sL https://github.com/spack/spack/releases/latest |grep '<title>Release' | awk '{print $2}')"
+        printenv >> $GITHUB_ENV
     - name: cache spack
       id: cache-spack
       uses: actions/cache@v3
