@@ -56,7 +56,8 @@ jobs:
 
     - name: Test parallelio
       run: |
-        pushd spack-build-ntee64g
+        pioblddir=$(ls -td */ | head -1)
+        pushd $pioblddir
         make tests
         # Exclude two tests that are timing out.
         ctest --timeout 1200
