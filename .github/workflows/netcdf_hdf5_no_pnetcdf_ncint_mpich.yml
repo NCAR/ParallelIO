@@ -7,9 +7,7 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
     env:
       CPPFLAGS: "-I${GITHUB_WORKSPACE}/mpich/include"
       LDFLAGS: "-L${GITHUB_WORKSPACE}/mpich/lib "
@@ -102,9 +100,9 @@ jobs:
         with_mpiexec: 'mpiexec --oversubscribe'
         parallelio_version: ${{ env.GITHUB_SHA }}
     - name: make check
-     run: |
-       cd $GITHUB_WORKSPACE/parallelio-src   
-       make -j check
+      run: |
+        cd $GITHUB_WORKSPACE/parallelio-src   
+        make -j check
 #    - name: Setup tmate session
 #      if: ${{ failure() }}
 #      uses: mxschmitt/action-tmate@v3
