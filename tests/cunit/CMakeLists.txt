@@ -235,6 +235,9 @@ else ()
     EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/test_pioc_putget
     NUMPROCS ${AT_LEAST_FOUR_TASKS}
     TIMEOUT ${DEFAULT_TEST_TIMEOUT})
+  # timeout in github testing - skip this test
+  set_tests_properties(test_pioc_putget PROPERTIES LABELS "skipforspack")
+
   add_mpi_test(test_pioc_fill
     EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/test_pioc_fill
     NUMPROCS ${AT_LEAST_FOUR_TASKS}
@@ -259,6 +262,9 @@ else ()
     EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/test_darray_multivar
     NUMPROCS ${AT_LEAST_FOUR_TASKS}
     TIMEOUT ${DEFAULT_TEST_TIMEOUT})
+  # timeout in github testing - skip this test
+  set_tests_properties(test_darray_multivar PROPERTIES LABELS "skipforspack")
+
   add_mpi_test(test_darray_multivar2
     EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/test_darray_multivar2
     NUMPROCS ${AT_LEAST_FOUR_TASKS}

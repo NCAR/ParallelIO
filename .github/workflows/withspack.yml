@@ -60,7 +60,7 @@ jobs:
         pushd $pioblddir
         make tests
         # Exclude two tests that are timing out.
-        ctest --timeout 1200
+        ctest -LE skipforspack
         popd
         
 
