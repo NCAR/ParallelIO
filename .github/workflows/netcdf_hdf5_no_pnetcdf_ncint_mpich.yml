@@ -41,7 +41,7 @@ jobs:
       id: cache-hdf5
       uses: actions/cache@v3
       with:
-        path: ${GITHUB_WORKSPACE}/hdf5
+        path: ~/work/ParallelIO/ParallelIO/hdf5
         key: hdf5-${{ runner.os }}-${{ env.HDF5_VERSION }}-mpich-${{ env.MPICH_VERSION }}
 
     - name: build-hdf5
@@ -57,7 +57,7 @@ jobs:
       id: cache-netcdf
       uses: actions/cache@v3
       with:
-        path: ~/netcdf
+        path: ~/sork/ParallelIO/ParallelIO/netcdf
         key: netcdf-${{ runner.os }}-${{ env.NETCDF_C_VERSION }}-${{ env.NETCDF_FORTRAN_VERSION }}-mpich-${{ env.MPICH_VERSION }}-hdf5-${{ env.HDF5_VERSION }}
     - name: Prep Netcdf
       run: |
