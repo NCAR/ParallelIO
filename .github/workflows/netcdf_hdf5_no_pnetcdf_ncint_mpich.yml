@@ -96,7 +96,7 @@ jobs:
       uses: ./.github/actions/parallelio_autotools
       with:
         enable_fortran: True
-        with_netcdf_integration: True
+        enable_netcdf_integration: True
         parallelio_version: ${{ env.GITHUB_SHA }}
     - name: make check
       run: |
