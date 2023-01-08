@@ -189,8 +189,8 @@ CVector parallel_sort(MPI_Comm comm, CVector v, int *ierr) {
  */
 int run_unique_check(MPI_Comm comm, size_t N,datatype *v, bool *has_dups)
 {
-  int rank, size, i, r;
-  int mpierr=MPI_SUCCESS, mpierr2;
+  int rank, size;
+  int mpierr=MPI_SUCCESS, mpierr2=MPI_SUCCESS;
   int ierr;
   if ((mpierr = MPI_Comm_rank(comm, &rank)))
     check_mpi(NULL, NULL, mpierr2, __FILE__, __LINE__);
