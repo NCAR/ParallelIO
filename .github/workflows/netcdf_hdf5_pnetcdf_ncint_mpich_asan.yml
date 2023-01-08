@@ -1,9 +1,9 @@
 name: netcdf_hdf5_pnetcdf_ncint_mpich_asan
 on:
   push:
-    branches: [ mastertodo ]
+    branches: [ maintodo ]
   pull_request:
-    branches: [ mastertodo ]
+    branches: [ maintodo ]
 
 jobs:
   build:

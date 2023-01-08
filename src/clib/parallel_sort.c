@@ -1,5 +1,5 @@
 /**
- * c.f.: https://raw.githubusercontent.com/rabauke/mpl/master/examples/parallel_sort_mpi.c
+ * c.f.: https://raw.githubusercontent.com/rabauke/mpl/main/examples/parallel_sort_mpi.c
  * parallel sort algorithm for distributed memory computers
  *
  * algorithm works as follows:
