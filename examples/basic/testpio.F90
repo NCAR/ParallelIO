@@ -110,8 +110,8 @@ program testpio
   integer(i4), parameter ::  nml_in = 10
   character(len=*), parameter :: nml_filename = 'testpio_in'
 
-  integer(i4)  :: master_task
-  logical      :: log_master_task
+  integer(i4)  :: main_task
+  logical      :: log_main_task
   integer(i4)  :: nml_error
   integer(kind=pio_offset_kind)  :: sdof,sdof_sum,sdof_min,sdof_max
 
@@ -157,11 +157,11 @@ program testpio
   call CheckMPIReturn('Call to MPI_COMM_RANK()',ierr,__FILE__,__LINE__)
   call MPI_COMM_SIZE(MPI_COMM_WORLD,nprocs,ierr)
   call CheckMPIReturn('Call to MPI_COMM_SIZE()',ierr,__FILE__,__LINE__)
-  master_task = 0
-  if (my_task == master_task) then
-     log_master_task = .true.
+  main_task = 0
+  if (my_task == main_task) then
+     log_main_task = .true.
   else
-     log_master_task = .false.
+     log_main_task = .false.
   endif
 
   if(Debug)    print *,'testpio: before call to t_initf'
@@ -171,7 +171,7 @@ program testpio
   !---------------------------------------------------------------
   if(Debug)    print *,'testpio: point #1'
   call t_initf(nml_filename, logprint=.false., logunit=6, &
-       mpicom=MPI_COMM_WORLD, MasterTask=log_master_task)
+       mpicom=MPI_COMM_WORLD, mainTask=log_main_task)
   if(Debug)    print *,'testpio: point #2'
   call t_startf('testpio_total')
 
@@ -193,7 +193,7 @@ program testpio
   if (mrss1 - mrss0 > 0) then
      mb_blk = (8.0_r8)/((mrss1-mrss0)*1.0_r8)
   endif
-  if (my_task == master_task) then
+  if (my_task == main_task) then
      write(*,*) myname,' 8 MB memory   alloc in MB is ',(mrss1-mrss0)*mb_blk
      write(*,*) myname,' 8 MB memory dealloc in MB is ',(mrss1-mrss2)*mb_blk
      write(*,*) myname,' Memory block size conversion in bytes is ',mb_blk*1024_r8*1024.0_r8
@@ -212,12 +212,12 @@ program testpio
   !----------------------------------------------------------------
 
   if(Debug)    print *,'testpio: before call to readTestPIO_Namelist'
-  if(my_task == master_task) then 
+  if(my_task == main_task) then 
      call ReadTestPIO_Namelist(nml_in, nprocs, nml_filename, myname, nml_error)
   endif
   if(Debug) print *,'testpio: before call to broadcast_namelist'
   call MPI_barrier(MPI_COMM_WORLD,ierr)
-  call Broadcast_Namelist(myname, my_task, master_task, MPI_COMM_WORLD, ierr)
+  call Broadcast_Namelist(myname, my_task, main_task, MPI_COMM_WORLD, ierr)
   if(Debug) print *,'testpio: after call to broadcast_namelist'
 
   !-------------------------------------
@@ -436,17 +436,17 @@ program testpio
 #endif
 
   sdof = sum(compDOF)
-  call MPI_REDUCE(sdof,sdof_sum,1,MPI_INTEGER8,MPI_SUM,master_task,MPI_COMM_COMPUTE,ierr)
+  call MPI_REDUCE(sdof,sdof_sum,1,MPI_INTEGER8,MPI_SUM,main_task,MPI_COMM_COMPUTE,ierr)
   call CheckMPIReturn('Call to MPI_REDUCE SUM',ierr,__FILE__,__LINE__)
 
   sdof = minval(compDOF)
-  call MPI_REDUCE(sdof,sdof_min,1,MPI_INTEGER8,MPI_MIN,master_task,MPI_COMM_COMPUTE,ierr)
+  call MPI_REDUCE(sdof,sdof_min,1,MPI_INTEGER8,MPI_MIN,main_task,MPI_COMM_COMPUTE,ierr)
   call CheckMPIReturn('Call to MPI_REDUCE MIN',ierr,__FILE__,__LINE__)
 
   sdof = maxval(compDOF)
-  call MPI_REDUCE(sdof,sdof_max,1,MPI_INTEGER8,MPI_MAX,master_task,MPI_COMM_COMPUTE,ierr)
+  call MPI_REDUCE(sdof,sdof_max,1,MPI_INTEGER8,MPI_MAX,main_task,MPI_COMM_COMPUTE,ierr)
   call CheckMPIReturn('Call to MPI_REDUCE MAX',ierr,__FILE__,__LINE__)
-  if (my_task == master_task) then
+  if (my_task == main_task) then
      write(6,*) trim(myname),' total nprocs = ',nprocs
      write(6,*) trim(myname),' compDOF sum/min/max = ',sdof_sum,sdof_min,sdof_max
   endif
@@ -621,7 +621,7 @@ program testpio
 	   readPhase = .true.
         endif
      endif
-     if(log_master_task) print *,'{write,read}Phase:  ',writePhase,readPhase
+     if(log_main_task) print *,'{write,read}Phase:  ',writePhase,readPhase
 
      
      do it=1,maxiter
@@ -1343,7 +1343,7 @@ program testpio
   lmem(2) = mrss
   call mpi_gather(lmem,2,MPI_INTEGER,gmem,2,MPI_INTEGER,0,MPI_COMM_COMPUTE,ierr)
   call CheckMPIReturn('Call to mpi_gather',ierr,__FILE__,__LINE__)
-  if (my_task == master_task) then
+  if (my_task == main_task) then
      do n = 0,nprocs-1
         write(*,'(2a,i8,a,2f10.2)') myname,' my_task=',n,' : (hw, usage) memory (MB) = ',gmem(1,n)*mb_blk,gmem(2,n)*mb_blk
      enddo
@@ -1356,8 +1356,8 @@ program testpio
 
   call MPI_Barrier(MPI_COMM_COMPUTE,ierr)
 
-!  print *,my_task, master_task
-  if (my_task == master_task) then
+!  print *,my_task, main_task
+  if (my_task == main_task) then
      print *,' '
      print *,'testpio completed successfully'
      print *,' '

@@ -235,8 +235,8 @@ PIOc_closefile(int ncid)
         if (file->writable)
             PIOc_sync(ncid);
 
-    /* If async is in use and this is a comp tasks, then the compmaster
-     * sends a msg to the pio_msg_handler running on the IO master and
+    /* If async is in use and this is a comp tasks, then the compmain
+     * sends a msg to the pio_msg_handler running on the IO main and
      * waiting for a message. Then broadcast the ncid over the intercomm
      * to the IO tasks. */
     if (ios->async)
@@ -245,11 +245,11 @@ PIOc_closefile(int ncid)
         {
             int msg = PIO_MSG_CLOSE_FILE;
 
-            if (ios->compmaster == MPI_ROOT)
+            if (ios->compmain == MPI_ROOT)
                 mpierr = MPI_Send(&msg, 1, MPI_INT, ios->ioroot, 1, ios->union_comm);
 
             if (!mpierr)
-                mpierr = MPI_Bcast(&ncid, 1, MPI_INT, ios->compmaster, ios->intercomm);
+                mpierr = MPI_Bcast(&ncid, 1, MPI_INT, ios->compmain, ios->intercomm);
         }
 
         /* Handle MPI errors. */
@@ -326,7 +326,7 @@ PIOc_deletefile(int iosysid, const char *filename)
     if (!(ios = pio_get_iosystem_from_id(iosysid)))
         return pio_err(NULL, NULL, PIO_EBADID, __FILE__, __LINE__);
 
-    /* If async is in use, send message to IO master task. */
+    /* If async is in use, send message to IO main task. */
     if (ios->async)
     {
         if (!ios->ioproc)
@@ -336,9 +336,9 @@ PIOc_deletefile(int iosysid, const char *filename)
 
             len = strlen(filename);
             if (!mpierr)
-                mpierr = MPI_Bcast(&len, 1, MPI_INT, ios->compmaster, ios->intercomm);
+                mpierr = MPI_Bcast(&len, 1, MPI_INT, ios->compmain, ios->intercomm);
             if (!mpierr)
-                mpierr = MPI_Bcast((void *)filename, len + 1, MPI_CHAR, ios->compmaster,
+                mpierr = MPI_Bcast((void *)filename, len + 1, MPI_CHAR, ios->compmain,
                                    ios->intercomm);
             PLOG((2, "Bcast len = %d filename = %s", len, filename));
         }
@@ -426,18 +426,18 @@ PIOc_sync(int ncid)
         }
     }
 
-    /* If async is in use, send message to IO master tasks. */
+    /* If async is in use, send message to IO main tasks. */
     if (ios->async)
     {
         if (!ios->ioproc)
         {
             int msg = PIO_MSG_SYNC;
 
-            if (ios->compmaster == MPI_ROOT)
+            if (ios->compmain == MPI_ROOT)
                 mpierr = MPI_Send(&msg, 1, MPI_INT, ios->ioroot, 1, ios->union_comm);
 
             if (!mpierr)
-                mpierr = MPI_Bcast(&ncid, 1, MPI_INT, ios->compmaster, ios->intercomm);
+                mpierr = MPI_Bcast(&ncid, 1, MPI_INT, ios->compmain, ios->intercomm);
         }
 
         /* Handle MPI errors. */

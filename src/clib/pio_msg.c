@@ -50,7 +50,7 @@ int inq_type_handler(iosystem_desc_t *ios)
     PLOG((1, "inq_type_handler"));
     assert(ios);
 
-    /* Get the parameters for this function that the the comp master
+    /* Get the parameters for this function that the the comp main
      * task is broadcasting. */
     if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
         return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
@@ -94,7 +94,7 @@ int inq_format_handler(iosystem_desc_t *ios)
     PLOG((1, "inq_format_handler"));
     assert(ios);
 
-    /* Get the parameters for this function that the the comp master
+    /* Get the parameters for this function that the the comp main
      * task is broadcasting. */
     if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
         return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
@@ -134,7 +134,7 @@ int set_fill_handler(iosystem_desc_t *ios)
     PLOG((1, "set_fill_handler"));
     assert(ios);
 
-    /* Get the parameters for this function that the the comp master
+    /* Get the parameters for this function that the the comp main
      * task is broadcasting. */
     if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
         return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
@@ -182,7 +182,7 @@ int create_file_handler(iosystem_desc_t *ios)
     PLOG((1, "create_file_handler comproot = %d", ios->comproot));
     assert(ios);
 
-    /* Get the parameters for this function that the he comp master
+    /* Get the parameters for this function that the he comp main
      * task is broadcasting. */
     if ((mpierr = MPI_Bcast(&len, 1, MPI_INT, 0, ios->intercomm)))
         return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
@@ -252,7 +252,7 @@ int close_file_handler(iosystem_desc_t *ios)
     PLOG((1, "close_file_handler"));
     assert(ios);
 
-    /* Get the parameters for this function that the the comp master
+    /* Get the parameters for this function that the the comp main
      * task is broadcasting. */
     if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
         return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
@@ -286,7 +286,7 @@ int inq_handler(iosystem_desc_t *ios)
     PLOG((1, "inq_handler"));
     assert(ios);
 
-    /* Get the parameters for this function that the the comp master
+    /* Get the parameters for this function that the the comp main
      * task is broadcasting. */
     if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
         return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
@@ -341,7 +341,7 @@ int inq_unlimdims_handler(iosystem_desc_t *ios)
     PLOG((1, "inq_unlimdims_handler"));
     assert(ios);
 
-    /* Get the parameters for this function that the the comp master
+    /* Get the parameters for this function that the the comp main
      * task is broadcasting. */
     if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
         return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
@@ -390,7 +390,7 @@ int inq_dim_handler(iosystem_desc_t *ios, int msg)
     PLOG((1, "inq_dim_handler"));
     assert(ios);
 
-    /* Get the parameters for this function that the the comp master
+    /* Get the parameters for this function that the the comp main
      * task is broadcasting. */
     if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
         return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
@@ -436,7 +436,7 @@ int inq_dimid_handler(iosystem_desc_t *ios)
     PLOG((1, "inq_dimid_handler"));
     assert(ios);
 
-    /* Get the parameters for this function that the the comp master
+    /* Get the parameters for this function that the the comp main
      * task is broadcasting. */
     if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
         return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
@@ -483,15 +483,15 @@ int inq_att_handler(iosystem_desc_t *ios)
     PLOG((1, "inq_att_handler"));
     assert(ios);
 
-    /* Get the parameters for this function that the the comp master
+    /* Get the parameters for this function that the the comp main
      * task is broadcasting. */
     if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
         return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
     if ((mpierr = MPI_Bcast(&varid, 1, MPI_INT, 0, ios->intercomm)))
         return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&namelen, 1, MPI_INT,  ios->compmaster, ios->intercomm)))
+    if ((mpierr = MPI_Bcast(&namelen, 1, MPI_INT,  ios->compmain, ios->intercomm)))
         return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(name, namelen + 1, MPI_CHAR, ios->compmaster,
+    if ((mpierr = MPI_Bcast(name, namelen + 1, MPI_CHAR, ios->compmain,
                             ios->intercomm)))
         return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
     if ((mpierr = MPI_Bcast(&xtype_present, 1, MPI_CHAR, 0, ios->intercomm)))
@@ -534,13 +534,13 @@ int inq_attname_handler(iosystem_desc_t *ios)
     PLOG((1, "inq_att_name_handler"));
     assert(ios);
 
-    /* Get the parameters for this function that the the comp master
+    /* Get the parameters for this function that the the comp main
      * task is broadcasting. */
     if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
         return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
     if ((mpierr = MPI_Bcast(&varid, 1, MPI_INT, 0, ios->intercomm)))
         return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&attnum, 1, MPI_INT,  ios->compmaster, ios->intercomm)))
+    if ((mpierr = MPI_Bcast(&attnum, 1, MPI_INT,  ios->compmain, ios->intercomm)))
         return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
     if ((mpierr = MPI_Bcast(&name_present, 1, MPI_CHAR, 0, ios->intercomm)))
         return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
@@ -579,15 +579,15 @@ int inq_attid_handler(iosystem_desc_t *ios)
     PLOG((1, "inq_attid_handler"));
     assert(ios);
 
-    /* Get the parameters for this function that the the comp master
+    /* Get the parameters for this function that the the comp main
      * task is broadcasting. */
     if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
         return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
     if ((mpierr = MPI_Bcast(&varid, 1, MPI_INT, 0, ios->intercomm)))
         return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&namelen, 1, MPI_INT,  ios->compmaster, ios->intercomm)))
+    if ((mpierr = MPI_Bcast(&namelen, 1, MPI_INT,  ios->compmain, ios->intercomm)))
         return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(name, namelen + 1, MPI_CHAR,  ios->compmaster, ios->intercomm)))
+    if ((mpierr = MPI_Bcast(name, namelen + 1, MPI_CHAR,  ios->compmain, ios->intercomm)))
         return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
     if ((mpierr = MPI_Bcast(&id_present, 1, MPI_CHAR, 0, ios->intercomm)))
         return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
@@ -629,15 +629,15 @@ int att_put_handler(iosystem_desc_t *ios)
     PLOG((1, "att_put_handler"));
     assert(ios);
 
-    /* Get the parameters for this function that the the comp master
+    /* Get the parameters for this function that the the comp main
      * task is broadcasting. */
     if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
         return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
     if ((mpierr = MPI_Bcast(&varid, 1, MPI_INT, 0, ios->intercomm)))
         return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&namelen, 1, MPI_INT,  ios->compmaster, ios->intercomm)))
+    if ((mpierr = MPI_Bcast(&namelen, 1, MPI_INT,  ios->compmain, ios->intercomm)))
         return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(name, namelen + 1, MPI_CHAR, ios->compmaster, ios->intercomm)))
+    if ((mpierr = MPI_Bcast(name, namelen + 1, MPI_CHAR, ios->compmain, ios->intercomm)))
         return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
     if ((mpierr = MPI_Bcast(&atttype, 1, MPI_INT, 0, ios->intercomm)))
         return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
@@ -698,15 +698,15 @@ int att_get_handler(iosystem_desc_t *ios)
     PLOG((1, "att_get_handler"));
     assert(ios);
 
-    /* Get the parameters for this function that the the comp master
+    /* Get the parameters for this function that the the comp main
      * task is broadcasting. */
     if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
         return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
     if ((mpierr = MPI_Bcast(&varid, 1, MPI_INT, 0, ios->intercomm)))
         return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&namelen, 1, MPI_INT,  ios->compmaster, ios->intercomm)))
+    if ((mpierr = MPI_Bcast(&namelen, 1, MPI_INT,  ios->compmain, ios->intercomm)))
         return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(name, namelen + 1, MPI_CHAR, ios->compmaster, ios->intercomm)))
+    if ((mpierr = MPI_Bcast(name, namelen + 1, MPI_CHAR, ios->compmain, ios->intercomm)))
         return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
     if ((mpierr = MPI_Bcast(&iotype, 1, MPI_INT, 0, ios->intercomm)))
         return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
@@ -765,7 +765,7 @@ int put_vars_handler(iosystem_desc_t *ios)
     PLOG((1, "put_vars_handler"));
     assert(ios);
 
-    /* Get the parameters for this function that the the comp master
+    /* Get the parameters for this function that the the comp main
      * task is broadcasting. */
     if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
         return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
@@ -906,7 +906,7 @@ int get_vars_handler(iosystem_desc_t *ios)
     PLOG((1, "get_vars_handler"));
     assert(ios);
 
-    /* Get the parameters for this function that the the comp master
+    /* Get the parameters for this function that the the comp main
      * task is broadcasting. */
     if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
         return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
@@ -1051,7 +1051,7 @@ int inq_var_handler(iosystem_desc_t *ios)
     PLOG((1, "inq_var_handler"));
     assert(ios);
 
-    /* Get the parameters for this function that the the comp master
+    /* Get the parameters for this function that the the comp main
      * task is broadcasting. */
     if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
         return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
@@ -1112,7 +1112,7 @@ int inq_var_chunking_handler(iosystem_desc_t *ios)
     assert(ios);
     PLOG((1, "inq_var_chunking_handler"));
 
-    /* Get the parameters for this function that the the comp master
+    /* Get the parameters for this function that the the comp main
      * task is broadcasting. */
     if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
         return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
@@ -1163,7 +1163,7 @@ int inq_var_fill_handler(iosystem_desc_t *ios)
     assert(ios);
     PLOG((1, "inq_var_fill_handler"));
 
-    /* Get the parameters for this function that the the comp master
+    /* Get the parameters for this function that the the comp main
      * task is broadcasting. */
     if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
         return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
@@ -1226,7 +1226,7 @@ int inq_var_endian_handler(iosystem_desc_t *ios)
     assert(ios);
     PLOG((1, "inq_var_endian_handler"));
 
-    /* Get the parameters for this function that the the comp master
+    /* Get the parameters for this function that the the comp main
      * task is broadcasting. */
     if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
         return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
@@ -1269,7 +1269,7 @@ int inq_var_deflate_handler(iosystem_desc_t *ios)
     assert(ios);
     PLOG((1, "inq_var_deflate_handler"));
 
-    /* Get the parameters for this function that the the comp master
+    /* Get the parameters for this function that the the comp main
      * task is broadcasting. */
     if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
         return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
@@ -1327,7 +1327,7 @@ int inq_varid_handler(iosystem_desc_t *ios)
 
     assert(ios);
 
-    /* Get the parameters for this function that the the comp master
+    /* Get the parameters for this function that the the comp main
      * task is broadcasting. */
     if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
         return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
@@ -1359,7 +1359,7 @@ int sync_file_handler(iosystem_desc_t *ios)
     PLOG((1, "sync_file_handler"));
     assert(ios);
 
-    /* Get the parameters for this function that the comp master
+    /* Get the parameters for this function that the comp main
      * task is broadcasting. */
     if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
         return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
@@ -1392,7 +1392,7 @@ int setframe_handler(iosystem_desc_t *ios)
     PLOG((1, "setframe_handler"));
     assert(ios);
 
-    /* Get the parameters for this function that the comp master
+    /* Get the parameters for this function that the comp main
      * task is broadcasting. */
     if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
         return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
@@ -1429,7 +1429,7 @@ int advanceframe_handler(iosystem_desc_t *ios)
     PLOG((1, "advanceframe_handler"));
     assert(ios);
 
-    /* Get the parameters for this function that the comp master
+    /* Get the parameters for this function that the comp main
      * task is broadcasting. */
     if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
         return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
@@ -1463,7 +1463,7 @@ int change_def_file_handler(iosystem_desc_t *ios, int msg)
     PLOG((1, "change_def_file_handler"));
     assert(ios);
 
-    /* Get the parameters for this function that the comp master
+    /* Get the parameters for this function that the comp main
      * task is broadcasting. */
     if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
         return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
@@ -1502,7 +1502,7 @@ int def_var_handler(iosystem_desc_t *ios)
     PLOG((1, "def_var_handler comproot = %d", ios->comproot));
     assert(ios);
 
-    /* Get the parameters for this function that the he comp master
+    /* Get the parameters for this function that the he comp main
      * task is broadcasting. */
     if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
         return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
@@ -1554,7 +1554,7 @@ int def_var_chunking_handler(iosystem_desc_t *ios)
     assert(ios);
     PLOG((1, "def_var_chunking_handler comproot = %d", ios->comproot));
 
-    /* Get the parameters for this function that the he comp master
+    /* Get the parameters for this function that the he comp main
      * task is broadcasting. */
     if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
         return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
@@ -1605,7 +1605,7 @@ int def_var_fill_handler(iosystem_desc_t *ios)
     assert(ios);
     PLOG((1, "def_var_fill_handler comproot = %d", ios->comproot));
 
-    /* Get the parameters for this function that the he comp master
+    /* Get the parameters for this function that the he comp main
      * task is broadcasting. */
     if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
         return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
@@ -1658,7 +1658,7 @@ int def_var_endian_handler(iosystem_desc_t *ios)
     assert(ios);
     PLOG((1, "def_var_endian_handler comproot = %d", ios->comproot));
 
-    /* Get the parameters for this function that the he comp master
+    /* Get the parameters for this function that the he comp main
      * task is broadcasting. */
     if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
         return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
@@ -1695,7 +1695,7 @@ int def_var_deflate_handler(iosystem_desc_t *ios)
     assert(ios);
     PLOG((1, "def_var_deflate_handler comproot = %d", ios->comproot));
 
-    /* Get the parameters for this function that the he comp master
+    /* Get the parameters for this function that the he comp main
      * task is broadcasting. */
     if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
         return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
@@ -1736,7 +1736,7 @@ int set_var_chunk_cache_handler(iosystem_desc_t *ios)
     assert(ios);
     PLOG((1, "set_var_chunk_cache_handler comproot = %d", ios->comproot));
 
-    /* Get the parameters for this function that the he comp master
+    /* Get the parameters for this function that the he comp main
      * task is broadcasting. */
     if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
         return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
@@ -1779,7 +1779,7 @@ int def_dim_handler(iosystem_desc_t *ios)
     PLOG((1, "def_dim_handler comproot = %d", ios->comproot));
     assert(ios);
 
-    /* Get the parameters for this function that the he comp master
+    /* Get the parameters for this function that the he comp main
      * task is broadcasting. */
     if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
         return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
@@ -1820,7 +1820,7 @@ int rename_dim_handler(iosystem_desc_t *ios)
     PLOG((1, "rename_dim_handler"));
     assert(ios);
 
-    /* Get the parameters for this function that the he comp master
+    /* Get the parameters for this function that the he comp main
      * task is broadcasting. */
     if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
         return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
@@ -1861,7 +1861,7 @@ int rename_var_handler(iosystem_desc_t *ios)
     PLOG((1, "rename_var_handler"));
     assert(ios);
 
-    /* Get the parameters for this function that the he comp master
+    /* Get the parameters for this function that the he comp main
      * task is broadcasting. */
     if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
         return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
@@ -1902,7 +1902,7 @@ int rename_att_handler(iosystem_desc_t *ios)
     PLOG((1, "rename_att_handler"));
     assert(ios);
 
-    /* Get the parameters for this function that the he comp master
+    /* Get the parameters for this function that the he comp main
      * task is broadcasting. */
     if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
         return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
@@ -1947,7 +1947,7 @@ int delete_att_handler(iosystem_desc_t *ios)
     PLOG((1, "delete_att_handler"));
     assert(ios);
 
-    /* Get the parameters for this function that the he comp master
+    /* Get the parameters for this function that the he comp main
      * task is broadcasting. */
     if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
         return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
@@ -1992,7 +1992,7 @@ int open_file_handler(iosystem_desc_t *ios)
     PLOG((1, "open_file_handler comproot = %d", ios->comproot));
     assert(ios);
 
-    /* Get the parameters for this function that the he comp master
+    /* Get the parameters for this function that the he comp main
      * task is broadcasting. */
     if ((mpierr = MPI_Bcast(&len, 1, MPI_INT, 0, ios->intercomm)))
         return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
@@ -2057,7 +2057,7 @@ int delete_file_handler(iosystem_desc_t *ios)
     PLOG((1, "delete_file_handler comproot = %d", ios->comproot));
     assert(ios);
 
-    /* Get the parameters for this function that the he comp master
+    /* Get the parameters for this function that the he comp main
      * task is broadcasting. */
     if ((mpierr = MPI_Bcast(&len, 1, MPI_INT, 0, ios->intercomm)))
         return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
@@ -2103,7 +2103,7 @@ int initdecomp_dof_handler(iosystem_desc_t *ios)
     PLOG((1, "initdecomp_dof_handler called"));
     assert(ios);
 
-    /* Get the parameters for this function that the the comp master
+    /* Get the parameters for this function that the the comp main
      * task is broadcasting. */
     if ((mpierr = MPI_Bcast(&iosysid, 1, MPI_INT, 0, ios->intercomm)))
         return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
@@ -2209,7 +2209,7 @@ int write_darray_multi_handler(iosystem_desc_t *ios)
     PLOG((1, "write_darray_multi_handler"));
     assert(ios);
 
-    /* Get the parameters for this function that the the comp master
+    /* Get the parameters for this function that the the comp main
      * task is broadcasting. */
     if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
         return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
@@ -2310,7 +2310,7 @@ int read_darray_handler(iosystem_desc_t *ios)
     PLOG((1, "read_darray_handler called"));
     assert(ios);
 
-    /* Get the parameters for this function that the the comp master
+    /* Get the parameters for this function that the the comp main
      * task is broadcasting. */
     if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
         return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
@@ -2351,7 +2351,7 @@ int seterrorhandling_handler(iosystem_desc_t *ios)
     PLOG((1, "seterrorhandling_handler comproot = %d", ios->comproot));
     assert(ios);
 
-    /* Get the parameters for this function that the he comp master
+    /* Get the parameters for this function that the he comp main
      * task is broadcasting. */
     if ((mpierr = MPI_Bcast(&method, 1, MPI_INT, 0, ios->intercomm)))
         return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
@@ -2392,7 +2392,7 @@ int set_chunk_cache_handler(iosystem_desc_t *ios)
     PLOG((1, "set_chunk_cache_handler called"));
     assert(ios);
 
-    /* Get the parameters for this function that the the comp master
+    /* Get the parameters for this function that the the comp main
      * task is broadcasting. */
     if ((mpierr = MPI_Bcast(&iosysid, 1, MPI_INT, 0, ios->intercomm)))
         return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
@@ -2436,7 +2436,7 @@ int get_chunk_cache_handler(iosystem_desc_t *ios)
     PLOG((1, "get_chunk_cache_handler called"));
     assert(ios);
 
-    /* Get the parameters for this function that the the comp master
+    /* Get the parameters for this function that the the comp main
      * task is broadcasting. */
     if ((mpierr = MPI_Bcast(&iosysid, 1, MPI_INT, 0, ios->intercomm)))
         return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
@@ -2489,7 +2489,7 @@ int get_var_chunk_cache_handler(iosystem_desc_t *ios)
     PLOG((1, "get_var_chunk_cache_handler called"));
     assert(ios);
 
-    /* Get the parameters for this function that the the comp master
+    /* Get the parameters for this function that the the comp main
      * task is broadcasting. */
     if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
         return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
@@ -2537,7 +2537,7 @@ int freedecomp_handler(iosystem_desc_t *ios)
     PLOG((1, "freedecomp_handler called"));
     assert(ios);
 
-    /* Get the parameters for this function that the the comp master
+    /* Get the parameters for this function that the the comp main
      * task is broadcasting. */
     if ((mpierr = MPI_Bcast(&iosysid, 1, MPI_INT, 0, ios->intercomm)))
         return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
@@ -2570,7 +2570,7 @@ int finalize_handler(iosystem_desc_t *ios, int index)
     PLOG((1, "finalize_handler called index = %d", index));
     assert(ios);
 
-    /* Get the parameters for this function that the the comp master
+    /* Get the parameters for this function that the the comp main
      * task is broadcasting. */
     if ((mpierr = MPI_Bcast(&iosysid, 1, MPI_INT, 0, ios->intercomm)))
         return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
