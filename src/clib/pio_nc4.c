@@ -58,19 +58,19 @@ PIOc_def_var_deflate(int ncid, int varid, int shuffle, int deflate,
         {
             int msg = PIO_MSG_DEF_VAR_DEFLATE;
 
-            if (ios->compmaster == MPI_ROOT)
+            if (ios->compmain == MPI_ROOT)
                 mpierr = MPI_Send(&msg, 1,MPI_INT, ios->ioroot, 1, ios->union_comm);
 
             if (!mpierr)
-                mpierr = MPI_Bcast(&ncid, 1, MPI_INT, ios->compmaster, ios->intercomm);
+                mpierr = MPI_Bcast(&ncid, 1, MPI_INT, ios->compmain, ios->intercomm);
             if (!mpierr)
-                mpierr = MPI_Bcast(&varid, 1, MPI_INT, ios->compmaster, ios->intercomm);
+                mpierr = MPI_Bcast(&varid, 1, MPI_INT, ios->compmain, ios->intercomm);
             if (!mpierr)
-                mpierr = MPI_Bcast(&shuffle, 1, MPI_INT, ios->compmaster, ios->intercomm);
+                mpierr = MPI_Bcast(&shuffle, 1, MPI_INT, ios->compmain, ios->intercomm);
             if (!mpierr)
-                mpierr = MPI_Bcast(&deflate, 1, MPI_INT, ios->compmaster, ios->intercomm);
+                mpierr = MPI_Bcast(&deflate, 1, MPI_INT, ios->compmain, ios->intercomm);
             if (!mpierr)
-                mpierr = MPI_Bcast(&deflate_level, 1, MPI_INT, ios->compmaster, ios->intercomm);
+                mpierr = MPI_Bcast(&deflate_level, 1, MPI_INT, ios->compmain, ios->intercomm);
         }
 
         /* Handle MPI errors from computation tasks. */
@@ -151,25 +151,25 @@ PIOc_inq_var_deflate(int ncid, int varid, int *shufflep, int *deflatep,
             char deflate_present = deflatep ? true : false;
             char deflate_level_present = deflate_levelp ? true : false;
 
-            if (ios->compmaster == MPI_ROOT)
+            if (ios->compmain == MPI_ROOT)
                 mpierr = MPI_Send(&msg, 1,MPI_INT, ios->ioroot, 1, ios->union_comm);
 
             if (!mpierr)
-                mpierr = MPI_Bcast(&ncid, 1, MPI_INT, ios->compmaster, ios->intercomm);
+                mpierr = MPI_Bcast(&ncid, 1, MPI_INT, ios->compmain, ios->intercomm);
             if (!mpierr)
-                mpierr = MPI_Bcast(&varid, 1, MPI_INT, ios->compmaster, ios->intercomm);
+                mpierr = MPI_Bcast(&varid, 1, MPI_INT, ios->compmain, ios->intercomm);
             if (!mpierr)
-                mpierr = MPI_Bcast(&shuffle_present, 1, MPI_CHAR, ios->compmaster, ios->intercomm);
+                mpierr = MPI_Bcast(&shuffle_present, 1, MPI_CHAR, ios->compmain, ios->intercomm);
             if (shuffle_present && !mpierr)
-                mpierr = MPI_Bcast(shufflep, 1, MPI_INT, ios->compmaster, ios->intercomm);
+                mpierr = MPI_Bcast(shufflep, 1, MPI_INT, ios->compmain, ios->intercomm);
             if (!mpierr)
-                mpierr = MPI_Bcast(&deflate_present, 1, MPI_CHAR, ios->compmaster, ios->intercomm);
+                mpierr = MPI_Bcast(&deflate_present, 1, MPI_CHAR, ios->compmain, ios->intercomm);
             if (deflate_present && !mpierr)
-                mpierr = MPI_Bcast(deflatep, 1, MPI_INT, ios->compmaster, ios->intercomm);
+                mpierr = MPI_Bcast(deflatep, 1, MPI_INT, ios->compmain, ios->intercomm);
             if (!mpierr)
-                mpierr = MPI_Bcast(&deflate_level_present, 1, MPI_CHAR, ios->compmaster, ios->intercomm);
+                mpierr = MPI_Bcast(&deflate_level_present, 1, MPI_CHAR, ios->compmain, ios->intercomm);
             if (deflate_level_present && !mpierr)
-                mpierr = MPI_Bcast(deflate_levelp, 1, MPI_INT, ios->compmaster, ios->intercomm);
+                mpierr = MPI_Bcast(deflate_levelp, 1, MPI_INT, ios->compmain, ios->intercomm);
             PLOG((2, "PIOc_inq_var_deflate ncid = %d varid = %d shuffle_present = %d deflate_present = %d "
                   "deflate_level_present = %d", ncid, varid, shuffle_present, deflate_present,
                   deflate_level_present));
@@ -271,21 +271,21 @@ PIOc_def_var_chunking(int ncid, int varid, int storage, const PIO_Offset *chunks
             int msg = PIO_MSG_DEF_VAR_CHUNKING;
             char chunksizes_present = chunksizesp ? true : false;
 
-            if (ios->compmaster == MPI_ROOT)
+            if (ios->compmain == MPI_ROOT)
                 mpierr = MPI_Send(&msg, 1,MPI_INT, ios->ioroot, 1, ios->union_comm);
 
             if (!mpierr)
-                mpierr = MPI_Bcast(&ncid, 1, MPI_INT, ios->compmaster, ios->intercomm);
+                mpierr = MPI_Bcast(&ncid, 1, MPI_INT, ios->compmain, ios->intercomm);
             if (!mpierr)
-                mpierr = MPI_Bcast(&varid, 1, MPI_INT, ios->compmaster, ios->intercomm);
+                mpierr = MPI_Bcast(&varid, 1, MPI_INT, ios->compmain, ios->intercomm);
             if (!mpierr)
-                mpierr = MPI_Bcast(&storage, 1, MPI_INT, ios->compmaster, ios->intercomm);
+                mpierr = MPI_Bcast(&storage, 1, MPI_INT, ios->compmain, ios->intercomm);
             if (!mpierr)
-                mpierr = MPI_Bcast(&ndims, 1, MPI_INT, ios->compmaster, ios->intercomm);
+                mpierr = MPI_Bcast(&ndims, 1, MPI_INT, ios->compmain, ios->intercomm);
             if (!mpierr)
-                mpierr = MPI_Bcast(&chunksizes_present, 1, MPI_CHAR, ios->compmaster, ios->intercomm);
+                mpierr = MPI_Bcast(&chunksizes_present, 1, MPI_CHAR, ios->compmain, ios->intercomm);
             if (!mpierr && chunksizes_present)
-                mpierr = MPI_Bcast((PIO_Offset *)chunksizesp, ndims, MPI_OFFSET, ios->compmaster,
+                mpierr = MPI_Bcast((PIO_Offset *)chunksizesp, ndims, MPI_OFFSET, ios->compmain,
                                    ios->intercomm);
             PLOG((2, "PIOc_def_var_chunking ncid = %d varid = %d storage = %d ndims = %d chunksizes_present = %d",
                   ncid, varid, storage, ndims, chunksizes_present));
@@ -396,19 +396,19 @@ PIOc_inq_var_chunking(int ncid, int varid, int *storagep, PIO_Offset *chunksizes
             char storage_present = storagep ? true : false;
             char chunksizes_present = chunksizesp ? true : false;
 
-            if (ios->compmaster == MPI_ROOT)
+            if (ios->compmain == MPI_ROOT)
                 mpierr = MPI_Send(&msg, 1,MPI_INT, ios->ioroot, 1, ios->union_comm);
 
             if (!mpierr)
-                mpierr = MPI_Bcast(&ncid, 1, MPI_INT, ios->compmaster, ios->intercomm);
+                mpierr = MPI_Bcast(&ncid, 1, MPI_INT, ios->compmain, ios->intercomm);
             if (!mpierr)
-                mpierr = MPI_Bcast(&varid, 1, MPI_INT, ios->compmaster, ios->intercomm);
+                mpierr = MPI_Bcast(&varid, 1, MPI_INT, ios->compmain, ios->intercomm);
             if (!mpierr)
-                mpierr = MPI_Bcast(&storage_present, 1, MPI_CHAR, ios->compmaster, ios->intercomm);
+                mpierr = MPI_Bcast(&storage_present, 1, MPI_CHAR, ios->compmain, ios->intercomm);
             if (!mpierr)
-                mpierr = MPI_Bcast(&ndims, 1, MPI_INT, ios->compmaster, ios->intercomm);
+                mpierr = MPI_Bcast(&ndims, 1, MPI_INT, ios->compmain, ios->intercomm);
             if (!mpierr)
-                mpierr = MPI_Bcast(&chunksizes_present, 1, MPI_CHAR, ios->compmaster, ios->intercomm);
+                mpierr = MPI_Bcast(&chunksizes_present, 1, MPI_CHAR, ios->compmain, ios->intercomm);
             PLOG((2, "PIOc_inq_var_chunking ncid = %d varid = %d storage_present = %d chunksizes_present = %d",
                   ncid, varid, storage_present, chunksizes_present));
         }
@@ -511,15 +511,15 @@ PIOc_def_var_endian(int ncid, int varid, int endian)
         if (!ios->ioproc)
         {
             int msg = PIO_MSG_DEF_VAR_ENDIAN;
-            if (ios->compmaster == MPI_ROOT)
+            if (ios->compmain == MPI_ROOT)
                 mpierr = MPI_Send(&msg, 1,MPI_INT, ios->ioroot, 1, ios->union_comm);
 
             if (!mpierr)
-                mpierr = MPI_Bcast(&ncid, 1, MPI_INT, ios->compmaster, ios->intercomm);
+                mpierr = MPI_Bcast(&ncid, 1, MPI_INT, ios->compmain, ios->intercomm);
             if (!mpierr)
-                mpierr = MPI_Bcast(&varid, 1, MPI_INT, ios->compmaster, ios->intercomm);
+                mpierr = MPI_Bcast(&varid, 1, MPI_INT, ios->compmain, ios->intercomm);
             if (!mpierr)
-                mpierr = MPI_Bcast(&endian, 1, MPI_INT, ios->compmaster, ios->intercomm);
+                mpierr = MPI_Bcast(&endian, 1, MPI_INT, ios->compmain, ios->intercomm);
         }
 
         /* Handle MPI errors. */
@@ -592,15 +592,15 @@ PIOc_inq_var_endian(int ncid, int varid, int *endianp)
             int msg = PIO_MSG_INQ_VAR_ENDIAN;
             char endian_present = endianp ? true : false;
 
-            if (ios->compmaster == MPI_ROOT)
+            if (ios->compmain == MPI_ROOT)
                 mpierr = MPI_Send(&msg, 1,MPI_INT, ios->ioroot, 1, ios->union_comm);
 
             if (!mpierr)
-                mpierr = MPI_Bcast(&ncid, 1, MPI_INT, ios->compmaster, ios->intercomm);
+                mpierr = MPI_Bcast(&ncid, 1, MPI_INT, ios->compmain, ios->intercomm);
             if (!mpierr)
-                mpierr = MPI_Bcast(&varid, 1, MPI_INT, ios->compmaster, ios->intercomm);
+                mpierr = MPI_Bcast(&varid, 1, MPI_INT, ios->compmain, ios->intercomm);
             if (!mpierr)
-                mpierr = MPI_Bcast(&endian_present, 1, MPI_CHAR, ios->compmaster, ios->intercomm);
+                mpierr = MPI_Bcast(&endian_present, 1, MPI_CHAR, ios->compmain, ios->intercomm);
         }
 
         /* Handle MPI errors. */
@@ -685,19 +685,19 @@ PIOc_set_chunk_cache(int iosysid, int iotype, PIO_Offset size, PIO_Offset nelems
         {
             int msg = PIO_MSG_SET_CHUNK_CACHE; /* Message for async notification. */
 
-            if (ios->compmaster == MPI_ROOT)
+            if (ios->compmain == MPI_ROOT)
                 mpierr = MPI_Send(&msg, 1, MPI_INT, ios->ioroot, 1, ios->union_comm);
 
             if (!mpierr)
-                mpierr = MPI_Bcast(&iosysid, 1, MPI_INT, ios->compmaster, ios->intercomm);
+                mpierr = MPI_Bcast(&iosysid, 1, MPI_INT, ios->compmain, ios->intercomm);
             if (!mpierr)
-                mpierr = MPI_Bcast(&iotype, 1, MPI_INT, ios->compmaster, ios->intercomm);
+                mpierr = MPI_Bcast(&iotype, 1, MPI_INT, ios->compmain, ios->intercomm);
             if (!mpierr)
-                mpierr = MPI_Bcast(&size, 1, MPI_OFFSET, ios->compmaster, ios->intercomm);
+                mpierr = MPI_Bcast(&size, 1, MPI_OFFSET, ios->compmain, ios->intercomm);
             if (!mpierr)
-                mpierr = MPI_Bcast(&nelems, 1, MPI_OFFSET, ios->compmaster, ios->intercomm);
+                mpierr = MPI_Bcast(&nelems, 1, MPI_OFFSET, ios->compmain, ios->intercomm);
             if (!mpierr)
-                mpierr = MPI_Bcast(&preemption, 1, MPI_FLOAT, ios->compmaster, ios->intercomm);
+                mpierr = MPI_Bcast(&preemption, 1, MPI_FLOAT, ios->compmain, ios->intercomm);
         }
 
         /* Handle MPI errors. */
@@ -789,19 +789,19 @@ PIOc_get_chunk_cache(int iosysid, int iotype, PIO_Offset *sizep, PIO_Offset *nel
             char nelems_present = nelemsp ? true : false;
             char preemption_present = preemptionp ? true : false;
 
-            if (ios->compmaster == MPI_ROOT)
+            if (ios->compmain == MPI_ROOT)
                 mpierr = MPI_Send(&msg, 1, MPI_INT, ios->ioroot, 1, ios->union_comm);
 
             if (!mpierr)
-                mpierr = MPI_Bcast(&iosysid, 1, MPI_INT, ios->compmaster, ios->intercomm);
+                mpierr = MPI_Bcast(&iosysid, 1, MPI_INT, ios->compmain, ios->intercomm);
             if (!mpierr)
-                mpierr = MPI_Bcast(&iotype, 1, MPI_INT, ios->compmaster, ios->intercomm);
+                mpierr = MPI_Bcast(&iotype, 1, MPI_INT, ios->compmain, ios->intercomm);
             if (!mpierr)
-                mpierr = MPI_Bcast(&size_present, 1, MPI_CHAR, ios->compmaster, ios->intercomm);
+                mpierr = MPI_Bcast(&size_present, 1, MPI_CHAR, ios->compmain, ios->intercomm);
             if (!mpierr)
-                mpierr = MPI_Bcast(&nelems_present, 1, MPI_CHAR, ios->compmaster, ios->intercomm);
+                mpierr = MPI_Bcast(&nelems_present, 1, MPI_CHAR, ios->compmain, ios->intercomm);
             if (!mpierr)
-                mpierr = MPI_Bcast(&preemption_present, 1, MPI_CHAR, ios->compmaster,
+                mpierr = MPI_Bcast(&preemption_present, 1, MPI_CHAR, ios->compmain,
                                    ios->intercomm);
             PLOG((2, "PIOc_get_chunk_cache size_present = %d nelems_present = %d "
                   "preemption_present = %d ", size_present, nelems_present, preemption_present));
@@ -906,19 +906,19 @@ PIOc_set_var_chunk_cache(int ncid, int varid, PIO_Offset size, PIO_Offset nelems
         {
             int msg = PIO_MSG_SET_VAR_CHUNK_CACHE;
 
-            if (ios->compmaster == MPI_ROOT)
+            if (ios->compmain == MPI_ROOT)
                 mpierr = MPI_Send(&msg, 1,MPI_INT, ios->ioroot, 1, ios->union_comm);
 
             if (!mpierr)
-                mpierr = MPI_Bcast(&ncid, 1, MPI_INT, ios->compmaster, ios->intercomm);
+                mpierr = MPI_Bcast(&ncid, 1, MPI_INT, ios->compmain, ios->intercomm);
             if (!mpierr)
-                mpierr = MPI_Bcast(&varid, 1, MPI_INT, ios->compmaster, ios->intercomm);
+                mpierr = MPI_Bcast(&varid, 1, MPI_INT, ios->compmain, ios->intercomm);
             if (!mpierr)
-                mpierr = MPI_Bcast(&size, 1, MPI_OFFSET, ios->compmaster, ios->intercomm);
+                mpierr = MPI_Bcast(&size, 1, MPI_OFFSET, ios->compmain, ios->intercomm);
             if (!mpierr)
-                mpierr = MPI_Bcast(&nelems, 1, MPI_OFFSET, ios->compmaster, ios->intercomm);
+                mpierr = MPI_Bcast(&nelems, 1, MPI_OFFSET, ios->compmain, ios->intercomm);
             if (!mpierr)
-                mpierr = MPI_Bcast(&preemption, 1, MPI_FLOAT, ios->compmaster, ios->intercomm);
+                mpierr = MPI_Bcast(&preemption, 1, MPI_FLOAT, ios->compmain, ios->intercomm);
         }
 
         /* Handle MPI errors. */
@@ -998,19 +998,19 @@ PIOc_get_var_chunk_cache(int ncid, int varid, PIO_Offset *sizep, PIO_Offset *nel
             char nelems_present = nelemsp ? true : false;
             char preemption_present = preemptionp ? true : false;
 
-            if (ios->compmaster == MPI_ROOT)
+            if (ios->compmain == MPI_ROOT)
                 mpierr = MPI_Send(&msg, 1, MPI_INT, ios->ioroot, 1, ios->union_comm);
 
             if (!mpierr)
-                mpierr = MPI_Bcast(&ncid, 1, MPI_INT, ios->compmaster, ios->intercomm);
+                mpierr = MPI_Bcast(&ncid, 1, MPI_INT, ios->compmain, ios->intercomm);
             if (!mpierr)
-                mpierr = MPI_Bcast(&varid, 1, MPI_INT, ios->compmaster, ios->intercomm);
+                mpierr = MPI_Bcast(&varid, 1, MPI_INT, ios->compmain, ios->intercomm);
             if (!mpierr)
-                mpierr = MPI_Bcast(&size_present, 1, MPI_CHAR, ios->compmaster, ios->intercomm);
+                mpierr = MPI_Bcast(&size_present, 1, MPI_CHAR, ios->compmain, ios->intercomm);
             if (!mpierr)
-                mpierr = MPI_Bcast(&nelems_present, 1, MPI_CHAR, ios->compmaster, ios->intercomm);
+                mpierr = MPI_Bcast(&nelems_present, 1, MPI_CHAR, ios->compmain, ios->intercomm);
             if (!mpierr)
-                mpierr = MPI_Bcast(&preemption_present, 1, MPI_CHAR, ios->compmaster,
+                mpierr = MPI_Bcast(&preemption_present, 1, MPI_CHAR, ios->compmain,
                                    ios->intercomm);
             PLOG((2, "PIOc_get_var_chunk_cache size_present = %d nelems_present = %d "
                   "preemption_present = %d ", size_present, nelems_present, preemption_present));

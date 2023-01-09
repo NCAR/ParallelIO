@@ -34,7 +34,7 @@ module gdecomp_mod
    end type
       
    character(len=*),parameter :: modname = 'gdecomp_mod'
-   integer(i4),parameter :: master_task = 0
+   integer(i4),parameter :: main_task = 0
 
 !==================================================================
 contains
@@ -171,7 +171,7 @@ contains
    endif
 
    if (present(my_task)) then
-      if (my_task == master_task) call gdecomp_print(gdecomp)
+      if (my_task == main_task) call gdecomp_print(gdecomp)
    endif
 
    end subroutine gdecomp_set
@@ -260,7 +260,7 @@ contains
    gdecomp%bdz = bdz
 
    if (present(my_task)) then
-      if (my_task == master_task) call gdecomp_print(gdecomp)
+      if (my_task == main_task) call gdecomp_print(gdecomp)
    endif
 
    end subroutine gdecomp_read_nml
@@ -422,7 +422,7 @@ contains
             write(6,*) trim(subname),' ERROR: contval must be > 0 ',nbor
             call piodie(__FILE__,__LINE__)
          endif
-         if (my_task == master_task) &
+         if (my_task == main_task) &
             write(6,*) trim(subname),' blkdecomp1 = ',trim(gdecomp%blkdecomp1),' contval = ',contval
       case ('cont1dm')
          call pad_div(contval,nblks,gnpes)
@@ -430,7 +430,7 @@ contains
             write(6,*) trim(subname),' ERROR: contval must be > 0 ',nbor
             call piodie(__FILE__,__LINE__)
          endif
-         if (my_task == master_task) &
+         if (my_task == main_task) &
             write(6,*) trim(subname),' blkdecomp1 = ',trim(gdecomp%blkdecomp1),' contval = ',contval
       case default
          call calcdecomp(gdecomp%blkdecomp1,gnpes,nblk,nbor,ierr)
@@ -658,18 +658,18 @@ contains
          start(1:3) = pstart(1:3,my_task)
          count(1:3) = pend(1:3,my_task) - pstart(1:3,my_task) + 1
       endif
-      if (my_task == master_task) &
+      if (my_task == main_task) &
          write(6,*) trim(subname),' start and count were computed ',my_task,start,count
    else
       start = 1
       count = 0
-      if (my_task == master_task) &
+      if (my_task == main_task) &
          write(6,*) trim(subname),' start and count could NOT be computed '
    endif
 
-!------- MASTER TASK WRITE ------------------------------------- 
+!------- main TASK WRITE ------------------------------------- 
 
-   if (my_task == master_task) then
+   if (my_task == main_task) then
 
    ! --- write testdof ---
 
@@ -738,7 +738,7 @@ contains
 
    endif   ! testonly
 
-!------- END MASTER TASK WRITE --------------------------------- 
+!------- END main TASK WRITE --------------------------------- 
 
    if(wdecomp) then 
      deallocate(blkid,tskid)

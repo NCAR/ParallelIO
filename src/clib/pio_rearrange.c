@@ -2260,7 +2260,6 @@ subset_rearrange_create(iosystem_desc_t *ios, int maplen, PIO_Offset *compmap,
     PIO_Offset soffset;
     /* we only want a single copy of each source point in the iobuffer but it may be sent to multiple destinations
        in a read operation */
-    int k=0;
 //    PIO_Offset previomap[ntasks];
 //    for (i = 0; i < ntasks; i++)
 //        previomap[i] = -1;
