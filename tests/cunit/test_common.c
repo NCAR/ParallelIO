@@ -602,8 +602,8 @@ create_nc_sample_1(int iosysid, int format, char *filename, int my_rank, int *nc
         return ret;
 
     /* Write some data. For the PIOc_put/get functions, all data must
-     * be on compmaster before the function is called. Only
-     * compmaster's arguments are passed to the async msg handler. All
+     * be on compmain before the function is called. Only
+     * compmain's arguments are passed to the async msg handler. All
      * other computation tasks are ignored. */
     for (int i = 0; i < DIM_LEN_S1; i++)
         data[i] = i;
@@ -797,8 +797,8 @@ create_nc_sample_2(int iosysid, int format, char *filename, int my_rank, int *nc
         return ret;
 
     /* Write some data. For the PIOc_put/get functions, all data must
-     * be on compmaster before the function is called. Only
-     * compmaster's arguments are passed to the async msg handler. All
+     * be on compmain before the function is called. Only
+     * compmain's arguments are passed to the async msg handler. All
      * other computation tasks are ignored. */
     for (int i = 0; i < DIM_LEN_S2; i++)
         data[i] = i;

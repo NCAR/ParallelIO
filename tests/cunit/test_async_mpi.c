@@ -266,7 +266,7 @@ int main(int argc, char **argv)
         int in_io = my_rank ? 0 : 1; /* Non-zero if this task is in IO. */
         int io_rank = -1;            /* Rank of current process in IO comm. */
         int comp_rank = -1;
-        int iomaster;  /* MPI_ROOT on master IO task, MPI_PROC_NULL otherwise. */
+        int iomain;  /* MPI_ROOT on main IO task, MPI_PROC_NULL otherwise. */
         MPI_Group group[COMPONENT_COUNT];       /* Group with comp tasks. */
         MPI_Group union_group[COMPONENT_COUNT]; /* Group with IO and comp tasks. */
         int my_proc_list[COMPONENT_COUNT][1] = {{1}, {2}};   /* Tasks for computation components. */
@@ -296,11 +296,11 @@ int main(int argc, char **argv)
         {
             if ((ret = MPI_Comm_rank(io_comm, &io_rank)))
                 MPIERR(ret);
-            iomaster = !io_rank ? MPI_ROOT : MPI_PROC_NULL;
+            iomain = !io_rank ? MPI_ROOT : MPI_PROC_NULL;
         }
         if (verbose)
             printf("my_rank %d in_io %d io_rank %d IO %s\n", my_rank, in_io,
-                   io_rank, iomaster == MPI_ROOT ? "MASTER" : "SERVANT");
+                   io_rank, iomain == MPI_ROOT ? "main" : "SERVANT");
         
         /* For each computation component. */
         for (int cmp = 0; cmp < COMPONENT_COUNT; cmp++)

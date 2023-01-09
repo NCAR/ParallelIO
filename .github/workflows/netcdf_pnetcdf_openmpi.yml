@@ -2,9 +2,9 @@ name: netcdf_pnetcdf_openmpi
 
 on:
   push:
-    branches: [ mastertodo ]
+    branches: [ maintodo ]
   pull_request:
-    branches: [ mastertodo ]
+    branches: [ maintodo ]
 
 jobs:
   build:
