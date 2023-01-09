@@ -455,11 +455,11 @@ write_darray_multi_par(file_desc_t *file, int nvars, int fndims, const int *vari
                         bufptr = (void *)((char *)iobuf + iodesc->mpitype_size * (nv * llen + region->loffset));
 
                     /* Ensure collective access. */
-                    if(ierr = nc_var_par_access(file->fh, varids[nv], NC_COLLECTIVE))
+                    if((ierr = nc_var_par_access(file->fh, varids[nv], NC_COLLECTIVE)))
                         return pio_err(ios, file, ierr, __FILE__, __LINE__);
                     
                     /* Write the data for this variable. */
-                    if(ierr = nc_put_vara(file->fh, varids[nv], (size_t *)start, (size_t *)count, bufptr))
+                    if((ierr = nc_put_vara(file->fh, varids[nv], (size_t *)start, (size_t *)count, bufptr)))
                         return pio_err(ios, file, ierr, __FILE__, __LINE__);
                 }
                 break;
