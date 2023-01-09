@@ -314,7 +314,7 @@ create_mpi_datatypes(MPI_Datatype mpitype, int msgcnt,
     if (mindex)
     {
       for(int j=0; j<numinds; j++)
-        PLOG((3,"mindex[%d] = %d",j,mindex[j]));
+        PLOG((5,"mindex[%d] = %d",j,mindex[j]));
       if (!(lindex = malloc(numinds * sizeof(PIO_Offset))))
             return pio_err(NULL, NULL, PIO_ENOMEM, __FILE__, __LINE__);
         memcpy(lindex, mindex, (size_t)(numinds * sizeof(PIO_Offset)));

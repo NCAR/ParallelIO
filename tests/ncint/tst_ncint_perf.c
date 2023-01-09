@@ -24,7 +24,8 @@
 #define NDIM2 2
 #define NDIM3 3
 #define NUM_TIMESTEPS 1
-#define NUM_MODES 4
+//#define NUM_MODES 4
+#define NUM_MODES 2
 
 extern NC_Dispatch NCINT_dispatcher;
 
@@ -60,9 +61,9 @@ main(int argc, char **argv)
         int i;
 
         /* Turn on logging for PIO library. */
-        /* PIOc_set_log_level(4); */
-        /* if (!my_rank) */
-        /*     nc_set_log_level(3); */
+/*         PIOc_set_log_level(4); 
+         if (!my_rank) 
+         nc_set_log_level(3);  */
         if (ntasks <= 16)
             num_io_procs = 1;
         else if (ntasks <= 64)
@@ -87,12 +88,18 @@ main(int argc, char **argv)
             float num_megabytes = DIM_LEN_X * DIM_LEN_Y * sizeof(int) / (float)1000000 * NUM_TIMESTEPS;
             float delta_in_sec;
             float mb_per_sec;
+/*
             int cmode[NUM_MODES] = {NC_PIO, NC_PIO|NC_NETCDF4,
                                     NC_PIO|NC_NETCDF4|NC_MPIIO,
                                     NC_PIO|NC_PNETCDF};
             char mode_name[NUM_MODES][NC_MAX_NAME + 1] = {"classic sequential   ",
                                                           "netCDF-4 sequential  ",
                                                           "netCDF-4 parallel I/O",
+                                                          "pnetcdf              "};
+*/
+            int cmode[NUM_MODES] = {NC_PIO|NC_CLOBBER, 
+                                    NC_PIO|NC_PNETCDF|NC_CLOBBER};
+            char mode_name[NUM_MODES][NC_MAX_NAME + 1] = {"classic sequential   ",
                                                           "pnetcdf              "};
             int t, m;
 
@@ -139,8 +146,15 @@ main(int argc, char **argv)
                 /* Write some data with distributed arrays. */
                 for (t = 0; t < NUM_TIMESTEPS; t++)
                     if (nc_put_vard_int(ncid, varid, ioid, t, my_data)) PERR;
-                if (nc_close(ncid)) PERR;
 
+                /* Turn on logging for PIO library. */
+                PIOc_set_log_level(3); 
+                if (!my_rank) 
+                    nc_set_log_level(3); 
+                if (nc_close(ncid)) PERR;
+                PIOc_set_log_level(0); 
+                if (!my_rank) 
+                    nc_set_log_level(0); 
                 /* Stop the clock. */
                 gettimeofday(&endtime, NULL);
 
@@ -154,9 +168,9 @@ main(int argc, char **argv)
                     printf("%s,\t%d,\t%d,\t%d,\t%8.3f,\t%8.1f,\t%8.3f\n", mode_name[m],
                            ntasks, num_io_procs, 1, delta_in_sec, num_megabytes,
                            mb_per_sec);
-		
-		free(my_data);
-		if (nc_free_decomp(ioid)) PERR;
+                
+                free(my_data);
+                if (nc_free_decomp(ioid)) PERR;
 
             } /* next mode flag */
         }

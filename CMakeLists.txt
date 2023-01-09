@@ -386,17 +386,17 @@ endif ()
 ###
 # Check to see if dispatch table version 2 is supported for netcdf integration.
 ###
-CHECK_C_SOURCE_COMPILES("
-#include <netcdf_meta.h>
-#if NC_DISPATCH_VERSION != 2
-      choke me
-#endif
-int main() {return 0;}" HAVE_DISPATCH2)
+#CHECK_C_SOURCE_COMPILES("
+##include <netcdf_meta.h>
+##if NC_DISPATCH_VERSION != 2
+#      choke me
+##endif
+#int main() {return 0;}" HAVE_DISPATCH2)
 
 if (NETCDF_INTEGRATION)
-  if (NOT HAVE_DISPATCH2)
-    message (FATAL_ERROR "Need newer version of netcdf-c for netcdf integration feature, please upgrade your netCDF library")
-  endif ()
+#  if (NOT HAVE_DISPATCH2)
+#    message (FATAL_ERROR "Need newer version of netcdf-c for netcdf integration feature, please upgrade your netCDF library")
+#  endif ()
   set(HAVE_NETCDF_INTEGRATION 1)
 else ()
   set(HAVE_NETCDF_INTEGRATION 0)

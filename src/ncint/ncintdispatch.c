@@ -25,18 +25,18 @@ int diosysid;
 int ncint_initialized = 0;
 
 /** Version of dispatch table. */
-#define DISPATCH_VERSION 2
+#define DISPATCH_VERSION 5
 
 /* Internal filter actions - copied from nc4internal.h */
-#define NCFILTER_DEF		1
-#define NCFILTER_REMOVE  	2
-#define NCFILTER_INQ	    	3
+#define NCFILTER_DEF            1
+#define NCFILTER_REMOVE         2
+#define NCFILTER_INQ            3
 #define NCFILTER_FILTERIDS      4
-#define NCFILTER_INFO		5
-#define NCFILTER_FREESPEC	6
-#define NCFILTER_CLIENT_REG	10
-#define NCFILTER_CLIENT_UNREG	11
-#define NCFILTER_CLIENT_INQ	12
+#define NCFILTER_INFO           5
+#define NCFILTER_FREESPEC       6
+#define NCFILTER_CLIENT_REG     10
+#define NCFILTER_CLIENT_UNREG   11
+#define NCFILTER_CLIENT_INQ     12
 
 /* This is the dispatch object that holds pointers to all the
  * functions that make up the NCINT dispatch interface. */
@@ -127,7 +127,20 @@ NC_Dispatch NCINT_dispatcher = {
     NC_NOTNC4_def_var_filter,
     NC_NOTNC4_set_var_chunk_cache,
     NC_NOTNC4_get_var_chunk_cache,
-    PIO_NCINT_filter_actions
+#if NC_DISPATCH_VERSION == 2
+    PIO_NCINT_filter_actions,
+#endif
+#if NC_DISPATCH_VERSION >= 3
+    NC_NOTNC4_inq_var_filter_ids,
+    NC_NOTNC4_inq_var_filter_info,
+#endif
+#if NC_DISPATCH_VERSION >= 4
+    NC_NOTNC4_def_var_quantize,
+    NC_NOTNC4_inq_var_quantize,
+#endif
+#if NC_DISPATCH_VERSION >= 5
+    NC_NOOP_inq_filter_avail,
+#endif
 };
 
 /**
@@ -887,13 +900,13 @@ PIO_NCINT_inq_var_all(int ncid, int varid, char *name, nc_type *xtypep,
     ret = PIOc_inq_var(ncid, varid, name, xtypep, ndimsp, dimidsp, nattsp);
 
     if (!ret)
-	ret = PIOc_inq_var_chunking(ncid, varid, contiguousp, (MPI_Offset *)chunksizesp);
+        ret = PIOc_inq_var_chunking(ncid, varid, contiguousp, (MPI_Offset *)chunksizesp);
 
     if (!ret)
-	ret = PIOc_inq_var_deflate(ncid, varid, shufflep, deflatep, deflate_levelp);
+        ret = PIOc_inq_var_deflate(ncid, varid, shufflep, deflatep, deflate_levelp);
 
     if (!ret)
-	ret = PIOc_inq_var_endian(ncid, varid, endiannessp);
+        ret = PIOc_inq_var_endian(ncid, varid, endiannessp);
     
     return ret;
 }
@@ -993,7 +1006,7 @@ PIO_NCINT_inq_type_equal(int ncid1, nc_type typeid1, int ncid2,
  */
 int
 PIO_NCINT_def_var_deflate(int ncid, int varid, int shuffle, int deflate,
-			  int deflate_level)
+                          int deflate_level)
 {
     return PIOc_def_var_deflate(ncid, varid, shuffle, deflate, deflate_level);
 }
@@ -1027,7 +1040,7 @@ PIO_NCINT_def_var_chunking(int ncid, int varid, int storage, const size_t *chunk
 {
     return PIOc_def_var_chunking(ncid, varid, storage, (const PIO_Offset *)chunksizesp);
 }
-
+#if NC_DISPATCH_VERSION == 2
 /**
  * @internal Carry out one of several filter actions
  *
@@ -1047,3 +1060,4 @@ PIO_NCINT_filter_actions(int ncid, int varid, int action, struct NC_Filterobject
     }
     return PIO_NOERR;
 }
+#endif

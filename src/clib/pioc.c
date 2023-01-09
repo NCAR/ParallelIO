@@ -1139,7 +1139,7 @@ PIOc_init_decomp(int iosysid, int pio_type, int ndims, const int *gdimlen, int m
     /* Add 1 to all elements in compmap. */
     for (int e = 0; e < maplen; e++)
     {
-        PLOG((3, "zero-based compmap[%d] = %d", e, compmap[e]));
+        PLOG((5, "zero-based compmap[%d] = %d", e, compmap[e]));
         compmap_1_based[e] = compmap[e] + 1;
     }
 
