@@ -26,13 +26,13 @@ nc_def_iosystem(MPI_Comm comp_comm, int num_iotasks, int stride, int base,
 
     /* Make sure PIO was initialized. */
     if ((ret = PIO_NCINT_initialize())){
-        printf("%s %d ret=%d\n",__FILE__,__LINE__,ret);
+        //printf("%s %d ret=%d\n",__FILE__,__LINE__,ret);
         return ret;
     }
     /* Call the PIOc_ function to initialize the intracomm. */
     if ((ret = PIOc_Init_Intracomm(comp_comm, num_iotasks, stride, base, rearr,
                                    iosysidp))){
-        printf("%s %d ret=%d\n",__FILE__,__LINE__,ret);
+        //printf("%s %d ret=%d\n",__FILE__,__LINE__,ret);
         return ret;
     }
     /* Remember the io system id. */

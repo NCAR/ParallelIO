@@ -319,14 +319,17 @@ fi
 # Do we have the correct dispatch table version in netcdf-c for netcdf
 # integration?
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include "netcdf_meta.h"],
-[[#if NC_DISPATCH_VERSION != 2
+[[#if NC_DISPATCH_VERSION < 2
+# error
+#endif
+#if NC_DISPATCH_VERSION > 5
 # error
 #endif]
-])], [have_dispatch2=yes], [have_dispatch2=no])
-AC_MSG_CHECKING([whether netcdf-c supports version 2 of dispatch table for netcdf integration])
-AC_MSG_RESULT([${have_dispatch2}])
-if test "x$enable_netcdf_integration" = xyes -a "x$have_dispatch2" = xno; then
-   AC_MSG_ERROR([NetCDF integration cannot be used with this version of netcdf-c, please upgrade your netCDF version.])
+])], [have_dispatch=yes], [have_dispatch=no])
+AC_MSG_CHECKING([whether netcdf-c supports compatible dispatch table for netcdf integration])
+AC_MSG_RESULT([${have_dispatch}])
+if test "x$enable_netcdf_integration" = xyes -a "x$have_dispatch" = xno; then
+   AC_MSG_ERROR([NetCDF integration version is not compatible with that in ParallelIO])
 fi
 
 # Set some build settings for when netcdf-4 is supported.
