@@ -123,12 +123,6 @@ else()
   set(NETCDF_INTEGRATION 0)
 endif()
 
-if(PIO_USE_MPISERIAL)
-  set(USE_MPI_SERIAL 1)
-else()
-  set(USE_MPI_SERIAL 0)
-endif()
-
 #==============================================================================
 #  PREPEND TO CMAKE MODULE PATH
 #==============================================================================
@@ -168,9 +162,11 @@ if (PIO_USE_MPISERIAL)
   if (MPISERIAL_C_FOUND)
     set (CMAKE_REQUIRED_INCLUDES ${MPISERIAL_C_INCLUDE_DIRS})
   endif ()
+  set(USE_MPI_SERIAL 1)
 else ()
   find_package (MPI REQUIRED)
   set (CMAKE_REQUIRED_INCLUDES ${MPI_INCLUDE_PATH})
+  set(USE_MPI_SERIAL 0)
 endif ()
 
 #SET(CMAKE_EXTRA_INCLUDE_FILES "mpi.h")
