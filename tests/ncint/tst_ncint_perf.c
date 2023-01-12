@@ -12,7 +12,7 @@
 #include <sys/time.h>
 #include "pio_err_macros.h"
 
-#define FILE_NAME "tst_ncint_perf.nc"
+#define FILE_PREFIX "tst_ncint_perf"
 #define VAR_NAME "data_var"
 #define DIM_NAME_UNLIMITED "dim_unlimited"
 #define DIM_NAME_X "dim_x"
@@ -24,8 +24,8 @@
 #define NDIM2 2
 #define NDIM3 3
 #define NUM_TIMESTEPS 1
-//#define NUM_MODES 4
-#define NUM_MODES 2
+#define NUM_MODES 8
+
 
 extern NC_Dispatch NCINT_dispatcher;
 
@@ -37,7 +37,7 @@ main(int argc, char **argv)
 {
     int my_rank;
     int ntasks;
-
+    
     /* Initialize MPI. */
     if (MPI_Init(&argc, &argv)) PERR;
 
@@ -59,7 +59,7 @@ main(int argc, char **argv)
         int *my_data;
         int num_io_procs;
         int i;
-
+        int found_format;
         /* Turn on logging for PIO library. */
 /*         PIOc_set_log_level(4); 
          if (!my_rank) 
@@ -88,19 +88,96 @@ main(int argc, char **argv)
             float num_megabytes = DIM_LEN_X * DIM_LEN_Y * sizeof(int) / (float)1000000 * NUM_TIMESTEPS;
             float delta_in_sec;
             float mb_per_sec;
-/*
-            int cmode[NUM_MODES] = {NC_PIO, NC_PIO|NC_NETCDF4,
+#if NUM_MODES == 1
+            int cmode[NUM_MODES] = {NC_PIO|NC_NETCDF4|NC_MPIIO};
+            char mode_name[NUM_MODES][NC_MAX_NAME] = {"netcdf4 parallel           "};
+            int expected_format[NUM_MODES] = {NC_PIO|NC_FORMAT_NETCDF4};
+#elif NUM_MODES == 2
+            int cmode[NUM_MODES] = {NC_PIO,
+                                    NC_PIO|NC_64BIT_OFFSET};
+            char mode_name[NUM_MODES][NC_MAX_NAME] = {"classic serial     ",
+                                                      "64bit offset serial"};
+            int expected_format[NUM_MODES] = {NC_PIO|NC_FORMAT_CLASSIC,
+                                              NC_PIO|NC_FORMAT_64BIT_OFFSET};
+#elif NUM_MODES == 3
+            int cmode[NUM_MODES] = {NC_PIO,
+                                    NC_PIO|NC_64BIT_OFFSET,
+                                    NC_PIO|NC_64BIT_DATA};
+            char mode_name[NUM_MODES][NC_MAX_NAME] = {"classic serial     ",
+                                                      "64bit offset serial",
+                                                      "64bit data serial"};
+            int expected_format[NUM_MODES] = {NC_PIO|NC_FORMAT_CLASSIC,
+                                              NC_PIO|NC_FORMAT_64BIT_OFFSET,
+                                              NC_PIO|NC_FORMAT_64BIT_DATA};
+#elif NUM_MODES == 4
+            int cmode[NUM_MODES] = {NC_PIO,
+                                    NC_PIO|NC_64BIT_OFFSET,
+                                    NC_PIO|NC_64BIT_DATA,
+                                    NC_PIO|NC_PNETCDF};
+            char mode_name[NUM_MODES][NC_MAX_NAME] = {"classic serial     ",
+                                                      "64bit offset serial",
+                                                      "64bit data serial  ",
+                                                      "classic pnetcdf        "};
+            int expected_format[NUM_MODES] = {NC_PIO|NC_FORMAT_CLASSIC,
+                                              NC_PIO|NC_FORMAT_64BIT_OFFSET,
+                                              NC_PIO|NC_FORMAT_64BIT_DATA,
+                                              NC_PIO|NC_FORMAT_CLASSIC};
+#elif NUM_MODES == 6
+            int cmode[NUM_MODES] = {NC_PIO,
+                                    NC_PIO|NC_64BIT_OFFSET,
+                                    NC_PIO|NC_64BIT_DATA,
+                                    NC_PIO|NC_PNETCDF,
+                                    NC_PIO|NC_PNETCDF|NC_64BIT_OFFSET,
+                                    NC_PIO|NC_PNETCDF|NC_64BIT_DATA};
+            char mode_name[NUM_MODES][NC_MAX_NAME] = {"classic serial     ",
+                                                      "64bit offset serial",
+                                                      "64bit data serial  ",
+                                                      "classic pnetcdf        ",
+                                                      "64bit offset pnetcdf   ",
+                                                      "64bit data pnetcdf     "};
+            int expected_format[NUM_MODES] = {NC_PIO|NC_FORMAT_CLASSIC,
+                                              NC_PIO|NC_FORMAT_64BIT_OFFSET,
+                                              NC_PIO|NC_FORMAT_64BIT_DATA,
+                                              NC_PIO|NC_FORMAT_CLASSIC,
+                                              NC_PIO|NC_FORMAT_64BIT_OFFSET,
+                                              NC_PIO|NC_FORMAT_64BIT_DATA};
+#elif NUM_MODES == 8
+            int cmode[NUM_MODES] = {NC_PIO,
+                                    NC_PIO|NC_64BIT_OFFSET,
+                                    NC_PIO|NC_64BIT_DATA,
+                                    NC_PIO|NC_PNETCDF,
+                                    NC_PIO|NC_PNETCDF|NC_64BIT_OFFSET,
+                                    NC_PIO|NC_PNETCDF|NC_64BIT_DATA,
+                                    NC_PIO|NC_NETCDF4,
+                                    NC_PIO|NC_NETCDF4|NC_MPIIO};
+            char mode_name[NUM_MODES][NC_MAX_NAME] = {"classic serial         ",
+                                                      "64bit offset serial    ",
+                                                      "64bit data serial      ",
+                                                      "classic pnetcdf        ",
+                                                      "64bit offset pnetcdf   ",
+                                                      "64bit data pnetcdf     ",
+                                                      "netcdf4 serial         ",
+                                                      "netcdf4 parallel       "};
+            int expected_format[NUM_MODES] = {NC_PIO|NC_FORMAT_CLASSIC,
+                                              NC_PIO|NC_FORMAT_64BIT_OFFSET,
+                                              NC_PIO|NC_FORMAT_64BIT_DATA,
+                                              NC_PIO|NC_FORMAT_CLASSIC,
+                                              NC_PIO|NC_FORMAT_64BIT_OFFSET,
+                                              NC_PIO|NC_FORMAT_64BIT_DATA,
+                                              NC_PIO|NC_FORMAT_NETCDF4,
+                                              NC_PIO|NC_FORMAT_NETCDF4};
+#else
+
+            int cmode[NUM_MODES] = {NC_PIO, 
+                                    NC_PIO|NC_NETCDF4,
                                     NC_PIO|NC_NETCDF4|NC_MPIIO,
                                     NC_PIO|NC_PNETCDF};
-            char mode_name[NUM_MODES][NC_MAX_NAME + 1] = {"classic sequential   ",
-                                                          "netCDF-4 sequential  ",
+            char mode_name[NUM_MODES][NC_MAX_NAME + 1] = {"classic serial   ",
+                                                          "netCDF-4 serial  ",
                                                           "netCDF-4 parallel I/O",
                                                           "pnetcdf              "};
-*/
-            int cmode[NUM_MODES] = {NC_PIO|NC_CLOBBER, 
-                                    NC_PIO|NC_PNETCDF|NC_CLOBBER};
-            char mode_name[NUM_MODES][NC_MAX_NAME + 1] = {"classic sequential   ",
-                                                          "pnetcdf              "};
+
+#endif
             int t, m;
 
             /* Print header. */
@@ -111,7 +188,13 @@ main(int argc, char **argv)
             for (m = 0; m < NUM_MODES; m++)
             {
                 /* Create a file with a 3D record var. */
-                if (nc_create(FILE_NAME, cmode[m], &ncid)) PERR;
+                char filename[strlen(FILE_PREFIX)+16];
+                sprintf(filename,"%s%d.nc",FILE_PREFIX,cmode[m]);
+                /* Turn on logging for PIO library. */
+//                PIOc_set_log_level(2); 
+//                if (!my_rank) 
+//                    nc_set_log_level(2); 
+                if (nc_create(filename, cmode[m], &ncid)) PERR;
                 if (nc_def_dim(ncid, DIM_NAME_UNLIMITED, dimlen[0], &dimid[0])) PERR;
                 if (nc_def_dim(ncid, DIM_NAME_X, dimlen[1], &dimid[1])) PERR;
                 if (nc_def_dim(ncid, DIM_NAME_Y, dimlen[2], &dimid[2])) PERR;
@@ -147,14 +230,18 @@ main(int argc, char **argv)
                 for (t = 0; t < NUM_TIMESTEPS; t++)
                     if (nc_put_vard_int(ncid, varid, ioid, t, my_data)) PERR;
 
-                /* Turn on logging for PIO library. */
-                PIOc_set_log_level(3); 
-                if (!my_rank) 
-                    nc_set_log_level(3); 
+                /* check the file format */
+                if (nc_inq_format_extended(ncid, NULL, &found_format)) PERR;
+                if (found_format != expected_format[m]) {
+                        printf("expected format 0x%x found format 0x%x\n",expected_format[m], 
+                           found_format);
+                    PERR;
+                }
+
                 if (nc_close(ncid)) PERR;
-                PIOc_set_log_level(0); 
-                if (!my_rank) 
-                    nc_set_log_level(0); 
+//                PIOc_set_log_level(0); 
+//                if (!my_rank) 
+//                    nc_set_log_level(0); 
                 /* Stop the clock. */
                 gettimeofday(&endtime, NULL);
 

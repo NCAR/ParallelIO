@@ -2542,7 +2542,6 @@ find_iotype_from_omode(int mode, int *iotype)
         else
             *iotype = PIO_IOTYPE_NETCDF;
     }
-
     return PIO_NOERR;
 }
 

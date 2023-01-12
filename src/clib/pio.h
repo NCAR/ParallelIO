@@ -95,7 +95,7 @@
 #define DECOMP_FORTRAN_ORDER_STR "Fortran"
 
 /** A convience macro for netCDF integration code. */
-#define NC_PIO NC_UDF0
+#define NC_PIO NC_UDF2
 
 /**
  * Variable description structure.
