@@ -42,7 +42,7 @@ int ncint_initialized = 0;
  * functions that make up the NCINT dispatch interface. */
 NC_Dispatch NCINT_dispatcher = {
 
-    NC_FORMATX_UDF2,
+    NC_FORMATX_UDF0,
     DISPATCH_VERSION,
 
     PIO_NCINT_create,
@@ -131,21 +131,21 @@ NC_Dispatch NCINT_dispatcher = {
     PIO_NCINT_filter_actions,
 #endif
 #if NC_DISPATCH_VERSION >= 3
-    NC_NOTNC4_inq_var_filter_ids,
-    NC_NOTNC4_inq_var_filter_info,
+    PIOc_inq_var_filter_ids,
+    PIOc_inq_var_filter_info,
 #endif
 #if NC_DISPATCH_VERSION >= 4
-    NC_NOTNC4_def_var_quantize,
-    NC_NOTNC4_inq_var_quantize,
+    PIOc_def_var_quantize,
+    PIOc_inq_var_quantize,
 #endif
 #if NC_DISPATCH_VERSION >= 5
-    NC_NOOP_inq_filter_avail,
+    PIOc_inq_filter_avail,
 #endif
 };
 
 /**
  * Pointer to the dispatch table used for netCDF/PIO
- * integration. Files opened or created with mode flag NC_UDF2 will be
+ * integration. Files opened or created with mode flag NC_UDF0 will be
  * opened using the functions in this dispatch table. */
 const NC_Dispatch* NCINT_dispatch_table = NULL;
 
@@ -167,7 +167,7 @@ PIO_NCINT_initialize(void)
         PLOG((1, "Adding user-defined format for netCDF PIO integration"));
 
         /* Add our user defined format. */
-        if ((ret = nc_def_user_format(NC_UDF2, &NCINT_dispatcher, NULL)))
+        if ((ret = nc_def_user_format(NC_UDF0, &NCINT_dispatcher, NULL)))
             return ret;
         ncint_initialized++;
     }
@@ -219,8 +219,8 @@ PIO_NCINT_create(const char *path, int cmode, size_t initialsz, int basepe,
     if (!(ios = pio_get_iosystem_from_id(diosysid)))
         return pio_err(NULL, NULL, PIO_EBADID, __FILE__, __LINE__);
 
-    /* Turn off NC_UDF2 in the mode flag. */
-    cmode = ((cmode) & ~(NC_UDF2));
+    /* Turn off NC_UDF0 in the mode flag. */
+    cmode = ((cmode) & ~(NC_UDF0));
     /* Find the IOTYPE from the mode flag. */
     if ((ret = find_iotype_from_omode(cmode, &iotype)))
         return pio_err(ios, NULL, ret, __FILE__, __LINE__);
@@ -269,8 +269,8 @@ PIO_NCINT_open(const char *path, int mode, int basepe, size_t *chunksizehintp,
     if (!(ios = pio_get_iosystem_from_id(diosysid)))
         return pio_err(NULL, NULL, PIO_EBADID, __FILE__, __LINE__);
 
-    /* Turn of NC_UDF2 in the mode flag. */
-    mode = (mode) & ~(NC_UDF2);
+    /* Turn of NC_UDF0 in the mode flag. */
+    mode = (mode) & ~(NC_UDF0);
 
     /* Find the IOTYPE from the mode flag. */
     if ((ret = find_iotype_from_omode(mode, &iotype)))
@@ -387,7 +387,7 @@ PIO_NCINT_set_fill(int ncid, int fillmode, int *old_modep)
 }
 
 /**
- * @internal Get the format (i.e. NC_FORMAT_UDF2) of a file opened
+ * @internal Get the format (i.e. NC_FORMAT_UDF0) of a file opened
  * with PIO.
  *
  * @param ncid File ID (ignored).
@@ -402,7 +402,7 @@ PIO_NCINT_inq_format(int ncid, int *formatp)
 {
     /* HDF4 is the format. */
     if (formatp)
-        *formatp = NC_FORMATX_UDF2;
+        *formatp = NC_FORMATX_UDF0;
 
     return NC_NOERR;
 }
@@ -413,7 +413,7 @@ PIO_NCINT_inq_format(int ncid, int *formatp)
  *
  * @param ncid File ID.
  * @param formatp a pointer that gets the extended format. PIO files
- * will always get NC_FORMATX_UDF2.
+ * will always get NC_FORMATX_UDF0.
  * @param modep a pointer that gets the open/create mode associated with
  * this file. Ignored if NULL.
 
@@ -433,10 +433,10 @@ PIO_NCINT_inq_format_extended(int ncid, int *formatp, int *modep)
         return NC_EBADID;
 
     if (modep)
-        *modep = my_mode|NC_UDF2;
+        *modep = my_mode|NC_UDF0;
 
     if (formatp)
-        *formatp = NC_FORMATX_UDF2;
+        *formatp = NC_FORMATX_UDF0;
 
     return NC_NOERR;
 }
@@ -1039,6 +1039,7 @@ PIO_NCINT_def_var_chunking(int ncid, int varid, int storage, const size_t *chunk
 {
     return PIOc_def_var_chunking(ncid, varid, storage, (const PIO_Offset *)chunksizesp);
 }
+
 #if NC_DISPATCH_VERSION == 2
 /**
  * @internal Carry out one of several filter actions

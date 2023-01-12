@@ -95,7 +95,7 @@
 #define DECOMP_FORTRAN_ORDER_STR "Fortran"
 
 /** A convience macro for netCDF integration code. */
-#define NC_PIO NC_UDF2
+#define NC_PIO NC_UDF0
 
 /**
  * Variable description structure.
@@ -1243,7 +1243,13 @@ extern "C" {
                                const long long *op);
     int PIOc_put_vard_ulonglong(int ncid, int varid, int decompid, const PIO_Offset recnum,
                                 const unsigned long long *op);
+  int PIOc_inq_var_filter_ids(int ncid, int varid, size_t *nfiltersp, unsigned int *ids);
+  int PIOc_inq_var_filter_info(int ncid, int varid, unsigned int id, size_t *nparamsp, unsigned int *params );
+  int PIOc_def_var_quantize(int ncid, int varid, int quantize_mode, int nsd );
+  int PIOc_inq_var_quantize(int ncid, int varid, int *quantize_mode, int *nsdp );
+  int PIOc_inq_filter_avail(int ncid, unsigned int id );
 
+  
     /* These functions are for the netCDF integration layer. */
     int nc_def_iosystem(MPI_Comm comp_comm, int num_iotasks, int stride, int base, int rearr,
                          int *iosysidp);

@@ -18,6 +18,7 @@
 #include <netcdf.h>
 #ifdef _NETCDF4
 #include <netcdf_par.h>
+#include <netcdf_filter.h>
 #endif
 #ifdef _PNETCDF
 #include <pnetcdf.h>
@@ -638,7 +639,12 @@ enum PIO_MSG
     PIO_MSG_GET_ATT,
     PIO_MSG_PUT_ATT,
     PIO_MSG_INQ_TYPE,
-    PIO_MSG_INQ_UNLIMDIMS
+    PIO_MSG_INQ_UNLIMDIMS,
+    PIO_MSG_INQ_VAR_FILTER_IDS,
+    PIO_MSG_INQ_VAR_FILTER_INFO,
+    PIO_MSG_DEF_VAR_QUANTIZE,
+    PIO_MSG_INQ_VAR_QUANTIZE,
+    PIO_MSG_INQ_FILTER_AVAIL,
 };
 
 #endif /* __PIO_INTERNAL__ */

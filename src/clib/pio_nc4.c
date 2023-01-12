@@ -1388,7 +1388,7 @@ PIOc_inq_var_quantize(int ncid, int varid, int *quantize_mode, int *nsdp )
         {
             int msg = PIO_MSG_INQ_VAR_QUANTIZE; /* Message for async notification. */
             char qmode_present = quantize_mode ? true : false;
-            char ndsp_present = ndsp ? true : false;
+            char nsdp_present = nsdp ? true : false;
 
             if (ios->compmain == MPI_ROOT)
                 mpierr = MPI_Send(&msg, 1, MPI_INT, ios->ioroot, 1, ios->union_comm);
@@ -1400,10 +1400,10 @@ PIOc_inq_var_quantize(int ncid, int varid, int *quantize_mode, int *nsdp )
             if (!mpierr)
                 mpierr = MPI_Bcast(&qmode_present, 1, MPI_CHAR, ios->compmain, ios->intercomm);
             if (!mpierr)
-                mpierr = MPI_Bcast(&ndsp_present, 1, MPI_CHAR, ios->compmain, ios->intercomm);
+                mpierr = MPI_Bcast(&nsdp_present, 1, MPI_CHAR, ios->compmain, ios->intercomm);
 
-            PLOG((2, "PIOc_inq_var_quantize qmode_present = %d ndsp_present = %d "
-                  qmode_present, ndsp_present));
+            PLOG((2, "PIOc_inq_var_quantize qmode_present = %d nsdp_present = %d "
+                  qmode_present, nsdp_present));
         }
 
         /* Handle MPI errors. */
@@ -1418,7 +1418,7 @@ PIOc_inq_var_quantize(int ncid, int varid, int *quantize_mode, int *nsdp )
     {
 #ifdef _NETCDF4
         if (file->do_io)
-	  ierr = nc_inq_var_quantize(file->fh, varid, quantize_mode, ndsp); 
+	  ierr = nc_inq_var_quantize(file->fh, varid, quantize_mode, nsdp); 
 #endif
     }
 
@@ -1432,8 +1432,8 @@ PIOc_inq_var_quantize(int ncid, int varid, int *quantize_mode, int *nsdp )
     if (quantize_mode && !ierr)
         if ((mpierr = MPI_Bcast(quantize_mode, 1, MPI_INT, ios->ioroot, ios->my_comm)))
             return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
-    if (ndsp && !ierr)
-      if ((mpierr = MPI_Bcast(ndsp, 1, MPI_INT, ios->ioroot, ios->my_comm)))
+    if (nsdp && !ierr)
+      if ((mpierr = MPI_Bcast(nsdp, 1, MPI_INT, ios->ioroot, ios->my_comm)))
 	return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
 
     return PIO_NOERR;

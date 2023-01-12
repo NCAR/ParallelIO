@@ -24,8 +24,15 @@
 #define NDIM2 2
 #define NDIM3 3
 #define NUM_TIMESTEPS 1
+#define NETCDF_VERSION (NC_VERSION_MAJOR*10000 \
+			+ NC_VERSION_MINOR*100 \
+			+ NC_VERSION_PATCH)
+#if NETCDF_VERSION < 40901
+// only netcdf4 formats supported
+#define NUM_MODES 4
+#else
 #define NUM_MODES 8
-
+#endif
 
 extern NC_Dispatch NCINT_dispatcher;
 
@@ -110,18 +117,18 @@ main(int argc, char **argv)
                                               NC_PIO|NC_FORMAT_64BIT_OFFSET,
                                               NC_PIO|NC_FORMAT_64BIT_DATA};
 #elif NUM_MODES == 4
-            int cmode[NUM_MODES] = {NC_PIO,
-                                    NC_PIO|NC_64BIT_OFFSET,
-                                    NC_PIO|NC_64BIT_DATA,
-                                    NC_PIO|NC_PNETCDF};
-            char mode_name[NUM_MODES][NC_MAX_NAME] = {"classic serial     ",
-                                                      "64bit offset serial",
-                                                      "64bit data serial  ",
-                                                      "classic pnetcdf        "};
-            int expected_format[NUM_MODES] = {NC_PIO|NC_FORMAT_CLASSIC,
-                                              NC_PIO|NC_FORMAT_64BIT_OFFSET,
-                                              NC_PIO|NC_FORMAT_64BIT_DATA,
-                                              NC_PIO|NC_FORMAT_CLASSIC};
+            int cmode[NUM_MODES] = {NC_PIO|NC_NETCDF4,
+				    NC_PIO|NC_NETCDF4|NC_MPIIO,
+                                    NC_PIO|NC_NETCDF4|NC_CLASSIC_MODEL,
+                                    NC_PIO|NC_NETCDF4|NC_MPIIO|NC_CLASSIC_MODEL};
+            char mode_name[NUM_MODES][NC_MAX_NAME] = {"netcdf4 serial          ",
+                                                      "netcdf4 parallel        ",
+                                                      "netcdf4 classic serial  ",
+                                                      "netcdf4 classic parallel"};
+            int expected_format[NUM_MODES] = {NC_PIO|NC_FORMAT_NETCDF4,
+                                              NC_PIO|NC_FORMAT_NETCDF4,
+                                              NC_PIO|NC_FORMAT_NETCDF4_CLASSIC,
+                                              NC_PIO|NC_FORMAT_NETCDF4_CLASSIC};
 #elif NUM_MODES == 6
             int cmode[NUM_MODES] = {NC_PIO,
                                     NC_PIO|NC_64BIT_OFFSET,
