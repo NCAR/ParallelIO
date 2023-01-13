@@ -262,7 +262,8 @@ PIO_NCINT_open(const char *path, int mode, int basepe, size_t *chunksizehintp,
     int iotype;
     iosystem_desc_t *ios;  /* Pointer to io system information. */
     int ret;
-
+    int nc4;
+    
     PLOG((1, "PIO_NCINT_open path = %s mode = %x", path, mode));
 
     /* Get the IO system info from the id. */
@@ -271,14 +272,14 @@ PIO_NCINT_open(const char *path, int mode, int basepe, size_t *chunksizehintp,
 
     /* Turn of NC_UDF0 in the mode flag. */
     mode = (mode) & ~(NC_UDF0);
-
+    
     /* Find the IOTYPE from the mode flag. */
     if ((ret = find_iotype_from_omode(mode, &iotype)))
         return pio_err(ios, NULL, ret, __FILE__, __LINE__);
 
     /* Add necessary structs to hold netcdf-4 file data. */
     if ((ret = nc4_file_list_add(ncid, path, mode, NULL)))
-        return ret;
+      return ret;
 
     /* Open the file with PIO. Tell openfile_retry to accept the
      * externally assigned ncid. */
