@@ -46,7 +46,7 @@ main(int argc, char **argv)
         int dimlen[NDIM3] = {NC_UNLIMITED, DIM_LEN_X, DIM_LEN_Y};
         int iosysid;
         NC_Dispatch *disp_in;
-        int i;
+        int n, m;
 
         /* Turn on logging for PIO library. */
         /* PIOc_set_log_level(3); */
@@ -54,7 +54,7 @@ main(int argc, char **argv)
         /* Initialize the intracomm. */
         if (nc_def_iosystem(MPI_COMM_WORLD, 1, 1, 0, 0, &iosysid)) PERR;
 
-	for(int m=7; m < NUM_MODES; m++){
+	for(m=0; m < NUM_MODES; m++){
 	  /* Create a file with a 3D record var. */
 	  if(!my_rank)
 	    printf("     cmode = %d\n", cmode[m]);
@@ -71,7 +71,7 @@ main(int argc, char **argv)
 	  if (nc_inq_user_format(NC_PIO, &disp_in, NULL)) PERR;
 	  if (disp_in != &NCINT_dispatcher) PERR;
 
-	  for(int n=0; n < NUM_MODES; n++){
+	  for(n=0; n < NUM_MODES; n++){
 	    /* Open the file. */
 	    if (nc_open(FILE_NAME, cmode[n], &ncid)) PERR;
 	  

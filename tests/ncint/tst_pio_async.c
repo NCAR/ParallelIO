@@ -54,7 +54,7 @@ main(int argc, char **argv)
         int *data_in;
         int num_procs2[COMPONENT_COUNT] = {3};
         int num_io_procs = 1;
-        int i;
+        int i, m;
 
         /* Turn on logging for PIO library. */
         /* PIOc_set_log_level(4); */
@@ -71,7 +71,7 @@ main(int argc, char **argv)
         if (my_rank)
         {
             /* Create a file with a 3D record var. */
-	  for(int m=0; m<NUM_MODES; m++){
+	  for(m=0; m<NUM_MODES; m++){
 	    if(my_rank==1)
 	      printf("     cmode = %d\n", cmode[m]);
 	    if (nc_create(FILE_NAME, cmode[m], &ncid)) PERR;

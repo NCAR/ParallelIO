@@ -62,7 +62,7 @@ main(int argc, char **argv)
         size_t *compdof; /* The decomposition mapping. */
         int *my_data;
         int *data_in;
-        int i;
+        int i, m;
 
         /* Turn on logging for PIO library. */
         /* PIOc_set_log_level(3); */
@@ -70,7 +70,7 @@ main(int argc, char **argv)
         /* Initialize the intracomm. */
         if (nc_def_iosystem(MPI_COMM_WORLD, 1, 1, 0, 0, &iosysid)) PERR;
 
-	for(int m=0; m < NUM_MODES; m++){
+	for(m=0; m < NUM_MODES; m++){
 	  /* Create a file with a 3D record var. */
 	  if(!my_rank)
 	    printf("     cmode = %d\n", cmode[m]);
