@@ -1253,12 +1253,12 @@ extern "C" {
                                const long long *op);
     int PIOc_put_vard_ulonglong(int ncid, int varid, int decompid, const PIO_Offset recnum,
                                 const unsigned long long *op);
-  int PIOc_inq_var_filter_ids(int ncid, int varid, size_t *nfiltersp, unsigned int *ids);
-  int PIOc_inq_var_filter_info(int ncid, int varid, unsigned int id, size_t *nparamsp, unsigned int *params );
-
 /* use this variable in the NETCDF library (introduced in v4.9.0) to determine if the following 
    functions are available */
 #ifdef NC_NOQUANTIZE
+  int PIOc_inq_var_filter_ids(int ncid, int varid, size_t *nfiltersp, unsigned int *ids);
+  int PIOc_inq_var_filter_info(int ncid, int varid, unsigned int id, size_t *nparamsp, unsigned int *params );
+
   int PIOc_def_var_quantize(int ncid, int varid, int quantize_mode, int nsd );
   int PIOc_inq_var_quantize(int ncid, int varid, int *quantize_mode, int *nsdp );
   int PIOc_inq_filter_avail(int ncid, unsigned int id );

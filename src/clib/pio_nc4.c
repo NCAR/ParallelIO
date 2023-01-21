@@ -1052,6 +1052,9 @@ PIOc_get_var_chunk_cache(int ncid, int varid, PIO_Offset *sizep, PIO_Offset *nel
 
     return PIO_NOERR;
 }
+/* use this variable in the NETCDF library (introduced in v4.9.0) to determine if the following 
+   functions are available */
+#ifdef NC_NOQUANTIZE
 
 /**
  * Get the variable filter ids if any
@@ -1129,10 +1132,8 @@ PIOc_inq_var_filter_ids(int ncid, int varid, size_t *nfiltersp, unsigned int *id
     /* If this is an IO task, then call the netCDF function. */
     if (ios->ioproc)
     {
-#ifdef _NETCDF4
         if (file->do_io)
           ierr = nc_inq_var_filter_ids(file->fh, varid, nfiltersp, ids);
-#endif
     }
 
     /* Broadcast and check the return code. */
@@ -1231,10 +1232,8 @@ PIOc_inq_var_filter_info(int ncid, int varid, unsigned int id, size_t *nparamsp,
     /* If this is an IO task, then call the netCDF function. */
     if (ios->ioproc)
     {
-#ifdef _NETCDF4
         if (file->do_io)
           ierr = nc_inq_var_filter_info(file->fh, varid, id, nparamsp, params);
-#endif
     }
 
     /* Broadcast and check the return code. */
@@ -1253,9 +1252,6 @@ PIOc_inq_var_filter_info(int ncid, int varid, unsigned int id, size_t *nparamsp,
 
     return PIO_NOERR;
 }
-/* use this variable in the NETCDF library (introduced in v4.9.0) to determine if the following 
-   functions are available */
-#ifdef NC_NOQUANTIZE
 
 /**
  * Turn on quantization for a variable
