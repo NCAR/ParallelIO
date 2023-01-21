@@ -214,14 +214,18 @@ contains
     integer :: nl
     integer :: forder
     
-    ctitle = C_NULL_CHAR
-    chistory = C_NULL_CHAR
     if(present(title)) then
+       allocate(ctitle(len_trim(title)+1))
        ctitle = trim(title)//C_NULL_CHAR
+    else
+       nullify(ctitle)
     endif
 
     if(present(history)) then
+       allocate(chistory(len_trim(history)+1))
        chistory = trim(history)//C_NULL_CHAR
+    else
+       nullify(chistory)
     endif
 
     if(present(fortran_order)) then
