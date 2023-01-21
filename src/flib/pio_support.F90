@@ -217,13 +217,13 @@ contains
     if(present(title)) then
        ctitle = trim(title)//C_NULL_CHAR
     else
-       nullify(ctitle)
+       ctitle(1:1) = C_NULL_CHAR
     endif
 
     if(present(history)) then
        chistory = trim(history)//C_NULL_CHAR
     else
-       nullify(chistory)
+       chistory(1:1) = C_NULL_CHAR
     endif
 
     if(present(fortran_order)) then
