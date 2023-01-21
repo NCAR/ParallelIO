@@ -46,7 +46,7 @@ main(int argc, char **argv)
         int dimlen[NDIM3] = {NC_UNLIMITED, DIM_LEN_X, DIM_LEN_Y};
         int iosysid;
         NC_Dispatch *disp_in;
-        int i, m, n;
+        int n, m;
 
         /* Turn on logging for PIO library. */
         /* PIOc_set_log_level(3); */
