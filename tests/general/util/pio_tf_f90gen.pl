@@ -698,6 +698,8 @@ sub get_default_test_driver
     $out_line = $out_line . "    END IF\n";
     $cur_test_case_num += 1;
   }
+  # This line just avoids a gfortran warning
+  $out_line = $out_line . "      mpierr = 0\n";
   $out_line = $out_line . "  END SUBROUTINE PIO_TF_Test_driver_\n";
   return $out_line;
 }
