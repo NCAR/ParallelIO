@@ -38,7 +38,7 @@ foreach (SRC_FILE IN LISTS GENERATED_SRCS)
 endforeach ()
 
 if ("${CMAKE_Fortran_COMPILER_ID}" STREQUAL "GNU")
-  add_definitions(-ffree-line-length-none -Wno-conversion)
+  add_definitions(-ffree-line-length-none)
 endif()
 
 if (CMAKE_Fortran_COMPILER_ID STREQUAL "NAG")
