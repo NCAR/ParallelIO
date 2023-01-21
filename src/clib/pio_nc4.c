@@ -49,7 +49,7 @@ PIOc_def_var_deflate(int ncid, int varid, int shuffle, int deflate,
         return pio_err(ios, file, PIO_ENOTNC4, __FILE__, __LINE__);
 
     PLOG((1, "PIOc_def_var_deflate ncid = %d varid = %d shuffle = %d deflate = %d deflate_level = %d",
-	  ncid, varid, shuffle, deflate, deflate_level));
+          ncid, varid, shuffle, deflate, deflate_level));
 
     /* If async is in use, and this is not an IO task, bcast the parameters. */
     if (ios->async)
@@ -83,8 +83,8 @@ PIOc_def_var_deflate(int ncid, int varid, int shuffle, int deflate,
     if (ios->ioproc)
     {
 #ifdef _NETCDF4
-	if (file->do_io)
-	    ierr = nc_def_var_deflate(file->fh, varid, shuffle, deflate, deflate_level);
+        if (file->do_io)
+            ierr = nc_def_var_deflate(file->fh, varid, shuffle, deflate, deflate_level);
 #endif
     }
 
@@ -1115,7 +1115,7 @@ PIOc_inq_var_filter_ids(int ncid, int varid, size_t *nfiltersp, unsigned int *id
             if (!mpierr)
                 mpierr = MPI_Bcast(&ids_present, 1, MPI_CHAR, ios->compmain, ios->intercomm);
 
-            PLOG((2, "PIOc_inq_var_filter_ids cnt_present = %d ids_present = %d "
+            PLOG((2, "PIOc_inq_var_filter_ids cnt_present = %d ids_present = %d ",
                   cnt_present, ids_present));
         }
 
@@ -1131,7 +1131,7 @@ PIOc_inq_var_filter_ids(int ncid, int varid, size_t *nfiltersp, unsigned int *id
     {
 #ifdef _NETCDF4
         if (file->do_io)
-	  ierr = nc_inq_var_filter_ids(file->fh, varid, nfiltersp, ids);
+          ierr = nc_inq_var_filter_ids(file->fh, varid, nfiltersp, ids);
 #endif
     }
 
@@ -1217,7 +1217,7 @@ PIOc_inq_var_filter_info(int ncid, int varid, unsigned int id, size_t *nparamsp,
             if (!mpierr)
                 mpierr = MPI_Bcast(&params_present, 1, MPI_CHAR, ios->compmain, ios->intercomm);
 
-            PLOG((2, "PIOc_inq_var_filter_info nparamsp_present = %d params_present = %d "
+            PLOG((2, "PIOc_inq_var_filter_info nparamsp_present = %d params_present = %d ",
                   nparamsp_present, params_present));
         }
 
@@ -1233,7 +1233,7 @@ PIOc_inq_var_filter_info(int ncid, int varid, unsigned int id, size_t *nparamsp,
     {
 #ifdef _NETCDF4
         if (file->do_io)
-	  ierr = nc_inq_var_filter_info(file->fh, varid, id, nparamsp, params);
+          ierr = nc_inq_var_filter_info(file->fh, varid, id, nparamsp, params);
 #endif
     }
 
@@ -1249,7 +1249,7 @@ PIOc_inq_var_filter_info(int ncid, int varid, unsigned int id, size_t *nparamsp,
             return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
     if ((*nparamsp)> 0 && params && !ierr)
       if ((mpierr = MPI_Bcast(params, *(nparamsp), MPI_UNSIGNED, ios->ioroot, ios->my_comm)))
-	return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+        return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
 
     return PIO_NOERR;
 }
@@ -1327,7 +1327,7 @@ PIOc_def_var_quantize(int ncid, int varid, int quantize_mode, int nsd )
     {
 #ifdef _NETCDF4
         if (file->do_io)
-	  ierr = nc_def_var_quantize(file->fh, varid, quantize_mode, nsd);
+          ierr = nc_def_var_quantize(file->fh, varid, quantize_mode, nsd);
 #endif
     }
 
@@ -1402,7 +1402,7 @@ PIOc_inq_var_quantize(int ncid, int varid, int *quantize_mode, int *nsdp )
             if (!mpierr)
                 mpierr = MPI_Bcast(&nsdp_present, 1, MPI_CHAR, ios->compmain, ios->intercomm);
 
-            PLOG((2, "PIOc_inq_var_quantize qmode_present = %d nsdp_present = %d "
+            PLOG((2, "PIOc_inq_var_quantize qmode_present = %d nsdp_present = %d ",
                   qmode_present, nsdp_present));
         }
 
@@ -1418,7 +1418,7 @@ PIOc_inq_var_quantize(int ncid, int varid, int *quantize_mode, int *nsdp )
     {
 #ifdef _NETCDF4
         if (file->do_io)
-	  ierr = nc_inq_var_quantize(file->fh, varid, quantize_mode, nsdp); 
+          ierr = nc_inq_var_quantize(file->fh, varid, quantize_mode, nsdp); 
 #endif
     }
 
@@ -1434,7 +1434,7 @@ PIOc_inq_var_quantize(int ncid, int varid, int *quantize_mode, int *nsdp )
             return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
     if (nsdp && !ierr)
       if ((mpierr = MPI_Bcast(nsdp, 1, MPI_INT, ios->ioroot, ios->my_comm)))
-	return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+        return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
 
     return PIO_NOERR;
 }
@@ -1506,7 +1506,7 @@ PIOc_inq_filter_avail(int ncid, unsigned int id )
     {
 #ifdef _NETCDF4
         if (file->do_io)
-	  ierr = nc_inq_filter_avail(file->fh, id); 
+          ierr = nc_inq_filter_avail(file->fh, id); 
 #endif
     }
 

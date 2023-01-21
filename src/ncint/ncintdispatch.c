@@ -270,7 +270,7 @@ PIO_NCINT_open(const char *path, int mode, int basepe, size_t *chunksizehintp,
     if (!(ios = pio_get_iosystem_from_id(diosysid)))
         return pio_err(NULL, NULL, PIO_EBADID, __FILE__, __LINE__);
 
-    /* Turn of NC_UDF0 in the mode flag. */
+    /* Turn off NC_UDF0 in the mode flag. */
     mode = (mode) & ~(NC_UDF0);
     
     /* Find the IOTYPE from the mode flag. */
@@ -283,7 +283,7 @@ PIO_NCINT_open(const char *path, int mode, int basepe, size_t *chunksizehintp,
 
     /* Open the file with PIO. Tell openfile_retry to accept the
      * externally assigned ncid. */
-    if ((ret = PIOc_openfile_retry(diosysid, &ncid, &iotype, path, mode, 0, 1)))
+    if ((ret = PIOc_openfile_retry(diosysid, &ncid, &iotype, path, mode, 1, 1)))
         return ret;
 
     return NC_NOERR;
@@ -896,18 +896,22 @@ PIO_NCINT_inq_var_all(int ncid, int varid, char *name, nc_type *xtypep,
                       unsigned int *idp, size_t *nparamsp, unsigned int *params)
 {
     int ret;
+    int format;
 
     ret = PIOc_inq_var(ncid, varid, name, xtypep, ndimsp, dimidsp, nattsp);
+#ifdef _NETCDF4
+    ret = PIOc_inq_format(ncid, &format);
+    if (!ret && (format == NC_FORMAT_NETCDF4 || format == NC_FORMAT_NETCDF4_CLASSIC) ){
+        if (!ret && contiguousp && chunksizesp)
+            ret = PIOc_inq_var_chunking(ncid, varid, contiguousp, (MPI_Offset *)chunksizesp);
 
-    if (!ret)
-        ret = PIOc_inq_var_chunking(ncid, varid, contiguousp, (MPI_Offset *)chunksizesp);
+        if (!ret && shufflep && deflatep && deflate_levelp)
+            ret = PIOc_inq_var_deflate(ncid, varid, shufflep, deflatep, deflate_levelp);
 
-    if (!ret)
-        ret = PIOc_inq_var_deflate(ncid, varid, shufflep, deflatep, deflate_levelp);
-
-    if (!ret)
-        ret = PIOc_inq_var_endian(ncid, varid, endiannessp);
-    
+        if (!ret && endiannessp)
+            ret = PIOc_inq_var_endian(ncid, varid, endiannessp);
+    }
+#endif
     return ret;
 }
 

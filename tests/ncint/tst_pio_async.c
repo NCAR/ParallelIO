@@ -70,11 +70,12 @@ main(int argc, char **argv)
 
         if (my_rank)
         {
+            int m;
             /* Create a file with a 3D record var. */
-	  for(int m=0; m<NUM_MODES; m++){
-	    if(my_rank==1)
-	      printf("     cmode = %d\n", cmode[m]);
-	    if (nc_create(FILE_NAME, cmode[m], &ncid)) PERR;
+          for( m=0; m<NUM_MODES; m++){
+            if(my_rank==1)
+              printf("     cmode = %d\n", cmode[m]);
+            if (nc_create(FILE_NAME, cmode[m], &ncid)) PERR;
             if (nc_def_dim(ncid, DIM_NAME_UNLIMITED, dimlen[0], &dimid[0])) PERR;
             if (nc_def_dim(ncid, DIM_NAME_X, dimlen[1], &dimid[1])) PERR;
             if (nc_def_dim(ncid, DIM_NAME_Y, dimlen[2], &dimid[2])) PERR;
@@ -152,7 +153,7 @@ main(int argc, char **argv)
 
             free(my_data);
             if (nc_free_decomp(ioid)) PERR;
-	  }
+          }
             if (nc_free_iosystem(iosysid)) PERR;
         }
     }
