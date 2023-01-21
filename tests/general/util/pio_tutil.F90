@@ -190,7 +190,7 @@ CONTAINS
   END SUBROUTINE PIO_TF_Init_
 
   ! Initialize Testing framework - Internal (Not directly used by unit tests)
-  SUBROUTINE  PIO_TF_Init_async_(rearr)
+  SUBROUTINE  PIO_TF_Init_async_()
 #ifdef TIMING
    use perf_mod
 #endif
@@ -199,7 +199,6 @@ CONTAINS
 #else
     include 'mpif.h'
 #endif
-    INTEGER, INTENT(IN) :: rearr
     INTEGER ierr
 
     CALL MPI_COMM_DUP(MPI_COMM_WORLD, pio_tf_comm_, ierr);

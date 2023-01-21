@@ -624,7 +624,7 @@ sub get_default_test_main
   $out_line = $out_line . "    CALL MPI_Init(ierr)\n";
   $out_line = $out_line . "    DO i=1,SIZE(rearrs)\n";
   if($test_type eq "async"){
-    $out_line = $out_line . "      CALL PIO_TF_Init_async_(rearrs(i))\n";
+    $out_line = $out_line . "      CALL PIO_TF_Init_async_()\n";
   }else{
     $out_line = $out_line . "      CALL PIO_TF_Init_(rearrs(i))\n";
   }
