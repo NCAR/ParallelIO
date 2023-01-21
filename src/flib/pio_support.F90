@@ -237,7 +237,8 @@ contains
     endif
     nl = len_trim(filename)
     ret = PIOc_write_nc_decomp(ios%iosysid, filename(:nl)//C_NULL_CHAR, cmode, iodesc%ioid, ctitle, chistory, forder)
-    
+    if(allocated(ctitle)) deallocate(ctitle)
+    if(allocated(chistory)) deallocate(chistory)
   end subroutine pio_write_nc_dof
 
 
