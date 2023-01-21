@@ -215,13 +215,13 @@ contains
     integer :: forder
     
     if(present(title)) then
-       ctitle = trim(title)//C_NULL_CHAR
+       ctitle(1:len_trim(title)+1) = trim(title)//C_NULL_CHAR
     else
        ctitle(1:1) = C_NULL_CHAR
     endif
 
     if(present(history)) then
-       chistory = trim(history)//C_NULL_CHAR
+       chistory(1:len_trim(history)+1) = trim(history)//C_NULL_CHAR
     else
        chistory(1:1) = C_NULL_CHAR
     endif
