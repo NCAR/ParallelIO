@@ -25,7 +25,7 @@ int diosysid;
 int ncint_initialized = 0;
 
 /** Version of dispatch table. */
-#define DISPATCH_VERSION 5
+#define DISPATCH_VERSION NC_DISPATCH_VERSION
 
 /* Internal filter actions - copied from nc4internal.h */
 #define NCFILTER_DEF            1

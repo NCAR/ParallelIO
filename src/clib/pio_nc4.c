@@ -1253,6 +1253,9 @@ PIOc_inq_var_filter_info(int ncid, int varid, unsigned int id, size_t *nparamsp,
 
     return PIO_NOERR;
 }
+/* use this variable in the NETCDF library (introduced in v4.9.0) to determine if the following 
+   functions are available */
+#ifdef NC_NOQUANTIZE
 
 /**
  * Turn on quantization for a variable
@@ -1325,10 +1328,8 @@ PIOc_def_var_quantize(int ncid, int varid, int quantize_mode, int nsd )
     /* If this is an IO task, then call the netCDF function. */
     if (ios->ioproc)
     {
-#ifdef _NETCDF4
         if (file->do_io)
           ierr = nc_def_var_quantize(file->fh, varid, quantize_mode, nsd);
-#endif
     }
 
     /* Broadcast and check the return code. */
@@ -1416,10 +1417,8 @@ PIOc_inq_var_quantize(int ncid, int varid, int *quantize_mode, int *nsdp )
     /* If this is an IO task, then call the netCDF function. */
     if (ios->ioproc)
     {
-#ifdef _NETCDF4
         if (file->do_io)
           ierr = nc_inq_var_quantize(file->fh, varid, quantize_mode, nsdp); 
-#endif
     }
 
     /* Broadcast and check the return code. */
@@ -1504,10 +1503,8 @@ PIOc_inq_filter_avail(int ncid, unsigned int id )
     /* If this is an IO task, then call the netCDF function. */
     if (ios->ioproc)
     {
-#ifdef _NETCDF4
         if (file->do_io)
           ierr = nc_inq_filter_avail(file->fh, id); 
-#endif
     }
 
     /* Broadcast and check the return code. */
@@ -1520,3 +1517,5 @@ PIOc_inq_filter_avail(int ncid, unsigned int id )
 
     return ierr;
 }
+#endif
+
