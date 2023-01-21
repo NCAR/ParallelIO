@@ -213,19 +213,15 @@ contains
     character(len=:), allocatable :: ctitle, chistory
     integer :: nl
     integer :: forder
-    integer :: i
-
     
+    ctitle = C_NULL_CHAR
+    chistory = C_NULL_CHAR
     if(present(title)) then
        ctitle = trim(title)//C_NULL_CHAR
-    else
-       ctitle = C_NULL_CHAR
     endif
 
     if(present(history)) then
        chistory = trim(history)//C_NULL_CHAR
-    else
-       chistory = C_NULL_CHAR
     endif
 
     if(present(fortran_order)) then
@@ -317,17 +313,17 @@ contains
          integer(c_int), value :: fortran_order
        end function PIOc_read_nc_decomp
     end interface
-    character(len=:), allocatable :: ctitle, chistory
     integer :: nl
     integer :: forder
 
     nl = len_trim(filename)
+    forder = 0
     ret = PIOc_read_nc_decomp(ios%iosysid, filename(:nl)//C_NULL_CHAR, iodesc%ioid, title, history, forder)
     if(present(fortran_order)) then
        if(forder /= 0) then
           fortran_order = .true.
        else
-          fortran_order = .true.
+          fortran_order = .false.
        endif
     endif
   end subroutine pio_read_nc_dof
