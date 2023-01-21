@@ -215,14 +215,12 @@ contains
     integer :: forder
     
     if(present(title)) then
-       allocate(ctitle(len_trim(title)+1))
        ctitle = trim(title)//C_NULL_CHAR
     else
        nullify(ctitle)
     endif
 
     if(present(history)) then
-       allocate(chistory(len_trim(history)+1))
        chistory = trim(history)//C_NULL_CHAR
     else
        nullify(chistory)
@@ -237,8 +235,6 @@ contains
     endif
     nl = len_trim(filename)
     ret = PIOc_write_nc_decomp(ios%iosysid, filename(:nl)//C_NULL_CHAR, cmode, iodesc%ioid, ctitle, chistory, forder)
-    if(allocated(ctitle)) deallocate(ctitle)
-    if(allocated(chistory)) deallocate(chistory)
   end subroutine pio_write_nc_dof
 
 
