@@ -129,7 +129,7 @@ SUBROUTINE check_file(comm, iosys, pio_file, fname, attname, dimname, ret)
     PIO_TF_PASSERT(val .eq. fname, comm, "Attribute value is not the expected value")
 
     call PIO_SetErrorHandling(pio_file, PIO_BCAST_ERROR, old_eh)
-!    ret = pio_set_log_level(iosys, 3)
+    ret = pio_set_log_level(iosys, 0)
     ret = PIO_get_att(pio_file, pio_var, "wrongname", ival)
     write(errstr, *) "Got wrong error ",ret," on getatt in file:", trim(fname)
     PIO_TF_PASSERT(ret==PIO_ENOTATT, comm, errstr)
@@ -177,7 +177,6 @@ PIO_TF_AUTO_TEST_SUB_BEGIN two_comps_odd_even_async
   character(len=PIO_TF_MAX_STR_LEN), target :: fname2 = "pio_iosys_async_test_file2.nc"
   character(len=PIO_TF_MAX_STR_LEN), parameter :: attname = "filename"
   character(len=PIO_TF_MAX_STR_LEN), parameter :: dimname = "filename_dim"
-  character(len=PIO_TF_MAX_STR_LEN), pointer :: fname
   integer, dimension(:), allocatable :: iotypes
   character(len=PIO_TF_MAX_STR_LEN), dimension(:), allocatable :: iotype_descs
   integer :: i, num_iotypes = 0
