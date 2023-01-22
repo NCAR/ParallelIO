@@ -124,15 +124,15 @@ PIO_TF_AUTO_TEST_SUB_BEGIN test_data_conversion
   compdof = VEC_LOCAL_SZ * pio_tf_world_rank_ + compdof_rel_disps
   wbuf = pio_tf_world_rank_;
 ! Type conversions here to avoid gfortran warnings
-#if PIO_TF_DATA_TYPE == PIO_int
-  exp_val = pio_tf_world_rank_
-#elif PIO_TF_DATA_TYPE == PIO_short
-  exp_val = int(pio_tf_world_rank_,kind=fc_short)
-#elif PIO_TF_DATA_TYPE == PIO_real
-  exp_val = real(pio_tf_world_rank_,kind=fc_real)
-#else
-  exp_val = real(pio_tf_world_rank_,kind=fc_double)
-#endif
+  if (PIO_TF_DATA_TYPE == PIO_int) THEN
+     exp_val = pio_tf_world_rank_
+  elseif (PIO_TF_DATA_TYPE == PIO_short) then
+     exp_val = int(pio_tf_world_rank_,kind=fc_short)
+  elseif (PIO_TF_DATA_TYPE == PIO_real) then
+     exp_val = real(pio_tf_world_rank_,kind=fc_real)
+  else
+     exp_val = real(pio_tf_world_rank_,kind=fc_double)
+  endif
   ! Set the decomposition for writing data as PIO_int
   call PIO_initdecomp(pio_tf_iosystem_, PIO_int, dims, compdof, wiodesc)
 
