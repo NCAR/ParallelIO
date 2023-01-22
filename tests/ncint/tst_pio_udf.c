@@ -69,7 +69,7 @@ main(int argc, char **argv)
 
         /* Initialize the intracomm. */
         if (nc_def_iosystem(MPI_COMM_WORLD, 1, 1, 0, 0, &iosysid)) PERR;
-        
+
         for( m=0; m < NUM_MODES; m++){
           /* Create a file with a 3D record var. */
           if(!my_rank)
@@ -92,7 +92,7 @@ main(int argc, char **argv)
           if (nc_def_decomp(iosysid, PIO_INT, NDIM2, &dimlen[1], elements_per_pe,
                             compdof, &ioid, 1, NULL, NULL)) PERR;
           free(compdof);
-          
+
           /* Create some data on this processor. */
           if (!(my_data = malloc(elements_per_pe * sizeof(int)))) PERR;
           for (i = 0; i < elements_per_pe; i++)
@@ -108,15 +108,15 @@ main(int argc, char **argv)
 
           /* Open the file. */
           if (nc_open(FILE_NAME, NC_PIO, &ncid)) PERR;
-          
+
           /* Read distributed arrays. */
           if (!(data_in = malloc(elements_per_pe * sizeof(int)))) PERR;
           if (nc_get_vard_int(ncid, varid, ioid, 0, data_in)) PERR;
-          
+
           /* Check results. */
           for (i = 0; i < elements_per_pe; i++)
             if (data_in[i] != my_data[i]) PERR;
-          
+
           /* Close file. */
           if (nc_close(ncid)) PERR;
 
