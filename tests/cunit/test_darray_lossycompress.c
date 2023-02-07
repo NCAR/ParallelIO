@@ -49,6 +49,20 @@
  * PIOc_write_darray(). */
 #define NUM_TEST_CASES_FILLVALUE 2
 
+/* This struct allows us to treat float as uint32_t
+ * types. */
+union FU {
+    float f;
+    uint32_t u;
+};
+
+/* This struct allows us to treat double points as uint64_t
+ * types. */
+union DU {
+    double d;
+    uint64_t u;
+};
+
 /* The dimension names. */
 char dim_name[NDIM][PIO_MAX_NAME + 1] = {"timestep", "x", "y"};
 
@@ -91,19 +105,47 @@ int test_darray(int iosysid, int ioid, int num_flavors, int *flavor, int my_rank
     int test_data_int_in[arraylen];
     float fillvalue_float = NC_FILL_FLOAT;
     float test_data_float[arraylen];
-    float test_data_float_in[arraylen];
+    float test_data_float_in[arraylen] ;
     double fillvalue_double = NC_FILL_DOUBLE;
     double test_data_double[arraylen];
     double test_data_double_in[arraylen];
+
+    union FU fin;
+    union DU dfin;
+    union FU xpect[arraylen];
+    union DU double_xpect[arraylen];
+
+    xpect[0].u = 0x3f8e3000;
+    xpect[1].u = 0x3f800fff;
+    xpect[2].u = 0x41200000;
+    xpect[3].u = 0x4640efff;
+//    xpect[4].u = 0x3dfcd000;
+    double_xpect[0].u = 0x3ff1c60000000000;
+    double_xpect[1].u = 0x3ff001ffffffffff;
+    double_xpect[2].u = 0x4023fe0000000000;
+    double_xpect[3].u = 0x41d265ffffffffff;
+//    double_xpect[4].u = 0x42dc120000000000;
 
     /* Initialize some data. */
     for (int f = 0; f < arraylen; f++)
     {
 	test_data_int[f] = my_rank * 10 + f;
-	test_data_float[f] = my_rank * 10 + f + 0.5;
-	test_data_double[f] = my_rank * 100000 + f + 0.5;
     }
+    test_data_float[0] = 1.11111111;
+    test_data_float[1] = 1.0;
+    test_data_float[2] = 9.99999999;
+    test_data_float[3] = 12345.67;
+//    test_data_float[4] = .1234567;
 
+    test_data_double[0] = 1.1111111;
+    test_data_double[1] = 1.0;
+    test_data_double[2] = 9.999999999;
+    test_data_double[3] = 1234567890.12345;
+//    test_data_double[4] = 123456789012345.0;     
+
+
+
+   
     /* Use PIO to create the example file in each of the four
      * available ways. */
     for (int fmt = 0; fmt < num_flavors; fmt++)
@@ -156,14 +198,14 @@ int test_darray(int iosysid, int ioid, int num_flavors, int *flavor, int my_rank
 			ERR(ret);
 		    if(pio_type == PIO_REAL || pio_type == PIO_DOUBLE)
 		    {
-			if ((ret = PIOc_def_var_quantize(ncid, varid, NC_QUANTIZE_BITROUND, 5)))
-			    ERR(ret);
+		        if ((ret = PIOc_def_var_quantize(ncid, varid, NC_QUANTIZE_BITGROOM, 3)))
+		            ERR(ret);
 		    }
 		    else
 		    {
-			/* this should fail */
-			if ((ret = PIOc_def_var_quantize(ncid, varid, NC_QUANTIZE_BITROUND, 5) != NC_EINVAL ))
-			    ERR(ret);
+		        /* this should fail */
+		        if ((ret = PIOc_def_var_quantize(ncid, varid, NC_QUANTIZE_BITROUND, 5) != NC_EINVAL ))
+		            ERR(ret);
 
 		    }
 		    if ((ret = PIOc_def_var_deflate(ncid, varid, 0, 1, 1)))
@@ -222,6 +264,7 @@ int test_darray(int iosysid, int ioid, int num_flavors, int *flavor, int my_rank
 			    ERR(ret);
 
 			/* Write the data. */
+//                        printf("test_data[0] = %f\n",test_data_float[0]);
 			if ((ret = PIOc_write_darray(ncid, varid, ioid, arraylen, test_data, fillvalue)))
 			    ERR(ret);
 
@@ -299,6 +342,7 @@ int test_darray(int iosysid, int ioid, int num_flavors, int *flavor, int my_rank
 		    /*     ERR(ret); */
 
 		    /* Check the results. */
+                    /* HOW does one test a lossy compression algorythm? */
 		    for (int f = 0; f < arraylen; f++)
 		    {
 			switch (pio_type)
@@ -308,11 +352,13 @@ int test_darray(int iosysid, int ioid, int num_flavors, int *flavor, int my_rank
 				return ERR_WRONG;
 			    break;
 			case PIO_FLOAT:
-			    if (test_data_float_in[f] != test_data_float[f])
+                            fin.f = test_data_float_in[f];
+			    if (fin.u != xpect[f].u)
 				return ERR_WRONG;
 			    break;
 			case PIO_DOUBLE:
-			    if (test_data_double_in[f] != test_data_double[f])
+                            dfin.d = test_data_double_in[f];
+			    if (dfin.u != double_xpect[f].u)
 				return ERR_WRONG;
 			    break;
 			default:
@@ -356,10 +402,10 @@ int test_darray(int iosysid, int ioid, int num_flavors, int *flavor, int my_rank
 int test_all_darray(int iosysid, int num_flavors, int *flavor, int my_rank,
 		    MPI_Comm test_comm)
 {
-#define NUM_TYPES_TO_TEST 1
+#define NUM_TYPES_TO_TEST 2
     int ioid;
     char filename[PIO_MAX_NAME + 1];
-    int pio_type[NUM_TYPES_TO_TEST] = {PIO_FLOAT};
+    int pio_type[NUM_TYPES_TO_TEST] = {PIO_FLOAT, PIO_DOUBLE};
     int dim_len_2d[NDIM2] = {X_DIM_LEN, Y_DIM_LEN};
     int ret; /* Return code. */
 
