@@ -196,6 +196,7 @@ int test_darray(int iosysid, int ioid, int num_flavors, int *flavor, int my_rank
 		    /* Define a variable. */
 		    if ((ret = PIOc_def_var(ncid, VAR_NAME, pio_type, NDIM, dimids, &varid)))
 			ERR(ret);
+#ifdef NC_NOQUANTIZE
 		    if(pio_type == PIO_REAL || pio_type == PIO_DOUBLE)
 		    {
 		        if ((ret = PIOc_def_var_quantize(ncid, varid, NC_QUANTIZE_BITGROOM, 3)))
@@ -208,6 +209,7 @@ int test_darray(int iosysid, int ioid, int num_flavors, int *flavor, int my_rank
 		            ERR(ret);
 
 		    }
+#endif
 		    if ((ret = PIOc_def_var_deflate(ncid, varid, 0, 1, 1)))
 			ERR(ret);
 
@@ -343,6 +345,7 @@ int test_darray(int iosysid, int ioid, int num_flavors, int *flavor, int my_rank
 
 		    /* Check the results. */
                     /* HOW does one test a lossy compression algorythm? */
+#ifdef NC_NOQUANTIZE
 		    for (int f = 0; f < arraylen; f++)
 		    {
 			switch (pio_type)
@@ -365,6 +368,9 @@ int test_darray(int iosysid, int ioid, int num_flavors, int *flavor, int my_rank
 			    ERR(ERR_WRONG);
 			}
 		    }
+#else
+                    printf("Quantize support was not available in the netcdf build and thus is not tested\n");
+#endif
 
 		    /* Try to write, but it won't work, because we opened file read-only. */
 		    if (!test_multi)
