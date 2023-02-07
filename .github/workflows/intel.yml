@@ -16,7 +16,7 @@ jobs:
       FC: mpiifort
       # Versions should match the github tag names
       PNETCDF_VERSION: checkpoint.1.12.3
-      NETCDF_C_VERSION: v4.9.0
+      NETCDF_C_VERSION: v4.9.1
       NETCDF_FORTRAN_VERSION: v4.6.0
       HDF5_VERSION: hdf5_1_12_2
     steps:
