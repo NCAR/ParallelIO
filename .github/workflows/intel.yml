@@ -25,8 +25,7 @@ jobs:
       run: |
         set -x
         sudo apt-get update 
-        sudo apt-get install wget
-        sudo apt-get install libjpeg-dev
+        sudo apt-get install curl
         sudo apt-get install libz-dev
     - name: cache intel compiler
       id: cache-intel
