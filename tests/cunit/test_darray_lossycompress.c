@@ -109,7 +109,7 @@ int test_darray(int iosysid, int ioid, int num_flavors, int *flavor, int my_rank
     double fillvalue_double = NC_FILL_DOUBLE;
     double test_data_double[arraylen];
     double test_data_double_in[arraylen];
-
+#ifdef NC_NOQUANTIZE
     union FU fin;
     union DU dfin;
     union FU xpect[arraylen];
@@ -125,7 +125,7 @@ int test_darray(int iosysid, int ioid, int num_flavors, int *flavor, int my_rank
     double_xpect[2].u = 0x4023fe0000000000;
     double_xpect[3].u = 0x41d265ffffffffff;
 //    double_xpect[4].u = 0x42dc120000000000;
-
+#endif
     /* Initialize some data. */
     for (int f = 0; f < arraylen; f++)
     {
