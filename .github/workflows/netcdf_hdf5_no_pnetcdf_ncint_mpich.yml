@@ -70,38 +70,38 @@ jobs:
         printenv >> $GITHUB_ENV
       
         
-#    - name: Build NetCDF C
-#      if: steps.cache-netcdf.outputs.cache-hit != 'true'
-#      uses: ./.github/actions/buildnetcdf
-#      with:
-#        netcdf_version: ${{ env.NETCDF_C_VERSION }}
-#        install_prefix: ${GITHUB_WORKSPACE}/netcdf
+    - name: Build NetCDF C
+      if: steps.cache-netcdf.outputs.cache-hit != 'true'
+      uses: ./.github/actions/buildnetcdf
+      with:
+        netcdf_version: ${{ env.NETCDF_C_VERSION }}
+        install_prefix: ${GITHUB_WORKSPACE}/netcdf
 
-    # - name: cache-netcdf-fortran
-    #   id: cache-netcdf-fortran
-    #   uses: actions/cache@v3
-    #   with:
-    #     path: ~/netcdf-fortran
-    #     key: netcdf-fortran-${{ runner.os }}-${{ env.NETCDF_FORTRAN_VERSION }}-mpich-${{ env.MPICH_VERSION }}-hdf5-${{ env.HDF5_VERSION }}
+    - name: cache-netcdf-fortran
+      id: cache-netcdf-fortran
+      uses: actions/cache@v3
+      with:
+        path: ~/netcdf-fortran
+        key: netcdf-fortran-${{ runner.os }}-${{ env.NETCDF_FORTRAN_VERSION }}-mpich-${{ env.MPICH_VERSION }}-hdf5-${{ env.HDF5_VERSION }}
 
-    # - name: Build NetCDF Fortran
-    #   if: steps.cache-netcdf.outputs.cache-hit != 'true'
-    #   uses: ./.github/actions/buildnetcdff
-    #   with:
-    #     netcdf_fortran_version: ${{ env.NETCDF_FORTRAN_VERSION }}
-    #     install_prefix: ${GITHUB_WORKSPACE}/netcdf
-    #     netcdf_c_path: ${GITHUB_WORKSPACE}/netcdf
+    - name: Build NetCDF Fortran
+      if: steps.cache-netcdf.outputs.cache-hit != 'true'
+      uses: ./.github/actions/buildnetcdff
+      with:
+        netcdf_fortran_version: ${{ env.NETCDF_FORTRAN_VERSION }}
+        install_prefix: ${GITHUB_WORKSPACE}/netcdf
+        netcdf_c_path: ${GITHUB_WORKSPACE}/netcdf
 
-    # - name: Build ParallelIO with autotools
-    #   uses: ./.github/actions/parallelio_autotools
-    #   with:
-    #     enable_fortran: True
-    #     enable_netcdf_integration: True
-    #     parallelio_version: ${{ env.GITHUB_SHA }}
-    # - name: make check
-    #   run: |
-    #     cd $GITHUB_WORKSPACE/parallelio-src   
-    #     make -j check
+    - name: Build ParallelIO with autotools
+      uses: ./.github/actions/parallelio_autotools
+      with:
+        enable_fortran: True
+        enable_netcdf_integration: True
+        parallelio_version: ${{ env.GITHUB_SHA }}
+    - name: make check
+      run: |
+        cd $GITHUB_WORKSPACE/parallelio-src   
+        make -j check
 #    - name: Setup tmate session
 #      if: ${{ failure() }}
 #      uses: mxschmitt/action-tmate@v3
