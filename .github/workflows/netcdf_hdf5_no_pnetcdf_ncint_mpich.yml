@@ -15,14 +15,14 @@ jobs:
       NETCDF_C_VERSION: v4.9.1
       NETCDF_FORTRAN_VERSION: v4.6.0
       MPICH_VERSION: v4.1
-      HDF5_VERSION: hdf5_1_14_0
+      HDF5_VERSION: hdf5_1_12_2
       FFLAGS: "-fallow-argument-mismatch"
       FCFLAGS: "-fallow-argument-mismatch"
     steps:
     - uses: actions/checkout@v3
     - name: Installs
       run: |
-        sudo apt-get install doxygen graphviz wget gfortran libjpeg-dev libz-dev
+        sudo apt-get install doxygen graphviz wget gfortran libjpeg-dev libz-dev libcurl4-gnutls-dev
     - name: cache-mpich
       id: cache-mpich
       uses: actions/cache@v3
@@ -65,17 +65,17 @@ jobs:
         export FC=mpifort
         export PATH="${GITHUB_WORKSPACE}/hdf5/bin:${GITHUB_WORKSPACE}/mpich/bin:${GITHUB_WORKSPACE}/netcdf/bin:$PATH"
         export CPPFLAGS="$CPPFLAGS -I${GITHUB_WORKSPACE}/hdf5/include -I${GITHUB_WORKSPACE}/netcdf/include"
-        export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${GITHUB_WORKSPACE}/hdf5/lib"
-        export LDFLAGS="$LDFLAGS -L${GITHUB_WORKSPACE}/hdf5/lib  -L${GITHUB_WORKSPACE}/netcdf/lib "
+        export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${GITHUB_WORKSPACE}/hdf5/lib:/usr/lib/x86_64-linux-gnu/"
+        export LDFLAGS="$LDFLAGS -L${GITHUB_WORKSPACE}/hdf5/lib  -L${GITHUB_WORKSPACE}/netcdf/lib -L/usr/lib/x86_64-linux-gnu/ -lcurl"
         printenv >> $GITHUB_ENV
       
         
-    - name: Build NetCDF C
-      if: steps.cache-netcdf.outputs.cache-hit != 'true'
-      uses: ./.github/actions/buildnetcdf
-      with:
-        netcdf_version: ${{ env.NETCDF_C_VERSION }}
-        install_prefix: ${GITHUB_WORKSPACE}/netcdf
+#    - name: Build NetCDF C
+#      if: steps.cache-netcdf.outputs.cache-hit != 'true'
+#      uses: ./.github/actions/buildnetcdf
+#      with:
+#        netcdf_version: ${{ env.NETCDF_C_VERSION }}
+#        install_prefix: ${GITHUB_WORKSPACE}/netcdf
 
     # - name: cache-netcdf-fortran
     #   id: cache-netcdf-fortran
@@ -102,8 +102,8 @@ jobs:
     #   run: |
     #     cd $GITHUB_WORKSPACE/parallelio-src   
     #     make -j check
-    - name: Setup tmate session
-      if: ${{ failure() }}
-      uses: mxschmitt/action-tmate@v3
+#    - name: Setup tmate session
+#      if: ${{ failure() }}
+#      uses: mxschmitt/action-tmate@v3
         
         
