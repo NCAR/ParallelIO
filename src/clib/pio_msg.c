@@ -2610,6 +2610,99 @@ int set_loglevel_handler(iosystem_desc_t *ios)
     return PIO_NOERR;
 }
 
+/**
+ * This function is run on the IO tasks to define a netCDF
+ *  variable filter.
+ *
+ * @param ios pointer to the iosystem_desc_t.
+ * @returns 0 for success, PIO_EIO for MPI Bcast errors, or error code
+ * from netCDF base function.
+ * @internal
+ * @author Jim Edwards, Ed Hartnett
+ */
+int def_var_filter_handler(iosystem_desc_t *ios)
+{
+    int ncid;
+    int varid;
+    int id;
+    size_t nparams;
+    unsigned int *params;
+    int mpierr;
+
+    PLOG((1, "def_var_filter_handler comproot = %d", ios->comproot));
+    assert(ios);
+
+    /* Get the parameters for this function that the he comp main
+     * task is broadcasting. */
+    if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
+        return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
+    if ((mpierr = MPI_Bcast(&varid, 1, MPI_INT, 0, ios->intercomm)))
+        return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
+    if ((mpierr = MPI_Bcast(&id, 1, MPI_INT, 0, ios->intercomm)))
+        return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
+    if ((mpierr = MPI_Bcast(&nparams, 1, PIO_MPI_SIZE_T, 0, ios->intercomm)))
+        return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
+    if (!(params = malloc(nparams * sizeof(int))))
+        return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__);
+
+    if ((mpierr = MPI_Bcast(params, nparams, MPI_UNSIGNED, 0, ios->intercomm)))
+        return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
+
+    PLOG((1, "def_var_filter_handler got parameters ncid = %d "
+          "varid = %d id = %d nparams = %d ", ncid, varid, id, nparams));
+
+    /* Call the function. */
+    PIOc_def_var_filter(ncid, varid, id, nparams, params);
+
+    /* Free resources. */
+    free(params);
+
+    PLOG((1, "def_var_filter_handler succeeded!"));
+    return PIO_NOERR;
+}
+
+/**
+ * This function is run on the IO tasks to define a netCDF
+ *  variable quantize level.
+ *
+ * @param ios pointer to the iosystem_desc_t.
+ * @returns 0 for success, PIO_EIO for MPI Bcast errors, or error code
+ * from netCDF base function.
+ * @internal
+ * @author Jim Edwards, Ed Hartnett
+ */
+int def_var_quantize_handler(iosystem_desc_t *ios)
+{
+    int ncid;
+    int varid;
+    int mode;
+    int nsd; 
+    int mpierr;
+
+    PLOG((1, "def_var_quantize_handler comproot = %d", ios->comproot));
+    assert(ios);
+
+    /* Get the parameters for this function that the he comp main
+     * task is broadcasting. */
+    if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
+        return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
+    if ((mpierr = MPI_Bcast(&varid, 1, MPI_INT, 0, ios->intercomm)))
+        return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
+    if ((mpierr = MPI_Bcast(&mode, 1, MPI_INT, 0, ios->intercomm)))
+        return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
+    if ((mpierr = MPI_Bcast(&nsd, 1, MPI_INT, 0, ios->intercomm)))
+        return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
+
+    PLOG((1, "def_var_quantize_handler got parameters ncid = %d "
+          "varid = %d mode = %d nsd = %d ", ncid, varid, mode, nsd));
+
+    /* Call the function. */
+    PIOc_def_var_quantize(ncid, varid, mode, nsd);
+
+
+    PLOG((1, "def_var_quantize_handler succeeded!"));
+    return PIO_NOERR;
+}
 
 /**
  * This function is called by the IO tasks.  This function will not
@@ -2852,6 +2945,12 @@ int pio_msg_handler2(int io_rank, int component_count, iosystem_desc_t **iosys,
 	    case PIO_MSG_SETLOGLEVEL:
 	      ret = set_loglevel_handler(my_iosys);
 	      break;
+            case PIO_MSG_DEF_VAR_FILTER:
+              ret = def_var_filter_handler(my_iosys);
+              break;
+            case PIO_MSG_DEF_VAR_QUANTIZE:
+              ret = def_var_quantize_handler(my_iosys);
+              break;
 	    case PIO_MSG_EXIT:
 	      finalize++;
 	      ret = finalize_handler(my_iosys, idx);

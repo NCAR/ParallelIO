@@ -1055,6 +1055,93 @@ PIOc_get_var_chunk_cache(int ncid, int varid, PIO_Offset *sizep, PIO_Offset *nel
 /* use this variable in the NETCDF library (introduced in v4.9.0) to determine if the following 
    functions are available */
 #ifdef NC_NOQUANTIZE
+/**
+ * Set the variable filter ids 
+ *
+ * This function only applies to netCDF-4 files. When used with netCDF
+ * classic files, the error PIO_ENOTNC4 will be returned.
+ *
+ *  See the <a
+ * href="http://www.unidata.ucar.edu/software/netcdf/docs/group__variables.html">netCDF
+ * variable documentation</a> for details about the operation of this
+ * function.
+ *
+ * @param ncid the ncid of the open file.
+ * @param varid the ID of the variable.
+ * @param id set the filter id.
+ * @return PIO_NOERR for success, otherwise an error code.
+ * @ingroup PIO_inq_var_c
+ * @author Jim Edwards/Ed Hartnett
+ */
+int
+PIOc_def_var_filter(int ncid, int varid, unsigned int id, size_t nparams, unsigned int* params)
+{
+    iosystem_desc_t *ios;  /* Pointer to io system information. */
+    file_desc_t *file;     /* Pointer to file information. */
+    int ierr;              /* Return code from function calls. */
+    int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI function codes. */
+    int i;
+
+    PLOG((1, "PIOc_def_var_filter ncid = %d varid = %d id = %d nparams = %d", ncid, varid, id, nparams));
+#ifdef DEBUG
+    for(i=0; i<nparams; i++)
+        PLOG(1, "  param %d %d\n",i, params[i]);
+#endif
+
+    /* Get the file info. */
+    if ((ierr = pio_get_file(ncid, &file)))
+        return pio_err(NULL, NULL, ierr, __FILE__, __LINE__);
+    ios = file->iosystem;
+
+    /* Only netCDF-4 files can use this feature. */
+    if (file->iotype != PIO_IOTYPE_NETCDF4P && file->iotype != PIO_IOTYPE_NETCDF4C)
+        return pio_err(ios, file, PIO_ENOTNC4, __FILE__, __LINE__);
+
+    /* If async is in use, and this is not an IO task, bcast the parameters. */
+    if (ios->async)
+    {
+        if (!ios->ioproc)
+        {
+            int msg = PIO_MSG_DEF_VAR_FILTER; /* Message for async notification. */
+
+            if (ios->compmain == MPI_ROOT)
+                mpierr = MPI_Send(&msg, 1, MPI_INT, ios->ioroot, 1, ios->union_comm);
+
+            if (!mpierr)
+                mpierr = MPI_Bcast(&ncid, 1, MPI_INT, ios->compmain, ios->intercomm);
+            if (!mpierr)
+                mpierr = MPI_Bcast(&varid, 1, MPI_INT, ios->compmain, ios->intercomm);
+            if (!mpierr)
+                mpierr = MPI_Bcast(&id, 1, MPI_INT, ios->compmain, ios->intercomm);
+            if (!mpierr)
+                mpierr = MPI_Bcast(&nparams, 1, PIO_MPI_SIZE_T, ios->compmain, ios->intercomm);
+            if (!mpierr)
+                mpierr = MPI_Bcast(params, nparams, MPI_UNSIGNED, ios->compmain, ios->intercomm);
+
+        }
+
+        /* Handle MPI errors. */
+        if ((mpierr2 = MPI_Bcast(&mpierr, 1, MPI_INT, ios->comproot, ios->my_comm)))
+            return check_mpi(ios, NULL, mpierr2, __FILE__, __LINE__);
+        if (mpierr)
+            return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
+    }
+
+    /* If this is an IO task, then call the netCDF function. */
+    if (ios->ioproc)
+    {
+        if (file->do_io)
+            ierr = nc_def_var_filter(file->fh, varid, id, nparams, params);
+    }
+
+    /* Broadcast and check the return code. */
+    if ((mpierr = MPI_Bcast(&ierr, 1, MPI_INT, ios->ioroot, ios->my_comm)))
+        return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+    if (ierr)
+        return check_netcdf(file, ierr, __FILE__, __LINE__);
+
+    return PIO_NOERR;
+}
 
 /**
  * Get the variable filter ids if any

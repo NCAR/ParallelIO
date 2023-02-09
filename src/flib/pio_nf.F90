@@ -1,4 +1,5 @@
 #include "config.h"
+#include <netcdf_meta.h>
 !>
 !! @file
 !! Code to implement the classic netCDF Fortran API in PIO.
@@ -134,6 +135,15 @@ module pio_nf
        pio_redef                                            , &
        pio_set_log_level                                    , &
        pio_strerror                                         , &
+#ifdef NC_HAS_QUANTIZE
+       pio_def_var_quantize                                 , &
+       pio_inq_var_quantize                                 , &
+#endif
+#ifdef NC_HAS_PAR_FILTERS
+       pio_inq_var_filter_ids                               , &
+       pio_inq_var_filter_info                              , &
+       pio_inq_filter_avail                                
+#endif
        pio_set_fill
   !       pio_copy_att    to be done
 
@@ -337,7 +347,35 @@ module pio_nf
           get_var_chunk_cache_desc                          , &
           get_var_chunk_cache_id
   end interface pio_get_var_chunk_cache
-
+#ifdef NC_HAS_QUANTIZE
+  interface pio_def_var_quantize
+     module procedure &
+          def_var_quantize_desc                          , &
+          def_var_quantize_id
+  end interface pio_def_var_quantize
+  interface pio_inq_var_quantize
+     module procedure &
+          inq_var_quantize_desc                          , &
+          inq_var_quantize_id
+  end interface pio_inq_var_quantize
+#endif
+#ifdef NC_HAS_PAR_FILTERS
+  interface pio_inq_var_filter_ids
+     module procedure &
+          inq_var_filter_ids_desc                          , &
+          inq_var_filter_ids_id
+  end interface pio_inq_var_filter_ids
+  interface pio_inq_var_filter_info
+     module procedure &
+          inq_var_filter_info_desc                          , &
+          inq_var_filter_info_id
+  end interface pio_inq_var_filter_info
+  interface pio_inq_filter_avail
+     module procedure &
+          inq_filter_avail_desc                          , &
+          inq_filter_avail_id
+  end interface pio_inq_filter_avail
+#endif
 contains
 
   !>
@@ -2105,5 +2143,83 @@ contains
     ierr = PIOc_get_var_chunk_cache(file%fh, varid-1, chunk_cache_size, &
          chunk_cache_nelems, chunk_cache_preemption)
   end function get_var_chunk_cache_id
+#ifdef NC_HAS_QUANTIZE
+  !>
+  !! @ingroup PIO_def_var_quantize
+  !! Set quantize level for a netCDF-4/HDF5 variable 
+  !! @author Jim Edwards, Ed Hartnett
+  !<
+  integer function def_var_quantize_desc(file, vardesc, quantize_mode, nsd)  result(ierr)
+    type (File_desc_t), intent(in)  :: file
+    type (var_desc_t), intent(in)   :: vardesc
+    integer, intent(in)             :: quantize_mode
+    integer, intent(in)             :: nsd
 
+    ierr = def_var_quantize_id(file%fh, vardesc%varid, quantize_mode, nsd)
+  end function def_var_quantize_desc
+  !>
+  !! @ingroup PIO_def_var_quantize
+  !! Set quantize level for a netCDF-4/HDF5 variable.
+  !! @author Jim Edwards, Ed Hartnett
+  !<
+  integer function def_var_quantize_id(file, vardesc, quantize_mode , nsd) result(ierr)
+    type (File_desc_t), intent(in)  :: file
+    type (var_desc_t), intent(in) :: vardesc
+    integer, intent(in) :: quantize_mode
+    integer, intent(in) :: nsd 
+
+    interface
+       integer (C_INT) function PIOc_def_var_quantize(ncid, varid, quantize_mode, nsd) &
+            bind(c,name="PIOc_def_var_quantize")
+         use iso_c_binding
+         integer(c_int), value :: ncid
+         integer(c_int), value :: varid
+         integer(c_int), value :: quantize_mode
+         integer(c_int), value :: nsd
+       end function PIOc_def_var_quantize
+    end interface
+
+    ierr = PIOc_def_var_quantize(ncid, varid-1, quantize_mode, nsd)
+  end function def_var_quantize_id  
+  !>
+  !! @ingroup PIO_inq_var_quantize
+  !! Set quantize level for a netCDF-4/HDF5 variable 
+  !! @author Jim Edwards, Ed Hartnett
+  !<
+  integer function inq_var_quantize_desc(file, vardesc, quantize_mode, nsd)  result(ierr)
+    type (File_desc_t), intent(in)  :: file
+    type (var_desc_t), intent(in)   :: vardesc
+    integer, intent(out)             :: quantize_mode
+    integer, intent(out)             :: nsd
+
+    ierr = inq_var_quantize_id(file%fh, vardesc%varid, quantize_mode, nsd)
+  end function inq_var_quantize_desc
+  !>
+  !! @ingroup PIO_inq_var_quantize
+  !! Set quantize level for a netCDF-4/HDF5 variable.
+  !! @author Jim Edwards, Ed Hartnett
+  !<
+  integer function inq_var_quantize_id(file, vardesc, quantize_mode , nsd) result(ierr)
+    type (File_desc_t), intent(in)  :: file
+    type (var_desc_t), intent(in) :: vardesc
+    integer, intent(out) :: quantize_mode
+    integer, intent(out) :: nsd 
+
+    interface
+       integer (C_INT) function PIOc_inq_var_quantize(ncid, varid, quantize_mode, nsd) &
+            bind(c,name="PIOc_inq_var_quantize")
+         use iso_c_binding
+         integer(c_int), value :: ncid
+         integer(c_int), value :: varid
+         integer(c_int)        :: quantize_mode
+         integer(c_int)        :: nsd
+       end function PIOc_inq_var_quantize
+    end interface
+
+    ierr = PIOc_inq_var_quantize(ncid, varid-1, quantize_mode, nsd)
+  end function inq_var_quantize_id  
+#endif
+#ifdef NC_HAS_PAR_FILTERS
+
+#endif
 end module pio_nf

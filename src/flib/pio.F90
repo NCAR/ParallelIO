@@ -8,6 +8,7 @@
 !! @defgroup PIO_set_blocksize Box Rearranger Settings
 !! Set the box rearranger blocksize in Fortran.
 #include "config.h"
+#include <netcdf_meta.h>
 
 module pio
 ! Package all exposed variables and functions under one roof
@@ -65,6 +66,8 @@ module pio
        PIO_def_dim   ,        &
        PIO_def_var   ,        &
        PIO_def_var_deflate   ,        &
+       PIO_def_var_chunking, &
+       PIO_inq_var_chunking, &
        PIO_redef     ,          &
        PIO_set_log_level,          &
        PIO_inquire_variable , &
@@ -74,6 +77,13 @@ module pio
        PIO_set_var_chunk_cache, &
        PIO_get_var_chunk_cache, &
        PIO_set_fill, &
+#ifdef HAVE_PAR_FILTERS
+       PIO_def_var_quantize                                 , &
+       PIO_inq_var_quantize                                 , &
+       PIO_inq_var_filter_ids                               , &
+       PIO_inq_var_filter_info                              , &
+       PIO_inq_filter_avail                                
+#endif
        PIO_strerror
 
   use pionfatt_mod, only : PIO_put_att   => put_att,        &

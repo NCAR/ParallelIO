@@ -13,6 +13,7 @@
 #include <config.h>
 #include <pio.h>
 #include <pio_error.h>
+#include <stdint.h>
 #include <limits.h>
 #include <math.h>
 #include <netcdf.h>
@@ -30,6 +31,22 @@
 #ifdef USE_MPE
 #include <mpe.h>
 #endif /* USE_MPE */
+
+/* define an MPI type equivalent to size_t */
+#if SIZE_MAX == UCHAR_MAX
+   #define PIO_MPI_SIZE_T MPI_UNSIGNED_CHAR
+#elif SIZE_MAX == USHRT_MAX
+   #define PIO_MPI_SIZE_T MPI_UNSIGNED_SHORT
+#elif SIZE_MAX == UINT_MAX
+   #define PIO_MPI_SIZE_T MPI_UNSIGNED
+#elif SIZE_MAX == ULONG_MAX
+   #define PIO_MPI_SIZE_T MPI_UNSIGNED_LONG
+#elif SIZE_MAX == ULLONG_MAX
+   #define PIO_MPI_SIZE_T MPI_UNSIGNED_LONG_LONG
+#else
+   #error "what is happening here?"
+#endif
+
 
 //#ifndef MPI_OFFSET
 /** MPI_OFFSET is an integer type of size sufficient to represent the
@@ -641,6 +658,7 @@ enum PIO_MSG
     PIO_MSG_INQ_TYPE,
     PIO_MSG_INQ_UNLIMDIMS,
 #ifdef NC_NOQUANTIZE
+    PIO_MSG_DEF_VAR_FILTER,
     PIO_MSG_INQ_VAR_FILTER_IDS,
     PIO_MSG_INQ_VAR_FILTER_INFO,
     PIO_MSG_DEF_VAR_QUANTIZE,
