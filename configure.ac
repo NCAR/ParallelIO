@@ -292,12 +292,8 @@ AC_MSG_RESULT([${have_szip_write}])
 
 # Do we have parallel filter support? Parallel filters are required
 # for iotype NETCDF4P to use compression.
-AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include "netcdf_meta.h"],
-[[#if !NC_HAS_PAR_FILTERS
-# error
-#endif]
-])], [have_par_filters=yes], [have_par_filters=no])
 AC_MSG_CHECKING([whether netCDF provides parallel filter support])
+AC_CHECK_LIB([netcdf], [nc_inq_filter_avail], [have_par_filters=yes], [have_par_filters=no])
 AC_MSG_RESULT([${have_par_filters}])
 if test "x$have_par_filters" = xyes ; then
    AC_DEFINE([HAVE_PAR_FILTERS], [1], [if true, netcdf-c supports filters with parallel I/O])

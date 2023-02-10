@@ -1571,10 +1571,10 @@ int test_nc4(int iosysid, int num_flavors, int *flavor, int my_rank)
                 ERR(ret);
 
             /* Setting deflate works with parallel iotype starting
-	     * with netcdf-c-4.7.4. If present, HAVE_PAR_FILTERS will
+	     * with netcdf-c-4.7.4. If present, PIO_HAS_PAR_FILTERS will
 	     * be defined. */
 	    ret = PIOc_def_var_deflate(ncid, 0, 0, 1, 1);
-#ifdef HAVE_PAR_FILTERS
+#ifdef PIO_HAS_PAR_FILTERS
 	    if (ret)
 		ERR(ret);
 #else
@@ -1613,16 +1613,16 @@ int test_nc4(int iosysid, int num_flavors, int *flavor, int my_rank)
                     ERR(ERR_AWFUL);
 
             /* For parallel netCDF-4, we turned on deflate above, if
-	     * HAVE_PAR_FILTERS is defined. */
+	     * PIO_HAS_PAR_FILTERS is defined. */
             if (flavor[fmt] == PIO_IOTYPE_NETCDF4P)
 	    {
-#ifdef HAVE_PAR_FILTERS
+#ifdef PIO_HAS_PAR_FILTERS
 		if (shuffle || !deflate || deflate_level != 1)
                     ERR(ERR_AWFUL);
 #else
 		if (shuffle || deflate)
                     ERR(ERR_AWFUL);
-#endif /* HAVE_PAR_FILTERS */
+#endif /* PIO_HAS_PAR_FILTERS */
 	    }
 
             /* Check setting the chunk cache for the variable. */

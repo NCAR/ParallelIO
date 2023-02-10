@@ -139,7 +139,7 @@ module pio_nf
        pio_def_var_quantize                                 , &
        pio_inq_var_quantize                                 , &
 #endif
-#ifdef NC_HAS_PAR_FILTERS
+#ifdef PIO_HAS_PAR_FILTERS
        pio_inq_var_filter_ids                               , &
        pio_inq_var_filter_info                              , &
        pio_inq_filter_avail                                 , &
@@ -359,7 +359,7 @@ module pio_nf
           inq_var_quantize_id
   end interface pio_inq_var_quantize
 #endif
-#ifdef NC_HAS_PAR_FILTERS
+#ifdef PIO_HAS_PAR_FILTERS
   interface pio_inq_var_filter_ids
      module procedure &
           inq_var_filter_ids_desc                          , &
@@ -2219,7 +2219,7 @@ contains
     ierr = PIOc_inq_var_quantize(ncid, varid-1, quantize_mode, nsd)
   end function inq_var_quantize_id  
 #endif
-#ifdef NC_HAS_PAR_FILTERS
+#ifdef PIO_HAS_PAR_FILTERS
   !>
   !! @ingroup PIO_inq_var_filter_ids
   !! Inquire filter ids for a netCDF-4/HDF5 variable.

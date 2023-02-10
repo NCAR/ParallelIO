@@ -17,6 +17,14 @@ module pio
 
   use pio_kinds, only :  pio_offset_kind
 
+  use pionfatt_mod, only : PIO_put_att   => put_att,        &
+       PIO_get_att   => get_att, &
+       PIO_inq_var_fill => inq_var_fill
+  use pionfput_mod, only : PIO_put_var   => put_var
+  use pionfget_mod, only : PIO_get_var   => get_var
+  use pio_support, only: pio_writedof, pio_readdof, pio_write_nc_dof, pio_read_nc_dof
+  use iso_c_binding
+
   use piolib_mod, only : pio_initdecomp, &
        pio_openfile, pio_closefile, pio_createfile, pio_setdebuglevel, &
        pio_seterrorhandling, pio_setframe, pio_init, pio_get_local_array_size, &
@@ -81,20 +89,13 @@ module pio
        PIO_def_var_quantize     , &
        PIO_inq_var_quantize     , &
 #endif
-#ifdef NC_HAS_PAR_FILTERS
+#ifdef PIO_HAS_PAR_FILTERS
        PIO_inq_var_filter_ids   , &
        PIO_inq_var_filter_info  , &
        PIO_inq_filter_avail     , &
 #endif
        PIO_strerror
 
-  use pionfatt_mod, only : PIO_put_att   => put_att,        &
-       PIO_get_att   => get_att, &
-       PIO_inq_var_fill => inq_var_fill
-  use pionfput_mod, only : PIO_put_var   => put_var
-  use pionfget_mod, only : PIO_get_var   => get_var
-  use pio_support, only: pio_writedof, pio_readdof, pio_write_nc_dof, pio_read_nc_dof
-  use iso_c_binding
 
   implicit none
   public

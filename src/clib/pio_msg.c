@@ -1142,7 +1142,7 @@ int inq_var_chunking_handler(iosystem_desc_t *ios)
 
     return PIO_NOERR;
 }
-
+#ifdef PIO_HAS_PAR_FILTERS
 /**
  * Do an inq_var_filter_ids on a netCDF variable. This function is only
  * run on IO tasks.
@@ -1255,6 +1255,7 @@ int inq_var_filter_info_handler(iosystem_desc_t *ios)
 
     return PIO_NOERR;
 }
+#endif
 #ifdef NC_HAS_QUANTIZE
 /**
  * Do an inq_var_quantize on a netCDF variable. This function is only
@@ -1302,7 +1303,51 @@ int inq_var_quantize_handler(iosystem_desc_t *ios)
 
     return PIO_NOERR;
 }
+
+/**
+ * This function is run on the IO tasks to define a netCDF
+ *  variable quantize level.
+ *
+ * @param ios pointer to the iosystem_desc_t.
+ * @returns 0 for success, PIO_EIO for MPI Bcast errors, or error code
+ * from netCDF base function.
+ * @internal
+ * @author Jim Edwards, Ed Hartnett
+ */
+int def_var_quantize_handler(iosystem_desc_t *ios)
+{
+    int ncid;
+    int varid;
+    int mode;
+    int nsd; 
+    int mpierr;
+
+    PLOG((1, "def_var_quantize_handler comproot = %d", ios->comproot));
+    assert(ios);
+
+    /* Get the parameters for this function that the he comp main
+     * task is broadcasting. */
+    if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
+        return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
+    if ((mpierr = MPI_Bcast(&varid, 1, MPI_INT, 0, ios->intercomm)))
+        return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
+    if ((mpierr = MPI_Bcast(&mode, 1, MPI_INT, 0, ios->intercomm)))
+        return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
+    if ((mpierr = MPI_Bcast(&nsd, 1, MPI_INT, 0, ios->intercomm)))
+        return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
+
+    PLOG((1, "def_var_quantize_handler got parameters ncid = %d "
+          "varid = %d mode = %d nsd = %d ", ncid, varid, mode, nsd));
+
+    /* Call the function. */
+    PIOc_def_var_quantize(ncid, varid, mode, nsd);
+
+
+    PLOG((1, "def_var_quantize_handler succeeded!"));
+    return PIO_NOERR;
+}
 #endif
+
 /**
  * Do an inq_var_fill on a netCDF variable. This function is only
  * run on IO tasks.
@@ -1365,38 +1410,6 @@ int inq_var_fill_handler(iosystem_desc_t *ios)
 
     if (fill_modep)
         PLOG((3, "done with inq_var_fill_handler", *fill_modep));
-    return PIO_NOERR;
-}
-
-/**
- * Do an inq_var_filter_avail on a netCDF variable. This function is only
- * run on IO tasks.
- *
- * @param ios pointer to the iosystem_desc_t.
- * @returns 0 for success, error code otherwise.
- */
-int inq_filter_avail_handler(iosystem_desc_t *ios)
-{
-    int ncid;
-    unsigned int id;
-    int mpierr;
-
-    assert(ios);
-    PLOG((1, "inq_filter_avail_handler"));
-
-    /* Get the parameters for this function that the the comp main
-     * task is broadcasting. */
-    if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&id, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
-
-    PLOG((2,"inq_filter_avail_handler ncid = %d id = %d",
-          ncid, id));
-
-    /* Call the inq function to get the values. */
-    PIOc_inq_filter_avail(ncid, id);
-
     return PIO_NOERR;
 }
 
@@ -2801,7 +2814,38 @@ int set_loglevel_handler(iosystem_desc_t *ios)
 #endif
     return PIO_NOERR;
 }
+#ifdef PIO_HAS_PAR_FILTERS
+/**
+ * Do an inq_var_filter_avail on a netCDF variable. This function is only
+ * run on IO tasks.
+ *
+ * @param ios pointer to the iosystem_desc_t.
+ * @returns 0 for success, error code otherwise.
+ */
+int inq_filter_avail_handler(iosystem_desc_t *ios)
+{
+    int ncid;
+    unsigned int id;
+    int mpierr;
 
+    assert(ios);
+    PLOG((1, "inq_filter_avail_handler"));
+
+    /* Get the parameters for this function that the the comp main
+     * task is broadcasting. */
+    if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
+        return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
+    if ((mpierr = MPI_Bcast(&id, 1, MPI_INT, 0, ios->intercomm)))
+        return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
+
+    PLOG((2,"inq_filter_avail_handler ncid = %d id = %d",
+          ncid, id));
+
+    /* Call the inq function to get the values. */
+    PIOc_inq_filter_avail(ncid, id);
+
+    return PIO_NOERR;
+}
 /**
  * This function is run on the IO tasks to define a netCDF
  *  variable filter.
@@ -2852,50 +2896,7 @@ int def_var_filter_handler(iosystem_desc_t *ios)
     PLOG((1, "def_var_filter_handler succeeded!"));
     return PIO_NOERR;
 }
-
-/**
- * This function is run on the IO tasks to define a netCDF
- *  variable quantize level.
- *
- * @param ios pointer to the iosystem_desc_t.
- * @returns 0 for success, PIO_EIO for MPI Bcast errors, or error code
- * from netCDF base function.
- * @internal
- * @author Jim Edwards, Ed Hartnett
- */
-int def_var_quantize_handler(iosystem_desc_t *ios)
-{
-    int ncid;
-    int varid;
-    int mode;
-    int nsd; 
-    int mpierr;
-
-    PLOG((1, "def_var_quantize_handler comproot = %d", ios->comproot));
-    assert(ios);
-
-    /* Get the parameters for this function that the he comp main
-     * task is broadcasting. */
-    if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&varid, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&mode, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
-    if ((mpierr = MPI_Bcast(&nsd, 1, MPI_INT, 0, ios->intercomm)))
-        return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
-
-    PLOG((1, "def_var_quantize_handler got parameters ncid = %d "
-          "varid = %d mode = %d nsd = %d ", ncid, varid, mode, nsd));
-
-    /* Call the function. */
-    PIOc_def_var_quantize(ncid, varid, mode, nsd);
-
-
-    PLOG((1, "def_var_quantize_handler succeeded!"));
-    return PIO_NOERR;
-}
-
+#endif
 /**
  * This function is called by the IO tasks.  This function will not
  * return, unless there is an error.
@@ -3145,7 +3146,7 @@ int pio_msg_handler2(int io_rank, int component_count, iosystem_desc_t **iosys,
               ret = inq_var_quantize_handler(my_iosys);
               break;
 #endif
-#ifdef NC_HAS_PAR_FILTERS
+#ifdef PIO_HAS_PAR_FILTERS
             case PIO_MSG_DEF_VAR_FILTER:
               ret = def_var_filter_handler(my_iosys);
               break;

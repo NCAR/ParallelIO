@@ -24,6 +24,9 @@ SET(PACKAGE_VERSION ${PIO_VERSION_MAJOR}.${PIO_VERSION_MINOR}.${PIO_VERSION_PATC
 # This provides cmake_print_variables() function for debugging.
 include(CMakePrintHelpers)
 
+# This provides check_symbol_exists
+include(CheckSymbolExists)
+
 # Determine the configure date.
 IF(DEFINED ENV{SOURCE_DATE_EPOCH})
 	EXECUTE_PROCESS(
@@ -354,18 +357,8 @@ int main() {return 0;}" HAVE_SZIP_WRITE)
 ###
 # Check to see if parallel filters are supported by HDF5/netcdf-c.
 ###
-CHECK_C_SOURCE_COMPILES("
-#include <netcdf_meta.h>
-#if !NC_HAS_PAR_FILTERS
-      choke me
-#endif
-int main() {return 0;}" HDF5_HAS_PAR_FILTERS)
-if(HDF5_HAS_PAR_FILTERS)
-  set(HAVE_PAR_FILTERS 1)
-else()
-  set(HAVE_PAR_FILTERS 0)
-endif()
-
+check_symbol_exists(nc_inq_filter_avail "netcdf.h;netcdf_filter.h" HAVE_PAR_FILTERS )
+message("HAVE_PAR_FILTERS Is ${HAVE_PAR_FILTERS}")
 ###
 # Check to see if this is netcdf-c-4.7.2, which won't work.
 ###
@@ -454,7 +447,7 @@ is_enabled(BUILD_SHARED_LIBS enable_shared)
 is_enabled(USE_SZIP HAS_SZIP_WRITE)
 is_enabled(STATUS_PNETCDF HAS_PNETCDF)
 is_enabled(HAVE_H5Z_SZIP HAS_SZLIB)
-is_enabled(HDF5_HAS_PAR_FILTERS HAS_PAR_FILTERS)
+is_enabled(HAVE_PAR_FILTERS PIO_HAS_PAR_FILTERS)
 is_enabled(HAVE_NETCDF4 HAS_NETCDF4)
 is_enabled(HAVE_NETCDF_PAR HAS_NETCDF4_PAR)
 is_enabled(HAVE_NETCDF_INTEGRATION HAS_NETCDF_INTEGRATION)

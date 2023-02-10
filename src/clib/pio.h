@@ -1255,14 +1255,15 @@ extern "C" {
                                 const unsigned long long *op);
 /* use this variable in the NETCDF library (introduced in v4.9.0) to determine if the following 
    functions are available */
-#ifdef HAVE_PAR_FILTERS
+#ifdef PIO_HAS_PAR_FILTERS
   int PIOc_def_var_filter(int ncid, int varid,unsigned int id, size_t nparams, unsigned int *params);
   int PIOc_inq_var_filter_ids(int ncid, int varid, size_t *nfiltersp, unsigned int *ids);
   int PIOc_inq_var_filter_info(int ncid, int varid, unsigned int id, size_t *nparamsp, unsigned int *params );
-
+  int PIOc_inq_filter_avail(int ncid, unsigned int id );
+#endif
+#ifdef NC_HAS_QUANTIZE
   int PIOc_def_var_quantize(int ncid, int varid, int quantize_mode, int nsd );
   int PIOc_inq_var_quantize(int ncid, int varid, int *quantize_mode, int *nsdp );
-  int PIOc_inq_filter_avail(int ncid, unsigned int id );
 #endif
   
     /* These functions are for the netCDF integration layer. */
