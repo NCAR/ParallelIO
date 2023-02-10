@@ -3137,9 +3137,6 @@ int pio_msg_handler2(int io_rank, int component_count, iosystem_desc_t **iosys,
 	    case PIO_MSG_SETLOGLEVEL:
 	      ret = set_loglevel_handler(my_iosys);
 	      break;
-            case PIO_MSG_DEF_VAR_FILTER:
-              ret = def_var_filter_handler(my_iosys);
-              break;
 #ifdef NC_HAS_QUANTIZE
             case PIO_MSG_DEF_VAR_QUANTIZE:
               ret = def_var_quantize_handler(my_iosys);
@@ -3148,6 +3145,10 @@ int pio_msg_handler2(int io_rank, int component_count, iosystem_desc_t **iosys,
               ret = inq_var_quantize_handler(my_iosys);
               break;
 #endif
+#ifdef NC_HAS_PAR_FILTERS
+            case PIO_MSG_DEF_VAR_FILTER:
+              ret = def_var_filter_handler(my_iosys);
+              break;
             case PIO_MSG_INQ_FILTER_AVAIL:
               ret = inq_filter_avail_handler(my_iosys);
               break;
