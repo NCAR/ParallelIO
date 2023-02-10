@@ -3158,6 +3158,7 @@ int pio_msg_handler2(int io_rank, int component_count, iosystem_desc_t **iosys,
             case PIO_MSG_INQ_VAR_FILTER_INFO:
               ret = inq_var_filter_info_handler(my_iosys);
               break;
+#endif
 	    case PIO_MSG_EXIT:
 	      finalize++;
 	      ret = finalize_handler(my_iosys, idx);
