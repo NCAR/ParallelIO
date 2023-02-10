@@ -120,7 +120,6 @@ jobs:
       run: |
         cd $GITHUB_WORKSPACE/parallelio-src
         make -j check
-        
     - name: autotools build
       run: |
         set -x

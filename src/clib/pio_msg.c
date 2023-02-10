@@ -1302,7 +1302,7 @@ int inq_var_quantize_handler(iosystem_desc_t *ios)
 
     return PIO_NOERR;
 }
-
+#endif
 /**
  * Do an inq_var_fill on a netCDF variable. This function is only
  * run on IO tasks.
@@ -1367,7 +1367,7 @@ int inq_var_fill_handler(iosystem_desc_t *ios)
         PLOG((3, "done with inq_var_fill_handler", *fill_modep));
     return PIO_NOERR;
 }
-#endif
+
 /**
  * Do an inq_var_filter_avail on a netCDF variable. This function is only
  * run on IO tasks.
