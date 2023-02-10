@@ -358,7 +358,9 @@ int main() {return 0;}" HAVE_SZIP_WRITE)
 # Check to see if parallel filters are supported by HDF5/netcdf-c.
 ###
 check_symbol_exists(nc_inq_filter_avail "netcdf.h;netcdf_filter.h" HAVE_PAR_FILTERS )
-message("HAVE_PAR_FILTERS Is ${HAVE_PAR_FILTERS}")
+if (HAVE_PAR_FILTERS)
+   set(PIO_HAS_PAR_FILTERS 1)
+endif()
 ###
 # Check to see if this is netcdf-c-4.7.2, which won't work.
 ###
@@ -447,7 +449,7 @@ is_enabled(BUILD_SHARED_LIBS enable_shared)
 is_enabled(USE_SZIP HAS_SZIP_WRITE)
 is_enabled(STATUS_PNETCDF HAS_PNETCDF)
 is_enabled(HAVE_H5Z_SZIP HAS_SZLIB)
-is_enabled(HAVE_PAR_FILTERS PIO_HAS_PAR_FILTERS)
+is_enabled(HAVE_PAR_FILTERS HAVE_PAR_FILTERS)
 is_enabled(HAVE_NETCDF4 HAS_NETCDF4)
 is_enabled(HAVE_NETCDF_PAR HAS_NETCDF4_PAR)
 is_enabled(HAVE_NETCDF_INTEGRATION HAS_NETCDF_INTEGRATION)

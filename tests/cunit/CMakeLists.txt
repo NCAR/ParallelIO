@@ -3,6 +3,7 @@ include (LibMPI)
 include_directories("${CMAKE_SOURCE_DIR}/tests/cunit")
 include_directories("${CMAKE_SOURCE_DIR}/src/clib")
 include_directories("${CMAKE_BINARY_DIR}")
+include_directories("${CMAKE_BINARY_DIR}/src/clib")
 
 # Compiler-specific compiler options
 if ("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")

@@ -7,6 +7,7 @@
 #include <pio.h>
 #include <pio_internal.h>
 #include <pio_tests.h>
+#include <pio_meta.h>
 
 /* The number of tasks this test should run on. */
 #define TARGET_NTASKS 4
