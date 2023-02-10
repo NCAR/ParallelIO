@@ -1054,7 +1054,7 @@ PIOc_get_var_chunk_cache(int ncid, int varid, PIO_Offset *sizep, PIO_Offset *nel
 }
 /* use this variable in the NETCDF library (introduced in v4.9.0) to determine if the following 
    functions are available */
-#ifdef NC_NOQUANTIZE
+#ifdef NC_HAS_QUANTIZE
 /**
  * Set the variable filter ids 
  *
@@ -1204,8 +1204,13 @@ PIOc_inq_var_filter_ids(int ncid, int varid, size_t *nfiltersp, unsigned int *id
                 mpierr = MPI_Bcast(&cnt_present, 1, MPI_CHAR, ios->compmain, ios->intercomm);
             if (!mpierr)
                 mpierr = MPI_Bcast(&ids_present, 1, MPI_CHAR, ios->compmain, ios->intercomm);
+            if(!mpierr && ids_present){
+                size_t idcnt;
+                idcnt = sizeof(ids);
+                mpierr = MPI_Bcast(&idcnt, 1, PIO_MPI_SIZE_T, ios->compmain, ios->intercomm);
+            }                
 
-            PLOG((2, "PIOc_inq_var_filter_ids cnt_present = %d ids_present = %d ",
+            PLOG((2, "PIOc_inq_var_filter_ids cnt_present = %d ids_present = %d",
                   cnt_present, ids_present));
         }
 
@@ -1304,7 +1309,11 @@ PIOc_inq_var_filter_info(int ncid, int varid, unsigned int id, size_t *nparamsp,
                 mpierr = MPI_Bcast(&nparamsp_present, 1, MPI_CHAR, ios->compmain, ios->intercomm);
             if (!mpierr)
                 mpierr = MPI_Bcast(&params_present, 1, MPI_CHAR, ios->compmain, ios->intercomm);
-
+            if(!mpierr && params_present){
+                size_t paramsize;
+                paramsize = sizeof(params);
+                mpierr = MPI_Bcast(&paramsize, 1, PIO_MPI_SIZE_T, ios->compmain, ios->intercomm);
+            }                
             PLOG((2, "PIOc_inq_var_filter_info nparamsp_present = %d params_present = %d ",
                   nparamsp_present, params_present));
         }

@@ -142,7 +142,7 @@ module pio_nf
 #ifdef NC_HAS_PAR_FILTERS
        pio_inq_var_filter_ids                               , &
        pio_inq_var_filter_info                              , &
-       pio_inq_filter_avail                                
+       pio_inq_filter_avail                                 , &
 #endif
        pio_set_fill
   !       pio_copy_att    to be done
@@ -2162,9 +2162,9 @@ contains
   !! Set quantize level for a netCDF-4/HDF5 variable.
   !! @author Jim Edwards, Ed Hartnett
   !<
-  integer function def_var_quantize_id(file, vardesc, quantize_mode , nsd) result(ierr)
-    type (File_desc_t), intent(in)  :: file
-    type (var_desc_t), intent(in) :: vardesc
+  integer function def_var_quantize_id(ncid, varid, quantize_mode , nsd) result(ierr)
+    integer, intent(in) :: ncid
+    integer, intent(in) :: varid
     integer, intent(in) :: quantize_mode
     integer, intent(in) :: nsd 
 
@@ -2199,9 +2199,9 @@ contains
   !! Set quantize level for a netCDF-4/HDF5 variable.
   !! @author Jim Edwards, Ed Hartnett
   !<
-  integer function inq_var_quantize_id(file, vardesc, quantize_mode , nsd) result(ierr)
-    type (File_desc_t), intent(in)  :: file
-    type (var_desc_t), intent(in) :: vardesc
+  integer function inq_var_quantize_id(ncid, varid, quantize_mode , nsd) result(ierr)
+    integer, intent(in)  :: ncid
+    integer, intent(in)  :: varid
     integer, intent(out) :: quantize_mode
     integer, intent(out) :: nsd 
 
@@ -2220,6 +2220,111 @@ contains
   end function inq_var_quantize_id  
 #endif
 #ifdef NC_HAS_PAR_FILTERS
+  !>
+  !! @ingroup PIO_inq_var_filter_ids
+  !! Inquire filter ids for a netCDF-4/HDF5 variable.
+  !! @author Jim Edwards, Ed Hartnett
+  !<
+  integer function inq_var_filter_ids_id(ncid, varid, nfilters, filterids) result(ierr)
+    integer, intent(in)  :: ncid
+    integer, intent(in)  :: varid
+    integer, intent(out) :: nfilters
+    integer, intent(out) :: filterids(:)
+
+    interface
+       integer (C_INT) function PIOc_inq_var_filter_ids(ncid, varid, nfiltersp, filterids) &
+            bind(c,name="PIOc_inq_var_filter_ids")
+         use iso_c_binding
+         integer(c_int), value :: ncid
+         integer(c_int), value :: varid
+         integer(c_int)        :: nfiltersp
+         integer(c_int)        :: filterids(:)
+       end function PIOc_inq_var_filter_ids
+    end interface
+
+    ierr = PIOc_inq_var_filter_ids(ncid, varid-1, nfilters, filterids)
+  end function inq_var_filter_ids_id
+  !>
+  !! @ingroup PIO_inq_var_filter_ids
+  !! Inquire filter ids for a netCDF-4/HDF5 variable.
+  !! @author Jim Edwards, Ed Hartnett
+  !<
+  integer function inq_var_filter_ids_desc(file, vardesc, nfilters, filterids) result(ierr)
+    type (File_desc_t), intent(in)  :: file
+    type (var_desc_t), intent(in)   :: vardesc
+    integer, intent(out) :: nfilters
+    integer, intent(out) :: filterids(:)
+
+    ierr = inq_var_filter_ids_id(file%fh, vardesc%varid, nfilters, filterids)
+  end function inq_var_filter_ids_desc
+  !>
+  !! @ingroup PIO_inq_var_filter_info
+  !! Inquire filter ids for a netCDF-4/HDF5 variable.
+  !! @author Jim Edwards, Ed Hartnett
+  !<
+  integer function inq_var_filter_info_id(ncid, varid, id, params) result(ierr)
+    integer, intent(in)  :: ncid
+    integer, intent(in)  :: varid
+    integer, intent(in)  :: id
+    integer, intent(out) :: params(:)
+
+    interface
+       integer (C_INT) function PIOc_inq_var_filter_info(ncid, varid, id, params) &
+            bind(c,name="PIOc_inq_var_filter_info")
+         use iso_c_binding
+         integer(c_int), value :: ncid
+         integer(c_int), value :: varid
+         integer(c_int), value :: id
+         integer(c_int)        :: params(:)
+       end function PIOc_inq_var_filter_info
+    end interface
+
+    ierr = PIOc_inq_var_filter_info(ncid, varid-1, id, params)
+  end function inq_var_filter_info_id
+  !>
+  !! @ingroup PIO_inq_var_filter_info
+  !! Inquire filter ids for a netCDF-4/HDF5 variable.
+  !! @author Jim Edwards, Ed Hartnett
+  !<
+  integer function inq_var_filter_info_desc(file, vardesc, id, params) result(ierr)
+    type (File_desc_t), intent(in)  :: file
+    type (var_desc_t), intent(in)   :: vardesc
+    integer, intent(in) :: id
+    integer, intent(out) :: params(:)
+
+    ierr = inq_var_filter_info_id(file%fh, vardesc%varid, id, params)
+  end function inq_var_filter_info_desc
+  !>
+  !! @ingroup PIO_inq_filter_avail_id
+  !! Inquire filter available for a netCDF-4/HDF5 file.
+  !! @author Jim Edwards, Ed Hartnett
+  !<
+  integer function inq_filter_avail_id(ncid, id) result(ierr)
+    integer, intent(in)  :: ncid
+    integer, intent(in)  :: id
+
+    interface
+       integer (C_INT) function PIOc_inq_filter_avail(ncid, id) &
+            bind(c,name="PIOc_inq_filter_avail")
+         use iso_c_binding
+         integer(c_int), value :: ncid
+         integer(c_int), value :: id
+       end function PIOc_inq_filter_avail
+    end interface
+
+    ierr = PIOc_inq_filter_avail(ncid, id)
+  end function inq_filter_avail_id
+  !>
+  !! @ingroup PIO_inq_var_filter_info
+  !! Inquire filter ids for a netCDF-4/HDF5 variable.
+  !! @author Jim Edwards, Ed Hartnett
+  !<
+  integer function inq_filter_avail_desc(file, id) result(ierr)
+    type (File_desc_t), intent(in)  :: file
+    integer, intent(in) :: id
+
+    ierr = inq_filter_avail_id(file%fh, id)
+  end function inq_filter_avail_desc
 
 #endif
 end module pio_nf

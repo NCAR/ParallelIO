@@ -78,11 +78,11 @@ module pio
        PIO_get_var_chunk_cache, &
        PIO_set_fill, &
 #ifdef HAVE_PAR_FILTERS
-       PIO_def_var_quantize                                 , &
-       PIO_inq_var_quantize                                 , &
-       PIO_inq_var_filter_ids                               , &
-       PIO_inq_var_filter_info                              , &
-       PIO_inq_filter_avail                                
+       PIO_def_var_quantize     , &
+       PIO_inq_var_quantize     , &
+       PIO_inq_var_filter_ids   , &
+       PIO_inq_var_filter_info  , &
+       PIO_inq_filter_avail     , &
 #endif
        PIO_strerror
 
