@@ -1199,6 +1199,102 @@ int inq_var_filter_ids_handler(iosystem_desc_t *ios)
 }
 
 /**
+ * Do an inq_var_bzip2 on a netCDF variable. This function is only
+ * run on IO tasks.
+ *
+ * @param ios pointer to the iosystem_desc_t.
+ * @returns 0 for success, error code otherwise.
+ */
+int inq_var_bzip2_handler(iosystem_desc_t *ios)
+{
+    int ncid;
+    int varid;
+    int *hasfilterp=NULL;
+    int *levelp=NULL;
+    char hasfilterp_present;
+    char levelp_present;
+    int hasfilter;
+    int level;
+    int mpierr;
+
+    assert(ios);
+    PLOG((1, "inq_var_bzip2_handler"));
+
+    /* Get the parameters for this function that the the comp main
+     * task is broadcasting. */
+    if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
+        return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
+    if ((mpierr = MPI_Bcast(&varid, 1, MPI_INT, 0, ios->intercomm)))
+        return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
+    if ((mpierr = MPI_Bcast(&hasfilterp_present, 1, MPI_CHAR, 0, ios->intercomm)))
+        return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
+    if ((mpierr = MPI_Bcast(&levelp_present, 1, MPI_CHAR, 0, ios->intercomm)))
+        return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
+
+    PLOG((2,"inq_var_bzip2_handler ncid = %d varid = %d hasfilter_present = %d  ",
+          ncid, varid, hasfilterp_present, levelp_present));
+
+    /* Set the non-NULL pointers. */
+    if(hasfilterp_present)
+        hasfilterp = &hasfilter;
+    if(levelp_present)
+        levelp = &level;
+
+    /* Call the inq function to get the values. */
+    PIOc_inq_var_bzip2(ncid, varid, hasfilterp, levelp);
+
+    return PIO_NOERR;
+}
+
+/**
+ * Do an inq_var_bzip2 on a netCDF variable. This function is only
+ * run on IO tasks.
+ *
+ * @param ios pointer to the iosystem_desc_t.
+ * @returns 0 for success, error code otherwise.
+ */
+int inq_var_zstandard_handler(iosystem_desc_t *ios)
+{
+    int ncid;
+    int varid;
+    int *hasfilterp=NULL;
+    int *levelp=NULL;
+    char hasfilterp_present;
+    char levelp_present;
+    int hasfilter;
+    int level;
+    int mpierr;
+
+    assert(ios);
+    PLOG((1, "inq_var_zstandard_handler"));
+
+    /* Get the parameters for this function that the the comp main
+     * task is broadcasting. */
+    if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
+        return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
+    if ((mpierr = MPI_Bcast(&varid, 1, MPI_INT, 0, ios->intercomm)))
+        return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
+    if ((mpierr = MPI_Bcast(&hasfilterp_present, 1, MPI_CHAR, 0, ios->intercomm)))
+        return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
+    if ((mpierr = MPI_Bcast(&levelp_present, 1, MPI_CHAR, 0, ios->intercomm)))
+        return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
+
+    PLOG((2,"inq_var_zstandard_handler ncid = %d varid = %d hasfilter_present = %d  ",
+          ncid, varid, hasfilterp_present, levelp_present));
+
+    /* Set the non-NULL pointers. */
+    if(hasfilterp_present)
+        hasfilterp = &hasfilter;
+    if(levelp_present)
+        levelp = &level;
+
+    /* Call the inq function to get the values. */
+    PIOc_inq_var_zstandard(ncid, varid, hasfilterp, levelp);
+
+    return PIO_NOERR;
+}
+
+/**
  * Do an inq_var_filter_info on a netCDF variable. This function is only
  * run on IO tasks.
  *

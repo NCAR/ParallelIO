@@ -98,6 +98,167 @@ PIOc_def_var_deflate(int ncid, int varid, int shuffle, int deflate,
 }
 
 /**
+ * Set bzip2 settings for a variable.
+ *
+ * This function only applies to netCDF-4 files. When used with netCDF
+ * classic files, the error PIO_ENOTNC4 will be returned.
+ *
+ * See the <a
+ * href="http://www.unidata.ucar.edu/software/netcdf/docs/group__variables.html">netCDF
+ * variable documentation</a> for details about the operation of this
+ * function.
+ *
+ * @param ncid the ncid of the open file.
+ * @param varid the ID of the variable.
+ * @param bzip2_level 1 to 9, with 1 being faster and 9 being more
+ * compressed.
+ * @return PIO_NOERR for success, otherwise an error code.
+ * @ingroup PIO_def_var_c
+ * @author Jim Edwards, Ed Hartnett
+ */
+int
+PIOc_def_var_bzip2(int ncid, int varid, int level)
+{
+    iosystem_desc_t *ios;  /* Pointer to io system information. */
+    file_desc_t *file;     /* Pointer to file information. */
+    int ierr = PIO_NOERR;  /* Return code from function calls. */
+    int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI function codes. */
+
+    /* Get the file info. */
+    if ((ierr = pio_get_file(ncid, &file)))
+        return pio_err(NULL, NULL, ierr, __FILE__, __LINE__);
+    ios = file->iosystem;
+
+    /* Only netCDF-4 files can use this feature. */
+    if (file->iotype != PIO_IOTYPE_NETCDF4P && file->iotype != PIO_IOTYPE_NETCDF4C)
+        return pio_err(ios, file, PIO_ENOTNC4, __FILE__, __LINE__);
+
+    PLOG((1, "PIOc_def_var_bzip2 ncid = %d varid = %d level = %d",
+          ncid, varid, level));
+
+    /* If async is in use, and this is not an IO task, bcast the parameters. */
+    if (ios->async)
+    {
+        if (!ios->ioproc)
+        {
+            int msg = PIO_MSG_DEF_VAR_BZIP2;
+
+            if (ios->compmain == MPI_ROOT)
+                mpierr = MPI_Send(&msg, 1,MPI_INT, ios->ioroot, 1, ios->union_comm);
+
+            if (!mpierr)
+                mpierr = MPI_Bcast(&ncid, 1, MPI_INT, ios->compmain, ios->intercomm);
+            if (!mpierr)
+                mpierr = MPI_Bcast(&varid, 1, MPI_INT, ios->compmain, ios->intercomm);
+            if (!mpierr)
+                mpierr = MPI_Bcast(&level, 1, MPI_INT, ios->compmain, ios->intercomm);
+        }
+
+        /* Handle MPI errors from computation tasks. */
+        if ((mpierr2 = MPI_Bcast(&mpierr, 1, MPI_INT, ios->comproot, ios->my_comm)))
+            return check_mpi(NULL, file, mpierr2, __FILE__, __LINE__);
+        if (mpierr)
+            return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+    }
+
+    if (ios->ioproc)
+    {
+#ifdef _NETCDF4
+        if (file->do_io)
+            ierr = nc_def_var_bzip2(file->fh, varid, level);
+#endif
+    }
+
+    /* Broadcast and check the return code. */
+    if ((mpierr = MPI_Bcast(&ierr, 1, MPI_INT, ios->ioroot, ios->my_comm)))
+        return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+    if (ierr)
+        return check_netcdf(file, ierr, __FILE__, __LINE__);
+
+    return PIO_NOERR;
+}
+/**
+ * Set zstandard settings for a variable.
+ *
+ * This function only applies to netCDF-4 files. When used with netCDF
+ * classic files, the error PIO_ENOTNC4 will be returned.
+ *
+ * See the <a
+ * href="http://www.unidata.ucar.edu/software/netcdf/docs/group__variables.html">netCDF
+ * variable documentation</a> for details about the operation of this
+ * function.
+ *
+ * @param ncid the ncid of the open file.
+ * @param varid the ID of the variable.
+ * @param zstandard_level 1 to 9, with 1 being faster and 9 being more
+ * compressed.
+ * @return PIO_NOERR for success, otherwise an error code.
+ * @ingroup PIO_def_var_c
+ * @author Jim Edwards, Ed Hartnett
+ */
+int
+PIOc_def_var_zstandard(int ncid, int varid, int level)
+{
+    iosystem_desc_t *ios;  /* Pointer to io system information. */
+    file_desc_t *file;     /* Pointer to file information. */
+    int ierr = PIO_NOERR;  /* Return code from function calls. */
+    int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI function codes. */
+
+    /* Get the file info. */
+    if ((ierr = pio_get_file(ncid, &file)))
+        return pio_err(NULL, NULL, ierr, __FILE__, __LINE__);
+    ios = file->iosystem;
+
+    /* Only netCDF-4 files can use this feature. */
+    if (file->iotype != PIO_IOTYPE_NETCDF4P && file->iotype != PIO_IOTYPE_NETCDF4C)
+        return pio_err(ios, file, PIO_ENOTNC4, __FILE__, __LINE__);
+
+    PLOG((1, "PIOc_def_var_zstandard ncid = %d varid = %d level = %d",
+          ncid, varid, level));
+
+    /* If async is in use, and this is not an IO task, bcast the parameters. */
+    if (ios->async)
+    {
+        if (!ios->ioproc)
+        {
+            int msg = PIO_MSG_DEF_VAR_ZSTANDARD;
+
+            if (ios->compmain == MPI_ROOT)
+                mpierr = MPI_Send(&msg, 1,MPI_INT, ios->ioroot, 1, ios->union_comm);
+
+            if (!mpierr)
+                mpierr = MPI_Bcast(&ncid, 1, MPI_INT, ios->compmain, ios->intercomm);
+            if (!mpierr)
+                mpierr = MPI_Bcast(&varid, 1, MPI_INT, ios->compmain, ios->intercomm);
+            if (!mpierr)
+                mpierr = MPI_Bcast(&level, 1, MPI_INT, ios->compmain, ios->intercomm);
+        }
+
+        /* Handle MPI errors from computation tasks. */
+        if ((mpierr2 = MPI_Bcast(&mpierr, 1, MPI_INT, ios->comproot, ios->my_comm)))
+            return check_mpi(NULL, file, mpierr2, __FILE__, __LINE__);
+        if (mpierr)
+            return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+    }
+
+    if (ios->ioproc)
+    {
+#ifdef _NETCDF4
+        if (file->do_io)
+            ierr = nc_def_var_zstandard(file->fh, varid, level);
+#endif
+    }
+
+    /* Broadcast and check the return code. */
+    if ((mpierr = MPI_Bcast(&ierr, 1, MPI_INT, ios->ioroot, ios->my_comm)))
+        return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+    if (ierr)
+        return check_netcdf(file, ierr, __FILE__, __LINE__);
+
+    return PIO_NOERR;
+}
+
+/**
  * This function only applies to netCDF-4 files. When used with netCDF
  * classic files, the error PIO_ENOTNC4 will be returned.
  *
@@ -1054,7 +1215,7 @@ PIOc_get_var_chunk_cache(int ncid, int varid, PIO_Offset *sizep, PIO_Offset *nel
 }
 /* use this variable in the NETCDF library (introduced in v4.9.0) to determine if the following 
    functions are available */
-#ifdef PIO_HAS_PAR_FILTERS
+#ifdef NC_HAS_MULTIFILTERS
 /**
  * Set the variable filter ids 
  *
@@ -1070,7 +1231,7 @@ PIOc_get_var_chunk_cache(int ncid, int varid, PIO_Offset *sizep, PIO_Offset *nel
  * @param varid the ID of the variable.
  * @param id set the filter id.
  * @return PIO_NOERR for success, otherwise an error code.
- * @ingroup PIO_inq_var_c
+ * @ingroup PIO_filters
  * @author Jim Edwards/Ed Hartnett
  */
 int
@@ -1162,7 +1323,7 @@ PIOc_def_var_filter(int ncid, int varid, unsigned int id, size_t nparams, unsign
  * @param nfiltersp Pointer to the number of filters; may be 0.
  * @param ids return the filter ids.
  * @return PIO_NOERR for success, otherwise an error code.
- * @ingroup PIO_inq_var_c
+ * @ingroup PIO_filters
  * @author Jim Edwards/Ed Hartnett
  */
 int
@@ -1265,7 +1426,7 @@ PIOc_inq_var_filter_ids(int ncid, int varid, size_t *nfiltersp, unsigned int *id
  * @param nparamsp (OUT) Storage which will get the number of parameters to the filter
  * @param params   (OUT) Storage which will get the associated parameters.
  * @return PIO_NOERR for success, otherwise an error code.
- * @ingroup PIO_inq_var_c
+ * @ingroup PIO_filters
  * @author Jim Edwards/Ed Hartnett
  */
 int
@@ -1349,6 +1510,194 @@ PIOc_inq_var_filter_info(int ncid, int varid, unsigned int id, size_t *nparamsp,
     return PIO_NOERR;
 }
 /**
+ * Get the variable bzip2 filter info if any
+ *
+ * This function only applies to netCDF-4 files. When used with netCDF
+ * classic files, the error PIO_ENOTNC4 will be returned.
+ *
+ *
+ *  See the <a
+ * href="http://www.unidata.ucar.edu/software/netcdf/docs/group__variables.html">netCDF
+ * variable documentation</a> for details about the operation of this
+ * function.
+ *
+ * @param ncid the ncid of the open file.
+ * @param varid the ID of the variable.
+ * @param hasfilterp (OUT) Pointer that gets a 0 if bzip2 is not in use for this var and a 1 if it is.  Ignored if NULL
+ * @param levelp (OUT) Pointer that gets the level setting (1 - 9) Ignored if NULL
+ * @return PIO_NOERR for success, otherwise an error code.
+ * @ingroup PIO_filters
+ * @author Jim Edwards/Ed Hartnett
+ */
+int
+PIOc_inq_var_bzip2(int ncid, int varid, int* hasfilterp, int *levelp)
+{
+    iosystem_desc_t *ios;  /* Pointer to io system information. */
+    file_desc_t *file;     /* Pointer to file information. */
+    int ierr;              /* Return code from function calls. */
+    int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI function codes. */
+
+    PLOG((1, "PIOc_inq_var_bzip2 ncid = %d varid = %d", ncid, varid));
+
+    /* Get the file info. */
+    if ((ierr = pio_get_file(ncid, &file)))
+        return pio_err(NULL, NULL, ierr, __FILE__, __LINE__);
+    ios = file->iosystem;
+
+    /* Only netCDF-4 files can use this feature. */
+    if (file->iotype != PIO_IOTYPE_NETCDF4P && file->iotype != PIO_IOTYPE_NETCDF4C)
+        return pio_err(ios, file, PIO_ENOTNC4, __FILE__, __LINE__);
+
+    /* If async is in use, and this is not an IO task, bcast the parameters. */
+    if (ios->async)
+    {
+        if (!ios->ioproc)
+        {
+            int msg = PIO_MSG_INQ_VAR_BZIP2; /* Message for async notification. */
+            char hasfilterp_present = hasfilterp ? true : false;
+            char levelp_present = levelp ? true : false;
+
+            if (ios->compmain == MPI_ROOT)
+                mpierr = MPI_Send(&msg, 1, MPI_INT, ios->ioroot, 1, ios->union_comm);
+
+            if (!mpierr)
+                mpierr = MPI_Bcast(&ncid, 1, MPI_INT, ios->compmain, ios->intercomm);
+            if (!mpierr)
+                mpierr = MPI_Bcast(&varid, 1, MPI_INT, ios->compmain, ios->intercomm);
+            if (!mpierr)
+                mpierr = MPI_Bcast(&hasfilterp_present, 1, MPI_CHAR, ios->compmain, ios->intercomm);
+            if (!mpierr)
+                mpierr = MPI_Bcast(&levelp_present, 1, MPI_CHAR, ios->compmain, ios->intercomm);
+            PLOG((2, "PIOc_inq_var_bzip2 hasfilterp_present = %d levelp_present = %d ",
+                  hasfilterp_present, levelp_present));
+        }
+
+        /* Handle MPI errors. */
+        if ((mpierr2 = MPI_Bcast(&mpierr, 1, MPI_INT, ios->comproot, ios->my_comm)))
+            return check_mpi(ios, NULL, mpierr2, __FILE__, __LINE__);
+        if (mpierr)
+            return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
+    }
+
+    /* If this is an IO task, then call the netCDF function. */
+    if (ios->ioproc)
+    {
+        if (file->do_io)
+          ierr = nc_inq_var_bzip2(file->fh, varid, hasfilterp, levelp);
+    }
+
+    /* Broadcast and check the return code. */
+    if ((mpierr = MPI_Bcast(&ierr, 1, MPI_INT, ios->ioroot, ios->my_comm)))
+        return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+    if (ierr)
+        return check_netcdf(file, ierr, __FILE__, __LINE__);
+
+    /* Broadcast results to all tasks. */
+    if (hasfilterp && !ierr)
+        if ((mpierr = MPI_Bcast(hasfilterp, 1, MPI_INT, ios->ioroot, ios->my_comm)))
+            return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+
+    if (levelp && !ierr)
+        if ((mpierr = MPI_Bcast(levelp, 1, MPI_INT, ios->ioroot, ios->my_comm)))
+        return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+
+    return PIO_NOERR;
+}
+/**
+ * Get the variable zstandard filter info if any
+ *
+ * This function only applies to netCDF-4 files. When used with netCDF
+ * classic files, the error PIO_ENOTNC4 will be returned.
+ *
+ *
+ *  See the <a
+ * href="http://www.unidata.ucar.edu/software/netcdf/docs/group__variables.html">netCDF
+ * variable documentation</a> for details about the operation of this
+ * function.
+ *
+ * @param ncid the ncid of the open file.
+ * @param varid the ID of the variable.
+ * @param hasfilterp (OUT) Pointer that gets a 0 if zstandard is not in use for this var and a 1 if it is.  Ignored if NULL
+ * @param levelp (OUT) Pointer that gets the level setting (1 - 9) Ignored if NULL
+ * @return PIO_NOERR for success, otherwise an error code.
+ * @ingroup PIO_filters
+ * @author Jim Edwards/Ed Hartnett
+ */
+int
+PIOc_inq_var_zstandard(int ncid, int varid, int* hasfilterp, int *levelp)
+{
+    iosystem_desc_t *ios;  /* Pointer to io system information. */
+    file_desc_t *file;     /* Pointer to file information. */
+    int ierr;              /* Return code from function calls. */
+    int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI function codes. */
+
+    PLOG((1, "PIOc_inq_var_zstandard ncid = %d varid = %d", ncid, varid));
+
+    /* Get the file info. */
+    if ((ierr = pio_get_file(ncid, &file)))
+        return pio_err(NULL, NULL, ierr, __FILE__, __LINE__);
+    ios = file->iosystem;
+
+    /* Only netCDF-4 files can use this feature. */
+    if (file->iotype != PIO_IOTYPE_NETCDF4P && file->iotype != PIO_IOTYPE_NETCDF4C)
+        return pio_err(ios, file, PIO_ENOTNC4, __FILE__, __LINE__);
+
+    /* If async is in use, and this is not an IO task, bcast the parameters. */
+    if (ios->async)
+    {
+        if (!ios->ioproc)
+        {
+            int msg = PIO_MSG_INQ_VAR_ZSTANDARD; /* Message for async notification. */
+            char hasfilterp_present = hasfilterp ? true : false;
+            char levelp_present = levelp ? true : false;
+
+            if (ios->compmain == MPI_ROOT)
+                mpierr = MPI_Send(&msg, 1, MPI_INT, ios->ioroot, 1, ios->union_comm);
+
+            if (!mpierr)
+                mpierr = MPI_Bcast(&ncid, 1, MPI_INT, ios->compmain, ios->intercomm);
+            if (!mpierr)
+                mpierr = MPI_Bcast(&varid, 1, MPI_INT, ios->compmain, ios->intercomm);
+            if (!mpierr)
+                mpierr = MPI_Bcast(&hasfilterp_present, 1, MPI_CHAR, ios->compmain, ios->intercomm);
+            if (!mpierr)
+                mpierr = MPI_Bcast(&levelp_present, 1, MPI_CHAR, ios->compmain, ios->intercomm);
+            PLOG((2, "PIOc_inq_var_zstandard hasfilterp_present = %d levelp_present = %d ",
+                  hasfilterp_present, levelp_present));
+        }
+
+        /* Handle MPI errors. */
+        if ((mpierr2 = MPI_Bcast(&mpierr, 1, MPI_INT, ios->comproot, ios->my_comm)))
+            return check_mpi(ios, NULL, mpierr2, __FILE__, __LINE__);
+        if (mpierr)
+            return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
+    }
+
+    /* If this is an IO task, then call the netCDF function. */
+    if (ios->ioproc)
+    {
+        if (file->do_io)
+          ierr = nc_inq_var_zstandard(file->fh, varid, hasfilterp, levelp);
+    }
+
+    /* Broadcast and check the return code. */
+    if ((mpierr = MPI_Bcast(&ierr, 1, MPI_INT, ios->ioroot, ios->my_comm)))
+        return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+    if (ierr)
+        return check_netcdf(file, ierr, __FILE__, __LINE__);
+
+    /* Broadcast results to all tasks. */
+    if (hasfilterp && !ierr)
+        if ((mpierr = MPI_Bcast(hasfilterp, 1, MPI_INT, ios->ioroot, ios->my_comm)))
+            return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+
+    if (levelp && !ierr)
+        if ((mpierr = MPI_Bcast(levelp, 1, MPI_INT, ios->ioroot, ios->my_comm)))
+        return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+
+    return PIO_NOERR;
+}
+/**
  * 
  *
  * This function only applies to netCDF-4 files. When used with netCDF
@@ -1365,7 +1714,7 @@ PIOc_inq_var_filter_info(int ncid, int varid, unsigned int id, size_t *nparamsp,
  * @param ncid the ncid of the open file.
  * @param id   the filter of interest
  * @return PIO_NOERR if the filter is available, PIO_ENOFILTER if unavailable
- * @ingroup PIO_inq_var_c
+ * @ingroup PIO_filters
  * @author Jim Edwards/Ed Hartnett
  */
 int
@@ -1427,6 +1776,10 @@ PIOc_inq_filter_avail(int ncid, unsigned int id )
 
     return ierr;
 }
+
+
+
+
 #endif
 #ifdef NC_HAS_QUANTIZE
 /**

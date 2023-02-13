@@ -199,13 +199,13 @@ int test_darray(int iosysid, int ioid, int num_flavors, int *flavor, int my_rank
 #ifdef NC_NOQUANTIZE
 		    if(pio_type == PIO_REAL || pio_type == PIO_DOUBLE)
 		    {
-		        if ((ret = PIOc_def_var_quantize(ncid, varid, NC_QUANTIZE_BITGROOM, 3)))
+		        if ((ret = PIOc_def_var_quantize(ncid, varid, PIO_QUANTIZE_BITGROOM, 3)))
 		            ERR(ret);
 		    }
 		    else
 		    {
 		        /* this should fail */
-		        if ((ret = PIOc_def_var_quantize(ncid, varid, NC_QUANTIZE_BITROUND, 5) != NC_EINVAL ))
+		        if ((ret = PIOc_def_var_quantize(ncid, varid, PIO_QUANTIZE_BITROUND, 5) != PIO_EINVAL ))
 		            ERR(ret);
 
 		    }

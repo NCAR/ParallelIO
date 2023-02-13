@@ -687,6 +687,13 @@ enum PIO_ERROR_HANDLERS
 #define PIO_64BIT_OFFSET NC_64BIT_OFFSET /**< Use large (64-bit) file offsets. Mode flag for nc_create(). */
 #define PIO_64BIT_DATA NC_64BIT_DATA /**< CDF5 format. */
 
+#ifdef NC_HAS_QUANTIZE
+#define PIO_NOQUANTIZE NC_NOQUANTIZE
+#define PIO_QUANTIZE_BITGROOM NC_QUANTIZE_BITGROOM
+#define PIO_QUANTIZE_GRANULARBR NC_QUANTIZE_GRANULARBR 
+#define PIO_QUANTIZE_BITROUND  NC_QUANTIZE_BITROUND  /**< Use BitRound quantization. */
+#endif
+
 /** Define the netCDF-based error codes. */
 #define PIO_NOERR  NC_NOERR           /**< No Error */
 #define PIO_EBADID NC_EBADID          /**< Bad ncid */
@@ -1255,7 +1262,7 @@ extern "C" {
                                 const unsigned long long *op);
 /* use this variable in the NETCDF library (introduced in v4.9.0) to determine if the following 
    functions are available */
-#ifdef PIO_HAS_PAR_FILTERS
+#ifdef NC_HAS_MULTIFILTERS
   int PIOc_def_var_filter(int ncid, int varid,unsigned int id, size_t nparams, unsigned int *params);
   int PIOc_inq_var_filter_ids(int ncid, int varid, size_t *nfiltersp, unsigned int *ids);
   int PIOc_inq_var_filter_info(int ncid, int varid, unsigned int id, size_t *nparamsp, unsigned int *params );

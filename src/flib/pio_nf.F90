@@ -139,7 +139,11 @@ module pio_nf
        pio_def_var_quantize                                 , &
        pio_inq_var_quantize                                 , &
 #endif
-#ifdef PIO_HAS_PAR_FILTERS
+#ifdef NC_HAS_MULTIFILTERS
+       pio_inq_var_bzip2                                    , &
+       pio_inq_var_zstandard                                , &
+       pio_def_var_bzip2                                    , &
+       pio_def_var_zstandard                                , &
        pio_inq_var_filter_ids                               , &
        pio_inq_var_filter_info                              , &
        pio_inq_filter_avail                                 , &
@@ -161,8 +165,22 @@ module pio_nf
   end interface pio_def_var_deflate
   interface pio_def_var_chunking
      module procedure &
-          def_var_chunking_desc
+          def_var_chunking_desc, &
+          def_var_chunking_int, &
+          def_var_chunking_vid
   end interface pio_def_var_chunking
+  interface pio_def_var_bzip2
+     module procedure &
+          def_var_bzip2_desc, &
+          def_var_bzip2_int, &
+          def_var_bzip2_vid
+  end interface pio_def_var_bzip2
+  interface pio_def_var_zstandard
+     module procedure &
+          def_var_zstandard_desc, &
+          def_var_zstandard_int, &
+          def_var_zstandard_vid
+  end interface pio_def_var_zstandard
   interface pio_inq_attname
      module procedure &
           inq_attname_desc                                  , &
@@ -225,6 +243,18 @@ module pio_nf
           inq_var_deflate_vid                                  , &
           inq_var_deflate_id
   end interface pio_inq_var_deflate
+  interface pio_inq_var_bzip2
+     module procedure &
+          inq_var_bzip2_desc                                 , &
+          inq_var_bzip2_vid                                  , &
+          inq_var_bzip2_id
+  end interface pio_inq_var_bzip2
+  interface pio_inq_var_zstandard
+     module procedure &
+          inq_var_zstandard_desc                                 , &
+          inq_var_zstandard_vid                                  , &
+          inq_var_zstandard_id
+  end interface pio_inq_var_zstandard
   interface pio_inq_var_chunking
      module procedure &
           inq_var_chunking_desc                                 , &
@@ -359,7 +389,7 @@ module pio_nf
           inq_var_quantize_id
   end interface pio_inq_var_quantize
 #endif
-#ifdef PIO_HAS_PAR_FILTERS
+#ifdef NC_HAS_MULTIFILTERS
   interface pio_inq_var_filter_ids
      module procedure &
           inq_var_filter_ids_desc                          , &
@@ -1502,6 +1532,141 @@ contains
   !>
   !! @public
   !! @ingroup PIO_inquire_variable
+  !! Gets metadata information for netcdf file.
+  !!
+  !! @param File @copydoc file_desc_t
+  !! @param vardesc @copydoc var_desc_t
+  !! @param storage 0 for chunked, 1 for contiguous
+  !! @param chunksizes Array of chunk sizes.
+  !! @retval ierr @copydoc error_return
+  !! @author Ed Hartnett
+  !<
+  integer function inq_var_bzip2_desc(File, vardesc, hasfilter, level) result(ierr)
+
+    type (File_desc_t), intent(in) :: File
+    type (Var_desc_t), intent(in) :: vardesc
+    logical, intent(out) :: hasfilter
+    integer, intent(out) :: level
+
+    ierr = pio_inq_var_bzip2(File%fh, vardesc%varid, hasfilter, level)
+  end function inq_var_bzip2_desc
+
+  !>
+  !! @public
+  !! @ingroup PIO_inquire_variable
+  !! Gets metadata information for netcdf file.
+  !! @author Ed Hartnett
+  !<
+  integer function inq_var_bzip2_vid(File, varid, hasfilter, level) result(ierr)
+
+    type (File_desc_t), intent(in) :: File
+    integer, intent(in) :: varid
+    logical, intent(out) :: hasfilter
+    integer, intent(out) :: level
+
+    ierr = pio_inq_var_bzip2(File%fh, varid, hasfilter, level)
+  end function inq_var_bzip2_vid
+
+  !>
+  !! @public
+  !! @ingroup PIO_inquire_variable
+  !! Gets metadata information for netcdf file.
+  !! @author Ed Hartnett
+  !<
+  integer function inq_var_bzip2_id(ncid, varid, hasfilter, level) result(ierr)
+    integer, intent(in) :: ncid
+    integer, intent(in) :: varid
+    logical, intent(out) :: hasfilter
+    integer, intent(out) :: level
+    
+    integer :: hasfilterp
+    interface
+       integer(C_INT) function PIOc_inq_var_bzip2(ncid, varid, hasfilterp, levelp) &
+            bind(C, name="PIOc_inq_var_bzip2")
+         use iso_c_binding
+         integer(C_INT), value :: ncid
+         integer(C_INT), value :: varid
+         integer(C_INT) :: hasfilterp
+         integer(C_INT) :: levelp
+       end function PIOc_inq_var_bzip2
+    end interface
+    
+    ierr = PIOc_inq_var_bzip2(ncid, varid-1, hasfilterp, level)
+    hasfilter = .false.
+    if(hasfilterp .ne. 0) hasfilter = .true.
+
+  end function inq_var_bzip2_id
+  !>
+  !! @public
+  !! @ingroup PIO_inquire_variable
+  !! Gets metadata information for netcdf file.
+  !!
+  !! @param File @copydoc file_desc_t
+  !! @param vardesc @copydoc var_desc_t
+  !! @param storage 0 for chunked, 1 for contiguous
+  !! @param chunksizes Array of chunk sizes.
+  !! @retval ierr @copydoc error_return
+  !! @author Ed Hartnett
+  !<
+  integer function inq_var_zstandard_desc(File, vardesc, hasfilter, level) result(ierr)
+
+    type (File_desc_t), intent(in) :: File
+    type (Var_desc_t), intent(in) :: vardesc
+    logical, intent(out) :: hasfilter
+    integer, intent(out) :: level
+
+    ierr = pio_inq_var_zstandard(File%fh, vardesc%varid, hasfilter, level)
+  end function inq_var_zstandard_desc
+
+  !>
+  !! @public
+  !! @ingroup PIO_inquire_variable
+  !! Gets metadata information for netcdf file.
+  !! @author Ed Hartnett
+  !<
+  integer function inq_var_zstandard_vid(File, varid, hasfilter, level) result(ierr)
+
+    type (File_desc_t), intent(in) :: File
+    integer, intent(in) :: varid
+    logical, intent(out) :: hasfilter
+    integer, intent(out) :: level
+
+    ierr = pio_inq_var_zstandard(File%fh, varid, hasfilter, level)
+  end function inq_var_zstandard_vid
+
+  !>
+  !! @public
+  !! @ingroup PIO_inquire_variable
+  !! Gets metadata information for netcdf file.
+  !! @author Ed Hartnett
+  !<
+  integer function inq_var_zstandard_id(ncid, varid, hasfilter, level) result(ierr)
+    integer, intent(in) :: ncid
+    integer, intent(in) :: varid
+    logical, intent(out) :: hasfilter
+    integer, intent(out) :: level
+    
+    integer :: hasfilterp
+    interface
+       integer(C_INT) function PIOc_inq_var_zstandard(ncid, varid, hasfilterp, levelp) &
+            bind(C, name="PIOc_inq_var_zstandard")
+         use iso_c_binding
+         integer(C_INT), value :: ncid
+         integer(C_INT), value :: varid
+         integer(C_INT) :: hasfilterp
+         integer(C_INT) :: levelp
+       end function PIOc_inq_var_zstandard
+    end interface
+    
+    ierr = PIOc_inq_var_zstandard(ncid, varid-1, hasfilterp, level)
+    hasfilter = .false.
+    if(hasfilterp .ne. 0) hasfilter = .true.
+
+  end function inq_var_zstandard_id
+
+  !>
+  !! @public
+  !! @ingroup PIO_inquire_variable
   !! Get the name associated with a variable.
   !!
   !! @param File @copydoc file_desc_t
@@ -1969,6 +2134,32 @@ contains
     type (var_desc_t), intent(in) :: vardesc
     integer, intent(in) :: storage
     integer, intent(in) :: chunksizes(:)
+
+    ierr = pio_def_var_chunking(file%fh, vardesc%varid, storage, chunksizes)
+  end function def_var_chunking_desc
+  !>
+  !! @ingroup PIO_def_var_chunking
+  !! Changes chunking settings for a netCDF-4/HDF5 variable.
+  !! @author Ed Hartnett
+  !<
+  integer function def_var_chunking_vid(file, varid, storage, chunksizes) result(ierr)
+    type (File_desc_t), intent(in)  :: file
+    integer, intent(in) :: varid
+    integer, intent(in) :: storage
+    integer, intent(in) :: chunksizes(:)
+
+    ierr = pio_def_var_chunking(file%fh, varid, storage, chunksizes)
+  end function def_var_chunking_vid
+  !>
+  !! @ingroup PIO_def_var_chunking
+  !! Changes chunking settings for a netCDF-4/HDF5 variable.
+  !! @author Ed Hartnett
+  !<
+  integer function def_var_chunking_int(ncid, varid, storage, chunksizes) result(ierr)
+    integer, intent(in) :: ncid
+    integer, intent(in) :: varid
+    integer, intent(in) :: storage
+    integer, intent(in) :: chunksizes(:)
     integer(kind=PIO_OFFSET_KIND) :: cchunksizes(PIO_MAX_VAR_DIMS)
     integer :: ndims, i
 
@@ -1987,8 +2178,100 @@ contains
        cchunksizes(i) = chunksizes(ndims-i+1)
     enddo
 
-    ierr = PIOc_def_var_chunking(file%fh, vardesc%varid-1, storage, cchunksizes)
-  end function def_var_chunking_desc
+    ierr = PIOc_def_var_chunking(ncid, varid-1, storage, cchunksizes)
+  end function def_var_chunking_int
+  !>
+  !! @ingroup PIO_def_var_bzip2
+  !! Changes bzip2 settings for a netCDF-4/HDF5 variable.
+  !! @author Ed Hartnett
+  !<
+  integer function def_var_bzip2_desc(file, vardesc, level) result(ierr)
+    type (File_desc_t), intent(in)  :: file
+    type (var_desc_t), intent(in) :: vardesc
+    integer, intent(in) :: level
+
+    ierr = pio_def_var_bzip2(file%fh, vardesc%varid, level)
+  end function def_var_bzip2_desc
+  !>
+  !! @ingroup PIO_def_var_bzip2
+  !! Changes chunking settings for a netCDF-4/HDF5 variable.
+  !! @author Ed Hartnett
+  !<
+  integer function def_var_bzip2_vid(file, varid, level) result(ierr)
+    type (File_desc_t), intent(in)  :: file
+    integer, intent(in) :: varid
+    integer, intent(in) :: level
+
+    ierr = pio_def_var_bzip2(file%fh, varid, level)
+  end function def_var_bzip2_vid
+  !>
+  !! @ingroup PIO_def_var_bzip2
+  !! Changes chunking settings for a netCDF-4/HDF5 variable.
+  !! @author Ed Hartnett
+  !<
+  integer function def_var_bzip2_int(ncid, varid, level) result(ierr)
+    integer, intent(in) :: ncid
+    integer, intent(in) :: varid
+    integer, intent(in) :: level
+
+    interface
+       integer (C_INT) function PIOc_def_var_bzip2(ncid, varid, level) &
+            bind(c,name="PIOc_def_var_bzip2")
+         use iso_c_binding
+         integer(c_int), value :: ncid
+         integer(c_int), value :: varid
+         integer(c_int), value :: level
+       end function PIOc_def_var_bzip2
+    end interface
+
+    ierr = PIOc_def_var_bzip2(ncid, varid-1, level)
+  end function def_var_bzip2_int
+  !>
+  !! @ingroup PIO_def_var_zstandard
+  !! Changes chunking settings for a netCDF-4/HDF5 variable.
+  !! @author Ed Hartnett
+  !<
+  integer function def_var_zstandard_desc(file, vardesc, level) result(ierr)
+    type (File_desc_t), intent(in)  :: file
+    type (var_desc_t), intent(in) :: vardesc
+    integer, intent(in) :: level
+
+    ierr = pio_def_var_zstandard(file%fh, vardesc%varid, level)
+  end function def_var_zstandard_desc
+  !>
+  !! @ingroup PIO_def_var_zstandard
+  !! Changes zstandard settings for a netCDF-4/HDF5 variable.
+  !! @author Ed Hartnett
+  !<
+  integer function def_var_zstandard_vid(file, varid, level) result(ierr)
+    type (File_desc_t), intent(in)  :: file
+    integer, intent(in) :: varid
+    integer, intent(in) :: level
+
+    ierr = pio_def_var_zstandard(file%fh, varid, level)
+  end function def_var_zstandard_vid
+  !>
+  !! @ingroup PIO_def_var_zstandard
+  !! Changes chunking settings for a netCDF-4/HDF5 variable.
+  !! @author Ed Hartnett
+  !<
+  integer function def_var_zstandard_int(ncid, varid, level) result(ierr)
+    integer, intent(in) :: ncid
+    integer, intent(in) :: varid
+    integer, intent(in) :: level
+
+    interface
+       integer (C_INT) function PIOc_def_var_zstandard(ncid, varid, level) &
+            bind(c,name="PIOc_def_var_zstandard")
+         use iso_c_binding
+         integer(c_int), value :: ncid
+         integer(c_int), value :: varid
+         integer(c_int), value :: level
+       end function PIOc_def_var_zstandard
+    end interface
+
+    ierr = PIOc_def_var_zstandard(ncid, varid-1, level)
+  end function def_var_zstandard_int
 
   !>
   !! @ingroup PIO_set_chunk_cache
@@ -2219,7 +2502,7 @@ contains
     ierr = PIOc_inq_var_quantize(ncid, varid-1, quantize_mode, nsd)
   end function inq_var_quantize_id  
 #endif
-#ifdef PIO_HAS_PAR_FILTERS
+#ifdef NC_HAS_MULTIFILTERS
   !>
   !! @ingroup PIO_inq_var_filter_ids
   !! Inquire filter ids for a netCDF-4/HDF5 variable.

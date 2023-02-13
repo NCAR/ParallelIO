@@ -24,6 +24,7 @@ SET(GENERATED_SRCS pio_file_simple_tests.F90
   pio_decomp_fillval.F90
   pio_iosystem_tests.F90
   pio_iosystem_async_tests.F90
+  pio_filter_tests.F90
   pio_iosystem_tests2.F90
   pio_iosystem_tests3.F90)
 
@@ -100,24 +101,6 @@ else ()
     TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 endif ()
 
-#===== pio_file_simple_tests =====
-add_executable (pio_file_simple_tests EXCLUDE_FROM_ALL
-  pio_file_simple_tests.F90)
-target_link_libraries (pio_file_simple_tests pio_tutil)
-add_dependencies (tests pio_file_simple_tests)
-
-if (PIO_USE_MPISERIAL)
-  add_test(NAME pio_file_simple_tests
-    COMMAND pio_file_simple_tests)
-  set_tests_properties(pio_file_simple_tests
-    PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-else ()
-  add_mpi_test(pio_file_simple_tests
-    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_file_simple_tests
-    NUMPROCS 2
-    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-endif ()
-
 #===== pio_file_fail =====
 add_executable (pio_file_fail EXCLUDE_FROM_ALL
   pio_file_fail.F90)
@@ -136,6 +119,24 @@ if (PIO_USE_MPISERIAL)
 else ()
   add_mpi_test(pio_file_fail
     EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_file_fail
+    NUMPROCS 2
+    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
+endif ()
+
+#===== pio_file_simple_tests =====
+add_executable (pio_file_simple_tests EXCLUDE_FROM_ALL
+  pio_file_simple_tests.F90)
+target_link_libraries (pio_file_simple_tests pio_tutil)
+add_dependencies (tests pio_file_simple_tests)
+
+if (PIO_USE_MPISERIAL)
+  add_test(NAME pio_file_simple_tests
+    COMMAND pio_file_simple_tests)
+  set_tests_properties(pio_file_simple_tests
+    PROPERTIES TIMEOUT ${DEFAULT_TEST_TIMEOUT})
+else ()
+  add_mpi_test(pio_file_simple_tests
+    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_file_simple_tests
     NUMPROCS 2
     TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 endif ()
@@ -810,6 +811,18 @@ add_dependencies (tests pio_iosystem_async_tests)
 if (NOT PIO_USE_MPISERIAL)
   add_mpi_test(pio_iosystem_async_tests
     EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_iosystem_async_tests
+    NUMPROCS 5
+    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
+endif ()
+
+add_executable (pio_filter_tests EXCLUDE_FROM_ALL
+  pio_filter_tests.F90)
+target_link_libraries (pio_filter_tests pio_tutil)
+add_dependencies (tests pio_filter_tests)
+
+if (NOT PIO_USE_MPISERIAL)
+  add_mpi_test(pio_filter_tests
+    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_filter_tests
     NUMPROCS 5
     TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 endif ()

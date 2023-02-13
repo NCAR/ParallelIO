@@ -50,8 +50,10 @@ module pio
        pio_max_name, pio_max_var_dims, pio_rearr_subset, pio_rearr_box, &
        pio_nofill, pio_unlimited, pio_fill_int, pio_fill_double, pio_fill_float, &
        pio_64bit_offset, pio_64bit_data, pio_fill, &
-       pio_internal_error, pio_bcast_error, pio_return_error, pio_default
-
+       pio_internal_error, pio_bcast_error, pio_return_error, pio_default, &
+#ifdef NC_HAS_QUANTIZE
+       PIO_NOQUANTIZE, PIO_QUANTIZE_BITGROOM, PIO_QUANTIZE_GRANULARBR, PIO_QUANTIZE_BITROUND
+#endif
   use piodarray, only : pio_read_darray, pio_write_darray, pio_set_buffer_size_limit
 
   use pio_nf, only:        &
@@ -89,7 +91,7 @@ module pio
        PIO_def_var_quantize     , &
        PIO_inq_var_quantize     , &
 #endif
-#ifdef PIO_HAS_PAR_FILTERS
+#ifdef NC_HAS_MULTIFILTERS
        PIO_inq_var_filter_ids   , &
        PIO_inq_var_filter_info  , &
        PIO_inq_filter_avail     , &
