@@ -144,6 +144,7 @@ module pio_nf
        pio_inq_var_zstandard                                , &
        pio_def_var_bzip2                                    , &
        pio_def_var_zstandard                                , &
+       pio_def_var_szip                                     , &
        pio_inq_var_filter_ids                               , &
        pio_inq_var_filter_info                              , &
        pio_inq_filter_avail                                 , &
@@ -175,6 +176,12 @@ module pio_nf
           def_var_bzip2_int, &
           def_var_bzip2_vid
   end interface pio_def_var_bzip2
+  interface pio_def_var_szip
+     module procedure &
+          def_var_szip_desc, &
+          def_var_szip_int, &
+          def_var_szip_vid
+  end interface pio_def_var_szip
   interface pio_def_var_zstandard
      module procedure &
           def_var_zstandard_desc, &
@@ -2272,6 +2279,56 @@ contains
 
     ierr = PIOc_def_var_zstandard(ncid, varid-1, level)
   end function def_var_zstandard_int
+  !>
+  !! @ingroup PIO_def_var_szip
+  !! Changes chunking settings for a netCDF-4/HDF5 variable.
+  !! @author Ed Hartnett
+  !<
+  integer function def_var_szip_desc(file, vardesc, mask, ppb) result(ierr)
+    type (File_desc_t), intent(in)  :: file
+    type (var_desc_t), intent(in) :: vardesc
+    integer, intent(in) :: mask
+    integer, intent(in) :: ppb
+
+    ierr = pio_def_var_szip(file%fh, vardesc%varid, mask, ppb)
+  end function def_var_szip_desc
+  !>
+  !! @ingroup PIO_def_var_szip
+  !! Changes szip settings for a netCDF-4/HDF5 variable.
+  !! @author Jim Edwards, Ed Hartnett
+  !<
+  integer function def_var_szip_vid(file, varid, mask, ppb) result(ierr)
+    type (File_desc_t), intent(in)  :: file
+    integer, intent(in) :: varid
+    integer, intent(in) :: mask
+    integer, intent(in) :: ppb
+
+    ierr = pio_def_var_szip(file%fh, varid, mask, ppb)
+  end function def_var_szip_vid
+  !>
+  !! @ingroup PIO_def_var_szip
+  !! Changes chunking settings for a netCDF-4/HDF5 variable.
+  !! @author Ed Hartnett
+  !<
+  integer function def_var_szip_int(ncid, varid, mask, ppb) result(ierr)
+    integer, intent(in) :: ncid
+    integer, intent(in) :: varid
+    integer, intent(in) :: mask
+    integer, intent(in) :: ppb
+
+    interface
+       integer (C_INT) function PIOc_def_var_szip(ncid, varid, options_mask, pixels_per_block) &
+            bind(c,name="PIOc_def_var_szip")
+         use iso_c_binding
+         integer(c_int), value :: ncid
+         integer(c_int), value :: varid
+         integer(c_int), value :: options_mask
+         integer(c_int), value :: pixels_per_block
+       end function PIOc_def_var_szip
+    end interface
+
+    ierr = PIOc_def_var_szip(ncid, varid-1, mask, ppb)
+  end function def_var_szip_int
 
   !>
   !! @ingroup PIO_set_chunk_cache

@@ -75,7 +75,10 @@ module pio
        PIO_inq_unlimdim, &
        PIO_def_dim   ,        &
        PIO_def_var   ,        &
-       PIO_def_var_deflate   ,        &
+       PIO_def_var_bzip2,     &
+       PIO_def_var_zstandard, &
+       PIO_def_var_szip, &
+       PIO_def_var_deflate   ,&
        PIO_def_var_chunking, &
        PIO_inq_var_chunking, &
        PIO_redef     ,          &

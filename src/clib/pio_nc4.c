@@ -98,6 +98,93 @@ PIOc_def_var_deflate(int ncid, int varid, int shuffle, int deflate,
 }
 
 /**
+ * Set szip settings for a variable.
+ *
+ * This function only applies to netCDF-4 files. When used with netCDF
+ * classic files, the error PIO_ENOTNC4 will be returned.
+ *
+ * See the <a
+ * href="http://www.unidata.ucar.edu/software/netcdf/docs/group__variables.html">netCDF
+ * variable documentation</a> for details about the operation of this
+ * function.
+ *
+ * @param ncid the ncid of the open file.
+ * @param varid the ID of the variable.
+ * @param option_mask The options mask. Can be PIO_SZIP_EC or PIO_SZIP_NN. 
+ * @param pixels_per_block Pixels per block. Must be even and not greater than 32, with typical
+ * values being 8, 10, 16, or 32. This parameter affects compression
+ * ratio; the more pixel values vary, the smaller this number should be
+ * to achieve better performance. If pixels_per_block is bigger than the
+ * total number of elements in a dataset chunk, NC_EINVAL will be
+ * returned.
+ * @return PIO_NOERR for success, otherwise an error code.
+ * @ingroup PIO_def_var_c
+ * @author Jim Edwards, Ed Hartnett
+ */
+int
+PIOc_def_var_szip(int ncid, int varid, int options_mask, int pixels_per_block)
+{
+    iosystem_desc_t *ios;  /* Pointer to io system information. */
+    file_desc_t *file;     /* Pointer to file information. */
+    int ierr = PIO_NOERR;  /* Return code from function calls. */
+    int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI function codes. */
+
+    /* Get the file info. */
+    if ((ierr = pio_get_file(ncid, &file)))
+        return pio_err(NULL, NULL, ierr, __FILE__, __LINE__);
+    ios = file->iosystem;
+
+    /* Only netCDF-4 files can use this feature. */
+    if (file->iotype != PIO_IOTYPE_NETCDF4P && file->iotype != PIO_IOTYPE_NETCDF4C)
+        return pio_err(ios, file, PIO_ENOTNC4, __FILE__, __LINE__);
+
+    PLOG((1, "PIOc_def_var_szip ncid = %d varid = %d mask = %d ppb = %d",
+          ncid, varid, options_mask, pixels_per_block));
+
+    /* If async is in use, and this is not an IO task, bcast the parameters. */
+    if (ios->async)
+    {
+        if (!ios->ioproc)
+        {
+            int msg = PIO_MSG_DEF_VAR_SZIP;
+
+            if (ios->compmain == MPI_ROOT)
+                mpierr = MPI_Send(&msg, 1,MPI_INT, ios->ioroot, 1, ios->union_comm);
+
+            if (!mpierr)
+                mpierr = MPI_Bcast(&ncid, 1, MPI_INT, ios->compmain, ios->intercomm);
+            if (!mpierr)
+                mpierr = MPI_Bcast(&varid, 1, MPI_INT, ios->compmain, ios->intercomm);
+            if (!mpierr)
+                mpierr = MPI_Bcast(&options_mask, 1, MPI_INT, ios->compmain, ios->intercomm);
+            if (!mpierr)
+                mpierr = MPI_Bcast(&pixels_per_block, 1, MPI_INT, ios->compmain, ios->intercomm);
+        }
+
+        /* Handle MPI errors from computation tasks. */
+        if ((mpierr2 = MPI_Bcast(&mpierr, 1, MPI_INT, ios->comproot, ios->my_comm)))
+            return check_mpi(NULL, file, mpierr2, __FILE__, __LINE__);
+        if (mpierr)
+            return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+    }
+
+    if (ios->ioproc)
+    {
+#ifdef _NETCDF4
+        if (file->do_io)
+            ierr = nc_def_var_szip(file->fh, varid, options_mask, pixels_per_block);
+#endif
+    }
+
+    /* Broadcast and check the return code. */
+    if ((mpierr = MPI_Bcast(&ierr, 1, MPI_INT, ios->ioroot, ios->my_comm)))
+        return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+    if (ierr)
+        return check_netcdf(file, ierr, __FILE__, __LINE__);
+
+    return PIO_NOERR;
+}
+/**
  * Set bzip2 settings for a variable.
  *
  * This function only applies to netCDF-4 files. When used with netCDF
