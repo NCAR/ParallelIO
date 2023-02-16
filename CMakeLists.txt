@@ -9,8 +9,8 @@ project (PIO C)
 
 # The project version number.
 set(VERSION_MAJOR   2   CACHE STRING "Project major version number.")
-set(VERSION_MINOR   5   CACHE STRING "Project minor version number.")
-set(VERSION_PATCH  10   CACHE STRING "Project patch version number.")
+set(VERSION_MINOR   6   CACHE STRING "Project minor version number.")
+set(VERSION_PATCH   0   CACHE STRING "Project patch version number.")
 mark_as_advanced(VERSION_MAJOR VERSION_MINOR VERSION_PATCH)
 
 # Create version info in autotools parlance for pio_meta.h.
@@ -89,6 +89,7 @@ option (PIO_ENABLE_DOC       "Enable building PIO documentation"            ON)
 option (PIO_ENABLE_COVERAGE  "Enable code coverage"                         OFF)
 option (PIO_ENABLE_EXAMPLES  "Enable PIO examples"                          ON)
 option (PIO_ENABLE_NETCDF_INTEGRATION  "Enable netCDF integration"          OFF)
+option (PIO_ENABLE_UTILS     "Enable PIO utils"                             ON)
 option (PIO_INTERNAL_DOC     "Enable PIO developer documentation"           OFF)
 option (PIO_TEST_BIG_ENDIAN  "Enable test to see if machine is big endian"  ON)
 option (PIO_USE_MPIIO        "Enable support for MPI-IO auto detect"        ON)
