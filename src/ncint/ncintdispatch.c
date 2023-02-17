@@ -99,7 +99,7 @@ NC_Dispatch NCINT_dispatcher = {
     NC_NOTNC4_inq_grp_parent,
     NC_NOTNC4_inq_grp_full_ncid,
     NC_NOTNC4_inq_varids,
-    NC_NOTNC4_inq_dimids,
+    PIO_NCINT_inq_dimids,
     NC_NOTNC4_inq_typeids,
     PIO_NCINT_inq_type_equal,
     NC_NOTNC4_def_grp,
@@ -308,6 +308,7 @@ PIO_NCINT__enddef(int ncid, size_t h_minfree, size_t v_align,
     return PIOc_enddef(ncid);
 }
 
+
 /**
  * @internal Put the file back in redef mode. This is done
  * automatically for netcdf-4 files, if the user forgets.
@@ -489,6 +490,35 @@ int
 PIO_NCINT_def_dim(int ncid, const char *name, size_t len, int *idp)
 {
     return PIOc_def_dim(ncid, name, len, idp);
+}
+
+/**
+ * @internal Given dim name, find its id.
+ *
+ * @param ncid File and group ID.
+ * @param name Name of the dimension to find.
+ * @param idp Pointer that gets dimension ID.
+ *
+ * @return ::NC_NOERR No error.
+ * @return ::NC_EBADID Bad ncid.
+ * @return ::NC_EBADDIM Dimension not found.
+ * @return ::NC_EINVAL Invalid input. Name must be provided.
+ * @author Ed Hartnett
+ */
+int
+PIO_NCINT_inq_dimids(int ncid, int *ndimsp, int *dimids, int include_parents)
+{
+    int retval,d,ndims;                                                                                                                                 
+    /* If this is a netcdf-3 file, then the dimids are going to be 0                                                                                    
+       thru ndims-1, so just provide them. */                                                                                                           
+    if ((retval = PIOc_inq(ncid, &ndims,  NULL, NULL, NULL)))                                                                                            
+        return retval;                                                                                                                                  
+    if(ndimsp) *ndimsp = ndims;                                                                                                                         
+    if (dimids)                                                                                                                                         
+        for (d = 0; d < ndims; d++)                                                                                                                     
+            dimids[d] = d;                                                                                                                              
+    return NC_NOERR;                
+
 }
 
 /**

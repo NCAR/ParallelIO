@@ -14,6 +14,7 @@
 #define _POSIX_C_SOURCE 200809L
 #define nullfree(x) {if((x)!=NULL) free(x);}
 #include <pio.h>
+#include <pio_internal.h>
 #include <mpi.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -49,7 +50,7 @@
 #define COPY_CHUNKCACHE_PREEMPTION (1.0f) /* for copying, can eject fully read chunks */
 #define SAME_AS_INPUT (-1)	/* default, if kind not specified */
 #define CHUNK_THRESHOLD (8192)	/* non-record variables with fewer bytes don't get chunked */
-
+#define fIsSet(t, f)  ((t) & (f))
 #ifndef USE_NETCDF4
 #define NC_CLASSIC_MODEL 0x0100 /* Enforce classic model if netCDF-4 not available. */
 #endif
@@ -164,7 +165,7 @@ static int option_compute_chunkcaches = 0; /* default, don't try still flaky est
 
 static int mpi_rank;
 static int mpi_pool_size;
-
+static int innc4=0;
 
 /* get group id in output corresponding to group igrp in input,
  * given parent group id (or root group id) parid in output. */
@@ -175,16 +176,20 @@ get_grpid(int igrp, int parid, int *ogrpp) {
 #ifdef USE_NETCDF4
     int inparid;
 
-    /* if not root group, get corresponding output groupid from group name */
-    stat = nc_inq_grp_parent(igrp, &inparid);
-    if(stat == NC_NOERR) {	/* not root group */
-	char grpname[NC_MAX_NAME + 1];
-	NC_CHECK(nc_inq_grpname(igrp, grpname));
-	NC_CHECK(nc_inq_grp_ncid(parid, grpname, &ogid));
-    } else if(stat == NC_ENOGRP) { /* root group */
-	stat = NC_NOERR;
-    } else {
-	NC_CHECK(stat);
+    if(innc4){
+        /* if not root group, get corresponding output groupid from group name */
+        stat = nc_inq_grp_parent(igrp, &inparid);
+        if(stat == NC_NOERR) {	/* not root group */
+            char grpname[NC_MAX_NAME + 1];
+            NC_CHECK(nc_inq_grpname(igrp, grpname));
+            NC_CHECK(nc_inq_grp_ncid(parid, grpname, &ogid));
+        } else if(stat == NC_ENOGRP) { /* root group */
+            stat = NC_NOERR;
+        } else {
+            NC_CHECK(stat);
+        }
+    }else{
+        ogid=0;
     }
 #endif	/* USE_NETCDF4 */
     *ogrpp = ogid;
@@ -763,6 +768,7 @@ copy_types(int igrp, int ogrp)
 
     /* Copy types from subgroups */
     NC_CHECK(nc_inq_grps(igrp, &numgrps, NULL));
+    printf("%d: here input numgrps %d\n",mpi_rank, numgrps);
     if(numgrps > 0) {
 	grpids = (int *)emalloc(sizeof(int) * numgrps);
 	NC_CHECK(nc_inq_grps(igrp, &numgrps, grpids));
@@ -797,8 +803,10 @@ copy_var_filter(int igrp, int varid, int ogrp, int o_varid, int inkind, int outk
     struct FilterOption* tmp = NULL;
     char* ofqn = NULL;
     int inputdefined, outputdefined, unfiltered;
-    int innc4 = (inkind == NC_FORMAT_NETCDF4 || inkind == NC_FORMAT_NETCDF4_CLASSIC);
-    int outnc4 = (outkind == NC_FORMAT_NETCDF4 || outkind == NC_FORMAT_NETCDF4_CLASSIC);
+//    int innc4 = fIsSet(inkind, NC_NETCDF4);
+//    int outnc4 = fIsSet(outkind, NC_NETCDF4);
+    int innc4 = 0;
+    int outnc4 = 1;
     int suppressvarfilters = 0;
 
     if(!outnc4)
@@ -917,8 +925,10 @@ static int
 copy_chunking(int igrp, int i_varid, int ogrp, int o_varid, int ndims, int inkind, int outkind)
 {
     int stat = NC_NOERR;
-    int innc4 = (inkind == NC_FORMAT_NETCDF4 || inkind == NC_FORMAT_NETCDF4_CLASSIC);
-    int outnc4 = (outkind == NC_FORMAT_NETCDF4 || outkind == NC_FORMAT_NETCDF4_CLASSIC);
+//    int innc4 = fIsSet(inkind, NC_NETCDF4);
+//    int outnc4 = fIsSet(outkind, NC_NETCDF4);
+    int innc4 = 0;
+    int outnc4 = 1;
     VarID ovid;
     char* ofqn = NULL;
     int icontig = NC_CONTIGUOUS;
@@ -1114,8 +1124,10 @@ static int
 copy_var_specials(int igrp, int varid, int ogrp, int o_varid, int inkind, int outkind)
 {
     int stat = NC_NOERR;
-    int innc4 = (inkind == NC_FORMAT_NETCDF4 || inkind == NC_FORMAT_NETCDF4_CLASSIC);
-    int outnc4 = (outkind == NC_FORMAT_NETCDF4 || outkind == NC_FORMAT_NETCDF4_CLASSIC);
+//    int innc4 = fIsSet(inkind, NC_NETCDF4);
+//    int outnc4 = fIsSet(outkind, NC_NETCDF4);
+    int innc4 = 0;
+    int outnc4 = 1;
     int deflated = 0; /* true iff deflation is applied */
     int ndims;
     char* ofqn = NULL;
@@ -1127,9 +1139,9 @@ copy_var_specials(int igrp, int varid, int ogrp, int o_varid, int inkind, int ou
 
     {				/* handle chunking parameters */
 	NC_CHECK(nc_inq_varndims(igrp, varid, &ndims));
-	if (ndims > 0) {		/* no chunking for scalar variables */
-	    NC_CHECK(copy_chunking(igrp, varid, ogrp, o_varid, ndims, inkind, outkind));
-	}
+//	if (ndims > 0) {		/* no chunking for scalar variables */
+//	    NC_CHECK(copy_chunking(igrp, varid, ogrp, o_varid, ndims, inkind, outkind));
+//	}
     }
 
     if((stat=computeFQN(ovid,&ofqn))) goto done;
@@ -1302,7 +1314,7 @@ free_var_chunk_cache(int grp, int varid)
     size_t cache_nelems = 1;
     float cache_preemp = 0;
     int kind;
-    NC_CHECK(nc_inq_format(grp, &kind));
+    NC_CHECK(nc_inq_format_extended(grp, NULL, &kind));
     if(kind == NC_FORMAT_NETCDF4 || kind == NC_FORMAT_NETCDF4_CLASSIC) {
 	int contig = NC_CONTIGUOUS
 	NC_CHECK(nc_inq_var_chunking(grp, varid, &contig, NULL));
@@ -1469,8 +1481,8 @@ copy_var(int igrp, int varid, int ogrp)
     {
 	int inkind;
 	int outkind;
-	NC_CHECK(nc_inq_format(igrp, &inkind));
-	NC_CHECK(nc_inq_format(ogrp, &outkind));
+	NC_CHECK(nc_inq_format_extended(igrp, NULL, &inkind));
+	NC_CHECK(nc_inq_format_extended(ogrp, NULL, &outkind));
         /* Copy all variable properties such as
 	 * chunking, endianness, deflation, checksumming, fill, etc.
 	 * Ok to call if outkind is netcdf-3
@@ -1551,19 +1563,25 @@ copy_schema(int igrp, int ogrp)
     /* get groupid in output corresponding to group igrp in input,
      * given parent group (or root group) ogrp in output */
     NC_CHECK(get_grpid(igrp, ogrp, &ogid));
-
+    /* pio hack here */
+    if(ogid == 0) ogid = ogrp;
     NC_CHECK(copy_dims(igrp, ogid));
+
     NC_CHECK(copy_atts(igrp, NC_GLOBAL, ogid, NC_GLOBAL));
     NC_CHECK(copy_vars(igrp, ogid));
 #ifdef USE_NETCDF4
     {
 	int numgrps;
-	int *grpids;
+	int *grpids=NULL;
 	int i;
 	/* Copy schema from subgroups */
-	stat = nc_inq_grps(igrp, &numgrps, NULL);
-	grpids = (int *)emalloc((numgrps + 1) * sizeof(int));
-	NC_CHECK(nc_inq_grps(igrp, &numgrps, grpids));
+        if(innc4){
+            stat = nc_inq_grps(igrp, &numgrps, NULL);
+            grpids = (int *)emalloc((numgrps + 1) * sizeof(int));
+        }
+        /* pio hack here */
+        numgrps = 0;
+//	NC_CHECK(nc_inq_grps(igrp, &numgrps, grpids));
 
 	for(i = 0; i < numgrps; i++) {
 	    if (option_grpstruct || group_wanted(grpids[i], option_nlgrps, option_grpids)) {
@@ -1634,8 +1652,9 @@ copy_var_data(int igrp, int varid, int ogrp)
 	do_realloc = 1;
     }
 #ifdef USE_NETCDF4
-    NC_CHECK(nc_inq_format(ogrp, &okind));
-    if(okind == NC_FORMAT_NETCDF4 || okind == NC_FORMAT_NETCDF4_CLASSIC) {
+    NC_CHECK(nc_inq_format_extended(ogrp, NULL, &okind));
+//    if(fIsSet(okind, NC_NETCDF4)){
+    if(1){
 	/* if this variable chunked, set variable chunk cache size */
 	int contig = NC_CONTIGUOUS;
 	NC_CHECK(nc_inq_var_chunking(ogrp, ovarid, &contig, NULL));
@@ -1666,7 +1685,9 @@ copy_var_data(int igrp, int varid, int ogrp)
     /* For chunked variables, option_copy_buffer_size must also be at least as large as
      * size of a chunk in input, otherwise resize it. */
     {
-	NC_CHECK(inq_var_chunksize(igrp, varid, &chunksize));
+        /* pio hack here */
+        chunksize = option_copy_buffer_size;
+	//NC_CHECK(inq_var_chunksize(igrp, varid, &chunksize));
 	if(chunksize > option_copy_buffer_size) {
 	    option_copy_buffer_size = chunksize;
 	    do_realloc = 1;
@@ -1754,7 +1775,12 @@ copy_data(int igrp, int ogrp)
 
     /* get groupid in output corresponding to group igrp in input,
      * given parent group (or root group) ogrp in output */
+    
     NC_CHECK(get_grpid(igrp, ogrp, &ogid));
+
+    /* pio hack here */
+    ogid = ogrp;
+
 
     /* Copy data from this group */
     NC_CHECK(nc_inq_nvars(igrp, &nvars));
@@ -1768,16 +1794,18 @@ copy_data(int igrp, int ogrp)
     }
 #ifdef USE_NETCDF4
     /* Copy data from subgroups */
-    stat = nc_inq_grps(igrp, &numgrps, NULL);
-    grpids = (int *)emalloc((numgrps + 1) * sizeof(int));
-    NC_CHECK(nc_inq_grps(igrp, &numgrps, grpids));
+//    stat = nc_inq_grps(igrp, &numgrps, NULL);
+//    grpids = (int *)emalloc((numgrps + 1) * sizeof(int));
+    /* pio hack here*/
+    numgrps = 0;
+//    NC_CHECK(nc_inq_grps(igrp, &numgrps, grpids));
 
     for(i = 0; i < numgrps; i++) {
         if (!option_grpstruct && !group_wanted(grpids[i], option_nlgrps, option_grpids))
             continue;
 	NC_CHECK(copy_data(grpids[i], ogid));
     }
-    free(grpids);
+//    free(grpids);
 #endif	/* USE_NETCDF4 */
     freeidlist(vlist);
     return stat;
@@ -1793,17 +1821,19 @@ count_dims(int ncid) {
 
     int ndims;
     NC_CHECK(nc_inq_ndims(ncid, &ndims));
-
 #ifdef USE_NETCDF4
-    NC_CHECK(nc_inq_grps(ncid, &numgrps, NULL));
-    if(numgrps > 0) {
-	int igrp;
-	int *grpids = emalloc(numgrps * sizeof(int));
-	NC_CHECK(nc_inq_grps(ncid, &numgrps, grpids));
-	for(igrp = 0; igrp < numgrps; igrp++) {
-	    ndims += count_dims(grpids[igrp]);
-	}
-	free(grpids);
+
+    if(innc4){
+        NC_CHECK(nc_inq_grps(ncid, &numgrps, NULL));
+        if(numgrps > 0) {
+            int igrp;
+            int *grpids = emalloc(numgrps * sizeof(int));
+            NC_CHECK(nc_inq_grps(ncid, &numgrps, grpids));
+            for(igrp = 0; igrp < numgrps; igrp++) {
+                ndims += count_dims(grpids[igrp]);
+            }
+            free(grpids);
+        }
     }
 #endif	/* USE_NETCDF4 */
     return ndims;
@@ -1818,8 +1848,8 @@ count_dims(int ncid) {
  * to copy data a record at a time. */
 static int
 nc3_special_case(int ncid, int kind) {
-    if (kind == NC_FORMAT_CLASSIC ||  kind == NC_FORMAT_64BIT_OFFSET
-        || kind == NC_FORMAT_CDF5) {
+    if (fIsSet(kind, NC_CLASSIC_MODEL) ||  fIsSet(kind, NC_64BIT_OFFSET)
+        || fIsSet(kind, NC_CDF5)) {
 	int recdimid = 0;
 	NC_CHECK(nc_inq_unlimdim(ncid, &recdimid));
 	if (recdimid != -1) {	/* we have a record dimension */
@@ -2031,8 +2061,9 @@ copy(char* infile, char* outfile)
 
     NC_CHECK(nc_open(infile, open_mode, &igrp));
 
-    NC_CHECK(nc_inq_format(igrp, &inkind));
-
+    NC_CHECK(nc_inq_format_extended(igrp, NULL, &inkind));
+//    innc4 = fIsSet(inkind, NC_NETCDF4);
+    innc4 = 0;
 /* option_kind specifies which netCDF format for output, one of
  *
  *     SAME_AS_INPUT, NC_FORMAT_CLASSIC, NC_FORMAT_64BIT,
@@ -2046,8 +2077,8 @@ copy(char* infile, char* outfile)
     if (option_kind == SAME_AS_INPUT) {	/* default, kind not specified */
 	outkind = inkind;
 	/* Deduce output kind if netCDF-4 features requested */
-	if (inkind == NC_FORMAT_CLASSIC || inkind == NC_FORMAT_64BIT_OFFSET
-	    || inkind == NC_FORMAT_CDF5) {
+	if (fIsSet(inkind, NC_CLASSIC_MODEL) || fIsSet(inkind, NC_64BIT_OFFSET)
+            || fIsSet(inkind, NC_CDF5)) {
 	    if (option_deflate_level > 0 ||
 		option_shuffle_vars == NC_SHUFFLE ||
 		listlength(option_chunkspecs) > 0)
@@ -2251,6 +2282,8 @@ main(int argc, char**argv)
     char* outputfile = NULL;
     int c;
     int primary;
+    int inlen;
+    int outlen;
 
     MPI_Init(&argc, &argv);
     MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
@@ -2459,13 +2492,51 @@ main(int argc, char**argv)
         }
 #endif /*DEBUGFILTER*/
 #endif /*USE_NETCDF4*/
-
-        if(copy(inputfile, outputfile) != NC_NOERR)
-            exitcode = EXIT_FAILURE;
-
-        nullfree(inputfile);
-        nullfree(outputfile);
+        inlen = strlen(inputfile);
+        outlen = strlen(outputfile);
     }
+    MPI_Bcast( &option_kind, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    MPI_Bcast( &option_deflate_level, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    MPI_Bcast( &option_shuffle_vars, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    MPI_Bcast( &option_fix_unlimdims, 1, MPI_INT, 0, MPI_COMM_WORLD);
+
+    MPI_Bcast( &option_copy_buffer_size, 1, PIO_MPI_SIZE_T, 0, MPI_COMM_WORLD);
+    MPI_Bcast( &option_chunk_cache_size, 1, PIO_MPI_SIZE_T, 0, MPI_COMM_WORLD);
+    MPI_Bcast( &option_chunk_cache_nelems, 1, PIO_MPI_SIZE_T, 0, MPI_COMM_WORLD);
+
+    MPI_Bcast( &option_read_diskless, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    MPI_Bcast( &option_write_diskless, 1, MPI_INT, 0, MPI_COMM_WORLD);
+#ifdef USE_NETCDF4
+    MPI_Bcast( &option_min_chunk_bytes, 1, PIO_MPI_SIZE_T, 0, MPI_COMM_WORLD);
+#endif
+    MPI_Bcast( &option_nlgrps, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    MPI_Bcast( &option_nlvars, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    if(mpi_rank > 0){
+        /* need to handle option_lvars and option_lgrps */
+    }
+    
+    MPI_Bcast( &option_compute_chunkcaches, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    
+
+
+    
+    MPI_Bcast( &inlen, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    MPI_Bcast( &inlen, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    MPI_Bcast( &outlen, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    if(mpi_rank > 0){
+        inputfile = malloc(inlen *sizeof(MPI_CHAR));
+        outputfile = malloc(outlen *sizeof(MPI_CHAR));
+    }
+
+    
+    MPI_Bcast( inputfile, inlen, MPI_CHAR, 0, MPI_COMM_WORLD);
+    MPI_Bcast( outputfile, outlen, MPI_CHAR, 0, MPI_COMM_WORLD);
+    if(copy(inputfile, outputfile) != NC_NOERR)
+        exitcode = EXIT_FAILURE;
+
+    nullfree(inputfile);
+    nullfree(outputfile);
+    
 #ifdef USE_NETCDF4
     /* Clean up */
     freefilteroptlist(filteroptions);

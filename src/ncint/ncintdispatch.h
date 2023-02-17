@@ -69,6 +69,9 @@ extern "C" {
     PIO_NCINT_inq_dimid(int ncid, const char *name, int *idp);
 
     extern int
+    PIO_NCINT_inq_dimids(int ncid, int *ndimsp, int *dimids, int include_parents);
+
+    extern int
     PIO_NCINT_inq_dim(int ncid, int dimid, char *name, size_t *lenp);
 
     extern int
