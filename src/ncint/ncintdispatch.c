@@ -95,7 +95,7 @@ NC_Dispatch NCINT_dispatcher = {
     NC_NOTNC4_inq_ncid,
     NC_NOTNC4_inq_grps,
     NC_NOTNC4_inq_grpname,
-    NC_NOTNC4_inq_grpname_full,
+    PIOc_inq_grpname_full,
     NC_NOTNC4_inq_grp_parent,
     NC_NOTNC4_inq_grp_full_ncid,
     NC_NOTNC4_inq_varids,

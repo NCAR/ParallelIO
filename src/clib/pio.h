@@ -1260,6 +1260,11 @@ extern "C" {
                                const long long *op);
     int PIOc_put_vard_ulonglong(int ncid, int varid, int decompid, const PIO_Offset recnum,
                                 const unsigned long long *op);
+#ifdef _NETCDF4
+/* Groups */
+    int PIOc_inq_grpname_full(int ncid, size_t *lenp, char *full_name);
+#endif
+
 /* use this variable in the NETCDF library (introduced in v4.9.0) to determine if the following 
    functions are available */
 #ifdef NC_HAS_MULTIFILTERS

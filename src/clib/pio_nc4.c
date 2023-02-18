@@ -1864,6 +1864,103 @@ PIOc_inq_filter_avail(int ncid, unsigned int id )
     return ierr;
 }
 
+/**
+ * 
+ *
+ * This function only applies to netCDF-4 files. When used with netCDF
+ * classic files, the error PIO_ENOTNC4 will be returned.
+ *
+ * Note that these settings are not part of the data file - they apply
+ * only to the open file as long as it is open.
+ *
+ *  See the <a
+ * href="http://www.unidata.ucar.edu/software/netcdf/docs/group__variables.html">netCDF
+ * variable documentation</a> for details about the operation of this
+ * function.
+ *
+ * @param ncid the ncid of the open file.
+ * @param lenp Pointer to memory to hold the length of the fullname
+ * @param full_name Pointer to memory to hold the full name of the group including root/parent
+ * @return PIO_NOERR if the filter is available, PIO_ENOFILTER if unavailable
+ * @ingroup PIO_groups
+ * @author Jim Edwards/Ed Hartnett
+ */
+int
+PIOc_inq_grpname_full(int ncid, size_t *lenp, char* full_name )
+{
+    iosystem_desc_t *ios;  /* Pointer to io system information. */
+    file_desc_t *file;     /* Pointer to file information. */
+    int ierr;              /* Return code from function calls. */
+    int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI function codes. */
+
+    PLOG((1, "PIOc_inq_grpname_full ncid = %d  ", ncid));
+
+    /* Get the file info. */
+    if ((ierr = pio_get_file(ncid, &file)))
+        return pio_err(NULL, NULL, ierr, __FILE__, __LINE__);
+    ios = file->iosystem;
+
+    /* Only netCDF-4 files can use this feature. */
+    if (file->iotype != PIO_IOTYPE_NETCDF4P && file->iotype != PIO_IOTYPE_NETCDF4C)
+        return pio_err(ios, file, PIO_ENOTNC4, __FILE__, __LINE__);
+
+    /* If async is in use, and this is not an IO task, bcast the parameters. */
+    if (ios->async)
+    {
+        if (!ios->ioproc)
+        {
+            int msg = PIO_MSG_INQ_GRPNAME_FULL; /* Message for async notification. */
+
+            if (ios->compmain == MPI_ROOT)
+                mpierr = MPI_Send(&msg, 1, MPI_INT, ios->ioroot, 1, ios->union_comm);
+
+            if (!mpierr)
+                mpierr = MPI_Bcast(&ncid, 1, MPI_INT, ios->compmain, ios->intercomm);
+            char lenp_present = lenp ? true : false;
+            int full_name_len = full_name ? strlen(full_name) : 0;
+            if (!mpierr)
+                mpierr = MPI_Bcast(&lenp_present, 1, MPI_CHAR, ios->compmain, ios->intercomm);
+            if (!mpierr)
+                mpierr = MPI_Bcast(&full_name_len, 1, MPI_INT, ios->compmain, ios->intercomm);
+        }
+
+        /* Handle MPI errors. */
+        if ((mpierr2 = MPI_Bcast(&mpierr, 1, MPI_INT, ios->comproot, ios->my_comm)))
+            return check_mpi(ios, NULL, mpierr2, __FILE__, __LINE__);
+        if (mpierr)
+            return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
+    }
+
+    /* If this is an IO task, then call the netCDF function. */
+    if (ios->ioproc)
+    {
+        if (file->do_io)
+            ierr = nc_inq_grpname_full(file->fh, lenp, full_name); 
+    }
+
+    /* Broadcast and check the return code. */
+    if ((mpierr = MPI_Bcast(&ierr, 1, MPI_INT, ios->ioroot, ios->my_comm)))
+        return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+    if (ierr && ierr !=NC_ENOFILTER)
+        return check_netcdf(file, ierr, __FILE__, __LINE__);
+
+    /* Broadcast results to all tasks. */
+    if(lenp) 
+        if ((mpierr = MPI_Bcast(lenp, 1, PIO_MPI_SIZE_T, ios->ioroot, ios->my_comm)))
+            return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+    if(full_name)
+    {
+        int slen;
+        if (ios->iomain == MPI_ROOT)
+            slen = strlen(full_name);
+        if ((mpierr = MPI_Bcast(&slen, 1, MPI_INT, ios->ioroot, ios->my_comm)))
+            return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+        if ((mpierr = MPI_Bcast((void *)full_name, slen + 1, MPI_CHAR, ios->ioroot, ios->my_comm)))
+            return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
+    }
+    return ierr;
+}
+
 
 
 
