@@ -166,6 +166,17 @@ static int option_compute_chunkcaches = 0; /* default, don't try still flaky est
 static int mpi_rank;
 static int mpi_pool_size;
 static int innc4=0;
+static int iosysid;
+
+typedef struct ioidlist
+{
+    int vartype;
+    int ndims;
+    int dimids[7];  // hardcoded max here
+    int ioid;
+    struct ioidlist *next;
+} ioidlist;
+ioidlist *ioidtop=NULL;
 
 /* get group id in output corresponding to group igrp in input,
  * given parent group id (or root group id) parid in output. */
@@ -768,7 +779,7 @@ copy_types(int igrp, int ogrp)
 
     /* Copy types from subgroups */
     NC_CHECK(nc_inq_grps(igrp, &numgrps, NULL));
-    printf("%d: here input numgrps %d\n",mpi_rank, numgrps);
+    //printf("%d: here input numgrps %d\n",mpi_rank, numgrps);
     if(numgrps > 0) {
 	grpids = (int *)emalloc(sizeof(int) * numgrps);
 	NC_CHECK(nc_inq_grps(igrp, &numgrps, grpids));
@@ -1404,6 +1415,9 @@ copy_dims(int igrp, int ogrp)
 	}
 	/* Store (idimid, odimid) mapping for later use, also whether unlimited */
 	dimmap_store(idimid, odimid, i_is_unlim, o_is_unlim);
+        
+        
+
     }
 #ifdef USE_NETCDF4
     free(dimids);
@@ -1620,20 +1634,22 @@ inq_nvals(int igrp, int varid, long long *nvalsp) {
 /* Copy data from variable varid in group igrp to corresponding group
  * ogrp. */
 static int
-copy_var_data(int igrp, int varid, int ogrp)
+copy_var_data(int igrp, int varid, int ogrp, int rec)
 {
     int stat = NC_NOERR;
     nc_type vartype;
     long long nvalues;		/* number of values for this variable */
     size_t ntoget;		/* number of values to access this iteration */
     size_t value_size;		/* size of a single value of this variable */
-    static void *buf = 0;	/* buffer for the variable values */
+    //  static void *buf = 0;	/* buffer for the variable values */
+    void *buf = 0;	/* buffer for the variable values */
     char varname[NC_MAX_NAME];
     int ovarid;
     size_t *start;
     size_t *count;
     nciter_t *iterp;		/* opaque structure for iteration status */
     int do_realloc = 0;
+    int ioid;
 #ifdef USE_NETCDF4
     int okind;
     size_t chunksize;
@@ -1712,11 +1728,17 @@ copy_var_data(int igrp, int varid, int ogrp)
      * changes start and count to iterate through whole variable on
      * subsequent calls. */
     while((ntoget = nc_next_iter(iterp, start, count)) > 0) {
-	NC_CHECK(nc_get_vara(igrp, varid, start, count, buf));
+        size_t varsize=1;
+        for(int ic=(rec>=0); ic<iterp->rank; ic++){
+            varsize *= iterp->dimsizes[ic];
+            if(mpi_rank==0) printf("%d: varid=%d dimsize[%d]=%d \n",mpi_rank,varid, ic, iterp->dimsizes[ic] );
+        }
+        if(mpi_rank==0) printf("%d: varid=%d varsize=%d mpi_pool_size=%d\n",mpi_rank, varid, varsize, mpi_pool_size);
+        NC_CHECK(nc_get_vara(igrp, varid, start, count, buf));
 #ifdef DEBUGCHUNK
-	report(iterp->rank,start,count,buf);
+        report(iterp->rank,start,count,buf);
 #endif
-	NC_CHECK(nc_put_vara(ogrp, ovarid, start, count, buf));
+        NC_CHECK(nc_put_vara(ogrp, ovarid, start, count, buf));
 #ifdef USE_NETCDF4
 	/* we have to explicitly free values for strings and vlens */
 	if(vartype == NC_STRING) {
@@ -1730,6 +1752,7 @@ copy_var_data(int igrp, int varid, int ogrp)
 	}
 #endif	/* USE_NETCDF4 */
     } /* end main iteration loop */
+    done:
 #ifdef USE_NETCDF4
     /* We're all done with this input and output variable, so if
      * either variable is chunked, free up its variable chunk cache */
@@ -1741,6 +1764,9 @@ copy_var_data(int igrp, int varid, int ogrp)
     NC_CHECK(nc_free_iter(iterp));
     return stat;
 }
+
+
+
 
 /* Copy data from variables in group igrp to variables in
  * corresponding group with parent ogrp, and all subgroups
@@ -1790,7 +1816,7 @@ copy_data(int igrp, int ogrp)
             continue;
         if (!group_wanted(igrp, option_nlgrps, option_grpids))
             continue;
-	NC_CHECK(copy_var_data(igrp, varid, ogid));
+	NC_CHECK(copy_var_data(igrp, varid, ogid, 0));
     }
 #ifdef USE_NETCDF4
     /* Copy data from subgroups */
@@ -1929,7 +1955,7 @@ copy_fixed_size_data(int igrp, int ogrp, size_t nfixed_vars, int *fixed_varids) 
     /* for each fixed-size variable, copy data */
     for (ivar = 0; ivar < nfixed_vars; ivar++) {
 	int varid = fixed_varids[ivar];
-	NC_CHECK(copy_var_data(igrp, varid, ogrp));
+	NC_CHECK(copy_var_data(igrp, varid, ogrp, -1));
     }
     if (fixed_varids)
 	free(fixed_varids);
@@ -1945,13 +1971,76 @@ copy_rec_var_data(int ncid, 	/* input */
 		  int ovarid, 	/* output variable id */
 		  size_t *start,   /* start indices for record data */
 		  size_t *count,   /* edge lengths for record data */
+                  int ioid,       /* ioid for decomposed variable */
 		  void *buf	   /* buffer large enough to hold data */
-    )
+)
 {
-    NC_CHECK(nc_get_vara(ncid, varid, start, count, buf));
-    NC_CHECK(nc_put_vara(ogrp, ovarid, start, count, buf));
+    //printf("%d: varid=%d ioid=%d\n",mpi_rank, varid, ioid);
+    if(ioid == -1){
+        NC_CHECK(nc_get_vara(ncid, varid, start, count, buf));
+        NC_CHECK(nc_put_vara(ogrp, ovarid, start, count, buf));
+    }else{
+        NC_CHECK(nc_get_vard(ncid, varid, ioid, start[0], buf));
+        NC_CHECK(nc_put_vard(ogrp, ovarid, ioid, start[0], buf));
+    }
     return NC_NOERR;
 }
+
+static int 
+find_ioid_in_list(int vartype,int ndims,int *dimids)
+{
+    ioidlist *member;
+    member = ioidtop;
+    while(member){
+        if(mpi_rank==0) printf("%d:find vartype %d %d ndims %d %d \n",mpi_rank, vartype,member->vartype, ndims, member->ndims);
+        if(vartype == member->vartype &&
+           ndims == member->ndims) 
+        {
+            for(int i=0; i<ndims; i++){
+                if(dimids[i] != member->dimids[i])
+                    goto done;
+            }
+            return(member->ioid);
+        }
+    done:
+        member = member->next;
+    }
+    return -1;
+}
+
+static int 
+add_ioid_to_list(int vartype, int ndims, int *dimids, int ioid)
+{
+    ioidlist *member;
+    member = ioidtop;
+    while(member){
+        member = member->next;
+    }
+    if(! ioidtop){
+        ioidtop = (ioidlist *) malloc(sizeof(ioidlist));
+        //        printf("top of list 0x%x %d\n",ioidtop, ioid);
+        member = ioidtop;
+    }
+    else if(member){
+        member->next = (ioidlist *) malloc(sizeof(ioidlist));
+        member = member->next;
+        //      printf("1new list member 0x%x %d\n",member, ioid);
+    }
+    else
+    {
+        member = (ioidlist *) malloc(sizeof(ioidlist));
+        //printf("2new list member 0x%x %d\n",member, ioid);
+    }
+    member->vartype = vartype;
+    member->ndims = ndims;
+    member->ioid = ioid;
+    for(int  i=0; i<ndims; i++)
+        member->dimids[i] = dimids[i];
+    if(mpi_rank==0) printf("%d: vartype %d %d ndims %d %d ioid %d\n",mpi_rank, vartype,member->vartype, ndims, member->ndims,ioid);
+    member->next = NULL;
+}
+
+
 
 /* Only called for classic format or 64-bit offset format files, to speed up special case */
 static int
@@ -1964,6 +2053,8 @@ copy_record_data(int ncid, int ogrp, size_t nrec_vars, int *rec_varids) {
     int *rec_ovarids;		/* corresponding varids in output */
     size_t **start;
     size_t **count;
+    int var_ioid[nrec_vars];
+
     NC_CHECK(nc_inq_unlimdim(ncid, &unlimid));
     NC_CHECK(nc_inq_dimlen(ncid, unlimid, &nrecs));
     buf = (void **) emalloc(nrec_vars * sizeof(void *));
@@ -1998,7 +2089,41 @@ copy_record_data(int ncid, int ogrp, size_t nrec_vars, int *rec_varids) {
 	}
 	start[ivar][0] = 0;
 	count[ivar][0] = 1;	/* 1 record */
-	buf[ivar] = (void *) emalloc(nvals * value_size);
+        int ioid=-1;
+        if(nvals > mpi_pool_size){
+            /* Create the PIO decomposition for this variable. */
+            int vartype;
+            NC_CHECK(nc_inq_vartype(ncid, varid, &vartype));
+            
+            ioid = find_ioid_in_list(vartype, ndims-1, dimids+1);
+            if(mpi_rank==0) printf("%d: varid %d vartype %d ndims %d ioid %d\n",mpi_rank, varid, vartype, ndims-1, ioid);
+            size_t epp;
+            size_t elements_per_pe = nvals/mpi_pool_size;
+            if(mpi_rank==mpi_pool_size-1 && elements_per_pe*mpi_pool_size != nvals)
+                epp = elements_per_pe + (nvals - elements_per_pe*mpi_pool_size);
+            else
+                epp = elements_per_pe;
+            if(ioid < 0){
+                size_t *compdof;
+                int gdims[ndims-1];
+
+                compdof = (size_t *) emalloc(epp *sizeof(size_t));
+                for(int i=0; i< epp; i++)
+                    compdof[i] = mpi_rank*elements_per_pe + i;
+                for(int i=0; i<ndims-1; i++)
+                    gdims[i] = (int) count[ivar][i+1];
+
+                NC_CHECK(nc_def_decomp(iosysid, vartype, ndims-1, gdims, epp ,
+                                       compdof, &ioid, PIO_REARR_SUBSET, NULL, NULL));
+                add_ioid_to_list(vartype, ndims-1, dimids+1, ioid);
+                free(compdof);
+            }
+            buf[ivar] = (void *) emalloc(epp * value_size);
+        }else{
+            buf[ivar] = (void *) emalloc(nvals * value_size);
+        }
+        var_ioid[ivar] = ioid;
+        
 	NC_CHECK(nc_inq_varname(ncid, varid, varname));
 	NC_CHECK(nc_inq_varid(ogrp, varname, &rec_ovarids[ivar]));
 	if(dimids)
@@ -2008,12 +2133,14 @@ copy_record_data(int ncid, int ogrp, size_t nrec_vars, int *rec_varids) {
     /* for each record, copy all variable data */
     for(irec = 0; irec < nrecs; irec++) {
 	for (ivar = 0; ivar < nrec_vars; ivar++) {
-	    int varid, ovarid;
+	    int varid, ovarid, ioid;
 	    varid = rec_varids[ivar];
 	    ovarid = rec_ovarids[ivar];
 	    start[ivar][0] = irec;
+            ioid = var_ioid[ivar];
+            if(mpi_rank==0) printf("%d: varid=%d ioid=%d\n", mpi_rank, varid, ioid);
 	    NC_CHECK(copy_rec_var_data(ncid, ogrp, irec, varid, ovarid,
-				       start[ivar], count[ivar], buf[ivar]));
+				       start[ivar], count[ivar], ioid, buf[ivar]));
 	}
     }
     for (ivar = 0; ivar < nrec_vars; ivar++) {
@@ -2037,6 +2164,8 @@ copy_record_data(int ncid, int ogrp, size_t nrec_vars, int *rec_varids) {
 	free(buf);
     if(rec_ovarids)
 	free(rec_ovarids);
+    NC_CHECK(nc_sync(ogrp));
+
     return NC_NOERR;
 }
 
@@ -2048,10 +2177,9 @@ copy(char* infile, char* outfile)
     int stat = NC_NOERR;
     int igrp, ogrp;
     int inkind, outkind;
-    int open_mode = NC_NOWRITE|NC_PIO;
-    int create_mode = NC_CLOBBER|NC_PIO;
+    int open_mode = NC_NOWRITE|NC_PIO|NC_PNETCDF;
+    int create_mode = NC_CLOBBER|NC_PIO|NC_MPIIO;
     size_t ndims;
-    int iosysid;
 
     if(option_read_diskless) {
 	open_mode |= NC_DISKLESS;
@@ -2169,14 +2297,14 @@ copy(char* infile, char* outfile)
      * variables, to copy a record-at-a-time instead of a
      * variable-at-a-time. */
     /* TODO: check that these special cases work with -v option */
-    if(nc3_special_case(igrp, inkind)) {
-	size_t nfixed_vars, nrec_vars;
-	int *fixed_varids;
-	int *rec_varids;
-	NC_CHECK(classify_vars(igrp, &nfixed_vars, &fixed_varids, &nrec_vars, &rec_varids));
-	NC_CHECK(copy_fixed_size_data(igrp, ogrp, nfixed_vars, fixed_varids));
-	NC_CHECK(copy_record_data(igrp, ogrp, nrec_vars, rec_varids));
-    } else if (nc3_special_case(ogrp, outkind)) {
+   /*  if(nc3_special_case(igrp, inkind)) { */
+   /*      size_t nfixed_vars, nrec_vars; */
+   /*      int *fixed_varids; */
+   /*      int *rec_varids; */
+   /*      NC_CHECK(classify_vars(igrp, &nfixed_vars, &fixed_varids, &nrec_vars, &rec_varids)); */
+   /*      NC_CHECK(copy_fixed_size_data(igrp, ogrp, nfixed_vars, fixed_varids)); */
+   /*      NC_CHECK(copy_record_data(igrp, ogrp, nrec_vars, rec_varids)); */
+   /* } else if (nc3_special_case(ogrp, outkind)) { */
 	size_t nfixed_vars, nrec_vars;
 	int *fixed_varids;
 	int *rec_varids;
@@ -2184,9 +2312,9 @@ copy(char* infile, char* outfile)
 	NC_CHECK(classify_vars(ogrp, &nfixed_vars, &fixed_varids, &nrec_vars, &rec_varids));
 	NC_CHECK(copy_fixed_size_data(igrp, ogrp, nfixed_vars, fixed_varids));
 	NC_CHECK(copy_record_data(igrp, ogrp, nrec_vars, rec_varids));
-    } else {
-	NC_CHECK(copy_data(igrp, ogrp)); /* recursive, to handle nested groups */
-    }
+   /* } else { */
+   /*      NC_CHECK(copy_data(igrp, ogrp)); /\* recursive, to handle nested groups *\/ */
+   /* } */
 
     NC_CHECK(nc_close(igrp));
     NC_CHECK(nc_close(ogrp));
@@ -2492,8 +2620,8 @@ main(int argc, char**argv)
         }
 #endif /*DEBUGFILTER*/
 #endif /*USE_NETCDF4*/
-        inlen = strlen(inputfile);
-        outlen = strlen(outputfile);
+        inlen = strlen(inputfile)+1;
+        outlen = strlen(outputfile)+1;
     }
     MPI_Bcast( &option_kind, 1, MPI_INT, 0, MPI_COMM_WORLD);
     MPI_Bcast( &option_deflate_level, 1, MPI_INT, 0, MPI_COMM_WORLD);

@@ -2218,6 +2218,10 @@ PIOc_def_var(int ncid, const char *name, nc_type xtype, int ndims,
                     else
                         invalid_unlim_dim++;
                 }
+                else
+                    rec_var = -1;
+
+
             }
         }
     }
