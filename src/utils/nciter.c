@@ -4,7 +4,7 @@
  *   "$Id: nciter.c 400 2010-08-27 21:02:52Z russ $"
  *********************************************************************/
 
-#include "config.h"		/* for USE_NETCDF4 macro */
+#include "config.h"		/* for _NETCDF4 macro */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -76,7 +76,7 @@ static int
 inq_value_size(int igrp, nc_type vartype, size_t *value_sizep)
 {
     int stat = NC_NOERR;
-#ifdef USE_NETCDF4
+#ifdef _NETCDF4
     NC_CHECK(nc_inq_type(igrp, vartype, NULL, value_sizep));
 #else
     switch(vartype) {
@@ -102,7 +102,7 @@ inq_value_size(int igrp, nc_type vartype, size_t *value_sizep)
 	NC_CHECK(NC_EBADTYPE);
 	break;
     }
-#endif	/* USE_NETCDF4 */
+#endif	/* _NETCDF4 */
     return stat;
 }
 
@@ -207,7 +207,7 @@ nc_get_iter(int ncid,
     }
     NC_CHECK(nc_inq_vartype(ncid, varid, &vartype));
     NC_CHECK(inq_value_size(ncid, vartype, &value_size));
-#ifdef USE_NETCDF4
+#ifdef _NETCDF4
     {
 	int contig = 1;
 	if(ndims > 0) {
@@ -218,7 +218,7 @@ nc_get_iter(int ncid,
 	    chunked = 1;
 	}
     }
-#endif	/* USE_NETCDF4 */
+#endif	/* _NETCDF4 */
     NC_CHECK(nc_blkio_init(bufsize, value_size, ndims, chunked, iterp));
     iterp->to_get = 0;
     free(dimids);

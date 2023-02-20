@@ -6,7 +6,7 @@
  *   $Id: nccopy.c 400 2010-08-27 21:02:52Z russ $
  *********************************************************************/
 
-#include "config.h"		/* for USE_NETCDF4 macro */
+#include "config.h"		/* for _NETCDF4 macro */
 /* these should be added to autoconf/cmake */
 #define HAVE_UNISTD_H
 #define CHUNK_CACHE_NELEMS 4133
@@ -51,7 +51,7 @@
 #define SAME_AS_INPUT (-1)	/* default, if kind not specified */
 #define CHUNK_THRESHOLD (8192)	/* non-record variables with fewer bytes don't get chunked */
 #define fIsSet(t, f)  ((t) & (f))
-#ifndef USE_NETCDF4
+#ifndef _NETCDF4 
 #define NC_CLASSIC_MODEL 0x0100 /* Enforce classic model if netCDF-4 not available. */
 #endif
 
@@ -61,7 +61,7 @@
 
 #define DFALTUNLIMSIZE (4* 1<<20) /*4 megabytes */
 
-#ifdef USE_NETCDF4
+#ifdef _NETCDF4
 
 /* The unique id for a variable requires also the enclosing group id */
 typedef struct VarID {
@@ -145,7 +145,7 @@ static size_t option_chunk_cache_size = CHUNK_CACHE_SIZE; /* default from config
 static size_t option_chunk_cache_nelems = CHUNK_CACHE_NELEMS; /* default from config.h */
 static int option_read_diskless = 0; /* default, don't read input into memory on open */
 static int option_write_diskless = 0; /* default, don't write output to diskless file */
-#ifdef USE_NETCDF4
+#ifdef _NETCDF4
 static size_t option_min_chunk_bytes = CHUNK_THRESHOLD; /* default, don't chunk variable if prod of
 						      * chunksizes of its dimensions is smaller
 						      * than this */
@@ -184,7 +184,7 @@ static int
 get_grpid(int igrp, int parid, int *ogrpp) {
     int stat = NC_NOERR;
     int ogid = parid;		/* like igrp but in output file */
-#ifdef USE_NETCDF4
+#ifdef _NETCDF4
     int inparid;
 
     if(innc4){
@@ -202,7 +202,7 @@ get_grpid(int igrp, int parid, int *ogrpp) {
     }else{
         ogid=0;
     }
-#endif	/* USE_NETCDF4 */
+#endif	/* _NETCDF4 */
     *ogrpp = ogid;
     return stat;
 }
@@ -217,7 +217,7 @@ val_size(int grpid, int varid) {
     return value_size;
 }
 
-#ifdef USE_NETCDF4
+#ifdef _NETCDF4
 /* Get parent id needed to define a new group from its full name in an
  * open file identified by ncid.  Assumes all intermediate groups are
  * already defined.  */
@@ -1102,7 +1102,7 @@ next2:
     default: stat = NC_EINVAL; goto done;
     }
 
-#ifdef USE_NETCDF4
+#ifdef _NETCDF4
 #ifdef DEBUGFILTER
     { int d;
 	size_t chunksizes[NC_MAX_VAR_DIMS];
@@ -1122,7 +1122,7 @@ next2:
         fflush(stderr);
     }
 #endif /*DEBUGFILTER*/
-#endif /*USE_NETCDF4*/
+#endif /*_NETCDF4*/
 
 done:
     if(ofqn) free(ofqn);
@@ -1337,7 +1337,7 @@ free_var_chunk_cache(int grp, int varid)
 }
 #endif
 
-#endif /* USE_NETCDF4 */
+#endif /* _NETCDF4 */
 
 /* Copy dimensions from group igrp to group ogrp, also associate input
  * dimids with output dimids (they need not match, because the input
@@ -1349,17 +1349,17 @@ copy_dims(int igrp, int ogrp)
     int stat = NC_NOERR;
     int ndims;
     int dgrp;
-#ifdef USE_NETCDF4
+#ifdef _NETCDF4
     int nunlims;
     int *dimids;
     int *unlimids;
 #else
     int unlimid;
-#endif /* USE_NETCDF4 */
+#endif /* _NETCDF4 */
 
     NC_CHECK(nc_inq_ndims(igrp, &ndims));
 
-#ifdef USE_NETCDF4
+#ifdef _NETCDF4
    /* In netCDF-4 files, dimids may not be sequential because they
     * may be defined in various groups, and we are only looking at one
     * group at a time. */
@@ -1372,7 +1372,7 @@ copy_dims(int igrp, int ogrp)
     NC_CHECK(nc_inq_unlimdims(igrp, NULL, unlimids));
 #else
     NC_CHECK(nc_inq_unlimdim(igrp, &unlimid));
-#endif /* USE_NETCDF4 */
+#endif /* _NETCDF4 */
 
     /* Copy each dimension to output, including unlimited dimension(s) */
     for (dgrp = 0; dgrp < ndims; dgrp++) {
@@ -1381,12 +1381,12 @@ copy_dims(int igrp, int ogrp)
 	int i_is_unlim;
 	int o_is_unlim;
 	int idimid, odimid;
-#ifdef USE_NETCDF4
+#ifdef _NETCDF4
 	int uld;
 #endif
 
 	i_is_unlim = 0;
-#ifdef USE_NETCDF4
+#ifdef _NETCDF4
 	idimid = dimids[dgrp];
 	for (uld = 0; uld < nunlims; uld++) {
 	    if(idimid == unlimids[uld]) {
@@ -1399,7 +1399,7 @@ copy_dims(int igrp, int ogrp)
 	if(unlimid != -1 && (idimid == unlimid)) {
 	    i_is_unlim = 1;
 	}
-#endif /* USE_NETCDF4 */
+#endif /* _NETCDF4 */
 
 	stat = nc_inq_dim(igrp, idimid, name, &length);
 	if (stat == NC_EDIMSIZE && sizeof(size_t) < 8) {
@@ -1419,10 +1419,10 @@ copy_dims(int igrp, int ogrp)
         
 
     }
-#ifdef USE_NETCDF4
+#ifdef _NETCDF4
     free(dimids);
     free(unlimids);
-#endif /* USE_NETCDF4 */
+#endif /* _NETCDF4 */
     return stat;
 }
 
@@ -1467,7 +1467,7 @@ copy_var(int igrp, int varid, int ogrp)
     idimids = (int *) emalloc((ndims + 1) * sizeof(int));
     NC_CHECK(nc_inq_var(igrp, varid, name, &typeid, NULL, idimids, &natts));
     o_typeid = typeid;
-#ifdef USE_NETCDF4
+#ifdef _NETCDF4
     if (typeid > NC_STRING) {	/* user-defined type */
 	/* type ids in source don't necessarily correspond to same
 	 * typeids in destination, so look up destination typeid by
@@ -1476,7 +1476,7 @@ copy_var(int igrp, int varid, int ogrp)
 	NC_CHECK(nc_inq_type(igrp, typeid, type_name, NULL));
 	NC_CHECK(nc_inq_typeid(ogrp, type_name, &o_typeid));
     }
-#endif	/* USE_NETCDF4 */
+#endif	/* _NETCDF4 */
 
     /* get the corresponding dimids in the output file */
     odimids = (int *) emalloc((ndims + 1) * sizeof(int));
@@ -1491,7 +1491,7 @@ copy_var(int igrp, int varid, int ogrp)
     NC_CHECK(nc_def_var(ogrp, name, o_typeid, ndims, odimids, &o_varid));
     /* attach the variable attributes to the output variable */
     NC_CHECK(copy_atts(igrp, varid, ogrp, o_varid));
-#ifdef USE_NETCDF4
+#ifdef _NETCDF4
     {
 	int inkind;
 	int outkind;
@@ -1503,7 +1503,7 @@ copy_var(int igrp, int varid, int ogrp)
          */
 	NC_CHECK(copy_var_specials(igrp, varid, ogrp, o_varid, inkind, outkind));
     }
-#endif	/* USE_NETCDF4 */
+#endif	/* _NETCDF4 */
     free(idimids);
     free(odimids);
     return stat;
@@ -1583,7 +1583,7 @@ copy_schema(int igrp, int ogrp)
 
     NC_CHECK(copy_atts(igrp, NC_GLOBAL, ogid, NC_GLOBAL));
     NC_CHECK(copy_vars(igrp, ogid));
-#ifdef USE_NETCDF4
+#ifdef _NETCDF4
     {
 	int numgrps;
 	int *grpids=NULL;
@@ -1604,7 +1604,7 @@ copy_schema(int igrp, int ogrp)
 	}
 	free(grpids);
     }
-#endif	/* USE_NETCDF4 */
+#endif	/* _NETCDF4 */
     return stat;
 }
 
@@ -1649,8 +1649,7 @@ copy_var_data(int igrp, int varid, int ogrp, int rec)
     size_t *count;
     nciter_t *iterp;		/* opaque structure for iteration status */
     int do_realloc = 0;
-    int ioid;
-#ifdef USE_NETCDF4
+#ifdef _NETCDF4
     int okind;
     size_t chunksize;
 #endif
@@ -1667,7 +1666,7 @@ copy_var_data(int igrp, int varid, int ogrp, int rec)
 	option_copy_buffer_size = value_size;
 	do_realloc = 1;
     }
-#ifdef USE_NETCDF4
+#ifdef _NETCDF4
     NC_CHECK(nc_inq_format_extended(ogrp, NULL, &okind));
 //    if(fIsSet(okind, NC_NETCDF4)){
     if(1){
@@ -1709,7 +1708,7 @@ copy_var_data(int igrp, int varid, int ogrp, int rec)
 	    do_realloc = 1;
 	}
     }
-#endif	/* USE_NETCDF4 */
+#endif	/* _NETCDF4 */
     if(buf && do_realloc) {
 	free(buf);
 	buf = 0;
@@ -1739,7 +1738,7 @@ copy_var_data(int igrp, int varid, int ogrp, int rec)
         report(iterp->rank,start,count,buf);
 #endif
         NC_CHECK(nc_put_vara(ogrp, ovarid, start, count, buf));
-#ifdef USE_NETCDF4
+#ifdef _NETCDF4
 	/* we have to explicitly free values for strings and vlens */
 	if(vartype == NC_STRING) {
 	    NC_CHECK(nc_free_string(ntoget, (char **)buf));
@@ -1750,15 +1749,14 @@ copy_var_data(int igrp, int varid, int ogrp, int rec)
 		NC_CHECK(nc_free_vlens(ntoget, (nc_vlen_t *)buf));
 	    }
 	}
-#endif	/* USE_NETCDF4 */
+#endif	/* _NETCDF4 */
     } /* end main iteration loop */
-    done:
-#ifdef USE_NETCDF4
+#ifdef _NETCDF4
     /* We're all done with this input and output variable, so if
      * either variable is chunked, free up its variable chunk cache */
     /* NC_CHECK(free_var_chunk_cache(igrp, varid)); */
     /* NC_CHECK(free_var_chunk_cache(ogrp, ovarid)); */
-#endif	/* USE_NETCDF4 */
+#endif	/* _NETCDF4 */
     free(start);
     free(count);
     NC_CHECK(nc_free_iter(iterp));
@@ -1778,7 +1776,7 @@ copy_data(int igrp, int ogrp)
     int ogid;
     int nvars;
     int varid;
-#ifdef USE_NETCDF4
+#ifdef _NETCDF4
     int numgrps;
     int *grpids;
     int i;
@@ -1818,7 +1816,7 @@ copy_data(int igrp, int ogrp)
             continue;
 	NC_CHECK(copy_var_data(igrp, varid, ogid, 0));
     }
-#ifdef USE_NETCDF4
+#ifdef _NETCDF4
     /* Copy data from subgroups */
 //    stat = nc_inq_grps(igrp, &numgrps, NULL);
 //    grpids = (int *)emalloc((numgrps + 1) * sizeof(int));
@@ -1832,7 +1830,7 @@ copy_data(int igrp, int ogrp)
 	NC_CHECK(copy_data(grpids[i], ogid));
     }
 //    free(grpids);
-#endif	/* USE_NETCDF4 */
+#endif	/* _NETCDF4 */
     freeidlist(vlist);
     return stat;
 }
@@ -1841,13 +1839,13 @@ copy_data(int igrp, int ogrp)
 int
 count_dims(int ncid) {
 
-#ifdef USE_NETCDF4
+#ifdef _NETCDF4
     int numgrps;
 #endif
 
     int ndims;
     NC_CHECK(nc_inq_ndims(ncid, &ndims));
-#ifdef USE_NETCDF4
+#ifdef _NETCDF4
 
     if(innc4){
         NC_CHECK(nc_inq_grps(ncid, &numgrps, NULL));
@@ -1861,7 +1859,7 @@ count_dims(int ncid) {
             free(grpids);
         }
     }
-#endif	/* USE_NETCDF4 */
+#endif	/* _NETCDF4 */
     return ndims;
 }
 
@@ -1991,8 +1989,19 @@ find_ioid_in_list(int vartype,int ndims,int *dimids)
 {
     ioidlist *member;
     member = ioidtop;
+    if(mpi_rank==0)
+      {
+	printf("%d:find vartype %d  ndims  %d \n",mpi_rank, vartype,ndims);
+	if(ndims==2) printf("%d: dimids (%d,%d) \n",mpi_rank, dimids[0], dimids[1]);
+	if(ndims==3) printf("%d: dimids (%d,%d,%d)\n",mpi_rank, dimids[0], dimids[1], dimids[2]);
+      }
     while(member){
-        if(mpi_rank==0) printf("%d:find vartype %d %d ndims %d %d \n",mpi_rank, vartype,member->vartype, ndims, member->ndims);
+      if(mpi_rank==0)
+	{
+	  printf("%d:check vartype %d  ndims  %d 0%x\n",mpi_rank, member->vartype, member->ndims, member->next);
+	  if(ndims==2) printf("%d: dimids (%d,%d) \n",mpi_rank, member->dimids[0], member->dimids[1]);
+	  if(ndims==3) printf("%d: dimids (%d,%d,%d)\n",mpi_rank, member->dimids[0], member->dimids[1], member->dimids[2]);
+	}
         if(vartype == member->vartype &&
            ndims == member->ndims) 
         {
@@ -2000,6 +2009,7 @@ find_ioid_in_list(int vartype,int ndims,int *dimids)
                 if(dimids[i] != member->dimids[i])
                     goto done;
             }
+	    if(mpi_rank==0) printf("%d:found ioid %d \n",mpi_rank, member->ioid);
             return(member->ioid);
         }
     done:
@@ -2011,10 +2021,12 @@ find_ioid_in_list(int vartype,int ndims,int *dimids)
 static int 
 add_ioid_to_list(int vartype, int ndims, int *dimids, int ioid)
 {
-    ioidlist *member;
+  ioidlist *member, *prevmem=NULL;
+
     member = ioidtop;
     while(member){
-        member = member->next;
+      prevmem = member;
+      member = member->next;
     }
     if(! ioidtop){
         ioidtop = (ioidlist *) malloc(sizeof(ioidlist));
@@ -2038,6 +2050,8 @@ add_ioid_to_list(int vartype, int ndims, int *dimids, int ioid)
         member->dimids[i] = dimids[i];
     if(mpi_rank==0) printf("%d: vartype %d %d ndims %d %d ioid %d\n",mpi_rank, vartype,member->vartype, ndims, member->ndims,ioid);
     member->next = NULL;
+    if(prevmem) prevmem->next = member;
+    return 0;
 }
 
 
@@ -2178,14 +2192,14 @@ copy(char* infile, char* outfile)
     int igrp, ogrp;
     int inkind, outkind;
     int open_mode = NC_NOWRITE|NC_PIO|NC_PNETCDF;
-    int create_mode = NC_CLOBBER|NC_PIO|NC_MPIIO;
+    int create_mode = NC_CLOBBER|NC_PIO;
     size_t ndims;
 
     if(option_read_diskless) {
 	open_mode |= NC_DISKLESS;
     }
 
-    NC_CHECK(nc_def_iosystem(MPI_COMM_WORLD, mpi_pool_size, 1, 0, PIO_REARR_SUBSET, &iosysid));
+    NC_CHECK(nc_def_iosystem(MPI_COMM_WORLD, 4, 1, 0, PIO_REARR_SUBSET, &iosysid));
 
     NC_CHECK(nc_open(infile, open_mode, &igrp));
 
@@ -2216,7 +2230,7 @@ copy(char* infile, char* outfile)
 	}
     }
 
-#ifdef USE_NETCDF4
+#ifdef _NETCDF4
     if(listlength(option_chunkspecs) > 0) {
 	int i;
 	/* Now that input is open, can parse option_chunkspecs into binary
@@ -2226,7 +2240,7 @@ copy(char* infile, char* outfile)
 	    NC_CHECK(chunkspec_parse(igrp, spec));
 	}
     }
-#endif	/* USE_NETCDF4 */
+#endif	/* _NETCDF4 */
 
 	/* Check if any vars in -v don't exist */
     if(missing_vars(igrp, option_nlvars, option_lvars))
@@ -2259,7 +2273,7 @@ copy(char* infile, char* outfile)
       error("netCDF library built without CDF5 support, can't create CDF5 files");
       break;
 #endif
-#ifdef USE_NETCDF4
+#ifdef _NETCDF4
     case NC_FORMAT_NETCDF4:
 	create_mode |= NC_NETCDF4;
 	break;
@@ -2271,22 +2285,25 @@ copy(char* infile, char* outfile)
     case NC_FORMAT_NETCDF4_CLASSIC:
 	error("netCDF library built with --disable-netcdf4, can't create netCDF-4 files");
 	break;
-#endif	/* USE_NETCDF4 */
+#endif	/* _NETCDF4 */
     default:
 	error("bad value for option specifying desired output format, see usage\n");
 	break;
     }
+    //printf("Call create with mode %d\n",create_mode);
     NC_CHECK(nc_create(outfile, create_mode, &ogrp));
+    if(mpi_rank==0) printf("outfile %s created with mode %d\n",outfile, create_mode);
+
     NC_CHECK(nc_set_fill(ogrp, NC_NOFILL, NULL));
 
-#ifdef USE_NETCDF4
+#ifdef _NETCDF4
     /* Because types in one group may depend on types in a different
      * group, need to create all groups before defining types */
     if(inkind == NC_FORMAT_NETCDF4) {
 	NC_CHECK(copy_groups(igrp, ogrp));
 	NC_CHECK(copy_types(igrp, ogrp));
     }
-#endif	/* USE_NETCDF4 */
+#endif	/* _NETCDF4 */
 
     ndims = count_dims(igrp);
     NC_CHECK(dimmap_init(ndims));
@@ -2558,7 +2575,7 @@ main(int argc, char**argv)
 #endif
             break;
             case 'F': /* optional filter spec for a specified variable */
-#ifdef USE_NETCDF4
+#ifdef _NETCDF4
                 /* If the arg is "none" or "*,none" then suppress all filters
                    on output unless explicit */
                 if(strcmp(optarg,"none")==0
@@ -2576,7 +2593,7 @@ main(int argc, char**argv)
 #endif
                 break;
             case 'M': /* set min chunk size */
-#ifdef USE_NETCDF4
+#ifdef _NETCDF4
                 if(optarg == NULL)
                     option_min_chunk_bytes = 0;
                 else
@@ -2603,7 +2620,7 @@ main(int argc, char**argv)
             error("output would overwrite input");
         }
 
-#ifdef USE_NETCDF4
+#ifdef _NETCDF4
 #ifdef DEBUGFILTER
         { int i,j;
             for(i=0;i<listlength(filterspecs);i++) {
@@ -2619,7 +2636,7 @@ main(int argc, char**argv)
             }
         }
 #endif /*DEBUGFILTER*/
-#endif /*USE_NETCDF4*/
+#endif /*_NETCDF4*/
         inlen = strlen(inputfile)+1;
         outlen = strlen(outputfile)+1;
     }
@@ -2634,7 +2651,7 @@ main(int argc, char**argv)
 
     MPI_Bcast( &option_read_diskless, 1, MPI_INT, 0, MPI_COMM_WORLD);
     MPI_Bcast( &option_write_diskless, 1, MPI_INT, 0, MPI_COMM_WORLD);
-#ifdef USE_NETCDF4
+#ifdef _NETCDF4
     MPI_Bcast( &option_min_chunk_bytes, 1, PIO_MPI_SIZE_T, 0, MPI_COMM_WORLD);
 #endif
     MPI_Bcast( &option_nlgrps, 1, MPI_INT, 0, MPI_COMM_WORLD);
@@ -2665,18 +2682,18 @@ main(int argc, char**argv)
     nullfree(inputfile);
     nullfree(outputfile);
     
-#ifdef USE_NETCDF4
+#ifdef _NETCDF4
     /* Clean up */
     freefilteroptlist(filteroptions);
     filteroptions = NULL;
-#endif /*USE_NETCDF4*/
+#endif /*_NETCDF4*/
 
     nc_finalize();
     
     MPI_Finalize();
 }
 
-#ifdef USE_NETCDF4
+#ifdef _NETCDF4
 static void
 freefilteroptlist(List* specs)
 {

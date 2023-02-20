@@ -220,14 +220,14 @@ nc_inq_grpid2(int ncid, const char *grpname0, int *grpidp)
 {
     int ret = NC_NOERR;
     char* grpname = NULL;
-#ifdef USE_NETCDF4
+#ifdef _NETCDF4
     char *sp = NULL;
 #endif
 
     grpname = strdup(grpname0);
     if(grpname == NULL) {ret = NC_ENOMEM; goto done;}
 
-#ifdef USE_NETCDF4
+#ifdef _NETCDF4
     /* If '/' doesn't occur in name, just return id found by nc_inq_grpid() */
     sp = strrchr(grpname, '/');
     if(!sp) { /* No '/' in grpname, so return nc_inq_grpid() result */
@@ -258,10 +258,10 @@ nc_inq_grpid2(int ncid, const char *grpname0, int *grpidp)
 	if(grpidp) *grpidp = ncid;
     }	
 
-#else	/* !USE_NETCDF4 */
+#else	/* !_NETCDF4 */
     /* Just return root */
     if(grpidp) *grpidp = ncid;
-#endif	/* USE_NETCDF4 */
+#endif	/* _NETCDF4 */
 done:
     if(grpname) free(grpname);
     return ret;
@@ -319,7 +319,7 @@ nc_inq_dimid2(int ncid, const char *dimname, int *dimidp) {
     if(!sp) { /* No '/' in dimname, so return nc_inq_dimid() result */
 	ret = nc_inq_dimid(ncid, dimname, dimidp);
     } 
-#ifdef USE_NETCDF4
+#ifdef _NETCDF4
     else {  /* Parse group name out and get dimid using that */
       size_t grp_namelen = sp - dimname;
       char *grpname = emalloc(grp_namelen+1);
@@ -333,7 +333,7 @@ nc_inq_dimid2(int ncid, const char *dimname, int *dimidp) {
       }
       free(grpname);
     }	
-#endif	/* USE_NETCDF4 */
+#endif	/* _NETCDF4 */
     return ret;
 }
 
@@ -349,7 +349,7 @@ isrecvar(int ncid, int varid)
     int *dimids;
 
     NC_CHECK( nc_inq_varndims(ncid, varid, &ndims) );
-#ifdef USE_NETCDF4
+#ifdef _NETCDF4
     if (ndims > 0) {
 	int nunlimdims;
 	int *recdimids;
@@ -380,7 +380,7 @@ isrecvar(int ncid, int varid)
 	    is_recvar = 1;
 	free(dimids);
     }
-#endif /* USE_NETCDF4 */
+#endif /* _NETCDF4 */
     return is_recvar;
 }
 
@@ -467,7 +467,7 @@ group_wanted(int grpid, int nlgrps, const idnode_t* grpids)
 static size_t
 nc_inq_grpname_count(int ncid, int igrp, char **lgrps, idnode_t *grpids) {
     size_t count = 0;
-#ifdef USE_NETCDF4
+#ifdef _NETCDF4
     int numgrps;
     int *ncids;
     int g;
@@ -482,7 +482,7 @@ nc_inq_grpname_count(int ncid, int igrp, char **lgrps, idnode_t *grpids) {
 	idadd(grpids, ncid);
 	return count;
     }
-#ifdef USE_NETCDF4
+#ifdef _NETCDF4
     /* Handle absolute group names */
     if(grpname[0] == '/') {
 	int grpid;
@@ -517,7 +517,7 @@ nc_inq_grpname_count(int ncid, int igrp, char **lgrps, idnode_t *grpids) {
 	}
 	free(ncids);
     }
-#endif /* USE_NETCDF4 */
+#endif /* _NETCDF4 */
     return count;    
 }
 
@@ -573,7 +573,7 @@ nc_inq_gvarid(int grpid, const char *varname, int *varidp) {
              return NC_ENOTVAR
     */
     
-#ifdef USE_NETCDF4
+#ifdef _NETCDF4
     char *vargroup;
     char *relname;
     char *groupname;
@@ -611,7 +611,7 @@ nc_inq_gvarid(int grpid, const char *varname, int *varidp) {
 	return status;
     }
     free(vargroup);
-#endif	/* USE_NETCDF4 */
+#endif	/* _NETCDF4 */
     return nc_inq_varid(grpid, varname, varidp);
 }
 
@@ -639,7 +639,7 @@ nc_inq_varname_count(int ncid, char *varname) {
     int varid;
     /* look in this group */
     int status = nc_inq_gvarid(ncid, varname, &varid);
-#ifdef USE_NETCDF4
+#ifdef _NETCDF4
     int numgrps;
     int *ncids;
     int g;
@@ -648,7 +648,7 @@ nc_inq_varname_count(int ncid, char *varname) {
     if (status == NC_NOERR)
 	count++;
 
-#ifdef USE_NETCDF4
+#ifdef _NETCDF4
     /* if this group has subgroups, call recursively on each of them */
     NC_CHECK( nc_inq_grps(ncid, &numgrps, NULL) );
 	 
@@ -663,7 +663,7 @@ nc_inq_varname_count(int ncid, char *varname) {
 	count += nc_inq_varname_count(ncids[g], varname);
     }
     free(ncids);
-#endif /* USE_NETCDF4 */
+#endif /* _NETCDF4 */
     return count;    
    
 }
@@ -812,7 +812,7 @@ nc_inq_grps2(int ncid, int *numgrps, int *grpids)
     /* just check if ncid is valid id of open netCDF file */
     NC_CHECK(nc_inq(ncid, NULL, NULL, NULL, NULL));
 
-#ifdef USE_NETCDF4
+#ifdef _NETCDF4
     NC_CHECK(nc_inq_grps(ncid, numgrps, grpids));
 #else
     *numgrps = 0;
@@ -914,7 +914,7 @@ int
 getrootid(int grpid)
 {
     int current = grpid;
-#ifdef USE_NETCDF4
+#ifdef _NETCDF4
     int parent = current;
     /* see if root id */
     for(;;) {
