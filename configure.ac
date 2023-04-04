@@ -462,7 +462,7 @@ AC_SUBST([HAS_NETCDF4_PAR], [$have_netcdf_par])
 AC_SUBST([HAS_NETCDF_INTEGRATION], [$enable_netcdf_integration])
 AC_SUBST([HAS_PIO_FORTRAN], [$enable_fortran])
 
-# Create the build summary file. 
+# Create the build summary file.
 AC_CONFIG_FILES([libpio.settings
                  src/clib/pio_meta.h
                  ])
@@ -497,5 +497,3 @@ AC_OUTPUT(Makefile
 
 # Show the build summary.
 cat libpio.settings
-
-

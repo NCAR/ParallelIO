@@ -42,43 +42,43 @@ inputs:
     type: boolean
   with_mpi-serial:
     description: 'Build with mpi-serial library'
-    default: 
+    default:
     required: False
     type: string
   with_pnetcdf:
     description: 'Build with pnetcdf library'
-    default: 
+    default:
     required: False
-    type: string  
+    type: string
   with_netcdf:
     description: 'Build with netcdf library'
     default: /usr
     required: False
-    type: string  
+    type: string
   with_netcdff:
     description: 'Build with netcdff library'
-    default: 
+    default:
     required: False
-    type: string  
+    type: string
   with_valgrind:
     description: 'Build the parallelio valgrind leak check '
     default: False
     required: False
-    type: boolean    
+    type: boolean
   enable_fortran:
     description: 'Build the parallelio Fortran Library '
     default: False
     required: False
-    type: boolean    
+    type: boolean
   extra_cflags:
     description: 'Additional cflags to use'
-    default: 
+    default:
     required: False
     type: string
-    
+
   extra_fflags:
     description: 'Additional fflags to use'
-    default: 
+    default:
     required: False
     type: string
   with_mpiexec:
@@ -118,4 +118,3 @@ runs:
         ./configure ${config_opts} --with-mpiexec="${{ inputs.with_mpiexec }}"
         make -j 4 VERBOSE=1
         make install
-

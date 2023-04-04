@@ -37,7 +37,7 @@ jobs:
       with:
         install_prefix: $HOME/mpich
         mpich_version: ${{ env.MPICH_VERSION }}
-        
+
     - name: cache-hdf5
       id: cache-hdf5
       uses: actions/cache@v3
@@ -128,5 +128,3 @@ jobs:
         autoreconf -i
         ./configure --enable-fortran --enable-netcdf-integration
         make -j check
-        
-        

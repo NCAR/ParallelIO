@@ -24,7 +24,7 @@ runs:
       run: |
         pushd openmpi-src
         perl ./autogen.pl
-        ./configure --prefix=${{ inputs.install_prefix }} 
+        ./configure --prefix=${{ inputs.install_prefix }}
         make -j4
         make install
         popd

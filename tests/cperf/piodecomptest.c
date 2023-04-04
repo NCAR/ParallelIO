@@ -7,7 +7,7 @@
 const char *argp_program_version = "pioperformance 0.1";
 const char *argp_program_bug_address = "<https://github.com/NCAR/ParallelIO>";
 
-static char doc[] = 
+static char doc[] =
     "a test of pio for performance and correctness of a given decomposition";
 
 static struct argp_option options[] = {
@@ -17,7 +17,7 @@ static struct argp_option options[] = {
     { 0 }
 };
 
-struct arguments 
+struct arguments
 {
     char *args[2];
     char *wdecomp_file;
@@ -89,7 +89,7 @@ int test_write_darray(int iosys, const char decomp_file[], int rank, const char 
     char dimname[PIO_MAX_NAME];
     char varname[PIO_MAX_NAME];
 
-    ierr = pioc_read_nc_decomp_int(iosys, decomp_file, &ndims, &global_dimlen, &num_tasks, 
+    ierr = pioc_read_nc_decomp_int(iosys, decomp_file, &ndims, &global_dimlen, &num_tasks,
                                    &maplen, &maxmaplen, &full_map, NULL, NULL, NULL, NULL, NULL);
     if(ierr || debug) printf("%d %d\n",__LINE__,ierr);
 
@@ -103,10 +103,10 @@ int test_write_darray(int iosys, const char decomp_file[], int rank, const char 
             ierr = MPI_Abort(MPI_COMM_WORLD, -1);
         }
     }
-       
+
     ierr = PIOc_createfile(iosys, &ncid, &iotype, "testfile.nc", PIO_CLOBBER);
     if(ierr || debug) printf("%d %d\n",__LINE__,ierr);
-    
+
     dimid = calloc(ndims,sizeof(int));
     for(int i=0; i<ndims; i++)
     {
@@ -116,7 +116,7 @@ int test_write_darray(int iosys, const char decomp_file[], int rank, const char 
     }
     /* TODO: support multiple variables and types*/
     if(myvarname != NULL)
-        sprintf(varname,"%s",myvarname);        
+        sprintf(varname,"%s",myvarname);
     else
         sprintf(varname,"var%4.4d",0);
 
@@ -180,7 +180,7 @@ int test_read_darray(int iosys,const char decomp_file[], int rank, const char my
     char dimname[PIO_MAX_NAME];
     char varname[PIO_MAX_NAME];
 
-    ierr = pioc_read_nc_decomp_int(iosys, decomp_file, &ndims, &global_dimlen, &num_tasks, 
+    ierr = pioc_read_nc_decomp_int(iosys, decomp_file, &ndims, &global_dimlen, &num_tasks,
                                    &maplen, &maxmaplen, &full_map, NULL, NULL, NULL, NULL, NULL);
     if(ierr || debug) printf("%d %d\n",__LINE__,ierr);
 
@@ -194,13 +194,13 @@ int test_read_darray(int iosys,const char decomp_file[], int rank, const char my
             ierr = MPI_Abort(MPI_COMM_WORLD, -1);
         }
     }
-       
+
     ierr = PIOc_openfile(iosys, &ncid, &iotype, "testfile.nc", PIO_NOWRITE);
     if(ierr || debug) printf("%d %d\n",__LINE__,ierr);
-    
+
     /* TODO: support multiple variables and types*/
     if(myvarname != NULL)
-        sprintf(varname,"%s",myvarname);        
+        sprintf(varname,"%s",myvarname);
     else
         sprintf(varname,"var%4.4d",0);
     ierr = PIOc_inq_varid(ncid, varname, &varid);
@@ -220,7 +220,7 @@ int test_read_darray(int iosys,const char decomp_file[], int rank, const char my
     {
         PIO_Offset gdimlen;
         ierr = PIOc_inq_dimlen(ncid, dimid[i], &gdimlen);
-        
+
         pioassert(gdimlen == global_dimlen[i], "testfile.nc does not match decomposition file",__FILE__,__LINE__);
     }
     free(dimid);
@@ -327,4 +327,3 @@ int main(int argc, char *argv[])
     MPI_Finalize();
 
 }
-

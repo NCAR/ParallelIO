@@ -1122,7 +1122,7 @@ int create_nc_sample_3(int iosysid, int iotype, int my_rank, int my_comp_idx,
     sprintf(var_name, "%s_%d", THREED_VAR_NAME, my_comp_idx);
     if ((ret = PIOc_def_var(ncid, var_name, PIO_SHORT, NDIM3, dimid, &varid[2])))
         ERR(ret);
-    
+
     /* End define mode. */
     if ((ret = PIOc_enddef(ncid)))
         ERR(ret);
@@ -1138,7 +1138,7 @@ int create_nc_sample_3(int iosysid, int iotype, int my_rank, int my_comp_idx,
     /* Write the 2-D variable with put_var(). */
     if ((ret = PIOc_put_var_short(ncid, 1, data_2d)))
         ERR(ret);
-    
+
     /* Write the 3D data. */
     if (use_darray)
     {
@@ -1156,11 +1156,11 @@ int create_nc_sample_3(int iosysid, int iotype, int my_rank, int my_comp_idx,
     {
         PIO_Offset start[NDIM3] = {0, 0, 0};
         PIO_Offset count[NDIM3] = {1, DIM_X_LEN, DIM_Y_LEN};
-        
+
         /* Write a record of the 3-D variable with put_vara(). */
         if ((ret = PIOc_put_vara_short(ncid, varid[2], start, count, data_2d)))
             ERR(ret);
-        
+
         /* Write another record of the 3-D variable with put_vara(). */
         start[0] = 1;
         if ((ret = PIOc_put_vara_short(ncid, varid[2], start, count, data_2d)))
@@ -1281,14 +1281,14 @@ int check_nc_sample_3(int iosysid, int iotype, int my_rank, int my_comp_idx,
     {
         PIO_Offset start[NDIM3] = {0, 0, 0};
         PIO_Offset count[NDIM3] = {1, DIM_X_LEN, DIM_Y_LEN};
-        
+
         /* Read a record of the 3-D variable with get_vara(). */
         if ((ret = PIOc_get_vara_short(ncid, 2, start, count, data_2d)))
             ERR(ret);
         for (int i = 0; i < DIM_X_LEN * DIM_Y_LEN; i++)
             if (data_2d[i] != my_comp_idx + i)
                 ERR(ERR_WRONG);
-        
+
         /* Read another record of the 3-D variable with get_vara(). */
         start[0] = 1;
         if ((ret = PIOc_get_vara_short(ncid, 2, start, count, data_2d)))

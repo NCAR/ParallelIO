@@ -161,7 +161,7 @@ module pio_types
      enumerator :: PIO_QUANTIZE_GRANULARBR
      enumerator :: PIO_QUANTIZE_BITROUND
   end enum
-#endif     
+#endif
 #ifdef NC_HAS_MULTIFILTERS
   enum, bind(c)
      enumerator :: PIO_FILTER_NONE = 0

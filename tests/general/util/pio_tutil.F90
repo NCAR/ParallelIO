@@ -410,7 +410,7 @@ CONTAINS
 
     num_filtertypes = 0
     ! First find the number of filter types
-    
+
     do i=1,num_possible_filters
        ierr = pio_inq_filter_avail(pio_file, i)
        if(ierr == PIO_NOERR) then

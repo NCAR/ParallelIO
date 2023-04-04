@@ -1049,7 +1049,7 @@ int test_empty_files(int iosysid, int num_flavors, int *flavor, int my_rank)
         if ((ret = get_iotype_name(flavor[fmt], iotype_name)))
             ERR(ret);
         sprintf(filename, "%s_empty_%s.nc", TEST_NAME, iotype_name);
-        
+
         if ((ret = PIOc_createfile(iosysid, &ncid, &flavor[fmt], filename, PIO_CLOBBER)))
             ERR(ret);
 
@@ -1077,10 +1077,10 @@ int test_empty_files(int iosysid, int num_flavors, int *flavor, int my_rank)
 /* Check that the fill values are correctly reported by find_var_fill().
  *
  * @param ncid the ID of the open test file.
- * @param ntypes the number ot types we are testing. 
+ * @param ntypes the number ot types we are testing.
  * @param use_custom_fill true if custom fill values were used.
  * @param my_rank rank of this task.
- * @return 0 on success. 
+ * @return 0 on success.
  */
 int check_fillvalues(int ncid, int num_types, int use_custom_fill, int my_rank)
 {
@@ -1129,7 +1129,7 @@ int check_fillvalues(int ncid, int num_types, int use_custom_fill, int my_rank)
 
     if ((ret = pio_get_file(ncid, &file)))
         ERR(ret);
-            
+
     for (int v = 0; v < num_types; v++)
     {
         var_desc_t *vdesc;
@@ -1137,7 +1137,7 @@ int check_fillvalues(int ncid, int num_types, int use_custom_fill, int my_rank)
         /* Get the var info. */
         if ((ret = get_var_desc(v, &file->varlist, &vdesc)))
             ERR(ret);
-                
+
         /* Check the fill value with this internal function. */
         if ((ret = find_var_fillvalue(file, v, vdesc)))
             ERR(ret);
@@ -1195,7 +1195,7 @@ int check_fillvalues(int ncid, int num_types, int use_custom_fill, int my_rank)
 
     return PIO_NOERR;
 }
-        
+
 /* Test the internal function that determins a var's fillvalue.
  *
  * @param iosysid the iosystem ID that will be used for the test.

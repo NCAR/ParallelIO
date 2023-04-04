@@ -83,7 +83,7 @@
 /** Some MPI implementations do not allow passing MPI_DATATYPE_NULL to
  * comm functions even though the send or recv length is 0, in these
  * cases we use MPI_CHAR, after this issue raised its ugly head again in mpich
- * 4.0.0 we decided to use this workaround in all cases.  
+ * 4.0.0 we decided to use this workaround in all cases.
  * See https://github.com/NCAR/ParallelIO/issues/1945 */
 
 #define PIO_DATATYPE_NULL MPI_CHAR

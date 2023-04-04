@@ -37,7 +37,7 @@ main(int argc, char **argv)
 {
     int my_rank;
     int ntasks;
-    
+
     /* Initialize MPI. */
     if (MPI_Init(&argc, &argv)) PERR;
 
@@ -61,8 +61,8 @@ main(int argc, char **argv)
         int i;
         int found_format;
         /* Turn on logging for PIO library. */
-/*         PIOc_set_log_level(4); 
-         if (!my_rank) 
+/*         PIOc_set_log_level(4);
+         if (!my_rank)
          nc_set_log_level(3);  */
         if (ntasks <= 16)
             num_io_procs = 1;
@@ -101,9 +101,9 @@ main(int argc, char **argv)
                 char filename[strlen(FILE_PREFIX)+16];
                 sprintf(filename,"%s%d.nc",FILE_PREFIX,cmode[m]);
                 /* Turn on logging for PIO library. */
-//                PIOc_set_log_level(2); 
-//                if (!my_rank) 
-//                    nc_set_log_level(2); 
+//                PIOc_set_log_level(2);
+//                if (!my_rank)
+//                    nc_set_log_level(2);
                 if (nc_create(filename, cmode[m], &ncid)) PERR;
                 if (nc_def_dim(ncid, DIM_NAME_UNLIMITED, dimlen[0], &dimid[0])) PERR;
                 if (nc_def_dim(ncid, DIM_NAME_X, dimlen[1], &dimid[1])) PERR;
@@ -143,15 +143,15 @@ main(int argc, char **argv)
                 /* check the file format */
                 if (nc_inq_format_extended(ncid, NULL, &found_format)) PERR;
                 if (found_format != expected_format[m]) {
-                        printf("expected format 0x%x found format 0x%x\n",expected_format[m], 
+                        printf("expected format 0x%x found format 0x%x\n",expected_format[m],
                            found_format);
                     PERR;
                 }
 
                 if (nc_close(ncid)) PERR;
-//                PIOc_set_log_level(0); 
-//                if (!my_rank) 
-//                    nc_set_log_level(0); 
+//                PIOc_set_log_level(0);
+//                if (!my_rank)
+//                    nc_set_log_level(0);
                 /* Stop the clock. */
                 gettimeofday(&endtime, NULL);
 
@@ -165,7 +165,7 @@ main(int argc, char **argv)
                     printf("%s,\t%d,\t%d,\t%d,\t%8.3f,\t%8.1f,\t%8.3f\n", mode_name[m],
                            ntasks, num_io_procs, 1, delta_in_sec, num_megabytes,
                            mb_per_sec);
-                
+
                 free(my_data);
                 if (nc_free_decomp(ioid)) PERR;
 

@@ -24,7 +24,7 @@ runs:
       run: |
         pushd mpich-src
         ./autogen.sh
-        ./configure --prefix=${{ inputs.install_prefix }} 
+        ./configure --prefix=${{ inputs.install_prefix }}
         make -j4
         make install
         popd

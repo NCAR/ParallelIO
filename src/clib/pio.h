@@ -316,7 +316,7 @@ typedef struct io_desc_t
      * sort it. */
     bool needssort;
 
-    /** If the decomp has repeated values it can only be used for reading 
+    /** If the decomp has repeated values it can only be used for reading
         since it doesn't make sense to write a single value from more than one location. */
     bool readonly;
 
@@ -690,7 +690,7 @@ enum PIO_ERROR_HANDLERS
 #ifdef NC_HAS_QUANTIZE
 #define PIO_NOQUANTIZE NC_NOQUANTIZE
 #define PIO_QUANTIZE_BITGROOM NC_QUANTIZE_BITGROOM
-#define PIO_QUANTIZE_GRANULARBR NC_QUANTIZE_GRANULARBR 
+#define PIO_QUANTIZE_GRANULARBR NC_QUANTIZE_GRANULARBR
 #define PIO_QUANTIZE_BITROUND  NC_QUANTIZE_BITROUND  /**< Use BitRound quantization. */
 #endif
 
@@ -1260,7 +1260,7 @@ extern "C" {
                                const long long *op);
     int PIOc_put_vard_ulonglong(int ncid, int varid, int decompid, const PIO_Offset recnum,
                                 const unsigned long long *op);
-/* use this variable in the NETCDF library (introduced in v4.9.0) to determine if the following 
+/* use this variable in the NETCDF library (introduced in v4.9.0) to determine if the following
    functions are available */
 #ifdef NC_HAS_MULTIFILTERS
   int PIOc_def_var_filter(int ncid, int varid,unsigned int id, size_t nparams, unsigned int *params);
@@ -1272,7 +1272,7 @@ extern "C" {
   int PIOc_def_var_quantize(int ncid, int varid, int quantize_mode, int nsd );
   int PIOc_inq_var_quantize(int ncid, int varid, int *quantize_mode, int *nsdp );
 #endif
-  
+
     /* These functions are for the netCDF integration layer. */
     int nc_def_iosystem(MPI_Comm comp_comm, int num_iotasks, int stride, int base, int rearr,
                          int *iosysidp);

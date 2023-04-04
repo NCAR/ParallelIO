@@ -1334,7 +1334,7 @@ int inq_var_filter_info_handler(iosystem_desc_t *ios)
             return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
         if (!(params = malloc(paramssize *sizeof(unsigned int))))
             return pio_err(ios, NULL, PIO_ENOMEM, __FILE__, __LINE__);
-        
+
     }
     PLOG((2,"inq_var_filter_info_handler ncid = %d varid = %d nparams_present = %d params_present = %d",
           ncid, varid, nparams_present, params_present));
@@ -1415,7 +1415,7 @@ int def_var_quantize_handler(iosystem_desc_t *ios)
     int ncid;
     int varid;
     int mode;
-    int nsd; 
+    int nsd;
     int mpierr;
 
     PLOG((1, "def_var_quantize_handler comproot = %d", ios->comproot));
@@ -2893,12 +2893,12 @@ int finalize_handler(iosystem_desc_t *ios, int index)
  */
 int set_loglevel_handler(iosystem_desc_t *ios)
 {
-#if PIO_ENABLE_LOGGING    
+#if PIO_ENABLE_LOGGING
     int iosysid;
     int level;
     int mpierr;
 #endif
-    
+
     PLOG((0, "set_loglevel_handler called"));
     assert(ios);
 #if PIO_ENABLE_LOGGING
@@ -3064,7 +3064,7 @@ int pio_msg_handler2(int io_rank, int component_count, iosystem_desc_t **iosys,
         if ((mpierr = MPI_Bcast(&outcount, 1, MPI_INT, 0, io_comm)))
             return check_mpi(NULL, NULL, mpierr, __FILE__, __LINE__);
         PLOG((3, "outcount MPI_Bcast complete outcount = %d", outcount));
-	
+
 	for(int creq=0; creq < outcount; creq++)
 	{
 	  int idx = index[creq];

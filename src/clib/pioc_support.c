@@ -1685,8 +1685,8 @@ pioc_read_nc_decomp_int(int iosysid, const char *filename, int *ndims, int **glo
         return pio_err(ios, NULL, PIO_EINVAL, __FILE__, __LINE__);
 
     PLOG((1, "pioc_read_nc_decomp_int iosysid = %d filename = %s", iosysid, filename));
-    
-    
+
+
     /* Open the netCDF decomp file. */
     if ((ret = PIOc_open(iosysid, filename, NC_WRITE, &ncid)))
         return pio_err(ios, NULL, ret, __FILE__, __LINE__);
@@ -3249,7 +3249,7 @@ determine_procs(int num_io_procs, int component_count, int *num_procs_per_comp,
 
 /**
  * Used in check_compmap to sort the compmap in accending order.
- * 
+ *
  * @param a pointer to an offset
  * @param b pointer to another offset
  * @returns 0 if offsets are the same or if either pointer is NULL
@@ -3263,7 +3263,7 @@ int offsetsort(const void *a,const void *b)
 
 /**
  * check_compmap gathers the entire compmap to comp task 0, sorts it into accending order
- * then looks for repeated values > 0.  If any repeated values are found the iodesc is marked 
+ * then looks for repeated values > 0.  If any repeated values are found the iodesc is marked
  * read only.
  *
  * @param ios pointer to the iosystem_desc_t struct.
@@ -3281,7 +3281,7 @@ bool check_compmap(iosystem_desc_t *ios, io_desc_t *iodesc,const PIO_Offset *com
     int ierr;
     bool readonly = 0;
 
-    if(ios->compproc) 
+    if(ios->compproc)
     {
 #ifdef OLDWAY
         int *gmaplen;
@@ -3331,7 +3331,7 @@ bool check_compmap(iosystem_desc_t *ios, io_desc_t *iodesc,const PIO_Offset *com
                 displs[i] = displs[i-1] + gmaplen[i-1];
             }
             gcompmaplen = displs[ios->num_comptasks-1] + gmaplen[ios->num_comptasks-1];
-            gcompmaps = malloc(gcompmaplen * sizeof(PIO_Offset)); 
+            gcompmaps = malloc(gcompmaplen * sizeof(PIO_Offset));
 //            printf("gcompmaplen %d\n",gcompmaplen);
 //            for(int i=0;i<ios->num_comptasks; i++)
 //                printf("gmaplen=%d displs[%d]=%d\n",gmaplen[i], i,displs[i]);
@@ -3358,7 +3358,7 @@ bool check_compmap(iosystem_desc_t *ios, io_desc_t *iodesc,const PIO_Offset *com
             free(displs);
             free(gcompmaps);
         }
-        
+
     }
     MPI_Bcast(&readonly, 1, MPI_CHAR, ios->comproot, ios->my_comm);
 #else

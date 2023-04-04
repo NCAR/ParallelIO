@@ -457,7 +457,7 @@ write_darray_multi_par(file_desc_t *file, int nvars, int fndims, const int *vari
                     /* Ensure collective access. */
                     if((ierr = nc_var_par_access(file->fh, varids[nv], NC_COLLECTIVE)))
                         return pio_err(ios, file, ierr, __FILE__, __LINE__);
-                    
+
                     /* Write the data for this variable. */
                     if((ierr = nc_put_vara(file->fh, varids[nv], (size_t *)start, (size_t *)count, bufptr)))
                         return pio_err(ios, file, ierr, __FILE__, __LINE__);
@@ -1682,7 +1682,7 @@ pio_read_darray_nc_serial(file_desc_t *file, io_desc_t *iodesc, int vid,
                  * ios->num_iotasks is the number of iotasks actually
                  * used in this decomposition. */
                 if (rtask < ios->num_iotasks && tmp_bufsize > 0){
-                  
+
                     if ((mpierr = MPI_Send(iobuf, tmp_bufsize, iodesc->mpitype, rtask,
                                            4 * ios->num_iotasks + rtask, ios->io_comm)))
                         return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);

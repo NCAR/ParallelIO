@@ -76,7 +76,7 @@ main(int argc, char **argv)
               if(!my_rank)
                   printf(" %d,", cmode[n]);
             if (nc_open(FILE_NAME, cmode[n], &ncid)) PERR;
-          
+
             /* Close file. */
             if (nc_close(ncid)) PERR;
           }
@@ -92,4 +92,4 @@ main(int argc, char **argv)
     /* Finalize MPI. */
     MPI_Finalize();
     PFINAL_RESULTS;
-}  
+}

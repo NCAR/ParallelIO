@@ -93,9 +93,9 @@ contains
     call xl__trbk()
 #endif
 
-    ! passing an argument of 1 to mpi_abort will lead to a STOPALL output 
+    ! passing an argument of 1 to mpi_abort will lead to a STOPALL output
     ! error code of 257
-    call mpi_abort (MPI_COMM_WORLD, 1, ierr)  
+    call mpi_abort (MPI_COMM_WORLD, 1, ierr)
 
 #ifdef CPRNAG
     stop
@@ -162,7 +162,7 @@ contains
          character(C_CHAR), intent(in) :: file
          integer(C_INT), value, intent(in) :: ndims
          integer(C_INT), intent(in) :: gdims(*)
-         integer(C_SIZE_T), value, intent(in) :: maplen 
+         integer(C_SIZE_T), value, intent(in) :: maplen
          integer(C_SIZE_T), intent(in) :: map(*)
          integer(C_INT), value, intent(in) :: f90_comm
        end function PIOc_writemap_from_f90
@@ -195,11 +195,11 @@ contains
     character(len=*), optional :: title
     character(len=*), optional :: history
     logical, optional :: fortran_order
-    
+
     interface
        integer(c_int) function PIOc_write_nc_decomp(iosysid, filename, cmode, &
             ioid, title, history, fortran_order) &
-            bind(C,name="PIOc_write_nc_decomp") 
+            bind(C,name="PIOc_write_nc_decomp")
          use iso_c_binding
          integer(C_INT), value :: iosysid
          character(kind=c_char) :: filename
@@ -213,7 +213,7 @@ contains
     character(len=:), allocatable :: ctitle, chistory
     integer :: nl
     integer :: forder
-    
+
     if(present(title)) then
        ctitle(1:len_trim(title)+1) = trim(title)//C_NULL_CHAR
     else
@@ -263,7 +263,7 @@ contains
     type(C_PTR) :: tgdims, tmap
     interface
        integer(C_INT) function PIOc_readmap_from_f90(file, ndims, gdims, maplen, map, f90_comm) &
-            bind(C,name="PIOc_readmap_from_f90") 
+            bind(C,name="PIOc_readmap_from_f90")
          use iso_c_binding
          character(C_CHAR), intent(in) :: file
          integer(C_INT), intent(out) :: ndims
@@ -300,11 +300,11 @@ contains
     character(len=*), optional :: title
     character(len=*), optional :: history
     logical, optional :: fortran_order
-    
+
     interface
        integer(c_int) function PIOc_read_nc_decomp(iosysid, filename, ioid, &
             title, history, fortran_order) &
-            bind(C,name="PIOc_read_nc_decomp") 
+            bind(C,name="PIOc_read_nc_decomp")
          use iso_c_binding
          integer(C_INT), value :: iosysid
          character(kind=c_char) :: filename

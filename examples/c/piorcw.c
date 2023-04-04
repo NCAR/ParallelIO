@@ -41,7 +41,7 @@ int rcw_write_darray(int iosys, int rank)
     ierr = MPI_Comm_size(MPI_COMM_WORLD, &comm_size);
     ierr = PIOc_createfile(iosys, &ncid, &iotype, "testfile.nc4", PIO_CLOBBER);
     if(ierr || debug) printf("%d %d\n",__LINE__,ierr);
-    
+
     dimid = calloc(ndims,sizeof(int));
     for(int i=0; i<ndims; i++)
     {
@@ -113,26 +113,26 @@ int rcw_read_darray(int iosys,int rank)
     dimlist *dim;
 
     ierr = MPI_Comm_size(MPI_COMM_WORLD, &comm_size);
-       
+
     ierr = PIOc_openfile(iosys, &ncid, &iotype, "testfile.nc", PIO_NOWRITE);
     if(ierr || debug) printf("%d %d\n",__LINE__,ierr);
-    
+
     ierr = PIOc_inq(ncid, &ndims, &nvars, &natts, &unlimdim);
     if(ierr || debug) printf("%d %d\n",__LINE__,ierr);
 
-    
+
     dim = (dimlist *) malloc(ndims*sizeof(dimlist));
     for(i=0; i<ndims; i++){
         ierr = PIOc_inq_dim(ncid, i, dim[i].name, dim[i].value);
         if(ierr || debug) printf("%d %d i=%d\n",__LINE__,ierr, i);
-    }    
+    }
 
 
 
 
     /* TODO: support multiple variables and types*/
     if(myvarname != NULL)
-        sprintf(varname,"%s",myvarname);        
+        sprintf(varname,"%s",myvarname);
     else
         sprintf(varname,"var%4.4d",0);
     ierr = PIOc_inq_varid(ncid, varname, &varid);
@@ -152,7 +152,7 @@ int rcw_read_darray(int iosys,int rank)
     {
         PIO_Offset gdimlen;
         ierr = PIOc_inq_dimlen(ncid, dimid[i], &gdimlen);
-        
+
         pioassert(gdimlen == global_dimlen[i], "testfile.nc does not match decomposition file",__FILE__,__LINE__);
     }
     free(dimid);
@@ -247,4 +247,3 @@ int main(int argc, char *argv[])
     MPI_Finalize();
 
 }
-

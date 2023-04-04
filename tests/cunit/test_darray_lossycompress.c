@@ -141,11 +141,11 @@ int test_darray(int iosysid, int ioid, int num_flavors, int *flavor, int my_rank
     test_data_double[1] = 1.0;
     test_data_double[2] = 9.999999999;
     test_data_double[3] = 1234567890.12345;
-//    test_data_double[4] = 123456789012345.0;     
+//    test_data_double[4] = 123456789012345.0;
 
 
 
-   
+
     /* Use PIO to create the example file in each of the four
      * available ways. */
     for (int fmt = 0; fmt < num_flavors; fmt++)
@@ -425,7 +425,7 @@ int test_all_darray(int iosysid, int num_flavors, int *flavor, int my_rank,
 	if ((ret = create_decomposition_2d(TARGET_NTASKS, my_rank, iosysid, dim_len_2d,
 					   &ioid, pio_type[t])))
 	    return ret;
-        
+
 	/* Run a simple darray test. */
 	if ((ret = test_darray(iosysid, ioid, num_flavors, flavor, my_rank, pio_type[t])))
 	    return ret;

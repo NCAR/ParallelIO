@@ -110,7 +110,7 @@ PIOc_def_var_deflate(int ncid, int varid, int shuffle, int deflate,
  *
  * @param ncid the ncid of the open file.
  * @param varid the ID of the variable.
- * @param option_mask The options mask. Can be PIO_SZIP_EC or PIO_SZIP_NN. 
+ * @param option_mask The options mask. Can be PIO_SZIP_EC or PIO_SZIP_NN.
  * @param pixels_per_block Pixels per block. Must be even and not greater than 32, with typical
  * values being 8, 10, 16, or 32. This parameter affects compression
  * ratio; the more pixel values vary, the smaller this number should be
@@ -1300,11 +1300,11 @@ PIOc_get_var_chunk_cache(int ncid, int varid, PIO_Offset *sizep, PIO_Offset *nel
 
     return PIO_NOERR;
 }
-/* use this variable in the NETCDF library (introduced in v4.9.0) to determine if the following 
+/* use this variable in the NETCDF library (introduced in v4.9.0) to determine if the following
    functions are available */
 #ifdef NC_HAS_MULTIFILTERS
 /**
- * Set the variable filter ids 
+ * Set the variable filter ids
  *
  * This function only applies to netCDF-4 files. When used with netCDF
  * classic files, the error PIO_ENOTNC4 will be returned.
@@ -1456,7 +1456,7 @@ PIOc_inq_var_filter_ids(int ncid, int varid, size_t *nfiltersp, unsigned int *id
                 size_t idcnt;
                 idcnt = sizeof(ids);
                 mpierr = MPI_Bcast(&idcnt, 1, PIO_MPI_SIZE_T, ios->compmain, ios->intercomm);
-            }                
+            }
 
             PLOG((2, "PIOc_inq_var_filter_ids cnt_present = %d ids_present = %d",
                   cnt_present, ids_present));
@@ -1561,7 +1561,7 @@ PIOc_inq_var_filter_info(int ncid, int varid, unsigned int id, size_t *nparamsp,
                 size_t paramsize;
                 paramsize = sizeof(params);
                 mpierr = MPI_Bcast(&paramsize, 1, PIO_MPI_SIZE_T, ios->compmain, ios->intercomm);
-            }                
+            }
             PLOG((2, "PIOc_inq_var_filter_info nparamsp_present = %d params_present = %d ",
                   nparamsp_present, params_present));
         }
@@ -1785,7 +1785,7 @@ PIOc_inq_var_zstandard(int ncid, int varid, int* hasfilterp, int *levelp)
     return PIO_NOERR;
 }
 /**
- * 
+ *
  *
  * This function only applies to netCDF-4 files. When used with netCDF
  * classic files, the error PIO_ENOTNC4 will be returned.
@@ -1850,7 +1850,7 @@ PIOc_inq_filter_avail(int ncid, unsigned int id )
     if (ios->ioproc)
     {
         if (file->do_io)
-          ierr = nc_inq_filter_avail(file->fh, id); 
+          ierr = nc_inq_filter_avail(file->fh, id);
     }
 
     /* Broadcast and check the return code. */
@@ -1954,7 +1954,7 @@ PIOc_def_var_quantize(int ncid, int varid, int quantize_mode, int nsd )
 }
 
 /**
- * Learn whether quantization is on for a variable, and, if so, the NSD setting. 
+ * Learn whether quantization is on for a variable, and, if so, the NSD setting.
  *
  * This function only applies to netCDF-4 files. When used with netCDF
  * classic files, the error PIO_ENOTNC4 will be returned.
@@ -2030,7 +2030,7 @@ PIOc_inq_var_quantize(int ncid, int varid, int *quantize_mode, int *nsdp )
     if (ios->ioproc)
     {
         if (file->do_io)
-          ierr = nc_inq_var_quantize(file->fh, varid, quantize_mode, nsdp); 
+          ierr = nc_inq_var_quantize(file->fh, varid, quantize_mode, nsdp);
     }
 
     /* Broadcast and check the return code. */
@@ -2050,4 +2050,3 @@ PIOc_inq_var_quantize(int ncid, int varid, int *quantize_mode, int *nsdp )
     return PIO_NOERR;
 }
 #endif
-

@@ -1585,7 +1585,7 @@ contains
     integer, intent(in) :: varid
     logical, intent(out) :: hasfilter
     integer, intent(out) :: level
-    
+
     integer :: hasfilterp
     interface
        integer(C_INT) function PIOc_inq_var_bzip2(ncid, varid, hasfilterp, levelp) &
@@ -1597,7 +1597,7 @@ contains
          integer(C_INT) :: levelp
        end function PIOc_inq_var_bzip2
     end interface
-    
+
     ierr = PIOc_inq_var_bzip2(ncid, varid-1, hasfilterp, level)
     hasfilter = .false.
     if(hasfilterp .ne. 0) hasfilter = .true.
@@ -1652,7 +1652,7 @@ contains
     integer, intent(in) :: varid
     logical, intent(out) :: hasfilter
     integer, intent(out) :: level
-    
+
     integer :: hasfilterp
     interface
        integer(C_INT) function PIOc_inq_var_zstandard(ncid, varid, hasfilterp, levelp) &
@@ -1664,7 +1664,7 @@ contains
          integer(C_INT) :: levelp
        end function PIOc_inq_var_zstandard
     end interface
-    
+
     ierr = PIOc_inq_var_zstandard(ncid, varid-1, hasfilterp, level)
     hasfilter = .false.
     if(hasfilterp .ne. 0) hasfilter = .true.
@@ -2486,7 +2486,7 @@ contains
 #ifdef NC_HAS_QUANTIZE
   !>
   !! @ingroup PIO_def_var_quantize
-  !! Set quantize level for a netCDF-4/HDF5 variable 
+  !! Set quantize level for a netCDF-4/HDF5 variable
   !! @author Jim Edwards, Ed Hartnett
   !<
   integer function def_var_quantize_desc(file, vardesc, quantize_mode, nsd)  result(ierr)
@@ -2506,7 +2506,7 @@ contains
     integer, intent(in) :: ncid
     integer, intent(in) :: varid
     integer, intent(in) :: quantize_mode
-    integer, intent(in) :: nsd 
+    integer, intent(in) :: nsd
 
     interface
        integer (C_INT) function PIOc_def_var_quantize(ncid, varid, quantize_mode, nsd) &
@@ -2520,10 +2520,10 @@ contains
     end interface
 
     ierr = PIOc_def_var_quantize(ncid, varid-1, quantize_mode, nsd)
-  end function def_var_quantize_id  
+  end function def_var_quantize_id
   !>
   !! @ingroup PIO_inq_var_quantize
-  !! Set quantize level for a netCDF-4/HDF5 variable 
+  !! Set quantize level for a netCDF-4/HDF5 variable
   !! @author Jim Edwards, Ed Hartnett
   !<
   integer function inq_var_quantize_desc(file, vardesc, quantize_mode, nsd)  result(ierr)
@@ -2543,7 +2543,7 @@ contains
     integer, intent(in)  :: ncid
     integer, intent(in)  :: varid
     integer, intent(out) :: quantize_mode
-    integer, intent(out) :: nsd 
+    integer, intent(out) :: nsd
 
     interface
        integer (C_INT) function PIOc_inq_var_quantize(ncid, varid, quantize_mode, nsd) &
@@ -2557,7 +2557,7 @@ contains
     end interface
 
     ierr = PIOc_inq_var_quantize(ncid, varid-1, quantize_mode, nsd)
-  end function inq_var_quantize_id  
+  end function inq_var_quantize_id
 #endif
 #ifdef NC_HAS_MULTIFILTERS
   !>

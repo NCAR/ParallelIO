@@ -263,7 +263,7 @@ PIO_NCINT_open(const char *path, int mode, int basepe, size_t *chunksizehintp,
     iosystem_desc_t *ios;  /* Pointer to io system information. */
     int ret;
     int nc4;
-    
+
     PLOG((1, "PIO_NCINT_open path = %s mode = %x", path, mode));
 
     /* Get the IO system info from the id. */
@@ -272,7 +272,7 @@ PIO_NCINT_open(const char *path, int mode, int basepe, size_t *chunksizehintp,
 
     /* Turn off NC_UDF0 in the mode flag. */
     mode = (mode) & ~(NC_UDF0);
-    
+
     /* Find the IOTYPE from the mode flag. */
     if ((ret = find_iotype_from_omode(mode, &iotype)))
         return pio_err(ios, NULL, ret, __FILE__, __LINE__);
@@ -1061,7 +1061,7 @@ PIO_NCINT_filter_actions(int ncid, int varid, int action, struct NC_Filterobject
 {
     if (action == NCFILTER_INFO)
     {
-        
+
     }
     return PIO_NOERR;
 }

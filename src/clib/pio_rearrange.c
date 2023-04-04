@@ -476,7 +476,7 @@ define_iodesc_datatypes(iosystem_desc_t *ios, io_desc_t *iodesc)
 
                 /* The different rearrangers get different values for mfrom. */
                 int *mfrom = iodesc->rearranger == PIO_REARR_SUBSET ? iodesc->rfrom : NULL;
-                
+
                 /* Create the MPI datatypes. */
                 PLOG((2, "Calling create_mpi_datatypes at line %d ",__LINE__));
                 if ((ret = create_mpi_datatypes(iodesc->mpitype, iodesc->nrecvs, iodesc->rindex,
@@ -510,7 +510,7 @@ define_iodesc_datatypes(iosystem_desc_t *ios, io_desc_t *iodesc)
 
             /* Remember how many types we created for the send side. */
             iodesc->num_stypes = ntypes;
-            
+
             /* Create the MPI data types. */
             PLOG((2, "Calling create_mpi_datatypes at line %d",__LINE__));
             if ((ret = create_mpi_datatypes(iodesc->mpitype, ntypes, iodesc->sindex,
@@ -1113,7 +1113,7 @@ rearrange_io2comp(iosystem_desc_t *ios, io_desc_t *iodesc, void *sbuf,
 
     /* Data in sbuf on the ionodes is sent to rbuf on the compute
      * nodes. */
-    
+
     if ((ret = pio_swapm(sbuf, sendcounts, sdispls, sendtypes, rbuf, recvcounts,
                          rdispls, recvtypes, mycomm, &iodesc->rearr_opts.io2comp)))
         return pio_err(ios, NULL, ret, __FILE__, __LINE__);

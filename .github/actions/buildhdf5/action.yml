@@ -20,7 +20,7 @@ inputs:
     default: False
     required: False
     type: boolean
-    
+
   install_prefix:
     description: 'Install path of hdf5'
     default: ${GITHUB_WORKSPACE}/hdf5
