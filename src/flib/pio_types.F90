@@ -227,10 +227,10 @@ module pio_types
   end type PIO_rearr_opt_t
 
   public :: PIO_rearr_comm_p2p, PIO_rearr_comm_coll,&
-       PIO_rearr_comm_fc_2d_enable, PIO_rearr_comm_fc_1d_comp2io,&
-       PIO_rearr_comm_fc_1d_io2comp, PIO_rearr_comm_fc_2d_disable, &
 #ifdef NC_HAS_QUANTIZE
-       PIO_NOQUANTIZE, PIO_QUANTIZE_BITGROOM, PIO_QUANTIZE_GRANULARBR, PIO_QUANTIZE_BITROUND
+       PIO_NOQUANTIZE, PIO_QUANTIZE_BITGROOM, PIO_QUANTIZE_GRANULARBR, PIO_QUANTIZE_BITROUND, &
 #endif
+       PIO_rearr_comm_fc_2d_enable, PIO_rearr_comm_fc_1d_comp2io,&
+       PIO_rearr_comm_fc_1d_io2comp, PIO_rearr_comm_fc_2d_disable
 
 end module pio_types
