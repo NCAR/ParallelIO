@@ -1479,8 +1479,7 @@ int def_var_zstandard_handler(iosystem_desc_t *ios)
 
     /* Call the function. */
     PIOc_def_var_zstandard(ncid, varid, level);
-
-
+    
     PLOG((1, "def_var_zstandard_handler succeeded!"));
     return PIO_NOERR;
 }
@@ -3176,9 +3175,14 @@ int pio_msg_handler2(int io_rank, int component_count, iosystem_desc_t **iosys,
 	    case PIO_MSG_DEF_VAR:
 	      ret = def_var_handler(my_iosys);
 	      break;
+#ifdef NC_HAS_ZSTD
+	    case PIO_MSG_INQ_VAR_ZSTANDARD:
+	      ret = inq_var_zstandard_handler(my_iosys);
+	      break;
 	    case PIO_MSG_DEF_VAR_ZSTANDARD:
 	      ret = def_var_zstandard_handler(my_iosys);
 	      break;
+#endif
 	    case PIO_MSG_DEF_VAR_CHUNKING:
 	      ret = def_var_chunking_handler(my_iosys);
 	      break;
