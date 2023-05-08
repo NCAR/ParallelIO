@@ -71,9 +71,9 @@ jobs:
         netcdf_version: ${{ env.NETCDF_C_VERSION }}
         install_prefix: ${GITHUB_WORKSPACE}/netcdf
 
-    - name: Setup tmate session
-      if: ${{ failure() }}
-      uses: mxschmitt/action-tmate@v3
+#    - name: Setup tmate session
+#      if: ${{ failure() }}
+#      uses: mxschmitt/action-tmate@v3
 
     - name: Build NetCDF Fortran
       if: steps.cache-netcdf.outputs.cache-hit != 'true'

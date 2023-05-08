@@ -1295,6 +1295,7 @@ int inq_var_zstandard_handler(iosystem_desc_t *ios)
     return PIO_NOERR;
 }
 #endif
+#ifdef PIO_HAS_PAR_FILTERS
 /**
  * Do an inq_var_filter_info on a netCDF variable. This function is only
  * run on IO tasks.
@@ -1352,6 +1353,7 @@ int inq_var_filter_info_handler(iosystem_desc_t *ios)
 
     return PIO_NOERR;
 }
+#endif
 #endif
 #ifdef NC_HAS_QUANTIZE
 /**
