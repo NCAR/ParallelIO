@@ -2577,7 +2577,7 @@ contains
     ierr = PIOc_inq_var_quantize(ncid, varid-1, quantize_mode, nsd)
   end function inq_var_quantize_id
 #endif
-#ifdef NC_HAS_MULTIFILTERS
+#ifdef PIO_HAS_PAR_FILTERS
   !>
   !! @ingroup PIO_inq_var_filter_ids
   !! Inquire filter ids for a netCDF-4/HDF5 variable.
