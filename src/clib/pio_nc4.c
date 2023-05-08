@@ -1334,7 +1334,6 @@ PIOc_def_var_filter(int ncid, int varid, unsigned int id, size_t nparams, unsign
     file_desc_t *file;     /* Pointer to file information. */
     int ierr;              /* Return code from function calls. */
     int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI function codes. */
-    int i;
 
     PLOG((1, "PIOc_def_var_filter ncid = %d varid = %d id = %d nparams = %d", ncid, varid, id, nparams));
 #ifdef DEBUG
