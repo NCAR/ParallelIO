@@ -99,12 +99,11 @@ END SUBROUTINE create_file
 ! Check the contents of file : Check the
 ! global attribute 'filename' (should be equal to the
 ! name of the file, fname)
-SUBROUTINE check_file(comm, iosys, pio_file, fname, attname, dimname, ret)
+SUBROUTINE check_file(comm, pio_file, fname, attname, dimname, ret)
     use pio_tutil
     implicit none
 
     integer, intent(in) :: comm
-    type(iosystem_desc_t), intent(in) :: iosys
     type(file_desc_t), intent(inout) :: pio_file
     character(len=*), intent(in) :: fname
     character(len=*), intent(in) :: attname
@@ -163,7 +162,7 @@ SUBROUTINE open_and_check_file(comm, iosys, iotype, pio_file, fname, &
     PIO_TF_CHECK_ERR(ret, comm, "Failed to open:" // fname)
 !    ret = pio_set_log_level(0)
 
-    call check_file(comm, iosys, pio_file, fname, attname, dimname, ret)
+    call check_file(comm, pio_file, fname, attname, dimname, ret)
     PIO_TF_CHECK_ERR(ret, comm, "Checking contents of file failed:" // fname)
 
     if(.not. disable_fclose) then
