@@ -1197,7 +1197,7 @@ int inq_var_filter_ids_handler(iosystem_desc_t *ios)
 
     return PIO_NOERR;
 }
-
+#ifdef NC_HAS_BZ2
 /**
  * Do an inq_var_bzip2 on a netCDF variable. This function is only
  * run on IO tasks.
@@ -1245,6 +1245,7 @@ int inq_var_bzip2_handler(iosystem_desc_t *ios)
 
     return PIO_NOERR;
 }
+#endif
 
 /**
  * Do an inq_var_bzip2 on a netCDF variable. This function is only

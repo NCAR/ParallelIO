@@ -20,6 +20,7 @@
 #ifdef _NETCDF4
 #include <netcdf_par.h>
 #include <netcdf_filter.h>
+#include <netcdf_meta.h>
 #endif
 #ifdef _PNETCDF
 #include <pnetcdf.h>
@@ -658,17 +659,19 @@ enum PIO_MSG
     PIO_MSG_PUT_ATT,
     PIO_MSG_INQ_TYPE,
     PIO_MSG_INQ_UNLIMDIMS,
-#ifdef NC_HAS_MULTIFILTERS
+#ifdef NC_HAS_BZ2
     PIO_MSG_INQ_VAR_BZIP2,
-    PIO_MSG_INQ_VAR_ZSTANDARD,
     PIO_MSG_DEF_VAR_BZIP2,
+#endif
+#ifdef NC_HAS_ZSTD
+    PIO_MSG_INQ_VAR_ZSTANDARD,
     PIO_MSG_DEF_VAR_ZSTANDARD,
-
+#endif
     PIO_MSG_DEF_VAR_FILTER,
     PIO_MSG_INQ_VAR_FILTER_IDS,
     PIO_MSG_INQ_VAR_FILTER_INFO,
     PIO_MSG_INQ_FILTER_AVAIL,
-#endif
+
 #ifdef NC_HAS_QUANTIZE
     PIO_MSG_DEF_VAR_QUANTIZE,
     PIO_MSG_INQ_VAR_QUANTIZE,

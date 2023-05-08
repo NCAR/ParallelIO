@@ -51,7 +51,7 @@ module pio
        pio_nofill, pio_unlimited, pio_fill_int, pio_fill_double, pio_fill_float, &
        pio_64bit_offset, pio_64bit_data, pio_fill, &
 #ifdef NC_HAS_QUANTIZE
-       PIO_NOQUANTIZE, PIO_QUANTIZE_BITGROOM, PIO_QUANTIZE_GRANULARBR, PIO_QUANTIZE_BITROUND
+       PIO_NOQUANTIZE, PIO_QUANTIZE_BITGROOM, PIO_QUANTIZE_GRANULARBR, PIO_QUANTIZE_BITROUND, &
 #endif
   ! last line of use clause needs to be outside of macro
        pio_internal_error, pio_bcast_error, pio_return_error, pio_default

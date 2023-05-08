@@ -1602,7 +1602,7 @@ PIOc_inq_var_filter_info(int ncid, int varid, unsigned int id, size_t *nparamsp,
 
     return PIO_NOERR;
 }
-#ifdef NC_HAS_BZ
+#ifdef NC_HAS_BZ2
 /**
  * Get the variable bzip2 filter info if any
  *

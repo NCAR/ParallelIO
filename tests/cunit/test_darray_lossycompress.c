@@ -365,10 +365,10 @@ int test_darray(int iosysid, int ioid, int num_flavors, int *flavor, int my_rank
 			  /*
 			    if (test_data_double_in[f] != test_data_double[f])
 				return ERR_WRONG;
-			    break;
-			    */   
+			    */
+			  break;
 			default:
-			    ERR(ERR_WRONG);
+			  ERR(ERR_WRONG);
 			}
 		    }
 #else

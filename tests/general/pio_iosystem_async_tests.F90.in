@@ -211,8 +211,6 @@ PIO_TF_AUTO_TEST_SUB_BEGIN two_comps_odd_even_async
         PIO_TF_LOG(0,*) "Testing : ", iotype_descs(i)
         ! Create two files to be opened later
         if(comp_comm(1) /= MPI_COMM_NULL) then
-
-!           if (iotypes(i) == PIO_IOTYPE_NETCDF4C) ret = pio_set_log_level(3)
            is_even = .false.
            call create_file(comp_comm(1), iosys(1), iotypes(i), &
                 fname1, attname, dimname, ret)
@@ -236,17 +234,14 @@ PIO_TF_AUTO_TEST_SUB_BEGIN two_comps_odd_even_async
            call open_and_check_file(comp_comm(2), iosys(2), iotypes(i), &
                 pio_file, fname1, attname, dimname, .false., ret)
            PIO_TF_CHECK_ERR(ret, comp_comm(2), "Checking contents of file failed :" // fname1)
-        print *,__FILE__,__LINE__,'at barrier', is_even
-           call mpi_barrier(comp_comm(2), ret)
            call pio_deletefile(iosys(2), fname1)
         else
            call open_and_check_file(comp_comm(1), iosys(1), iotypes(i), &
                 pio_file, fname2, attname, dimname, .false., ret)
            PIO_TF_CHECK_ERR(ret, comp_comm(1), "Checking contents of file failed :" // fname2)
-        print *,__FILE__,__LINE__,'at barrier', is_even
-           call mpi_barrier(comp_comm(1), ret)
            call pio_deletefile(iosys(1), fname2)
         end if
+        call mpi_barrier(all_comp_comm, ret)
      end do
      if (is_even) then
         call PIO_finalize(iosys(2), ret)

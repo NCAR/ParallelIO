@@ -963,6 +963,12 @@ extern "C" {
     int PIOc_set_fill(int ncid, int fillmode, int *old_modep);
     int PIOc_def_var_fill(int ncid, int varid, int no_fill, const void *fill_value);
     int PIOc_inq_var_fill(int ncid, int varid, int *no_fill, void *fill_valuep);
+#ifdef NC_HAS_BZ2
+  int PIOc_inq_var_bzip2(int ncid, int varid, int* hasfilterp, int *levelp);
+#endif
+#ifdef NC_HAS_ZSTD
+  int PIOc_inq_var_zstandard(int ncid, int varid, int* hasfilterp, int *levelp);
+#endif
     int PIOc_rename_var(int ncid, int varid, const char *name);
 
     /* These variable settings only apply to netCDF-4 files. */
