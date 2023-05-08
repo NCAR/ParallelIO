@@ -387,7 +387,7 @@ CONTAINS
       i = i + 1
 #endif
   END SUBROUTINE
-#ifdef _NETCDF4
+#ifdef PIO_HAS_PAR_FILTERS
   ! Returns a list of defined netcdf4 filter types
   ! pio_file : An open file to check
   ! filtertypes : After the routine returns contains a list of defined

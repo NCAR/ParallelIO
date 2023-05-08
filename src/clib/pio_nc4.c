@@ -184,6 +184,8 @@ PIOc_def_var_szip(int ncid, int varid, int options_mask, int pixels_per_block)
 
     return PIO_NOERR;
 }
+
+#ifdef  NC_HAS_BZ2
 /**
  * Set bzip2 settings for a variable.
  *
@@ -264,6 +266,9 @@ PIOc_def_var_bzip2(int ncid, int varid, int level)
 
     return PIO_NOERR;
 }
+#endif
+
+#ifdef NC_HAS_ZSTD
 /**
  * Set zstandard settings for a variable.
  *
@@ -344,6 +349,7 @@ PIOc_def_var_zstandard(int ncid, int varid, int level)
 
     return PIO_NOERR;
 }
+#endif
 
 /**
  * This function only applies to netCDF-4 files. When used with netCDF
@@ -1596,6 +1602,7 @@ PIOc_inq_var_filter_info(int ncid, int varid, unsigned int id, size_t *nparamsp,
 
     return PIO_NOERR;
 }
+#ifdef NC_HAS_BZ
 /**
  * Get the variable bzip2 filter info if any
  *
@@ -1690,6 +1697,8 @@ PIOc_inq_var_bzip2(int ncid, int varid, int* hasfilterp, int *levelp)
 
     return PIO_NOERR;
 }
+#endif
+#ifdef NC_HAS_ZSTD
 /**
  * Get the variable zstandard filter info if any
  *
@@ -1784,6 +1793,8 @@ PIOc_inq_var_zstandard(int ncid, int varid, int* hasfilterp, int *levelp)
 
     return PIO_NOERR;
 }
+#endif
+#ifdef PIO_HAS_PAR_FILTERS
 /**
  *
  *
@@ -1863,10 +1874,7 @@ PIOc_inq_filter_avail(int ncid, unsigned int id )
 
     return ierr;
 }
-
-
-
-
+#endif
 #endif
 #ifdef NC_HAS_QUANTIZE
 /**

@@ -2333,8 +2333,10 @@ int open_file_handler(iosystem_desc_t *ios)
     }
     else
     {
+//    PIOc_set_log_level(3);
         PIOc_openfile_retry(ios->iosysid, &ncid, &iotype, filename, mode, 0,
                             use_ext_ncid);
+//    PIOc_set_log_level(0);
     }
 
     return PIO_NOERR;

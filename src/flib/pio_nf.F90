@@ -140,14 +140,20 @@ module pio_nf
        pio_inq_var_quantize                                 , &
 #endif
 #ifdef NC_HAS_MULTIFILTERS
+#ifdef NC_HAS_BZ
        pio_inq_var_bzip2                                    , &
-       pio_inq_var_zstandard                                , &
        pio_def_var_bzip2                                    , &
+#endif
+#ifdef NC_HAS_ZSTD
+       pio_inq_var_zstandard                                , &
        pio_def_var_zstandard                                , &
+#endif
        pio_def_var_szip                                     , &
+#ifdef PIO_HAS_PAR_FILTERS
        pio_inq_var_filter_ids                               , &
        pio_inq_var_filter_info                              , &
        pio_inq_filter_avail                                 , &
+#endif
 #endif
        pio_set_fill
   !       pio_copy_att    to be done
@@ -170,24 +176,40 @@ module pio_nf
           def_var_chunking_int, &
           def_var_chunking_vid
   end interface pio_def_var_chunking
+#ifdef NC_HAS_BZ
   interface pio_def_var_bzip2
      module procedure &
           def_var_bzip2_desc, &
           def_var_bzip2_int, &
           def_var_bzip2_vid
   end interface pio_def_var_bzip2
+  interface pio_inq_var_bzip2
+     module procedure &
+          inq_var_bzip2_desc                                 , &
+          inq_var_bzip2_vid                                  , &
+          inq_var_bzip2_id
+  end interface pio_inq_var_bzip2
+#endif
   interface pio_def_var_szip
      module procedure &
           def_var_szip_desc, &
           def_var_szip_int, &
           def_var_szip_vid
   end interface pio_def_var_szip
+#ifdef NC_HAS_ZSTD
   interface pio_def_var_zstandard
      module procedure &
           def_var_zstandard_desc, &
           def_var_zstandard_int, &
           def_var_zstandard_vid
   end interface pio_def_var_zstandard
+  interface pio_inq_var_zstandard
+     module procedure &
+          inq_var_zstandard_desc                                 , &
+          inq_var_zstandard_vid                                  , &
+          inq_var_zstandard_id
+  end interface pio_inq_var_zstandard
+#endif
   interface pio_inq_attname
      module procedure &
           inq_attname_desc                                  , &
@@ -250,18 +272,7 @@ module pio_nf
           inq_var_deflate_vid                                  , &
           inq_var_deflate_id
   end interface pio_inq_var_deflate
-  interface pio_inq_var_bzip2
-     module procedure &
-          inq_var_bzip2_desc                                 , &
-          inq_var_bzip2_vid                                  , &
-          inq_var_bzip2_id
-  end interface pio_inq_var_bzip2
-  interface pio_inq_var_zstandard
-     module procedure &
-          inq_var_zstandard_desc                                 , &
-          inq_var_zstandard_vid                                  , &
-          inq_var_zstandard_id
-  end interface pio_inq_var_zstandard
+
   interface pio_inq_var_chunking
      module procedure &
           inq_var_chunking_desc                                 , &
@@ -396,7 +407,7 @@ module pio_nf
           inq_var_quantize_id
   end interface pio_inq_var_quantize
 #endif
-#ifdef NC_HAS_MULTIFILTERS
+#ifdef PIO_HAS_PAR_FILTERS
   interface pio_inq_var_filter_ids
      module procedure &
           inq_var_filter_ids_desc                          , &
@@ -1536,6 +1547,7 @@ contains
 
   end function inq_var_chunking_id
 
+#ifdef NC_HAS_BZ
   !>
   !! @public
   !! @ingroup PIO_inquire_variable
@@ -1603,6 +1615,8 @@ contains
     if(hasfilterp .ne. 0) hasfilter = .true.
 
   end function inq_var_bzip2_id
+#endif
+#ifdef NC_HAS_ZSTD
   !>
   !! @public
   !! @ingroup PIO_inquire_variable
@@ -1670,7 +1684,7 @@ contains
     if(hasfilterp .ne. 0) hasfilter = .true.
 
   end function inq_var_zstandard_id
-
+#endif
   !>
   !! @public
   !! @ingroup PIO_inquire_variable
@@ -2187,6 +2201,7 @@ contains
 
     ierr = PIOc_def_var_chunking(ncid, varid-1, storage, cchunksizes)
   end function def_var_chunking_int
+#ifdef NC_HAS_BZ
   !>
   !! @ingroup PIO_def_var_bzip2
   !! Changes bzip2 settings for a netCDF-4/HDF5 variable.
@@ -2233,6 +2248,8 @@ contains
 
     ierr = PIOc_def_var_bzip2(ncid, varid-1, level)
   end function def_var_bzip2_int
+#endif
+#ifdef NC_HAS_ZSTD
   !>
   !! @ingroup PIO_def_var_zstandard
   !! Changes chunking settings for a netCDF-4/HDF5 variable.
@@ -2279,6 +2296,7 @@ contains
 
     ierr = PIOc_def_var_zstandard(ncid, varid-1, level)
   end function def_var_zstandard_int
+#endif
   !>
   !! @ingroup PIO_def_var_szip
   !! Changes chunking settings for a netCDF-4/HDF5 variable.
@@ -2634,6 +2652,7 @@ contains
 
     ierr = inq_var_filter_info_id(file%fh, vardesc%varid, id, params)
   end function inq_var_filter_info_desc
+#ifdef PIO_HAS_PAR_FILTERS
   !>
   !! @ingroup PIO_inq_filter_avail_id
   !! Inquire filter available for a netCDF-4/HDF5 file.
@@ -2665,6 +2684,6 @@ contains
 
     ierr = inq_filter_avail_id(file%fh, id)
   end function inq_filter_avail_desc
-
+#endif
 #endif
 end module pio_nf

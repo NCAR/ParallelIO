@@ -2148,8 +2148,10 @@ PIOc_createfile_int(int iosysid, int *ncidp, int *iotype, const char *filename,
         case PIO_IOTYPE_NETCDF:
             if (!ios->io_rank)
             {
+//                PIOc_set_log_level(3);
                 PLOG((2, "Calling nc_create mode = %d", mode));
                 ierr = nc_create(filename, mode, &file->fh);
+                PLOG((2, "Called nc_create mode = %d %d %s", mode, ierr, filename));
             }
             break;
 #ifdef _PNETCDF
@@ -2330,7 +2332,7 @@ inq_file_metadata(file_desc_t *file, int ncid, int iotype, int *nvars,
     /* Check inputs. */
     pioassert(rec_var && pio_type && pio_type_size && mpi_type && mpi_type_size,
               "pointers must be provided", __FILE__, __LINE__);
-
+    ret = PIO_NOERR;
     /* How many vars in the file? */
     if (iotype == PIO_IOTYPE_PNETCDF)
     {
@@ -2384,7 +2386,6 @@ inq_file_metadata(file_desc_t *file, int ncid, int iotype, int *nvars,
             return pio_err(NULL, file, ret, __FILE__, __LINE__);
 #endif /* _NETCDF4 */
     }
-
     /* Learn the unlimited dimension ID(s), if there are any. */
     if (nunlimdims)
     {
@@ -2622,12 +2623,12 @@ PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filename,
     int *mpi_type_size = NULL;
     int *ndims = NULL;
     int mpierr = MPI_SUCCESS, mpierr2;  /** Return code from MPI function codes. */
-    int ierr = PIO_NOERR;      /* Return code from function calls. */
+    int ierr;      /* Return code from function calls. */
 
 #ifdef USE_MPE
     pio_start_mpe_log(OPEN);
 #endif /* USE_MPE */
-
+    ierr = PIO_NOERR;      /* Return code from function calls. */
     /* Get the IO system info from the iosysid. */
     if (!(ios = pio_get_iosystem_from_id(iosysid)))
         return pio_err(NULL, NULL, PIO_EBADID, __FILE__, __LINE__);
@@ -2638,8 +2639,8 @@ PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filename,
     if (*iotype < PIO_IOTYPE_PNETCDF || *iotype > PIO_IOTYPE_NETCDF4P)
         return pio_err(ios, NULL, PIO_EINVAL, __FILE__, __LINE__);
 
-    PLOG((2, "PIOc_openfile_retry iosysid = %d iotype = %d filename = %s mode = %d retry = %d",
-          iosysid, *iotype, filename, mode, retry));
+    PLOG((2, "PIOc_openfile_retry iosysid = %d iotype = %d filename = %s mode = %d retry = %d ierr=%d",
+          iosysid, *iotype, filename, mode, retry, ierr));
 
     /* Allocate space for the file info. */
     if (!(file = calloc(sizeof(*file), 1)))
@@ -2692,6 +2693,8 @@ PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filename,
         if (mpierr)
             return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
     }
+    PLOG((2, "%d: PIOc_openfile_retry ierr=%d",__LINE__,ierr));
+
 
     /* If this is an IO task, then call the netCDF function. */
     if (ios->ioproc)
@@ -2726,11 +2729,15 @@ PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filename,
         case PIO_IOTYPE_NETCDF4C:
             if (ios->io_rank == 0)
             {
-                if ((ierr = nc_open(filename, mode, &file->fh)))
+                if ((ierr = nc_open(filename, mode, &file->fh))){
+                    PLOG((2, "%d: PIOc_openfile_retry ierr=%d filename=%s mode=%d",__LINE__,ierr, filename, mode));
                     break;
+                }
                 /* Check the vars for valid use of unlim dims. */
-                if ((ierr = check_unlim_use(file->fh)))
+                if ((ierr = check_unlim_use(file->fh))){
+                    PLOG((2, "%d: PIOc_openfile_retry ierr=%d",__LINE__,ierr));
                     break;
+                }
                 ierr = inq_file_metadata(file, file->fh, PIO_IOTYPE_NETCDF4C,
                                          &nvars, &rec_var, &pio_type,
                                          &pio_type_size, &mpi_type,
@@ -2738,6 +2745,7 @@ PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filename,
                 PLOG((2, "PIOc_openfile_retry:nc_open for 4C filename = %s mode = %d "
                       "ierr = %d", filename, mode, ierr));
             }
+        PLOG((2, "%d: PIOc_openfile_retry ierr=%d",__LINE__,ierr));
             break;
 #endif /* _NETCDF4 */
 
@@ -2781,6 +2789,8 @@ PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filename,
             return pio_err(ios, file, PIO_EBADIOTYPE, __FILE__, __LINE__);
         }
 
+        PLOG((2, "%d: PIOc_openfile_retry ierr=%d",__LINE__,ierr));
+
         /* If the caller requested a retry, and we failed to open a
            file due to an incompatible type of NetCDF, try it once
            with just plain old basic NetCDF. */
@@ -2820,6 +2830,7 @@ PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filename,
     if (ios->ioroot == ios->union_rank)
         PLOG((2, "Bcasting error code ierr %d ios->ioroot %d ios->my_comm %d",
               ierr, ios->ioroot, ios->my_comm));
+
     if ((mpierr = MPI_Bcast(&ierr, 1, MPI_INT, ios->ioroot, ios->my_comm)))
         return check_mpi(NULL, file, mpierr, __FILE__, __LINE__);
     PLOG((2, "Bcast openfile_retry error code ierr = %d", ierr));

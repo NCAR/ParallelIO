@@ -820,7 +820,7 @@ add_executable (pio_filter_tests EXCLUDE_FROM_ALL
 target_link_libraries (pio_filter_tests pio_tutil)
 add_dependencies (tests pio_filter_tests)
 
-if (NOT PIO_USE_MPISERIAL)
+if (NOT PIO_USE_MPISERIAL AND PIO_USE_PARALLEL_FILTERS)
   add_mpi_test(pio_filter_tests
     EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/pio_filter_tests
     NUMPROCS 5

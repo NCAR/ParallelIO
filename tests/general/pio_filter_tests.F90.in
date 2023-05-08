@@ -226,7 +226,7 @@ PIO_TF_AUTO_TEST_SUB_BEGIN nc_write_read_2d_col_decomp
     PIO_TF_LOG(0,*) "Testing : PIO_TF_DATA_TYPE : ", trim(iotype_descs(i))
     ierr = PIO_createfile(pio_tf_iosystem_, pio_file, iotypes(i), filename, PIO_CLOBBER)
     PIO_TF_CHECK_ERR(ierr, "Could not create file " // trim(filename))
-#ifdef NC_HAS_MULTIFILTERS
+#ifdef PIO_HAS_PAR_FILTERS
     if(iotypes(i) == PIO_IOTYPE_NETCDF4P .or. iotypes(i) == PIO_IOTYPE_NETCDF4C) then
        call PIO_TF_Get_nc4_filtertypes(pio_file, filtertypes, filtertype_descs, num_filtertypes)
        print *,__FILE__,__LINE__,num_filtertypes
@@ -242,14 +242,15 @@ PIO_TF_AUTO_TEST_SUB_BEGIN nc_write_read_2d_col_decomp
 
     ierr = PIO_def_dim(pio_file, 'PIO_TF_test_dim_col', dims(2), pio_dims(2))
     PIO_TF_CHECK_ERR(ierr, "Failed to define dim2")
-
+#ifdef NC_HAS_BZ
     ierr = PIO_def_var(pio_file, 'PIO_TF_test_var_bzip2', PIO_TF_DATA_TYPE, pio_dims, pio_var(1))
     PIO_TF_CHECK_ERR(ierr, "Failed to define var")
-
+#endif
+#ifdef NC_HAS_ZSTD
     ierr = PIO_def_var(pio_file, 'PIO_TF_test_var_zstandard', PIO_TF_DATA_TYPE, pio_dims, pio_var(2))
     PIO_TF_CHECK_ERR(ierr, "Failed to define var")
-
-#if defined(NC_HAS_MULTIFILTERS)
+#endif
+#if defined(PIO_HAS_PAR_FILTERS)
     if((iotypes(i) == PIO_IOTYPE_NETCDF4P .or. iotypes(i) == PIO_IOTYPE_NETCDF4C) &
          .and. (PIO_TF_DATA_TYPE==PIO_double .or. PIO_TF_DATA_TYPE==PIO_real)) then
        ierr = PIO_def_var_szip(pio_file, pio_var(1), 32, 32)
