@@ -38,13 +38,11 @@ fi
 LD=ld # Required for MPE to work.
 LT_INIT
 
-# Find and learn about install and ranlib.
+# Find and learn about install 
 AC_PROG_INSTALL
-AC_PROG_RANLIB
 
 # Find and learn about the C compiler.
 AC_PROG_CC
-AC_PROG_CC_C99
 
 # Compiler with version information. This consists of the full path
 # name of the compiler and the reported version number.
@@ -335,12 +333,12 @@ fi
 AM_CONDITIONAL(BUILD_NETCDF4, [test "x$have_netcdf_par" = xyes])
 
 # Not working for some reason, so I will just set it...
-#AC_CHECK_TYPE([MPI_Offset], [], [], [#include <mpi.h>])
-#if test "x${ac_cv_type_MPI_Offset}" = xyes; then
-#   AC_CHECK_SIZEOF([MPI_Offset], [], [#include <mpi.h>])
-#else
-#   AC_MSG_ERROR([Unable to find type MPI_Offset in mpi.h])
-#fi
+AC_CHECK_TYPE([MPI_Offset], [], [], [#include <mpi.h>])
+if test "x${ac_cv_type_MPI_Offset}" = xyes; then
+   AC_CHECK_SIZEOF([MPI_Offset], [], [#include <mpi.h>])
+else
+   AC_MSG_ERROR([Unable to find type MPI_Offset in mpi.h])
+fi
 
 # If we want the timing library, we must find it.
 if test "x$enable_timing" = xyes; then
@@ -472,28 +470,30 @@ AC_CONFIG_LINKS([tests/unit/input.nl:tests/unit/input.nl])
 AC_CONFIG_HEADERS([config.h])
 
 # Create the makefiles.
-AC_OUTPUT(Makefile
-          src/Makefile
-          src/clib/Makefile
-          src/ncint/Makefile
-          src/flib/Makefile
-          src/gptl/Makefile
-          tests/Makefile
-          tests/cunit/Makefile
-          tests/ncint/Makefile
-          tests/fncint/Makefile
-          tests/unit/Makefile
-          tests/general/Makefile
-          tests/general/util/Makefile
-          tests/performance/Makefile
-          doc/Makefile
-          doc/source/Makefile
-          doc/images/Makefile
-          examples/Makefile
-          examples/c/Makefile
-          examples/f03/Makefile
-          cmake/Makefile
-          scripts/Makefile)
+AC_CONFIG_FILES(Makefile
+	        src/Makefile
+        	src/clib/Makefile
+                src/ncint/Makefile
+                src/flib/Makefile
+                src/gptl/Makefile
+                tests/Makefile
+                tests/cunit/Makefile
+                tests/ncint/Makefile
+                tests/fncint/Makefile
+                tests/unit/Makefile
+                tests/general/Makefile
+                tests/general/util/Makefile
+                tests/performance/Makefile
+                doc/Makefile
+                doc/source/Makefile
+                doc/images/Makefile
+                examples/Makefile
+                examples/c/Makefile
+                examples/f03/Makefile
+                cmake/Makefile
+                scripts/Makefile)
+
+AC_OUTPUT()
 
 # Show the build summary.
 cat libpio.settings

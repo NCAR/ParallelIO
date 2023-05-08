@@ -967,6 +967,7 @@ extern "C" {
   int PIOc_inq_var_bzip2(int ncid, int varid, int* hasfilterp, int *levelp);
 #endif
 #ifdef NC_HAS_ZSTD
+  int PIOc_def_var_zstandard(int ncid, int varid, int level);
   int PIOc_inq_var_zstandard(int ncid, int varid, int* hasfilterp, int *levelp);
 #endif
     int PIOc_rename_var(int ncid, int varid, const char *name);

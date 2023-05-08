@@ -357,10 +357,20 @@ int main() {return 0;}" HAVE_SZIP_WRITE)
 ###
 # Check to see if parallel filters are supported by HDF5/netcdf-c.
 ###
-check_symbol_exists(nc_inq_filter_avail "netcdf.h;netcdf_filter.h" HAVE_PAR_FILTERS )
+SET(CMAKE_REQUIRED_INCLUDES ${NetCDF_C_INCLUDE_DIR})
+CHECK_C_SOURCE_COMPILES("
+#include <netcdf_meta.h>
+#if !NC_HAS_PAR_FILTERS
+      choke me
+#endif
+int main() {return 0;}" HAVE_PAR_FILTERS)
+
 if (HAVE_PAR_FILTERS)
    set(PIO_HAS_PAR_FILTERS 1)
 endif()
+
+
+
 ###
 # Check to see if this is netcdf-c-4.7.2, which won't work.
 ###

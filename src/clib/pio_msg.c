@@ -1246,7 +1246,7 @@ int inq_var_bzip2_handler(iosystem_desc_t *ios)
     return PIO_NOERR;
 }
 #endif
-
+#ifdef NC_HAS_ZSTD
 /**
  * Do an inq_var_bzip2 on a netCDF variable. This function is only
  * run on IO tasks.
@@ -1294,7 +1294,7 @@ int inq_var_zstandard_handler(iosystem_desc_t *ios)
 
     return PIO_NOERR;
 }
-
+#endif
 /**
  * Do an inq_var_filter_info on a netCDF variable. This function is only
  * run on IO tasks.
@@ -1441,6 +1441,47 @@ int def_var_quantize_handler(iosystem_desc_t *ios)
 
 
     PLOG((1, "def_var_quantize_handler succeeded!"));
+    return PIO_NOERR;
+}
+#endif
+#ifdef NC_HAS_ZSTD
+/**
+ * This function is run on the IO tasks to define a netCDF
+ *  variable quantize level.
+ *
+ * @param ios pointer to the iosystem_desc_t.
+ * @returns 0 for success, PIO_EIO for MPI Bcast errors, or error code
+ * from netCDF base function.
+ * @internal
+ * @author Jim Edwards, Ed Hartnett
+ */
+int def_var_zstandard_handler(iosystem_desc_t *ios)
+{
+    int ncid;
+    int varid;
+    int level;
+    int mpierr;
+
+    PLOG((1, "def_var_zstandard_handler comproot = %d", ios->comproot));
+    assert(ios);
+
+    /* Get the parameters for this function that the he comp main
+     * task is broadcasting. */
+    if ((mpierr = MPI_Bcast(&ncid, 1, MPI_INT, 0, ios->intercomm)))
+        return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
+    if ((mpierr = MPI_Bcast(&varid, 1, MPI_INT, 0, ios->intercomm)))
+        return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
+    if ((mpierr = MPI_Bcast(&level, 1, MPI_INT, 0, ios->intercomm)))
+        return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
+
+    PLOG((1, "def_var_zstandard_handler got parameters ncid = %d "
+          "varid = %d level = %d ", ncid, varid, level));
+
+    /* Call the function. */
+    PIOc_def_var_zstandard(ncid, varid, level);
+
+
+    PLOG((1, "def_var_zstandard_handler succeeded!"));
     return PIO_NOERR;
 }
 #endif
@@ -3134,6 +3175,9 @@ int pio_msg_handler2(int io_rank, int component_count, iosystem_desc_t **iosys,
 	      break;
 	    case PIO_MSG_DEF_VAR:
 	      ret = def_var_handler(my_iosys);
+	      break;
+	    case PIO_MSG_DEF_VAR_ZSTANDARD:
+	      ret = def_var_zstandard_handler(my_iosys);
 	      break;
 	    case PIO_MSG_DEF_VAR_CHUNKING:
 	      ret = def_var_chunking_handler(my_iosys);
