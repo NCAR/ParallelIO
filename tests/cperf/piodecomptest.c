@@ -149,7 +149,7 @@ int test_write_darray(int iosys, const char decomp_file[], int rank, const char 
     for(int i=0; i < maplen[rank]; i++)
         dsum += dvarw[i];
     if(dsum != rank)
-        printf("%d: dvarwsum = %d\n",rank, dsum);
+        printf("%d: dvarwsum = %g\n",rank, dsum);
 
     ierr = PIOc_write_darray(ncid, varid, ioid, maplen[rank], dvarw, NULL);
     free(maplen);
@@ -248,7 +248,7 @@ int test_read_darray(int iosys,const char decomp_file[], int rank, const char my
         for(int i=0; i < maplen[rank]; i++)
             dsum += dvarr[i];
         if(dsum != rank)
-            printf("%d: dsum = %d\n",rank, dsum);
+            printf("%d: dsum = %g\n",rank, dsum);
         break;
     case PIO_INT:
         ivarr = malloc(sizeof(int)*maplen[rank]);

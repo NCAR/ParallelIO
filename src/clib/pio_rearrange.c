@@ -11,7 +11,7 @@
 #if PIO_USE_MPISERIAL
 #define MPI_Type_create_hvector MPI_Type_hvector
 #endif
-#define SIZEOF_MPI_OFFSET sizeof(MPI_Offset)
+
 /**
  * Convert a 1-D index into a coordinate value in an arbitrary
  * dimension space. E.g., for index 4 into a array defined as a[3][2],

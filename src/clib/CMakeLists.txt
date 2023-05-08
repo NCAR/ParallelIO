@@ -63,7 +63,7 @@ target_compile_definitions (pioc
 
 # Compiler-specific compiler options
 if ("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
-  string(APPEND CMAKE_C_FLAGS  " -std=c99 " )
+  string(APPEND CMAKE_C_FLAGS  " -std=gnu99 " )
 elseif ("${CMAKE_C_COMPILER_ID}" STREQUAL "PGI")
   string(APPEND CMAKE_C_FLAGS  " -c99 ")
 elseif ("${CMAKE_C_COMPILER_ID}" STREQUAL "Intel")

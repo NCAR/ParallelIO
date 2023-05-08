@@ -95,7 +95,7 @@ unsigned long long uint64_att_data[ATT_LEN] = {NC_MAX_UINT64, 0, NC_MAX_UINT64};
 
 /* Scalar variable test data. */
 signed char byte_scalar_data = NC_MAX_BYTE;
-char char_scalar_data = NC_MAX_CHAR;
+char char_scalar_data = (char) NC_MAX_CHAR;
 short short_scalar_data = NC_MAX_SHORT;
 int int_scalar_data = NC_MAX_INT;
 float float_scalar_data = NC_MAX_FLOAT;

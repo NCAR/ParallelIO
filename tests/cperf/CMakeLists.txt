@@ -6,8 +6,8 @@ include_directories("${CMAKE_BINARY_DIR}")
 
 # Compiler-specific compiler options
 if ("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c99")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu99")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu99")
 elseif ("${CMAKE_C_COMPILER_ID}" STREQUAL "PGI")
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -c99")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -c99")
