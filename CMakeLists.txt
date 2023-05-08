@@ -359,10 +359,6 @@ int main() {return 0;}" HAVE_SZIP_WRITE)
 ###
 check_function_exists(nc_inq_filter_avail HAVE_PAR_FILTERS)
 
-if (HAVE_PAR_FILTERS)
-   set(PIO_HAS_PAR_FILTERS 1)
-endif()
-
 ###
 # Check to see if this is netcdf-c-4.7.2, which won't work.
 ###
