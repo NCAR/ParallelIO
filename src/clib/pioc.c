@@ -352,13 +352,7 @@ PIOc_get_local_array_size(int ioid)
 int
 PIOc_Set_IOSystem_Error_Handling(int iosysid, int method)
 {
-    iosystem_desc_t *ios;
     int oldmethod;
-
-    /* Get the iosystem info. */
-    if (iosysid != PIO_DEFAULT)
-        if (!(ios = pio_get_iosystem_from_id(iosysid)))
-            piodie("Could not find IO system.", __FILE__, __LINE__);
 
     /* Set the error handler. */
     if (PIOc_set_iosystem_error_handling(iosysid, method, &oldmethod))
@@ -1690,7 +1684,6 @@ PIOc_iotype_available(int iotype)
 #ifdef _PNETCDF
     case PIO_IOTYPE_PNETCDF:
         return 1;
-        break;
 #endif
     default:
         return 0;

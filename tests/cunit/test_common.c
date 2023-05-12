@@ -80,7 +80,7 @@ int pio_type[NUM_PIO_TYPES_TO_TEST] = {PIO_BYTE, PIO_CHAR, PIO_SHORT, PIO_INT, P
 
 /* Attribute test data. */
 signed char byte_att_data[ATT_LEN] = {NC_MAX_BYTE, NC_MIN_BYTE, NC_MAX_BYTE};
-char char_att_data[ATT_LEN] = {NC_MAX_CHAR, 0, NC_MAX_CHAR};
+char char_att_data[ATT_LEN] = {(char) NC_MAX_CHAR, (char) 0, (char) NC_MAX_CHAR};
 short short_att_data[ATT_LEN] = {NC_MAX_SHORT, NC_MIN_SHORT, NC_MAX_SHORT};
 int int_att_data[ATT_LEN] = {NC_MAX_INT, NC_MIN_INT, NC_MAX_INT};
 float float_att_data[ATT_LEN] = {NC_MAX_FLOAT, NC_MIN_FLOAT, NC_MAX_FLOAT};
@@ -441,13 +441,10 @@ create_nc_sample(int sample, int iosysid, int format, char *filename, int my_ran
     {
     case 0:
         return create_nc_sample_0(iosysid, format, filename, my_rank, ncid);
-        break;
     case 1:
         return create_nc_sample_1(iosysid, format, filename, my_rank, ncid);
-        break;
     case 2:
         return create_nc_sample_2(iosysid, format, filename, my_rank, ncid);
-        break;
     }
     return PIO_EINVAL;
 }
@@ -460,13 +457,10 @@ check_nc_sample(int sample, int iosysid, int format, char *filename, int my_rank
     {
     case 0:
         return check_nc_sample_0(iosysid, format, filename, my_rank, ncid);
-        break;
     case 1:
         return check_nc_sample_1(iosysid, format, filename, my_rank, ncid);
-        break;
     case 2:
         return check_nc_sample_2(iosysid, format, filename, my_rank, ncid);
-        break;
     }
     return PIO_EINVAL;
 }
@@ -828,7 +822,7 @@ int
 check_nc_sample_2(int iosysid, int format, char *filename, int my_rank, int *ncidp)
 {
     int ncid;
-    int ret;
+    int ret=PIO_NOERR;
     int ndims, nvars, ngatts, unlimdimid;
     int ndims2, nvars2, ngatts2, unlimdimid2;
     int dimid2;
@@ -998,7 +992,7 @@ check_nc_sample_2(int iosysid, int format, char *filename, int my_rank, int *nci
             return ERR_CHECK;
     }
 
-    return 0;
+    return ret;
 }
 
 /* Create the decomposition to divide the 3-dimensional sample data

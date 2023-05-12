@@ -2059,5 +2059,4 @@ int main(int argc, char **argv)
     return run_test_main(argc, argv, MIN_NTASKS, TARGET_NTASKS, -1,
                          TEST_NAME, dim_len, COMPONENT_COUNT, NUM_IO_PROCS);
 
-    return 0;
 }

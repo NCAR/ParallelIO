@@ -2709,9 +2709,11 @@ PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filename,
 #else
             imode = mode |  NC_MPIIO;
             if ((ierr = nc_open_par(filename, imode, ios->io_comm, ios->info,
-                                    &file->fh)))
-                break;
+                                    &file->fh))){
+	      PLOG((2, "%d: PIOc_openfile_retry nc_open_par ierr=%d",__LINE__,ierr));
 
+	      break;
+	    }
             /* Check the vars for valid use of unlim dims. */
             if ((ierr = check_unlim_use(file->fh)))
                 break;
@@ -2797,7 +2799,7 @@ PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filename,
         if (retry)
         {
             PLOG((2, "retry error code ierr = %d io_rank %d", ierr, ios->io_rank));
-            if ((ierr == NC_ENOTNC || ierr == NC_EINVAL) && (file->iotype != PIO_IOTYPE_NETCDF))
+            if ((ierr == NC_ENOTNC || ierr == NC_EINVAL || ierr == NC_ENOTBUILT) && (file->iotype != PIO_IOTYPE_NETCDF))
             {
                 if (ios->iomain == MPI_ROOT)
                     printf("PIO2 pio_file.c retry NETCDF\n");

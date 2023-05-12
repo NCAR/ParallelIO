@@ -262,7 +262,6 @@ PIO_NCINT_open(const char *path, int mode, int basepe, size_t *chunksizehintp,
     int iotype;
     iosystem_desc_t *ios;  /* Pointer to io system information. */
     int ret;
-    int nc4;
 
     PLOG((1, "PIO_NCINT_open path = %s mode = %x", path, mode));
 
@@ -431,7 +430,7 @@ PIO_NCINT_inq_format_extended(int ncid, int *formatp, int *modep)
     PLOG((2, "%s: ncid 0x%x", __func__, ncid));
 
     if ((retval = PIOc_inq_format(ncid, &my_mode)))
-        return NC_EBADID;
+        return retval;
 
     if (modep)
         *modep = my_mode|NC_UDF0;

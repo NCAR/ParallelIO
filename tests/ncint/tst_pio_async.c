@@ -54,7 +54,7 @@ main(int argc, char **argv)
         int *data_in;
         int num_procs2[COMPONENT_COUNT] = {3};
         int num_io_procs = 1;
-        int i, m;
+        int i;
 
         /* Turn on logging for PIO library. */
         /* PIOc_set_log_level(4); */

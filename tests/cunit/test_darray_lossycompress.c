@@ -110,20 +110,17 @@ int test_darray(int iosysid, int ioid, int num_flavors, int *flavor, int my_rank
     double test_data_double[arraylen];
     double test_data_double_in[arraylen];
 #ifdef NC_NOQUANTIZE
-    union FU fin;
-    union DU dfin;
-    union FU xpect[arraylen];
-    union DU double_xpect[arraylen];
+    //    union FU fin;
 
-    xpect[0].u = 0x3f8e3000;
-    xpect[1].u = 0x3f800fff;
-    xpect[2].u = 0x41200000;
-    xpect[3].u = 0x4640efff;
+    //xpect[0].u = 0x3f8e3000;
+    //xpect[1].u = 0x3f800fff;
+    //xpect[2].u = 0x41200000;
+    //xpect[3].u = 0x4640efff;
 //    xpect[4].u = 0x3dfcd000;
-    double_xpect[0].u = 0x3ff1c60000000000;
-    double_xpect[1].u = 0x3ff001ffffffffff;
-    double_xpect[2].u = 0x4023fe0000000000;
-    double_xpect[3].u = 0x41d265ffffffffff;
+    //double_xpect[0].u = 0x3ff1c60000000000;
+    //double_xpect[1].u = 0x3ff001ffffffffff;
+    //double_xpect[2].u = 0x4023fe0000000000;
+    //double_xpect[3].u = 0x41d265ffffffffff;
 //    double_xpect[4].u = 0x42dc120000000000;
 #endif
     /* Initialize some data. */

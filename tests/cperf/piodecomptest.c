@@ -84,7 +84,6 @@ int test_write_darray(int iosys, const char decomp_file[], int rank, const char 
     int *full_map;
     int *dimid;
     int varid;
-    int globalsize;
     int ioid;
     char dimname[PIO_MAX_NAME];
     char varname[PIO_MAX_NAME];
@@ -174,10 +173,10 @@ int test_read_darray(int iosys,const char decomp_file[], int rank, const char my
     int *full_map;
     int *dimid;
     int varid;
-    int globalsize;
+    //int globalsize;
     int ioid;
     int pio_type;
-    char dimname[PIO_MAX_NAME];
+    //char dimname[PIO_MAX_NAME];
     char varname[PIO_MAX_NAME];
 
     ierr = pioc_read_nc_decomp_int(iosys, decomp_file, &ndims, &global_dimlen, &num_tasks,

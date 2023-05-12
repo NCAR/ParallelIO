@@ -190,13 +190,13 @@ CVector parallel_sort(MPI_Comm comm, CVector v, int *ierr) {
 int run_unique_check(MPI_Comm comm, size_t N,datatype *v, bool *has_dups)
 {
   int rank, size;
-  int mpierr=MPI_SUCCESS, mpierr2=MPI_SUCCESS;
+  int mpierr=MPI_SUCCESS;
   int ierr;
   if ((mpierr = MPI_Comm_rank(comm, &rank)))
-    check_mpi(NULL, NULL, mpierr2, __FILE__, __LINE__);
+    check_mpi(NULL, NULL, mpierr, __FILE__, __LINE__);
 
   if ((mpierr = MPI_Comm_size(comm, &size)))
-    check_mpi(NULL, NULL, mpierr2, __FILE__, __LINE__);
+    check_mpi(NULL, NULL, mpierr, __FILE__, __LINE__);
 
   srand(time(NULL) * rank);
 
@@ -205,7 +205,7 @@ int run_unique_check(MPI_Comm comm, size_t N,datatype *v, bool *has_dups)
   int i_have_dups = is_unique(sorted) ? 0:1;
   int global_dups;
   if ((mpierr = MPI_Allreduce(&i_have_dups, &global_dups, 1, MPI_INT, MPI_MAX, comm)))
-    check_mpi(NULL, NULL, mpierr2, __FILE__, __LINE__);
+    check_mpi(NULL, NULL, mpierr, __FILE__, __LINE__);
 
   if(global_dups > 0)
     *has_dups = true;
