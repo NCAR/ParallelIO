@@ -91,19 +91,30 @@ inputs:
     default: ${GITHUB_WORKSPACE}/parallelio
     required: False
     type: string
-
+  src_path:
+    description: 'Path to parallelio source'
+    default: ${GITHUB_WORKSPACE}/parallelio-src
+    required: False
+    type: string
+    
 runs:
   using: composite
   steps:
-    - uses: actions/checkout@v3
+    - name: Check if already present
+      uses: andstor/file-existance-action@v2
+      with:
+        files: ${{ inputs.src_path }}
+    - name: get parallelio
+      if: ${{ steps.check_files.outputs.files_exists == 'false' }}
+      uses: actions/checkout@v3
       with:
         repository: NCAR/ParallelIO
-        path: parallelio-src
+        path: ${{ inputs.src_path }}
         ref: ${{ inputs.parallelio_version }}
     - id: parallelio-build
       shell: bash
       run: |
-        cd $GITHUB_WORKSPACE/parallelio-src
+        cd ${{ inputs.src_path }}
         autoreconf -i
         config_opts='--prefix=${{ inputs.install_prefix }} '
         if [[ -z "${{ inputs.with_pnetcdf }}" ]];

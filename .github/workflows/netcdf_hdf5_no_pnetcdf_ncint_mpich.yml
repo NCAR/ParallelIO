@@ -97,10 +97,11 @@ jobs:
       with:
         enable_fortran: True
         enable_netcdf_integration: True
+        src_path: ${GITHUB_WORKSPACE}
         parallelio_version: ${{ env.GITHUB_SHA }}
     - name: make check
       run: |
-        cd $GITHUB_WORKSPACE/parallelio-src
+        cd $GITHUB_WORKSPACE
         make -j check
     - name: Setup tmate session
       if: ${{ failure() }}
