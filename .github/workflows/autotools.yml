@@ -46,10 +46,11 @@ jobs:
         with_pnetcdf: /usr
         with_mpiexec: 'mpiexec --oversubscribe'
         parallelio_version: ${{ env.GITHUB_SHA }}
+        src_path: ${GITHUB_WORKSPACE}
     - name: make check
       run: |
-        cd $GITHUB_WORKSPACE/parallelio-src
-        make  check
+        cd $GITHUB_WORKSPACE
+        make check
 
 #    - name: Setup tmate session
 #      if: ${{ failure() }}
