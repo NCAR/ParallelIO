@@ -57,8 +57,8 @@ jobs:
         ln -fs $GITHUB_WORKSPACE/scripts/genf90.pl .
         popd
         # the || true prevents a fail if parallelio is not installed
-        spack uninstall -y parallelio@develop+pnetcdf+fortran ^mpich || true
-        spack dev-build -d $GITHUB_WORKSPACE parallelio@develop+pnetcdf+fortran ^mpich
+        spack uninstall -y parallelio@=develop+pnetcdf+fortran ^mpich || true
+        spack dev-build -d $GITHUB_WORKSPACE parallelio@=develop+pnetcdf+fortran ^mpich
 
     - name: Test parallelio
       run: |
