@@ -101,7 +101,7 @@ runs:
   using: composite
   steps:
     - name: Check if already present
-      uses: andstor/file-existance-action@v2
+      uses: andstor/file-existence-action@v2
       with:
         files: ${{ inputs.src_path }}
     - name: get parallelio
