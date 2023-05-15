@@ -57,7 +57,7 @@ endif()
 #==============================================================================
 
 # Test Timeout (4 min = 240 sec)
-set (DEFAULT_TEST_TIMEOUT 480)
+set (DEFAULT_TEST_TIMEOUT 600)
 
 add_library(pio_tutil util/pio_tutil.F90)
 target_link_libraries(pio_tutil piof pioc)

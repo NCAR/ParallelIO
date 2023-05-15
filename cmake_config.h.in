@@ -26,7 +26,7 @@
 
 #define USE_VARD @USE_VARD@
 
-#define PIO_HAS_PAR_FILTERS @PIO_HAS_PAR_FILTERS@
+#cmakedefine PIO_HAS_PAR_FILTERS 
 /* Does netCDF support netCDF/HDF5 files? */
 #cmakedefine HAVE_NETCDF4
 
