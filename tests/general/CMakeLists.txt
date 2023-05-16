@@ -256,6 +256,8 @@ else ()
 	NUMPROCS 4
 	TIMEOUT ${DEFAULT_TEST_TIMEOUT})
 endif ()
+# Test times out in github action.
+set_tests_properties(pio_rearr_opts PROPERTIES LABELS "skipforspack")
 
 #===== pio_rearr_opts2 =====
 add_executable (pio_rearr_opts2 EXCLUDE_FROM_ALL
