@@ -16,7 +16,7 @@ jobs:
       FC: mpiifort
       # Versions should match the github tag names
       PNETCDF_VERSION: checkpoint.1.12.3
-      NETCDF_C_VERSION: v4.9.0
+      NETCDF_C_VERSION: v4.9.1
       NETCDF_FORTRAN_VERSION: v4.6.0
       HDF5_VERSION: hdf5_1_12_2
     steps:
@@ -24,9 +24,8 @@ jobs:
     - name: Installs
       run: |
         set -x
-        sudo apt-get update 
-        sudo apt-get install wget
-        sudo apt-get install libjpeg-dev
+        sudo apt-get update
+        sudo apt-get install libcurl4-gnutls-dev
         sudo apt-get install libz-dev
     - name: cache intel compiler
       id: cache-intel
@@ -73,9 +72,9 @@ jobs:
     - name: prep netcdf-c
       run: |
         export PATH=$GITHUB_WORKSPACE/hdf5/bin:$GITHUB_WORKSPACE/netcdf/bin:$PATH
-        export LDFLAGS="$LDFLAGS -L$GITHUB_WORKSPACE/hdf5/lib  "
+        export LDFLAGS="$LDFLAGS -L$GITHUB_WORKSPACE/hdf5/lib  -L/usr/lib/x86_64-linux-gnu/ -lcurl"
         export CPPFLAGS="$CPPFLAGS -I$GITHUB_WORKSPACE/hdf5/include -I$GITHUB_WORKSPACE/netcdf/include"
-        export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$GITHUB_WORKSPACE/hdf5/lib"
+        export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$GITHUB_WORKSPACE/hdf5/lib:/usr/lib/x86_64-linux-gnu/"
         printenv >> $GITHUB_ENV
     - name: build-netcdf-c
       if: steps.cache-netcdf-c.outputs.cache-hit != 'true'

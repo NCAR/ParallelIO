@@ -16,7 +16,7 @@ jobs:
     - name: Installs
       run: |
         set -x
-        sudo apt-get update 
+        sudo apt-get update
         sudo apt-get install wget
         sudo apt-get install libjpeg-dev
         sudo apt-get install libz-dev
@@ -47,16 +47,18 @@ jobs:
         source $GITHUB_WORKSPACE/spack/share/spack/setup-env.sh
         spack compiler find
         # Remove the patch for gfortran, we don't want it
-        # 
+        #
         sed -i 's/patch(.*$//' $GITHUB_WORKSPACE/spack/var/spack/repos/builtin/packages/parallelio/package.py
     - name: Build with spack
       run: |
         source $GITHUB_WORKSPACE/spack/share/spack/setup-env.sh
         mkdir genf90
-        pushd genf90    
+        pushd genf90
         ln -fs $GITHUB_WORKSPACE/scripts/genf90.pl .
         popd
         # the || true prevents a fail if parallelio is not installed
+        #        spack uninstall -y parallelio@=develop+pnetcdf+fortran ^mpich || true
+        #        spack dev-build -d $GITHUB_WORKSPACE parallelio@=develop+pnetcdf+fortran ^mpich
         spack uninstall -y parallelio@develop+pnetcdf+fortran ^mpich || true
         spack dev-build -d $GITHUB_WORKSPACE parallelio@develop+pnetcdf+fortran ^mpich
 
@@ -66,10 +68,10 @@ jobs:
         pushd $pioblddir
         make tests
         # Exclude two tests that are timing out.
-        ctest -LE skipforspack
+        ctest -VV -LE skipforspack
         popd
-        
 
-#    - name: Setup tmate session
-#      if: ${{ failure() }}
-#      uses: mxschmitt/action-tmate@v3
+
+    - name: Setup tmate session
+      if: ${{ failure() }}
+      uses: mxschmitt/action-tmate@v3

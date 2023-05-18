@@ -37,7 +37,7 @@ jobs:
       with:
         install_prefix: $HOME/mpich
         mpich_version: ${{ env.MPICH_VERSION }}
-        
+
     - name: cache-hdf5
       id: cache-hdf5
       uses: actions/cache@v3
@@ -120,23 +120,11 @@ jobs:
       run: |
         cd $GITHUB_WORKSPACE/parallelio-src
         make -j check
-        
+
     - name: autotools build
       run: |
         set -x
         gcc --version
-#        echo 'export PATH=/home/runner/mpich/bin:$PATH' > .bashrc
-#        source .bashrc
-#        export CPPFLAGS: "-I/home/runner/mpich/include -I/home/runner/hdf5/include -I/home/runner/netcdf-c/include -I/home/runner/netcdf-fortran/include -I/home/runner/pnetcdf/include"
-#        export LDFLAGS: "-L/home/runner/mpich/lib -L/home/runner/hdf5/lib -L/home/runner/netcdf-c/lib -L/home/runner/netcdf-fortran/lib -L/home/runner/pnetcdf/lib"
-#        export CC=/home/runner/mpich/bin/mpicc
-#        export FC=/home/runner/mpich/bin/mpifort
-#        export CFLAGS="-g -O0 -fsanitize=address -fno-omit-frame-pointer -static-libasan"
-#        export FCFLAGS="$FCFLAGS -g -O0 -fsanitize=address -fno-omit-frame-pointer -static-libasan"
-#        export LDFLAGS="$LDFLAGS -static-libasan"
-#        export ASAN_OPTIONS="detect_odr_violation=0"
         autoreconf -i
         ./configure --enable-fortran --enable-netcdf-integration
         make -j check
-        
-        

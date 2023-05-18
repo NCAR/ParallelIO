@@ -41,7 +41,7 @@ runs:
         then
           config_opts="${config_opts} --enable-shared=yes"
         fi
-        
+
         config_opts="${config_opts}"
         echo "config_opts=$config_opts"
         autoreconf -i
