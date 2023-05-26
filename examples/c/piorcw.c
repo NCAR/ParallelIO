@@ -109,7 +109,7 @@ int rcw_read_darray(int iosys,int rank)
     char dimname[PIO_MAX_NAME];
     char varname[PIO_MAX_NAME];
 
-    int ndims, nvars, natts, unlimdim;
+    int nvars, natts, unlimdim;
     dimlist *dim;
 
     ierr = MPI_Comm_size(MPI_COMM_WORLD, &comm_size);
@@ -122,7 +122,7 @@ int rcw_read_darray(int iosys,int rank)
 
 
     dim = (dimlist *) malloc(ndims*sizeof(dimlist));
-    for(i=0; i<ndims; i++){
+    for(int i=0; i<ndims; i++){
         ierr = PIOc_inq_dim(ncid, i, dim[i].name, dim[i].value);
         if(ierr || debug) printf("%d %d i=%d\n",__LINE__,ierr, i);
     }
@@ -131,10 +131,12 @@ int rcw_read_darray(int iosys,int rank)
 
 
     /* TODO: support multiple variables and types*/
+    /*
     if(myvarname != NULL)
         sprintf(varname,"%s",myvarname);
     else
-        sprintf(varname,"var%4.4d",0);
+    */
+    sprintf(varname,"var%4.4d",0);
     ierr = PIOc_inq_varid(ncid, varname, &varid);
     if(ierr || debug) printf("%d %d\n",__LINE__,ierr);
 
@@ -221,7 +223,9 @@ int rcw_read_darray(int iosys,int rank)
 
 int main(int argc, char *argv[])
 {
+    /*
     struct arguments arguments;
+    */
     int ierr;
     int rank;
     int comm_size;
