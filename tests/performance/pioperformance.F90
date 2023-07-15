@@ -149,7 +149,7 @@ contains
     integer(kind=PIO_Offset_kind) :: maplen, gmaplen
     integer :: ndims
     integer, pointer :: gdims(:)
-    character(len=20) :: fname
+    character(len=24) :: fname
     type(var_desc_t) :: vari(nvars), varr(nvars), vard(nvars)
     type(iosystem_desc_t) :: iosystem
     integer :: stride, n
@@ -260,7 +260,7 @@ contains
 
                 call pio_init(mype, comm, ntasks, 0, stride, PIO_REARR_SUBSET, iosystem)
 
-                write(fname, '(a,i1,a,i4.4,a,i1,a)') 'pioperf.',rearr,'-',ntasks,'-',iotype,'.nc'
+                write(fname, '(a,i1,a,i6.6,a,i1,a)') 'pioperf.',rearr,'-',ntasks,'-',iotype,'.nc'
 
                 ierr =  PIO_CreateFile(iosystem, File, iotype, trim(fname), mode)
 
@@ -357,7 +357,7 @@ contains
                 end if
 ! Now the Read
 
-                write(fname, '(a,i1,a,i4.4,a,i1,a)') 'pioperf.',rearr,'-',ntasks,'-',iotype,'.nc'
+                write(fname, '(a,i1,a,i6.6,a,i1,a)') 'pioperf.',rearr,'-',ntasks,'-',iotype,'.nc'
 
                 ierr = PIO_OpenFile(iosystem, File, iotype, trim(fname), mode=PIO_NOWRITE);
                 do nv=1,nvars
@@ -396,7 +396,7 @@ contains
 #ifdef VARINT
                       call PIO_setframe(File, vari(nv), frame)
                       call pio_read_darray(File, vari(nv), iodesc_i4, ifld_in(:,nv,frame), ierr)
-                      print *,__FILE__,__LINE__,size(ifld_in),ifld_in(1,1,1)
+!                      print *,__FILE__,__LINE__,size(ifld_in),ifld_in(1,1,1)
 #endif
 #ifdef VARREAL
                       call PIO_setframe(File, varr(nv), frame)

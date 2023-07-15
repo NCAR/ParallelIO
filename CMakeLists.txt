@@ -468,12 +468,16 @@ FILE(READ "${CMAKE_CURRENT_BINARY_DIR}/libpio.settings"
   LIBPIO_SETTINGS)
 MESSAGE(STATUS ${LIBPIO_SETTINGS})
 
+# Set RPATH for shared libraries
+set(CMAKE_MACOSX_RPATH 1)
+set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+
 # Install libpio.settings file into same location
 # as the libraries.
 INSTALL(FILES "${PIO_BINARY_DIR}/libpio.settings"
   DESTINATION lib
   COMPONENT libraries)
-
+  
 #####
 # Create pio_meta.h include file.
 #####

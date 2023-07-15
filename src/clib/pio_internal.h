@@ -17,10 +17,12 @@
 #include <limits.h>
 #include <math.h>
 #include <netcdf.h>
-#ifdef _NETCDF4
-#include <netcdf_par.h>
+#ifdef PIO_HAS_PAR_FILTERS
 #include <netcdf_filter.h>
 #include <netcdf_meta.h>
+#endif
+#ifdef _NETCDF4
+#include <netcdf_par.h>
 #endif
 #ifdef _PNETCDF
 #include <pnetcdf.h>
