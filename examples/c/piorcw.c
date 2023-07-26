@@ -78,7 +78,7 @@ int rcw_write_darray(int iosys, int rank)
     for(int i=0; i < maplen[rank]; i++)
         dsum += dvarw[i];
     if(dsum != rank)
-        printf("%d: dvarwsum = %d\n",rank, dsum);
+        printf("%d: dvarwsum = %g\n",rank, dsum);
 
     ierr = PIOc_write_darray(ncid, varid, ioid, maplen[rank], dvarw, NULL);
     free(maplen);
@@ -109,7 +109,7 @@ int rcw_read_darray(int iosys,int rank)
     char dimname[PIO_MAX_NAME];
     char varname[PIO_MAX_NAME];
 
-    int ndims, nvars, natts, unlimdim;
+    int  nvars, natts, unlimdim;
     dimlist *dim;
 
     ierr = MPI_Comm_size(MPI_COMM_WORLD, &comm_size);
@@ -122,8 +122,10 @@ int rcw_read_darray(int iosys,int rank)
 
 
     dim = (dimlist *) malloc(ndims*sizeof(dimlist));
-    for(i=0; i<ndims; i++){
-        ierr = PIOc_inq_dim(ncid, i, dim[i].name, dim[i].value);
+    for(int i=0; i<ndims; i++){
+        PIO_Offset val;
+        ierr = PIOc_inq_dim(ncid, i, dim[i].name, &val);
+        dim[i].value = (int) val;
         if(ierr || debug) printf("%d %d i=%d\n",__LINE__,ierr, i);
     }
 
@@ -131,10 +133,11 @@ int rcw_read_darray(int iosys,int rank)
 
 
     /* TODO: support multiple variables and types*/
-    if(myvarname != NULL)
-        sprintf(varname,"%s",myvarname);
-    else
+//    if(myvarname != NULL)
+//        sprintf(varname,"%s",myvarname);
+//    else
         sprintf(varname,"var%4.4d",0);
+
     ierr = PIOc_inq_varid(ncid, varname, &varid);
     if(ierr || debug) printf("%d %d\n",__LINE__,ierr);
 
@@ -180,7 +183,7 @@ int rcw_read_darray(int iosys,int rank)
         for(int i=0; i < maplen[rank]; i++)
             dsum += dvarr[i];
         if(dsum != rank)
-            printf("%d: dsum = %d\n",rank, dsum);
+            printf("%d: dsum = %g\n",rank, dsum);
         break;
     case PIO_INT:
         ivarr = malloc(sizeof(int)*maplen[rank]);
@@ -221,7 +224,6 @@ int rcw_read_darray(int iosys,int rank)
 
 int main(int argc, char *argv[])
 {
-    struct arguments arguments;
     int ierr;
     int rank;
     int comm_size;
