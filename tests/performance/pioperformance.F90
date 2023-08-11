@@ -1,7 +1,7 @@
 #include "config.h"
-#define VARINT 1
+!#define VARINT 1
 !#define VARREAL 1
-!#define VARDOUBLE 1
+#define VARDOUBLE 1
 
 program pioperformance
 #ifndef NO_MPIMOD
@@ -117,6 +117,7 @@ program pioperformance
               if(nvars(nv)>0) then
                  call pioperformancetest(decompfile(i), piotypes(1:niotypes), mype, npe, &
                       rearrangers, niotasks, nframes, nvars(nv), varsize(vs),unlimdimindof)
+                 if(mype==0) print * ,' complete'
               endif
            enddo
         endif
@@ -124,6 +125,7 @@ program pioperformance
   enddo
   call t_finalizef()
 
+  if(mype==0) print *, ' calling mpi finalize'
   call MPI_Finalize(ierr)
 contains
 
@@ -170,6 +172,10 @@ contains
     double precision, parameter :: cd0 = 1.0e30
     integer :: nvarmult
     character(len=*), parameter :: rearr_name(2) = (/'   BOX','SUBSET'/)
+    character(len=8) :: date
+    character(len=10) :: time
+    type(var_desc_t) :: rundate
+    logical, save :: firstpass=.true.
 
     nullify(compmap)
 
@@ -260,11 +266,13 @@ contains
 
                 call pio_init(mype, comm, ntasks, 0, stride, PIO_REARR_SUBSET, iosystem)
 
-                write(fname, '(a,i1,a,i4.4,a,i1,a)') 'pioperf.',rearr,'-',ntasks,'-',iotype,'.nc'
+                write(fname, '(a,i1,a,i4.4,a,i1,a)') 'pioperf.',rearr,'-',ntasks,'-',k,'.nc'
 
+                call PIO_set_hint(iosystem, "nc_var_align_size", "1")
+                
                 ierr =  PIO_CreateFile(iosystem, File, iotype, trim(fname), mode)
 
-                call WriteMetadata(File, gdims, vari, varr, vard, unlimdimindof)
+                call WriteMetadata(File, gdims, vari, varr, vard, unlimdimindof, rundate)
 
                 call MPI_Barrier(comm,ierr)
                 call t_stampf(wall(1), usr(1), sys(1))
@@ -328,9 +336,20 @@ contains
 #endif
                    endif
                 enddo
+                if(firstpass) then
+                   firstpass = .false.
+                else
+                   if(mype==0) print *,'Writing rundate to file ',trim(filename)
+                   call date_and_time(DATE=date, TIME=time)
+                   nvarmult= pio_put_var(File, rundate, date//' '//time(1:4))
+                endif
+!                if(modulo(mype,128)==0) then
+!                   call PAT_REGION_BEGIN(1,'pio_closefile')
+!                endif
                 call pio_closefile(File)
-
-
+!                if(modulo(mype,128)==0) then
+!                   call PAT_REGION_END(1, 'pio_closefile')
+!                endif
                 call MPI_Barrier(comm,ierr)
 
                 call t_stampf(wall(2), usr(2), sys(2))
@@ -348,14 +367,15 @@ contains
 #ifdef VARDOUBLE
                    nvarmult = nvarmult+2
 #endif
-                   write(*,'(a15,a9,i10,i10,i10,f20.10)') &
+                   write(*,'(a15,a9,i10,i10,i10,2f20.10)') &
                    'RESULT: write ',rearr_name(rearr), piotypes(k), ntasks, nvars, &
-                                     nvarmult*nvars*nframes*gmaplen*4.0/(1048576.0*wall(2))
+                                     nvarmult*nvars*nframes*gmaplen*4.0/(1048576.0*wall(2)), wall(2)
 #ifdef BGQTRY
   call print_memusage()
 #endif
                 end if
 ! Now the Read
+#ifdef DOREAD
 
                 write(fname, '(a,i1,a,i4.4,a,i1,a)') 'pioperf.',rearr,'-',ntasks,'-',iotype,'.nc'
 
@@ -396,7 +416,6 @@ contains
 #ifdef VARINT
                       call PIO_setframe(File, vari(nv), frame)
                       call pio_read_darray(File, vari(nv), iodesc_i4, ifld_in(:,nv,frame), ierr)
-                      print *,__FILE__,__LINE__,size(ifld_in),ifld_in(1,1,1)
 #endif
 #ifdef VARREAL
                       call PIO_setframe(File, varr(nv), frame)
@@ -496,6 +515,7 @@ contains
   call print_memusage()
 #endif
                 end if
+#endif ! DOREAD
 #ifdef VARREAL
                 call PIO_freedecomp(iosystem, iodesc_r4)
 #endif
@@ -555,11 +575,11 @@ contains
   end subroutine init_ideal_dof
 
 
-  subroutine WriteMetadata(File, gdims, vari, varr, vard,unlimdimindof)
+  subroutine WriteMetadata(File, gdims, vari, varr, vard,unlimdimindof, rundate)
     use pio
     type(file_desc_t) :: File
     integer, intent(in) :: gdims(:)
-    type(var_desc_t),intent(out) :: vari(:), varr(:), vard(:)
+    type(var_desc_t),intent(out) :: vari(:), varr(:), vard(:), rundate
     logical, intent(in) :: unlimdimindof
     integer :: ndims
     character(len=12) :: dimname
@@ -567,6 +587,7 @@ contains
     integer, allocatable :: dimid(:)
     integer :: i, iostat, nv
     integer :: nvars
+    logical, save :: firstpass=.true.
 
     nvars = size(vari)
 
@@ -599,10 +620,20 @@ contains
        iostat = PIO_def_var(File, varname, PIO_DOUBLE, dimid, vard(nv))
        iostat = PIO_put_att(File, vard(nv), "_FillValue", PIO_FILL_DOUBLE);
 #endif
+
     enddo
-
-    iostat = PIO_enddef(File)
-
+!    if (firstpass) then
+!       iostat = PIO_enddef(File)
+!       firstpass = .false.
+!    else
+       iostat = PIO_def_dim(File, 'strlen', int(13, pio_offset_kind), dimid(1))
+       varname = ' '
+       write(varname,'(a7)') 'rundate'
+       iostat = PIO_def_var(File, trim(varname), PIO_CHAR, dimid(1:1), rundate)
+    
+       iostat = PIO_enddef(File)
+       
+!    endif
   end subroutine WriteMetadata
 
 

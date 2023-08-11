@@ -1,5 +1,5 @@
-#include "config.h"
 #include <netcdf_meta.h>
+#include "config.h"
 !>
 !! @file
 !! Code to implement the classic netCDF Fortran API in PIO.

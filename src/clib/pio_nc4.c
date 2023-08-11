@@ -4,9 +4,9 @@
  *
  * @author Ed Hartnett
  */
-#include <config.h>
 #include <pio.h>
 #include <pio_internal.h>
+#include <config.h>
 
 /**
  * Set deflate (zlib) settings for a variable.
@@ -1395,7 +1395,7 @@ PIOc_def_var_filter(int ncid, int varid, unsigned int id, size_t nparams, unsign
 
     return PIO_NOERR;
 }
-
+#ifdef PIO_HAS_PAR_FILTERS
 /**
  * Get the variable filter ids if any
  *
@@ -1497,7 +1497,7 @@ PIOc_inq_var_filter_ids(int ncid, int varid, size_t *nfiltersp, unsigned int *id
 
     return PIO_NOERR;
 }
-#ifdef PIO_HAS_PAR_FILTERS
+
 /**
  * Get the variable filter info if any
  *

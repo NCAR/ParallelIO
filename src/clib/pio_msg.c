@@ -14,9 +14,9 @@
  * @author Ed Hartnett
  */
 
-#include <config.h>
 #include <pio.h>
 #include <pio_internal.h>
+#include <config.h>
 
 #ifdef PIO_ENABLE_LOGGING
 extern int my_rank;

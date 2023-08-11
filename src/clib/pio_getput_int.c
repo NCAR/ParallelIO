@@ -1085,22 +1085,22 @@ PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Offset 
 #ifdef _PNETCDF
         if (file->iotype == PIO_IOTYPE_PNETCDF)
         {
-            /* Scalars have to be handled differently. */
-            if (ndims == 0)
+            if (ios->iomain == MPI_ROOT)
             {
-                /* This is a scalar var. */
-                PLOG((2, "pnetcdf writing scalar with ncmpi_put_vars_*() file->fh = %d varid = %d",
-                      file->fh, varid));
-                pioassert(!start && !count && !stride, "expected NULLs", __FILE__, __LINE__);
-
-                /* Turn on independent access for pnetcdf file. */
-                if ((ierr = ncmpi_begin_indep_data(file->fh)))
-                    return pio_err(ios, file, ierr, __FILE__, __LINE__);
-
+                /* Scalars have to be handled differently. */
+                if (ndims == 0)
+                {
+                    /* This is a scalar var. */
+                    PLOG((2, "pnetcdf writing scalar with ncmpi_put_vars_*() file->fh = %d varid = %d",
+                          file->fh, varid));
+                    pioassert(!start && !count && !stride, "expected NULLs", __FILE__, __LINE__);
+                    
+                    /* Turn on independent access for pnetcdf file. */
+//                if ((ierr = ncmpi_begin_indep_data(file->fh)))
+//                    return pio_err(ios, file, ierr, __FILE__, __LINE__);
+                    
                 /* Only the IO main does the IO, so we are not really
                  * getting parallel IO here. */
-                if (ios->iomain == MPI_ROOT)
-                {
                     switch(xtype)
                     {
                     case NC_BYTE:
@@ -1127,68 +1127,67 @@ PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Offset 
                     default:
                         return pio_err(ios, file, PIO_EBADIOTYPE, __FILE__, __LINE__);
                     }
+                    /* Turn off independent access for pnetcdf file. */
+//                if ((ierr = ncmpi_end_indep_data(file->fh)))
+//                    return pio_err(ios, file, ierr, __FILE__, __LINE__);
                 }
+                else
+                {
+                    /* This is not a scalar var. */
+                    var_desc_t *vdesc;
+                    int *request;
 
-                /* Turn off independent access for pnetcdf file. */
-                if ((ierr = ncmpi_end_indep_data(file->fh)))
-                    return pio_err(ios, file, ierr, __FILE__, __LINE__);
-            }
-            else
-            {
-                /* This is not a scalar var. */
-                var_desc_t *vdesc;
-                int *request;
-
-                PLOG((2, "PIOc_put_vars_tc calling pnetcdf function"));
-                flush_output_buffer(file, false, num_elem*typelen);
+                    PLOG((2, "PIOc_put_vars_tc calling pnetcdf function"));
+//                flush_output_buffer(file, false, num_elem*typelen);
 
                 /*vdesc = &file->varlist[varid];*/
-                if ((ierr = get_var_desc(varid, &file->varlist, &vdesc)))
-                    return pio_err(ios, file, ierr, __FILE__, __LINE__);
-                if (vdesc->nreqs % PIO_REQUEST_ALLOC_CHUNK == 0)
-                    if (!(vdesc->request = realloc(vdesc->request,
-                                                   sizeof(int) * (vdesc->nreqs + PIO_REQUEST_ALLOC_CHUNK))))
-                        return pio_err(ios, file, PIO_ENOMEM, __FILE__, __LINE__);
-                request = vdesc->request + vdesc->nreqs;
-                PLOG((2, "PIOc_put_vars_tc request = %d size = %d", vdesc->request, num_elem*typelen));
+                    if ((ierr = get_var_desc(varid, &file->varlist, &vdesc)))
+                        return pio_err(ios, file, ierr, __FILE__, __LINE__);
+                    if (vdesc->nreqs % PIO_REQUEST_ALLOC_CHUNK == 0)
+                        if (!(vdesc->request = realloc(vdesc->request,
+                                                       sizeof(int) * (vdesc->nreqs + PIO_REQUEST_ALLOC_CHUNK))))
+                            return pio_err(ios, file, PIO_ENOMEM, __FILE__, __LINE__);
+                    request = vdesc->request + vdesc->nreqs;
+                    PLOG((2, "PIOc_put_vars_tc request = %d size = %d", vdesc->request, num_elem*typelen));
 
-                switch(xtype)
-                {
-                case NC_BYTE:
-                    ierr = ncmpi_bput_vars_schar(file->fh, varid, start, count, fake_stride, buf, request);
-                    break;
-                case NC_CHAR:
-                    ierr = ncmpi_bput_vars_text(file->fh, varid, start, count, fake_stride, buf, request);
-                    break;
-                case NC_SHORT:
-                    ierr = ncmpi_bput_vars_short(file->fh, varid, start, count, fake_stride, buf, request);
-                    break;
-                case NC_INT:
-                    ierr = ncmpi_bput_vars_int(file->fh, varid, start, count, fake_stride, buf, request);
-                    break;
-                case PIO_LONG_INTERNAL:
-                    ierr = ncmpi_bput_vars_long(file->fh, varid, start, count, fake_stride, buf, request);
-                    break;
-                case NC_FLOAT:
-                    ierr = ncmpi_bput_vars_float(file->fh, varid, start, count, fake_stride, buf, request);
-                    break;
-                case NC_DOUBLE:
-                    ierr = ncmpi_bput_vars_double(file->fh, varid, start, count, fake_stride, buf, request);
-                    break;
-                default:
-                    return pio_err(ios, file, PIO_EBADTYPE, __FILE__, __LINE__);
-                }
-                PLOG((2, "PIOc_put_vars_tc io_rank 0 done with pnetcdf call, ierr=%d", ierr));
+                    switch(xtype)
+                    {
+                    case NC_BYTE:
+                        ierr = ncmpi_bput_vars_schar(file->fh, varid, start, count, fake_stride, buf, request);
+                        break;
+                    case NC_CHAR:
+                        ierr = ncmpi_bput_vars_text(file->fh, varid, start, count, fake_stride, buf, request);
+                        break;
+                    case NC_SHORT:
+                        ierr = ncmpi_bput_vars_short(file->fh, varid, start, count, fake_stride, buf, request);
+                        break;
+                    case NC_INT:
+                        ierr = ncmpi_bput_vars_int(file->fh, varid, start, count, fake_stride, buf, request);
+                        break;
+                    case PIO_LONG_INTERNAL:
+                        ierr = ncmpi_bput_vars_long(file->fh, varid, start, count, fake_stride, buf, request);
+                        break;
+                    case NC_FLOAT:
+                        ierr = ncmpi_bput_vars_float(file->fh, varid, start, count, fake_stride, buf, request);
+                        break;
+                    case NC_DOUBLE:
+                        ierr = ncmpi_bput_vars_double(file->fh, varid, start, count, fake_stride, buf, request);
+                        break;
+                    default:
+                        return pio_err(ios, file, PIO_EBADTYPE, __FILE__, __LINE__);
+                    }
+                    PLOG((2, "PIOc_put_vars_tc io_rank 0 done with pnetcdf call, ierr=%d", ierr));
 
 
-                vdesc->nreqs++;
+                    vdesc->nreqs++;
 //                flush_output_buffer(file, ierr == PIO_EINSUFFBUF, 0);
 //                PLOG((2, "PIOc_put_vars_tc flushed output buffer"));
 
                 if(ierr == PIO_EINVALCOORDS)
                     for(int i=0; i<ndims; i++)
                         PLOG((2,"start[%d] %ld count[%d] %ld\n",i,start[i],i,count[i]));
-            } /* endif ndims == 0 */
+                } /* endif ndims == 0 */
+            } /* end if MPI_ROOT */
         }
 #endif /* _PNETCDF */
 
