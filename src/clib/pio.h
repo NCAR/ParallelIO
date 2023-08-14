@@ -784,7 +784,7 @@ enum PIO_ERROR_HANDLERS
 #define PIO_FILL_UINT64 NC_FILL_UINT64 /**< Default fill value for this type. */
 
 #define PIO_EINDEP  (-203)  /**< independent access error. */
-
+#define PIO_EINSUFFBUF (-219)         /**< Insufficient buffer size (pnetcdf only) */
 #define PIO_FIRST_ERROR_CODE (-500)  /**< The first error code for PIO. */
 #define PIO_EBADIOTYPE  (-500)       /**< Bad IOTYPE error. */
 #define PIO_EVARDIMMISMATCH (-501)   /**< Variable dimensions do not match in a multivar call. */

@@ -277,6 +277,14 @@ contains
                 call MPI_Barrier(comm,ierr)
                 call t_stampf(wall(1), usr(1), sys(1))
 
+                if(firstpass) then
+                   firstpass = .false.
+                else
+                   if(mype==0) print *,'Writing rundate to file ',trim(filename)
+                   call date_and_time(DATE=date, TIME=time)
+                   nvarmult= pio_put_var(File, rundate, date//' '//time(1:4))
+                endif
+                
                 if(.not. unlimdimindof) then
 #ifdef VARINT
                    call PIO_InitDecomp(iosystem, PIO_INT, gdims, compmap, iodesc_i4, rearr=rearr)
@@ -336,13 +344,7 @@ contains
 #endif
                    endif
                 enddo
-                if(firstpass) then
-                   firstpass = .false.
-                else
-                   if(mype==0) print *,'Writing rundate to file ',trim(filename)
-                   call date_and_time(DATE=date, TIME=time)
-                   nvarmult= pio_put_var(File, rundate, date//' '//time(1:4))
-                endif
+
 !                if(modulo(mype,128)==0) then
 !                   call PAT_REGION_BEGIN(1,'pio_closefile')
 !                endif
@@ -587,7 +589,6 @@ contains
     integer, allocatable :: dimid(:)
     integer :: i, iostat, nv
     integer :: nvars
-    logical, save :: firstpass=.true.
 
     nvars = size(vari)
 
@@ -597,6 +598,11 @@ contains
    endif
    allocate(dimid(ndims+1))
 
+   iostat = PIO_def_dim(File, 'strlen', int(13, pio_offset_kind), dimid(1))
+   varname = ' '
+   write(varname,'(a7)') 'rundate'
+   iostat = PIO_def_var(File, trim(varname), PIO_CHAR, dimid(1:1), rundate)
+
    do i=1,ndims
 
       write(dimname,'(a,i6.6)') 'dim',i
@@ -604,6 +610,7 @@ contains
    enddo
    iostat = PIO_def_dim(File, 'time', PIO_UNLIMITED, dimid(ndims+1))
 
+   
     do nv=1,nvars
 #ifdef VARINT
        write(varname,'(a,i4.4)') 'vari',nv
@@ -622,18 +629,8 @@ contains
 #endif
 
     enddo
-!    if (firstpass) then
-!       iostat = PIO_enddef(File)
-!       firstpass = .false.
-!    else
-       iostat = PIO_def_dim(File, 'strlen', int(13, pio_offset_kind), dimid(1))
-       varname = ' '
-       write(varname,'(a7)') 'rundate'
-       iostat = PIO_def_var(File, trim(varname), PIO_CHAR, dimid(1:1), rundate)
-    
-       iostat = PIO_enddef(File)
+    iostat = PIO_enddef(File)
        
-!    endif
   end subroutine WriteMetadata
 
 

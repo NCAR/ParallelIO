@@ -1180,14 +1180,15 @@ PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Offset 
 
 
                     vdesc->nreqs++;
-//                flush_output_buffer(file, ierr == PIO_EINSUFFBUF, 0);
-//                PLOG((2, "PIOc_put_vars_tc flushed output buffer"));
 
                 if(ierr == PIO_EINVALCOORDS)
                     for(int i=0; i<ndims; i++)
                         PLOG((2,"start[%d] %ld count[%d] %ld\n",i,start[i],i,count[i]));
                 } /* endif ndims == 0 */
             } /* end if MPI_ROOT */
+//                flush_output_buffer(file, ierr == PIO_EINSUFFBUF, 0);
+//            flush_output_buffer(file, true, 0);
+//            PLOG((2, "PIOc_put_vars_tc flushed output buffer"));
         }
 #endif /* _PNETCDF */
 
