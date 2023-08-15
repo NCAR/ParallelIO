@@ -1767,9 +1767,6 @@ flush_output_buffer(file_desc_t *file, bool force, PIO_Offset addsize)
             if (vdesc->nreqs > 0)
                 maxreq = i;
         }
-        int request[reqcnt];
-        int status[reqcnt];
-
         if (file->varlist)
         {
             for (int i = 0; i <= maxreq; i++)
@@ -1786,9 +1783,6 @@ flush_output_buffer(file_desc_t *file, bool force, PIO_Offset addsize)
                 }
                 prev_record = vdesc->record;
 #endif
-                for (reqcnt = 0; reqcnt < vdesc->nreqs; reqcnt++)
-                    request[rcnt++] = max(vdesc->request[reqcnt], NC_REQ_NULL);
-                PLOG((3,"flush_output_buffer rcnt=%d",rcnt));
 
                 if (vdesc->request != NULL)
                     free(vdesc->request);
