@@ -1752,18 +1752,13 @@ flush_output_buffer(file_desc_t *file, bool force, PIO_Offset addsize)
      * limit, then flush to disk. */
     if (force || (usage >= pio_pnetcdf_buffer_size_limit))
     {
-        int rcnt;
         int  maxreq;
-        int reqcnt;
         maxreq = 0;
-        reqcnt = 0;
-        rcnt = 0;
 
         for (int i = 0; i < file->nvars; i++)
         {
             if ((ierr = get_var_desc(i, &file->varlist, &vdesc)))
                 return pio_err(NULL, file, ierr, __FILE__, __LINE__);
-            reqcnt += vdesc->nreqs;
             if (vdesc->nreqs > 0)
                 maxreq = i;
         }
@@ -1773,16 +1768,6 @@ flush_output_buffer(file_desc_t *file, bool force, PIO_Offset addsize)
             {
                 if ((ierr = get_var_desc(i, &file->varlist, &vdesc)))
                     return pio_err(NULL, file, ierr, __FILE__, __LINE__);
-#ifdef MPIO_ONESIDED
-                /*onesided optimization requires that all of the requests in a wait_all call represent
-                  a contiguous block of data in the file */
-                if (rcnt > 0 && (prev_record != vdesc->record || vdesc->nreqs == 0))
-                {
-                    ierr = ncmpi_wait_all(file->fh, NC_REQ_ALL, NULL, NULL);
-                    rcnt = 0;
-                }
-                prev_record = vdesc->record;
-#endif
 
                 if (vdesc->request != NULL)
                     free(vdesc->request);
