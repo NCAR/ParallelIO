@@ -124,7 +124,7 @@ typedef struct var_desc_t
     int record;
 
     /** ID of each outstanding pnetcdf request for this variable. */
-    int *request;
+//    int *request;
 
     /** Number of requests pending with pnetcdf. */
     int nreqs;

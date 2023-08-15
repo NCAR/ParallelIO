@@ -1133,41 +1133,34 @@ PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Offset 
                 {
                     /* This is not a scalar var. */
                     var_desc_t *vdesc;
-                    int *request;
 
                     PLOG((2, "PIOc_put_vars_tc calling pnetcdf function"));
 
                     if ((ierr = get_var_desc(varid, &file->varlist, &vdesc)))
                         return pio_err(ios, file, ierr, __FILE__, __LINE__);
-                    if (vdesc->nreqs % PIO_REQUEST_ALLOC_CHUNK == 0)
-                        if (!(vdesc->request = realloc(vdesc->request,
-                                                       sizeof(int) * (vdesc->nreqs + PIO_REQUEST_ALLOC_CHUNK))))
-                            return pio_err(ios, file, PIO_ENOMEM, __FILE__, __LINE__);
-                    request = vdesc->request + vdesc->nreqs;
-                    PLOG((2, "PIOc_put_vars_tc request = %d size = %d", vdesc->request, num_elem*typelen));
 
                     switch(xtype)
                     {
                     case NC_BYTE:
-                        ierr = ncmpi_bput_vars_schar(file->fh, varid, start, count, fake_stride, buf, request);
+                        ierr = ncmpi_bput_vars_schar(file->fh, varid, start, count, fake_stride, buf, NULL);
                         break;
                     case NC_CHAR:
-                        ierr = ncmpi_bput_vars_text(file->fh, varid, start, count, fake_stride, buf, request);
+                        ierr = ncmpi_bput_vars_text(file->fh, varid, start, count, fake_stride, buf, NULL);
                         break;
                     case NC_SHORT:
-                        ierr = ncmpi_bput_vars_short(file->fh, varid, start, count, fake_stride, buf, request);
+                        ierr = ncmpi_bput_vars_short(file->fh, varid, start, count, fake_stride, buf, NULL);
                         break;
                     case NC_INT:
-                        ierr = ncmpi_bput_vars_int(file->fh, varid, start, count, fake_stride, buf, request);
+                        ierr = ncmpi_bput_vars_int(file->fh, varid, start, count, fake_stride, buf, NULL);
                         break;
                     case PIO_LONG_INTERNAL:
-                        ierr = ncmpi_bput_vars_long(file->fh, varid, start, count, fake_stride, buf, request);
+                        ierr = ncmpi_bput_vars_long(file->fh, varid, start, count, fake_stride, buf, NULL);
                         break;
                     case NC_FLOAT:
-                        ierr = ncmpi_bput_vars_float(file->fh, varid, start, count, fake_stride, buf, request);
+                        ierr = ncmpi_bput_vars_float(file->fh, varid, start, count, fake_stride, buf, NULL);
                         break;
                     case NC_DOUBLE:
-                        ierr = ncmpi_bput_vars_double(file->fh, varid, start, count, fake_stride, buf, request);
+                        ierr = ncmpi_bput_vars_double(file->fh, varid, start, count, fake_stride, buf, NULL);
                         break;
                     default:
                         return pio_err(ios, file, PIO_EBADTYPE, __FILE__, __LINE__);

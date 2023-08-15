@@ -645,27 +645,10 @@ write_darray_multi_par(file_desc_t *file, int nvars, int fndims, const int *vari
                         else /* don't flush yet, accumulate the request size */
                             vard_llen += llen;
 #else
-                        if (vdesc->nreqs % PIO_REQUEST_ALLOC_CHUNK == 0)
-                        {
-                            if (!(vdesc->request = realloc(vdesc->request, sizeof(int) *
-                                                           (vdesc->nreqs + PIO_REQUEST_ALLOC_CHUNK))))
-                                return pio_err(ios, file, PIO_ENOMEM, __FILE__, __LINE__);
 
-                            for (int i = vdesc->nreqs; i < vdesc->nreqs + PIO_REQUEST_ALLOC_CHUNK; i++)
-                                vdesc->request[i] = NC_REQ_NULL;
-                        }
-
-                        /* Write, in non-blocking fashion, a list of subarrays. */
-//                        PLOG((3, "about to call ncmpi_iput_varn() varids[%d] = %d rrcnt = %d, llen = %d",
-//                              nv, varids[nv], rrcnt, llen));
-//                        for(int i=0;i < llen; i++)
-//                            PLOG((3, "bufptr[%d] = %d",i,((int *)bufptr)[i]));
                         ierr = ncmpi_iput_varn(file->fh, varids[nv], rrcnt, startlist, countlist,
-                                               bufptr, llen, iodesc->mpitype, &vdesc->request[vdesc->nreqs]);
+                                               bufptr, llen, iodesc->mpitype, NULL);
 
-                        /* keeps wait calls in sync */
-                        if (vdesc->request[vdesc->nreqs] == NC_REQ_NULL)
-                            vdesc->request[vdesc->nreqs] = PIO_REQ_NULL;
 
                         vdesc->nreqs++;
 #endif
@@ -1769,9 +1752,6 @@ flush_output_buffer(file_desc_t *file, bool force, PIO_Offset addsize)
                 if ((ierr = get_var_desc(i, &file->varlist, &vdesc)))
                     return pio_err(NULL, file, ierr, __FILE__, __LINE__);
 
-                if (vdesc->request != NULL)
-                    free(vdesc->request);
-                vdesc->request = NULL;
                 vdesc->nreqs = 0;
 
 #ifdef FLUSH_EVERY_VAR
