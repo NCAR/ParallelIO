@@ -75,7 +75,7 @@ jobs:
         export PATH=$GITHUB_WORKSPACE/hdf5/bin:$GITHUB_WORKSPACE/netcdf/bin:$PATH
         export LDFLAGS="$LDFLAGS -L$GITHUB_WORKSPACE/hdf5/lib  -L/usr/lib/x86_64-linux-gnu/ -lcurl"
         export CPPFLAGS="$CPPFLAGS -I$GITHUB_WORKSPACE/hdf5/include -I$GITHUB_WORKSPACE/netcdf/include"
-        export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$GITHUB_WORKSPACE/hdf5/lib:/usr/lib/x86_64-linux-gnu/:/opt/intel/oneapi/compiler/2023.2.1/linux/lib"
+        export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$GITHUB_WORKSPACE/hdf5/lib:/usr/lib/x86_64-linux-gnu/:/opt/intel/oneapi/compiler/2023.2.1/linux/compiler/lib/intel64_lin/"
         printenv >> $GITHUB_ENV
     - name: build-netcdf-c
       if: steps.cache-netcdf-c.outputs.cache-hit != 'true'
