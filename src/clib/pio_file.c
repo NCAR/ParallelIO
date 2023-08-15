@@ -276,8 +276,10 @@ PIOc_closefile(int ncid)
             break;
 #ifdef _PNETCDF
         case PIO_IOTYPE_PNETCDF:
-            if (file->writable)
+            if (file->writable){
+                ierr = ncmpi_wait_all(file->fh, NC_REQ_ALL, NULL, NULL);
                 ierr = ncmpi_buffer_detach(file->fh);
+            }
             ierr = ncmpi_close(file->fh);
             break;
 #endif

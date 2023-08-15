@@ -1306,7 +1306,6 @@ int inq_var_filter_info_handler(iosystem_desc_t *ios)
     return PIO_NOERR;
 }
 #endif
-#endif
 #ifdef NC_HAS_QUANTIZE
 /**
  * Do an inq_var_quantize on a netCDF variable. This function is only
@@ -1398,6 +1397,7 @@ int def_var_quantize_handler(iosystem_desc_t *ios)
     return PIO_NOERR;
 }
 #endif
+
 #ifdef NC_HAS_ZSTD
 /**
  * Do an inq_var_bzip2 on a netCDF variable. This function is only
@@ -1484,6 +1484,7 @@ int def_var_zstandard_handler(iosystem_desc_t *ios)
     PLOG((1, "def_var_zstandard_handler succeeded!"));
     return PIO_NOERR;
 }
+#endif
 #endif
 
 /**
@@ -3176,6 +3177,7 @@ int pio_msg_handler2(int io_rank, int component_count, iosystem_desc_t **iosys,
 	    case PIO_MSG_DEF_VAR:
 	      ret = def_var_handler(my_iosys);
 	      break;
+#ifdef PIO_HAS_PAR_FILTERS
 #ifdef NC_HAS_ZSTD
 	    case PIO_MSG_INQ_VAR_ZSTANDARD:
 	      ret = inq_var_zstandard_handler(my_iosys);
@@ -3183,6 +3185,7 @@ int pio_msg_handler2(int io_rank, int component_count, iosystem_desc_t **iosys,
 	    case PIO_MSG_DEF_VAR_ZSTANDARD:
 	      ret = def_var_zstandard_handler(my_iosys);
 	      break;
+#endif
 #endif
 	    case PIO_MSG_DEF_VAR_CHUNKING:
 	      ret = def_var_chunking_handler(my_iosys);
@@ -3286,6 +3289,7 @@ int pio_msg_handler2(int io_rank, int component_count, iosystem_desc_t **iosys,
 	    case PIO_MSG_SETLOGLEVEL:
 	      ret = set_loglevel_handler(my_iosys);
 	      break;
+#ifdef PIO_HAS_PAR_FILTERS
 #ifdef NC_HAS_QUANTIZE
             case PIO_MSG_DEF_VAR_QUANTIZE:
               ret = def_var_quantize_handler(my_iosys);
@@ -3294,7 +3298,6 @@ int pio_msg_handler2(int io_rank, int component_count, iosystem_desc_t **iosys,
               ret = inq_var_quantize_handler(my_iosys);
               break;
 #endif
-#ifdef PIO_HAS_PAR_FILTERS
             case PIO_MSG_DEF_VAR_FILTER:
               ret = def_var_filter_handler(my_iosys);
               break;

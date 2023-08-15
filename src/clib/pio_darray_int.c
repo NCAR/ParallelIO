@@ -1782,7 +1782,6 @@ flush_output_buffer(file_desc_t *file, bool force, PIO_Offset addsize)
                 if (rcnt > 0 && (prev_record != vdesc->record || vdesc->nreqs == 0))
                 {
                     ierr = ncmpi_wait_all(file->fh, NC_REQ_ALL, NULL, NULL);
-                    //ierr = ncmpi_wait_all(file->fh, rcnt, request, status);
                     rcnt = 0;
                 }
                 prev_record = vdesc->record;
@@ -1803,11 +1802,9 @@ flush_output_buffer(file_desc_t *file, bool force, PIO_Offset addsize)
 #endif
             }
         }
+        /* make sure all buffers are now clean */
+        ierr = ncmpi_wait_all(file->fh, NC_REQ_ALL, NULL, NULL);
 
-        if (rcnt > 0){
-            ierr = ncmpi_wait_all(file->fh, NC_REQ_ALL, NULL, NULL);
-            //ierr = ncmpi_wait_all(file->fh, rcnt, request, status);
-        }
         /* Release resources. */
         if (file->iobuf)
         {

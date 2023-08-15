@@ -1085,6 +1085,9 @@ PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Offset 
 #ifdef _PNETCDF
         if (file->iotype == PIO_IOTYPE_PNETCDF)
         {
+            if (ndims == 0) 
+                if ((ierr = ncmpi_begin_indep_data(file->fh)))
+                    return pio_err(ios, file, ierr, __FILE__, __LINE__);
             if (ios->iomain == MPI_ROOT)
             {
                 /* Scalars have to be handled differently. */
@@ -1095,12 +1098,10 @@ PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Offset 
                           file->fh, varid));
                     pioassert(!start && !count && !stride, "expected NULLs", __FILE__, __LINE__);
                     
-                    /* Turn on independent access for pnetcdf file. */
-//                if ((ierr = ncmpi_begin_indep_data(file->fh)))
-//                    return pio_err(ios, file, ierr, __FILE__, __LINE__);
                     
-                /* Only the IO main does the IO, so we are not really
-                 * getting parallel IO here. */
+                    /* Only the IO main does the IO, so we are not really
+                     * getting parallel IO here. */
+
                     switch(xtype)
                     {
                     case NC_BYTE:
@@ -1127,9 +1128,6 @@ PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Offset 
                     default:
                         return pio_err(ios, file, PIO_EBADIOTYPE, __FILE__, __LINE__);
                     }
-                    /* Turn off independent access for pnetcdf file. */
-//                if ((ierr = ncmpi_end_indep_data(file->fh)))
-//                    return pio_err(ios, file, ierr, __FILE__, __LINE__);
                 }
                 else
                 {
@@ -1138,9 +1136,7 @@ PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Offset 
                     int *request;
 
                     PLOG((2, "PIOc_put_vars_tc calling pnetcdf function"));
-//                flush_output_buffer(file, false, num_elem*typelen);
 
-                /*vdesc = &file->varlist[varid];*/
                     if ((ierr = get_var_desc(varid, &file->varlist, &vdesc)))
                         return pio_err(ios, file, ierr, __FILE__, __LINE__);
                     if (vdesc->nreqs % PIO_REQUEST_ALLOC_CHUNK == 0)
@@ -1186,9 +1182,10 @@ PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Offset 
                         PLOG((2,"start[%d] %ld count[%d] %ld\n",i,start[i],i,count[i]));
                 } /* endif ndims == 0 */
             } /* end if MPI_ROOT */
-//                flush_output_buffer(file, ierr == PIO_EINSUFFBUF, 0);
-//            flush_output_buffer(file, true, 0);
-//            PLOG((2, "PIOc_put_vars_tc flushed output buffer"));
+            /* Turn off independent access for pnetcdf file. */
+            if(ndims == 0)
+                if ((ierr = ncmpi_end_indep_data(file->fh)))
+                    return pio_err(ios, file, ierr, __FILE__, __LINE__);
         }
 #endif /* _PNETCDF */
 

@@ -135,6 +135,7 @@ module pio_nf
        pio_redef                                            , &
        pio_set_log_level                                    , &
        pio_strerror                                         , &
+#ifdef PIO_HAS_PAR_FILTERS
 #ifdef NC_HAS_QUANTIZE
        pio_def_var_quantize                                 , &
        pio_inq_var_quantize                                 , &
@@ -149,7 +150,6 @@ module pio_nf
        pio_def_var_zstandard                                , &
 #endif
        pio_def_var_szip                                     , &
-#ifdef PIO_HAS_PAR_FILTERS
        pio_inq_var_filter_ids                               , &
        pio_inq_var_filter_info                              , &
        pio_inq_filter_avail                                 , &
@@ -176,6 +176,7 @@ module pio_nf
           def_var_chunking_int, &
           def_var_chunking_vid
   end interface pio_def_var_chunking
+#ifdef PIO_HAS_PAR_FILTERS
 #ifdef NC_HAS_BZ
   interface pio_def_var_bzip2
      module procedure &
@@ -209,6 +210,7 @@ module pio_nf
           inq_var_zstandard_vid                                  , &
           inq_var_zstandard_id
   end interface pio_inq_var_zstandard
+#endif
 #endif
   interface pio_inq_attname
      module procedure &
@@ -1546,7 +1548,7 @@ contains
     enddo
 
   end function inq_var_chunking_id
-
+#ifdef PIO_HAS_PAR_FILTERS
 #ifdef NC_HAS_BZ
   !>
   !! @public
@@ -1684,6 +1686,7 @@ contains
     if(hasfilterp .ne. 0) hasfilter = .true.
 
   end function inq_var_zstandard_id
+#endif
 #endif
   !>
   !! @public
@@ -2201,6 +2204,7 @@ contains
 
     ierr = PIOc_def_var_chunking(ncid, varid-1, storage, cchunksizes)
   end function def_var_chunking_int
+#ifdef PIO_HAS_PAR_FILTERS
 #ifdef NC_HAS_BZ
   !>
   !! @ingroup PIO_def_var_bzip2
@@ -2347,7 +2351,7 @@ contains
 
     ierr = PIOc_def_var_szip(ncid, varid-1, mask, ppb)
   end function def_var_szip_int
-
+#endif
   !>
   !! @ingroup PIO_set_chunk_cache
   !! Changes chunk cache settings for netCDF-4/HDF5 files created after this call.
