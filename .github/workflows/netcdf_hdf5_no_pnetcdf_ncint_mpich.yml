@@ -13,8 +13,8 @@ jobs:
       LDFLAGS: "-L${GITHUB_WORKSPACE}/mpich/lib "
       # Note issue https://github.com/NCAR/ParallelIO/issues/1889 netcdf integration currently only works with netcdf 4.7.4
       NETCDF_C_VERSION: v4.9.2
-      NETCDF_FORTRAN_VERSION: v4.6.0
-      MPICH_VERSION: v4.1
+      NETCDF_FORTRAN_VERSION: v4.6.1
+      MPICH_VERSION: v4.1.2
       HDF5_VERSION: hdf5_1_12_2
       FFLAGS: "-fallow-argument-mismatch"
       FCFLAGS: "-fallow-argument-mismatch"

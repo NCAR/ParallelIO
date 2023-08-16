@@ -276,8 +276,10 @@ PIOc_closefile(int ncid)
             break;
 #ifdef _PNETCDF
         case PIO_IOTYPE_PNETCDF:
-            if (file->writable)
+            if (file->writable){
+                ierr = ncmpi_wait_all(file->fh, NC_REQ_ALL, NULL, NULL);
                 ierr = ncmpi_buffer_detach(file->fh);
+            }
             ierr = ncmpi_close(file->fh);
             break;
 #endif
@@ -477,8 +479,8 @@ PIOc_sync(int ncid)
     }
 
     /* Broadcast and check the return code. */
-    if ((mpierr = MPI_Bcast(&ierr, 1, MPI_INT, ios->ioroot, ios->my_comm)))
-        return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
+//    if ((mpierr = MPI_Bcast(&ierr, 1, MPI_INT, ios->ioroot, ios->my_comm)))
+//        return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
     if (ierr)
         return check_netcdf2(ios, NULL, ierr, __FILE__, __LINE__);
 
