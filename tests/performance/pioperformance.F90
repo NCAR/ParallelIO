@@ -151,7 +151,7 @@ contains
     integer(kind=PIO_Offset_kind) :: maplen, gmaplen
     integer :: ndims
     integer, pointer :: gdims(:)
-    character(len=20) :: fname
+    character(len=24) :: fname
     type(var_desc_t) :: vari(nvars), varr(nvars), vard(nvars)
     type(iosystem_desc_t) :: iosystem
     integer :: stride, n
@@ -266,7 +266,7 @@ contains
 
                 call pio_init(mype, comm, ntasks, 0, stride, PIO_REARR_SUBSET, iosystem)
 
-                write(fname, '(a,i1,a,i4.4,a,i1,a)') 'pioperf.',rearr,'-',ntasks,'-',k,'.nc'
+                write(fname, '(a,i1,a,i6.6,a,i1,a)') 'pioperf.',rearr,'-',ntasks,'-',iotype,'.nc'
 
                 call PIO_set_hint(iosystem, "nc_var_align_size", "1")
                 
@@ -379,7 +379,7 @@ contains
 ! Now the Read
 #ifdef DOREAD
 
-                write(fname, '(a,i1,a,i4.4,a,i1,a)') 'pioperf.',rearr,'-',ntasks,'-',iotype,'.nc'
+                write(fname, '(a,i1,a,i6.6,a,i1,a)') 'pioperf.',rearr,'-',ntasks,'-',iotype,'.nc'
 
                 ierr = PIO_OpenFile(iosystem, File, iotype, trim(fname), mode=PIO_NOWRITE);
                 do nv=1,nvars
