@@ -2091,6 +2091,7 @@ PIOc_def_dim(int ncid, const char *name, PIO_Offset len, int *idp)
     if (ios->ioproc)
     {
 #ifdef _PNETCDF
+
         if (file->iotype == PIO_IOTYPE_PNETCDF)
             ierr = ncmpi_def_dim(file->fh, name, len, idp);
 #endif /* _PNETCDF */

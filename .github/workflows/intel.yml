@@ -16,8 +16,8 @@ jobs:
       FC: mpiifort
       # Versions should match the github tag names
       PNETCDF_VERSION: checkpoint.1.12.3
-      NETCDF_C_VERSION: v4.9.1
-      NETCDF_FORTRAN_VERSION: v4.6.0
+      NETCDF_C_VERSION: v4.9.2
+      NETCDF_FORTRAN_VERSION: v4.6.1
       HDF5_VERSION: hdf5_1_12_2
     steps:
     - uses: actions/checkout@v3
@@ -27,6 +27,7 @@ jobs:
         sudo apt-get update
         sudo apt-get install libcurl4-gnutls-dev
         sudo apt-get install libz-dev
+        echo "/opt/intel/oneapi/compiler/2023.2.1/linux/bin/intel64/" >> $GITHUB_PATH
     - name: cache intel compiler
       id: cache-intel
       uses: actions/cache@v3
@@ -74,7 +75,7 @@ jobs:
         export PATH=$GITHUB_WORKSPACE/hdf5/bin:$GITHUB_WORKSPACE/netcdf/bin:$PATH
         export LDFLAGS="$LDFLAGS -L$GITHUB_WORKSPACE/hdf5/lib  -L/usr/lib/x86_64-linux-gnu/ -lcurl"
         export CPPFLAGS="$CPPFLAGS -I$GITHUB_WORKSPACE/hdf5/include -I$GITHUB_WORKSPACE/netcdf/include"
-        export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$GITHUB_WORKSPACE/hdf5/lib:/usr/lib/x86_64-linux-gnu/"
+        export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$GITHUB_WORKSPACE/hdf5/lib:/usr/lib/x86_64-linux-gnu/:/opt/intel/oneapi/compiler/2023.2.1/linux/compiler/lib/intel64_lin/"
         printenv >> $GITHUB_ENV
     - name: build-netcdf-c
       if: steps.cache-netcdf-c.outputs.cache-hit != 'true'
@@ -125,6 +126,6 @@ jobs:
         popd
       #     the following can be used by developers to login to the github server in case of errors
       #     see https://github.com/marketplace/actions/debugging-with-tmate for further details
-#    - name: Setup tmate session
-#      if: ${{ failure() }}
-#      uses: mxschmitt/action-tmate@v3
+    - name: Setup tmate session
+      if: ${{ failure() }}
+      uses: mxschmitt/action-tmate@v3

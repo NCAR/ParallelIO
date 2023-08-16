@@ -755,11 +755,10 @@ pio_err(iosystem_desc_t *ios, file_desc_t *file, int err_num, const char *fname,
         MPI_Abort(MPI_COMM_WORLD, -1);
     }
 
-    /* What should we do here??? */
-    if (err_handler == PIO_BCAST_ERROR)
-    {
-        /* ??? */
-    }
+    /* Do nothing, error is bcast to all tasks and application will handle */
+//    if (err_handler == PIO_BCAST_ERROR)
+//    {
+//    }
 
     /* If abort was not called, we'll get here. */
     return err_num;
