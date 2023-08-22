@@ -1142,7 +1142,7 @@ int inq_var_chunking_handler(iosystem_desc_t *ios)
 
     return PIO_NOERR;
 }
-#ifdef PIO_HAS_PAR_FILTERS
+#ifdef NC_HAS_PAR_FILTERS
 /**
  * Do an inq_var_filter_ids on a netCDF variable. This function is only
  * run on IO tasks.
@@ -1247,7 +1247,7 @@ int inq_var_bzip2_handler(iosystem_desc_t *ios)
 }
 #endif
 
-#ifdef PIO_HAS_PAR_FILTERS
+#ifdef NC_HAS_PAR_FILTERS
 /**
  * Do an inq_var_filter_info on a netCDF variable. This function is only
  * run on IO tasks.
@@ -2955,7 +2955,7 @@ int set_loglevel_handler(iosystem_desc_t *ios)
 #endif
     return PIO_NOERR;
 }
-#ifdef PIO_HAS_PAR_FILTERS
+#ifdef NC_HAS_PAR_FILTERS
 /**
  * Do an inq_var_filter_avail on a netCDF variable. This function is only
  * run on IO tasks.
@@ -3177,7 +3177,7 @@ int pio_msg_handler2(int io_rank, int component_count, iosystem_desc_t **iosys,
 	    case PIO_MSG_DEF_VAR:
 	      ret = def_var_handler(my_iosys);
 	      break;
-#ifdef PIO_HAS_PAR_FILTERS
+#ifdef NC_HAS_PAR_FILTERS
 #ifdef NC_HAS_ZSTD
 	    case PIO_MSG_INQ_VAR_ZSTANDARD:
 	      ret = inq_var_zstandard_handler(my_iosys);
@@ -3289,7 +3289,7 @@ int pio_msg_handler2(int io_rank, int component_count, iosystem_desc_t **iosys,
 	    case PIO_MSG_SETLOGLEVEL:
 	      ret = set_loglevel_handler(my_iosys);
 	      break;
-#ifdef PIO_HAS_PAR_FILTERS
+#ifdef NC_HAS_PAR_FILTERS
 #ifdef NC_HAS_QUANTIZE
             case PIO_MSG_DEF_VAR_QUANTIZE:
               ret = def_var_quantize_handler(my_iosys);

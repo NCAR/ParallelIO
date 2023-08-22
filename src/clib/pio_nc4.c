@@ -1395,7 +1395,7 @@ PIOc_def_var_filter(int ncid, int varid, unsigned int id, size_t nparams, unsign
 
     return PIO_NOERR;
 }
-#ifdef PIO_HAS_PAR_FILTERS
+#ifdef NC_HAS_PAR_FILTERS
 
 /**
  * Get the variable filter ids if any

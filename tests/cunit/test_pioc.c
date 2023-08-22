@@ -1827,6 +1827,9 @@ int test_scalar(int iosysid, int num_flavors, int *flavor, int my_rank, int asyn
         int test_val = TEST_VAL_42;
         if ((ret = PIOc_put_var_int(ncid, varid, &test_val)))
             ERR(ret);
+        /* flush the write buffer */
+        if ((ret = PIOc_sync(ncid)))
+            ERR(ret);
 
         /* Check the scalar var. */
         if ((ret = check_scalar_var(ncid, varid, flavor[fmt], my_rank)))
@@ -2326,7 +2329,6 @@ int test_all(int iosysid, int num_flavors, int *flavor, int my_rank, MPI_Comm te
     /* This will be our file name for writing out decompositions. */
     sprintf(filename, "decomp_%d.txt", my_rank);
     sprintf(nc_filename, "decomp_%d.nc", my_rank);
-
     /* This is a simple test that just creates the decomp with
      * async. */
     if (async)

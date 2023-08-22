@@ -127,6 +127,7 @@ NC_Dispatch NCINT_dispatcher = {
     NC_NOTNC4_def_var_filter,
     NC_NOTNC4_set_var_chunk_cache,
     NC_NOTNC4_get_var_chunk_cache,
+#ifdef NC_HAS_PAR_FILTERS
 #if NC_DISPATCH_VERSION == 2
     PIO_NCINT_filter_actions,
 #endif
@@ -140,6 +141,7 @@ NC_Dispatch NCINT_dispatcher = {
 #endif
 #if NC_DISPATCH_VERSION >= 5
     PIOc_inq_filter_avail,
+#endif
 #endif
 };
 

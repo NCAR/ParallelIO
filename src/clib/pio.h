@@ -1267,9 +1267,8 @@ extern "C" {
                                const long long *op);
     int PIOc_put_vard_ulonglong(int ncid, int varid, int decompid, const PIO_Offset recnum,
                                 const unsigned long long *op);
-/* use this variable in the NETCDF library (introduced in v4.9.0) to determine if the following
-   functions are available */
-#ifdef NC_HAS_MULTIFILTERS
+
+#ifdef NC_HAS_PAR_FILTERS
   int PIOc_def_var_filter(int ncid, int varid,unsigned int id, size_t nparams, unsigned int *params);
   int PIOc_inq_var_filter_ids(int ncid, int varid, size_t *nfiltersp, unsigned int *ids);
   int PIOc_inq_var_filter_info(int ncid, int varid, unsigned int id, size_t *nparamsp, unsigned int *params );
