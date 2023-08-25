@@ -3111,7 +3111,7 @@ iotype_is_valid(int iotype)
         ret++;
 
     /* Some builds include netCDF-4. */
-#ifdef _NETCDF4
+#ifdef HAVE_NETCDF4
     if (iotype == PIO_IOTYPE_NETCDF4C || iotype == PIO_IOTYPE_NETCDF4P)
         ret++;
 #endif /* _NETCDF4 */

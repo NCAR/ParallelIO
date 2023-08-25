@@ -101,7 +101,7 @@ main(int argc, char **argv)
                 char filename[strlen(FILE_PREFIX)+16];
                 sprintf(filename,"%s%d.nc",FILE_PREFIX,cmode[m]);
                 /* Turn on logging for PIO library. */
-//                PIOc_set_log_level(2);
+                if(m==9) PIOc_set_log_level(2);
 //                if (!my_rank)
 //                    nc_set_log_level(2);
                 if (nc_create(filename, cmode[m], &ncid)) PERR;

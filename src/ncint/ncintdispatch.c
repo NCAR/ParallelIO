@@ -231,10 +231,11 @@ PIO_NCINT_create(const char *path, int cmode, size_t initialsz, int basepe,
     if ((ret = nc4_file_list_add(ncid, path, cmode, NULL)))
         return ret;
 
-    /* Create the file with PIO. The final parameter tests
+    /* Create the file with PIO. The final parameter tells
      * createfile_int to accept the externally assigned ncid. */
     if ((ret = PIOc_createfile_int(diosysid, &ncid, &iotype, path, cmode, 1)))
         return ret;
+    
 
     return PIO_NOERR;
 }
