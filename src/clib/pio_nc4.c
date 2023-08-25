@@ -1796,7 +1796,7 @@ PIOc_inq_var_zstandard(int ncid, int varid, int* hasfilterp, int *levelp)
 // NC_HAS_ZSTD
 #endif
 #endif
-#if NC_HAS_PAR_FILTERS
+#ifdef NC_HAS_PAR_FILTERS
 /**
  *
  *

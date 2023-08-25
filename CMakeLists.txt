@@ -364,6 +364,8 @@ if (HAVE_NETCDF_PAR)
     choke me
 #endif
 int main() {return 0;}" HAVE_PAR_FILTERS)
+else()
+  set(HAVE_PAR_FILTERS 0)
 endif()
 
 ###
