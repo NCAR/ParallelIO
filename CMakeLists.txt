@@ -358,8 +358,13 @@ int main() {return 0;}" HAVE_SZIP_WRITE)
 # Check to see if parallel filters are supported by HDF5/netcdf-c.
 ###
 if (HAVE_NETCDF_PAR)
-  check_function_exists(nc_inq_filter_avail HAVE_PAR_FILTERS)
-endif()
+  CHECK_C_SOURCE_COMPILES("
+#include <netcdf_meta.h>
+#if !NC_HAS_PAR_FILTERS
+    choke me
+#endif
+int main() {return 0;}" HAVE_PAR_FILTERS)
+
 ###
 # Check to see if this is netcdf-c-4.7.2, which won't work.
 ###
