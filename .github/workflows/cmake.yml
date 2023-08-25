@@ -40,6 +40,8 @@ jobs:
     - name: parallelio tests
       run: |
         pushd $GITHUB_WORKSPACE/build
+        nc-config --all
+        cat ../libpio.settings
         make tests VERBOSE=1
         ctest -VV
         popd
