@@ -1876,7 +1876,7 @@ PIOc_inq_filter_avail(int ncid, unsigned int id )
 
     return ierr;
 }
-// NC_HAS_PAR_FILTERS
+// PIO_HAS_PAR_FILTERS
 #endif 
 // NC_HAS_MULTIFILTERS
 #endif
