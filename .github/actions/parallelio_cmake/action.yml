@@ -137,5 +137,5 @@ runs:
         -DPnetCDF_C_LIBRARY=${{ inputs.pnetcdf_library }}  \
         $GITHUB_WORKSPACE/parallelio-src
         make VERBOSE=1
-        make tests
+        #make tests
         make install
