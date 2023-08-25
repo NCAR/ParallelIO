@@ -135,7 +135,7 @@ module pio_nf
        pio_redef                                            , &
        pio_set_log_level                                    , &
        pio_strerror                                         , &
-#ifdef NC_HAS_PAR_FILTERS
+#ifdef PIO_HAS_PAR_FILTERS
 #ifdef NC_HAS_QUANTIZE
        pio_def_var_quantize                                 , &
        pio_inq_var_quantize                                 , &
@@ -176,7 +176,7 @@ module pio_nf
           def_var_chunking_int, &
           def_var_chunking_vid
   end interface pio_def_var_chunking
-#ifdef NC_HAS_PAR_FILTERS
+#ifdef PIO_HAS_PAR_FILTERS
 #ifdef NC_HAS_BZ
   interface pio_def_var_bzip2
      module procedure &
@@ -409,7 +409,7 @@ module pio_nf
           inq_var_quantize_id
   end interface pio_inq_var_quantize
 #endif
-#ifdef NC_HAS_PAR_FILTERS
+#ifdef PIO_HAS_PAR_FILTERS
   interface pio_inq_var_filter_ids
      module procedure &
           inq_var_filter_ids_desc                          , &
@@ -1548,7 +1548,7 @@ contains
     enddo
 
   end function inq_var_chunking_id
-#ifdef NC_HAS_PAR_FILTERS
+#ifdef PIO_HAS_PAR_FILTERS
 #ifdef NC_HAS_BZ
   !>
   !! @public
@@ -2204,7 +2204,7 @@ contains
 
     ierr = PIOc_def_var_chunking(ncid, varid-1, storage, cchunksizes)
   end function def_var_chunking_int
-#ifdef NC_HAS_PAR_FILTERS
+#ifdef PIO_HAS_PAR_FILTERS
 #ifdef NC_HAS_BZ
   !>
   !! @ingroup PIO_def_var_bzip2
@@ -2581,7 +2581,7 @@ contains
     ierr = PIOc_inq_var_quantize(ncid, varid-1, quantize_mode, nsd)
   end function inq_var_quantize_id
 #endif
-#ifdef NC_HAS_PAR_FILTERS
+#ifdef PIO_HAS_PAR_FILTERS
   !>
   !! @ingroup PIO_inq_var_filter_ids
   !! Inquire filter ids for a netCDF-4/HDF5 variable.
@@ -2656,7 +2656,7 @@ contains
 
     ierr = inq_var_filter_info_id(file%fh, vardesc%varid, id, params)
   end function inq_var_filter_info_desc
-#ifdef NC_HAS_PAR_FILTERS
+#ifdef PIO_HAS_PAR_FILTERS
   !>
   !! @ingroup PIO_inq_filter_avail_id
   !! Inquire filter available for a netCDF-4/HDF5 file.

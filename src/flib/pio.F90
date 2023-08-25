@@ -76,7 +76,7 @@ module pio
        PIO_inq_unlimdim, &
        PIO_def_dim   ,        &
        PIO_def_var   ,        &
-#ifdef NC_HAS_PAR_FILTERS
+#ifdef PIO_HAS_PAR_FILTERS
 #ifdef NC_HAS_BZ
        PIO_def_var_bzip2,     &
 #endif
