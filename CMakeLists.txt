@@ -364,6 +364,7 @@ if (HAVE_NETCDF_PAR)
     choke me
 #endif
 int main() {return 0;}" HAVE_PAR_FILTERS)
+endif()
 
 ###
 # Check to see if this is netcdf-c-4.7.2, which won't work.
