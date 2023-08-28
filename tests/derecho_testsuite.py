@@ -18,7 +18,7 @@ from env_modules_python import module
 compilers = ["cce/15.0.1", "intel/2023.0.0", "intel-oneapi/2023.0.0", "nvhpc/23.5", "gcc/12.2.0"]
 #compilers = ["intel/2023.0.0"]
 #mpilibs = ["cray-mpich/8.1.25", "intel-mpi/2021.8.0", "mpi-serial/2.3.0"]
-mpilibs = ["cray-mpich/8.1.25", "mpi-serial/2.3.0"]
+mpilibs = ["mpi-serial/2.3.0","cray-mpich/8.1.25"]
 netcdf = ["netcdf/4.9.2","netcdf-mpi/4.9.2"]
 pnetcdf = ["parallel-netcdf/1.12.3"]
 
@@ -36,7 +36,7 @@ for compiler in compilers:
     module("load", compiler)
     for mpilib in mpilibs:
         module("load", mpilib)
-        cmakeflags = ["-DPIO_ENABLE_EXAMPLES=OFF", "-DPIO_ENABLE_LOGGING=ON"]
+        cmakeflags = ["-DPIO_ENABLE_EXAMPLES=OFF"]
         for netlib in netcdf:
             module("unload", "netcdf")
             module("unload", "hdf5")
@@ -46,10 +46,11 @@ for compiler in compilers:
                 cc = os.getenv("CC")
                 ftn = os.getenv("FC")
                 if not cc:
-                    cc = "gcc"
+                    cc = "cc"
                 if not ftn:
-                    ftn = "gfortran"
-                cmakeflags.extend(["-DPIO_USE_MPISERIAL=ON","-DMPISERIAL_PATH=$NCAR_ROOT_MPI_SERIAL","-DPIO_ENABLE_TESTS=OFF"])
+                    ftn = "ftn"
+                mpi_serial = os.environ["NCAR_ROOT_MPI_SERIAL"]
+                cmakeflags.extend(["-DPIO_USE_MPISERIAL=ON","-DMPISERIAL_PATH="+mpi_serial,"-DPIO_ENABLE_TESTS=OFF","-DPIO_ENABLE_TIMING=OFF"])
                 if "mpi" in netlib:
                     continue
 
@@ -90,14 +91,17 @@ for compiler in compilers:
                 if cmakeopt:
                     cmake.extend(cmakeopt)
                 cmake.extend([piodir])
-                print("Running cmake", flush=True)
+                print("Running cmake")
+                print(f"compiler = {compiler} netcdf={netlib} mpilib={mpilib} cmake = {cmake}", flush=True)
                 cmakeout = None
                 try:
                     cmakeout = subprocess.run(cmake, check=True, cwd=bld, capture_output=True, text=True)
+#                    cmakeout = subprocess.run(cmake, check=True, cwd=bld)
                 except:
-                    print(f"cmake process failed {cmakeout.stdout}")
+                    #print(f"cmake process failed {cmakeout.stdout}")
                     continue
-                print(f"compiler = {compiler} netcdf={netlib} mpilib={mpilib} cmake args = {cmakeout.args}")
+
+
                 printline = False
                 for line in cmakeout.stdout.split("\n"):
                     if "PIO Configuration Summary" in line:
