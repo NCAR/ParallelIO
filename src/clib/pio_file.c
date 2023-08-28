@@ -156,7 +156,7 @@ PIOc_createfile(int iosysid, int *ncidp, int *iotype, const char *filename,
 
     PLOG((1, "PIOc_createfile iosysid = %d iotype = %d filename = %s mode = %d",
           iosysid, *iotype, filename, mode));
-
+   
     /* Create the file. */
     if ((ret = PIOc_createfile_int(iosysid, ncidp, iotype, filename, mode, 0)))
         return pio_err(ios, NULL, ret, __FILE__, __LINE__);

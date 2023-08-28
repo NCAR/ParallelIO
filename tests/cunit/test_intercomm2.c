@@ -338,6 +338,7 @@ int main(int argc, char **argv)
                 sprintf(filename[fmt], "test_intercomm2_%d.nc", flavor[fmt]);
 
                 /* Create a netCDF file with one dimension and one variable. */
+                
                 if ((ret = PIOc_createfile(iosysid[my_comp_idx], &ncid, &flavor[fmt], filename[fmt],
                                            NC_CLOBBER)))
                     ERR(ret);

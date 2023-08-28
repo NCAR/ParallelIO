@@ -72,7 +72,7 @@ for compiler in compilers:
                 if cmakeopt and "mpi-serial" in mpilib and "PNETCDF" in cmakeopt:
                     continue
                 bldcnt = bldcnt+1
-                bld = f"bld{bldcnt:02d}"
+                bld = f"/glade/derecho/scratch/jedwards/piotest/bld{bldcnt:02d}"
                 os.chdir(piodir)
                 if os.path.exists(bld):
                     shutil.rmtree(bld)
@@ -89,8 +89,9 @@ for compiler in compilers:
                     cmake.extend(cmakeflags)
                 if cmakeopt:
                     cmake.extend(cmakeopt)
-                cmake.extend(["../"])
+                cmake.extend([piodir])
                 print("Running cmake", flush=True)
+                cmakeout = None
                 try:
                     cmakeout = subprocess.run(cmake, check=True, cwd=bld, capture_output=True, text=True)
                 except:
