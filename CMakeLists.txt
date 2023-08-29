@@ -10,7 +10,7 @@ project (PIO C)
 # The project version number.
 set(VERSION_MAJOR   2   CACHE STRING "Project major version number.")
 set(VERSION_MINOR   6   CACHE STRING "Project minor version number.")
-set(VERSION_PATCH   1   CACHE STRING "Project patch version number.")
+set(VERSION_PATCH   2   CACHE STRING "Project patch version number.")
 mark_as_advanced(VERSION_MAJOR VERSION_MINOR VERSION_PATCH)
 
 # Create version info in autotools parlance for pio_meta.h.
@@ -358,8 +358,16 @@ int main() {return 0;}" HAVE_SZIP_WRITE)
 # Check to see if parallel filters are supported by HDF5/netcdf-c.
 ###
 if (HAVE_NETCDF_PAR)
-  check_function_exists(nc_inq_filter_avail HAVE_PAR_FILTERS)
+  CHECK_C_SOURCE_COMPILES("
+#include <netcdf_meta.h>
+#if !NC_HAS_PAR_FILTERS
+    choke me
+#endif
+int main() {return 0;}" HAVE_PAR_FILTERS)
+else()
+  set(HAVE_PAR_FILTERS 0)
 endif()
+
 ###
 # Check to see if this is netcdf-c-4.7.2, which won't work.
 ###

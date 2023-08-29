@@ -3111,15 +3111,15 @@ iotype_is_valid(int iotype)
         ret++;
 
     /* Some builds include netCDF-4. */
-#ifdef _NETCDF4
+#ifdef NC_HAS_NC4
     if (iotype == PIO_IOTYPE_NETCDF4C || iotype == PIO_IOTYPE_NETCDF4P)
         ret++;
 #endif /* _NETCDF4 */
 
     /* Some builds include pnetcdf. */
+#ifdef _PNETCDF
     if (iotype == PIO_IOTYPE_PNETCDF)
         ret++;
-#ifdef _PNETCDF
 #endif /* _PNETCDF */
 
     return ret;

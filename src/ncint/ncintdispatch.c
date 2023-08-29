@@ -127,6 +127,7 @@ NC_Dispatch NCINT_dispatcher = {
     NC_NOTNC4_def_var_filter,
     NC_NOTNC4_set_var_chunk_cache,
     NC_NOTNC4_get_var_chunk_cache,
+#ifdef PIO_HAS_PAR_FILTERS
 #if NC_DISPATCH_VERSION == 2
     PIO_NCINT_filter_actions,
 #endif
@@ -140,6 +141,7 @@ NC_Dispatch NCINT_dispatcher = {
 #endif
 #if NC_DISPATCH_VERSION >= 5
     PIOc_inq_filter_avail,
+#endif
 #endif
 };
 
@@ -229,10 +231,11 @@ PIO_NCINT_create(const char *path, int cmode, size_t initialsz, int basepe,
     if ((ret = nc4_file_list_add(ncid, path, cmode, NULL)))
         return ret;
 
-    /* Create the file with PIO. The final parameter tests
+    /* Create the file with PIO. The final parameter tells
      * createfile_int to accept the externally assigned ncid. */
     if ((ret = PIOc_createfile_int(diosysid, &ncid, &iotype, path, cmode, 1)))
         return ret;
+    
 
     return PIO_NOERR;
 }

@@ -17,7 +17,7 @@
 #include <limits.h>
 #include <math.h>
 #include <netcdf.h>
-#ifdef PIO_HAS_PAR_FILTERS
+#ifdef NC_HAS_PAR_FILTERS
 #include <netcdf_filter.h>
 #include <netcdf_meta.h>
 #endif

@@ -1396,7 +1396,6 @@ PIOc_def_var_filter(int ncid, int varid, unsigned int id, size_t nparams, unsign
     return PIO_NOERR;
 }
 #ifdef PIO_HAS_PAR_FILTERS
-
 /**
  * Get the variable filter ids if any
  *
@@ -1794,8 +1793,10 @@ PIOc_inq_var_zstandard(int ncid, int varid, int* hasfilterp, int *levelp)
 
     return PIO_NOERR;
 }
+// NC_HAS_ZSTD
 #endif
-
+#endif
+#ifdef PIO_HAS_PAR_FILTERS
 /**
  *
  *
@@ -1875,7 +1876,9 @@ PIOc_inq_filter_avail(int ncid, unsigned int id )
 
     return ierr;
 }
-#endif
+// PIO_HAS_PAR_FILTERS
+#endif 
+// NC_HAS_MULTIFILTERS
 #endif
 #ifdef NC_HAS_QUANTIZE
 /**
