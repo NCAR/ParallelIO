@@ -200,7 +200,6 @@ else ()
     target_compile_definitions (gptl
       PUBLIC NO_MPIMOD)
   endif()
-  target_compile_definitions (piof PUBLIC NO_MPIMOD)
 endif ()
 
 #===== GPTL =====

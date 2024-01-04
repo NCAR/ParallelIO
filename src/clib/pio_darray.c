@@ -181,7 +181,7 @@ PIOc_write_darray_multi(int ncid, const int *varids, int ioid, int nvars,
 
     /* Run these on all tasks if async is not in use, but only on
      * non-IO tasks if async is in use. */
-    if (!ios->async || !ios->ioproc)
+    if ((!ios->async || !ios->ioproc) && (file->iotype != PIO_IOTYPE_GDAL))
     {
         /* Get the number of dims for this var. */
         PLOG((3, "about to call PIOc_inq_varndims varids[0] = %d", varids[0]));
@@ -208,35 +208,35 @@ PIOc_write_darray_multi(int ncid, const int *varids, int ioid, int nvars,
             char fillvalue_present = fillvalue ? true : false; /* Is fillvalue non-NULL? */
             int flushtodisk_int = flushtodisk; /* Need this to be int not boolean. */
 
-            if (ios->compmain == MPI_ROOT)
+            if (ios->compmaster == MPI_ROOT)
                 mpierr = MPI_Send(&msg, 1, MPI_INT, ios->ioroot, 1, ios->union_comm);
 
             /* Send the function parameters and associated informaiton
              * to the msg handler. */
             if (!mpierr)
-                mpierr = MPI_Bcast(&ncid, 1, MPI_INT, ios->compmain, ios->intercomm);
+                mpierr = MPI_Bcast(&ncid, 1, MPI_INT, ios->compmaster, ios->intercomm);
             if (!mpierr)
-                mpierr = MPI_Bcast(&nvars, 1, MPI_INT, ios->compmain, ios->intercomm);
+                mpierr = MPI_Bcast(&nvars, 1, MPI_INT, ios->compmaster, ios->intercomm);
             if (!mpierr)
-                mpierr = MPI_Bcast((void *)varids, nvars, MPI_INT, ios->compmain, ios->intercomm);
+                mpierr = MPI_Bcast((void *)varids, nvars, MPI_INT, ios->compmaster, ios->intercomm);
             if (!mpierr)
-                mpierr = MPI_Bcast(&ioid, 1, MPI_INT, ios->compmain, ios->intercomm);
+                mpierr = MPI_Bcast(&ioid, 1, MPI_INT, ios->compmaster, ios->intercomm);
             if (!mpierr)
-                mpierr = MPI_Bcast(&arraylen, 1, MPI_OFFSET, ios->compmain, ios->intercomm);
+                mpierr = MPI_Bcast(&arraylen, 1, MPI_OFFSET, ios->compmaster, ios->intercomm);
             if (!mpierr)
-                mpierr = MPI_Bcast(array, arraylen * iodesc->piotype_size, MPI_CHAR, ios->compmain,
+                mpierr = MPI_Bcast(array, arraylen * iodesc->piotype_size, MPI_CHAR, ios->compmaster,
                                    ios->intercomm);
             if (!mpierr)
-                mpierr = MPI_Bcast(&frame_present, 1, MPI_CHAR, ios->compmain, ios->intercomm);
+                mpierr = MPI_Bcast(&frame_present, 1, MPI_CHAR, ios->compmaster, ios->intercomm);
             if (!mpierr && frame_present)
-                mpierr = MPI_Bcast((void *)frame, nvars, MPI_INT, ios->compmain, ios->intercomm);
+                mpierr = MPI_Bcast((void *)frame, nvars, MPI_INT, ios->compmaster, ios->intercomm);
             if (!mpierr)
-                mpierr = MPI_Bcast(&fillvalue_present, 1, MPI_CHAR, ios->compmain, ios->intercomm);
+                mpierr = MPI_Bcast(&fillvalue_present, 1, MPI_CHAR, ios->compmaster, ios->intercomm);
             if (!mpierr && fillvalue_present)
                 mpierr = MPI_Bcast((void *)fillvalue, nvars * iodesc->piotype_size, MPI_CHAR,
-                                   ios->compmain, ios->intercomm);
+                                   ios->compmaster, ios->intercomm);
             if (!mpierr)
-                mpierr = MPI_Bcast(&flushtodisk_int, 1, MPI_INT, ios->compmain, ios->intercomm);
+                mpierr = MPI_Bcast(&flushtodisk_int, 1, MPI_INT, ios->compmaster, ios->intercomm);
             PLOG((2, "PIOc_write_darray_multi file->pio_ncid = %d nvars = %d ioid = %d arraylen = %d "
                   "frame_present = %d fillvalue_present = %d flushtodisk = %d", file->pio_ncid, nvars,
                   ioid, arraylen, frame_present, fillvalue_present, flushtodisk));
@@ -263,14 +263,14 @@ PIOc_write_darray_multi(int ncid, const int *varids, int ioid, int nvars,
 
     /* Determine total size of aggregated data (all vars/records).
      * For netcdf serial writes we collect the data on io nodes and
-     * then move that data one node at a time to the io main node
+     * then move that data one node at a time to the io master node
      * and write (or read). The buffer size on io task 0 must be as
      * large as the largest used to accommodate this serial io
      * method.  */
     rlen = 0;
     if (iodesc->llen > 0 ||
         ((file->iotype == PIO_IOTYPE_NETCDF ||
-          file->iotype == PIO_IOTYPE_NETCDF4C) && ios->iomain))
+          file->iotype == PIO_IOTYPE_NETCDF4C) && ios->iomaster))
         rlen = iodesc->maxiobuflen * nvars;
 
     /* Allocate iobuf. */
@@ -332,6 +332,12 @@ PIOc_write_darray_multi(int ncid, const int *varids, int ioid, int nvars,
                                               DARRAY_DATA, frame)))
             return pio_err(ios, file, ierr, __FILE__, __LINE__);
 
+        break;
+    case PIO_IOTYPE_GDAL:
+//        if ((ierr = gdal_write_darray_multi_serial(file, nvars, fndims, varids, iodesc,
+        if ((ierr = gdal_write_darray_multi_serial(file, nvars, 1, varids, iodesc,
+                                              DARRAY_DATA, frame)))
+            return pio_err(ios, file, ierr, __FILE__, __LINE__);
         break;
     default:
         return pio_err(NULL, NULL, PIO_EBADIOTYPE, __FILE__, __LINE__);
@@ -661,6 +667,7 @@ PIOc_write_darray(int ncid, int varid, int ioid, PIO_Offset arraylen, void *arra
 #endif /* USE_MPE */
 
     /* Get the file info. */
+    printf(">>>> getting file %d\n",ncid);
     if ((ierr = pio_get_file(ncid, &file)))
         return pio_err(NULL, NULL, PIO_EBADID, __FILE__, __LINE__);
     ios = file->iosystem;
@@ -686,9 +693,12 @@ PIOc_write_darray(int ncid, int varid, int ioid, PIO_Offset arraylen, void *arra
           arraylen, iodesc->ndof));
 
     /* Get var description. */
+    PLOG((3, "here1"));
+    printf(">>>> NCID: %d, %d\n",file->pio_ncid, file->fh);
     if ((ierr = get_var_desc(varid, &file->varlist, &vdesc)))
         return pio_err(ios, file, ierr, __FILE__, __LINE__);
 
+    PLOG((3, "here2"));
     /* If the type of the var doesn't match the type of the
      * decomposition, return an error. */
     /* if (iodesc->piotype != vdesc->pio_type) */
@@ -697,13 +707,14 @@ PIOc_write_darray(int ncid, int varid, int ioid, PIO_Offset arraylen, void *arra
     /*           __FILE__, __LINE__); */
 
     /* If we don't know the fill value for this var, get it. */
-    if (!vdesc->fillvalue)
+    if (!vdesc->fillvalue && file->iotype != PIO_IOTYPE_GDAL)
         if ((ierr = find_var_fillvalue(file, varid, vdesc)))
             return pio_err(ios, file, PIO_EBADID, __FILE__, __LINE__);
 
     /* Check that if the user passed a fill value, it is correct. If
      * use_fill is false, then find_var_fillvalue will not end up
      * getting a fill value. */
+    PLOG((3, "here3"));
     if (fillvalue && vdesc->use_fill)
         if (memcmp(fillvalue, vdesc->fillvalue, vdesc->pio_type_size))
             return pio_err(ios, file, PIO_EINVAL, __FILE__, __LINE__);
@@ -895,19 +906,19 @@ PIOc_read_darray(int ncid, int varid, int ioid, PIO_Offset arraylen,
         {
             int msg = PIO_MSG_READDARRAY;
 
-            if (ios->compmain == MPI_ROOT)
+            if (ios->compmaster == MPI_ROOT)
                 mpierr = MPI_Send(&msg, 1, MPI_INT, ios->ioroot, 1, ios->union_comm);
 
             /* Send the function parameters and associated informaiton
              * to the msg handler. */
             if (!mpierr)
-                mpierr = MPI_Bcast(&ncid, 1, MPI_INT, ios->compmain, ios->intercomm);
+                mpierr = MPI_Bcast(&ncid, 1, MPI_INT, ios->compmaster, ios->intercomm);
             if (!mpierr)
-                mpierr = MPI_Bcast(&varid, 1, MPI_INT, ios->compmain, ios->intercomm);
+                mpierr = MPI_Bcast(&varid, 1, MPI_INT, ios->compmaster, ios->intercomm);
             if (!mpierr)
-                mpierr = MPI_Bcast(&ioid, 1, MPI_INT, ios->compmain, ios->intercomm);
+                mpierr = MPI_Bcast(&ioid, 1, MPI_INT, ios->compmaster, ios->intercomm);
             if (!mpierr)
-                mpierr = MPI_Bcast(&arraylen, 1, MPI_OFFSET, ios->compmain, ios->intercomm);
+                mpierr = MPI_Bcast(&arraylen, 1, MPI_OFFSET, ios->compmaster, ios->intercomm);
             PLOG((2, "PIOc_read_darray ncid %d varid %d ioid %d arraylen %d",
                   ncid, varid, ioid, arraylen));
         }
@@ -925,8 +936,8 @@ PIOc_read_darray(int ncid, int varid, int ioid, PIO_Offset arraylen,
     pioassert(iodesc->rearranger == PIO_REARR_BOX || iodesc->rearranger == PIO_REARR_SUBSET,
               "unknown rearranger", __FILE__, __LINE__);
 
-    /* iomain needs max of buflen, others need local len */
-    if (ios->iomain == MPI_ROOT)
+    /* iomaster needs max of buflen, others need local len */
+    if (ios->iomaster == MPI_ROOT)
         rlen = iodesc->maxiobuflen;
     else
         rlen = iodesc->llen;
@@ -947,6 +958,10 @@ PIOc_read_darray(int ncid, int varid, int ioid, PIO_Offset arraylen,
     case PIO_IOTYPE_PNETCDF:
     case PIO_IOTYPE_NETCDF4P:
         if ((ierr = pio_read_darray_nc(file, iodesc, varid, iobuf)))
+            return pio_err(ios, file, ierr, __FILE__, __LINE__);
+        break;
+    case PIO_IOTYPE_GDAL:
+        if ((ierr = gdal_read_darray_shp(file, iodesc, varid, iobuf)))
             return pio_err(ios, file, ierr, __FILE__, __LINE__);
         break;
     default:

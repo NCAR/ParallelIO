@@ -9,8 +9,8 @@ project (PIOC C)
 if (CMAKE_BUILD_TYPE)
     define_property(
         SOURCE
-        PROPERTY COMPILE_FLAGS
-        INHERITED
+        PROPERTY COMPILE_FLAGS 
+        INHERITED 
         BRIEF_DOCS "brief-doc"
         FULL_DOCS  "full-doc"
     )
@@ -28,16 +28,19 @@ set (src topology.c pio_file.c pioc_support.c pio_lists.c
 if (NETCDF_INTEGRATION)
   set (src ${src} ../ncint/nc_get_vard.c ../ncint/ncintdispatch.c ../ncint/ncint_pio.c ../ncint/nc_put_vard.c)
 endif ()
+#<<THIS IS NOT YET IMPLEMENTED - MSL>> if (GDAL_INTEGRATION)
+set (src ${src} pio_gdal.c)
+#endif ()
 
 add_library (pioc ${src})
 
 # Always use -fPIC
 set_property(TARGET pioc PROPERTY POSITION_INDEPENDENT_CODE ON)
 
-set_source_files_properties(
-    pioc_async.c
+set_source_files_properties( 
+    pioc_async.c 
     PROPERTIES
-    COMPILE_FLAGS -O0
+    COMPILE_FLAGS -O0 
 )
 
 
@@ -63,7 +66,7 @@ target_compile_definitions (pioc
 
 # Compiler-specific compiler options
 if ("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
-  string(APPEND CMAKE_C_FLAGS  " -std=gnu99 " )
+  string(APPEND CMAKE_C_FLAGS  " -std=c99 " )
 elseif ("${CMAKE_C_COMPILER_ID}" STREQUAL "PGI")
   string(APPEND CMAKE_C_FLAGS  " -c99 ")
 elseif ("${CMAKE_C_COMPILER_ID}" STREQUAL "Intel")
@@ -172,6 +175,14 @@ if (PIO_USE_MPISERIAL)
     set (MPI_C_INCLUDE_PATH ${MPISERIAL_C_INCLUDE_DIRS})
   endif ()
 endif ()
+
+#===== GDAL ===== <M.Long>
+#if (GDAL_Found)
+  target_include_directories (pioc
+    PUBLIC ${GDAL_INCLUDE_DIR})
+  target_link_libraries (pioc
+    PUBLIC ${GDAL_LIBRARY})
+#endif ()
 
 include(CheckTypeSize)
 check_type_size("size_t" SIZEOF_SIZE_T)

@@ -156,7 +156,7 @@ PIOc_createfile(int iosysid, int *ncidp, int *iotype, const char *filename,
 
     PLOG((1, "PIOc_createfile iosysid = %d iotype = %d filename = %s mode = %d",
           iosysid, *iotype, filename, mode));
-   
+
     /* Create the file. */
     if ((ret = PIOc_createfile_int(iosysid, ncidp, iotype, filename, mode, 0)))
         return pio_err(ios, NULL, ret, __FILE__, __LINE__);
@@ -235,8 +235,8 @@ PIOc_closefile(int ncid)
         if (file->writable)
             PIOc_sync(ncid);
 
-    /* If async is in use and this is a comp tasks, then the compmain
-     * sends a msg to the pio_msg_handler running on the IO main and
+    /* If async is in use and this is a comp tasks, then the compmaster
+     * sends a msg to the pio_msg_handler running on the IO master and
      * waiting for a message. Then broadcast the ncid over the intercomm
      * to the IO tasks. */
     if (ios->async)
@@ -245,11 +245,11 @@ PIOc_closefile(int ncid)
         {
             int msg = PIO_MSG_CLOSE_FILE;
 
-            if (ios->compmain == MPI_ROOT)
+            if (ios->compmaster == MPI_ROOT)
                 mpierr = MPI_Send(&msg, 1, MPI_INT, ios->ioroot, 1, ios->union_comm);
 
             if (!mpierr)
-                mpierr = MPI_Bcast(&ncid, 1, MPI_INT, ios->compmain, ios->intercomm);
+                mpierr = MPI_Bcast(&ncid, 1, MPI_INT, ios->compmaster, ios->intercomm);
         }
 
         /* Handle MPI errors. */
@@ -276,13 +276,15 @@ PIOc_closefile(int ncid)
             break;
 #ifdef _PNETCDF
         case PIO_IOTYPE_PNETCDF:
-            if (file->writable){
-                ierr = ncmpi_wait_all(file->fh, NC_REQ_ALL, NULL, NULL);
+            if (file->writable)
                 ierr = ncmpi_buffer_detach(file->fh);
-            }
             ierr = ncmpi_close(file->fh);
             break;
 #endif
+	case PIO_IOTYPE_GDAL:
+	  ierr = GDALClose((void*)file->hDS);
+	  printf("GDALClose ierr: %d\n",ierr);
+	  break;
         default:
             return pio_err(ios, file, PIO_EBADIOTYPE, __FILE__, __LINE__);
         }
@@ -328,7 +330,7 @@ PIOc_deletefile(int iosysid, const char *filename)
     if (!(ios = pio_get_iosystem_from_id(iosysid)))
         return pio_err(NULL, NULL, PIO_EBADID, __FILE__, __LINE__);
 
-    /* If async is in use, send message to IO main task. */
+    /* If async is in use, send message to IO master task. */
     if (ios->async)
     {
         if (!ios->ioproc)
@@ -338,9 +340,9 @@ PIOc_deletefile(int iosysid, const char *filename)
 
             len = strlen(filename);
             if (!mpierr)
-                mpierr = MPI_Bcast(&len, 1, MPI_INT, ios->compmain, ios->intercomm);
+                mpierr = MPI_Bcast(&len, 1, MPI_INT, ios->compmaster, ios->intercomm);
             if (!mpierr)
-                mpierr = MPI_Bcast((void *)filename, len + 1, MPI_CHAR, ios->compmain,
+                mpierr = MPI_Bcast((void *)filename, len + 1, MPI_CHAR, ios->compmaster,
                                    ios->intercomm);
             PLOG((2, "Bcast len = %d filename = %s", len, filename));
         }
@@ -428,18 +430,18 @@ PIOc_sync(int ncid)
         }
     }
 
-    /* If async is in use, send message to IO main tasks. */
+    /* If async is in use, send message to IO master tasks. */
     if (ios->async)
     {
         if (!ios->ioproc)
         {
             int msg = PIO_MSG_SYNC;
 
-            if (ios->compmain == MPI_ROOT)
+            if (ios->compmaster == MPI_ROOT)
                 mpierr = MPI_Send(&msg, 1, MPI_INT, ios->ioroot, 1, ios->union_comm);
 
             if (!mpierr)
-                mpierr = MPI_Bcast(&ncid, 1, MPI_INT, ios->compmain, ios->intercomm);
+                mpierr = MPI_Bcast(&ncid, 1, MPI_INT, ios->compmaster, ios->intercomm);
         }
 
         /* Handle MPI errors. */
@@ -471,6 +473,11 @@ PIOc_sync(int ncid)
                 flush_output_buffer(file, true, 0);
                 break;
 #endif
+//#ifdef _GDAL
+	    case PIO_IOTYPE_GDAL:
+	      printf("<<>> PIOc_sync() TEST <<>>");
+	      break;
+//#endif
             default:
                 return pio_err(ios, file, PIO_EBADIOTYPE, __FILE__, __LINE__);
             }
@@ -479,8 +486,8 @@ PIOc_sync(int ncid)
     }
 
     /* Broadcast and check the return code. */
-//    if ((mpierr = MPI_Bcast(&ierr, 1, MPI_INT, ios->ioroot, ios->my_comm)))
-//        return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
+    if ((mpierr = MPI_Bcast(&ierr, 1, MPI_INT, ios->ioroot, ios->my_comm)))
+        return check_mpi(ios, NULL, mpierr, __FILE__, __LINE__);
     if (ierr)
         return check_netcdf2(ios, NULL, ierr, __FILE__, __LINE__);
 
