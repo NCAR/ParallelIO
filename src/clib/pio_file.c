@@ -284,8 +284,10 @@ PIOc_closefile(int ncid)
             break;
 #endif
 	case PIO_IOTYPE_GDAL:
-	  ierr = GDALClose((void*)file->hDS);
-	  printf("GDALClose ierr: %d\n",ierr);
+            if (ios->io_rank == 0) {
+	      ierr = GDALClose((void*)file->hDS);
+	      printf("GDALClose ierr: %d\n",ierr);
+	    }
 	  break;
         default:
             return pio_err(ios, file, PIO_EBADIOTYPE, __FILE__, __LINE__);

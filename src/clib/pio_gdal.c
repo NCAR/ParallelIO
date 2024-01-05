@@ -251,8 +251,7 @@ GDALc_openfile(int iosysid, int *fileIDp, GDALDatasetH *hDSp,int *iotype, const 
 
     /* Set to true if this task should participate in IO (only true
      * for one task with netcdf serial files. */
-    if (file->iotype == PIO_IOTYPE_GDAL ||
-        ios->io_rank == 0)
+    if (file->iotype == PIO_IOTYPE_GDAL && ios->io_rank == 0)
         file->do_io = 1;
 
     /* If async is in use, and this is not an IO task, bcast the parameters. */
@@ -293,7 +292,7 @@ GDALc_openfile(int iosysid, int *fileIDp, GDALDatasetH *hDSp,int *iotype, const 
         switch (file->iotype)
         {
         case PIO_IOTYPE_GDAL:
-//            if (ios->io_rank == 0)
+            if (ios->io_rank == 0)
             {
 	      *hDSp = OGROpen( filename, FALSE, NULL );
 	      if( hDSp != NULL )
@@ -751,7 +750,7 @@ pio_read_darray_shp(file_desc_t *file, io_desc_t *iodesc, int vid,
         return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
 #endif /* TIMING */
 
-    PLOG((2, "pio_read_darray_nc_serial complete ierr %d", ierr));
+    PLOG((2, "pio_read_darray_shp complete ierr %d", ierr));
     return PIO_NOERR;
 }
 
