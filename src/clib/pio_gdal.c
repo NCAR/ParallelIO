@@ -781,6 +781,7 @@ GDALc_shp_get_double_field(int fileid, int varid, const size_t *startp,
     
     hF     = OGR_L_GetFeature(hL,i);
     ip[i] = OGR_F_GetFieldAsDouble(hF,varid);
+    printf("<<>> ip[%d]=%f\n",i,ip[i]);
   }
 
   return PIO_NOERR;
