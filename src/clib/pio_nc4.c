@@ -1337,8 +1337,8 @@ PIOc_def_var_filter(int ncid, int varid, unsigned int id, size_t nparams, unsign
 
     PLOG((1, "PIOc_def_var_filter ncid = %d varid = %d id = %d nparams = %d", ncid, varid, id, nparams));
 #ifdef DEBUG
-    for(i=0; i<nparams; i++)
-        PLOG(1, "  param %d %d\n",i, params[i]);
+    for(int i=0; i<nparams; i++)
+        PLOG((1, "  param %d %d\n",i, params[i]));
 #endif
 
     /* Get the file info. */
