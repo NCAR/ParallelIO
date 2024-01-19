@@ -95,6 +95,7 @@ option (PIO_USE_MPIIO        "Enable support for MPI-IO auto detect"        ON)
 option (PIO_USE_MPISERIAL    "Enable mpi-serial support (instead of MPI)"   OFF)
 option (PIO_USE_PNETCDF_VARD       "Use pnetcdf put_vard "  OFF)
 option (WITH_PNETCDF         "Require the use of PnetCDF"                   ON)
+option (PIO_USE_GDAL         "Enable support for Geospatial Data Abstraction Library ON")
 option (BUILD_SHARED_LIBS    "Build shared libraries"                       OFF)
 
 if(APPLE)
@@ -109,6 +110,14 @@ if(PIO_USE_PNETCDF_VARD)
 else()
   set(USE_VARD 0)
 endif()
+
+# Set a variable that appears in the config.h.in file.
+if(PIO_USE_GDAL)
+  set(USE_GDAL 1)
+else()
+  set(USE_GDAL 0)
+endif()
+
 
 # Set a variable that appears in the config.h.in file.
 if(PIO_ENABLE_LOGGING)

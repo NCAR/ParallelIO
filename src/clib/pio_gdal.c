@@ -1,6 +1,7 @@
 #include <config.h>
 #include <pio.h>
 #include <pio_internal.h>
+#ifdef USE_GDAL
 #include <ogr_api.h>
 
 /**
@@ -456,11 +457,6 @@ int GDALc_inq_timeid(int fileid, int *timeid) { // Is there a field of type OFTD
     for (int i=0;i<(file->nvars)-1;i++) {
       OGRFieldDefnH hFlD = OGR_FD_GetFieldDefn(hFD,i);
       OGRFieldType Fld = OGR_Fld_GetType(hFlD);
-      if (Fld == NULL)
-        return pio_err(NULL, NULL, ierr, __FILE__, __LINE__);
-
-//      const char* FldTyp = OGR_GetFieldTypeName(Fld);
-//      PRINTMSG("Field type: " << FldTyp);
     }
 
 //    OGR_FD_Destroy(hFD);
@@ -789,3 +785,4 @@ GDALc_shp_get_double_field(int fileid, int varid, const size_t *startp,
 /**
  * @}
  */
+#endif
