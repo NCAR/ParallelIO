@@ -154,6 +154,7 @@ int test_gdal(int iosysid, int ioid, int num_flavors, int *flavor, int my_rank,
         {
 	  sprintf(filename, "data/cb_2018_us_region_20m.shp");
 
+	  test_data_in = test_data_float_in;
 	  /* Open the file. */
 	  if ((ret = GDALc_openfile(iosysid, &ncid2, &hDSp, &iotype, filename, PIO_NOWRITE)))
 	    ERR(ret);
