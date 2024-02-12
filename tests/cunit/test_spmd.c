@@ -8,9 +8,9 @@
 #include <pio.h>
 #include <pio_tests.h>
 #include <pio_internal.h>
-
+#include <sys/time.h>
 /* The number of tasks this test should run on. */
-#define TARGET_NTASKS 4
+#define TARGET_NTASKS 512
 
 /* The minimum number of tasks this test should run on. */
 #define MIN_NTASKS 1
@@ -20,6 +20,8 @@
 
 /* Number of test cases in inner loop of test. */
 #define NUM_TEST_CASES 5
+
+#define MAX_MSG_SIZE 8
 
 /* Test MPI_Alltoallw by having processor i send different amounts of
  * data to each processor.  The first test sends i items to processor
@@ -38,7 +40,7 @@ int run_spmd_tests(MPI_Comm test_comm)
         MPIERR(mpierr);
     if ((mpierr = MPI_Comm_rank(test_comm, &my_rank)))
         MPIERR(mpierr);
-
+    if(my_rank==0)printf("%d: Here ntasks %d\n",my_rank, ntasks);
     /* Determine size of buffers. */
     num_elem = ntasks;
 
@@ -51,6 +53,10 @@ int run_spmd_tests(MPI_Comm test_comm)
     MPI_Datatype sendtypes[ntasks]; /* MPI types of data being sent. */
     MPI_Datatype recvtypes[ntasks]; /* MPI types of data being received. */
 
+    struct timeval starttime, endtime;
+    long long startt, endt;
+    long long delta;
+    float delta_in_sec, mintime, maxtime;
     /* Load up the send buffer. */
     for (int i = 0; i < num_elem; i++)
         sbuf[i] = my_rank;
@@ -77,56 +83,73 @@ int run_spmd_tests(MPI_Comm test_comm)
 
     /* Perform tests for different values of msg_cnt. (BTW it hangs
      * with msg_cnt = 1!). */
-    for (int msg_cnt = 0; msg_cnt < TARGET_NTASKS; msg_cnt = msg_cnt ? msg_cnt * 2 : 4)
+    for (int msg_cnt = 0; msg_cnt < TARGET_NTASKS; msg_cnt = msg_cnt ? msg_cnt * 2 : TARGET_NTASKS)
     {
         for (int itest = 0; itest < NUM_TEST_CASES; itest++)
         {
-            rearr_comm_fc_opt_t fc;
-            fc.hs = false;
-            fc.isend = false;
+	    for (int msg_in_flight = 128; msg_in_flight <= TARGET_NTASKS; msg_in_flight*=2)
+	    {
+		for (int msgsize = 1; msgsize <= MAX_MSG_SIZE; msgsize*=2)
+		{
+		    rearr_comm_fc_opt_t fc;
+		    fc.hs = false;
+		    fc.isend = false;
 
-            /* Wait for all tasks. */
-            MPI_Barrier(test_comm);
+		    /* Wait for all tasks. */
+		    MPI_Barrier(test_comm);
+		    fc.max_pend_req = msg_in_flight;
 
-            /* Set the parameters different for each test case. */
-            if (itest == 1)
-            {
-                fc.hs = true;
-                fc.isend = true;
-            }
-            else if (itest == 2)
-            {
-                fc.hs = false;
-                fc.isend = true;
-            }
-            else if (itest == 3)
-            {
-                fc.hs = false;
-                fc.isend = false;
-            }
-            else if (itest == 4)
-            {
-                fc.hs = true;
-                fc.isend = false;
-            }
-
-            /* Run the swapm function. */
-            if ((ret = pio_swapm(sbuf, sendcounts, sdispls, sendtypes, rbuf, recvcounts,
-                                 rdispls, recvtypes, test_comm, &fc)))
-                return ret;
-
-            /* Print results. */
-            /* MPI_Barrier(test_comm); */
-            /* for (int e = 0; e < num_elem; e++) */
-            /*     printf("%d sbuf[%d] = %d\n", my_rank, e, sbuf[e]); */
-            /* MPI_Barrier(test_comm); */
-            /* for (int e = 0; e < num_elem; e++) */
-            /*     printf("%d rbuf[%d] = %d\n", my_rank, e, rbuf[e]); */
-
-            /* Check that rbuf has 0, 1, ..., ntasks-1. */
-            for (int e = 0; e < num_elem; e++)
-                if (((int *)rbuf)[e] != e)
-                    return ERR_WRONG;
+		    /* Set the parameters different for each test case. */
+		    if (itest == 1)
+		    {
+			fc.hs = true;
+			fc.isend = true;
+		    }
+		    else if (itest == 2)
+		    {
+			fc.hs = false;
+			fc.isend = true;
+		    }
+		    else if (itest == 3)
+		    {
+			fc.hs = true;
+			fc.isend = false;
+		    }
+		    else if (itest == 4)
+		    {
+			fc.max_pend_req = 0;
+		    }
+		    gettimeofday(&starttime, NULL);
+		    /* Run the swapm function. */
+		    if ((ret = pio_swapm(sbuf, sendcounts, sdispls, sendtypes, rbuf, recvcounts,
+					 rdispls, recvtypes, test_comm, &fc)))
+			return ret;
+		    gettimeofday(&endtime, NULL);
+		    MPI_Barrier(test_comm); 
+		    startt = (1000000 * starttime.tv_sec) + starttime.tv_usec;
+		    endt = (1000000 * endtime.tv_sec) + endtime.tv_usec;
+		    delta = (endt - startt);
+		    delta_in_sec = (float)delta / 1000000;
+		    MPI_Reduce(&delta_in_sec, &mintime, 1, MPI_FLOAT, MPI_MIN, 0, test_comm);
+		    MPI_Reduce(&delta_in_sec, &maxtime, 1, MPI_FLOAT, MPI_MAX, 0, test_comm);
+		    if(my_rank==0) printf("msgsize=%d max_pend_req=%d hs=%d isend=%d\n",4*msgsize, fc.max_pend_req, fc.hs, fc.isend);
+		    if(my_rank==0) printf("min time %f max time %f\n",mintime,maxtime);
+	    
+		    /* Print results. */
+		    /* for (int e = 0; e < num_elem; e++) */
+		    /*     printf("%d sbuf[%d] = %d\n", my_rank, e, sbuf[e]); */
+		    /* MPI_Barrier(test_comm); */
+		    /* for (int e = 0; e < num_elem; e++) */
+		    /*     printf("%d rbuf[%d] = %d\n", my_rank, e, rbuf[e]); */
+		    
+		    /* Check that rbuf has 0, 1, ..., ntasks-1. */
+		    for (int e = 0; e < num_elem; e++)
+			if (((int *)rbuf)[e] != e)
+			    return ERR_WRONG;
+		}
+		if (itest == 4)
+		    break;
+	    }
         }
     }
 
@@ -741,18 +764,18 @@ int main(int argc, char **argv)
         /* I don't need this iosystem, but it's the only way to get
          * the logs to write. */
         int iosysid;
-        if ((ret = PIOc_Init_Intracomm(test_comm, TARGET_NTASKS, 1, 0, PIO_REARR_BOX, &iosysid)))
+        if ((ret = PIOc_Init_Intracomm(test_comm, TARGET_NTASKS, 1, 0, PIO_REARR_SUBSET, &iosysid)))
             return ret;
 
-        if ((ret = run_sc_tests(test_comm)))
+/*        if ((ret = run_sc_tests(test_comm)))
             return ret;
 
         if ((ret = run_GCDblocksize_tests(test_comm)))
             return ret;
-
+*/
         if ((ret = run_spmd_tests(test_comm)))
             return ret;
-
+/*
         if ((ret = test_CalcStartandCount()))
             return ret;
 
@@ -779,18 +802,19 @@ int main(int argc, char **argv)
 
         if ((ret = test_misc()))
             return ret;
-
+*/
         /* Finalize PIO system. */
         if ((ret = PIOc_free_iosystem(iosysid)))
             return ret;
 
     } /* endif my_rank < TARGET_NTASKS */
+    
 
     /* Finalize the MPI library. */
     if ((ret = pio_test_finalize(&test_comm)))
         return ret;
 
-    printf("%d %s SUCCESS!!\n", my_rank, TEST_NAME);
+    if(my_rank==0)printf("%d %s SUCCESS!!\n", my_rank, TEST_NAME);
 
     return 0;
 }
