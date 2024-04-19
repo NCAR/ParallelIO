@@ -439,8 +439,12 @@ write_darray_multi_par(file_desc_t *file, int nvars, int fndims, const int *vari
                                          start, count)))
                 return pio_err(ios, file, ierr, __FILE__, __LINE__);
 	    size_t cnt = 1;
-	    for(int i=0; i<fndims; i++)
+	    for(int i=0; i<fndims; i++){
 		cnt *= count[i];
+		if(ios->io_rank==0){
+		    printf("region %d dim %d count %lld\n",regioncnt,i,count[i]);
+		}
+	    }
 	    chkcnt2 += cnt;
 
             /* IO tasks will run the netCDF/pnetcdf functions to write the data. */
