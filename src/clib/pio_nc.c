@@ -2430,7 +2430,7 @@ PIOc_def_var_fill(int ncid, int varid, int fill_mode, const void *fill_valuep)
             {
                 ierr = nc_set_fill(file->fh, NC_FILL, NULL);
                 if (!ierr)
-                    ierr = nc_put_att(file->fh, varid, _FillValue, xtype, 1, fill_valuep);
+                    ierr = nc_put_att(file->fh, varid, NCDF_FillValue, xtype, 1, fill_valuep);
             }
         }
         else

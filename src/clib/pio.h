@@ -27,6 +27,11 @@
     (((NC_VERSION_MAJOR == Maj) && (NC_VERSION_MINOR == Min) && (NC_VERSION_PATCH >= Pat)) || \
      ((NC_VERSION_MAJOR == Maj) && (NC_VERSION_MINOR > Min)) || (NC_VERSION_MAJOR > Maj))
 
+#if defined(NC_FillValue)
+#define NCDF_FillValue NC_FillValue
+#elif defined(_FillValue)
+#define NCDF_Fillvalue _FillValue
+#endif
 
 /** PIO_OFFSET is an integer type of size sufficient to represent the
  * size (in bytes) of the largest file supported by MPI. This is not
