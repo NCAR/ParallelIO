@@ -2574,7 +2574,7 @@ PIOc_inq_var_fill(int ncid, int varid, int *no_fill, void *fill_valuep)
 
             if (!ierr && fill_valuep)
             {
-                ierr = nc_get_att(file->fh, varid, _FillValue, fill_valuep);
+                ierr = nc_get_att(file->fh, varid, NCDF_FillValue, fill_valuep);
                 if (ierr == NC_ENOTATT)
                 {
                     char char_fill_value = NC_FILL_CHAR;
