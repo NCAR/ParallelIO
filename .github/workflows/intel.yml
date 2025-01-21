@@ -13,9 +13,9 @@ jobs:
 
     env:
       CC: mpicc
-      FC: mpiifort
+      FC: mpiifx
       # Versions should match the github tag names
-      PNETCDF_VERSION: checkpoint.1.12.3
+      PNETCDF_VERSION: checkpoint.1.14.0
       NETCDF_C_VERSION: v4.9.2
       NETCDF_FORTRAN_VERSION: v4.6.1
       HDF5_VERSION: hdf5_1_12_2
