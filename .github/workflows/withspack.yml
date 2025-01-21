@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Installs
       run: |
         set -x
@@ -28,7 +28,7 @@ jobs:
         printenv >> $GITHUB_ENV
     - name: cache spack
       id: cache-spack
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: |
           ~/work/ParallelIO/ParallelIO/spack
@@ -36,7 +36,7 @@ jobs:
         key: spack-${{ runner.os }}-${{ env.SPACK_LATEST }}
     - name: Get Spack
       if: steps.cache-spack.outputs.cache-hit != 'true'
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         repository: spack/spack
         path: spack
