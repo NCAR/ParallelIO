@@ -12,15 +12,15 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      CC: mpicc
-      FC: mpiifort
+      CC: mpicx
+      FC: mpiifx
       # Versions should match the github tag names
-      PNETCDF_VERSION: checkpoint.1.12.3
+      PNETCDF_VERSION: checkpoint.1.14.0
       NETCDF_C_VERSION: v4.9.2
       NETCDF_FORTRAN_VERSION: v4.6.1
       HDF5_VERSION: hdf5_1_12_2
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Installs
       run: |
         set -x
@@ -30,7 +30,7 @@ jobs:
         echo "/opt/intel/oneapi/compiler/2023.2.1/linux/bin/intel64/" >> $GITHUB_PATH
     - name: cache intel compiler
       id: cache-intel
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: /opt/intel/oneapi
         key: intel-${{ runner.os }}
@@ -45,7 +45,7 @@ jobs:
 
     - name: cache-hdf5
       id: cache-hdf5
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: ~/work/ParallelIO/ParallelIO/hdf5
         key: hdf5-${{ runner.os }}-${{ env.HDF5_VERSION }}-impi
@@ -59,13 +59,13 @@ jobs:
         mpi_path: /opt/intel/mpi
     - name: cache netcdf C
       id: cache-netcdf-c
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: ~/work/ParallelIO/ParallelIO/netcdf-c
         key: netcdf-c-${{ runner.os }}-${{ env.NETCDF_C_VERSION }}-impi-hdf5-${{ env.HDF5_VERSION }}
     - name: cache netcdf Fortran
       id: cache-netcdf-f
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: ~/work/ParallelIO/ParallelIO/netcdf-f
         key: netcdf-f-${{ runner.os }}-${{ env.NETCDF_FORTRAN_VERSION }}-impi-hdf5-${{ env.HDF5_VERSION }}
@@ -94,7 +94,7 @@ jobs:
 
     - name: cache-pnetcdf
       id: cache-pnetcdf
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: ~/work/ParallelIO/ParallelIO/pnetcdf
         key: pnetcdf-${{ runner.os }}-${{ env.PNETCDF_VERSION }}-impi-5
@@ -128,4 +128,4 @@ jobs:
       #     see https://github.com/marketplace/actions/debugging-with-tmate for further details
 #    - name: Setup tmate session
 #      if: ${{ failure() }}
-#      uses: mxschmitt/action-tmate@v3
+#      uses: mxschmitt/action-tmate@v4
