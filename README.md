@@ -66,6 +66,7 @@ itself, introduces dependencies on LIBZ and (optionally) SZIP.
 To build PIO, unpack the distribution tarball and do:
 
 ```
+autoreconf -i
 CC=mpicc FC=mpif90 ./configure --enable-fortran && make check install
 ```
 

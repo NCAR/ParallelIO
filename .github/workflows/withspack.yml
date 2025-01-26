@@ -60,7 +60,7 @@ jobs:
         #        spack uninstall -y parallelio@=develop+pnetcdf+fortran ^mpich || true
         #        spack dev-build -d $GITHUB_WORKSPACE parallelio@=develop+pnetcdf+fortran ^mpich
         spack uninstall -y parallelio@=develop+pnetcdf+fortran ^mpich || true
-        spack dev-build -d $GITHUB_WORKSPACE parallelio@=develop+pnetcdf+fortran ^mpich
+        spack dev-build -n -d $GITHUB_WORKSPACE parallelio@=develop+pnetcdf+fortran ^mpich
 
     - name: Test parallelio
       run: |
@@ -72,6 +72,6 @@ jobs:
         popd
 
 
-    - name: Setup tmate session
-      if: ${{ failure() }}
-      uses: mxschmitt/action-tmate@v3
+#    - name: Setup tmate session
+#      if: ${{ failure() }}
+#      uses: mxschmitt/action-tmate@v3
