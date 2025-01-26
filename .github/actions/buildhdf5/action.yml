@@ -34,7 +34,7 @@ inputs:
 runs:
   using: composite
   steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         repository: HDFGroup/hdf5
         path: hdf5-src
