@@ -27,10 +27,6 @@ jobs:
         sudo apt-get update
         sudo apt-get install libcurl4-gnutls-dev
         sudo apt-get install libz-dev
-        sudo apt-get install intel-oneapi-compiler-fortran
-        sudo apt install intel-oneapi-compiler-dpcpp-cpp-and-cpp-classic
-        source /opt/intel/oneapi/setvars.sh
-        source /opt/intel/oneapi/compiler/latest/env/vars.sh intel64
     - name: cache intel compiler
       id: cache-intel
       uses: actions/cache@v4
