@@ -2,7 +2,7 @@ description: 'Install Intel Compilers'
 runs:
   using: composite
   steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: setup repo
       shell: bash
       run: |
@@ -19,5 +19,6 @@ runs:
         sudo apt-get install -y intel-oneapi-mkl
         sudo apt-get install -y intel-oneapi-mpi
         sudo apt-get install -y intel-oneapi-mpi-devel
+        find /opt/intel -name setvars.sh
         source /opt/intel/oneapi/setvars.sh
         printenv >> $GITHUB_ENV
