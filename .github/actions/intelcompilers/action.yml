@@ -17,11 +17,5 @@ runs:
       shell: bash
       run: |
         sudo apt-get install intel-oneapi-hpc-toolkit
-#        sudo apt-get install -y intel-oneapi-common-vars
-#        sudo apt-get install -y intel-oneapi-compiler-fortran
-#        sudo apt-get install -y intel-oneapi-mkl
-#        sudo apt-get install -y intel-oneapi-mpi
-#        sudo apt-get install -y intel-oneapi-mpi-devel
-#        find /opt/intel -name setvars.sh
         source /opt/intel/oneapi/setvars.sh
-#        printenv >> $GITHUB_ENV
+        source /opt/intel/oneapi/compiler/latest/env/vars.sh intel64
