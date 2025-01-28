@@ -21,27 +21,25 @@ jobs:
       HDF5_VERSION: hdf5_1_12_2
     steps:
     - uses: actions/checkout@v4
+    - name: Set up Intel OneAPI
+      run: |
+        source /opt/intel/oneapi/setvars.sh
+        export CC=/opt/intel/oneapi/compiler/latest/linux/bin/intel64/icc
+        export FC=/opt/intel/oneapi/compiler/latest/linux/bin/intel64/ifort
     - name: Installs
       run: |
         set -x
         sudo apt-get update
         sudo apt-get install libcurl4-gnutls-dev
         sudo apt-get install libz-dev
-        echo "/opt/intel/oneapi/compiler/2023.2.1/linux/bin/intel64/" >> $GITHUB_PATH
-    - name: cache intel compiler
-      id: cache-intel
-      uses: actions/cache@v4
-      with:
-        path: /opt/intel/oneapi
-        key: intel-${{ runner.os }}
-    - name: Install Intel OneAPI
-      if: steps.cache-intel.outputs.cache-hit != 'true'
-      uses: ./.github/actions/intelcompilers
-    - name: Prep Intel OneAPI
-      if: steps.cache-intel.outputs.cache-hit == 'true'
-      run: |
-        source /opt/intel/oneapi/setvars.sh
-        printenv >> $GITHUB_ENV
+#    - name: Install Intel OneAPI
+#      if: steps.cache-intel.outputs.cache-hit != 'true'
+#      uses: ./.github/actions/intelcompilers
+#    - name: Prep Intel OneAPI
+#      if: steps.cache-intel.outputs.cache-hit == 'true'
+#      run: |
+#        source /opt/intel/oneapi/setvars.sh
+#        printenv >> $GITHUB_ENV
 
     - name: cache-hdf5
       id: cache-hdf5
