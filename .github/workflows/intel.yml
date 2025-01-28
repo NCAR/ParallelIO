@@ -12,8 +12,8 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      CC: mpicc
-      FC: mpifort
+      CC: mpiicx
+      FC: mpiifx
       # Versions should match the github tag names
       PNETCDF_VERSION: checkpoint.1.14.0
       NETCDF_C_VERSION: v4.9.2
