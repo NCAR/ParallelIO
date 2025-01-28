@@ -12,8 +12,8 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      CC: icx
-      FC: ifx
+      CC: icc
+      FC: ifort
       # Versions should match the github tag names
       PNETCDF_VERSION: checkpoint.1.14.0
       NETCDF_C_VERSION: v4.9.2
