@@ -27,7 +27,7 @@ jobs:
         sudo apt-get update
         sudo apt-get install libcurl4-gnutls-dev
         sudo apt-get install libz-dev
-#        echo "/opt/intel/oneapi/compiler/2023.2.1/linux/bin/intel64/" >> $GITHUB_PATH
+        echo "/opt/intel/oneapi/compiler/latest/bin:/opt/intel/oneapi/mpi/latest/bin" >> $GITHUB_PATH
     - name: cache intel compiler
       id: cache-intel
       uses: actions/cache@v4
