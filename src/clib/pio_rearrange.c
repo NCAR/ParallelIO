@@ -1816,7 +1816,10 @@ compare_offsets(const void *a, const void *b)
     mapsort *y = (mapsort *)b;
     if (!x || !y)
         return 0;
-    return (int)(x->iomap - y->iomap);
+
+    if (x->iomap < y->iomap) { return -1; }
+    if (x->iomap > y->iomap) { return 1; }
+    return 0;
 }
 
 /**
