@@ -53,6 +53,7 @@ runs:
         -DHDF5_ENABLE_DEPRICATED_SYMBOLS=OFF \
         -DHDF5_BUILD_EXAMPLES=OFF \
         -DHDF5_BUILD_TOOLS=OFF \
+        -DCMAKE_BUILD_TYPE=REL \
         ../
         make
         make install
