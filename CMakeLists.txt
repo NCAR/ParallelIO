@@ -29,18 +29,18 @@ include(CheckSymbolExists)
 
 # Determine the configure date.
 IF(DEFINED ENV{SOURCE_DATE_EPOCH})
-	EXECUTE_PROCESS(
-	  COMMAND "date" "-u" "-d" "@$ENV{SOURCE_DATE_EPOCH}"
-	  OUTPUT_VARIABLE CONFIG_DATE
-	  )
+        EXECUTE_PROCESS(
+          COMMAND "date" "-u" "-d" "@$ENV{SOURCE_DATE_EPOCH}"
+          OUTPUT_VARIABLE CONFIG_DATE
+          )
 ELSE()
-	EXECUTE_PROCESS(
-	  COMMAND date
-	  OUTPUT_VARIABLE CONFIG_DATE
-	  )
+        EXECUTE_PROCESS(
+          COMMAND date
+          OUTPUT_VARIABLE CONFIG_DATE
+          )
 ENDIF()
 IF(CONFIG_DATE)
-	string(STRIP ${CONFIG_DATE} CONFIG_DATE)
+        string(STRIP ${CONFIG_DATE} CONFIG_DATE)
 ENDIF()
 
 # A function used to create autotools-style 'yes/no' definitions.
@@ -363,9 +363,9 @@ if (HAVE_NETCDF_PAR)
 #if !NC_HAS_PAR_FILTERS
     choke me
 #endif
-int main() {return 0;}" HAVE_PAR_FILTERS)
+int main() {return 0;}" PIO_HAS_PAR_FILTERS)
 else()
-  set(HAVE_PAR_FILTERS 0)
+  set(PIO_HAS_PAR_FILTERS 0)
 endif()
 
 ###
@@ -486,7 +486,7 @@ set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 INSTALL(FILES "${PIO_BINARY_DIR}/libpio.settings"
   DESTINATION lib
   COMPONENT libraries)
-  
+
 #####
 # Create pio_meta.h include file.
 #####

@@ -38,7 +38,7 @@ fi
 LD=ld # Required for MPE to work.
 LT_INIT
 
-# Find and learn about install 
+# Find and learn about install
 AC_PROG_INSTALL
 
 # Find and learn about the C compiler.
@@ -294,7 +294,7 @@ AC_MSG_CHECKING([whether netCDF provides parallel filter support])
 AC_CHECK_LIB([netcdf], [nc_inq_filter_avail], [have_par_filters=yes], [have_par_filters=no])
 AC_MSG_RESULT([${have_par_filters}])
 if test "x$have_par_filters" = xyes ; then
-   AC_DEFINE([HAVE_PAR_FILTERS], [1], [if true, netcdf-c supports filters with parallel I/O])
+   AC_DEFINE([PIO_HAS_PAR_FILTERS], [1], [if true, netcdf-c supports filters with parallel I/O])
 fi
 
 # Is this version 4.7.2, which does not work?
@@ -472,8 +472,8 @@ AC_CONFIG_HEADERS([config.h])
 
 # Create the makefiles.
 AC_CONFIG_FILES(Makefile
-	        src/Makefile
-        	src/clib/Makefile
+                src/Makefile
+                src/clib/Makefile
                 src/ncint/Makefile
                 src/flib/Makefile
                 src/gptl/Makefile
