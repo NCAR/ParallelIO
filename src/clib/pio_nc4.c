@@ -1308,7 +1308,6 @@ PIOc_get_var_chunk_cache(int ncid, int varid, PIO_Offset *sizep, PIO_Offset *nel
 }
 /* use this variable in the NETCDF library (introduced in v4.9.0) to determine if the following
    functions are available */
-#ifdef NC_HAS_MULTIFILTERS
 /**
  * Set the variable filter ids
  *
@@ -1878,8 +1877,6 @@ PIOc_inq_filter_avail(int ncid, unsigned int id )
 }
 // PIO_HAS_PAR_FILTERS
 #endif 
-// NC_HAS_MULTIFILTERS
-#endif
 #ifdef NC_HAS_QUANTIZE
 /**
  * Turn on quantization for a variable
