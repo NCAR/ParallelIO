@@ -3125,7 +3125,8 @@ iotype_is_valid(int iotype)
         ret++;
 
     /* Some builds include netCDF-4. */
-#ifdef NC_HAS_NC4
+    /* as of netcdf 4.9.3 NC_HAS_NC4 is no longer defined */
+#if NC_HAS_NC4 || (NC_VERSION_PATCH > 2)
     if (iotype == PIO_IOTYPE_NETCDF4C || iotype == PIO_IOTYPE_NETCDF4P)
         ret++;
 #endif /* _NETCDF4 */

@@ -140,7 +140,7 @@ module pio_nf
        pio_def_var_quantize                                 , &
        pio_inq_var_quantize                                 , &
 #endif
-#ifdef NC_HAS_MULTIFILTERS
+!!#ifdef NC_HAS_MULTIFILTERS
 #ifdef NC_HAS_BZ
        pio_inq_var_bzip2                                    , &
        pio_def_var_bzip2                                    , &
@@ -154,7 +154,7 @@ module pio_nf
        pio_inq_var_filter_info                              , &
        pio_inq_filter_avail                                 , &
 #endif
-#endif
+!!#endif
        pio_set_fill
   !       pio_copy_att    to be done
 
