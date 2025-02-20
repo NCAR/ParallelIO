@@ -91,7 +91,7 @@ ParallelIO supports two primary modes of operation:
 - Suitable for systems where dedicated I/O tasks are not needed.
 
 #### Illustration:
-![Intracomm Mode](doc/images/intracomm_mode.png)
+![Intracomm Mode](./doc/images/I_O_on_Many_Intracomm.png)
 
 ### Asynchronous Mode
 - In **Asynchronous mode**, a subset of tasks handle I/O while others focus on computation.
@@ -99,7 +99,7 @@ ParallelIO supports two primary modes of operation:
 
 
 #### Illustration:
-![Asynchronous Mode](doc/images/asynchronous_mode.png)
+![Asynchronous Mode](doc/images/I_O_on_Many_Async.png)
 
 ## Documentation
 - [NetCDF Homepage](https://www.unidata.ucar.edu/software/netcdf/)
