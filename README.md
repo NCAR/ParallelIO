@@ -1,4 +1,4 @@
-# Project Name
+# ParallelIO
 
 ## Overview
 This repository provides a robust implementation of **Parallel I/O (PIO)** using **NetCDF** and **ParallelNetCDF** backends. It is optimized for **high-performance computing (HPC)** and integrates with parallel file systems to efficiently handle large-scale scientific datasets.
@@ -40,12 +40,12 @@ make install
 To run the test suite, use the following commands:
 ```bash
 mpiexec -n 4 make check  # Run all unit tests
-mpiexec -n 4 ctest -VV   # Run CMake-based tests
+ctest -VV   # Run CMake-based tests (must be run on a parallel-capable node)
 ```
 
 For debugging failed tests:
 ```bash
-mpiexec -n 4 ctest --rerun-failed --output-on-failure
+ctest --rerun-failed --output-on-failure  # Must be run on a parallel-capable node
 ```
 
 ## Usage
@@ -83,6 +83,8 @@ We welcome contributions! To contribute:
 Refer to **doc/contributing_code.txt** for detailed guidelines.
 
 ## Documentation
+- [NetCDF Homepage](https://www.unidata.ucar.edu/software/netcdf/)
+- [ParallelNetCDF Homepage](https://parallel-netcdf.github.io/)
 - [User Guide](doc/users_guide.txt)
 - [API Documentation](doc/api.txt)
 - [Testing Guidelines](doc/Testing.txt)
