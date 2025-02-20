@@ -82,6 +82,25 @@ We welcome contributions! To contribute:
 
 Refer to **doc/contributing_code.txt** for detailed guidelines.
 
+## Intracomm and Asynchronous Modes
+ParallelIO supports two primary modes of operation:
+
+### Intracomm Mode
+- In **Intracomm mode**, a subset of MPI tasks participate in I/O operations while also performing computation tasks. This approach avoids the bottleneck that occurs when every task participates in I/O, improving overall performance.
+- This mode ensures efficient parallel data writes and reads across distributed systems.
+- Suitable for systems where dedicated I/O tasks are not needed.
+
+#### Illustration:
+![Intracomm Mode](doc/images/intracomm_mode.png)
+
+### Asynchronous Mode
+- In **Asynchronous mode**, a subset of tasks handle I/O while others focus on computation.
+- Helps in overlapping computation and I/O for better performance.
+
+
+#### Illustration:
+![Asynchronous Mode](doc/images/asynchronous_mode.png)
+
 ## Documentation
 - [NetCDF Homepage](https://www.unidata.ucar.edu/software/netcdf/)
 - [ParallelNetCDF Homepage](https://parallel-netcdf.github.io/)
