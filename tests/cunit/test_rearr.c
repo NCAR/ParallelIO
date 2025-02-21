@@ -684,7 +684,7 @@ int test_init_decomp(int iosysid, MPI_Comm test_comm, int my_rank)
 
     /* Initialize a decomposition. */
     if ((ret = PIOc_init_decomp(iosysid, PIO_INT, NDIM1, gdimlen, MAPLEN2,
-                                compmap, &ioid, PIO_REARR_BOX, NULL, NULL)))
+                                compmap, &ioid, PIO_REARR_BOX, NULL, NULL, NULL)))
         return ret;
 
     /* Free it. */

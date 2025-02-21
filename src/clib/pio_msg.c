@@ -2941,7 +2941,7 @@ int set_loglevel_handler(iosystem_desc_t *ios)
 {
 #if PIO_ENABLE_LOGGING
     int iosysid;
-    int level;
+    int level=0;
     int mpierr;
 #endif
 

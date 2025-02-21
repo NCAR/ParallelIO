@@ -1985,6 +1985,8 @@ int subset_rearrange_create(iosystem_desc_t *ios, int maplen, PIO_Offset *compma
     pioassert(ios && maplen >= 0 && compmap && gdimlen && ndims >= 0 && iodesc,
               "Invalid input parameters", __FILE__, __LINE__);
 
+    PLOG((2, "subset_rearrange_create maplen = %d ndims = %d", maplen, ndims));
+
     int ret = PIO_NOERR;
     int mpierr = PIO_NOERR;
     int color, key;
@@ -2018,7 +2020,7 @@ int subset_rearrange_create(iosystem_desc_t *ios, int maplen, PIO_Offset *compma
     int i, j;
     PIO_Offset *iomap = NULL;
     mapsort *map = NULL;
-    PIO_Offset totalgridsize = 0;
+    PIO_Offset totalgridsize = 1;
     PIO_Offset *srcindex = NULL;
     PIO_Offset *myfillgrid = NULL;
     int maxregions;
@@ -2084,6 +2086,7 @@ int subset_rearrange_create(iosystem_desc_t *ios, int maplen, PIO_Offset *compma
         }
     }
 
+    PLOG((2,"At line %d scount[0]=%d",__LINE__,iodesc->scount[0]));
     /* Gather send counts to root of subset communicator */
     int rcnt = (ios->ioproc) ? 1 : 0;
     if ((mpierr = MPI_Gather(iodesc->scount, 1, MPI_INT, iodesc->rcount, rcnt,
@@ -2267,7 +2270,7 @@ int subset_rearrange_create(iosystem_desc_t *ios, int maplen, PIO_Offset *compma
         thisgridmax[0] = thisgridsize[0];
         int xtra = totalgridsize - thisgridsize[0] * ios->num_iotasks;
 
-        PLOG((4, "xtra %d", xtra));
+        PLOG((3, "xtra %d", xtra));
 
         for (nio = 0; nio < ios->num_iotasks; nio++)
         {
@@ -2280,7 +2283,7 @@ int subset_rearrange_create(iosystem_desc_t *ios, int maplen, PIO_Offset *compma
                     thisgridsize[nio]++;
                 thisgridmin[nio] = thisgridmax[nio - 1] + 1;
                 thisgridmax[nio] = thisgridmin[nio] + thisgridsize[nio] - 1;
-                PLOG((4, "nio %d thisgridsize[nio] %d thisgridmin[nio] %d thisgridmax[nio] %d",
+                PLOG((3, "nio %d thisgridsize[nio] %d thisgridmin[nio] %d thisgridmax[nio] %d",
                       nio, thisgridsize[nio], thisgridmin[nio], thisgridmax[nio]));
             }
             for (int i = 0; i < iodesc->rllen; i++)

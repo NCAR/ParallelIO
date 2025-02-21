@@ -296,19 +296,6 @@ extern "C" {
     void free_region_list(io_region *top);
 
 
-    /**
-     * @brief Function type for custom partitioning strategies
-     *
-     * @param ios      Pointer to the iosystem description
-     * @param iodesc   Pointer to the IO description structure
-     * @param color    Pointer to store the computed color value
-     * @param key      Pointer to store the computed key value
-     * @return PIO_NOERR on success, error code otherwise
-     */
-    typedef int (*pio_partition_fn)(iosystem_desc_t *ios, io_desc_t *iodesc, 
-				int *color, int *key);
-
-
     /* Create a subset rearranger. */
     int subset_rearrange_create(iosystem_desc_t *ios, int maplen, PIO_Offset *compmap, const int *gsize,
                                 int ndim, io_desc_t *iodesc, pio_partition_fn partition_fn);

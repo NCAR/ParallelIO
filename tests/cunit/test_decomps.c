@@ -81,19 +81,19 @@ int test_decomp1(int iosysid, int use_io, int my_rank, MPI_Comm test_comm)
     /* These should not work. */
     bad_slice_dimlen[1] = 0;
     if (PIOc_InitDecomp(iosysid + TEST_VAL_42, PIO_FLOAT, 2, slice_dimlen, (PIO_Offset)elements_per_pe,
-                        compdof, &ioid, NULL, NULL, NULL) != PIO_EBADID)
+                        compdof, &ioid, NULL, NULL, NULL, NULL) != PIO_EBADID)
         return ERR_WRONG;
     if (PIOc_InitDecomp(iosysid, PIO_FLOAT, 2, bad_slice_dimlen, (PIO_Offset)elements_per_pe,
-                        compdof, &ioid, NULL, NULL, NULL) != PIO_EINVAL)
+                        compdof, &ioid, NULL, NULL, NULL, NULL) != PIO_EINVAL)
         return ERR_WRONG;
     if (PIOc_InitDecomp(iosysid, PIO_FLOAT, 2, NULL, (PIO_Offset)elements_per_pe,
-                        compdof, &ioid, NULL, NULL, NULL) != PIO_EINVAL)
+                        compdof, &ioid, NULL, NULL, NULL, NULL) != PIO_EINVAL)
         return ERR_WRONG;
     if (PIOc_InitDecomp(iosysid, PIO_FLOAT, 2, slice_dimlen, (PIO_Offset)elements_per_pe,
-                        NULL, &ioid, NULL, NULL, NULL) != PIO_EINVAL)
+                        NULL, &ioid, NULL, NULL, NULL, NULL) != PIO_EINVAL)
         return ERR_WRONG;
     if (PIOc_InitDecomp(iosysid, PIO_FLOAT, 2, slice_dimlen, (PIO_Offset)elements_per_pe,
-                        compdof, NULL, NULL, NULL, NULL) != PIO_EINVAL)
+                        compdof, NULL, NULL, NULL, NULL, NULL) != PIO_EINVAL)
         return ERR_WRONG;
 
     /* Sometimes we will test with these arrays. */
@@ -113,7 +113,7 @@ int test_decomp1(int iosysid, int use_io, int my_rank, MPI_Comm test_comm)
 
     /* Create the PIO decomposition for this test. */
     if ((ret = PIOc_InitDecomp(iosysid, PIO_FLOAT, 2, slice_dimlen, (PIO_Offset)elements_per_pe,
-                               compdof, &ioid, NULL, iostart, iocount)))
+                               compdof, &ioid, NULL, iostart, iocount, NULL)))
     {
         if (iostart)
             free(iostart);

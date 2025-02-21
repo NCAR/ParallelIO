@@ -105,7 +105,7 @@ int test_no_async2(int my_rank, int num_flavors, int *flavor, MPI_Comm test_comm
 
     /* Create the PIO decomposition for this test. */
     if ((ret = PIOc_init_decomp(iosysid, PIO_FLOAT, 2, slice_dimlen, (PIO_Offset)elements_per_pe,
-                                compdof, &ioid, 0, NULL, NULL)))
+                                compdof, &ioid, 0, NULL, NULL, NULL)))
         return ret;
     free(compdof);
 
