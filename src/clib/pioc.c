@@ -492,6 +492,8 @@ compare( const void* a, const void* b)
  * decompositions for the SUBSET rearranger. Ignored if block
  * rearranger is used. If NULL and SUBSET rearranger is used, the
  * iostarts are generated.
+ * @param partition_fn  Optional function for custom partitioning (NULL for default)
+ *
  * @returns 0 on success, error code otherwise
  * @ingroup PIO_initdecomp_c
  * @author Jim Edwards, Ed Hartnett
@@ -499,7 +501,8 @@ compare( const void* a, const void* b)
 int
 PIOc_InitDecomp(int iosysid, int pio_type, int ndims, const int *gdimlen, int maplen,
                 const PIO_Offset *compmap, int *ioidp, const int *rearranger,
-                const PIO_Offset *iostart, const PIO_Offset *iocount)
+                const PIO_Offset *iostart, const PIO_Offset *iocount,
+                pio_partition_fn partition_fn)
 {
     iosystem_desc_t *ios;  /* Pointer to io system information. */
     io_desc_t *iodesc;     /* The IO description. */
@@ -674,7 +677,7 @@ PIOc_InitDecomp(int iosysid, int pio_type, int ndims, const int *gdimlen, int ma
         PLOG((2, "creating subset rearranger iodesc->num_aiotasks = %d readonly = %d",
               iodesc->num_aiotasks, iodesc->readonly));
         if ((ierr = subset_rearrange_create(ios, maplen, (PIO_Offset *)iodesc->map, gdimlen,
-                                            ndims, iodesc)))
+                                            ndims, iodesc, partition_fn)))
             return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
 
     }
@@ -814,7 +817,8 @@ PIOc_InitDecomp(int iosysid, int pio_type, int ndims, const int *gdimlen, int ma
 int
 PIOc_InitDecomp_ReadOnly(int iosysid, int pio_type, int ndims, const int *gdimlen, int maplen,
                 const PIO_Offset *compmap, int *ioidp, const int *rearranger,
-                const PIO_Offset *iostart, const PIO_Offset *iocount)
+			 const PIO_Offset *iostart, const PIO_Offset *iocount,
+                pio_partition_fn partition_fn)
 {
     iosystem_desc_t *ios;  /* Pointer to io system information. */
     io_desc_t *iodesc;     /* The IO description. */
@@ -993,7 +997,7 @@ PIOc_InitDecomp_ReadOnly(int iosysid, int pio_type, int ndims, const int *gdimle
         PLOG((2, "creating subset rearranger iodesc->num_aiotasks = %d readonly = %d",
               iodesc->num_aiotasks, iodesc->readonly));
         if ((ierr = subset_rearrange_create(ios, maplen, (PIO_Offset *)iodesc->map, gdimlen,
-                                            ndims, iodesc)))
+                                            ndims, iodesc, partition_fn)))
             return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
     }
     else /* box rearranger */
@@ -1113,7 +1117,8 @@ PIOc_InitDecomp_ReadOnly(int iosysid, int pio_type, int ndims, const int *gdimle
 int
 PIOc_init_decomp(int iosysid, int pio_type, int ndims, const int *gdimlen, int maplen,
                  const PIO_Offset *compmap, int *ioidp, int rearranger,
-                 const PIO_Offset *iostart, const PIO_Offset *iocount)
+                 const PIO_Offset *iostart, const PIO_Offset *iocount,
+                 pio_partition_fn partition_fn)
 {
     PIO_Offset *compmap_1_based;
     int *rearrangerp = NULL;
@@ -1139,7 +1144,7 @@ PIOc_init_decomp(int iosysid, int pio_type, int ndims, const int *gdimlen, int m
 
     /* Call the legacy version of the function. */
     ret = PIOc_InitDecomp(iosysid, pio_type, ndims, gdimlen, maplen, compmap_1_based,
-                          ioidp, rearrangerp, iostart, iocount);
+                          ioidp, rearrangerp, iostart, iocount, partition_fn);
 
     free(compmap_1_based);
 
@@ -1220,7 +1225,7 @@ PIOc_InitDecomp_bc(int iosysid, int pio_type, int ndims, const int *gdimlen,
     }
 
     return PIOc_InitDecomp(iosysid, pio_type, ndims, gdimlen, maplen, compmap, ioidp,
-                           &rearr, NULL, NULL);
+                           &rearr, NULL, NULL, NULL);
 }
 
 /**

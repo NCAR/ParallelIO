@@ -802,22 +802,35 @@ extern "C" {
     int PIOc_set_log_level(int level);
     int PIOc_set_global_log_level(int iosysid, int level);
 
+    /**
+     * @brief Function type for custom partitioning strategies (subset partitioning)
+     *
+     * @param ios      Pointer to the iosystem description
+     * @param iodesc   Pointer to the IO description structure
+     * @param color    Pointer to store the computed color value
+     * @param key      Pointer to store the computed key value
+     * @return PIO_NOERR on success, error code otherwise
+     */
+    typedef int (*pio_partition_fn)(iosystem_desc_t *ios, io_desc_t *iodesc, 
+				int *color, int *key);
+
+
     /* Decomposition. */
 
     /* Init decomposition with 1-based compmap array. */
     int PIOc_InitDecomp_ReadOnly(int iosysid, int pio_type, int ndims, const int *gdimlen, int maplen,
                         const PIO_Offset *compmap, int *ioidp, const int *rearr,
-                        const PIO_Offset *iostart, const PIO_Offset *iocount);
+				 const PIO_Offset *iostart, const PIO_Offset *iocount, pio_partition_fn partition_fn);
     int PIOc_InitDecomp(int iosysid, int pio_type, int ndims, const int *gdimlen, int maplen,
                         const PIO_Offset *compmap, int *ioidp, const int *rearr,
-                        const PIO_Offset *iostart, const PIO_Offset *iocount);
+                        const PIO_Offset *iostart, const PIO_Offset *iocount, pio_partition_fn partition_fn);
     int PIOc_InitDecomp_bc(int iosysid, int basetype, int ndims, const int *gdimlen,
                            const long int *start, const long int *count, int *ioidp);
 
     /* Init decomposition with 0-based compmap array. */
     int PIOc_init_decomp(int iosysid, int pio_type, int ndims, const int *gdimlen, int maplen,
                          const PIO_Offset *compmap, int *ioidp, int rearranger,
-                         const PIO_Offset *iostart, const PIO_Offset *iocount);
+                         const PIO_Offset *iostart, const PIO_Offset *iocount, pio_partition_fn partition_fn);
 
     /* Free resources associated with a decomposition. */
     int PIOc_freedecomp(int iosysid, int ioid);

@@ -2513,9 +2513,10 @@ int initdecomp_dof_handler(iosystem_desc_t *ios)
     if (iocount_present)
         iocountp = iocount;
 
+    /* TODO: support for custom partition functions */
     /* Call the function. */
     PIOc_InitDecomp(iosysid, pio_type, ndims, dims, maplen, compmap, &ioid, rearrangerp,
-                    iostartp, iocountp);
+                    iostartp, iocountp, NULL);
 
     PLOG((1, "PIOc_InitDecomp returned"));
 
