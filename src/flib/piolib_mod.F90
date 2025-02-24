@@ -871,7 +871,7 @@ contains
     type(C_PTR) :: crearr
     interface
        integer(C_INT) function PIOc_InitDecomp(iosysid,basetype,ndims,dims, &
-            maplen, compmap, ioidp, rearr, iostart, iocount)  &
+            maplen, compmap, ioidp, rearr, iostart, iocount, partition_fn)  &
             bind(C,name="PIOc_InitDecomp")
          use iso_c_binding
          integer(C_INT), value :: iosysid
@@ -884,6 +884,7 @@ contains
          type(C_PTR), value :: rearr
          type(C_PTR), value :: iostart
          type(C_PTR), value :: iocount
+         type(C_PTR), value :: partition_fn
        end function PIOc_InitDecomp
     end interface
     integer :: ierr,i
@@ -908,11 +909,11 @@ contains
        end do
 
        ierr = PIOc_InitDecomp(iosystem%iosysid, basepiotype, ndims, cdims, &
-            maplen, compdof, iodesc%ioid, crearr, C_LOC(cstart), C_LOC(ccount))
+            maplen, compdof, iodesc%ioid, crearr, C_LOC(cstart), C_LOC(ccount), C_NULL_PTR)
        deallocate(cstart, ccount)
     else
        ierr = PIOc_InitDecomp(iosystem%iosysid, basepiotype, ndims, cdims, &
-            maplen, compdof, iodesc%ioid, crearr, C_NULL_PTR, C_NULL_PTR)
+            maplen, compdof, iodesc%ioid, crearr, C_NULL_PTR, C_NULL_PTR, C_NULL_PTR)
     end if
 
     deallocate(cdims)
