@@ -1928,34 +1928,26 @@ get_regions(int ndims, const int *gdimlen, int maplen, const PIO_Offset *map,
  * @note Future enhancement: Allow user-defined subset partitioning functions
  *       that maintain the one-to-one IO task per compute task group requirement.
  */
-int default_subset_partition(iosystem_desc_t *ios, io_desc_t *iodesc)
+int default_subset_partition(int comprank,int iorank,int comptasks,int iotasks,int *color,int *key)
 {
     /* Input validation */
-    pioassert(ios && iodesc, "invalid input", __FILE__, __LINE__);
+    pioassert(comprank >= -1 && comprank < comptasks, "invalid input", __FILE__, __LINE__);
+    pioassert(iorank >= -1 && iorank < iotasks, "invalid input", __FILE__, __LINE__);
 
-    int color;          /* Color for MPI communicator splitting */
-    int key;           /* Key for ordering within new communicators */
-    int mpierr = PIO_NOERR;  /* Return value from MPI functions */
-
-    PLOG((1, "default_subset_partition ios->ioproc = %d ios->io_rank = %d "
-          "ios->comp_rank = %d", ios->ioproc, ios->io_rank, ios->comp_rank));
+    PLOG((1, "default_subset_partition iorank = %d "
+          "comprank = %d", iorank, comprank));
 
     /* Assign color and key values based on process type */
-    if (ios->ioproc) {
-        key = 0;
-        color = ios->io_rank;
+    if (iorank >=0 ) {
+        *key = 0;
+        *color = iorank;
     } else {
-        int taskratio = max(1, ios->num_comptasks / ios->num_iotasks);
-        key = max(1, ios->comp_rank % taskratio + 1);
-        color = min(ios->num_iotasks - 1, ios->comp_rank / taskratio);
+        int taskratio = max(1, comptasks / iotasks);
+        *key = max(1, comprank % taskratio + 1);
+        *color = min(iotasks - 1, comprank / taskratio);
     }
     
-    PLOG((3, "key = %d color = %d", key, color));
-
-    /* Create new communicator and check for errors */
-    mpierr = MPI_Comm_split(ios->union_comm, color, key, &iodesc->subset_comm);
-    if (mpierr != MPI_SUCCESS)
-        return check_mpi(NULL, NULL, mpierr, __FILE__, __LINE__);
+    PLOG((3, "key = %d color = %d", *key, *color));
 
     return PIO_NOERR;
 }
@@ -1991,23 +1983,19 @@ int subset_rearrange_create(iosystem_desc_t *ios, int maplen, PIO_Offset *compma
     int mpierr = PIO_NOERR;
     int color, key;
 
-    /* Apply partitioning strategy */
-    if (partition_fn != NULL) {
-        /* Use custom partitioning */
-        if ((ret = partition_fn(ios, iodesc, &color, &key)) != PIO_NOERR) {
-            return pio_err(ios, NULL, ret, __FILE__, __LINE__);
-        }
+    /* Apply partitioning strategy or default if no strategy provided */
+    if (partition_fn == NULL) {
+	partition_fn = default_subset_partition;
+    }	
+
+    if ((ret = partition_fn(ios->comp_rank, ios->io_rank, ios->num_comptasks, ios->num_iotasks, &color, &key)) != PIO_NOERR) {
+	return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+    }
         
-        /* Create communicator using computed color and key */
-        if ((mpierr = MPI_Comm_split(ios->union_comm, color, key, 
-                                    &iodesc->subset_comm))) {
-            return check_mpi(NULL, NULL, mpierr, __FILE__, __LINE__);
-        }
-    } else {
-        /* Use default partitioning */
-        if ((ret = default_subset_partition(ios, iodesc))) {
-            return pio_err(ios, NULL, ret, __FILE__, __LINE__);
-        }
+    /* Create communicator using computed color and key */
+    if ((mpierr = MPI_Comm_split(ios->union_comm, color, key, 
+				 &iodesc->subset_comm))) {
+	return check_mpi(NULL, NULL, mpierr, __FILE__, __LINE__);
     }
 
     /* Set rearranger type */

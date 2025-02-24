@@ -811,7 +811,7 @@ extern "C" {
      * @param key      Pointer to store the computed key value
      * @return PIO_NOERR on success, error code otherwise
      */
-    typedef int (*pio_partition_fn)(iosystem_desc_t *ios, io_desc_t *iodesc, 
+    typedef int (*pio_partition_fn)(int comprank, int iorank, int comptasks, int iotasks,
 				int *color, int *key);
 
 

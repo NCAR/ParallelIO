@@ -251,7 +251,7 @@ extern "C" {
                        const PIO_Offset *dest_ioindex);
 
     /* Create the MPI communicators needed by the subset rearranger. */
-    int default_subset_partition(iosystem_desc_t *ios, io_desc_t *iodesc);
+    int default_subset_partition(int comprank, int iorank, int comptasks, int iotasks, int *color, int *key);
 
     /* Like MPI_Alltoallw(), but with flow control. */
     int pio_swapm(void *sendbuf, int *sendcounts, int *sdispls, MPI_Datatype *sendtypes,

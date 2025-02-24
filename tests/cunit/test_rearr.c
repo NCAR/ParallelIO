@@ -672,6 +672,21 @@ int test_compute_counts(MPI_Comm test_comm, int my_rank)
     return 0;
 }
 
+int round_robin_partition(int comprank, int iorank, int comptasks, int iotasks, int *color, int *key)
+{
+    if(!color || !key || iorank < -1 || iorank >= iotasks || comprank < -1 || comprank >= comptasks) {
+	return PIO_EINVAL;
+    }
+    if (iorank > -1){
+	*key = 0;
+	*color = iorank;
+    }else{
+	*key = 1;
+	*color = comprank % iotasks;
+    }
+    return PIO_NOERR;
+}
+
 /* Call PIOc_InitDecomp() with parameters such that it calls
  * box_rearrange_create() just like test_box_rearrange_create() will
  * (see below). */
@@ -685,6 +700,15 @@ int test_init_decomp(int iosysid, MPI_Comm test_comm, int my_rank)
     /* Initialize a decomposition. */
     if ((ret = PIOc_init_decomp(iosysid, PIO_INT, NDIM1, gdimlen, MAPLEN2,
                                 compmap, &ioid, PIO_REARR_BOX, NULL, NULL, NULL)))
+        return ret;
+
+    /* Free it. */
+    if ((ret = PIOc_freedecomp(iosysid, ioid)))
+        return ret;
+
+    /* Initialize a decomposition. */
+    if ((ret = PIOc_init_decomp(iosysid, PIO_INT, NDIM1, gdimlen, MAPLEN2,
+                                compmap, &ioid, PIO_REARR_SUBSET, NULL, NULL, round_robin_partition)))
         return ret;
 
     /* Free it. */
@@ -917,41 +941,6 @@ int test_box_rearrange_create_2(MPI_Comm test_comm, int my_rank)
     free(ior1);
     free(ios->ioranks);
     free(ios->compranks);
-    free(iodesc);
-    free(ios);
-
-    return 0;
-}
-
-/* Test function default_subset_partition. */
-int test_default_subset_partition(MPI_Comm test_comm, int my_rank)
-{
-    iosystem_desc_t *ios;
-    io_desc_t *iodesc;
-    int mpierr;
-    int ret;
-
-    /* Allocate IO system info struct for this test. */
-    if (!(ios = calloc(1, sizeof(iosystem_desc_t))))
-        return PIO_ENOMEM;
-
-    /* Allocate IO desc struct for this test. */
-    if (!(iodesc = calloc(1, sizeof(io_desc_t))))
-        return PIO_ENOMEM;
-
-    ios->ioproc = 1;
-    ios->io_rank = my_rank;
-    ios->union_comm = test_comm;
-
-    /* Run the function to test. */
-    if ((ret = default_subset_partition(ios, iodesc)))
-        return ret;
-
-    /* Free the created communicator. */
-    if ((mpierr = MPI_Comm_free(&iodesc->subset_comm)))
-        MPIERR(mpierr);
-
-    /* Free resources from test. */
     free(iodesc);
     free(ios);
 
@@ -1286,9 +1275,6 @@ int run_no_iosys_tests(int my_rank, MPI_Comm test_comm)
         return ret;
 
     if ((ret = test_box_rearrange_create_2(test_comm, my_rank)))
-        return ret;
-
-    if ((ret = test_default_subset_partition(test_comm, my_rank)))
         return ret;
 
     if ((ret = test_rearrange_comp2io(test_comm, my_rank)))
