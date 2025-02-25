@@ -407,7 +407,7 @@ int main(int argc, char **argv)
 
                 /* Decompose the data over the tasks. */
                 if ((ret = create_decomposition_2d(TARGET_NTASKS, my_rank, iosysid, dim_len_2d, &ioid,
-                                                   PIO_INT)))
+                                                   PIO_INT, rearranger[r])))
                     return ret;
 
                 /* Test decomposition read/write. */

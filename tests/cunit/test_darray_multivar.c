@@ -513,7 +513,7 @@ int test_all_darray(int iosysid, int num_flavors, int *flavor, int my_rank,
 
         /* Decompose the data over the tasks. */
         if ((ret = create_decomposition_2d(TARGET_NTASKS, my_rank, iosysid, dim_len_2d,
-                                           &ioid, test_type[t])))
+                                           &ioid, test_type[t], rearranger)))
             return ret;
 
         /* Run the different combinations of use_fill and use_default. */

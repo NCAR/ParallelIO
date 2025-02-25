@@ -1008,7 +1008,7 @@ check_nc_sample_2(int iosysid, int format, char *filename, int my_rank, int *nci
  * @returns 0 for success, error code otherwise.
  **/
 int create_decomposition_2d(int ntasks, int my_rank, int iosysid, int *dim_len_2d,
-                            int *ioid, int pio_type)
+                            int *ioid, int pio_type, int rearranger)
 {
     PIO_Offset elements_per_pe;     /* Array elements per processing unit. */
     PIO_Offset *compdof;  /* The decomposition mapping. */
@@ -1028,7 +1028,7 @@ int create_decomposition_2d(int ntasks, int my_rank, int iosysid, int *dim_len_2
 
     /* Create the PIO decomposition for this test. */
     if ((ret = PIOc_InitDecomp(iosysid, pio_type, NDIM2, dim_len_2d, elements_per_pe,
-                               compdof, ioid, NULL, NULL, NULL, NULL)))
+                               compdof, ioid, &rearranger, NULL, NULL, NULL)))
         ERR(ret);
 
 

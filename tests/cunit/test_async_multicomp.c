@@ -90,7 +90,7 @@ int main(int argc, char **argv)
                     int ioid = 0;
 
                     if ((ret = create_decomposition_2d(NUM_COMP_PROCS, my_rank, iosysid[my_comp_idx], dim_len_2d,
-                                                       &ioid, PIO_SHORT)))
+                                                       &ioid, PIO_SHORT, rearranger[rearr])))
                         AERR2(ret, iosysid[my_comp_idx]);
 
 #ifndef USE_MPE /* For some reason MPE logging breaks this test! */
