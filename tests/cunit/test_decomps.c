@@ -40,7 +40,7 @@
 #define NUM_IO1 1
 #define NUM_IO2 2
 #define NUM_IO4 4
-#define NUM_REARRANGER 2
+#define NUM_REARRANGERS_TO_TEST 3
 
 /**
  * Test some decomposition functions.
@@ -365,7 +365,7 @@ int main(int argc, char **argv)
     int flavor[NUM_FLAVORS];    /* iotypes for the supported netCDF IO flavors. */
     int dim_len_2d[NDIM2] = {X_DIM_LEN, Y_DIM_LEN};
     int ioid;
-    int rearranger[NUM_REARRANGERS] = {PIO_REARR_BOX, PIO_REARR_SUBSET};
+    int rearranger[NUM_REARRANGERS_TO_TEST] = {PIO_REARR_BOX, PIO_REARR_SUBSET, -PIO_REARR_SUBSET};
     int ret;                    /* Return code. */
 
     /* Initialize test. */
@@ -383,14 +383,14 @@ int main(int argc, char **argv)
 
         /* Test for each rearranger. */
         /* for (int r = 0; r < NUM_REARRANGERS; r++) */
-        for (int r = 1; r < NUM_REARRANGERS; r++)
+        for (int r = 1; r < NUM_REARRANGERS_TO_TEST; r++)
         {
             int num_iotests = (rearranger[r] == PIO_REARR_BOX) ? 2 : 1;
 
             for (int io_test = 0; io_test < num_iotests; io_test++)
             {
                 /* Initialize PIO system on world. */
-                if ((ret = PIOc_Init_Intracomm(test_comm, NUM_IO4, STRIDE1, BASE0, rearranger[r], &iosysid)))
+                if ((ret = PIOc_Init_Intracomm(test_comm, NUM_IO4, STRIDE1, BASE0, abs(rearranger[r]), &iosysid)))
                     ERR(ret);
 
                 /* Set the error handler. */
@@ -411,7 +411,7 @@ int main(int argc, char **argv)
                     return ret;
 
                 /* Test decomposition read/write. */
-                if ((ret = test_decomp_read_write(iosysid, ioid, num_flavors, flavor, rearranger[r],
+                if ((ret = test_decomp_read_write(iosysid, ioid, num_flavors, flavor, abs(rearranger[r]),
                                                   my_rank, test_comm)))
                     return ret;
 

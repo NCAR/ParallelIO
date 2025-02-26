@@ -29,6 +29,8 @@
 /* Name of test var. (Name of a Welsh town.)*/
 #define VAR_NAME "Llanfairpwllgwyngyllgogerychwyrndrobwllllantysiliogogogoch"
 
+extern int round_robin_partition(int comprank, int iorank, int comptasks, int iotasks, int *color, int *key);
+
 /* Test some of the rearranger utility functions. */
 int test_rearranger_opts1(int iosysid)
 {
@@ -670,21 +672,6 @@ int test_compute_counts(MPI_Comm test_comm, int my_rank)
     free(ios);
 
     return 0;
-}
-
-int round_robin_partition(int comprank, int iorank, int comptasks, int iotasks, int *color, int *key)
-{
-    if(!color || !key || iorank < -1 || iorank >= iotasks || comprank < -1 || comprank >= comptasks) {
-	return PIO_EINVAL;
-    }
-    if (iorank > -1){
-	*key = 0;
-	*color = iorank;
-    }else{
-	*key = 1;
-	*color = comprank % iotasks;
-    }
-    return PIO_NOERR;
 }
 
 /* Call PIOc_InitDecomp() with parameters such that it calls

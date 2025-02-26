@@ -995,6 +995,24 @@ check_nc_sample_2(int iosysid, int format, char *filename, int my_rank, int *nci
     return ret;
 }
 
+/* round_robin_partition is an example of a user provided subset partitioning method
+**/
+
+int round_robin_partition(int comprank, int iorank, int comptasks, int iotasks, int *color, int *key)
+{
+    if(!color || !key || iorank < -1 || iorank >= iotasks || comprank < -1 || comprank >= comptasks) {
+	return PIO_EINVAL;
+    }
+    if (iorank > -1){
+	*key = 0;
+	*color = iorank;
+    }else{
+	*key = 1;
+	*color = comprank % iotasks;
+    }
+    return PIO_NOERR;
+}
+
 /* Create the decomposition to divide the 3-dimensional sample data
  * between tasks. For the purposes of decomposition we are only
  * concerned with 2 dimensions - we ignore the unlimited dimension.
@@ -1013,7 +1031,8 @@ int create_decomposition_2d(int ntasks, int my_rank, int iosysid, int *dim_len_2
     PIO_Offset elements_per_pe;     /* Array elements per processing unit. */
     PIO_Offset *compdof;  /* The decomposition mapping. */
     int ret;
-
+    pio_partition_fn partition_fn;
+    
     /* How many data elements per task? In this example we will end up
      * with 4. */
     elements_per_pe = dim_len_2d[0] * dim_len_2d[1] / ntasks;
@@ -1026,9 +1045,17 @@ int create_decomposition_2d(int ntasks, int my_rank, int iosysid, int *dim_len_2
     for (int i = 0; i < elements_per_pe; i++)
         compdof[i] = my_rank * elements_per_pe + i + 1;
 
+    if(rearranger == PIO_REARR_SUBSET){
+	partition_fn = default_subset_partition;
+    }else if(rearranger == -PIO_REARR_SUBSET){
+	rearranger = PIO_REARR_SUBSET;
+	partition_fn = round_robin_partition;
+    }
+    
+    
     /* Create the PIO decomposition for this test. */
     if ((ret = PIOc_InitDecomp(iosysid, pio_type, NDIM2, dim_len_2d, elements_per_pe,
-                               compdof, ioid, &rearranger, NULL, NULL, NULL)))
+                               compdof, ioid, &rearranger, NULL, NULL, partition_fn)))
         ERR(ret);
 
 

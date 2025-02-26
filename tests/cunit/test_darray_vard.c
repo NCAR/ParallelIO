@@ -459,8 +459,8 @@ int test_all_darray(int iosysid, int fmt, int num_flavors, int *flavor,
 /* Run tests for darray functions. */
 int main(int argc, char **argv)
 {
-#define NUM_REARRANGERS_TO_TEST 2
-    int rearranger[NUM_REARRANGERS_TO_TEST] = {PIO_REARR_BOX, PIO_REARR_SUBSET};
+#define NUM_REARRANGERS_TO_TEST 3
+    int rearranger[NUM_REARRANGERS_TO_TEST] = {PIO_REARR_BOX, PIO_REARR_SUBSET, -PIO_REARR_SUBSET};
     int my_rank;
     int ntasks;
     int num_flavors; /* Number of PIO netCDF flavors in this build. */
@@ -499,7 +499,7 @@ int main(int argc, char **argv)
                  * many and which processors are involved in I/O. */
                 if ((ret = PIOc_Init_Intracomm(test_comm, TARGET_NTASKS,
                                                ioproc_stride, ioproc_start,
-                                               rearranger[r], &iosysid)))
+                                               abs(rearranger[r]), &iosysid)))
                     return ret;
 
                 /* Run tests. */
