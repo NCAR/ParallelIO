@@ -854,7 +854,8 @@ contains
 
   end subroutine PIO_initdecomp_dof_i4
 
-  subroutine PIO_initdecomp_internal(iosystem,basepiotype,dims,maplen, compdof, iodesc, rearr, iostart, iocount, lib_path, func_name)
+  subroutine PIO_initdecomp_internal(iosystem,basepiotype,dims,maplen, compdof, iodesc, rearr, &
+       iostart, iocount, lib_path, func_name)
     type (iosystem_desc_t), intent(in) :: iosystem
     integer(i4), intent(in)           :: basepiotype
     integer(i4), intent(in)           :: dims(:)
