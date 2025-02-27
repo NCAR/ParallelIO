@@ -929,11 +929,13 @@ contains
           end do
           
           ierr = PIOc_InitDecomp_DynamicPartitioner(iosystem%iosysid, basepiotype, ndims, cdims, &
-               maplen, compdof, iodesc%ioid, crearr, C_LOC(cstart), C_LOC(ccount), trim(lib_path)//C_NULL_CHAR, trim(func_name)//C_NULL_CHAR)
+               maplen, compdof, iodesc%ioid, crearr, C_LOC(cstart), C_LOC(ccount), &
+               trim(lib_path)//C_NULL_CHAR, trim(func_name)//C_NULL_CHAR)
           deallocate(cstart, ccount)
        else
           ierr = PIOc_InitDecomp_DynamicPartitioner(iosystem%iosysid, basepiotype, ndims, cdims, &
-               maplen, compdof, iodesc%ioid, crearr, C_NULL_PTR, C_NULL_PTR, trim(lib_path)//C_NULL_CHAR, trim(func_name)//C_NULL_CHAR)
+               maplen, compdof, iodesc%ioid, crearr, C_NULL_PTR, C_NULL_PTR, &
+               trim(lib_path)//C_NULL_CHAR, trim(func_name)//C_NULL_CHAR)
        end if
     else       
        if(present(iostart) .and. present(iocount)) then
