@@ -768,6 +768,48 @@ PIOc_InitDecomp(int iosysid, int pio_type, int ndims, const int *gdimlen, int ma
     return PIO_NOERR;
 }
 
+
+int PIOc_InitDecomp_DynamicPartitioner(int iosysid, int basetype, int ndims, 
+                                       const int *dims, int maplen,
+                                       const PIO_Offset *compmap, int *ioidp, 
+                                       const int *rearranger,
+                                       const PIO_Offset *iostart, 
+                                       const PIO_Offset *iocount,
+                                       const char *lib_path, 
+                                       const char *func_name) {
+    
+    void *handle;
+    pio_partition_fn partition_fn;
+    
+    // Open the library
+
+    handle = dlopen(lib_path, RTLD_LAZY);
+    if (!handle) {
+        fprintf(stderr, "Error loading library >%s<: %s\n", lib_path, dlerror());
+        return -1;
+    }
+    
+    // Get the function
+    partition_fn = (pio_partition_fn)dlsym(handle, func_name);
+    if (!partition_fn) {
+        fprintf(stderr, "Error getting function %s: %s\n", func_name, dlerror());
+        dlclose(handle);
+        return -2;
+    }
+    
+    // Call the original PIOc_InitDecomp with our loaded function
+    int ret = PIOc_InitDecomp(iosysid, basetype, ndims, dims, maplen,
+                             compmap, ioidp, rearranger, iostart, iocount,
+                             partition_fn);
+
+    // Close the library handle
+    dlclose(handle);
+    return ret;
+}
+
+
+
+
 /**
  * Initialize the decomposition used with distributed arrays. The
  * decomposition describes how the data will be distributed between

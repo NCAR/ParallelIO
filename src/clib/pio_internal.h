@@ -17,6 +17,8 @@
 #include <limits.h>
 #include <math.h>
 #include <netcdf.h>
+#include <dlfcn.h> // used in PIOc_InitDecomp_DynamicPartitioner
+
 #ifdef NC_HAS_PAR_FILTERS
 #include <netcdf_filter.h>
 #include <netcdf_meta.h>

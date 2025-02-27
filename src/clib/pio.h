@@ -832,6 +832,14 @@ extern "C" {
                          const PIO_Offset *compmap, int *ioidp, int rearranger,
                          const PIO_Offset *iostart, const PIO_Offset *iocount, pio_partition_fn partition_fn);
 
+    int PIOc_InitDecomp_DynamicPartitioner(int iosysid, int basetype, int ndims, 
+					   const int *dims, int maplen,
+					   const PIO_Offset *compmap, int *ioidp, 
+					   const int *rearranger,
+					   const PIO_Offset *iostart, 
+					   const PIO_Offset *iocount,
+					   const char *lib_path, 
+					   const char *func_name) ;
     /* Free resources associated with a decomposition. */
     int PIOc_freedecomp(int iosysid, int ioid);
 

@@ -854,7 +854,7 @@ contains
 
   end subroutine PIO_initdecomp_dof_i4
 
-  subroutine PIO_initdecomp_internal(iosystem,basepiotype,dims,maplen, compdof, iodesc, rearr, iostart, iocount)
+  subroutine PIO_initdecomp_internal(iosystem,basepiotype,dims,maplen, compdof, iodesc, rearr, iostart, iocount, lib_path, func_name)
     type (iosystem_desc_t), intent(in) :: iosystem
     integer(i4), intent(in)           :: basepiotype
     integer(i4), intent(in)           :: dims(:)
@@ -862,13 +862,14 @@ contains
     integer (PIO_OFFSET_KIND), intent(in) :: compdof(maplen)   ! global degrees of freedom for computational decomposition
     integer, optional, target :: rearr
     integer (PIO_OFFSET_KIND), optional :: iostart(:), iocount(:)
+    character(len=*), optional :: lib_path, func_name
     type (io_desc_t), intent(inout)     :: iodesc
 
     integer(c_int) :: ndims
     integer(c_int), dimension(:), allocatable, target :: cdims
     integer(PIO_OFFSET_KIND), dimension(:), allocatable, target :: cstart, ccount
-
     type(C_PTR) :: crearr
+
     interface
        integer(C_INT) function PIOc_InitDecomp(iosysid,basetype,ndims,dims, &
             maplen, compmap, ioidp, rearr, iostart, iocount, partition_fn)  &
@@ -886,6 +887,24 @@ contains
          type(C_PTR), value :: iocount
          type(C_PTR), value :: partition_fn
        end function PIOc_InitDecomp
+
+       integer(C_INT) function PIOc_InitDecomp_DynamicPartitioner(iosysid,basetype,ndims,dims, &
+            maplen, compmap, ioidp, rearranger, iostart, iocount, &
+            lib_path, func_name) bind(C, name="PIOc_InitDecomp_DynamicPartitioner")
+         use iso_c_binding
+         integer(C_INT), value :: iosysid
+         integer(C_INT), value :: basetype
+         integer(C_INT), value :: ndims
+         integer(C_INT) :: dims(*)
+         integer(C_INT), value :: maplen
+         integer(C_SIZE_T) :: compmap(*)
+         integer(C_INT) :: ioidp
+         type(C_PTR), value :: rearranger
+         type(C_PTR), value :: iostart
+         type(C_PTR), value :: iocount
+         character(kind=c_char), intent(in) :: lib_path(*), func_name(*)
+       end function PIOc_InitDecomp_DynamicPartitioner
+
     end interface
     integer :: ierr,i
 
@@ -900,22 +919,37 @@ contains
     else
        crearr = C_NULL_PTR
     endif
-
-    if(present(iostart) .and. present(iocount)) then
-       allocate(cstart(ndims), ccount(ndims))
-       do i=1,ndims
-          cstart(i) = iostart(ndims-i+1)-1
-          ccount(i) = iocount(ndims-i+1)
-       end do
-
-       ierr = PIOc_InitDecomp(iosystem%iosysid, basepiotype, ndims, cdims, &
-            maplen, compdof, iodesc%ioid, crearr, C_LOC(cstart), C_LOC(ccount), C_NULL_PTR)
-       deallocate(cstart, ccount)
-    else
-       ierr = PIOc_InitDecomp(iosystem%iosysid, basepiotype, ndims, cdims, &
-            maplen, compdof, iodesc%ioid, crearr, C_NULL_PTR, C_NULL_PTR, C_NULL_PTR)
-    end if
-
+    if(present(lib_path) .and. present(func_name) .and. len_trim(lib_path) > 0 .and. len_trim(func_name) > 0) then
+       if(present(iostart) .and. present(iocount)) then
+          allocate(cstart(ndims), ccount(ndims))
+          do i=1,ndims
+             cstart(i) = iostart(ndims-i+1)-1
+             ccount(i) = iocount(ndims-i+1)
+          end do
+          
+          ierr = PIOc_InitDecomp_DynamicPartitioner(iosystem%iosysid, basepiotype, ndims, cdims, &
+               maplen, compdof, iodesc%ioid, crearr, C_LOC(cstart), C_LOC(ccount), trim(lib_path)//C_NULL_CHAR, trim(func_name)//C_NULL_CHAR)
+          deallocate(cstart, ccount)
+       else
+          ierr = PIOc_InitDecomp_DynamicPartitioner(iosystem%iosysid, basepiotype, ndims, cdims, &
+               maplen, compdof, iodesc%ioid, crearr, C_NULL_PTR, C_NULL_PTR, trim(lib_path)//C_NULL_CHAR, trim(func_name)//C_NULL_CHAR)
+       end if
+    else       
+       if(present(iostart) .and. present(iocount)) then
+          allocate(cstart(ndims), ccount(ndims))
+          do i=1,ndims
+             cstart(i) = iostart(ndims-i+1)-1
+             ccount(i) = iocount(ndims-i+1)
+          end do
+          
+          ierr = PIOc_InitDecomp(iosystem%iosysid, basepiotype, ndims, cdims, &
+               maplen, compdof, iodesc%ioid, crearr, C_LOC(cstart), C_LOC(ccount), C_NULL_PTR)
+          deallocate(cstart, ccount)
+       else
+          ierr = PIOc_InitDecomp(iosystem%iosysid, basepiotype, ndims, cdims, &
+               maplen, compdof, iodesc%ioid, crearr, C_NULL_PTR, C_NULL_PTR, C_NULL_PTR)
+       end if
+    endif
     deallocate(cdims)
 
   end subroutine PIO_initdecomp_internal
@@ -1023,7 +1057,7 @@ contains
   !! I8 version of PIO_initdecomp_dof_i4.
   !! @author Jim Edwards
   subroutine PIO_initdecomp_dof_i8(iosystem, basepiotype, dims, compdof, &
-       iodesc, rearr, iostart, iocount)
+       iodesc, rearr, iostart, iocount, lib_path, func_name)
     type (iosystem_desc_t), intent(in) :: iosystem
     integer(i4), intent(in)           :: basepiotype
     integer(i4), intent(in)           :: dims(:)
@@ -1032,7 +1066,7 @@ contains
     integer (PIO_OFFSET_KIND), optional :: iostart(:), iocount(:)
     type (io_desc_t), intent(inout)     :: iodesc
     integer :: maplen
-
+    character(len=*), optional, intent(in) :: lib_path, func_name
 #ifdef TIMING
     call t_startf("PIO:initdecomp_dof")
 #endif
@@ -1040,7 +1074,7 @@ contains
     maplen = size(compdof)
 
     call PIO_initdecomp_internal(iosystem, basepiotype, dims, maplen, &
-         compdof, iodesc, rearr, iostart, iocount)
+         compdof, iodesc, rearr, iostart, iocount, lib_path, func_name)
 
 #ifdef TIMING
     call t_stopf("PIO:initdecomp_dof")

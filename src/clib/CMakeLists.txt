@@ -143,7 +143,7 @@ endif ()
 target_include_directories (pioc
   PUBLIC ${PIO_C_EXTRA_INCLUDE_DIRS})
 target_link_libraries (pioc
-  PUBLIC ${PIO_C_EXTRA_LIBRARIES})
+  PUBLIC ${PIO_C_EXTRA_LIBRARIES} ${CMAKE_DL_LIBS})
 target_compile_options (pioc
   PRIVATE ${PIO_C_EXTRA_COMPILE_OPTIONS})
 target_compile_definitions (pioc
