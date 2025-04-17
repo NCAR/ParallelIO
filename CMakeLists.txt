@@ -321,7 +321,7 @@ SET(STATUS_PNETCDF ${PnetCDF_C_FOUND})
 ###
 CHECK_C_SOURCE_COMPILES("
 #include <netcdf_meta.h>
-#if !NC_HAS_NC4
+#if !NC_HAS_HDF5 && !NC_HAS_NC4
       choke me
 #endif
 int main() {return 0;}" HAVE_NETCDF4)
@@ -452,7 +452,7 @@ SET(LDFLAGS "${CMAKE_EXE_LINKER_FLAGS} ${CMAKE_EXE_LINKER_FLAGS_${CMAKE_BUILD_TY
 
 is_disabled(BUILD_SHARED_LIBS enable_static)
 is_enabled(BUILD_SHARED_LIBS enable_shared)
-is_enabled(HAVE_PAR_FILTERS have_par_filters)
+is_enabled(PIO_HAS_PAR_FILTERS have_par_filters)
 is_enabled(USE_SZIP HAS_SZIP_WRITE)
 is_enabled(STATUS_PNETCDF HAS_PNETCDF)
 is_enabled(HAVE_H5Z_SZIP HAS_SZLIB)

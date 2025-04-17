@@ -513,7 +513,7 @@ int test_all_darray(int iosysid, int num_flavors, int *flavor, int my_rank,
 
         /* Decompose the data over the tasks. */
         if ((ret = create_decomposition_2d(TARGET_NTASKS, my_rank, iosysid, dim_len_2d,
-                                           &ioid, test_type[t])))
+                                           &ioid, test_type[t], rearranger)))
             return ret;
 
         /* Run the different combinations of use_fill and use_default. */
@@ -542,8 +542,8 @@ int test_all_darray(int iosysid, int num_flavors, int *flavor, int my_rank,
 /* Run tests for darray functions. */
 int main(int argc, char **argv)
 {
-#define NUM_REARRANGERS 2
-    int rearranger[NUM_REARRANGERS] = {PIO_REARR_BOX, PIO_REARR_SUBSET};
+#define NUM_REARRANGERS_TO_TEST 3
+    int rearranger[NUM_REARRANGERS_TO_TEST] = {PIO_REARR_BOX, PIO_REARR_SUBSET, -PIO_REARR_SUBSET};
     int my_rank;
     int ntasks;
     int num_flavors;         /* Number of PIO netCDF flavors in this build. */
@@ -572,13 +572,13 @@ int main(int argc, char **argv)
             ERR(ret);
 
         /* Test for both arrangers. */
-        for (int r = 0; r < NUM_REARRANGERS; r++)
+        for (int r = 0; r < NUM_REARRANGERS_TO_TEST; r++)
         {
 
             /* Initialize the PIO IO system. This specifies how
              * many and which processors are involved in I/O. */
             if ((ret = PIOc_Init_Intracomm(test_comm, TARGET_NTASKS, ioproc_stride,
-                                           ioproc_start, rearranger[r], &iosysid)))
+                                           ioproc_start, abs(rearranger[r]), &iosysid)))
                 return ret;
             /* printf("test Rearranger %d\n",rearranger[r]); */
             /* Run tests. */

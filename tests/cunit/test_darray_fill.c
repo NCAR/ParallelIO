@@ -282,10 +282,10 @@ int main(int argc, char **argv)
 
                     /* Initialize decompositions. */
                     if ((ret = PIOc_InitDecomp(iosysid, test_type[t], NDIM1, dim_len, maplen, wcompmap,
-                                               &wioid, &rearranger[r], NULL, NULL)))
+                                               &wioid, &rearranger[r], NULL, NULL, NULL)))
                         return ret;
                     if ((ret = PIOc_InitDecomp(iosysid, test_type[t], NDIM1, dim_len, maplen, rcompmap,
-                                               &rioid, &rearranger[r], NULL, NULL)))
+                                               &rioid, &rearranger[r], NULL, NULL, NULL)))
                         return ret;
 
                     /* Create the test file in each of the available iotypes. */

@@ -81,7 +81,7 @@ int main(int argc, char **argv)
     for (i = 0; i < elements_per_pe; i++)
         compmap[i] = my_rank + i;
     if ((ret = PIOc_init_decomp(iosysid, PIO_INT, NDIM1, &gdimlen, elements_per_pe, compmap,
-                                &ioid, PIO_REARR_BOX, NULL, NULL)))
+                                &ioid, PIO_REARR_BOX, NULL, NULL, NULL)))
         ERR(ret);
     free(compmap);
 
