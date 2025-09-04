@@ -487,6 +487,22 @@ INSTALL(FILES "${PIO_BINARY_DIR}/libpio.settings"
   DESTINATION lib
   COMPONENT libraries)
 
+include(CMakePackageConfigHelpers)
+
+write_basic_package_version_file(
+  "${CMAKE_CURRENT_BINARY_DIR}/PIOConfigVersion.cmake"
+  VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}"
+  COMPATIBILITY AnyNewerVersion)
+
+configure_package_config_file("${CMAKE_CURRENT_SOURCE_DIR}/cmake/PIOConfig.cmake.in"
+  "${CMAKE_CURRENT_BINARY_DIR}/PIOConfig.cmake"
+  INSTALL_DESTINATION lib/cmake/PIO)
+
+install(FILES
+  "${CMAKE_CURRENT_BINARY_DIR}/PIOConfig.cmake"
+  "${CMAKE_CURRENT_BINARY_DIR}/PIOConfigVersion.cmake"
+  DESTINATION lib/cmake/PIO)
+
 #####
 # Create pio_meta.h include file.
 #####
