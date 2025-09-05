@@ -1439,7 +1439,7 @@ PIOc_read_nc_decomp(int iosysid, const char *filename, int *ioidp, MPI_Comm comm
 
         /* Initialize the decomposition. */
         ret = PIOc_InitDecomp(iosysid, pio_type, ndims, global_dimlen, task_maplen[my_rank],
-                              compmap, ioidp, NULL, NULL, NULL);
+                              compmap, ioidp, NULL, NULL, NULL, NULL);
 
         free(compmap);
     }
@@ -3126,7 +3126,7 @@ iotype_is_valid(int iotype)
 
     /* Some builds include netCDF-4. */
     /* as of netcdf 4.9.3 NC_HAS_NC4 is no longer defined */
-#if NC_HAS_NC4 || (NC_VERSION_PATCH > 2)
+#if NC_HAS_NC4 || NC_HAS_HDF5 
     if (iotype == PIO_IOTYPE_NETCDF4C || iotype == PIO_IOTYPE_NETCDF4P)
         ret++;
 #endif /* _NETCDF4 */

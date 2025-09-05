@@ -76,7 +76,7 @@ int create_decomposition_3d(int ntasks, int my_rank, int iosysid, int *dim_len,
 
     /* Create the PIO decomposition for this test. */
     if ((ret = PIOc_init_decomp(iosysid, pio_type, NDIM3, dim_len, elements_per_pe,
-                                compdof, ioid, 0, NULL, NULL)))
+                                compdof, ioid, 0, NULL, NULL, NULL)))
         ERR(ret);
 
     /* Free the mapping. */

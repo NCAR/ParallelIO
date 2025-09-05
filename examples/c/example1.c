@@ -342,7 +342,7 @@ int check_file(int ntasks, char *filename) {
         if (verbose)
             printf("rank: %d Creating decomposition...\n", my_rank);
         if ((ret = PIOc_InitDecomp(iosysid, PIO_INT, NDIM, dim_len, (PIO_Offset)elements_per_pe,
-                                   compdof, &ioid, NULL, NULL, NULL)))
+                                   compdof, &ioid, NULL, NULL, NULL, NULL)))
             ERR(ret);
         free(compdof);
 

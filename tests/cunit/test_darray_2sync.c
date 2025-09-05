@@ -217,7 +217,7 @@ int darray_fill_test(int iosysid, int my_rank, int num_iotypes, int *iotype,
             /* Initialize the decomposition. Only the subset
              * decomposition uses the fill value. */
             if ((ret = PIOc_init_decomp(iosysid, test_type[t], NDIM1, &gdimlen, elements_per_pe,
-                                        compdof, &ioid, PIO_REARR_BOX, NULL, NULL)))
+                                        compdof, &ioid, PIO_REARR_BOX, NULL, NULL, NULL)))
                 AERR(ret);
 
             /* Set the record number for the unlimited dimension. */
@@ -424,7 +424,7 @@ int darray_simple_test(int iosysid, int my_rank, int num_iotypes, int *iotype,
 
         /* Initialize the decomposition. */
         if ((ret = PIOc_init_decomp(iosysid, PIO_INT, NDIM1, &gdimlen, elements_per_pe,
-                                    compdof, &ioid, PIO_REARR_BOX, NULL, NULL)))
+                                    compdof, &ioid, PIO_REARR_BOX, NULL, NULL, NULL)))
             AERR(ret);
 
         /* Set the record number for the unlimited dimension. */

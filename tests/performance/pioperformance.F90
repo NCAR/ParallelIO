@@ -29,8 +29,11 @@ program pioperformance
   integer :: vs, varsize(max_nvars) !  Local size of array for idealized decomps
   logical :: unlimdimindof
   integer :: log_level
+  integer, parameter :: pathlen=120
+  character(len=pathlen) :: lib_path, func_name
+
   namelist /pioperf/ decompfile, pio_typenames, rearrangers, niotasks, nframes, &
-       nvars, varsize, unlimdimindof, log_level
+       nvars, varsize, unlimdimindof, log_level, lib_path, func_name
 #ifdef BGQTRY
   external :: print_memusage
 #endif
@@ -67,6 +70,8 @@ program pioperformance
   varsize(1) = 1
   unlimdimindof=.false.
   log_level = -1
+  func_name = ""
+  lib_path = ""
   if(mype==0) then
      open(unit=12,file='pioperf.nl',status='old')
      read(12,pioperf)
@@ -97,6 +102,8 @@ program pioperformance
   call MPI_Bcast(nvars, max_nvars, MPI_INTEGER, 0, MPI_COMM_WORLD,ierr)
   call MPI_Bcast(varsize, max_nvars, MPI_INTEGER, 0, MPI_COMM_WORLD,ierr)
   call MPI_Bcast(log_level, 1, MPI_INTEGER, 0, MPI_COMM_WORLD,ierr)
+  call MPI_Bcast(lib_path, pathlen, MPI_CHARACTER, 0, MPI_COMM_WORLD,ierr)
+  call MPI_Bcast(func_name, pathlen, MPI_CHARACTER, 0, MPI_COMM_WORLD,ierr)
 
   call t_initf('pioperf.nl', LogPrint=.false., mpicom=MPI_COMM_WORLD, MasterTask=MasterTask)
   niotypes = 0
@@ -116,7 +123,7 @@ program pioperformance
            do nv=1,max_nvars
               if(nvars(nv)>0) then
                  call pioperformancetest(decompfile(i), piotypes(1:niotypes), mype, npe, &
-                      rearrangers, niotasks, nframes, nvars(nv), varsize(vs),unlimdimindof)
+                      rearrangers, niotasks, nframes, nvars(nv), varsize(vs),unlimdimindof,lib_path,func_name)
                  if(mype==0) print * ,' complete'
               endif
            enddo
@@ -130,7 +137,7 @@ program pioperformance
 contains
 
   subroutine pioperformancetest(filename, piotypes, mype, npe_base, &
-       rearrangers, niotasks,nframes, nvars, varsize, unlimdimindof)
+       rearrangers, niotasks,nframes, nvars, varsize, unlimdimindof, lib_path, func_name )
     use pio
     use pio_support, only : pio_readdof
     use perf_mod
@@ -143,6 +150,7 @@ contains
     integer, intent(in) :: nvars
     integer, intent(in) :: varsize
     logical, intent(in) :: unlimdimindof
+    character(len=*), intent(in) :: lib_path, func_name
     integer(kind=PIO_Offset_kind), pointer :: compmap(:)
     integer :: ntasks
     integer :: comm
@@ -284,16 +292,21 @@ contains
                    call date_and_time(DATE=date, TIME=time)
                    nvarmult= pio_put_var(File, rundate, date//' '//time(1:4))
                 endif
-                
+                if(mype == 0 .and. len_trim(lib_path) > 0) print *,'Using partition lib_path=',trim(lib_path),len_trim(lib_path)
+                if(mype == 0 .and. len_trim(func_name) > 0) print *,'Using partition function=',trim(func_name), len_trim(func_name)
+
                 if(.not. unlimdimindof) then
 #ifdef VARINT
-                   call PIO_InitDecomp(iosystem, PIO_INT, gdims, compmap, iodesc_i4, rearr=rearr)
+                   call PIO_InitDecomp(iosystem, PIO_INT, gdims, compmap, iodesc_i4, rearr=rearr, &                                                                                
+                        lib_path=trim(lib_path),func_name=trim(func_name)) 
 #endif
 #ifdef VARREAL
-                   call PIO_InitDecomp(iosystem, PIO_REAL, gdims, compmap, iodesc_r4, rearr=rearr)
+                   call PIO_InitDecomp(iosystem, PIO_REAL, gdims, compmap, iodesc_r4, rearr=rearr, &                                                                                
+                        lib_path=trim(lib_path),func_name=trim(func_name)) 
 #endif
 #ifdef VARDOUBLE
-                   call PIO_InitDecomp(iosystem, PIO_DOUBLE, gdims, compmap, iodesc_r8, rearr=rearr)
+                   call PIO_InitDecomp(iosystem, PIO_DOUBLE, gdims, compmap, iodesc_r8, rearr=rearr, &
+                        lib_path=trim(lib_path),func_name=trim(func_name))
 #endif
                 endif
 
@@ -306,13 +319,16 @@ contains
 !                      compmap = compmap2 + (frame-1)*gdims(ndims)
 !                      print *,__FILE__,__LINE__,compmap
 #ifdef VARINT
-                      call PIO_InitDecomp(iosystem, PIO_INT, gdims, compmap, iodesc_i4, rearr=rearr)
+                      call PIO_InitDecomp(iosystem, PIO_INT, gdims, compmap, iodesc_i4, rearr=rearr, &                                                                                
+                        lib_path=trim(lib_path),func_name=trim(func_name)) 
 #endif
 #ifdef VARREAL
-                      call PIO_InitDecomp(iosystem, PIO_REAL, gdims, compmap, iodesc_r4, rearr=rearr)
+                      call PIO_InitDecomp(iosystem, PIO_REAL, gdims, compmap, iodesc_r4, rearr=rearr, &                                                                                
+                        lib_path=trim(lib_path),func_name=trim(func_name)) 
 #endif
 #ifdef VARDOUBLE
-                      call PIO_InitDecomp(iosystem, PIO_DOUBLE, gdims, compmap, iodesc_r8, rearr=rearr)
+                      call PIO_InitDecomp(iosystem, PIO_DOUBLE, gdims, compmap, iodesc_r8, rearr=rearr, &                                                                                
+                        lib_path=trim(lib_path),func_name=trim(func_name)) 
 #endif
                    endif
                    !if(mype==0) print *,__FILE__,__LINE__,'Frame: ',recnum
@@ -399,13 +415,16 @@ contains
 
                 if( unlimdimindof) then
 #ifdef VARINT
-                   call PIO_InitDecomp(iosystem, PIO_INT, gdims, compmap, iodesc_i4, rearr=rearr)
+                   call PIO_InitDecomp(iosystem, PIO_INT, gdims, compmap, iodesc_i4, rearr=rearr, &                                                                                
+                        lib_path=trim(lib_path),func_name=trim(func_name)) 
 #endif
 #ifdef VARREAL
-                   call PIO_InitDecomp(iosystem, PIO_REAL, gdims, compmap, iodesc_r4, rearr=rearr)
+                   call PIO_InitDecomp(iosystem, PIO_REAL, gdims, compmap, iodesc_r4, rearr=rearr, &                                                                                
+                        lib_path=trim(lib_path),func_name=trim(func_name)) 
 #endif
 #ifdef VARDOUBLE
-                   call PIO_InitDecomp(iosystem, PIO_DOUBLE, gdims, compmap, iodesc_r8, rearr=rearr)
+                   call PIO_InitDecomp(iosystem, PIO_DOUBLE, gdims, compmap, iodesc_r8, rearr=rearr, &
+                        lib_path=trim(lib_path),func_name=trim(func_name)) 
 #endif
                 endif
 
@@ -571,7 +590,7 @@ contains
        enddo
     endif
     if(minval(compmap)< 1 .or. maxval(compmap) > gdims(1)) then
-       print *,__FILE__,__LINE__,trim(doftype),varsize,minval(compmap),maxval(compmap)
+       print *,__LINE__,trim(doftype),varsize,minval(compmap),maxval(compmap)
        call piodie(__FILE__,__LINE__,'Compmap out of bounds')
     endif
   end subroutine init_ideal_dof

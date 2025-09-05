@@ -77,7 +77,7 @@ int test_frame_simple(int iosysid, int num_iotypes, int *iotype, int my_rank,
     /* Create the PIO decomposition for this test. */
     printf("%d Creating decomposition elements_per_pe = %lld\n", my_rank, elements_per_pe);
     if ((ret = PIOc_InitDecomp(iosysid, PIO_INT, NDIM2, dim_len_2d, elements_per_pe,
-                               compdof, &ioid, NULL, NULL, NULL)))
+                               compdof, &ioid, NULL, NULL, NULL, NULL)))
         ERR(ret);
 
     printf("%d decomposition initialized.\n", my_rank);

@@ -122,5 +122,5 @@ int run_test_main(int argc, char **argv, int min_ntasks, int max_ntasks,
 
 /* Create a 2D decomposition used in some tests. */
 int create_decomposition_2d(int ntasks, int my_rank, int iosysid, int *dim_len_2d, int *ioid,
-                            int pio_type);
+                            int pio_type, int rearranger);
 #endif /* _PIO_TESTS_H */

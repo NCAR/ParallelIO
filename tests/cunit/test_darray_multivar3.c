@@ -267,7 +267,7 @@ int create_dcomp_gaps(int ntasks, int my_rank, int iosysid, int *dim_len_2d,
 
     /* Create the PIO decomposition for this test. */
     if ((ret = PIOc_InitDecomp(iosysid, pio_type, NDIM2, dim_len_2d, elements_per_pe,
-                               compdof, ioid, NULL, NULL, NULL)))
+                               compdof, ioid, NULL, NULL, NULL, NULL)))
         ERR(ret);
 
     /* Free the mapping. */

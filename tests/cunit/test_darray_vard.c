@@ -407,7 +407,7 @@ int test_darray(int iosysid, int ioid, int fmt, int num_flavors,
  * @returns 0 for success, error code otherwise.
  */
 int test_all_darray(int iosysid, int fmt, int num_flavors, int *flavor,
-                    int my_rank, MPI_Comm test_comm)
+                    int my_rank, MPI_Comm test_comm, int rearranger)
 {
     int ioid;
     char filename[PIO_MAX_NAME + 1];
@@ -440,7 +440,7 @@ int test_all_darray(int iosysid, int fmt, int num_flavors, int *flavor,
 
         /* Decompose the data over the tasks. */
         if ((ret = create_decomposition_2d(TARGET_NTASKS, my_rank, iosysid,
-                                           dim_len_2d, &ioid, type_to_use)))
+                                           dim_len_2d, &ioid, type_to_use, rearranger)))
             return ret;
 
         /* Run a simple darray test. */
@@ -459,8 +459,8 @@ int test_all_darray(int iosysid, int fmt, int num_flavors, int *flavor,
 /* Run tests for darray functions. */
 int main(int argc, char **argv)
 {
-#define NUM_REARRANGERS_TO_TEST 2
-    int rearranger[NUM_REARRANGERS_TO_TEST] = {PIO_REARR_BOX, PIO_REARR_SUBSET};
+#define NUM_REARRANGERS_TO_TEST 3
+    int rearranger[NUM_REARRANGERS_TO_TEST] = {PIO_REARR_BOX, PIO_REARR_SUBSET, -PIO_REARR_SUBSET};
     int my_rank;
     int ntasks;
     int num_flavors; /* Number of PIO netCDF flavors in this build. */
@@ -499,12 +499,12 @@ int main(int argc, char **argv)
                  * many and which processors are involved in I/O. */
                 if ((ret = PIOc_Init_Intracomm(test_comm, TARGET_NTASKS,
                                                ioproc_stride, ioproc_start,
-                                               rearranger[r], &iosysid)))
+                                               abs(rearranger[r]), &iosysid)))
                     return ret;
 
                 /* Run tests. */
                 if ((ret = test_all_darray(iosysid, fmt, num_flavors, flavor,
-                                           my_rank, test_comm)))
+                                           my_rank, test_comm, rearranger[r])))
                     return ret;
 
                 /* Finalize PIO system. */

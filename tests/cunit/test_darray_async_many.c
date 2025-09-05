@@ -382,47 +382,47 @@ int run_darray_async_test(int iosysid, int my_rank, MPI_Comm test_comm,
     sprintf(decomp_filename, "decomp_%s_%d.nc", TEST_NAME, rearr);
     /* Create the PIO decompositions for this test. */
     if ((ret = PIOc_init_decomp(iosysid, PIO_BYTE, NDIM2, &dim_len[2], elements_per_pe,
-                                compdof, &ioid_byte, rearr, NULL, NULL)))
+                                compdof, &ioid_byte, rearr, NULL, NULL, NULL)))
         AERR(ret);
     if ((ret = PIOc_init_decomp(iosysid, PIO_CHAR, NDIM2, &dim_len[2], elements_per_pe,
-                                compdof, &ioid_char, rearr, NULL, NULL)))
+                                compdof, &ioid_char, rearr, NULL, NULL, NULL)))
         AERR(ret);
     if ((ret = PIOc_init_decomp(iosysid, PIO_SHORT, NDIM2, &dim_len[2], elements_per_pe,
-                                compdof, &ioid_short, rearr, NULL, NULL)))
+                                compdof, &ioid_short, rearr, NULL, NULL, NULL)))
         AERR(ret);
     if ((ret = PIOc_init_decomp(iosysid, PIO_INT, NDIM2, &dim_len[2], elements_per_pe,
-                                compdof, &ioid_int, rearr, NULL, NULL)))
+                                compdof, &ioid_int, rearr, NULL, NULL, NULL)))
         AERR(ret);
     if ((ret = PIOc_init_decomp(iosysid, PIO_FLOAT, NDIM2, &dim_len[2], elements_per_pe,
-                                compdof, &ioid_float, rearr, NULL, NULL)))
+                                compdof, &ioid_float, rearr, NULL, NULL, NULL)))
         AERR(ret);
     if ((ret = PIOc_init_decomp(iosysid, PIO_DOUBLE, NDIM2, &dim_len[2], elements_per_pe,
-                                compdof, &ioid_double, rearr, NULL, NULL)))
+                                compdof, &ioid_double, rearr, NULL, NULL, NULL)))
         AERR(ret);
 
 #ifdef _NETCDF4
     if ((ret = PIOc_init_decomp(iosysid, PIO_UBYTE, NDIM2, &dim_len[2], elements_per_pe,
-                                compdof, &ioid_ubyte, rearr, NULL, NULL)))
+                                compdof, &ioid_ubyte, rearr, NULL, NULL, NULL)))
         AERR(ret);
     if ((ret = PIOc_init_decomp(iosysid, PIO_USHORT, NDIM2, &dim_len[2], elements_per_pe,
-                                compdof, &ioid_ushort, rearr, NULL, NULL)))
+                                compdof, &ioid_ushort, rearr, NULL, NULL, NULL)))
         AERR(ret);
     if ((ret = PIOc_init_decomp(iosysid, PIO_UINT, NDIM2, &dim_len[2], elements_per_pe,
-                                compdof, &ioid_uint, rearr, NULL, NULL)))
+                                compdof, &ioid_uint, rearr, NULL, NULL, NULL)))
         AERR(ret);
     if ((ret = PIOc_init_decomp(iosysid, PIO_INT64, NDIM2, &dim_len[2], elements_per_pe,
-                                compdof, &ioid_int64, rearr, NULL, NULL)))
+                                compdof, &ioid_int64, rearr, NULL, NULL, NULL)))
         AERR(ret);
     if ((ret = PIOc_init_decomp(iosysid, PIO_UINT64, NDIM2, &dim_len[2], elements_per_pe,
-                                compdof, &ioid_uint64, rearr, NULL, NULL)))
+                                compdof, &ioid_uint64, rearr, NULL, NULL, NULL)))
         AERR(ret);
 #endif
 
     if ((ret = PIOc_init_decomp(iosysid, PIO_INT, NDIM3, &dim_len[1], elements_per_pe_3d,
-                                compdof_3d, &ioid_4d_int, rearr, NULL, NULL)))
+                                compdof_3d, &ioid_4d_int, rearr, NULL, NULL, NULL)))
         AERR(ret);
     if ((ret = PIOc_init_decomp(iosysid, PIO_FLOAT, NDIM3, &dim_len[1], elements_per_pe_3d,
-                                compdof_3d, &ioid_4d_float, rearr, NULL, NULL)))
+                                compdof_3d, &ioid_4d_float, rearr, NULL, NULL, NULL)))
         AERR(ret);
 
     /* These are the decompositions associated with each type. */

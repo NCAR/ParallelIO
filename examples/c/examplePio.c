@@ -319,7 +319,7 @@ struct examplePioClass* epc_createDecomp( struct examplePioClass* this )
     if (this->verbose)
 	printf("rank: %d Creating decomposition...\n", this->myRank);
     PIOc_InitDecomp(this->pioIoSystem, PIO_INT, 1, this->dimLen, (PIO_Offset)(this->arrIdxPerPe),
-                    this->compdof, &this->iodescNCells, NULL, NULL, NULL);
+                    this->compdof, &this->iodescNCells, NULL, NULL, NULL, NULL);
     return this;
 }
 
