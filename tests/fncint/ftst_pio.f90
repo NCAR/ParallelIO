@@ -24,7 +24,7 @@ program ftst_pio
   integer, dimension(3) :: var_dim
   integer :: maplen
   integer :: decompid, iosysid
-  integer :: varid, i
+  integer :: varid, i, tsvarid
   integer :: ierr
 
   ! Set up MPI.
@@ -75,6 +75,9 @@ program ftst_pio
   ! Define a data variable.
   ierr = nf_def_var(ncid, VAR_NAME, NF_INT, NDIM3, var_dim, varid)
   if (ierr .ne. nf_noerr) call handle_err(ierr)
+
+  ierr = nf_def_var(ncid, 'timestep', NF_INT, 1, var_dim(3), tsvarid)
+
   ierr = nf_enddef(ncid)
   if (ierr .ne. nf_noerr) call handle_err(ierr)
 
@@ -82,6 +85,9 @@ program ftst_pio
   ierr = nf_put_vard_int(ncid, varid, decompid, 1, data_buffer)
   if (ierr .ne. nf_noerr) call handle_err(ierr)
 
+  ierr = nf_put_var(ncid, tsvarid, 2, 2) 
+  if (ierr .ne. nf_noerr) call handle_err(ierr)
+  
   ! Close the file.
   ierr = nf_close(ncid)
   if (ierr .ne. nf_noerr) call handle_err(ierr)
