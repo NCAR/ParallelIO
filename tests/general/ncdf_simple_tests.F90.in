@@ -100,6 +100,69 @@ PIO_TF_AUTO_TEST_SUB_BEGIN test_def_var
 
 PIO_TF_AUTO_TEST_SUB_END test_def_var
 
+PIO_TF_AUTO_TEST_SUB_BEGIN test_extend_unlimited_var
+  use ncdf_simple_tests_tgv
+  Implicit none
+  type(file_desc_t) :: pio_file
+  type(var_desc_t)  :: pio_var
+  integer :: pio_dim
+  integer :: ret, i
+  integer, parameter :: initial_len = 5, extend_len = 3
+  integer, dimension(initial_len + extend_len) :: data_out, data_in
+  character(len=PIO_TF_MAX_STR_LEN), parameter :: fname = "pio_test_extend_unlim.nc"
+
+  ! Create file with unlimited dimension and write initial data
+  ret = PIO_createfile(pio_tf_iosystem_, pio_file, tgv_iotype, fname, PIO_CLOBBER)
+  PIO_TF_CHECK_ERR(ret, "Failed to create:" // trim(fname))
+
+  ret = PIO_def_dim(pio_file, 'unlim_dim', PIO_UNLIMITED, pio_dim) ! -1 for unlimited
+  PIO_TF_CHECK_ERR(ret, "Failed to define unlimited dim:" // trim(fname))
+
+  ret = PIO_def_var(pio_file, 'unlim_var', PIO_int, (/pio_dim/), pio_var)
+  PIO_TF_CHECK_ERR(ret, "Failed to define var:" // trim(fname))
+
+  ret = PIO_enddef(pio_file)
+  PIO_TF_CHECK_ERR(ret, "Failed to enddef:" // trim(fname))
+
+  do i = 1, initial_len
+    data_out(i) = i
+  end do
+  ret = PIO_put_var(pio_file, pio_var, data_out(1:initial_len))
+  PIO_TF_CHECK_ERR(ret, "Failed to write initial data:" // trim(fname))
+
+  call PIO_closefile(pio_file)
+
+  ! Reopen file and extend variable
+  ret = PIO_openfile(pio_tf_iosystem_, pio_file, tgv_iotype, fname, PIO_write)
+  PIO_TF_CHECK_ERR(ret, "Failed to reopen:" // trim(fname))
+
+  do i = 1, extend_len
+    data_out(initial_len + i) = 100 + i
+  end do
+  ret = PIO_put_var(pio_file, pio_var, start=(/initial_len/), count=(/extend_len/), &
+                    ival=data_out(initial_len+1:initial_len+extend_len))
+  PIO_TF_CHECK_ERR(ret, "Failed to extend data:" // trim(fname))
+
+  call PIO_syncfile(pio_file)
+
+  ! Optionally, read back and verify
+  ret = PIO_get_var(pio_file, pio_var, data_in)
+  PIO_TF_CHECK_ERR(ret, "Failed to read back data:" // trim(fname))
+  do i = 1, initial_len
+    if (data_in(i) /= i) then
+      print *, "ERROR: Initial data mismatch at ", i, ":", data_in(i), "!=", i
+    end if
+  end do
+  do i = 1, extend_len
+    if (data_in(initial_len + i) /= 100 + i) then
+      print *, "ERROR: Extended data mismatch at ", initial_len + i, ":", data_in(initial_len + i), "!=", 100 + i
+    end if
+  end do
+
+  call PIO_closefile(pio_file)
+  call PIO_deletefile(pio_tf_iosystem_, fname)
+
+PIO_TF_AUTO_TEST_SUB_END test_extend_unlimited_var
 PIO_TF_TEMPLATE<PIO_TF_PREDEF_TYPENAME PIO_TF_DATA_TYPE, PIO_TF_PREDEF_TYPENAME PIO_TF_FC_DATA_TYPE>
 PIO_TF_AUTO_TEST_SUB_BEGIN test_data_conversion
   use ncdf_simple_tests_tgv
@@ -190,6 +253,8 @@ PIO_TF_TEST_DRIVER_BEGIN
 
     ! Make sure that global variables are set correctly before running the tests
     PIO_TF_AUTO_TESTS_RUN(trim(iotype_descs(i)))
+    PRINT *, "PIO_TF: Starting test_extend_unlimited_var for ", trim(iotype_descs(i))
+    CALL test_extend_unlimited_var()
 
     call PIO_deletefile(pio_tf_iosystem_, tgv_fname)
   end do

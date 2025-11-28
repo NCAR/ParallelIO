@@ -1143,6 +1143,7 @@ PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Offset 
 		if ((ierr = nc_var_par_access(file->fh, varid, NC_COLLECTIVE)))
 		    return pio_err(ios, file, ierr, __FILE__, __LINE__);
 	    }
+            
 #endif
             switch(xtype)
             {
