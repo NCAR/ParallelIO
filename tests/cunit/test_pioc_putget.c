@@ -1767,7 +1767,7 @@ int putget_read_vars_nt(int ncid, int *varid, PIO_Offset *start, PIO_Offset *cou
  * @returns 0 for success, error code otherwise.
  */
 int create_putget_file(int iosysid, int access, int unlim, int flavor, int *dim_len,
-                       int *varid, const char *filename, int *ncidp)
+                       int *varid, const char *filename, int *ncidp, int *tsvarid)
 {
     int dimids[NDIM];        /* The dimension IDs. */
     int num_vars = NUM_CLASSIC_TYPES + 1;
@@ -1786,7 +1786,9 @@ int create_putget_file(int iosysid, int access, int unlim, int flavor, int *dim_
         return ret;
 
     /* Are we using unlimited dimension? */
-    if (!unlim)
+    if (unlim)
+	dim_len[0] = NC_UNLIMITED;
+    else
         dim_len[0] = NUM_TIMESTEPS;
 
     /* Define netCDF dimensions and variable. */
@@ -1812,7 +1814,14 @@ int create_putget_file(int iosysid, int access, int unlim, int flavor, int *dim_
         if ((ret = PIOc_def_var(ncid, var_name, my_type, NDIM, dimids, &varid[v])))
             return ret;
     }
-
+    if(unlim){
+	/* create an additional variable with only the unlimdim dimension */
+	if ((ret = PIOc_def_var(ncid, "timestep", PIO_INT, 1, dimids, tsvarid)))
+	{
+	    printf("Defined a timestep variable %d\n", ret);
+	    return ret;
+	}
+    }
     /* For the first access, also test attributes. */
     if (access == 0)
         if ((ret = test_write_atts(ncid, varid, flavor)))
@@ -1908,7 +1917,8 @@ int test_putget(int iosysid, int num_flavors, int *flavor, int my_rank,
                 MPI_Comm test_comm)
 {
     int dim_len[NDIM] = {NC_UNLIMITED, X_DIM_LEN, Y_DIM_LEN};
-
+    int tsvarid;
+    
 #define NUM_ACCESS 8
     for (int unlim = 0; unlim < 2; unlim++)
         for (int access = 0; access < NUM_ACCESS; access++)
@@ -1931,7 +1941,7 @@ int test_putget(int iosysid, int num_flavors, int *flavor, int my_rank,
 
                 /* Create test file with dims and vars defined. */
                 if ((ret = create_putget_file(iosysid, access, unlim, flavor[fmt], dim_len, varid,
-                                              filename, &ncid)))
+                                              filename, &ncid, &tsvarid)))
                     return ret;
 
                 /* Write some data. */
@@ -1939,7 +1949,7 @@ int test_putget(int iosysid, int num_flavors, int *flavor, int my_rank,
                 PIO_Offset start[NDIM] = {0, 0, 0};
                 PIO_Offset count[NDIM] = {1, X_DIM_LEN, Y_DIM_LEN};
                 PIO_Offset stride[NDIM] = {1, 1, 1};
-
+		PIO_Offset index1d = 0;
                 switch (access)
                 {
                 case 0:
@@ -2003,7 +2013,21 @@ int test_putget(int iosysid, int num_flavors, int *flavor, int my_rank,
                 /* Check contents of the file. */
                 if ((ret = check_file(access, ncid, varid, flavor[fmt], index, start, count, stride, unlim)))
                     return ret;
-
+		if(unlim > 0) {
+		    /* try advancing the file */
+		    index1d = 0;
+		    if ((ret = PIOc_put_var1_int(ncid, tsvarid, &index1d, dim_len)))
+		    {
+			printf("extend file time test %d\n",ret);
+			return ret;
+		    }
+		    index1d = 1;
+		    if ((ret = PIOc_put_var1_int(ncid, tsvarid, &index1d, dim_len+1)))
+		    {
+			printf("extend file time test %d\n",ret);
+			return ret;
+		    }
+		}
                 /* Close the netCDF file. */
                 if ((ret = PIOc_closefile(ncid)))
                     ERR(ret);
