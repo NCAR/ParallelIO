@@ -241,7 +241,7 @@ int run_darray_async_test(int iosysid, int my_rank, MPI_Comm test_comm, MPI_Comm
 
     /* Create the PIO decomposition for this test. */
     if ((ret = PIOc_init_decomp(iosysid, piotype, NDIM2, &dim_len[1], elements_per_pe,
-                                compdof, &ioid, PIO_REARR_BOX, NULL, NULL)))
+                                compdof, &ioid, PIO_REARR_BOX, NULL, NULL, NULL)))
         PBAIL(ret);
 
     /* Write the decomp file (on appropriate tasks). */

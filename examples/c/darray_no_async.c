@@ -277,7 +277,7 @@ int main(int argc, char* argv[])
     /* printf("rank: %d Creating decomposition, elements_per_pe %lld...\n", my_rank, */
     /*        elements_per_pe); */
     if ((ret = PIOc_init_decomp(iosysid, PIO_INT, NDIM3 - 1, &dim_len[1], elements_per_pe,
-                                compdof, &ioid, PIO_REARR_SUBSET, NULL, NULL)))
+                                compdof, &ioid, PIO_REARR_SUBSET, NULL, NULL, NULL)))
         ERR(ret);
 
     /* Write the decomposition file. */

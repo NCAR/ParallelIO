@@ -117,15 +117,15 @@ int create_decomposition(int ntasks, int my_rank, int iosysid, int dim1_len, int
 
     /* These should fail. */
     if (PIOc_init_decomp(iosysid + TEST_VAL_42, PIO_FLOAT, NDIM1, dim_len, elements_per_pe,
-                         compdof, ioid, 0, NULL, NULL) != PIO_EBADID)
+                         compdof, ioid, 0, NULL, NULL, NULL) != PIO_EBADID)
         ERR(ERR_WRONG);
     if (PIOc_init_decomp(iosysid, PIO_FLOAT, NDIM1, bad_dim_len, elements_per_pe,
-                         compdof, ioid, 0, NULL, NULL) != PIO_EINVAL)
+                         compdof, ioid, 0, NULL, NULL, NULL) != PIO_EINVAL)
         ERR(ERR_WRONG);
 
     /* Create the PIO decomposition for this test. */
     if ((ret = PIOc_init_decomp(iosysid, PIO_FLOAT, NDIM1, dim_len, elements_per_pe,
-                                compdof, ioid, 0, NULL, NULL)))
+                                compdof, ioid, 0, NULL, NULL, NULL)))
         ERR(ret);
 
     /* Free the mapping. */
@@ -2299,7 +2299,7 @@ int test_decomp_public_async(int my_test_size, int my_rank, int iosysid, MPI_Com
 
     /* Create the PIO decomposition for this test. */
     if ((ret = PIOc_init_decomp(iosysid, PIO_FLOAT, NDIM1, &dim_len, elements_per_pe,
-                                compdof, &ioid, PIO_REARR_BOX, NULL, NULL)))
+                                compdof, &ioid, PIO_REARR_BOX, NULL, NULL, NULL)))
         ERR(ret);
 
     /* Write the decomp file (on appropriate tasks). */

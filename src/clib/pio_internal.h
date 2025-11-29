@@ -17,6 +17,8 @@
 #include <limits.h>
 #include <math.h>
 #include <netcdf.h>
+#include <dlfcn.h> // used in PIOc_InitDecomp_DynamicPartitioner
+
 #ifdef NC_HAS_PAR_FILTERS
 #include <netcdf_filter.h>
 #include <netcdf_meta.h>
@@ -251,7 +253,7 @@ extern "C" {
                        const PIO_Offset *dest_ioindex);
 
     /* Create the MPI communicators needed by the subset rearranger. */
-    int default_subset_partition(iosystem_desc_t *ios, io_desc_t *iodesc);
+    int default_subset_partition(int comprank, int iorank, int comptasks, int iotasks, int *color, int *key);
 
     /* Like MPI_Alltoallw(), but with flow control. */
     int pio_swapm(void *sendbuf, int *sendcounts, int *sdispls, MPI_Datatype *sendtypes,
@@ -295,9 +297,10 @@ extern "C" {
     /* Free a region list. */
     void free_region_list(io_region *top);
 
+
     /* Create a subset rearranger. */
     int subset_rearrange_create(iosystem_desc_t *ios, int maplen, PIO_Offset *compmap, const int *gsize,
-                                int ndim, io_desc_t *iodesc);
+                                int ndim, io_desc_t *iodesc, pio_partition_fn partition_fn);
 
     /* Create a box rearranger. */
     int box_rearrange_create(iosystem_desc_t *ios, int maplen, const PIO_Offset *compmap, const int *gsize,

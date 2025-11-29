@@ -261,7 +261,7 @@ fi
 
 # Do we have netCDF-4?
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include "netcdf_meta.h"],
-[[#if !NC_HAS_NC4
+[[#if !NC_HAS_HDF5 && !NC_HAS_NC4
 # error
 #endif]
 ])], [have_netcdf4=yes], [have_netcdf4=no])
