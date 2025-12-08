@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 2.8.12)
+cmake_minimum_required (VERSION 3.5.2)
 include (CheckFunctionExists)
 project (PIOC C)
 
@@ -29,9 +29,7 @@ if (NETCDF_INTEGRATION)
   set (src ${src} ../ncint/nc_get_vard.c ../ncint/ncintdispatch.c ../ncint/ncint_pio.c ../ncint/nc_put_vard.c)
 endif ()
 # This needs to be in an IF statement. using GDAL_INTEGRATION. But haven't figured that out yet.
-if (USE_GDAL)
-  set (src ${src} pio_gdal.c)
-endif()
+set (src ${src} pio_gdal.c)
 
 add_library (pioc ${src})
 
@@ -178,17 +176,17 @@ if (PIO_USE_MPISERIAL)
 endif ()
 
 #===== GDAL ===== <M.Long>
-if (USE_GDAL)
+#if (GDAL_Found)
   target_include_directories (pioc
     PUBLIC ${GDAL_INCLUDE_DIR})
   target_link_libraries (pioc
-    PUBLIC "-L${GDAL_LIBRARY_PATH} -lgdal")
-endif ()
+    PUBLIC ${GDAL_LIBRARY})
+#endif ()
 
 include(CheckTypeSize)
 check_type_size("size_t" SIZEOF_SIZE_T)
-CHECK_TYPE_SIZE("long long" SIZEOF_LONG_LONG)
-if (NOT ${SIZEOF_SIZE_T} EQUAL ${SIZEOF_LONG_LONG})
+check_type_size("long long" SIZEOF_LONG_LONG)
+if (NOT "${SIZEOF_SIZE_T}" STREQUAL "${SIZEOF_LONG_LONG}")
   message (FATAL_ERROR "size_t and long long must be the same size!")
 endif ()
 

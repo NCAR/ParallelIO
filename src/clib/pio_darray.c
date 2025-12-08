@@ -197,6 +197,12 @@ PIOc_write_darray_multi(int ncid, const int *varids, int ioid, int nvars,
 
     }
 
+    if ((!ios->async || !ios->ioproc) && (file->iotype = PIO_IOTYPE_GDAL))
+    {
+      // Do we even need to sort out fndims here? (MSL<<>>)
+      fndims = 1;
+    }
+
     /* If async is in use, and this is not an IO task, bcast the
      * parameters. */
     if (ios->async)
@@ -328,6 +334,12 @@ PIOc_write_darray_multi(int ncid, const int *varids, int ioid, int nvars,
         break;
     case PIO_IOTYPE_NETCDF4C:
     case PIO_IOTYPE_NETCDF:
+        if ((ierr = write_darray_multi_serial(file, nvars, fndims, varids, iodesc,
+                                              DARRAY_DATA, frame)))
+            return pio_err(ios, file, ierr, __FILE__, __LINE__);
+
+        break;
+    case PIO_IOTYPE_GDAL:
         if ((ierr = write_darray_multi_serial(file, nvars, fndims, varids, iodesc,
                                               DARRAY_DATA, frame)))
             return pio_err(ios, file, ierr, __FILE__, __LINE__);
@@ -697,7 +709,7 @@ PIOc_write_darray(int ncid, int varid, int ioid, PIO_Offset arraylen, void *arra
     /*           __FILE__, __LINE__); */
 
     /* If we don't know the fill value for this var, get it. */
-    if (!vdesc->fillvalue)
+    if (!vdesc->fillvalue && file->iotype != PIO_IOTYPE_GDAL)
         if ((ierr = find_var_fillvalue(file, varid, vdesc)))
             return pio_err(ios, file, PIO_EBADID, __FILE__, __LINE__);
 
@@ -949,12 +961,12 @@ PIOc_read_darray(int ncid, int varid, int ioid, PIO_Offset arraylen,
         if ((ierr = pio_read_darray_nc(file, iodesc, varid, iobuf)))
             return pio_err(ios, file, ierr, __FILE__, __LINE__);
         break;
-#ifdef USE_GDAL
     case PIO_IOTYPE_GDAL:
-        if ((ierr = pio_read_darray_shp(file, iodesc, varid, iobuf)))
+        if ((ierr = pio_read_darray_shp_par(file, iodesc, varid, iobuf)))
             return pio_err(ios, file, ierr, __FILE__, __LINE__);
+//        if ((ierr = pio_gdal_read_features_par(file->pio_ncid, varid, iodesc, iobuf)))
+//            return pio_err(ios, file, ierr, __FILE__, __LINE__);
         break;
-#endif
     default:
         return pio_err(NULL, NULL, PIO_EBADIOTYPE, __FILE__, __LINE__);
     }
