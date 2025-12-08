@@ -29,7 +29,9 @@ if (NETCDF_INTEGRATION)
   set (src ${src} ../ncint/nc_get_vard.c ../ncint/ncintdispatch.c ../ncint/ncint_pio.c ../ncint/nc_put_vard.c)
 endif ()
 # This needs to be in an IF statement. using GDAL_INTEGRATION. But haven't figured that out yet.
-set (src ${src} pio_gdal.c)
+if (USE_GDAL)
+  set (src ${src} pio_gdal.c)
+endif()
 
 add_library (pioc ${src})
 
@@ -176,12 +178,12 @@ if (PIO_USE_MPISERIAL)
 endif ()
 
 #===== GDAL ===== <M.Long>
-#if (GDAL_Found)
+if (USE_GDAL)
   target_include_directories (pioc
     PUBLIC ${GDAL_INCLUDE_DIR})
   target_link_libraries (pioc
-    PUBLIC ${GDAL_LIBRARY})
-#endif ()
+    PUBLIC "-L${GDAL_LIBRARY_PATH} -lgdal")
+endif ()
 
 include(CheckTypeSize)
 check_type_size("size_t" SIZEOF_SIZE_T)

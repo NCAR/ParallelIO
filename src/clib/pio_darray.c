@@ -961,12 +961,14 @@ PIOc_read_darray(int ncid, int varid, int ioid, PIO_Offset arraylen,
         if ((ierr = pio_read_darray_nc(file, iodesc, varid, iobuf)))
             return pio_err(ios, file, ierr, __FILE__, __LINE__);
         break;
+#ifdef USE_GDAL
     case PIO_IOTYPE_GDAL:
         if ((ierr = pio_read_darray_shp_par(file, iodesc, varid, iobuf)))
             return pio_err(ios, file, ierr, __FILE__, __LINE__);
 //        if ((ierr = pio_gdal_read_features_par(file->pio_ncid, varid, iodesc, iobuf)))
 //            return pio_err(ios, file, ierr, __FILE__, __LINE__);
         break;
+#endif
     default:
         return pio_err(NULL, NULL, PIO_EBADIOTYPE, __FILE__, __LINE__);
     }
