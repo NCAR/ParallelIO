@@ -22,6 +22,11 @@ endif()
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -O0")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0")
 
+
+set(CMAKE_MACOSX_RPATH 1)
+if(USE_GDAL)  
+  set(CMAKE_BUILD_RPATH ${GDAL_LIBRARY_PATH})
+endif()
 #==============================================================================
 #  PREPARE FOR TESTING
 #==============================================================================
@@ -344,9 +349,16 @@ else ()
   #   EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/test_async_perf
   #   NUMPROCS ${EXACTLY_FOUR_TASKS}
   #   TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-  add_mpi_test(test_gdal
-    EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/test_gdal
-    NUMPROCS ${EXACTLY_FOUR_TASKS}
-    TIMEOUT ${DEFAULT_TEST_TIMEOUT})
+  if(USE_GDAL)  
+    add_custom_target(link_target ALL
+                      COMMAND ${CMAKE_COMMAND} -E create_symlink
+                      ${CMAKE_CURRENT_SOURCE_DIR}/data ${CMAKE_CURRENT_BINARY_DIR}/data)
+    add_mpi_test(test_gdal
+      EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/test_gdal
+      NUMPROCS ${EXACTLY_FOUR_TASKS}
+      TIMEOUT ${DEFAULT_TEST_TIMEOUT})
+    set_tests_properties(test_gdal PROPERTIES DEPENDS link_target)
+      
+  endif()
 endif ()
 MESSAGE("CMAKE_EXE_LINKER_FLAGS ${CMAKE_EXE_LINKER_FLAGS}")

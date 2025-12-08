@@ -167,27 +167,26 @@ int test_gdal(int iosysid, int ioid, int num_flavors, int *flavor, int my_rank,
 	    ERR(ret);
 	  
 	  /* Check the results. */
-// TEMPORARILY DISABLED UNTIL A SEGFAULT IS DIAGNOSED
-//	  for (int f = 0; f < arraylen; f++)
-//	    {
-//	      switch (pio_type)
-//		{
-//		case PIO_INT:
-//		  if (test_data_int_in[f] != test_data_int[f])
-//		    return ERR_WRONG;
-//		  break;
-//		case PIO_FLOAT:
-//		  if (test_data_float_in[f] != test_data_float[f])
-//		    return ERR_WRONG;
-//		  break;
-//		case PIO_DOUBLE:
-//		  if (test_data_double_in[f] != test_data_double[f])
-//		    return ERR_WRONG;
-//		  break;
-//		default:
-//		  ERR(ERR_WRONG);
-//		}
-//	    }
+	  for (int f = 0; f < arraylen; f++)
+	    {
+	      switch (pio_type)
+		{
+		case PIO_INT:
+		  if (test_data_int_in[f] != test_data_int[f])
+		    return ERR_WRONG;
+		  break;
+		case PIO_FLOAT:
+		  if (test_data_float_in[f] != test_data_float[f])
+		    return ERR_WRONG;
+		  break;
+		case PIO_DOUBLE:
+		  if (test_data_double_in[f] != test_data_double[f])
+		    return ERR_WRONG;
+		  break;
+		default:
+		  ERR(ERR_WRONG);
+		}
+	    }
 
 	  /* Close the netCDF file. */
 	  if ((ret = PIOc_closefile(ncid2)))
@@ -247,7 +246,7 @@ int test_all_gdal(int iosysid, int num_flavors, int *flavor, int my_rank,
 int main(int argc, char **argv)
 {
 #define NUM_REARRANGERS_TO_TEST 2
-    int rearranger[NUM_REARRANGERS_TO_TEST] = {PIO_REARR_BOX, PIO_REARR_SUBSET};
+    int rearranger[NUM_REARRANGERS_TO_TEST] = {PIO_REARR_SUBSET, PIO_REARR_BOX};
     int my_rank;
     int ntasks;
     int num_flavors; /* Number of PIO netCDF flavors in this build. */
@@ -283,10 +282,14 @@ int main(int argc, char **argv)
         {
             /* Initialize the PIO IO system. This specifies how
              * many and which processors are involved in I/O. */
-            if ((ret = PIOc_Init_Intracomm(test_comm, TARGET_NTASKS, ioproc_stride,
+            if ((ret = PIOc_Init_Intracomm(test_comm, NUM_IO_PROCS, ioproc_stride,
                                            ioproc_start, rearranger[r], &iosysid)))
                 return ret;
 
+/*	    if ((ret = PIOc_set_rearr_opts(iosysid, PIO_REARR_COMM_P2P, PIO_REARR_COMM_FC_2D_DISABLE, false, false, PIO_REARR_COMM_UNLIMITED_PEND_REQ, false, false, PIO_REARR_COMM_UNLIMITED_PEND_REQ)))
+                return ret;
+*/
+	    
             /* Run tests. */
             if ((ret = test_all_gdal(iosysid, num_flavors, flavor, my_rank, test_comm)))
                 return ret;
