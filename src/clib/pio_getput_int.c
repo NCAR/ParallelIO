@@ -1081,7 +1081,6 @@ PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Offset 
             else
                 fake_stride = (PIO_Offset *)stride;
         }
-
 #ifdef _PNETCDF
         if (file->iotype == PIO_IOTYPE_PNETCDF)
         {
@@ -1137,6 +1136,15 @@ PIOc_put_vars_tc(int ncid, int varid, const PIO_Offset *start, const PIO_Offset 
         {
             PLOG((2, "PIOc_put_vars_tc calling netcdf function file->iotype = %d",
                   file->iotype));
+#ifdef _NETCDF4
+	    if (file->iotype == PIO_IOTYPE_NETCDF4P)
+	    {
+		PLOG((2, "Setting NC_COLLECTIVE mode"));
+		if ((ierr = nc_var_par_access(file->fh, varid, NC_COLLECTIVE)))
+		    return pio_err(ios, file, ierr, __FILE__, __LINE__);
+	    }
+            
+#endif
             switch(xtype)
             {
             case NC_BYTE:

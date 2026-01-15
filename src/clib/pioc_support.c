@@ -9,7 +9,15 @@
 #include <pio.h>
 #include <pio_internal.h>
 
+#if defined __has_include
+#if __has_include (<execinfo.h>)
+#define PLATFORM_HAS_EXECINFO
+#endif /* __has_include (<execinfo.h>) */
+#endif /* __has_include */
+
+#ifdef PLATFORM_HAS_EXECINFO
 #include <execinfo.h>
+#endif /* PLATFORM_HAS_EXECINFO */
 
 /** This is used with text decomposition files. */
 #define VERSNO 2001
@@ -522,6 +530,7 @@ pio_log(int severity, const char *fmt, ...)
 void
 print_trace(FILE *fp)
 {
+#ifdef PLATFORM_HAS_EXECINFO
     void *array[10];
     size_t size;
     char **strings;
@@ -540,6 +549,9 @@ print_trace(FILE *fp)
         fprintf(fp,"%s\n", strings[i]);
 
     free(strings);
+#else
+    (void)fp;
+#endif /* PLATFORM_HAS_EXECINFO */
 }
 
 /**
@@ -1532,6 +1544,7 @@ pioc_write_nc_decomp_int(iosystem_desc_t *ios, const char *filename, int cmode, 
                                  strlen(my_order_str) + 1, my_order_str)))
         return pio_err(ios, NULL, ret, __FILE__, __LINE__);
 
+#ifdef PLATFORM_HAS_EXECINFO
     /* Write an attribute with the stack trace. This can be helpful
      * for debugging. */
     void *bt[MAX_BACKTRACE];
@@ -1562,6 +1575,7 @@ pioc_write_nc_decomp_int(iosystem_desc_t *ios, const char *filename, int cmode, 
     if ((ret = PIOc_put_att_text(ncid, NC_GLOBAL, DECOMP_BACKTRACE_ATT_NAME,
                                  strlen(full_bt) + 1, full_bt)))
         return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+#endif /* PLATFORM_HAS_EXECINFO */
 
     /* We need a dimension for the dimensions in the data. (Example:
      * for 4D data we will need to store 4 dimension IDs.) */
@@ -2706,7 +2720,7 @@ PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filename,
 #ifdef _MPISERIAL
             ierr = nc_open(filename, mode, &file->fh);
 #else
-            imode = mode |  NC_MPIIO;
+            imode = mode |  NC_MPIIO | NC_NETCDF4;
             if ((ierr = nc_open_par(filename, imode, ios->io_comm, ios->info,
                                     &file->fh))){
 	      PLOG((2, "%d: PIOc_openfile_retry nc_open_par ierr=%d",__LINE__,ierr));
@@ -2722,6 +2736,7 @@ PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filename,
                                           &pio_type_size, &mpi_type,
                                           &mpi_type_size, &ndims)))
                 break;
+	    
             PLOG((2, "PIOc_openfile_retry:nc_open_par filename = %s mode = %d "
                   "imode = %d ierr = %d", filename, mode, imode, ierr));
 #endif
@@ -3111,7 +3126,8 @@ iotype_is_valid(int iotype)
         ret++;
 
     /* Some builds include netCDF-4. */
-#ifdef NC_HAS_NC4
+    /* as of netcdf 4.9.3 NC_HAS_NC4 is no longer defined */
+#if NC_HAS_NC4 || (NC_VERSION_PATCH > 2)
     if (iotype == PIO_IOTYPE_NETCDF4C || iotype == PIO_IOTYPE_NETCDF4P)
         ret++;
 #endif /* _NETCDF4 */

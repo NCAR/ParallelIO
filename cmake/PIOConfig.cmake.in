@@ -1,0 +1,52 @@
+@PACKAGE_INIT@
+
+if(NOT PIO_FIND_QUIETLY)
+  message(STATUS "Found PIO: ${PACKAGE_PREFIX_DIR}")
+endif()
+
+set(PIO_ENABLE_TIMING @PIO_ENABLE_TIMING@)
+set(PIO_ENABLE_FORTRAN @PIO_ENABLE_FORTRAN@)
+
+# The following components are supported by PIO (order is important)
+set(_supported_components GPTL C Fortran)
+
+# Check validity of requested components
+foreach(_comp ${PIO_FIND_COMPONENTS})
+  if(NOT _comp IN_LIST _supported_components)
+    set(PIO_FOUND False)
+    set(PIO_NOT_FOUND_MESSAGE "Unsupported component: ${_comp}")
+  endif()
+endforeach()
+
+# Some components are only available if they were built
+if (GPTL IN_LIST PIO_FIND_COMPONENTS AND NOT PIO_ENABLE_TIMING)
+  set(PIO_FOUND False)
+  set(PIO_NOT_FOUND_MESSAGE "The following component is unavailable: GPTL")
+endif()
+if (Fortran IN_LIST PIO_FIND_COMPONENTS AND NOT PIO_ENABLE_FORTRAN)
+  set(PIO_FOUND False)
+  set(PIO_NOT_FOUND_MESSAGE "The following component is unavailable: Fortran")
+endif()
+
+# Build a list of all the required components, taking into account their dependencies
+set(_required_components ${PIO_FIND_COMPONENTS})
+if(C IN_LIST _required_components)
+  if(PIO_ENABLE_TIMING)
+    list(APPEND _required_components GPTL)
+  endif()
+endif()
+if(Fortran IN_LIST _required_components)
+  list(APPEND _required_components C)
+  if(PIO_ENABLE_TIMING)
+    list(APPEND _required_components GPTL)
+  endif()
+endif()
+list(REMOVE_DUPLICATES _required_components)
+
+# Include required targets. We do this by looping over the _supported_components
+# list because the order in which targets are loaded matters.
+foreach(_comp ${_supported_components})
+  if(_comp IN_LIST _required_components)
+    include("${CMAKE_CURRENT_LIST_DIR}/PIO${_comp}Targets.cmake")
+  endif()
+endforeach()
