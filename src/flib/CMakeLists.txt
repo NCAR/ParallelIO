@@ -252,9 +252,7 @@ endif()
 #===== NetCDF-Fortran =====
 
 if(NetCDF_Fortran_FOUND)
-  # Set include and library variables from top-level CACHE
-  set(NetCDF_Fortran_INCLUDE_DIRS "${NetCDF_Fortran_INCLUDE_DIRS}")
-  set(NetCDF_Fortran_LIBRARIES "${NetCDF_Fortran_LIBRARIES}")
+  # Use NetCDF-Fortran include directories and libraries
   target_include_directories(piof
     PUBLIC ${NetCDF_Fortran_INCLUDE_DIRS})
   target_link_libraries(piof
