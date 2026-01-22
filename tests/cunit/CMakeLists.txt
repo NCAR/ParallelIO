@@ -4,7 +4,12 @@ include_directories("${CMAKE_SOURCE_DIR}/tests/cunit")
 include_directories("${CMAKE_SOURCE_DIR}/src/clib")
 include_directories("${CMAKE_BINARY_DIR}")
 include_directories("${CMAKE_BINARY_DIR}/src/clib")
-
+if(DEFINED NetCDF_C_LIBDIR)
+  link_directories(${NetCDF_C_LIBDIR})
+endif()
+if(DEFINED PnetCDF_C_LIBDIR)
+  link_directories(${PnetCDF_C_LIBDIR})
+endif()
 # Compiler-specific compiler options
 if ("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99")

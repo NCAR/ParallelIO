@@ -1,6 +1,13 @@
 #==============================================================================
 #  DEFINE THE TARGETS AND TESTS
 #==============================================================================
+if(DEFINED NetCDF_Fortran_LIBDIR)
+  link_directories(${NetCDF_Fortran_LIBDIR})
+  link_directories(${NetCDF_C_LIBDIR})
+endif()
+if(DEFINED PnetCDF_C_LIBDIR)
+  link_directories(${PnetCDF_C_LIBDIR})
+endif()
 
 add_executable (pioperf EXCLUDE_FROM_ALL
   pioperformance.F90)

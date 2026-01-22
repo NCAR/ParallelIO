@@ -3,7 +3,12 @@ include (LibMPI)
 include_directories("${CMAKE_SOURCE_DIR}/tests/cperf")
 include_directories("${CMAKE_SOURCE_DIR}/src/clib")
 include_directories("${CMAKE_BINARY_DIR}")
-
+if(DEFINED NetCDF_C_LIBDIR)
+  link_directories(${NetCDF_C_LIBDIR})
+endif()
+if(DEFINED PnetCDF_C_LIBDIR)
+  link_directories(${PnetCDF_C_LIBDIR})
+endif()
 # Compiler-specific compiler options
 message("Compiler is ${CMAKE_C_COMPILER_ID}")
 if ("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
