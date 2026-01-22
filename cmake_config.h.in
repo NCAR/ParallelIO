@@ -46,4 +46,6 @@
 /* Does PIO support using pnetcdf for I/O? */
 #cmakedefine _PNETCDF
 
+#cmakedefine USE_GDAL
+
 #endif /* _PIO_CONFIG_ */
