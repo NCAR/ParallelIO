@@ -53,11 +53,11 @@ include_directories(
 
 # Include the clib source directory
 target_include_directories (pioc
-  PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+  PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
 
 # Include the ncint source directory
 target_include_directories (pioc
-  PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../ncint)
+  PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../ncint>)
 
 # System and compiler CPP directives
 target_compile_definitions (pioc
@@ -80,11 +80,21 @@ endif()
 #  DEFINE THE INSTALL
 #==============================================================================
 
+set_target_properties(pioc PROPERTIES EXPORT_NAME PIO_C)
+
 # Library
-install (TARGETS pioc DESTINATION lib)
+install (TARGETS pioc
+  EXPORT PIOCTargets
+  DESTINATION lib
+  INCLUDES DESTINATION include)
 
 # Include/Header Files
 install (FILES pio.h uthash.h DESTINATION include)
+
+install(EXPORT PIOCTargets
+  FILE PIOCTargets.cmake
+  NAMESPACE PIO::
+  DESTINATION lib/cmake/PIO)
 
 #==============================================================================
 #  DEFINE THE DEPENDENCIES
@@ -145,7 +155,7 @@ endif ()
 
 #===== Add EXTRAs =====
 target_include_directories (pioc
-  PUBLIC ${PIO_C_EXTRA_INCLUDE_DIRS})
+  PUBLIC $<BUILD_INTERFACE:${PIO_C_EXTRA_INCLUDE_DIRS}>)
 target_link_libraries (pioc
   PUBLIC ${PIO_C_EXTRA_LIBRARIES})
 target_compile_options (pioc

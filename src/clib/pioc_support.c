@@ -2720,7 +2720,7 @@ PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filename,
 #ifdef _MPISERIAL
             ierr = nc_open(filename, mode, &file->fh);
 #else
-            imode = mode |  NC_MPIIO;
+            imode = mode |  NC_MPIIO | NC_NETCDF4;
             if ((ierr = nc_open_par(filename, imode, ios->io_comm, ios->info,
                                     &file->fh))){
 	      PLOG((2, "%d: PIOc_openfile_retry nc_open_par ierr=%d",__LINE__,ierr));
@@ -2736,6 +2736,7 @@ PIOc_openfile_retry(int iosysid, int *ncidp, int *iotype, const char *filename,
                                           &pio_type_size, &mpi_type,
                                           &mpi_type_size, &ndims)))
                 break;
+	    
             PLOG((2, "PIOc_openfile_retry:nc_open_par filename = %s mode = %d "
                   "imode = %d ierr = %d", filename, mode, imode, ierr));
 #endif
