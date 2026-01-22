@@ -99,30 +99,6 @@ else()
   endif()
 
 
-# NetCDF feature tests (after NetCDF_C detection)
-if(NetCDF_C_FOUND AND NetCDF_C_INCLUDE_DIRS)
-  # Test for NetCDF-4 capability
-  set(CMAKE_REQUIRED_INCLUDES ${NetCDF_C_INCLUDE_DIRS})
-  CHECK_C_SOURCE_COMPILES("
-#include <netcdf_meta.h>
-#if !defined(NC_VERSION_MAJOR) || NC_VERSION_MAJOR < 4
-  choke me
-#endif
-int main() {return 0;}" HAVE_NETCDF4)
-
-  # Test for NetCDF parallel I/O capability
-  set(CMAKE_REQUIRED_INCLUDES ${NetCDF_C_INCLUDE_DIRS})
-  CHECK_C_SOURCE_COMPILES("
-#include <netcdf_meta.h>
-#if !NC_HAS_PARALLEL
-  choke me
-#endif
-int main() {return 0;}" HAVE_NETCDF_PAR)
-else()
-  set(HAVE_NETCDF4 FALSE)
-  set(HAVE_NETCDF_PAR FALSE)
-endif()
-
 # The size of the data buffer for write/read_darray().
 set(PIO_BUFFER_SIZE 134217728)
 
