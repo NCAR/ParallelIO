@@ -305,54 +305,43 @@ if(PIO_ENABLE_FORTRAN)
     set(NetCDF_Fortran_LIBRARIES "${NetCDF_Fortran_LIBRARIES}" CACHE STRING "NetCDF Fortran libraries" FORCE)
   endif()
 endif()
+if(WITH_PNETCDF)
+  find_program(PNETCDF_CONFIG pnetcdf-config REQUIRED)
 
-# Always detect NetCDF C and PnetCDF for C library
-find_package(NetCDF QUIET COMPONENTS C)
-if(NOT NetCDF_C_FOUND)
-  find_package(PkgConfig REQUIRED)
-  pkg_check_modules(NetCDF_C REQUIRED IMPORTED_TARGET "netcdf")
-  if(NetCDF_C_FOUND OR NetCDF_C_INCLUDE_DIRS)
-    set(NetCDF_C_FOUND TRUE CACHE BOOL "NetCDF C found via pkg-config" FORCE)
+  execute_process(
+    COMMAND "${PNETCDF_CONFIG}" --includedir
+    OUTPUT_VARIABLE PNETCDF_INCLUDEDIR
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+  )
+
+  execute_process(
+    COMMAND "${PNETCDF_CONFIG}" --libdir
+    OUTPUT_VARIABLE PNETCDF_LIBDIR
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+  )
+
+
+  execute_process(
+    COMMAND "${PNETCDF_CONFIG}" --libs
+    OUTPUT_VARIABLE PNETCDF_LIBS
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+  )
+  # If PNETCDF_LIBS is empty but PNETCDF_LIBDIR is set, set a default
+  if(NOT PNETCDF_LIBS AND PNETCDF_LIBDIR)
+    set(PNETCDF_LIBS "-L${PNETCDF_LIBDIR} -lpnetcdf")
   endif()
+
+  # Propagate PnetCDF variables to subdirectories
+  set(PNETCDF_INCLUDEDIR "${PNETCDF_INCLUDEDIR}" CACHE PATH "PnetCDF include directory" FORCE)
+  set(PNETCDF_LIBDIR "${PNETCDF_LIBDIR}" CACHE PATH "PnetCDF library directory" FORCE)
+  set(PNETCDF_LIBS "${PNETCDF_LIBS}" CACHE STRING "PnetCDF libraries" FORCE)
+
+  # Modern CMake: create imported interface target for PnetCDF
+  add_library(PnetCDF::PnetCDF INTERFACE IMPORTED)
+  target_include_directories(PnetCDF::PnetCDF INTERFACE "${PNETCDF_INCLUDEDIR}")
+  target_link_directories(PnetCDF::PnetCDF INTERFACE "${PNETCDF_LIBDIR}")
+  target_link_libraries(PnetCDF::PnetCDF INTERFACE ${PNETCDF_LIBS})
 endif()
-
-find_program(PNETCDF_CONFIG pnetcdf-config REQUIRED)
-
-execute_process(
-  COMMAND "${PNETCDF_CONFIG}" --includedir
-  OUTPUT_VARIABLE PNETCDF_INCLUDEDIR
-  OUTPUT_STRIP_TRAILING_WHITESPACE
-)
-
-execute_process(
-  COMMAND "${PNETCDF_CONFIG}" --libdir
-  OUTPUT_VARIABLE PNETCDF_LIBDIR
-  OUTPUT_STRIP_TRAILING_WHITESPACE
-)
-
-
-execute_process(
-  COMMAND "${PNETCDF_CONFIG}" --libs
-  OUTPUT_VARIABLE PNETCDF_LIBS
-  OUTPUT_STRIP_TRAILING_WHITESPACE
-)
-# If PNETCDF_LIBS is empty but PNETCDF_LIBDIR is set, set a default
-if(NOT PNETCDF_LIBS AND PNETCDF_LIBDIR)
-  set(PNETCDF_LIBS "-L${PNETCDF_LIBDIR} -lpnetcdf")
-endif()
-
-
-# Propagate PnetCDF variables to subdirectories
-set(PNETCDF_INCLUDEDIR "${PNETCDF_INCLUDEDIR}" CACHE PATH "PnetCDF include directory" FORCE)
-set(PNETCDF_LIBDIR "${PNETCDF_LIBDIR}" CACHE PATH "PnetCDF library directory" FORCE)
-set(PNETCDF_LIBS "${PNETCDF_LIBS}" CACHE STRING "PnetCDF libraries" FORCE)
-
-# Modern CMake: create imported interface target for PnetCDF
-add_library(PnetCDF::PnetCDF INTERFACE IMPORTED)
-target_include_directories(PnetCDF::PnetCDF INTERFACE "${PNETCDF_INCLUDEDIR}")
-target_link_directories(PnetCDF::PnetCDF INTERFACE "${PNETCDF_LIBDIR}")
-target_link_libraries(PnetCDF::PnetCDF INTERFACE ${PNETCDF_LIBS})
-
 
 # Set PnetCDF_C_FOUND to TRUE if we have the include dir and libs, and propagate to subdirectories
 if(PNETCDF_INCLUDEDIR AND PNETCDF_LIBDIR AND PNETCDF_LIBS)
