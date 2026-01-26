@@ -2,11 +2,12 @@
 ### CMakeList.txt for examples using pio
 ###-------------------------------------------------------------------------###
 
+
 # Adding PIO definitions - defined in the root directory
-ADD_DEFINITIONS(${PIO_DEFINITIONS})
+add_definitions(${PIO_DEFINITIONS})
 
-INCLUDE_DIRECTORIES(${PIO_INCLUDE_DIRS})
-LINK_DIRECTORIES(${PIO_LIB_DIR})
+include_directories(${PIO_INCLUDE_DIRS})
+link_directories(${PIO_LIB_DIR})
 
-SET(SRC examplePio.cxx)
-ADD_EXECUTABLE(examplePio_cxx ${SRC})
+set(SRC examplePio.cxx)
+add_executable(examplePio_cxx ${SRC})

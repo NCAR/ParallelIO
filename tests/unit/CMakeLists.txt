@@ -4,7 +4,13 @@
 include (LibMPI)
 
 include_directories("${CMAKE_SOURCE_DIR}/tests/unit")
-
+if(DEFINED NetCDF_Fortran_LIBDIR)
+  link_directories(${NetCDF_Fortran_LIBDIR})
+  link_directories(${NetCDF_C_LIBDIR})
+endif()
+if(DEFINED PnetCDF_C_LIBDIR)
+  link_directories(${PnetCDF_C_LIBDIR})
+endif()
 #==============================================================================
 #  PREPARE FOR TESTING
 #==============================================================================
