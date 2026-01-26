@@ -1,54 +1,44 @@
+
 # This is part of the PIO library.
-
 # This is the CMake build file for the main directory.
-
 # Jim Edwards
 
-cmake_minimum_required (VERSION 3.5.2)
-project (PIO C)
+cmake_minimum_required(VERSION 3.10)
+project(PIO LANGUAGES C)
 
-# The project version number.
-set(VERSION_MAJOR   2   CACHE STRING "Project major version number.")
-set(VERSION_MINOR   6   CACHE STRING "Project minor version number.")
-set(VERSION_PATCH   6   CACHE STRING "Project patch version number.")
+# The project version number (modern style)
+set(VERSION_MAJOR 2 CACHE STRING "Project major version number.")
+set(VERSION_MINOR 6 CACHE STRING "Project minor version number.")
+set(VERSION_PATCH 9 CACHE STRING "Project patch version number.")
 mark_as_advanced(VERSION_MAJOR VERSION_MINOR VERSION_PATCH)
 
-# Create version info in autotools parlance for pio_meta.h.
 set(PIO_VERSION_MAJOR ${VERSION_MAJOR})
 set(PIO_VERSION_MINOR ${VERSION_MINOR})
 set(PIO_VERSION_PATCH ${VERSION_PATCH})
 
-# This is needed for the libpio.settings file.
-SET(PACKAGE_VERSION ${PIO_VERSION_MAJOR}.${PIO_VERSION_MINOR}.${PIO_VERSION_PATCH})
+set(PACKAGE_VERSION "${PIO_VERSION_MAJOR}.${PIO_VERSION_MINOR}.${PIO_VERSION_PATCH}")
 
 # This provides cmake_print_variables() function for debugging.
 include(CMakePrintHelpers)
 
 # This provides check_symbol_exists
 include(CheckSymbolExists)
+include(CheckCSourceCompiles)
 
 # Determine the configure date.
-IF(DEFINED ENV{SOURCE_DATE_EPOCH})
-        EXECUTE_PROCESS(
-          COMMAND "date" "-u" "-d" "@$ENV{SOURCE_DATE_EPOCH}"
-          OUTPUT_VARIABLE CONFIG_DATE
-          )
-ELSE()
-        EXECUTE_PROCESS(
-          COMMAND date
-          OUTPUT_VARIABLE CONFIG_DATE
-          )
-ENDIF()
-IF(CONFIG_DATE)
-        string(STRIP ${CONFIG_DATE} CONFIG_DATE)
-ENDIF()
 
-# A function used to create autotools-style 'yes/no' definitions.
-# If a variable is set, it 'yes' is returned. Otherwise, 'no' is
-# returned.
-#
-# Also creates a version of the ret_val prepended with 'NC',
-# when feature is true, which is used to generate netcdf_meta.h.
+if(DEFINED ENV{SOURCE_DATE_EPOCH})
+  execute_process(
+    COMMAND "date" "-u" "-d" "@$ENV{SOURCE_DATE_EPOCH}"
+    OUTPUT_VARIABLE CONFIG_DATE
+  )
+else()
+  execute_process(
+    COMMAND date
+    OUTPUT_VARIABLE CONFIG_DATE
+  )
+endif()
+
 FUNCTION(is_enabled feature ret_val)
   IF(${feature})
     SET(${ret_val} "yes" PARENT_SCOPE)
@@ -58,7 +48,6 @@ FUNCTION(is_enabled feature ret_val)
     SET("PIO_${ret_val}" 0 PARENT_SCOPE)
   ENDIF(${feature})
 ENDFUNCTION()
-
 # A function used to create autotools-style 'yes/no' definitions.
 # If a variable is set, it 'yes' is returned. Otherwise, 'no' is
 # returned.
@@ -74,6 +63,42 @@ FUNCTION(is_disabled feature ret_val)
   ENDIF(${feature})
 ENDFUNCTION()
 
+
+# Always detect NetCDF C and PnetCDF for C library
+find_package(NetCDF QUIET COMPONENTS C)
+if(NOT NetCDF_C_FOUND)
+  find_package(PkgConfig REQUIRED)
+  pkg_check_modules(NetCDF_C REQUIRED IMPORTED_TARGET "netcdf")
+  if(NetCDF_C_FOUND OR NetCDF_C_INCLUDE_DIRS)
+    set(NetCDF_C_FOUND TRUE CACHE BOOL "NetCDF C found via pkg-config" FORCE)
+  endif()
+endif()
+
+# NetCDF feature tests (after NetCDF_C detection)
+if(NetCDF_C_FOUND AND NetCDF_C_INCLUDE_DIRS)
+  # Test for NetCDF-4 capability
+  set(CMAKE_REQUIRED_INCLUDES ${NetCDF_C_INCLUDE_DIRS})
+  CHECK_C_SOURCE_COMPILES("
+#include <netcdf_meta.h>
+#if !defined(NC_VERSION_MAJOR) || NC_VERSION_MAJOR < 4
+  choke me
+#endif
+int main() {return 0;}" HAVE_NETCDF4)
+
+  # Test for NetCDF parallel I/O capability
+  set(CMAKE_REQUIRED_INCLUDES ${NetCDF_C_INCLUDE_DIRS})
+  CHECK_C_SOURCE_COMPILES("
+#include <netcdf_meta.h>
+#if !NC_HAS_PARALLEL
+  choke me
+#endif
+int main() {return 0;}" HAVE_NETCDF_PAR)
+else()
+  set(HAVE_NETCDF4 FALSE)
+  set(HAVE_NETCDF_PAR FALSE)
+  endif()
+
+
 # The size of the data buffer for write/read_darray().
 set(PIO_BUFFER_SIZE 134217728)
 
@@ -81,22 +106,23 @@ set(PIO_BUFFER_SIZE 134217728)
 #  USER-DEFINED OPTIONS (set with "-DOPT=VAL" from command line)
 #==============================================================================
 
+
 #===== Library Options =====
-option (PIO_ENABLE_FORTRAN   "Enable the Fortran library builds"            ON)
-option (PIO_ENABLE_TIMING    "Enable the use of the GPTL timing library"    ON)
-option (PIO_ENABLE_LOGGING   "Enable debug logging (large output possible)" OFF)
-option (PIO_ENABLE_DOC       "Enable building PIO documentation"            ON)
-option (PIO_ENABLE_COVERAGE  "Enable code coverage"                         OFF)
-option (PIO_ENABLE_EXAMPLES  "Enable PIO examples"                          ON)
-option (PIO_ENABLE_NETCDF_INTEGRATION  "Enable netCDF integration"          OFF)
-option (PIO_INTERNAL_DOC     "Enable PIO developer documentation"           OFF)
-option (PIO_TEST_BIG_ENDIAN  "Enable test to see if machine is big endian"  ON)
-option (PIO_USE_MPIIO        "Enable support for MPI-IO auto detect"        ON)
-option (PIO_USE_MPISERIAL    "Enable mpi-serial support (instead of MPI)"   OFF)
-option (PIO_USE_PNETCDF_VARD       "Use pnetcdf put_vard "  OFF)
-option (WITH_PNETCDF         "Require the use of PnetCDF"                   ON)
-option (PIO_USE_GDAL         "Enable support for Geospatial Data Abstraction Library" ON)
-option (BUILD_SHARED_LIBS    "Build shared libraries"                       OFF)
+option(PIO_ENABLE_FORTRAN "Enable the Fortran library builds" ON)
+option(PIO_ENABLE_TIMING "Enable the use of the GPTL timing library" ON)
+option(PIO_ENABLE_LOGGING "Enable debug logging (large output possible)" OFF)
+option(PIO_ENABLE_DOC "Enable building PIO documentation" ON)
+option(PIO_ENABLE_COVERAGE "Enable code coverage" OFF)
+option(PIO_ENABLE_EXAMPLES "Enable PIO examples" ON)
+option(PIO_ENABLE_NETCDF_INTEGRATION "Enable netCDF integration" OFF)
+option(PIO_INTERNAL_DOC "Enable PIO developer documentation" OFF)
+option(PIO_TEST_BIG_ENDIAN "Enable test to see if machine is big endian" ON)
+option(PIO_USE_MPIIO "Enable support for MPI-IO auto detect" ON)
+option(PIO_USE_MPISERIAL "Enable mpi-serial support (instead of MPI)" OFF)
+option(PIO_USE_PNETCDF_VARD "Use pnetcdf put_vard" OFF)
+option(WITH_PNETCDF "Require the use of PnetCDF" ON)
+option(PIO_USE_GDAL "Enable support for Geospatial Data Abstraction Library" ON)  
+option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
 
 if(APPLE)
   # The linker on macOS does not include `common symbols` by default
@@ -104,12 +130,14 @@ if(APPLE)
   set(CMAKE_C_ARCHIVE_FINISH "<CMAKE_RANLIB> -c <TARGET>")
 endif()
 
+
 # Set a variable that appears in the config.h.in file.
 if(PIO_USE_PNETCDF_VARD)
   set(USE_VARD 1)
 else()
   set(USE_VARD 0)
 endif()
+
 
 # Set a variable that appears in the config.h.in file.
 if(PIO_USE_GDAL)
@@ -127,6 +155,7 @@ else()
   set(ENABLE_LOGGING 0)
   set(HAS_LOGGING "no")
 endif()
+
 
 # Set a variable that appears in the config.h.in file.
 if(PIO_ENABLE_NETCDF_INTEGRATION)
@@ -168,29 +197,32 @@ endif ()
 
 INCLUDE (CheckTypeSize)
 
-#===== MPI =====
-if (PIO_USE_MPISERIAL)
-  find_package (MPISERIAL COMPONENTS C REQUIRED)
-  if (MPISERIAL_C_FOUND)
-    set (CMAKE_REQUIRED_INCLUDES ${MPISERIAL_C_INCLUDE_DIRS})
-  endif ()
-  set(USE_MPI_SERIAL 1)
-else ()
-  find_package (MPI REQUIRED)
-  set (CMAKE_REQUIRED_INCLUDES ${MPI_INCLUDE_PATH})
-  set(USE_MPI_SERIAL 0)
-endif ()
 
-SET(CMAKE_EXTRA_INCLUDE_FILES "mpi.h")
-CHECK_TYPE_SIZE("MPI_Offset" SIZEOF_MPI_OFFSET)
-SET(CMAKE_EXTRA_INCLUDE_FILES)
+#===== MPI =====
+if(PIO_USE_MPISERIAL)
+  find_package(MPISERIAL COMPONENTS C REQUIRED)
+  if(MPISERIAL_C_FOUND)
+    set(CMAKE_REQUIRED_INCLUDES ${MPISERIAL_C_INCLUDE_DIRS})
+  endif()
+  set(USE_MPI_SERIAL 1)
+else()
+  find_package(MPI REQUIRED)
+  set(CMAKE_REQUIRED_INCLUDES ${MPI_INCLUDE_PATH})
+  set(USE_MPI_SERIAL 0)
+endif()
+
+set(CMAKE_EXTRA_INCLUDE_FILES "mpi.h")
+check_type_size("MPI_Offset" SIZEOF_MPI_OFFSET)
+set(CMAKE_EXTRA_INCLUDE_FILES)
+
 
 #===== Library Variables =====
-set (PIO_FILESYSTEM_HINTS IGNORE CACHE STRING "Filesystem hints (lustre or gpfs)")
+set(PIO_FILESYSTEM_HINTS IGNORE CACHE STRING "Filesystem hints (lustre or gpfs)")
+
 
 #===== Testing Options =====
-option (PIO_ENABLE_TESTS  "Enable the testing builds"                           ON)
-option (PIO_VALGRIND_CHECK  "Enable memory leak check using valgrind"           OFF)
+option(PIO_ENABLE_TESTS "Enable the testing builds" ON)
+option(PIO_VALGRIND_CHECK "Enable memory leak check using valgrind" OFF)
 
 #==============================================================================
 #  BACKWARDS COMPATIBILITY
@@ -262,22 +294,68 @@ if (CMAKE_Fortran_COMPILER_NAME STREQUAL "GNU")
 endif()
 # Include this so we can check values in netcdf_meta.h.
 INCLUDE(CheckCSourceCompiles)
-INCLUDE(FindNetCDF)
+
+
+
 message("Fortran Library build is ${PIO_ENABLE_FORTRAN}")
-if (PIO_ENABLE_FORTRAN)
-  find_package (NetCDF COMPONENTS C Fortran)
-  if (NOT NetCDF_Fortran_FOUND)
-    include(FindPkgConfig)
+
+# Always detect NetCDF Fortran if Fortran enabled
+
+if(PIO_ENABLE_FORTRAN)
+  find_package(NetCDF QUIET COMPONENTS C Fortran)
+  if(NOT NetCDF_Fortran_FOUND)
+    find_package(PkgConfig REQUIRED)
     pkg_check_modules(NetCDF_Fortran REQUIRED IMPORTED_TARGET "netcdf-fortran")
   endif()
-  if (WITH_PNETCDF)
-    find_package (PnetCDF COMPONENTS C Fortran)
+  # Propagate NetCDF Fortran variables to subdirectories
+  if(NetCDF_Fortran_FOUND)
+    set(NetCDF_Fortran_INCLUDE_DIRS "${NetCDF_Fortran_INCLUDE_DIRS}" CACHE PATH "NetCDF Fortran include directory" FORCE)
+    set(NetCDF_Fortran_LIBRARIES "${NetCDF_Fortran_LIBRARIES}" CACHE STRING "NetCDF Fortran libraries" FORCE)
   endif()
+endif()
+if(WITH_PNETCDF)
+  find_program(PNETCDF_CONFIG pnetcdf-config REQUIRED)
+
+  execute_process(
+    COMMAND "${PNETCDF_CONFIG}" --includedir
+    OUTPUT_VARIABLE PNETCDF_INCLUDEDIR
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+  )
+
+  execute_process(
+    COMMAND "${PNETCDF_CONFIG}" --libdir
+    OUTPUT_VARIABLE PNETCDF_LIBDIR
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+  )
+
+
+  execute_process(
+    COMMAND "${PNETCDF_CONFIG}" --libs
+    OUTPUT_VARIABLE PNETCDF_LIBS
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+  )
+  # If PNETCDF_LIBS is empty but PNETCDF_LIBDIR is set, set a default
+  if(NOT PNETCDF_LIBS AND PNETCDF_LIBDIR)
+    set(PNETCDF_LIBS "-L${PNETCDF_LIBDIR} -lpnetcdf")
+  endif()
+
+  # Propagate PnetCDF variables to subdirectories
+  set(PNETCDF_INCLUDEDIR "${PNETCDF_INCLUDEDIR}" CACHE PATH "PnetCDF include directory" FORCE)
+  set(PNETCDF_LIBDIR "${PNETCDF_LIBDIR}" CACHE PATH "PnetCDF library directory" FORCE)
+  set(PNETCDF_LIBS "${PNETCDF_LIBS}" CACHE STRING "PnetCDF libraries" FORCE)
+
+  # Modern CMake: create imported interface target for PnetCDF
+  add_library(PnetCDF::PnetCDF INTERFACE IMPORTED)
+  target_include_directories(PnetCDF::PnetCDF INTERFACE "${PNETCDF_INCLUDEDIR}")
+  target_link_directories(PnetCDF::PnetCDF INTERFACE "${PNETCDF_LIBDIR}")
+  target_link_libraries(PnetCDF::PnetCDF INTERFACE ${PNETCDF_LIBS})
+endif()
+
+# Set PnetCDF_C_FOUND to TRUE if we have the include dir and libs, and propagate to subdirectories
+if(PNETCDF_INCLUDEDIR AND PNETCDF_LIBDIR AND PNETCDF_LIBS)
+  set(PnetCDF_C_FOUND TRUE CACHE BOOL "PnetCDF C found via pnetcdf-config" FORCE)
 else()
-  find_package (NetCDF REQUIRED COMPONENTS C)
-  if (WITH_PNETCDF)
-    find_package (PnetCDF COMPONENTS C)
-  endif()
+  set(PnetCDF_C_FOUND FALSE CACHE BOOL "PnetCDF C not found" FORCE)
 endif()
 
 # Did we find pnetCDF? If so, set _PNETCDF in config.h.
@@ -289,39 +367,42 @@ endif ()
 #  INCLUDE SOURCE DIRECTORIES
 #==============================================================================
 
+
 # Libraries
-add_subdirectory (src)
+add_subdirectory(src)
 
 #==============================================================================
 #  TESTING TARGET
 #==============================================================================
 
+
 # Custom "piotests" target (builds the test executables)
-add_custom_target (tests)
-if (PIO_ENABLE_FORTRAN)
-  add_dependencies (tests pioc piof)
+add_custom_target(tests)
+if(PIO_ENABLE_FORTRAN)
+  add_dependencies(tests pioc piof)
 else()
-  add_dependencies (tests pioc)
+  add_dependencies(tests pioc)
 endif()
 
 # Custom "check" target that depends upon "tests"
-add_custom_target (check COMMAND ${CMAKE_CTEST_COMMAND})
-add_dependencies (check tests)
+add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND})
+add_dependencies(check tests)
+
 
 # Tests
-if (PIO_ENABLE_TESTS)
+if(PIO_ENABLE_TESTS)
   enable_testing()
-  include (CTest)
-  add_subdirectory (tests)
-  if (PIO_ENABLE_EXAMPLES)
-    add_subdirectory (examples)
-  endif ()
-endif ()
+  include(CTest)
+  add_subdirectory(tests)
+  if(PIO_ENABLE_EXAMPLES)
+    add_subdirectory(examples)
+  endif()
+endif()
 
 # Documentation
-if (PIO_ENABLE_DOC)
-  add_subdirectory (doc)
-endif ()
+if(PIO_ENABLE_DOC)
+  add_subdirectory(doc)
+endif()
 
 SET(STATUS_PNETCDF ${PnetCDF_C_FOUND})
 
@@ -330,8 +411,8 @@ SET(STATUS_PNETCDF ${PnetCDF_C_FOUND})
 ###
 CHECK_C_SOURCE_COMPILES("
 #include <netcdf_meta.h>
-#if !NC_HAS_NC4
-      choke me
+#if !defined(NC_VERSION_MAJOR) || NC_VERSION_MAJOR < 4
+  choke me
 #endif
 int main() {return 0;}" HAVE_NETCDF4)
 
@@ -340,6 +421,7 @@ int main() {return 0;}" HAVE_NETCDF4)
 # netcdf-c. (Really we should be checking NC_HAS_PARALLEL4, but that
 # was only recently introduced, so we will go with NC_HAS_PARALLEL.)
 ###
+set(CMAKE_REQUIRED_INCLUDES ${NetCDF_C_INCLUDE_DIRS})
 CHECK_C_SOURCE_COMPILES("
 #include <netcdf_meta.h>
 #if !NC_HAS_PARALLEL
@@ -352,29 +434,36 @@ if (HAVE_NETCDF_PAR)
   set(_NETCDF4 1)
 endif ()
 
+
 ###
 # Check to see if szip write capability is present in netcdf-c.
 ###
-SET(CMAKE_REQUIRED_INCLUDES ${NetCDF_C_INCLUDE_DIR})
-CHECK_C_SOURCE_COMPILES("
+if(NetCDF_C_FOUND AND NetCDF_C_INCLUDE_DIRS)
+  set(CMAKE_REQUIRED_INCLUDES ${NetCDF_C_INCLUDE_DIRS})
+  CHECK_C_SOURCE_COMPILES("
 #include <netcdf_meta.h>
 #if !NC_HAS_SZIP_WRITE
       choke me
 #endif
 int main() {return 0;}" USE_SZIP)
+else()
+  set(USE_SZIP FALSE)
+endif()
 
 ###
 # Check to see if parallel filters are supported by HDF5/netcdf-c.
 ###
-if (HAVE_NETCDF_PAR)
+
+if(HAVE_NETCDF_PAR AND NetCDF_C_FOUND AND NetCDF_C_INCLUDE_DIRS)
+  set(CMAKE_REQUIRED_INCLUDES ${NetCDF_C_INCLUDE_DIRS})
   CHECK_C_SOURCE_COMPILES("
 #include <netcdf_meta.h>
 #if !NC_HAS_PAR_FILTERS
     choke me
 #endif
-int main() {return 0;}" PIO_HAS_PAR_FILTERS)
+int main() {return 0;}" HAVE_PAR_FILTERS)
 else()
-  set(PIO_HAS_PAR_FILTERS 0)
+  set(HAVE_PAR_FILTERS 0)
 endif()
 
 ###
@@ -430,7 +519,7 @@ set_property(GLOBAL PROPERTY WITH_MPIEXEC "${WITH_MPIEXEC}")
 find_program(UNAME NAMES uname)
 IF(UNAME)
   macro(getuname name flag)
-    exec_program("${UNAME}" ARGS "${flag}" OUTPUT_VARIABLE "${name}")
+    execute_process(COMMAND "${UNAME}" "${flag}" OUTPUT_VARIABLE "${name}")
   endmacro(getuname)
   getuname(osname -s)
   getuname(osrel  -r)
@@ -474,8 +563,9 @@ if(HAVE_PAR_FILTERS)
   SET(PIO_HAS_PAR_FILTERS 1)
 endif()
 
+
 # Generate file from template.
-CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/libpio.settings.in"
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/libpio.settings.in"
   "${CMAKE_CURRENT_BINARY_DIR}/libpio.settings"
   @ONLY)
 
@@ -490,9 +580,9 @@ MESSAGE(STATUS ${LIBPIO_SETTINGS})
 set(CMAKE_MACOSX_RPATH 1)
 set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 
-# Install libpio.settings file into same location
-# as the libraries.
-INSTALL(FILES "${PIO_BINARY_DIR}/libpio.settings"
+
+# Install libpio.settings file into same location as the libraries.
+install(FILES "${PIO_BINARY_DIR}/libpio.settings"
   DESTINATION lib
   COMPONENT libraries)
 
@@ -503,25 +593,27 @@ write_basic_package_version_file(
   VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}"
   COMPATIBILITY AnyNewerVersion)
 
+
 configure_package_config_file("${CMAKE_CURRENT_SOURCE_DIR}/cmake/PIOConfig.cmake.in"
   "${CMAKE_CURRENT_BINARY_DIR}/PIOConfig.cmake"
   INSTALL_DESTINATION lib/cmake/PIO)
+
 
 install(FILES
   "${CMAKE_CURRENT_BINARY_DIR}/PIOConfig.cmake"
   "${CMAKE_CURRENT_BINARY_DIR}/PIOConfigVersion.cmake"
   DESTINATION lib/cmake/PIO)
 
-#####
-# Create pio_meta.h include file.
+
 #####
 configure_file(
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/clib/pio_meta.h.in
-  ${CMAKE_CURRENT_BINARY_DIR}/src/clib/pio_meta.h @ONLY)
-
-# configure a header file to pass some of the CMake settings
-# to the source code
-configure_file (
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/clib/pio_meta.h.in"
+  "${CMAKE_CURRENT_BINARY_DIR}/src/clib/pio_meta.h"
+  @ONLY
+)
+# Configure a header file to pass some of the CMake settings to the source code
+configure_file(
   "${PROJECT_SOURCE_DIR}/cmake_config.h.in"
   "${PROJECT_BINARY_DIR}/config.h"
-  )
+  @ONLY
+)

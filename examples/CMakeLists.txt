@@ -2,9 +2,10 @@
 ### CMakeList.txt for examples using pio
 ###-------------------------------------------------------------------------###
 
-if (PIO_ENABLE_FORTRAN)
-    ADD_SUBDIRECTORY(f03)
-    ADD_SUBDIRECTORY(c)
+
+if(PIO_ENABLE_FORTRAN)
+  add_subdirectory(f03)
+  add_subdirectory(c)
 else()
-  ADD_SUBDIRECTORY(c)
+  add_subdirectory(c)
 endif()

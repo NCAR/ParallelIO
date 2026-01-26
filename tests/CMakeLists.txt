@@ -1,5 +1,6 @@
-cmake_minimum_required (VERSION 3.5.2)
-project (PIOTests C Fortran)
+
+cmake_minimum_required(VERSION 3.10)
+project(PIOTests LANGUAGES C Fortran)
 
 #==============================================================================
 #  TESTING TARGET
@@ -15,20 +16,21 @@ project (PIOTests C Fortran)
 #==============================================================================
 #  INCLUDE SOURCE DIRECTORIES
 #==============================================================================
-add_subdirectory (cunit)
-add_subdirectory (cperf)
 
-if (PIO_ENABLE_FORTRAN)
-  add_subdirectory (unit)
-  add_subdirectory (general)
-  add_subdirectory (doftests)
-  if (PIO_ENABLE_TIMING)
-    add_subdirectory (performance)
-  else ()
-    message (STATUS "Cannot build performance test without gptl timing library")
-  endif ()
+add_subdirectory(cunit)
+add_subdirectory(cperf)
+
+if(PIO_ENABLE_FORTRAN)
+  add_subdirectory(unit)
+  add_subdirectory(general)
+  add_subdirectory(doftests)
+  if(PIO_ENABLE_TIMING)
+    add_subdirectory(performance)
+  else()
+    message(STATUS "Cannot build performance test without gptl timing library")
+  endif()
 endif()
 
-if (NETCDF_INTEGRATION)
+if(NETCDF_INTEGRATION)
   add_subdirectory(ncint)
-endif ()
+endif()

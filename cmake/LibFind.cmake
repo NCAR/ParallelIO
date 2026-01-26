@@ -303,9 +303,11 @@ function (find_package_component PKG)
 
         # handle the QUIETLY and REQUIRED arguments and
         # set NetCDF_C_FOUND to TRUE if all listed variables are TRUE
-        find_package_handle_standard_args (${PKGCOMP} DEFAULT_MSG
-                                           ${PKGCOMP}_LIBRARY
-                                           ${PKGCOMP}_INCLUDE_DIR)
+
+        # Use the main package name for find_package_handle_standard_args to avoid CMake warnings
+        find_package_handle_standard_args (${PKG} DEFAULT_MSG
+                           ${PKGCOMP}_LIBRARY
+                           ${PKGCOMP}_INCLUDE_DIR)
         mark_as_advanced (${PKGCOMP}_INCLUDE_DIR ${PKGCOMP}_LIBRARY)
 
         # HACK For bug in CMake v3.0:

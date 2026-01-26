@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.5.2)
+cmake_minimum_required (VERSION 3.10)
 include (CheckFunctionExists)
 project (PIOC C)
 
@@ -142,15 +142,19 @@ if (NetCDF_C_FOUND)
   endif()
 endif ()
 
+
 #===== PnetCDF-C =====
 if (PnetCDF_C_FOUND)
+  # Set include and library variables from top-level CACHE
+  set(PnetCDF_C_INCLUDE_DIRS "${PNETCDF_INCLUDEDIR}")
+  set(PnetCDF_C_LIBRARIES "${PNETCDF_LIBS}")
   target_include_directories (pioc
     PUBLIC ${PnetCDF_C_INCLUDE_DIRS})
   target_link_libraries (pioc
     PUBLIC ${PnetCDF_C_LIBRARIES})
 
   # Check library for varn functions
-  set (CMAKE_REQUIRED_LIBRARIES ${PnetCDF_C_LIBRARY})
+  set (CMAKE_REQUIRED_LIBRARIES ${PnetCDF_C_LIBRARIES})
 endif ()
 
 #===== Add EXTRAs =====
@@ -172,20 +176,21 @@ if (NOT PnetCDF_C_FOUND AND NOT NetCDF_C_FOUND)
   message (FATAL_ERROR "Must have PnetCDF and/or NetCDF C libraries")
 endif ()
 
-#===== MPI =====
-if (PIO_USE_MPISERIAL)
-  if (MPISERIAL_C_FOUND)
-    target_compile_definitions (pioc
-      PRIVATE _MPISERIAL)
-    target_include_directories (pioc
-      PUBLIC ${MPISERIAL_C_INCLUDE_DIRS})
-    target_link_libraries (pioc
-      PUBLIC ${MPISERIAL_C_LIBRARIES})
 
-    set (WITH_PNETCDF FALSE)
-    set (MPI_C_INCLUDE_PATH ${MPISERIAL_C_INCLUDE_DIRS})
-  endif ()
-endif ()
+#===== MPI =====
+if(PIO_USE_MPISERIAL)
+  if(MPISERIAL_C_FOUND)
+    target_compile_definitions(pioc
+      PRIVATE _MPISERIAL)
+    target_include_directories(pioc
+      PUBLIC ${MPISERIAL_C_INCLUDE_DIRS})
+    target_link_libraries(pioc
+      PUBLIC ${MPISERIAL_C_LIBRARIES})
+    set(WITH_PNETCDF FALSE)
+    set(MPI_C_INCLUDE_PATH ${MPISERIAL_C_INCLUDE_DIRS})
+  endif()
+endif()
+
 
 #===== GDAL ===== <M.Long>
 if (USE_GDAL)
@@ -198,9 +203,10 @@ endif ()
 include(CheckTypeSize)
 check_type_size("size_t" SIZEOF_SIZE_T)
 check_type_size("long long" SIZEOF_LONG_LONG)
-if (NOT "${SIZEOF_SIZE_T}" STREQUAL "${SIZEOF_LONG_LONG}")
-  message (FATAL_ERROR "size_t and long long must be the same size!")
-endif ()
+if(NOT "${SIZEOF_SIZE_T}" STREQUAL "${SIZEOF_LONG_LONG}")
+  message(FATAL_ERROR "size_t and long long must be the same size!")
+endif()
+
 
 set(CFLAGS "${CMAKE_C_FLAGS} ${CMAKE_C_FLAGS_${CMAKE_BUILD_TYPE}}" PARENT_SCOPE)
 get_target_property(cppdefs pioc COMPILE_DEFINITIONS)
@@ -209,7 +215,7 @@ foreach(x IN LISTS cppdefs)
   string(APPEND CPPFLAGS " -D${x}")
 endforeach()
 foreach(x IN LISTS includes)
-  if (x)
+  if(x)
     string(APPEND CPPFLAGS " -I${x}")
   endif()
 endforeach()
