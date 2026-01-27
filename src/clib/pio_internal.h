@@ -91,7 +91,7 @@
 
 #define PIO_DATATYPE_NULL MPI_CHAR
 
-#ifdef USE_GDAL
+#ifdef PIO_ENABLE_GDAL
 int
 pio_read_darray_shp(file_desc_t *file, io_desc_t *iodesc, int vid,
 		    void *iobuf);

@@ -170,16 +170,17 @@ int check_darray_file(int iosysid, int ntasks, int my_rank, char *filename)
     if ((ret = PIOc_read_darray(ncid, 0, ioid, arraylen, &data_in)))
         ERR(ret);
 
+    /* Check data. */
+    printf("my_rank %d data_in %f\n",my_rank, data_in);
+    if (data_in != my_rank * 10)
+        ERR(ERR_WRONG);
+
     /* Try to write, but this will fail because file was opened with
      * NOWRITE. */
     float fillvalue = 0.0;
     float test_data =  my_rank * 10;
     if (PIOc_write_darray(ncid, 0, ioid, arraylen, &test_data, &fillvalue) != PIO_EPERM)
         ERR(ret);
-
-    /* Check data. */
-    if (data_in != my_rank * 10)
-        ERR(ERR_WRONG);
 
     /* Close the file. */
     if ((ret = PIOc_closefile(ncid)))
@@ -209,7 +210,7 @@ int test_darray(int iosysid, int ioid, int num_flavors, int *flavor, int my_rank
     {
         /* Create the filename. */
         sprintf(filename, "%s_flavor_%d_fv_%d.nc", TEST_NAME, flavor[fmt], fv);
-
+	printf("Creating file %s\n",filename);
         /* Create the netCDF output file. */
         if ((ret = PIOc_createfile(iosysid, &ncid, &(flavor[fmt]), filename, PIO_CLOBBER)))
             ERR(ret);
@@ -237,10 +238,17 @@ int test_darray(int iosysid, int ioid, int num_flavors, int *flavor, int my_rank
         float fillvalue = PIO_FILL_FLOAT;
         float *fillvaluep = fv ? &fillvalue : NULL;
         float test_data[arraylen];
-        for (int f = 0; f < arraylen; f++)
+        for (int f = 0; f < arraylen; f++){
             test_data[f] = my_rank * 10 + f;
+	    if (flavor[fmt] == 3)
+		printf("my_rank %d test_data[%d]%f\n",my_rank, f, test_data[f]);
+	}
+	if (flavor[fmt] == 3)
+	    PIOc_set_log_level(3);
         if ((ret = PIOc_write_darray(ncid, varid, ioid, arraylen, test_data, fillvaluep)))
             ERR(ret);
+	if (flavor[fmt] == 3)
+	    PIOc_set_log_level(0);
 
         /* Close the netCDF file. */
         if ((ret = PIOc_closefile(ncid)))

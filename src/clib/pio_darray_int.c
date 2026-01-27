@@ -996,11 +996,13 @@ recv_and_write_data(file_desc_t *file, const int *varids, const int *frame,
 
                     /* Call the netCDF functions to write the data. */
                     if (needtowrite) {
+#ifdef PIO_ENABLE_GDAL
+			if (file->iotype == PIO_IOTYPE_GDAL)
+			    ierr = GDALc_shp_write_float_field(file->pio_ncid, varids[nv], start, count, bufptr);
+#endif		        
 		      if (file->iotype == PIO_IOTYPE_NETCDF)
                         if ((ierr = nc_put_vara(file->fh, varids[nv], start, count, bufptr)))
                             return check_netcdf2(ios, NULL, ierr, __FILE__, __LINE__);
-		      if (file->iotype == PIO_IOTYPE_GDAL)
-                        ierr = GDALc_shp_write_float_field(file->pio_ncid, varids[nv], start, count, bufptr);
 		      }
 
                 } /* next var */

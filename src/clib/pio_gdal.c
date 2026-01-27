@@ -1,7 +1,7 @@
 #include <config.h>
 #include <pio.h>
 #include <pio_internal.h>
-#ifdef USE_GDAL
+#ifdef PIO_ENABLE_GDAL
 #include <ogr_api.h>
 
 /**

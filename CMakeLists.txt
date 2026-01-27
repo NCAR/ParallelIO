@@ -3,7 +3,7 @@
 # This is the CMake build file for the main directory.
 # Jim Edwards
 
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.18)
 project(PIO LANGUAGES C)
 
 # The project version number (modern style)
@@ -141,9 +141,12 @@ endif()
 
 # Set a variable that appears in the config.h.in file.
 if(PIO_USE_GDAL)
-  set(USE_GDAL 1)
+  find_package(GDAL REQUIRED)
+  if(GDAL_FOUND)
+    set(PIO_ENABLE_GDAL 1)
+  endif()
 else()
-  set(USE_GDAL 0)
+  set(PIO_ENABLE_GDAL 0)
 endif()
 
 

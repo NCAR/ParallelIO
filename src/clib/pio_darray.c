@@ -197,7 +197,7 @@ PIOc_write_darray_multi(int ncid, const int *varids, int ioid, int nvars,
 
     }
 
-    if ((!ios->async || !ios->ioproc) && (file->iotype = PIO_IOTYPE_GDAL))
+    if ((!ios->async || !ios->ioproc) && (file->iotype == PIO_IOTYPE_GDAL))
     {
       // Do we even need to sort out fndims here? (MSL<<>>)
       fndims = 1;
@@ -961,7 +961,7 @@ PIOc_read_darray(int ncid, int varid, int ioid, PIO_Offset arraylen,
         if ((ierr = pio_read_darray_nc(file, iodesc, varid, iobuf)))
             return pio_err(ios, file, ierr, __FILE__, __LINE__);
         break;
-#ifdef USE_GDAL
+#ifdef PIO_ENABLE_GDAL
     case PIO_IOTYPE_GDAL:
         if ((ierr = pio_read_darray_shp_par(file, iodesc, varid, iobuf)))
             return pio_err(ios, file, ierr, __FILE__, __LINE__);
