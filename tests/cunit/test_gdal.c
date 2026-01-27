@@ -140,7 +140,7 @@ int test_gdal(int iosysid, int ioid, int num_flavors, int *flavor, int my_rank,
     {
         test_data_int[f] = my_rank * 10 + f;
         test_data_float[f] = my_rank * 10 + f + 0.5;
-        test_data_double[f] = my_rank * 100000 + f + 0.5;
+        test_data_double[f] = my_rank + f + 1;
     }
 
     /* Use PIO to create the example file in each of the four
@@ -156,7 +156,7 @@ int test_gdal(int iosysid, int ioid, int num_flavors, int *flavor, int my_rank,
 
 	  assert(filename);
 	  
-	  test_data_in = test_data_float_in;
+	  test_data_in = test_data_double_in;
 	  /* Open the file. */
 	  if ((ret = GDALc_openfile(iosysid, &ncid2, &hDSp, &iotype, filename, PIO_NOWRITE)))
 	    ERR(ret);
@@ -167,11 +167,11 @@ int test_gdal(int iosysid, int ioid, int num_flavors, int *flavor, int my_rank,
 	  /* Read the data. */
 	  if ((ret = PIOc_read_darray(ncid2, varid, ioid, arraylen, test_data_in)))
 	    ERR(ret);
-	  
+	  printf("my_rank=%d arraylen=%lld \n",my_rank, arraylen);
 	  /* Check the results. */
 	  for (int f = 0; f < arraylen; f++)
 	    {
-	      switch (pio_type)
+		switch (pio_type)
 		{
 		case PIO_INT:
 		  if (test_data_int_in[f] != test_data_int[f])
@@ -182,6 +182,7 @@ int test_gdal(int iosysid, int ioid, int num_flavors, int *flavor, int my_rank,
 		    return ERR_WRONG;
 		  break;
 		case PIO_DOUBLE:
+		    printf("Here on task %d pio_type=%d test_data_double[%d]=%f %f\n", my_rank, pio_type, f, test_data_double[f], test_data_double_in[f]);
 		  if (test_data_double_in[f] != test_data_double[f])
 		    return ERR_WRONG;
 		  break;
@@ -279,7 +280,8 @@ int main(int argc, char **argv)
         /* Figure out iotypes. */
         if ((ret = get_iotypes(&num_flavors, flavor)))
             ERR(ret);
-
+	flavor[0] = PIO_IOTYPE_GDAL;
+	printf("%d flavor is %d\n",num_flavors, flavor[0]);
         for (int r = 0; r < NUM_REARRANGERS_TO_TEST; r++)
         {
             /* Initialize the PIO IO system. This specifies how
