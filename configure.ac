@@ -182,6 +182,15 @@ test "x$enable_pnetcdf" = xno || enable_pnetcdf=yes
 AC_MSG_RESULT([$enable_pnetcdf])
 AM_CONDITIONAL(BUILD_PNETCDF, [test "x$enable_pnetcdf" = xyes])
 
+# Does the user want to enable gdal?
+AC_MSG_CHECKING([whether gdal is to be used])
+AC_ARG_ENABLE([gdal],
+              [AS_HELP_STRING([--enable-gdal],
+                              [Enable gdal use.])])
+test "x$enable_gdal" = xyes || enable_gdal=no
+AC_MSG_RESULT([$enable_gdal])
+AM_CONDITIONAL(PIO_USE_GDAL, [test "x$enable_gdal" = xyes])
+
 # Does the user want to build documentation?
 AC_MSG_CHECKING([whether documentation should be build (requires doxygen)])
 AC_ARG_ENABLE([docs],
@@ -258,6 +267,15 @@ fi
 if test x$ac_cv_lib_pnetcdf_ncmpi_create = xyes; then
    AC_DEFINE([_PNETCDF], [1], [parallel-netcdf library available])
 fi
+
+#Do we have gdal
+AC_CHECK_LIB([gdal], [OGR_Fld_GetType], [], [])
+if test "x$ac_cv_lib_gdal_OGR_Fld_GetType" = xno -a $enable_gdal = yes; then
+   AC_MSG_ERROR([GDAL not found. Set CPPFLAGS/LDFLAGS or remove --enable-gdal.])
+   AC_DEFINE([PIO_USE_GDAL], [1], [gdal library available])
+fi
+
+
 
 # Do we have netCDF-4?
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include "netcdf_meta.h"],
@@ -440,6 +458,7 @@ AX_SET_META([PIO_HAS_PAR_FILTERS], [$have_par_filters],[yes])
 AX_SET_META([PIO_HAS_NETCDF4], [$have_netcdf4],[yes])
 AX_SET_META([PIO_HAS_NETCDF4_PAR], [$have_netcdf_par],[yes])
 AX_SET_META([PIO_HAS_NETCDF_INTEGRATION], [$enable_netcdf_integration],[yes])
+AX_SET_META([PIO_HAS_GDAL],[$enable_gdal],[yes])
 
 # Create output variables from various shell variables, for use in
 # generating libpio.settings.
@@ -460,6 +479,7 @@ AC_SUBST([HAS_NETCDF4], [$have_netcdf4])
 AC_SUBST([HAS_NETCDF4_PAR], [$have_netcdf_par])
 AC_SUBST([HAS_NETCDF_INTEGRATION], [$enable_netcdf_integration])
 AC_SUBST([HAS_PIO_FORTRAN], [$enable_fortran])
+AC_SUBST([PIO_USE_GDAL], [$enable_gdal])
 
 # Create the build summary file.
 AC_CONFIG_FILES([libpio.settings

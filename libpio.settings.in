@@ -35,3 +35,4 @@ NetCDF Integration:	@HAS_NETCDF_INTEGRATION@
 PIO Logging:		@HAS_LOGGING@
 MPIEXEC:		@WITH_MPIEXEC@
 Fortran:		@HAS_PIO_FORTRAN@
+GDAL                    @PIO_USE_GDAL@
