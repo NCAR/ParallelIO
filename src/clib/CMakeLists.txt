@@ -28,7 +28,7 @@ set (src topology.c pio_file.c pioc_support.c pio_lists.c
 if (NETCDF_INTEGRATION)
   set (src ${src} ../ncint/nc_get_vard.c ../ncint/ncintdispatch.c ../ncint/ncint_pio.c ../ncint/nc_put_vard.c)
 endif ()
-# This needs to be in an IF statement. using GDAL_INTEGRATION. But haven't figured that out yet.
+
 if (PIO_USE_GDAL)
   set (src ${src} pio_gdal.c)
 endif()

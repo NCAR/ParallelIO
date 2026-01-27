@@ -361,12 +361,11 @@ else ()
     add_custom_target(link_target ALL
                       COMMAND ${CMAKE_COMMAND} -E create_symlink
                       ${CMAKE_CURRENT_SOURCE_DIR}/data ${CMAKE_CURRENT_BINARY_DIR}/data)
+    add_dependencies(tests link_target)
     add_mpi_test(test_gdal
       EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/test_gdal
       NUMPROCS ${EXACTLY_FOUR_TASKS}
       TIMEOUT ${DEFAULT_TEST_TIMEOUT})
-    set_tests_properties(test_gdal PROPERTIES DEPENDS link_target)
-      
   endif()
 endif ()
 MESSAGE("CMAKE_EXE_LINKER_FLAGS ${CMAKE_EXE_LINKER_FLAGS}")
