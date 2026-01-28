@@ -21,7 +21,7 @@ test_async_multicomp test_async_multi2 test_async_manyproc		\
 test_darray_fill test_decomp_frame test_perf2 test_async_perf		\
 test_darray_vard test_async_1d test_darray_append test_simple           \
 test_darray_lossycompress
-if PIO_USE_GDAL
+if PIO_ENABLE_GDAL
   check_PROGRAMS += test_gdal
 endif
 if RUN_TESTS

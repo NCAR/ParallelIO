@@ -189,7 +189,16 @@ AC_ARG_ENABLE([gdal],
                               [Enable gdal use.])])
 test "x$enable_gdal" = xyes || enable_gdal=no
 AC_MSG_RESULT([$enable_gdal])
-AM_CONDITIONAL(PIO_USE_GDAL, [test "x$enable_gdal" = xyes])
+AM_CONDITIONAL(PIO_ENABLE_GDAL, [test "x$enable_gdal" = xyes])
+#Do we have gdal
+if test "x$enable_gdal" = xyes; then
+  AC_CHECK_LIB([gdal], [OGR_Fld_GetType], [], [])
+  if test "x$ac_cv_lib_gdal_OGR_Fld_GetType" = xyes ; then
+     AC_DEFINE([PIO_ENABLE_GDAL], [1], [gdal library available])
+   else
+     AC_MSG_ERROR([GDAL not found. Set CPPFLAGS/LDFLAGS or remove --enable-gdal.])
+  fi
+fi
 
 # Does the user want to build documentation?
 AC_MSG_CHECKING([whether documentation should be build (requires doxygen)])
@@ -267,15 +276,6 @@ fi
 if test x$ac_cv_lib_pnetcdf_ncmpi_create = xyes; then
    AC_DEFINE([_PNETCDF], [1], [parallel-netcdf library available])
 fi
-
-#Do we have gdal
-AC_CHECK_LIB([gdal], [OGR_Fld_GetType], [], [])
-if test "x$ac_cv_lib_gdal_OGR_Fld_GetType" = xno -a $enable_gdal = yes; then
-   AC_MSG_ERROR([GDAL not found. Set CPPFLAGS/LDFLAGS or remove --enable-gdal.])
-   AC_DEFINE([PIO_USE_GDAL], [1], [gdal library available])
-fi
-
-
 
 # Do we have netCDF-4?
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include "netcdf_meta.h"],

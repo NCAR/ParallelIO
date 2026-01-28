@@ -85,8 +85,8 @@ int create_decomposition_1d(int ntasks, int my_rank, int iosysid, int *ioid, int
 
     /* Create the PIO decomposition for this test. */
     if ((ret = PIOc_InitDecomp(iosysid, pio_type, NDIM, dim_len_1d, elements_per_pe,
-                               compdof, ioid, NULL, NULL, NULL)))
-        ERR(ret);
+			       compdof, ioid, NULL, NULL, NULL)))
+	ERR(ret);
 
     return 0;
 }
@@ -105,7 +105,7 @@ int create_decomposition_1d(int ntasks, int my_rank, int iosysid, int *ioid, int
  * @returns 0 for success, error code otherwise.
  */
 int test_gdal(int iosysid, int ioid, int num_flavors, int *flavor, int my_rank,
-                int pio_type)
+		int pio_type)
 {
     char filename[PIO_MAX_NAME + 1]; /* Name for the output files. */
     int dimids[NDIM];      /* The dimension IDs. */
@@ -138,9 +138,9 @@ int test_gdal(int iosysid, int ioid, int num_flavors, int *flavor, int my_rank,
     /* Initialize some data. */
     for (int f = 0; f < arraylen; f++)
     {
-        test_data_int[f] = my_rank * 10 + f;
-        test_data_float[f] = my_rank * 10 + f + 0.5;
-        test_data_double[f] = my_rank + f + 1;
+	test_data_int[f] = my_rank * 10 + f;
+	test_data_float[f] = my_rank * 10 + f + 0.5;
+	test_data_double[f] = my_rank + f + 1;
     }
 
     /* Use PIO to create the example file in each of the four
@@ -148,14 +148,14 @@ int test_gdal(int iosysid, int ioid, int num_flavors, int *flavor, int my_rank,
     for (int fmt = 0; fmt < num_flavors; fmt++)
     {
 
-        /* Add a couple of extra tests for the
-         * PIOc_write_darray_multi() function. */
-        for (int test_multi = 0; test_multi < NUM_TEST_CASES_WRT_MULTI; test_multi++)
-        {
+	/* Add a couple of extra tests for the
+	 * PIOc_write_darray_multi() function. */
+	for (int test_multi = 0; test_multi < NUM_TEST_CASES_WRT_MULTI; test_multi++)
+	{
 	  sprintf(filename, "data/cb_2018_us_region_20m.shp");
 
 	  assert(filename);
-	  
+
 	  test_data_in = test_data_double_in;
 	  /* Open the file. */
 	  if ((ret = GDALc_openfile(iosysid, &ncid2, &hDSp, &iotype, filename, PIO_NOWRITE)))
@@ -194,7 +194,7 @@ int test_gdal(int iosysid, int ioid, int num_flavors, int *flavor, int my_rank,
 	  /* Close the netCDF file. */
 	  if ((ret = PIOc_closefile(ncid2)))
 	    ERR(ret);
-        } /* next test multi */
+	} /* next test multi */
     } /* next iotype */
 
     return PIO_NOERR;
@@ -211,7 +211,7 @@ int test_gdal(int iosysid, int ioid, int num_flavors, int *flavor, int my_rank,
  * @returns 0 for success, error code otherwise.
  */
 int test_all_gdal(int iosysid, int num_flavors, int *flavor, int my_rank,
-                    MPI_Comm test_comm)
+		    MPI_Comm test_comm)
 {
 #define NUM_TYPES_TO_TEST 1
     int ioid;
@@ -226,19 +226,19 @@ int test_all_gdal(int iosysid, int num_flavors, int *flavor, int my_rank,
 //        sprintf(filename, "%s_decomp_rank_%d_flavor_%d_type_%d.nc", TEST_NAME, my_rank,
 //                *flavor, pio_type[t]);
 
-        /* Decompose the data over the tasks. */
-        if ((ret = create_decomposition_1d(TARGET_NTASKS, my_rank, iosysid,
-                                           &ioid, pio_type[t])))
+	/* Decompose the data over the tasks. */
+	if ((ret = create_decomposition_1d(TARGET_NTASKS, my_rank, iosysid,
+					   &ioid, pio_type[t])))
 	  return ret;
 
 	printf("my_rank %d iosysid %d ioid %d ret %d\n",my_rank, iosysid, ioid, ret);
 
-        /* Run a simple darray test. */
-        if ((ret = test_gdal(iosysid, ioid, num_flavors, flavor, my_rank, pio_type[t])))
+	/* Run a simple darray test. */
+	if ((ret = test_gdal(iosysid, ioid, num_flavors, flavor, my_rank, pio_type[t])))
 	  return ret;
 
-        /* Free the PIO decomposition. */
-        if ((ret = PIOc_freedecomp(iosysid, ioid)))
+	/* Free the PIO decomposition. */
+	if ((ret = PIOc_freedecomp(iosysid, ioid)))
 	  ERR(ret);
     }
 
@@ -261,52 +261,52 @@ int main(int argc, char **argv)
 
     /* Initialize test. */
     if ((ret = pio_test_init2(argc, argv, &my_rank, &ntasks, MIN_NTASKS,
-                              MIN_NTASKS, -1, &test_comm)))
-        ERR(ERR_INIT);
+			      MIN_NTASKS, -1, &test_comm)))
+	ERR(ERR_INIT);
 
     PIOc_set_log_level(4);
 
     if ((ret = PIOc_set_iosystem_error_handling(PIO_DEFAULT, PIO_RETURN_ERROR, NULL)))
-        return ret;
+	return ret;
 
     /* Only do something on max_ntasks tasks. */
     if (my_rank < TARGET_NTASKS)
     {
-        int iosysid;  /* The ID for the parallel I/O system. */
-        int ioproc_stride = 1;    /* Stride in the mpi rank between io tasks. */
-        int ioproc_start = 0;     /* Zero based rank of first processor to be used for I/O. */
-        int ret;      /* Return code. */
+	int iosysid;  /* The ID for the parallel I/O system. */
+	int ioproc_stride = 1;    /* Stride in the mpi rank between io tasks. */
+	int ioproc_start = 0;     /* Zero based rank of first processor to be used for I/O. */
+	int ret;      /* Return code. */
 
-        /* Figure out iotypes. */
-        if ((ret = get_iotypes(&num_flavors, flavor)))
-            ERR(ret);
+	/* Figure out iotypes. */
+	if ((ret = get_iotypes(&num_flavors, flavor)))
+	    ERR(ret);
 	flavor[0] = PIO_IOTYPE_GDAL;
 	printf("%d flavor is %d\n",num_flavors, flavor[0]);
-        for (int r = 0; r < NUM_REARRANGERS_TO_TEST; r++)
-        {
-            /* Initialize the PIO IO system. This specifies how
-             * many and which processors are involved in I/O. */
-            if ((ret = PIOc_Init_Intracomm(test_comm, NUM_IO_PROCS, ioproc_stride,
-                                           ioproc_start, rearranger[r], &iosysid)))
-                return ret;
+	for (int r = 0; r < NUM_REARRANGERS_TO_TEST; r++)
+	{
+	    /* Initialize the PIO IO system. This specifies how
+	     * many and which processors are involved in I/O. */
+	    if ((ret = PIOc_Init_Intracomm(test_comm, NUM_IO_PROCS, ioproc_stride,
+					   ioproc_start, rearranger[r], &iosysid)))
+		return ret;
 
 /*	    if ((ret = PIOc_set_rearr_opts(iosysid, PIO_REARR_COMM_P2P, PIO_REARR_COMM_FC_2D_DISABLE, false, false, PIO_REARR_COMM_UNLIMITED_PEND_REQ, false, false, PIO_REARR_COMM_UNLIMITED_PEND_REQ)))
-                return ret;
+		return ret;
 */
-	    
-            /* Run tests. */
-            if ((ret = test_all_gdal(iosysid, num_flavors, flavor, my_rank, test_comm)))
-                return ret;
 
-            /* Finalize PIO system. */
-            if ((ret = PIOc_free_iosystem(iosysid)))
-                return ret;
-        } /* next rearranger */
+	    /* Run tests. */
+	    if ((ret = test_all_gdal(iosysid, num_flavors, flavor, my_rank, test_comm)))
+		return ret;
+
+	    /* Finalize PIO system. */
+	    if ((ret = PIOc_free_iosystem(iosysid)))
+		return ret;
+	} /* next rearranger */
     } /* endif my_rank < TARGET_NTASKS */
 
     /* Finalize the MPI library. */
     if ((ret = pio_test_finalize(&test_comm)))
-        return ret;
+	return ret;
     /* if ((ret = pio_test_finalize2(&test_comm, TEST_NAME))) */
     /*     return ret; */
 
