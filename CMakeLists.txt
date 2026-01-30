@@ -3,7 +3,7 @@
 # This is the CMake build file for the main directory.
 # Jim Edwards
 
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.18)
 project(PIO LANGUAGES C)
 
 # The project version number (modern style)
@@ -121,8 +121,8 @@ option(PIO_USE_MPIIO "Enable support for MPI-IO auto detect" ON)
 option(PIO_USE_MPISERIAL "Enable mpi-serial support (instead of MPI)" OFF)
 option(PIO_USE_PNETCDF_VARD "Use pnetcdf put_vard" OFF)
 option(WITH_PNETCDF "Require the use of PnetCDF" ON)
+option(PIO_USE_GDAL "Enable support for Geospatial Data Abstraction Library" OFF)  
 option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
-
 
 if(APPLE)
   # The linker on macOS does not include `common symbols` by default
@@ -136,6 +136,17 @@ if(PIO_USE_PNETCDF_VARD)
   set(USE_VARD 1)
 else()
   set(USE_VARD 0)
+endif()
+
+
+# Set a variable that appears in the config.h.in file.
+if(PIO_USE_GDAL)
+  find_package(GDAL REQUIRED)
+  if(GDAL_FOUND)
+    set(PIO_ENABLE_GDAL 1)
+  endif()
+else()
+  set(PIO_ENABLE_GDAL 0)
 endif()
 
 

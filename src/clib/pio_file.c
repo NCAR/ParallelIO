@@ -283,6 +283,14 @@ PIOc_closefile(int ncid)
             ierr = ncmpi_close(file->fh);
             break;
 #endif
+#ifdef PIO_ENABLE_GDAL
+	case PIO_IOTYPE_GDAL:
+            if (ios->io_rank == 0) {
+	      GDALClose((void*)file->hDS);
+	      printf("GDALClose ierr: %d\n",ierr);
+	    }
+	  break;
+#endif
         default:
             return pio_err(ios, file, PIO_EBADIOTYPE, __FILE__, __LINE__);
         }
@@ -470,6 +478,10 @@ PIOc_sync(int ncid)
             case PIO_IOTYPE_PNETCDF:
                 flush_output_buffer(file, true, 0);
                 break;
+#endif
+#ifdef PIO_ENABLE_GDAL
+	    case PIO_IOTYPE_GDAL:
+	        break;
 #endif
             default:
                 return pio_err(ios, file, PIO_EBADIOTYPE, __FILE__, __LINE__);
