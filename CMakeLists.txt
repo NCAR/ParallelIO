@@ -139,16 +139,22 @@ else()
 endif()
 
 
-# Set a variable that appears in the config.h.in file.
+# Find GDAL library if enabled
 if(PIO_USE_GDAL)
+  message(STATUS "Searching for GDAL library...")
+  
+  # Find GDAL - will use GDAL_ROOT if provided via -DGDAL_ROOT=/path
   find_package(GDAL REQUIRED)
-  if(GDAL_FOUND)
-    set(PIO_ENABLE_GDAL 1)
-  endif()
+  
+  message(STATUS "Found GDAL ${GDAL_VERSION}")
+  message(STATUS "  GDAL include: ${GDAL_INCLUDE_DIRS}")
+  message(STATUS "  GDAL library: ${GDAL_LIBRARIES}")
+  
+  set(PIO_ENABLE_GDAL 1)
 else()
+  message(STATUS "GDAL support disabled")
   set(PIO_ENABLE_GDAL 0)
 endif()
-
 
 # Set a variable that appears in the config.h.in file.
 if(PIO_ENABLE_LOGGING)
