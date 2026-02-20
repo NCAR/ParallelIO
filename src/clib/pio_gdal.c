@@ -694,6 +694,7 @@ pio_read_darray_shp(file_desc_t *file, io_desc_t *iodesc, int vid,
                             start[m] = this_start[m + regioncnt * fndims];
                             count[m] = this_count[m + regioncnt * fndims];
                             regionsize *= count[m];
+			    printf("1 this_count: %d\n",count[m]);
                         }
                     }
                     else
@@ -703,12 +704,12 @@ pio_read_darray_shp(file_desc_t *file, io_desc_t *iodesc, int vid,
                             start[m] = tmp_start[m + regioncnt * fndims];
                             count[m] = tmp_count[m + regioncnt * fndims];
                             regionsize *= count[m];
+			    printf("2 tmp_count: %d\n",count[m]);
                         }
                     }
                     loffset += regionsize;
 
                     /* Read the data. */
-                    /* ierr = nc_get_vara(file->fh, vid, start, count, bufptr); */
                     switch (iodesc->piotype)
                     {
                     case PIO_BYTE:
@@ -783,7 +784,8 @@ GDALc_shp_get_double_field(int fileid, int varid, const size_t *startp,
   for (size_t i = startp[0]; i<countp[0]; i++) {
     // This ASSUMES that FIDs start at 0 and are sequential
     // This is NOT guaranteed. So this is a major TBD -- MSL
-    hF     = OGR_L_GetFeature(hL,i);
+    printf("getting feature %d of %d on rank %d\n",i,countp[0],rank);
+    hF    = OGR_L_GetFeature(hL,i);
     ip[i] = OGR_F_GetFieldAsDouble(hF,varid);
     PLOG((3,"gdal get_double %f", ip[i]));
   }
@@ -861,7 +863,7 @@ GDALc_shp_write_float_field(int fileid, int varid, const size_t *startp,
     
     hF = OGR_L_GetFeature(hL,i);
     OGR_F_SetFieldDouble(hF,varid,(float)ip[i]);
-    OGR_L_SetFeature(hL,hF);
+    ierr = OGR_L_SetFeature(hL,hF);
     OGR_F_Destroy( hF );
 //    printf("<<>> ip[%d]=%f\n",i,ip[i]);
   }
@@ -1129,12 +1131,6 @@ pio_read_darray_shp_par(file_desc_t *file, io_desc_t *iodesc, int vid, void *iob
         size_t start[fndims];
         size_t count[fndims];
         void *bufptr;
-#ifdef _PNETCDF
-        size_t tmp_bufsize = 1;
-        int rrlen = 0;
-        PIO_Offset *startlist[iodesc->maxregions];
-        PIO_Offset *countlist[iodesc->maxregions];
-#endif
 
         /* buffer is incremented by byte and loffset is in terms of
            the iodessc->mpitype so we need to multiply by the size of
@@ -1185,6 +1181,7 @@ pio_read_darray_shp_par(file_desc_t *file, io_desc_t *iodesc, int vid, void *iob
                     {
                         start[i] = region->start[i-1];
                         count[i] = region->count[i-1];
+			printf("fndims gdal: start[%d] %d count[%d] %d\n", i, start[i], i, count[i]);
                     }
 
                     /* Read one record. */
@@ -1198,6 +1195,7 @@ pio_read_darray_shp_par(file_desc_t *file, io_desc_t *iodesc, int vid, void *iob
                     {
                         start[i] = region->start[i];
                         count[i] = region->count[i];
+			printf("pas fndims gdal: start[%d] %d count[%d] %d\n", i, start[i], i, count[i]);
                     }
                 }
             }
@@ -1207,6 +1205,8 @@ pio_read_darray_shp_par(file_desc_t *file, io_desc_t *iodesc, int vid, void *iob
                 PLOG((3, "gdal: start[%d] %d count[%d] %d", i, start[i], i, count[i]));
 	        PLOG((3, "piotype: %d (%d, %d)", iodesc->piotype, PIO_FLOAT, PIO_DOUBLE));
 #endif /* LOGGING */
+            for (int i = 0; i < ndims; i++)
+                printf("gdal: start[%d] %d count[%d] %d\n", i, start[i], i, count[i]);
             /* Do the read. */
                 switch (iodesc->piotype)
                 {

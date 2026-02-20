@@ -358,10 +358,9 @@ else ()
   #   NUMPROCS ${EXACTLY_FOUR_TASKS}
   #   TIMEOUT ${DEFAULT_TEST_TIMEOUT})
   if(PIO_ENABLE_GDAL)  
-    add_custom_target(link_target ALL
-                      COMMAND ${CMAKE_COMMAND} -E create_symlink
-                      ${CMAKE_CURRENT_SOURCE_DIR}/data ${CMAKE_CURRENT_BINARY_DIR}/data)
-    add_dependencies(tests link_target)
+  #  add_custom_target(link_target ALL
+  #                    COMMAND ${CMAKE_COMMAND} -E create_symlink
+  #                    ${CMAKE_CURRENT_SOURCE_DIR}/data ${CMAKE_CURRENT_BINARY_DIR}/data)
     add_mpi_test(test_gdal
       EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/test_gdal
       NUMPROCS ${EXACTLY_FOUR_TASKS}
