@@ -1038,6 +1038,34 @@ int create_decomposition_2d(int ntasks, int my_rank, int iosysid, int *dim_len_2
     return 0;
 }
 
+int create_decomposition_2d_uneven(int ntasks, int my_rank, int iosysid, int *dim_len_2d,
+                            int *ioid, int pio_type)
+{
+    PIO_Offset elements_per_pe[4]={0,3,5,8};     /* Array elements per processing unit. */
+    PIO_Offset *compdof;  /* The decomposition mapping. */
+    int ret;
+
+
+    /* Allocate space for the decomposition array. */
+    if (!(compdof = malloc(elements_per_pe[my_rank] * sizeof(PIO_Offset))))
+        return PIO_ENOMEM;
+
+    /* Describe the decomposition. This is a 1-based array, so add 1! */
+    for (int i = 0; i < elements_per_pe[my_rank]; i++)
+	compdof[i] = my_rank*my_rank + i + 1;
+
+    /* Create the PIO decomposition for this test. */
+    if ((ret = PIOc_InitDecomp(iosysid, pio_type, NDIM2, dim_len_2d, elements_per_pe[my_rank],
+                               compdof, ioid, NULL, NULL, NULL)))
+        ERR(ret);
+
+
+    /* Free the mapping. */
+    free(compdof);
+
+    return 0;
+}
+
 /*
  * This creates a test netCDF file in the specified format. This file
  * is simple, with a global attribute, 2 dimensions, a scalar var, and
