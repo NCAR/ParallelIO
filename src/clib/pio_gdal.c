@@ -300,7 +300,6 @@ GDALc_openfile(int iosysid, int *fileIDp, GDALDatasetH *hDSp,int *iotype, const 
             if (1)//ios->io_rank == 0)
             {
 	      *hDSp = GDALOpenEx(filename, GDAL_OF_VECTOR | GDAL_OF_UPDATE, NULL, NULL, NULL);
-	      printf( "%s opened.\n", filename );
 	      //*hDSp = OGROpen( filename, mode, NULL );
 	      if( hDSp != NULL )
                 ierr = GDALc_inq_file_metadata(file, *hDSp, PIO_IOTYPE_GDAL,
@@ -694,7 +693,6 @@ pio_read_darray_shp(file_desc_t *file, io_desc_t *iodesc, int vid,
                             start[m] = this_start[m + regioncnt * fndims];
                             count[m] = this_count[m + regioncnt * fndims];
                             regionsize *= count[m];
-			    printf("1 this_count: %d\n",count[m]);
                         }
                     }
                     else
@@ -704,7 +702,6 @@ pio_read_darray_shp(file_desc_t *file, io_desc_t *iodesc, int vid,
                             start[m] = tmp_start[m + regioncnt * fndims];
                             count[m] = tmp_count[m + regioncnt * fndims];
                             regionsize *= count[m];
-			    printf("2 tmp_count: %d\n",count[m]);
                         }
                     }
                     loffset += regionsize;
@@ -784,7 +781,6 @@ GDALc_shp_get_double_field(int fileid, int varid, const size_t *startp,
   for (size_t i = startp[0]; i<countp[0]; i++) {
     // This ASSUMES that FIDs start at 0 and are sequential
     // This is NOT guaranteed. So this is a major TBD -- MSL
-    printf("getting feature %d of %d on rank %d\n",i,countp[0],rank);
     hF    = OGR_L_GetFeature(hL,i);
     ip[i] = OGR_F_GetFieldAsDouble(hF,varid);
     PLOG((3,"gdal get_double %f", ip[i]));
@@ -1181,7 +1177,6 @@ pio_read_darray_shp_par(file_desc_t *file, io_desc_t *iodesc, int vid, void *iob
                     {
                         start[i] = region->start[i-1];
                         count[i] = region->count[i-1];
-			printf("fndims gdal: start[%d] %d count[%d] %d\n", i, start[i], i, count[i]);
                     }
 
                     /* Read one record. */
@@ -1195,7 +1190,6 @@ pio_read_darray_shp_par(file_desc_t *file, io_desc_t *iodesc, int vid, void *iob
                     {
                         start[i] = region->start[i];
                         count[i] = region->count[i];
-			printf("pas fndims gdal: start[%d] %d count[%d] %d\n", i, start[i], i, count[i]);
                     }
                 }
             }
@@ -1205,8 +1199,6 @@ pio_read_darray_shp_par(file_desc_t *file, io_desc_t *iodesc, int vid, void *iob
                 PLOG((3, "gdal: start[%d] %d count[%d] %d", i, start[i], i, count[i]));
 	        PLOG((3, "piotype: %d (%d, %d)", iodesc->piotype, PIO_FLOAT, PIO_DOUBLE));
 #endif /* LOGGING */
-            for (int i = 0; i < ndims; i++)
-                printf("gdal: start[%d] %d count[%d] %d\n", i, start[i], i, count[i]);
             /* Do the read. */
                 switch (iodesc->piotype)
                 {

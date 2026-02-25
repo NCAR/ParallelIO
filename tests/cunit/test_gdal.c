@@ -154,7 +154,6 @@ int test_gdal(int iosysid, int ioid, int num_flavors, int *flavor, int my_rank,
 	  }
 
 	sprintf(filename, "data/simple.shp");
-//	sprintf(filename, "data/esmf_3x3_multimesh.shp");
 
 	/* Open the file. */
 	if ((ret = GDALc_openfile(iosysid, &ncid2, &hDSp, &iotype, filename, PIO_NOWRITE)))
@@ -167,28 +166,6 @@ int test_gdal(int iosysid, int ioid, int num_flavors, int *flavor, int my_rank,
 	if ((ret = PIOc_read_darray(ncid2, varid, ioid, arraylen, (void *)test_data)))
 	  ERR(ret);
 	  
-//	/* Check the results. */
-//	for (int f = 0; f < arraylen; f++)
-//	  {
-//	    switch (pio_type)
-//	      {
-//	      case PIO_INT:
-//		if (test_data[f] != test_data_int[f])
-//		  return ERR_WRONG;
-//		break;
-//	      case PIO_FLOAT:
-//		if (test_data[f] != test_data_float[f])
-//		  return ERR_WRONG;
-//		break;
-//	      case PIO_DOUBLE:
-//		if (test_data[f] != test_data_double[f])
-//		  return ERR_WRONG;
-//		break;
-//	      default:
-//		ERR(ERR_WRONG);
-//	      }
-//	  }
-
 	/* Close the GIS file. */
 	if ((ret = PIOc_closefile(ncid2)))
 	  ERR(ret);
@@ -256,8 +233,6 @@ int main(int argc, char **argv)
     if ((ret = pio_test_init2(argc, argv, &my_rank, &ntasks, MIN_NTASKS,
                               MIN_NTASKS, -1, &test_comm)))
         ERR(ERR_INIT);
-
-    PIOc_set_log_level(-1);
 
     if ((ret = PIOc_set_iosystem_error_handling(PIO_DEFAULT, PIO_RETURN_ERROR, NULL)))
         return ret;
