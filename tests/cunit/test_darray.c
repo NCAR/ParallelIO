@@ -69,7 +69,7 @@ int dim_len[NDIM] = {NC_UNLIMITED, X_DIM_LEN, Y_DIM_LEN};
  * @returns 0 for success, error code otherwise.
  */
 int test_darray(int iosysid, int ioid, int num_flavors, int *flavor, int my_rank,
-                int pio_type)
+                int pio_type, PIO_Offset arraylen)
 {
     char filename[PIO_MAX_NAME + 1]; /* Name for the output files. */
     int dimids[NDIM];      /* The dimension IDs. */
@@ -82,7 +82,7 @@ int test_darray(int iosysid, int ioid, int num_flavors, int *flavor, int my_rank
     MPI_Datatype mpi_type;
     int type_size; /* size of a variable of type pio_type */
     int other_type; /* another variable of the same size but different type */
-    PIO_Offset arraylen = 4;
+//    PIO_Offset arraylen = 4;
     void *fillvalue, *ofillvalue;
     void *test_data;
     void *test_data_in;
@@ -345,6 +345,7 @@ int test_all_darray(int iosysid, int num_flavors, int *flavor, int my_rank,
     int pio_type[NUM_TYPES_TO_TEST] = {PIO_INT, PIO_FLOAT, PIO_DOUBLE};
     int dim_len_2d[NDIM2] = {X_DIM_LEN, Y_DIM_LEN};
     int ret; /* Return code. */
+    PIO_Offset array_len[4] = {0,3,5,8};
 
     for (int t = 0; t < NUM_TYPES_TO_TEST; t++)
     {
@@ -358,7 +359,22 @@ int test_all_darray(int iosysid, int num_flavors, int *flavor, int my_rank,
             return ret;
 
         /* Run a simple darray test. */
-        if ((ret = test_darray(iosysid, ioid, num_flavors, flavor, my_rank, pio_type[t])))
+        if ((ret = test_darray(iosysid, ioid, num_flavors, flavor, my_rank, pio_type[t], 4)))
+            return ret;
+
+        /* Free the PIO decomposition. */
+        if ((ret = PIOc_freedecomp(iosysid, ioid)))
+            ERR(ret);
+        sprintf(filename, "%s_decomp_rank_%d_flavor_%d_type_%d_uneven.nc", TEST_NAME, my_rank,
+                *flavor, pio_type[t]);
+
+        /* Decompose the data over the tasks. */
+        if ((ret = create_decomposition_2d_uneven(TARGET_NTASKS, my_rank, iosysid, dim_len_2d,
+                                           &ioid, pio_type[t])))
+            return ret;
+
+        /* Run a simple darray test. */
+        if ((ret = test_darray(iosysid, ioid, num_flavors, flavor, my_rank, pio_type[t], array_len[my_rank])))
             return ret;
 
         /* Free the PIO decomposition. */
