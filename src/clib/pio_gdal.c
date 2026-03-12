@@ -300,7 +300,6 @@ GDALc_openfile(int iosysid, int *fileIDp, GDALDatasetH *hDSp,int *iotype, const 
             if (1)//ios->io_rank == 0)
             {
 	      *hDSp = GDALOpenEx(filename, GDAL_OF_VECTOR | GDAL_OF_UPDATE, NULL, NULL, NULL);
-	      printf( "%s opened.\n", filename );
 	      //*hDSp = OGROpen( filename, mode, NULL );
 	      if( hDSp != NULL )
                 ierr = GDALc_inq_file_metadata(file, *hDSp, PIO_IOTYPE_GDAL,
@@ -708,7 +707,6 @@ pio_read_darray_shp(file_desc_t *file, io_desc_t *iodesc, int vid,
                     loffset += regionsize;
 
                     /* Read the data. */
-                    /* ierr = nc_get_vara(file->fh, vid, start, count, bufptr); */
                     switch (iodesc->piotype)
                     {
                     case PIO_BYTE:
@@ -783,7 +781,7 @@ GDALc_shp_get_double_field(int fileid, int varid, const size_t *startp,
   for (size_t i = startp[0]; i<countp[0]; i++) {
     // This ASSUMES that FIDs start at 0 and are sequential
     // This is NOT guaranteed. So this is a major TBD -- MSL
-    hF     = OGR_L_GetFeature(hL,i);
+    hF    = OGR_L_GetFeature(hL,i);
     ip[i] = OGR_F_GetFieldAsDouble(hF,varid);
     PLOG((3,"gdal get_double %f", ip[i]));
   }
@@ -861,7 +859,7 @@ GDALc_shp_write_float_field(int fileid, int varid, const size_t *startp,
     
     hF = OGR_L_GetFeature(hL,i);
     OGR_F_SetFieldDouble(hF,varid,(float)ip[i]);
-    OGR_L_SetFeature(hL,hF);
+    ierr = OGR_L_SetFeature(hL,hF);
     OGR_F_Destroy( hF );
 //    printf("<<>> ip[%d]=%f\n",i,ip[i]);
   }
@@ -1129,12 +1127,6 @@ pio_read_darray_shp_par(file_desc_t *file, io_desc_t *iodesc, int vid, void *iob
         size_t start[fndims];
         size_t count[fndims];
         void *bufptr;
-#ifdef _PNETCDF
-        size_t tmp_bufsize = 1;
-        int rrlen = 0;
-        PIO_Offset *startlist[iodesc->maxregions];
-        PIO_Offset *countlist[iodesc->maxregions];
-#endif
 
         /* buffer is incremented by byte and loffset is in terms of
            the iodessc->mpitype so we need to multiply by the size of

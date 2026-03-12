@@ -274,10 +274,8 @@ PIOc_write_darray_multi(int ncid, const int *varids, int ioid, int nvars,
      * large as the largest used to accommodate this serial io
      * method.  */
     rlen = 0;
-    if (iodesc->llen > 0 ||
-        ((file->iotype == PIO_IOTYPE_NETCDF ||
-          file->iotype == PIO_IOTYPE_NETCDF4C) && ios->iomain))
-        rlen = iodesc->maxiobuflen * nvars;
+    if (ios->iomaster && (file->iotype==PIO_IOTYPE_NETCDF || file->iotype == PIO_IOTYPE_NETCDF4C))
+       rlen = iodesc->maxiobuflen * nvars;
 
     /* Allocate iobuf. */
     if (rlen > 0)
