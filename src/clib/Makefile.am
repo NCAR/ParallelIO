@@ -26,3 +26,6 @@ pio_put_nc.c pio_spmd.c pio_get_vard.c pio_put_vard.c pio_error.c	\
 pio_internal.h uthash.h pio_error.h parallel_sort.h pioc_async.c
 
 EXTRA_DIST = CMakeLists.txt topology.c pio_meta.h.in
+if PIO_ENABLE_GDAL
+  libpioc_la_SOURCES += pio_gdal.c
+endif

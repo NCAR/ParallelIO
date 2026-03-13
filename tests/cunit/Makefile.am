@@ -21,7 +21,9 @@ test_async_multicomp test_async_multi2 test_async_manyproc		\
 test_darray_fill test_decomp_frame test_perf2 test_async_perf		\
 test_darray_vard test_async_1d test_darray_append test_simple           \
 test_darray_lossycompress
-
+if PIO_ENABLE_GDAL
+  check_PROGRAMS += test_gdal
+endif
 if RUN_TESTS
 # Tests will run from a bash script.
 TESTS = run_tests.sh
@@ -69,6 +71,7 @@ test_async_perf_SOURCES = test_async_perf.c test_common.c pio_tests.h
 test_darray_vard_SOURCES = test_darray_vard.c test_common.c pio_tests.h
 test_async_1d_SOURCES = test_async_1d.c pio_tests.h
 test_simple_SOURCES = test_simple.c test_common.c pio_tests.h
+test_gdal_SOURCES = test_gdal.c test_common.c pio_tests.h
 
 # Distribute the test script.
 EXTRA_DIST = run_tests.sh.in CMakeLists.txt test_darray_frame.c

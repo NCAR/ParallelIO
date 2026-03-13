@@ -29,6 +29,10 @@ if (NETCDF_INTEGRATION)
   set (src ${src} ../ncint/nc_get_vard.c ../ncint/ncintdispatch.c ../ncint/ncint_pio.c ../ncint/nc_put_vard.c)
 endif ()
 
+if (PIO_USE_GDAL)
+  set (src ${src} pio_gdal.c)
+endif()
+
 add_library (pioc ${src})
 
 # Always use -fPIC
@@ -187,6 +191,14 @@ if(PIO_USE_MPISERIAL)
   endif()
 endif()
 
+
+#===== GDAL ===== <M.Long>
+if (PIO_USE_GDAL)
+  target_include_directories (pioc
+    PUBLIC ${GDAL_INCLUDE_DIRS})
+  target_link_libraries (pioc
+    PUBLIC ${GDAL_LIBRARIES})
+endif ()
 
 include(CheckTypeSize)
 check_type_size("size_t" SIZEOF_SIZE_T)
