@@ -254,7 +254,7 @@ function (find_package_component PKG)
                 find_library (${PKGCOMP}_LIBRARY
                               NAMES ${${PKGCOMP}_LIBRARY_NAMES}
                               PATHS ${${PKGCOMP}_PREFIX}
-                              PATH_SUFFIXES lib
+                              PATH_SUFFIXES lib lib/${CMAKE_LIBRARY_ARCHITECTURE}
                               NO_DEFAULT_PATH)
 
                 # If found, check if library is static or dynamic
@@ -266,7 +266,7 @@ function (find_package_component PKG)
                         find_shared_library (${PKGCOMP}_SHARED_LIBRARY
                                              NAMES ${${PKGCOMP}_LIBRARY_NAMES}
                                              PATHS ${${PKGCOMP}_PREFIX}
-                                             PATH_SUFFIXES lib
+                                             PATH_SUFFIXES lib lib/${CMAKE_LIBRARY_ARCHITECTURE}
                                              NO_DEFAULT_PATH)
                         if (${PKGCOMP}_SHARED_LIBRARY)
                             set (${PKGCOMP}_LIBRARY ${${PKGCOMP}_SHARED_LIBRARY})
@@ -278,7 +278,7 @@ function (find_package_component PKG)
                         find_static_library (${PKGCOMP}_STATIC_LIBRARY
                                              NAMES ${${PKGCOMP}_LIBRARY_NAMES}
                                              PATHS ${${PKGCOMP}_PREFIX}
-                                             PATH_SUFFIXES lib
+                                             PATH_SUFFIXES lib lib/${CMAKE_LIBRARY_ARCHITECTURE}
                                              NO_DEFAULT_PATH)
                         if (${PKGCOMP}_STATIC_LIBRARY)
                             set (${PKGCOMP}_LIBRARY ${${PKGCOMP}_STATIC_LIBRARY})
@@ -311,7 +311,9 @@ function (find_package_component PKG)
         mark_as_advanced (${PKGCOMP}_INCLUDE_DIR ${PKGCOMP}_LIBRARY)
 
         # HACK For bug in CMake v3.0:
-        set (${PKGCOMP}_FOUND ${${PKGCOMPUP}_FOUND})
+        if (NOT DEFINED ${PKGCOMP}_FOUND AND DEFINED ${PKGCOMPUP}_FOUND)
+            set (${PKGCOMP}_FOUND ${${PKGCOMPUP}_FOUND})
+        endif ()
 
         # Set return variables
         if (${PKGCOMP}_FOUND)
