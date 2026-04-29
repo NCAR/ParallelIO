@@ -8,8 +8,8 @@ project(PIO LANGUAGES C)
 
 # The project version number (modern style)
 set(VERSION_MAJOR 2 CACHE STRING "Project major version number.")
-set(VERSION_MINOR 6 CACHE STRING "Project minor version number.")
-set(VERSION_PATCH 9 CACHE STRING "Project patch version number.")
+set(VERSION_MINOR 7 CACHE STRING "Project minor version number.")
+set(VERSION_PATCH 0 CACHE STRING "Project patch version number.")
 mark_as_advanced(VERSION_MAJOR VERSION_MINOR VERSION_PATCH)
 
 set(PIO_VERSION_MAJOR ${VERSION_MAJOR})
