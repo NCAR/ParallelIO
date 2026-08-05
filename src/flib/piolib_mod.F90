@@ -529,19 +529,23 @@ contains
   !! @param compcount The count for the block-cyclic computational
   !! decomposition
   !! @param iodesc @copydoc iodesc_generate
+  !! @param force_nofill Optional. If present and .true., skip the
+  !! needsfill coverage check and force needsfill=false.
   !! @author Jim Edwards
   !<
-  subroutine PIO_initdecomp_bc(iosystem,basepiotype,dims,compstart,compcount,iodesc)
+  subroutine PIO_initdecomp_bc(iosystem,basepiotype,dims,compstart,compcount,iodesc,force_nofill)
     type (iosystem_desc_t), intent(inout) :: iosystem
     integer(i4), intent(in)               :: basepiotype
     integer(i4), intent(in)               :: dims(:)
     integer (kind=PIO_OFFSET_KIND)             :: compstart(:)
     integer (kind=PIO_OFFSET_KIND)             :: compcount(:)
     type (IO_desc_t), intent(out)         :: iodesc
+    logical, optional, intent(in)         :: force_nofill
 
     interface
-       integer(C_INT) function PIOc_InitDecomp_bc(iosysid, basetype, ndims, dims, compstart, compcount, ioidp) &
-            bind(C,name="PIOc_InitDecomp_bc")
+       integer(C_INT) function PIOc_InitDecomp_bc_flags(iosysid, basetype, ndims, dims, &
+            compstart, compcount, ioidp, force_nofill) &
+            bind(C,name="PIOc_InitDecomp_bc_flags")
          use iso_c_binding
          integer(C_INT), value :: iosysid
          integer(C_INT), value :: basetype
@@ -550,12 +554,14 @@ contains
          integer(C_INT) :: ioidp
          integer(C_SIZE_T) :: compstart(*)
          integer(C_SIZE_T) :: compcount(*)
-       end function PIOc_InitDecomp_bc
+         integer(C_INT), value :: force_nofill
+       end function PIOc_InitDecomp_bc_flags
     end interface
     integer :: i, ndims
     integer, allocatable ::  cdims(:)
     integer(PIO_Offset_kind), allocatable :: cstart(:), ccount(:)
     integer :: ierr
+    integer(C_INT) :: c_force_nofill
 
     ndims = size(dims)
 
@@ -567,8 +573,13 @@ contains
        ccount(i)  = compcount(ndims-i+1)
     end do
 
-    ierr = PIOc_InitDecomp_bc(iosystem%iosysid, basepiotype, ndims, cdims, &
-         cstart, ccount, iodesc%ioid)
+    c_force_nofill = 0
+    if (present(force_nofill)) then
+       if (force_nofill) c_force_nofill = 1
+    end if
+
+    ierr = PIOc_InitDecomp_bc_flags(iosystem%iosysid, basepiotype, ndims, cdims, &
+         cstart, ccount, iodesc%ioid, c_force_nofill)
 
     deallocate(cstart, ccount, cdims)
 
@@ -831,7 +842,7 @@ contains
   !! @param iocount The count for the block-cyclic io decomposition
   !! @author Jim Edwards
   !<
-  subroutine PIO_initdecomp_dof_i4(iosystem, basepiotype, dims, compdof, iodesc, rearr, iostart, iocount)
+  subroutine PIO_initdecomp_dof_i4(iosystem, basepiotype, dims, compdof, iodesc, rearr, iostart, iocount, force_nofill)
     type (iosystem_desc_t), intent(inout) :: iosystem
     integer(i4), intent(in)           :: basepiotype
     integer(i4), intent(in)          :: compdof(:)   ! global degrees of freedom for computational decomposition
@@ -840,21 +851,23 @@ contains
     type (io_desc_t), intent(inout)     :: iodesc
     integer(PIO_OFFSET_KIND), pointer :: internal_compdof(:)
     integer(i4), intent(in)           :: dims(:)
+    logical, optional, intent(in) :: force_nofill
 
     allocate(internal_compdof(size(compdof)))
     internal_compdof = int(compdof,PIO_OFFSET_KIND)
 
     if(present(iostart) .and. present(iocount) ) then
        call pio_initdecomp_dof_i8(iosystem, basepiotype, dims, internal_compdof, iodesc, &
-            PIO_REARR_SUBSET, iostart, iocount)
+            PIO_REARR_SUBSET, iostart, iocount, force_nofill=force_nofill)
     else
-       call pio_initdecomp_dof_i8(iosystem, basepiotype, dims, internal_compdof, iodesc, rearr)
+       call pio_initdecomp_dof_i8(iosystem, basepiotype, dims, internal_compdof, iodesc, rearr, &
+            force_nofill=force_nofill)
     endif
     deallocate(internal_compdof)
 
   end subroutine PIO_initdecomp_dof_i4
 
-  subroutine PIO_initdecomp_internal(iosystem,basepiotype,dims,maplen, compdof, iodesc, rearr, iostart, iocount)
+  subroutine PIO_initdecomp_internal(iosystem,basepiotype,dims,maplen, compdof, iodesc, rearr, iostart, iocount, force_nofill)
     type (iosystem_desc_t), intent(in) :: iosystem
     integer(i4), intent(in)           :: basepiotype
     integer(i4), intent(in)           :: dims(:)
@@ -863,16 +876,18 @@ contains
     integer, optional, target :: rearr
     integer (PIO_OFFSET_KIND), optional :: iostart(:), iocount(:)
     type (io_desc_t), intent(inout)     :: iodesc
+    logical, optional, intent(in) :: force_nofill
 
     integer(c_int) :: ndims
     integer(c_int), dimension(:), allocatable, target :: cdims
     integer(PIO_OFFSET_KIND), dimension(:), allocatable, target :: cstart, ccount
+    integer(C_INT) :: c_force_nofill
 
     type(C_PTR) :: crearr
     interface
-       integer(C_INT) function PIOc_InitDecomp(iosysid,basetype,ndims,dims, &
-            maplen, compmap, ioidp, rearr, iostart, iocount)  &
-            bind(C,name="PIOc_InitDecomp")
+       integer(C_INT) function PIOc_InitDecomp_flags(iosysid,basetype,ndims,dims, &
+            maplen, compmap, ioidp, rearr, iostart, iocount, force_nofill)  &
+            bind(C,name="PIOc_InitDecomp_flags")
          use iso_c_binding
          integer(C_INT), value :: iosysid
          integer(C_INT), value :: basetype
@@ -884,7 +899,8 @@ contains
          type(C_PTR), value :: rearr
          type(C_PTR), value :: iostart
          type(C_PTR), value :: iocount
-       end function PIOc_InitDecomp
+         integer(C_INT), value :: force_nofill
+       end function PIOc_InitDecomp_flags
     end interface
     integer :: ierr,i
 
@@ -900,6 +916,11 @@ contains
        crearr = C_NULL_PTR
     endif
 
+    c_force_nofill = 0
+    if (present(force_nofill)) then
+       if (force_nofill) c_force_nofill = 1
+    end if
+
     if(present(iostart) .and. present(iocount)) then
        allocate(cstart(ndims), ccount(ndims))
        do i=1,ndims
@@ -907,12 +928,12 @@ contains
           ccount(i) = iocount(ndims-i+1)
        end do
 
-       ierr = PIOc_InitDecomp(iosystem%iosysid, basepiotype, ndims, cdims, &
-            maplen, compdof, iodesc%ioid, crearr, C_LOC(cstart), C_LOC(ccount))
+       ierr = PIOc_InitDecomp_flags(iosystem%iosysid, basepiotype, ndims, cdims, &
+            maplen, compdof, iodesc%ioid, crearr, C_LOC(cstart), C_LOC(ccount), c_force_nofill)
        deallocate(cstart, ccount)
     else
-       ierr = PIOc_InitDecomp(iosystem%iosysid, basepiotype, ndims, cdims, &
-            maplen, compdof, iodesc%ioid, crearr, C_NULL_PTR, C_NULL_PTR)
+       ierr = PIOc_InitDecomp_flags(iosystem%iosysid, basepiotype, ndims, cdims, &
+            maplen, compdof, iodesc%ioid, crearr, C_NULL_PTR, C_NULL_PTR, c_force_nofill)
     end if
 
     deallocate(cdims)
@@ -1021,7 +1042,7 @@ contains
   !! I8 version of PIO_initdecomp_dof_i4.
   !! @author Jim Edwards
   subroutine PIO_initdecomp_dof_i8(iosystem, basepiotype, dims, compdof, &
-       iodesc, rearr, iostart, iocount)
+       iodesc, rearr, iostart, iocount, force_nofill)
     type (iosystem_desc_t), intent(in) :: iosystem
     integer(i4), intent(in)           :: basepiotype
     integer(i4), intent(in)           :: dims(:)
@@ -1029,6 +1050,7 @@ contains
     integer, optional, target :: rearr
     integer (PIO_OFFSET_KIND), optional :: iostart(:), iocount(:)
     type (io_desc_t), intent(inout)     :: iodesc
+    logical, optional, intent(in) :: force_nofill
     integer :: maplen
 
 #ifdef TIMING
@@ -1038,7 +1060,7 @@ contains
     maplen = size(compdof)
 
     call PIO_initdecomp_internal(iosystem, basepiotype, dims, maplen, &
-         compdof, iodesc, rearr, iostart, iocount)
+         compdof, iodesc, rearr, iostart, iocount, force_nofill)
 
 #ifdef TIMING
     call t_stopf("PIO:initdecomp_dof")

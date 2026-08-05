@@ -501,13 +501,31 @@ PIOc_InitDecomp(int iosysid, int pio_type, int ndims, const int *gdimlen, int ma
                 const PIO_Offset *compmap, int *ioidp, const int *rearranger,
                 const PIO_Offset *iostart, const PIO_Offset *iocount)
 {
+    return PIOc_InitDecomp_flags(iosysid, pio_type, ndims, gdimlen, maplen, compmap,
+                                 ioidp, rearranger, iostart, iocount, 0);
+}
+
+/**
+ * Same as PIOc_InitDecomp(), with optional force_nofill.
+ *
+ * If force_nofill is non-zero, skip the needsfill coverage check and
+ * force needsfill=false for this decomposition.
+ *
+ * @param force_nofill non-zero to skip needsfill check
+ */
+int
+PIOc_InitDecomp_flags(int iosysid, int pio_type, int ndims, const int *gdimlen, int maplen,
+                      const PIO_Offset *compmap, int *ioidp, const int *rearranger,
+                      const PIO_Offset *iostart, const PIO_Offset *iocount,
+                      int force_nofill)
+{
     iosystem_desc_t *ios;  /* Pointer to io system information. */
     io_desc_t *iodesc;     /* The IO description. */
     int mpierr = MPI_SUCCESS, mpierr2;  /* Return code from MPI function calls. */
     int ierr;              /* Return code. */
 
-    PLOG((1, "PIOc_InitDecomp iosysid = %d pio_type = %d ndims = %d maplen = %d",
-          iosysid, pio_type, ndims, maplen));
+    PLOG((1, "PIOc_InitDecomp_flags iosysid = %d pio_type = %d ndims = %d maplen = %d force_nofill = %d",
+          iosysid, pio_type, ndims, maplen, force_nofill));
 
 #ifdef USE_MPE
     pio_start_mpe_log(DECOMP);
@@ -566,8 +584,10 @@ PIOc_InitDecomp(int iosysid, int pio_type, int ndims, const int *gdimlen, int ma
                 mpierr = MPI_Bcast(&iocount_present, 1, MPI_CHAR, ios->compmain, ios->intercomm);
             if (iocount_present && !mpierr)
                 mpierr = MPI_Bcast((PIO_Offset *)iocount, ndims, MPI_OFFSET, ios->compmain, ios->intercomm);
-            PLOG((2, "PIOc_InitDecomp iosysid = %d pio_type = %d ndims = %d maplen = %d rearranger_present = %d iostart_present = %d "
-                  "iocount_present = %d ", iosysid, pio_type, ndims, maplen, rearranger_present, iostart_present, iocount_present));
+            if (!mpierr)
+                mpierr = MPI_Bcast(&force_nofill, 1, MPI_INT, ios->compmain, ios->intercomm);
+            PLOG((2, "PIOc_InitDecomp_flags iosysid = %d pio_type = %d ndims = %d maplen = %d rearranger_present = %d iostart_present = %d "
+                  "iocount_present = %d force_nofill = %d", iosysid, pio_type, ndims, maplen, rearranger_present, iostart_present, iocount_present, force_nofill));
         }
 
         /* Handle MPI errors. */
@@ -587,6 +607,9 @@ PIOc_InitDecomp(int iosysid, int pio_type, int ndims, const int *gdimlen, int ma
     PLOG((2, "allocating iodesc pio_type %d ndims %d", pio_type, ndims));
     if ((ierr = malloc_iodesc(ios, pio_type, ndims, &iodesc)))
         return pio_err(ios, NULL, ierr, __FILE__, __LINE__);
+
+    /* Optional: skip needsfill coverage check for this decomp. */
+    iodesc->force_nofill = (force_nofill != 0);
 
     /* Remember the maplen. */
     iodesc->maplen = maplen;
@@ -648,7 +671,7 @@ PIOc_InitDecomp(int iosysid, int pio_type, int ndims, const int *gdimlen, int ma
         iodesc->rearranger = ios->default_rearranger;
     else
         iodesc->rearranger = *rearranger;
-    PLOG((2, "iodesc->rearranger = %d", iodesc->rearranger));
+    PLOG((2, "iodesc->rearranger = %d force_nofill = %d", iodesc->rearranger, iodesc->force_nofill));
 
     /* Is this the subset rearranger? */
     if (iodesc->rearranger == PIO_REARR_SUBSET)
@@ -1166,14 +1189,31 @@ PIOc_init_decomp(int iosysid, int pio_type, int ndims, const int *gdimlen, int m
 int
 PIOc_InitDecomp_bc(int iosysid, int pio_type, int ndims, const int *gdimlen,
                    const long int *start, const long int *count, int *ioidp)
+{
+    return PIOc_InitDecomp_bc_flags(iosysid, pio_type, ndims, gdimlen, start, count,
+                                    ioidp, 0);
+}
 
+/**
+ * Same as PIOc_InitDecomp_bc(), with optional force_nofill.
+ *
+ * If force_nofill is non-zero, skip the needsfill coverage check and
+ * force needsfill=false for this decomposition.
+ *
+ * @param force_nofill non-zero to skip needsfill check
+ */
+int
+PIOc_InitDecomp_bc_flags(int iosysid, int pio_type, int ndims, const int *gdimlen,
+                         const long int *start, const long int *count, int *ioidp,
+                         int force_nofill)
 {
     iosystem_desc_t *ios;
     int n, i, maplen = 1;
     PIO_Offset prod[ndims], loc[ndims];
     int rearr = PIO_REARR_SUBSET;
 
-    PLOG((1, "PIOc_InitDecomp_bc iosysid = %d pio_type = %d ndims = %d"));
+    PLOG((1, "PIOc_InitDecomp_bc_flags iosysid = %d pio_type = %d ndims = %d force_nofill = %d",
+          iosysid, pio_type, ndims, force_nofill));
 
     /* Get the info about the io system. */
     if (!(ios = pio_get_iosystem_from_id(iosysid)))
@@ -1219,8 +1259,8 @@ PIOc_InitDecomp_bc(int iosysid, int pio_type, int ndims, const int *gdimlen,
         }
     }
 
-    return PIOc_InitDecomp(iosysid, pio_type, ndims, gdimlen, maplen, compmap, ioidp,
-                           &rearr, NULL, NULL);
+    return PIOc_InitDecomp_flags(iosysid, pio_type, ndims, gdimlen, maplen, compmap, ioidp,
+                                 &rearr, NULL, NULL, force_nofill);
 }
 
 /**

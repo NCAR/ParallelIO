@@ -1141,6 +1141,14 @@ determine_fill(iosystem_desc_t *ios, io_desc_t *iodesc, const int *gdimlen,
     pioassert(ios && iodesc && gdimlen && compmap, "invalid input",
               __FILE__, __LINE__);
 
+    /* Application requested skip of the coverage / hole-fill path. */
+    if (iodesc->force_nofill)
+    {
+        iodesc->needsfill = false;
+        PLOG((2, "determine_fill: force_nofill set, needsfill forced false"));
+        return PIO_NOERR;
+    }
+
     /* Determine size of data space. */
     for (int i = 0; i < iodesc->ndims; i++)
         totalgridsize *= gdimlen[i];
@@ -1164,9 +1172,6 @@ determine_fill(iosystem_desc_t *ios, io_desc_t *iodesc, const int *gdimlen,
     /* If the total size of the data provided to be written is < the
      * total data size then we need fill values. */
     iodesc->needsfill = totalllen < totalgridsize;
-
-    /*  TURN OFF FILL for timing test
-        iodesc->needsfill=false; */
 
     return PIO_NOERR;
 }

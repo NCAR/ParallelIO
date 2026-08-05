@@ -317,6 +317,11 @@ typedef struct io_desc_t
      * everywhere (false) */
     bool needsfill;
 
+    /** If true, skip the needsfill coverage check and force
+     * needsfill=false. Set via PIOc_InitDecomp_flags /
+     * PIOc_InitDecomp_bc_flags (or Fortran force_nofill). */
+    bool force_nofill;
+
     /** If the map is not monotonically increasing we will need to
      * sort it. */
     bool needssort;
@@ -823,10 +828,19 @@ extern "C" {
 			const PIO_Offset *compmap, int *ioidp, const int *rearr,
 			const PIO_Offset *iostart, const PIO_Offset *iocount);
     int PIOc_InitDecomp(int iosysid, int pio_type, int ndims, const int *gdimlen, int maplen,
-			const PIO_Offset *compmap, int *ioidp, const int *rearr,
-			const PIO_Offset *iostart, const PIO_Offset *iocount);
+                        const PIO_Offset *compmap, int *ioidp, const int *rearr,
+                        const PIO_Offset *iostart, const PIO_Offset *iocount);
+    /** Like PIOc_InitDecomp, but force_nofill!=0 skips the needsfill check. */
+    int PIOc_InitDecomp_flags(int iosysid, int pio_type, int ndims, const int *gdimlen, int maplen,
+                              const PIO_Offset *compmap, int *ioidp, const int *rearr,
+                              const PIO_Offset *iostart, const PIO_Offset *iocount,
+                              int force_nofill);
     int PIOc_InitDecomp_bc(int iosysid, int basetype, int ndims, const int *gdimlen,
-			   const long int *start, const long int *count, int *ioidp);
+                           const long int *start, const long int *count, int *ioidp);
+    /** Like PIOc_InitDecomp_bc, but force_nofill!=0 skips the needsfill check. */
+    int PIOc_InitDecomp_bc_flags(int iosysid, int basetype, int ndims, const int *gdimlen,
+                                 const long int *start, const long int *count, int *ioidp,
+                                 int force_nofill);
 
     /* Init decomposition with 0-based compmap array. */
     int PIOc_init_decomp(int iosysid, int pio_type, int ndims, const int *gdimlen, int maplen,
