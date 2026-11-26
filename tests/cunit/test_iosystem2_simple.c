@@ -87,11 +87,54 @@ int main(int argc, char **argv)
             MPIERR(ret);
 
         /* Check that some bad inputs are rejected. */
-        if (PIOc_Init_Intracomm(newcomm, new_size, STRIDE + 30, BASE, REARRANGER,
+        if (PIOc_Init_Intracomm(newcomm, new_size + 1, STRIDE + 30, BASE, REARRANGER,
                                 &iosysid) != PIO_EINVAL)
             return ERR_WRONG;
         if (PIOc_Init_Intracomm(newcomm, new_size, STRIDE, BASE, REARRANGER, NULL) != PIO_EINVAL)
             return ERR_WRONG;
+
+        /* stride must be >= 1, base >= 0, and the IO tasks must be
+         * distinct: (num_iotasks - 1) * stride < ntasks. */
+        if (PIOc_Init_Intracomm(test_comm, TARGET_NTASKS + 1, STRIDE, BASE, REARRANGER,
+                                &iosysid) != PIO_EINVAL)
+            return ERR_WRONG;
+        if (PIOc_Init_Intracomm(test_comm, 1, 0, BASE, REARRANGER, &iosysid) != PIO_EINVAL)
+            return ERR_WRONG;
+        if (PIOc_Init_Intracomm(test_comm, 1, STRIDE, -1, REARRANGER, &iosysid) != PIO_EINVAL)
+            return ERR_WRONG;
+
+        /* num_iotasks * stride may be more than ntasks, as long as the
+         * IO tasks are distinct (https://github.com/NCAR/ParallelIO/issues/1986).
+         * Here the only IO task is rank 1. */
+        {
+            int iosysid_stride;
+            bool ioproc;
+            if ((ret = PIOc_Init_Intracomm(test_comm, 1, TARGET_NTASKS + 1, 1, REARRANGER,
+                                           &iosysid_stride)))
+                ERR(ret);
+            if ((ret = PIOc_iam_iotask(iosysid_stride, &ioproc)))
+                ERR(ret);
+            if (ioproc != (my_rank == 1))
+                ERR(ERR_WRONG);
+            if ((ret = PIOc_free_iosystem(iosysid_stride)))
+                ERR(ret);
+        }
+
+        /* IO tasks wrap around when base + (num_iotasks - 1) * stride >=
+         * ntasks: here every task is an IO task (ranks 1, 0). */
+        {
+            int iosysid_wrap;
+            bool ioproc;
+            if ((ret = PIOc_Init_Intracomm(test_comm, TARGET_NTASKS, STRIDE, 1, REARRANGER,
+                                           &iosysid_wrap)))
+                ERR(ret);
+            if ((ret = PIOc_iam_iotask(iosysid_wrap, &ioproc)))
+                ERR(ret);
+            if (!ioproc)
+                ERR(ERR_WRONG);
+            if ((ret = PIOc_free_iosystem(iosysid_wrap)))
+                ERR(ret);
+        }
 
         /* Initialize an intracomm for evens/odds. */
         if ((ret = PIOc_Init_Intracomm(newcomm, new_size, STRIDE, BASE, REARRANGER, &iosysid)))

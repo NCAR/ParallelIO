@@ -1259,7 +1259,9 @@ PIOc_InitDecomp_bc(int iosysid, int pio_type, int ndims, const int *gdimlen,
  * @param stride the offset between io tasks in the comp_comm. The mod
  * operator is used when computing the IO tasks with the formula:
  * <pre>ios->ioranks[i] = (base + i * ustride) % ios->num_comptasks</pre>.
- * @param base the comp_comm index of the first io task.
+ * stride must be >= 1, and (num_iotasks - 1) * stride must be less
+ * than the size of comp_comm, so that the IO tasks are distinct.
+ * @param base the comp_comm index of the first io task (>= 0).
  * @param rearr the rearranger to use by default, this may be
  * overriden in the PIO_init_decomp(). The rearranger is not used
  * until the decomposition is initialized.
@@ -1303,7 +1305,8 @@ PIOc_Init_Intracomm(MPI_Comm comp_comm, int num_iotasks, int stride, int base,
           "rearr = %d", comp_comm, num_iotasks, stride, base, rearr));
 
     /* Check the inputs. */
-    if (!iosysidp || num_iotasks < 1 || num_iotasks * stride > num_comptasks)
+    if (!iosysidp || num_iotasks < 1 || stride < 1 || base < 0 ||
+        (num_iotasks - 1) * stride >= num_comptasks)
         return pio_err(NULL, NULL, PIO_EINVAL, __FILE__, __LINE__);
 
 
